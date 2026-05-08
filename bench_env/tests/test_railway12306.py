@@ -661,18 +661,6 @@ def _return_order(
         "status": "pending",
         "createTime": "2026-03-15T10:00:00",
     }
-
-
-def _open_my_account_positive_case():
-    task = _tasks_module.OpenMyAccount()
-    return task, _make_task_input(DEFAULTS, DEFAULTS, answer="xuan123456")
-
-
-def _open_my_account_negative_case():
-    task = _tasks_module.OpenMyAccount()
-    return task, _make_task_input(DEFAULTS, DEFAULTS, answer="wrong_user")
-
-
 def _open_all_apps_positive_case():
     task = _tasks_module.OpenAllApps()
     return task, _make_task_input(
@@ -731,21 +719,6 @@ def _open_invoice_negative_case():
         email="ticket_demo01@example.com",
     )
     return task, _make_task_input(DEFAULTS, DEFAULTS)
-
-
-def _set_font_size_positive_case():
-    task = _tasks_module.SetFontSize(font_size="large", high_contrast=True)
-    curr = copy.deepcopy(DEFAULTS)
-    curr["settings"]["fontSize"] = "large"
-    curr["settings"]["highContrast"] = True
-    return task, _make_task_input(DEFAULTS, curr)
-
-
-def _set_font_size_negative_case():
-    task = _tasks_module.SetFontSize(font_size="large", high_contrast=True)
-    return task, _make_task_input(DEFAULTS, DEFAULTS)
-
-
 def _check_passenger_count_positive_case():
     task = _tasks_module.CheckPassengerCount()
     return task, _make_task_input(DEFAULTS, DEFAULTS, answer="9")
@@ -1049,11 +1022,9 @@ def _check_id_verification_status_negative_case():
 
 
 OFFLINE_JUDGE_POSITIVE_CASES = [
-    ("OpenMyAccount", _open_my_account_positive_case),
     ("OpenAllApps", _open_all_apps_positive_case),
     ("OpenServicePhone", _open_service_phone_positive_case),
     ("OpenInvoice", _open_invoice_positive_case),
-    ("SetFontSize", _set_font_size_positive_case),
     ("CheckPassengerCount", _check_passenger_count_positive_case),
     ("CheckDefaultPassengerName", _check_default_passenger_name_positive_case),
     ("FindTrainByDate", _find_order_by_train_positive_case),
@@ -1069,11 +1040,9 @@ OFFLINE_JUDGE_POSITIVE_CASES = [
 
 
 OFFLINE_JUDGE_NEGATIVE_CASES = [
-    ("OpenMyAccount", _open_my_account_negative_case),
     ("OpenAllApps", _open_all_apps_negative_case),
     ("OpenServicePhone", _open_service_phone_negative_case),
     ("OpenInvoice", _open_invoice_negative_case),
-    ("SetFontSize", _set_font_size_negative_case),
     ("CheckPassengerCount", _check_passenger_count_negative_case),
     ("CheckDefaultPassengerName", _check_default_passenger_name_negative_case),
     ("FindTrainByDate", _find_order_by_train_negative_case),

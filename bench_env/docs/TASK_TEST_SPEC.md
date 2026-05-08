@@ -280,10 +280,10 @@ return task, _make_input(state, state, answer="上海今天天气多云")
 | **部分完成** | sequential/deep_dive 任务只做了第一步 | 只修改第一个 criteria 字段，其余保持初始值 |
 
 ```python
-# ✅ 做反操作：让关闭早晚播报，Agent 反而开启了
-("DisableMorningAlert_inverted", lambda: (
-    _tasks_module.DisableMorningAlert(),
-    _make_input(BASE_STATE, _with_settings(morningEveningAlert=True)),
+# ✅ 做反操作：让开启夜间免打扰，Agent 反而关闭了
+("EnableNightDnd_inverted", lambda: (
+    _tasks_module.EnableNightDnd(),
+    _make_input(BASE_STATE, _with_settings(nightDnd=False)),
 ))
 
 # ✅ 操作错误目标：让切温度单位，Agent 切了风速单位
@@ -292,9 +292,9 @@ return task, _make_input(state, state, answer="上海今天天气多云")
     _make_input(BASE_STATE, _with_settings(windUnit="ms")),  # 改错了字段
 ))
 
-# ✅ 部分完成：ConfigureAllUnits 要改 3 项，只改了 1 项
-("ConfigureAllUnits_partial", lambda: (
-    _tasks_module.ConfigureAllUnits(),
+# ✅ 部分完成：SwitchUnitAndReport 要改单位并回答，只改了单位
+("SwitchUnitAndReport_partial", lambda: (
+    _tasks_module.SwitchUnitAndReport(city="上海"),
     _make_input(BASE_STATE, _with_settings(tempUnit="celsius")),  # 只改了温度单位
 ))
 ```

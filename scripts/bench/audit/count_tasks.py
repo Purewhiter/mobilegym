@@ -133,14 +133,8 @@ SAMPLER_SIZES: dict[str, int | None] = {
     # ── tencent_meeting ───────────────────────────────────────────────────────
     "bench_env.task.tencent_meeting.app.TencentMeeting.sample_two_participation_topics": 6,  # C(4,2)
 
-    # ── device ───────────────────────────────────────────────────────────────
-    "bench_env.task.device.app.Device.sample_secure_wifi_ssid": 4,   # 5条中4条非OPEN
-
     # ── utils（全局共享）──────────────────────────────────────────────────────
     "bench_env.task.utils.sample_future_date": 13,   # range(1,14)=13天
-
-    # ── crossapp_work lambda ──────────────────────────────────────────────────
-    "bench_env.task.crossapp_work.tasks.MeetingCreateWithPasswordNotify.<lambda>": 34,  # range(15,181,5)
 }
 
 

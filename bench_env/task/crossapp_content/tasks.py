@@ -2,45 +2,27 @@
 Cross-app Content & Social tasks.
 """
 # -- Task Index (auto-generated, do not edit) --
-# 39 tasks | L2×5  L3×14  L4×20
+# 21 tasks | L2×4  L3×7  L4×10
 #
 # [L2] SpotifyNowPlayingToWechat            把 Spotify 当前播放的歌加入喜欢，再把歌名微信发给{contact}
-# [L2] BilibiliRankingToWechat              看看B站{partition}区排行榜第{rank}名是什么视频，把标题微信发给{contact}
-# [L2] RedbookSearchTitleToWechat           在小红书搜'{keyword}'，把第一篇笔记的标题微信发给{contact}
-# [L2] SmsContentForwardToWechat            把{sender}最新发来的短信内容在微信发给{contact}
-# [L3] SpotifyTodayNthPlayToRedbook         查看我今天在 Spotify 听的第{nth}首歌，在小红书发一篇推荐笔记，标题或正文包含歌名和艺人
-# [L3] BilibiliSearchUpFollowersToSms       在B站搜UP主{up_name}，查一下粉丝数，发短信给{phone}告知
+# [L3] BilibiliRankingToWechat              看看B站{partition}区排行榜第{rank}名是什么视频，把标题微信发给{contact}
+# [L3] RedbookSearchTitleToWechat           在小红书搜'{keyword}'，把第一篇笔记的标题微信发给{contact}
+# [L4] SpotifyTodayNthPlayToRedbook         查看我今天在 Spotify 听的第{nth}首歌，在小红书发一篇推荐笔记，标题或正文包含歌名和艺人
 # [L3] WechatReadingBestBookToWechat        帮我在微信读书{category}分类下找推荐值最高的书，把书名和推荐值微信发给{contact}
-# [L3] WechatReadingCompareToWechat         在微信读书比较《{book1}》和《{book2}》哪本评分高，把更好的那本推荐给{contact}
-# [L3] WechatReadingStatsToWechat           查微信读书最近一周内阅读时长最多的一天是哪天读了多久，告诉微信好友{contact}
+# [L4] WechatReadingStatsToWechat           查微信读书最近一周内阅读时长最多的一天是哪天读了多久，告诉微信好友{contact}
 # [L3] RedbookAuthorFollowersToWechat       在小红书搜'{keyword}'，关注第一篇笔记的作者，并将作者名字和粉丝数微信发给{contact}
 # [L4] XLatestPostToReddit_WithTitleFormat  把 X 用户 {user} 最新一条推文的文字内容，以"{user}:"开头发到 Reddit 的 r/{subreddit}。
-# [L3] RedbookFollowingNoteCountToSms       查小红书我关注的'{username}'发了多少篇笔记，发短信告诉{contact}
-# [L3] SpotifySongToWechatAndNotes          在Spotify搜{artist}，把搜索结果第一首歌名微信发给{contact}，再写到笔记里
-# [L3] WechatReadingBestToNotesAndWechat    帮我在微信读书找{category}分类下推荐值最高的书，在笔记记下书名和推荐值，推荐给微信好友{contact}
-# [L3] BilibiliRankingToRedbookAndX         看看B站{partition}区排行第一名是什么视频，在小红书发一篇推荐，再在X上也发一条推文分享
+# [L4] RedbookFollowingNoteCountToSms       查小红书我关注的'{username}'发了多少篇笔记，发短信告诉{contact}
 # [L4] SpotifySongFullDetailsToRedbook      在Spotify搜'{song}'查下是谁唱的、几分钟，在小红书发一篇听歌笔记把这些写进去
-# [L4] WechatReadingCompareBooksToRedbook   在微信读书比较《{book1}》和《{book2}》的推荐值，在小红书发一篇笔记介绍推荐值更高的那本书的书名、推荐值和字数
-# [L4] BilibiliTripleLikeThenMoments        在B站{partition}排行榜找到第{rank}名给它一键三连，然后发个纯文字朋友圈推荐这个视频
-# [L4] RedbookFavoriteThenMoments           在小红书搜'{keyword}'收藏第一篇笔记，然后发朋友圈分享这篇笔记的标题
-# [L4] SpotifyNowPlayingToMoments           把 Spotify 正在播放的歌名和歌手发一条微信朋友圈，文案里带上{mood}
-# [L4] RedbookDmThenWechatReport            给小红书上我关注的'{username}'发私信'{message}'，然后在微信告诉{contact}已经联系他了
-# [L4] SpotifyToRedbookToWechat             在Spotify搜{artist}，把搜索结果第一首歌在小红书发一篇推荐笔记，再把歌名发给微信好友{contact}
-# [L4] WechatReadingNotesWechatPlan         在微信读书搜'{book}'，查看它的推荐值，在笔记里写一条包含书名和推荐值的读书计划，然后把这本书推荐给{contact}
-# [L4] BilibiliUpToSpotifyConditional       看B站{partition}排行榜第一名视频的UP主是谁，在Spotify搜这个UP主有没有歌，有就把搜索结果第一首歌名在微信发给{contact}，没有就告诉TA没找到
-# [L4] NotesContentToRedbookAndX            在笔记里写一段关于{topic}的想法，然后分别在小红书和X上发布出来
+# [L3] BilibiliTripleLikeThenMoments        在B站{partition}排行榜找到第{rank}名给它一键三连，然后发个纯文字朋友圈推荐这个视频
+# [L2] RedbookDmThenWechatReport            给小红书上我关注的'{username}'发私信'{message}'，然后在微信告诉{contact}已经联系他了
+# [L2] NotesContentToRedbookAndX            在笔记里写一段关于{topic}的想法，然后分别在小红书和X上发布出来
 # [L4] DailyLogToMoments                    把我笔记里最新两条笔记简单汇总一下，发一条朋友圈。
 # [L4] CulturalChecklistToRedbook           看看Spotify我今天最早听的那首歌是什么，再看看微信读书热搜第一本书叫什么，在笔记里记一份'今日文化清单'，然后在小红书发一篇笔记分享
-# [L4] EbayCheapToRedbook                   帮我在 eBay 看看{product}里最便宜的那款，然后发一篇小红书商品推荐笔记。
+# [L3] EbayCheapToRedbook                   帮我在 eBay 看看{product}里最便宜的那款，然后发一篇小红书商品推荐笔记。
 # [L2] SpotifySaveCurrentSongToNotes        把 Spotify 正在播放的歌名和歌手记到笔记里
-# [L3] SpotifyShareSearchResults            在Spotify搜{keyword}，把歌曲搜索结果里前{n}个歌名微信发给{contact}
 # [L3] WechatReadingShareBookList           把微信读书书架前{n}本书的名字微信发给{contact}
-# [L3] WechatReadingAddShelfShare           把微信读书的《{book}》加入书架，再把书名微信发给{contact}
-# [L3] ReadingPlanToNotes                   看看微信读书里我正在读的书，然后在笔记里制定一个本周的阅读计划。
-# [L4] NotesBestToRedbook                   在笔记里找到带"{keyword}"的那条笔记，把它发到小红书。
-# [L4] RedbookResearchToNotes               在小红书搜索{keyword}，把点赞最多的前{n}篇笔记的标题整理记到备忘录里。
-# [L4] RedbookCommentAndShare               在小红书搜{keyword}，给第一篇笔记评论"{comment}"，再把标题微信发给{contact}
-# [L4] RedbookPopularityCheckToWechat       在小红书搜{keyword}，看看第一篇笔记有多少赞——超过{threshold}个就把标题和赞数微信发给{contact}说'值得看'，没超过就发'热度一般'
+# [L4] ReadingPlanToNotes                   看看微信读书里我正在读的书，然后在笔记里制定一个本周的阅读计划。
 # [L4] FileManagerSendFileToWechatContact   找出同一张图片在两个目录下的两份不同文件名副本，并把这两个文件名分别发给微信联系人{contact}
 # [L4] NotesToWechatAndRedbook              把包含"{text_keyword}"的内容记到笔记后，再用微信同步发给{contact}，并发布一条对应的小红书笔记。
 # -- End Task Index --
@@ -149,36 +131,6 @@ class RedbookSearchTitleToWechat(BaseTask):
                 last_only=True,
             )
         ]
-
-
-class SmsContentForwardToWechat(BaseTask):
-    templates = [
-        "把{sender}最新发来的短信内容在微信发给{contact}",
-        "Forward the latest SMS from {sender} to WeChat contact {contact}",
-    ]
-    apps = ["sms", "wechat"]
-    scope = "S2"
-    objective = "operate"
-    composition = "transfer"
-    difficulty = "L2"
-    capabilities = ["query", "transfer"]
-    parameters = {
-        "sender": {
-            "type": "enum",
-            "values": {"中国联通": "中国联通", "中国电信": "中国电信", "华为云": "华为云"},
-            "default": "中国联通",
-        },
-        "contact": WECHAT_CONTACT_PARAM,
-    }
-    expected_changes = WECHAT_SEND_CHANGES + ["os.providers.sms.conversations"]
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        sms = sms_from_input(input)
-        wechat = Wechat(input.apps["wechat"], init=input.apps_init["wechat"])
-        content = sms.latest_incoming_content_from(self.p.sender)
-        return [wechat.check_new_sent_contains(self.p.contact, content, field="sms_forward")]
-
-
 class SpotifyTodayNthPlayToRedbook(BaseTask):
     templates = [
         "查看我今天在 Spotify 听的第{nth}首歌，在小红书发一篇推荐笔记，标题或正文包含歌名和艺人",
@@ -213,36 +165,6 @@ class SpotifyTodayNthPlayToRedbook(BaseTask):
                 field="redbook_today_nth_play",
             )
         ]
-
-
-class BilibiliSearchUpFollowersToSms(BaseTask):
-    templates = ["在B站搜UP主{up_name}，查一下粉丝数，发短信给{phone}告知"]
-    apps = ["bilibili", "sms"]
-    scope = "S2"
-    objective = "hybrid"
-    composition = "transfer"
-    difficulty = "L3"
-    capabilities = ["search", "query", "transfer"]
-    parameters = {
-        "up_name": {
-            "type": "enum",
-            "values": {"流光视界": "流光视界", "小白工坊志": "小白工坊志"},
-            "default": "流光视界",
-        },
-        "phone": {
-            "type": "enum",
-            "values": {"张三": "张三", "李四": "李四", "王五": "王五"},
-            "default": "张三",
-        },
-    }
-    expected_changes = SMS_SEND_CHANGES + ["apps.bilibili.user.searchHistory"]
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        sms = sms_from_input(input)
-        followers = Bilibili.author_follower_display(self.p.up_name)
-        return [sms.check_new_sent_to(self.p.phone, followers, field="sms_bili_followers")]
-
-
 class WechatReadingBestBookToWechat(BaseTask):
     templates = ["帮我在微信读书{category}分类下找推荐值最高的书，把书名和推荐值微信发给{contact}"]
     apps = ["wechat_reading", "wechat"]
@@ -272,34 +194,6 @@ class WechatReadingBestBookToWechat(BaseTask):
                 field="best_book_share",
             )
         ]
-
-
-class WechatReadingCompareToWechat(BaseTask):
-    templates = ["在微信读书比较《{book1}》和《{book2}》哪本评分高，把更好的那本推荐给{contact}"]
-    apps = ["wechat_reading", "wechat"]
-    scope = "S2"
-    objective = "hybrid"
-    composition = "deep_dive"
-    difficulty = "L3"
-    capabilities = ["search", "query", "reasoning", "transfer"]
-    parameters = {
-        "book1": WECHAT_READING_BOOK_PARAM,
-        "book2": {
-            "type": "enum",
-            "values": {"理想国": "理想国"},
-            "default": "理想国",
-        },
-        "contact": WECHAT_CONTACT_PARAM,
-    }
-    expected_changes = WECHAT_SEND_CHANGES
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        wr = WechatReading(input.apps["wechat_reading"])
-        wechat = Wechat(input.apps["wechat"], init=input.apps_init["wechat"])
-        winner = wr.higher_rated_book(self.p.book1, self.p.book2)
-        return [wechat.check_new_sent_contains(self.p.contact, str(winner["title"]), field="higher_rated_book")]
-
-
 class WechatReadingStatsToWechat(BaseTask):
     templates = ["查微信读书最近一周内阅读时长最多的一天是哪天读了多久，告诉微信好友{contact}"]
     apps = ["wechat_reading", "wechat"]
@@ -444,98 +338,6 @@ class RedbookFollowingNoteCountToSms(BaseTask):
                 field="redbook_note_count",
             )
         ]
-
-
-class SpotifySongToWechatAndNotes(BaseTask):
-    templates = [
-        "在Spotify搜{artist}，把搜索结果第一首歌名微信发给{contact}，再写到笔记里",
-        "Search for {artist} on Spotify, send the first song's title to {contact} on WeChat, and also write it in Notes",
-    ]
-    apps = ["spotify", "wechat", "notes"]
-    scope = "S3"
-    objective = "operate"
-    composition = "transfer"
-    difficulty = "L3"
-    capabilities = ["search", "create", "transfer"]
-    parameters = {"artist": SPOTIFY_ARTIST_PARAM, "contact": WECHAT_CONTACT_PARAM}
-    expected_changes = ["spotify.searchHistory"] + WECHAT_SEND_CHANGES + NOTES_CREATE_CHANGES
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        spotify = Spotify(input.apps["spotify"])
-        wechat = Wechat(input.apps["wechat"], init=input.apps_init["wechat"])
-        notes = Notes(input.apps["notes"], init=input.apps_init["notes"])
-        results = spotify.resolve_search_results(self.p.artist, limit=1)
-        if not results:
-            _skip = f"no search result for {self.p.artist}"
-            return [
-                {"field": "wechat_song", "expected": "song title", "actual": _skip, "passed": False},
-                {"field": "notes_song", "expected": "song title", "actual": _skip, "passed": False},
-            ]
-        track_title = str(results[0]["title"])
-        return [
-            wechat.check_new_sent_contains(self.p.contact, track_title, field="wechat_song"),
-            notes.check_latest_contains(track_title, field="notes_song"),
-        ]
-
-
-class WechatReadingBestToNotesAndWechat(BaseTask):
-    templates = [
-        "帮我在微信读书找{category}分类下推荐值最高的书，在笔记记下书名和推荐值，推荐给微信好友{contact}",
-        "Find the highest-rated book in the {category} category on WeChat Reading, write the title and recommendation score in Notes, then recommend it to {contact} on WeChat",
-    ]
-    apps = ["wechat_reading", "notes", "wechat"]
-    scope = "S3"
-    objective = "hybrid"
-    composition = "transfer"
-    difficulty = "L3"
-    capabilities = ["search", "query", "create", "transfer"]
-    parameters = {"category": WECHAT_READING_CATEGORY_PARAM, "contact": WECHAT_CONTACT_PARAM}
-    expected_changes = NOTES_CREATE_CHANGES + WECHAT_SEND_CHANGES
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        wr = WechatReading(input.apps["wechat_reading"])
-        notes = Notes(input.apps["notes"], init=input.apps_init["notes"])
-        wechat = Wechat(input.apps["wechat"], init=input.apps_init["wechat"])
-        data_cats = WECHAT_READING_UI_TO_DATA.get(self.p.category, [self.p.category])
-        books = [b for b in wr.store if str(b.get("category")) in data_cats]
-        if not books:
-            raise ValueError(f"No books in UI category '{self.p.category}'")
-        books.sort(key=lambda b: float(b.get("rating") or 0), reverse=True)
-        book = books[0]
-        rv = str(book.get("recommendedValue", ""))
-        return [
-            notes.check_latest_contains(str(book["title"]), rv, field="best_book_note"),
-            wechat.check_new_sent_contains(self.p.contact, str(book["title"]), field="best_book_wechat"),
-        ]
-
-
-class BilibiliRankingToRedbookAndX(BaseTask):
-    templates = [
-        "看看B站{partition}区排行第一名是什么视频，在小红书发一篇推荐，再在X上也发一条推文分享",
-        "Check what the #1 video is in Bilibili's {partition} ranking, post a recommendation on RedNote, and also share it as a tweet on X",
-    ]
-    apps = ["bilibili", "redbook", "x"]
-    scope = "S3"
-    objective = "operate"
-    composition = "transfer"
-    difficulty = "L3"
-    capabilities = ["query", "create", "transfer"]
-    parameters = {"partition": BILIBILI_PARTITION_PARAM}
-    expected_changes = REDBOOK_PUBLISH_CHANGES + X_POST_CHANGES + ["apps.bilibili.activeVideoId"]
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        title = Bilibili.ranking_title(self.p.partition, 1)
-        rb = Redbook(input.apps["redbook"], init=input.apps_init["redbook"])
-        x_app = X(input.apps["x"], init=input.apps_init["x"])
-        return [
-            rb.check_note_published(
-                content_keywords=(title,),
-                field="redbook_post",
-            ),
-            x_app.check_new_post_contains(title, field="x_post"),
-        ]
-
-
 class SpotifySongFullDetailsToRedbook(BaseTask):
     templates = ["在Spotify搜'{song}'查下是谁唱的、几分钟，在小红书发一篇听歌笔记把这些写进去"]
     apps = ["spotify", "redbook"]
@@ -563,41 +365,6 @@ class SpotifySongFullDetailsToRedbook(BaseTask):
                 field="song_full_details",
             )
         ]
-
-
-class WechatReadingCompareBooksToRedbook(BaseTask):
-    templates = ["在微信读书比较《{book1}》和《{book2}》的推荐值，在小红书发一篇笔记介绍推荐值更高的那本书的书名、推荐值和字数"]
-    apps = ["wechat_reading", "redbook"]
-    scope = "S2"
-    objective = "operate"
-    composition = "deep_dive"
-    difficulty = "L4"
-    capabilities = ["search", "query", "reasoning", "create"]
-    parameters = {
-        "book1": {"type": "enum", "values": {"纳瓦尔宝典": "纳瓦尔宝典", "中国通史": "中国通史"}, "default": "纳瓦尔宝典"},
-        "book2": {"type": "enum", "values": {"原则": "原则", "明朝那些事儿": "明朝那些事儿"}, "default": "原则"},
-    }
-    expected_changes = REDBOOK_PUBLISH_CHANGES
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        wr = WechatReading(input.apps["wechat_reading"])
-        rb = Redbook(input.apps["redbook"], init=input.apps_init["redbook"])
-        winner = wr.higher_recommended_book(self.p.book1, self.p.book2)
-        title = str(winner["title"])
-        rv = str(winner["recommendedValue"])
-        raw_words = str(int(winner["totalWords"]))
-        words = format_words(int(winner["totalWords"]))
-        return [
-            rb.check_note_published(
-                content_keywords=(title, rv),
-                content_pred=lambda content, _w=words, _raw=raw_words: (
-                    _w in str(content) or _raw in str(content)
-                ),
-                field="redbook_compare_books",
-            )
-        ]
-
-
 class BilibiliTripleLikeThenMoments(BaseTask):
     templates = [
         "在B站{partition}排行榜找到第{rank}名给它一键三连，然后发个纯文字朋友圈推荐这个视频",
@@ -625,76 +392,6 @@ class BilibiliTripleLikeThenMoments(BaseTask):
             wechat.check_new_moment_with(title, field="moment_share"),
             wechat.check_new_moment_no_images(),
         ]
-
-
-class RedbookFavoriteThenMoments(BaseTask):
-    templates = [
-        "在小红书搜'{keyword}'收藏第一篇笔记，然后发朋友圈分享这篇笔记的标题",
-        "Search '{keyword}' on RedNote, favorite the first note, then post its title in a WeChat Moments update",
-    ]
-    apps = ["redbook", "wechat"]
-    scope = "S2"
-    objective = "operate"
-    composition = "sequential"
-    difficulty = "L4"
-    capabilities = ["search", "social", "create"]
-    parameters = {"keyword": REDBOOK_KEYWORD_PARAM}
-    expected_changes = WECHAT_MOMENT_CHANGES + ["redbook.user", "redbook.entities", "redbook.history"]
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        rb = Redbook(input.apps["redbook"], init=input.apps_init["redbook"])
-        wechat = Wechat(input.apps["wechat"], init=input.apps_init["wechat"])
-        note = rb.first_search_note(self.p.keyword)
-        return [
-            rb.check_note_collected(str(note["id"]), field="note_collected"),
-            wechat.check_new_moment_contains(
-                str(note["title"]),
-                field="moment_share",
-            ),
-        ]
-
-
-class SpotifyNowPlayingToMoments(BaseTask):
-    templates = [
-        "把 Spotify 正在播放的歌名和歌手发一条微信朋友圈，文案里带上{mood}",
-        "Post a WeChat Moments update with the song name and artist currently playing on Spotify, and include {mood} in the caption",
-    ]
-    apps = ["spotify", "wechat"]
-    scope = "S2"
-    objective = "operate"
-    composition = "transfer"
-    difficulty = "L4"
-    capabilities = ["query", "create", "transfer"]
-    parameters = {
-        "mood": {
-            "type": "enum",
-            "values": {
-                "好听到循环": "好听到循环",
-                "今日单曲循环": "今日单曲循环",
-                "宝藏歌曲推荐": "宝藏歌曲推荐",
-            },
-            "default": "好听到循环",
-        },
-    }
-    expected_changes = WECHAT_MOMENT_CHANGES + ["apps.spotify"]
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        spotify_init = Spotify(input.apps_init["spotify"])
-        wechat = Wechat(input.apps["wechat"], init=input.apps_init["wechat"])
-        track = spotify_init.current_track
-        if not track:
-            raise ValueError("任务设计错误：spotify.currentTrack 为空。")
-        return [
-            wechat.check_new_moment_contains(
-                str(track["title"]),
-                str(track["artist"]),
-                str(self.p.mood),
-                field="spotify_moment",
-            ),
-            wechat.check_new_moment_no_images(),
-        ]
-
-
 class RedbookDmThenWechatReport(BaseTask):
     templates = ["给小红书上我关注的'{username}'发私信'{message}'，然后在微信告诉{contact}已经联系他了"]
     apps = ["redbook", "wechat"]
@@ -722,93 +419,6 @@ class RedbookDmThenWechatReport(BaseTask):
                 field="wechat_report",
             ),
         ]
-
-
-class SpotifyToRedbookToWechat(BaseTask):
-    templates = ["在Spotify搜{artist}，把搜索结果第一首歌在小红书发一篇推荐笔记，再把歌名发给微信好友{contact}"]
-    apps = ["spotify", "redbook", "wechat"]
-    scope = "S3"
-    objective = "operate"
-    composition = "transfer"
-    difficulty = "L4"
-    capabilities = ["search", "create", "transfer"]
-    parameters = {"artist": SPOTIFY_ARTIST_PARAM, "contact": WECHAT_CONTACT_PARAM}
-    expected_changes = REDBOOK_PUBLISH_CHANGES + WECHAT_SEND_CHANGES + ["spotify.searchHistory"]
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        spotify = Spotify(input.apps["spotify"])
-        rb = Redbook(input.apps["redbook"], init=input.apps_init["redbook"])
-        wechat = Wechat(input.apps["wechat"], init=input.apps_init["wechat"])
-        results = spotify.resolve_search_results(self.p.artist, limit=1)
-        if not results:
-            _skip = f"no search result for {self.p.artist}"
-            return [
-                {"field": "redbook_song", "expected": "song title", "actual": _skip, "passed": False},
-                {"field": "wechat_song", "expected": "song title", "actual": _skip, "passed": False},
-            ]
-        track_title = str(results[0]["title"])
-        return [
-            rb.check_note_published(
-                content_keywords=(track_title,),
-                field="redbook_song",
-            ),
-            wechat.check_new_sent_contains(self.p.contact, track_title, field="wechat_song"),
-        ]
-
-
-class WechatReadingNotesWechatPlan(BaseTask):
-    templates = ["在微信读书搜'{book}'，查看它的推荐值，在笔记里写一条包含书名和推荐值的读书计划，然后把这本书推荐给{contact}"]
-    apps = ["wechat_reading", "notes", "wechat"]
-    scope = "S3"
-    objective = "operate"
-    composition = "transfer"
-    difficulty = "L4"
-    capabilities = ["search", "query", "create", "transfer"]
-    parameters = {"book": WECHAT_READING_BOOK_PARAM, "contact": WECHAT_CONTACT_PARAM}
-    expected_changes = NOTES_CREATE_CHANGES + WECHAT_SEND_CHANGES
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        wr = WechatReading(input.apps["wechat_reading"])
-        notes = Notes(input.apps["notes"], init=input.apps_init["notes"])
-        wechat = Wechat(input.apps["wechat"], init=input.apps_init["wechat"])
-        book = wr.require_book_by_title(self.p.book)
-        rv = str(book.get("recommendedValue", ""))
-        return [
-            notes.check_latest_contains(str(book["title"]), rv, field="reading_plan"),
-            wechat.check_new_sent_contains(self.p.contact, str(book["title"]), field="wechat_book"),
-        ]
-
-
-class BilibiliUpToSpotifyConditional(BaseTask):
-    templates = ["看B站{partition}排行榜第一名视频的UP主是谁，在Spotify搜这个UP主有没有歌，有就把搜索结果第一首歌名在微信发给{contact}，没有就告诉TA没找到"]
-    apps = ["bilibili", "spotify", "wechat"]
-    scope = "S3"
-    objective = "hybrid"
-    composition = "deep_dive"
-    difficulty = "L4"
-    capabilities = ["search", "query", "reasoning", "transfer"]
-    parameters = {"partition": BILIBILI_PARTITION_PARAM, "contact": WECHAT_CONTACT_PARAM}
-    expected_changes = WECHAT_SEND_CHANGES + ["apps.bilibili.activeVideoId", "spotify.searchHistory"]
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        spotify = Spotify(input.apps["spotify"])
-        wechat = Wechat(input.apps["wechat"], init=input.apps_init["wechat"])
-        keyword = Bilibili.ranking_creator_keyword(self.p.partition, 1)
-        results = spotify.resolve_search_results(keyword, limit=1)
-        matched = [t for t in results if norm(str(t["artist"])) == norm(keyword)]
-        if matched:
-            track_title = str(matched[0]["title"])
-            if track_title:
-                return [wechat.check_new_sent_contains(self.p.contact, track_title, field="conditional_song")]
-        return [
-            wechat.check_new_sent_any_of(
-                self.p.contact,
-                ["没找到", "没有找到", "未找到", "搜不到"],
-                field="conditional_no_result",
-            )
-        ]
-
-
 class NotesContentToRedbookAndX(BaseTask):
     templates = [
         "在笔记里写一段关于{topic}的想法，然后分别在小红书和X上发布出来",
@@ -940,43 +550,6 @@ class SpotifySaveCurrentSongToNotes(BaseTask):
         notes = Notes(input.apps["notes"], init=input.apps_init["notes"])
         track = spotify.current_track
         return [notes.check_latest_contains(track["title"], track["artist"])]
-
-
-class SpotifyShareSearchResults(BaseTask):
-    templates = [
-        "在Spotify搜{keyword}，把歌曲搜索结果里前{n}个歌名微信发给{contact}",
-        "Search for {keyword} on Spotify, then send the first {n} song titles in search results to {contact} on WeChat",
-    ]
-    apps = ["spotify", "wechat"]
-    scope = "S2"
-    objective = "operate"
-    composition = "deep_dive"
-    difficulty = "L3"
-    capabilities = ["search", "query", "transfer"]
-    parameters = {
-        "keyword": {"type": "string", "default": "周杰伦"},
-        "n": {"type": "int", "default": 3},
-        "contact": WECHAT_CONTACT_PARAM,
-    }
-    expected_changes = WECHAT_SEND_CHANGES + ["spotify.searchHistory"]
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        spotify = Spotify(input.apps["spotify"])
-        wechat = Wechat(input.apps["wechat"], init=input.apps_init["wechat"])
-        n = int(self.p.n)
-        results = spotify.resolve_search_results(self.p.keyword, limit=n)
-        matched = [str(t["title"]) for t in results[:n]] if results else []
-        actual = wechat.joined_new_texts_to(self.p.contact)
-        return [
-            {
-                "field": "sent_search_results",
-                "expected": matched,
-                "actual": actual or "(none)",
-                "passed": bool(actual) and bool(matched) and count_titles_in_text(actual, matched) == len(matched),
-            }
-        ]
-
-
 class WechatReadingShareBookList(BaseTask):
     templates = [
         "把微信读书书架前{n}本书的名字微信发给{contact}",
@@ -1010,42 +583,6 @@ class WechatReadingShareBookList(BaseTask):
                 "passed": bool(actual) and count_titles_in_text(actual, titles) == len(titles),
             }
         ]
-
-
-class WechatReadingAddShelfShare(BaseTask):
-    templates = ["把微信读书的《{book}》加入书架，再把书名微信发给{contact}"]
-    apps = ["wechat_reading", "wechat"]
-    scope = "S2"
-    objective = "hybrid"
-    composition = "transfer"
-    difficulty = "L3"
-    capabilities = ["search", "edit", "transfer"]
-    parameters = {
-        "book": {
-            "type": "string",
-            "default": "三体",
-            "sampler": WechatReading.sample_book_title_not_on_shelf,
-        },
-        "contact": WECHAT_CONTACT_PARAM,
-    }
-    expected_changes = ["wechat_reading.shelf", "wechat_reading.bookProgress", "wechat_reading.allProgressBookIds", "wechat_reading.readingBookIds", "wechat.chats"]
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        reading = WechatReading(input.apps["wechat_reading"])
-        wechat = Wechat(input.apps["wechat"], init=input.apps_init["wechat"])
-        book = reading.require_book_by_title(self.p.book)
-        on_shelf = reading.is_book_on_shelf(str(book["id"]))
-        return [
-            {
-                "field": "book_on_shelf",
-                "expected": f"《{self.p.book}》on shelf",
-                "actual": "on shelf" if on_shelf else "not on shelf",
-                "passed": on_shelf,
-            },
-            wechat.check_new_sent_to(self.p.contact, self.p.book, field="share"),
-        ]
-
-
 class ReadingPlanToNotes(BaseTask):
     """
     新增笔记包含正在读的书即可
@@ -1087,158 +624,6 @@ class ReadingPlanToNotes(BaseTask):
                 "passed": passed_books and passed_plan,
             }
         ]
-
-
-class NotesBestToRedbook(BaseTask):
-    templates = [
-        '在笔记里找到带"{keyword}"的那条笔记，把它发到小红书。',
-        'Find the note containing "{keyword}" in Notes, then post it on RedNote.',
-    ]
-    apps = ["notes", "redbook"]
-    scope = "S2"
-    objective = "operate"
-    composition = "transfer"
-    difficulty = "L4"
-    capabilities = ["create", "transfer"]
-    parameters = {"keyword": {"type": "enum", "values": {"购物清单": "购物清单", "杭州旅行": "杭州旅行", "租房待办": "租房待办", "阅读摘抄": "阅读摘抄"}, "default": "购物清单"}}
-    expected_changes = REDBOOK_PUBLISH_CHANGES + ["os.clipboard"]
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        notes = Notes(input.apps_init["notes"])
-        rb = Redbook(input.apps["redbook"], init=input.apps_init["redbook"])
-        target = notes.find_note_with_keywords([self.p.keyword])
-        if not target:
-            raise ValueError(f"No note containing '{self.p.keyword}' found in Notes")
-        expected_title = str(target.get("title") or "")
-        expected_content = str(target.get("content") or "")
-        check_text = expected_content if expected_content else expected_title
-        lines = [ln.strip() for ln in check_text.splitlines() if ln.strip()]
-        return [
-            rb.check_note_published(
-                content_lines=tuple(lines),
-                new_only=True,
-                allow_draft=True,
-                field="post_best",
-            )
-        ]
-
-
-class RedbookResearchToNotes(BaseTask):
-    templates = [
-        "在小红书搜索{keyword}，把点赞最多的前{n}篇笔记的标题整理记到备忘录里。",
-        "Search for {keyword} on RedNote, then write the titles of the top {n} most-liked notes into Notes.",
-    ]
-    apps = ["redbook", "notes"]
-    scope = "S2"
-    objective = "operate"
-    composition = "transfer"
-    difficulty = "L4"
-    capabilities = ["search", "create", "transfer"]
-    parameters = {
-        "keyword": {"type": "string", "default": "OOTD"},
-        "n": {"type": "int", "default": 2},
-    }
-    expected_changes = NOTES_CREATE_CHANGES + ["redbook.history"]
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        rb = Redbook(input.apps["redbook"], init=input.apps_init["redbook"])
-        notes = Notes(input.apps["notes"], init=input.apps_init["notes"])
-        targets = [
-            str(note.get("title") or "")
-            for note in rb.sorted_search_notes(self.p.keyword, "likes")[: self.p.n]
-            if str(note.get("title") or "")
-        ]
-        if not targets:
-            raise ValueError(f"No notes matching keyword '{self.p.keyword}' found in Redbook")
-        return [
-            notes.check_latest_norm_contains(*targets, field="research_note")
-        ]
-
-
-class RedbookCommentAndShare(BaseTask):
-    templates = [
-        '在小红书搜{keyword}，给第一篇笔记评论"{comment}"，再把标题微信发给{contact}',
-        'Search for {keyword} on RedNote, comment "{comment}" on the first note, then send the title to {contact}',
-    ]
-    apps = ["redbook", "wechat"]
-    scope = "S2"
-    objective = "hybrid"
-    composition = "deep_dive"
-    difficulty = "L4"
-    capabilities = ["search", "social", "transfer"]
-    parameters = {
-        "keyword": {"type": "string", "default": "探店"},
-        "comment": {"type": "string", "default": "看起来不错"},
-        "contact": WECHAT_CONTACT_PARAM,
-    }
-    expected_changes = ["redbook.entities", "redbook.user", "redbook.history", "wechat.chats"]
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        redbook = Redbook(input.apps["redbook"], init=input.apps_init["redbook"])
-        wechat = Wechat(input.apps["wechat"], init=input.apps_init["wechat"])
-        note = redbook.first_search_note(self.p.keyword)
-        return [
-            redbook.check_note_commented(
-                note["id"],
-                self.p.comment,
-                redbook.user_id,
-                field="comment_added",
-            ),
-            wechat.check_new_sent_norm_contains(
-                self.p.contact,
-                str(note["title"]),
-                field="share",
-                last_only=True,
-            ),
-        ]
-
-
-class RedbookPopularityCheckToWechat(BaseTask):
-    templates = [
-        "在小红书搜{keyword}，看看第一篇笔记有多少赞——超过{threshold}个就把标题和赞数微信发给{contact}说'值得看'，没超过就发'热度一般'",
-    ]
-    apps = ["redbook", "wechat"]
-    scope = "S2"
-    objective = "operate"
-    composition = "deep_dive"
-    difficulty = "L4"
-    capabilities = ["search", "query", "reasoning", "transfer"]
-    parameters = {
-        "keyword": {"type": "string", "default": "探店"},
-        "threshold": {
-            "type": "enum",
-            "values": {"50": 50, "100": 100, "200": 200},
-            "default": 100,
-        },
-        "contact": WECHAT_CONTACT_PARAM,
-    }
-    expected_changes = WECHAT_SEND_CHANGES + ["redbook.history"]
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        redbook = Redbook(input.apps["redbook"], init=input.apps_init["redbook"])
-        wechat = Wechat(input.apps["wechat"], init=input.apps_init["wechat"])
-        note = redbook.first_search_note(self.p.keyword)
-        likes_raw = note["likes"]
-        likes_num = redbook.count_value(likes_raw)
-        threshold = int(self.p.threshold)
-        if likes_num >= threshold:
-            return [
-                wechat.check_new_sent_norm_contains(
-                    self.p.contact,
-                    str(note["title"]),
-                    "值得看",
-                    field="popularity_branch",
-                )
-            ]
-        return [
-            wechat.check_new_sent_contains(
-                self.p.contact,
-                "热度一般",
-                field="popularity_branch",
-            )
-        ]
-
-
 class FileManagerSendFileToWechatContact(BaseTask):
     """
         两个文件名副本分别是：

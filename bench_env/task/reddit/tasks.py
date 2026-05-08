@@ -1,20 +1,20 @@
 # -- Task Index (auto-generated, do not edit) --
-# 16 tasks | L2×3  L3×9  L4×4
+# 16 tasks | L1×3  L2×5  L3×6  L4×2
 #
 # [L2] Reddit_DisableCommunityThemes                帮我在 Reddit 设置里关闭社区主题
-# [L3] Reddit_AdvancedPrivacyToggles                帮我在 Reddit 设置里调整隐私选项，打开显示成人内容，关闭模糊成人图片，同时关闭社区主题
+# [L2] Reddit_AdvancedPrivacyToggles                帮我在 Reddit 设置里调整隐私选项，打开显示成人内容，关闭模糊成人图片，同时关闭社区主题
 # [L4] Reddit_TurnOffMatureContentButKeepUnblurred  帮我在 Reddit 设置里关闭显示成人内容，并且保持不模糊成人媒体
 # [L2] Reddit_OpenLinksOutsideApp                   帮我在 Reddit 设置里把链接打开方式改成用外部默认浏览器打开，不要在应用内打开
-# [L4] Reddit_JoinCommunityFromFeed                 在 Reddit 首页动态里找到 {community} 社区的帖子，先加入这个社区，再给里面任意一条帖子点赞
+# [L2] Reddit_JoinCommunityFromFeed                 在 Reddit 首页动态里找到 {community} 社区的帖子，先加入这个社区，再给里面任意一条帖子点赞
 # [L3] Reddit_UpvoteSpecificFeedPost                在 Reddit 首页动态里找到标题是 {post_title} 的帖子，给这条帖子点赞
-# [L4] Reddit_CreatePostToCommunity                 帮我在 Reddit 向 {community} 社区发布一篇帖子，标题包含 {title}，内容包含 {body}
+# [L1] Reddit_CreatePostToCommunity                 帮我在 Reddit 向 {community} 社区发布一篇帖子，标题包含 {title}，内容包含 {body}
 # [L3] Reddit_AddCommentToPost                      在 Reddit 打开标题为 {post_title} 的帖子，发表一条评论 {comment}
 # [L3] Reddit_DeleteSeededOwnComment                在 Reddit 打开标题是 {post_title} 的帖子，把我刚才发的 {seed_comment} 这条评论删掉
 # [L3] Reddit_SendChatMessage                       在 Reddit 聊天里，给用户 {username} 发送消息 {message}
-# [L3] Reddit_DeleteSeededChatMessage               在 Reddit 聊天里打开和 {username} 的对话，把我发的 {seed_message} 这条消息删掉
+# [L1] Reddit_DeleteSeededChatMessage               在 Reddit 聊天里打开和 {username} 的对话，把我发的 {seed_message} 这条消息删掉
 # [L2] Reddit_UpvoteAnyComment                      在 Reddit 随便一个帖子的评论区，给任意一条评论点赞
 # [L3] Reddit_EditSeededOwnComment                  在 Reddit 找到我之前发的 {seed_comment} 评论，把它修改成包含 {new_comment} 的内容
-# [L3] Reddit_UpdateProfileBio                      帮我进入 Reddit 个人资料编辑页面，把个人简介改成包含 {bio} 的内容并保存
+# [L1] Reddit_UpdateProfileBio                      帮我进入 Reddit 个人资料编辑页面，把个人简介改成包含 {bio} 的内容并保存
 # [L3] Reddit_DeleteSeededOwnPost                   在 Reddit 个人主页里，把我之前发的标题是 {seed_title} 的帖子删掉
 # [L4] Reddit_DeepThreadReplyAndDeleteSeedMessage   在 Reddit 聊天里打开和 {username} 的对话，找到对方发的 {thread_seed_message} 消息，在这条消息的子对话里回复包含 {reply} 的内容，然后回到聊天列表，删掉我之前发的 {delete_seed_message} 这条消息
 # -- End Task Index --

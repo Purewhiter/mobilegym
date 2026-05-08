@@ -2,31 +2,26 @@
 Calendar app task definitions.
 """
 # -- Task Index (auto-generated, do not edit) --
-# 25 tasks | L1×3  L2×7  L3×9  L4×6
+# 20 tasks | L1×3  L2×8  L3×7  L4×2
 #
-# [L1] ChangeWeekStartDay       把日历的一周开始日改成{day}
 # [L1] ToggleShowWeekNumber     {toggle}日历的显示周数
 # [L1] ChangeDefaultReminder    把日历默认提前提醒改成{reminder}
 # [L2] CreateEvent              帮我在{date}创建一个名为{title}的日程
 # [L2] DeleteEvent              帮我把{title}那个日程删了
-# [L2] JumpToDate               帮我把日历翻到{date}
 # [L2] SearchEventTitle         日历里关于{keyword}的日程，最早的是哪个
 # [L2] CreateBirthdayEvent      帮我在日历里记一下{title}，设置个生日日程，日期是{date}
-# [L2] QueryEventCountOnDate    帮我在日历看看{date}有几个日程
 # [L3] CreateTimedEvent         {date}{start}到{end}有个安排，帮我创建一个名为{title}的日程
 # [L3] CreateEventWithReminder  {date}有个安排，帮我创建一个名为{title}的日程，提前{reminder}提醒
-# [L3] EditEventTitle           把日历里{old_title}那个日程改名叫{new_title}
-# [L3] DateCalcForward          从{date}往后数{days}天是几月几号
+# [L2] DateCalcForward          从{date}往后数{days}天是几月几号
 # [L2] CalculateDateInterval    {date1}到{date2}隔了多少天
 # [L3] QueryHolidayLength       今年{holiday}一共放几天假
-# [L3] QueryMakeupWorkday       今年{holiday}放假结束后第一个补班日是哪天
-# [L3] ConfigAllReminders       把日历默认提前提醒改成{r1}，全天提醒改成{r2}，稍后提醒改成{r3}
+# [L2] QueryMakeupWorkday       今年{holiday}放假结束后第一个补班日是哪天
+# [L1] ConfigAllReminders       把日历默认提前提醒改成{r1}，全天提醒改成{r2}，稍后提醒改成{r3}
 # [L3] EditEventTime            把{title}那个日程改到{new_time}
 # [L3] QueryFirstEventOnDate    {date}最早的安排是什么，几点开始
-# [L4] DateCalcThenCreate       从{date}往后数{days}天是几号，顺手帮我在那天创建一个名为{title}的日程，最后告诉我具体是哪天
-# [L4] MakeupDayReminder        看看今年{holiday}放假结束后有没有补班，有就在那天创建一个名为{title}的日程，没有就直接告诉我不用
-# [L4] SearchDeleteAll          帮我把日历里所有和{keyword}有关的日程都删掉，删完告诉我一共删了几个
-# [L4] HolidayFirstDayEvent     今年{holiday}假期第一天是几号，帮我在那天创建一个名为{title}的全天日程
+# [L3] DateCalcThenCreate       从{date}往后数{days}天是几号，顺手帮我在那天创建一个名为{title}的日程，最后告诉我具体是哪天
+# [L2] MakeupDayReminder        看看今年{holiday}放假结束后有没有补班，有就在那天创建一个名为{title}的日程，没有就直接告诉我不用
+# [L3] SearchDeleteAll          帮我把日历里所有和{keyword}有关的日程都删掉，删完告诉我一共删了几个
 # [L4] CompareScheduleDensity   {date1}和{date2}哪天安排更多
 # [L4] EditAndReportNewTime     把{title}改到{new_date} {new_time}，改完告诉我新的结束时间
 # -- End Task Index --
@@ -63,32 +58,6 @@ from bench_env.task.calendar.app import (
 # =============================================================================
 # L1 — Atomic settings
 # =============================================================================
-
-
-class ChangeWeekStartDay(CriteriaTask):
-    templates = [
-        "把日历的一周开始日改成{day}",
-        "帮我把日历每周的起始日切到{day}",
-    ]
-    apps = ["calendar"]
-    scope = "S1"
-    objective = "operate"
-    composition = "atomic"
-    difficulty = "L1"
-    capabilities = ["settings"]
-    parameters = {
-        "day": {
-            "type": "enum",
-            "values": CALENDAR_WEEK_START_VALUES,
-            "default": "monday",
-        },
-    }
-    criteria = {"settings.weekStartDay": "{day}"}
-
-    async def _post_sample(self, env):
-        await self._invert_criteria(env)
-
-
 class ToggleShowWeekNumber(CriteriaTask):
     templates = [
         "{toggle}日历的显示周数",
@@ -201,42 +170,6 @@ class DeleteEvent(BaseTask):
     def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
         calendar = Calendar(input.apps["calendar"], init=input.apps_init["calendar"])
         return [calendar.check_event_deleted(self.p.title)]
-
-
-class JumpToDate(BaseTask):
-    templates = [
-        "帮我把日历翻到{date}",
-        "把日历跳到{date}那天",
-    ]
-    apps = ["calendar"]
-    scope = "S1"
-    objective = "operate"
-    composition = "sequential"
-    difficulty = "L2"
-    capabilities = ["nav"]
-    parameters = {
-        "date": {
-            "type": "string",
-            "sampler": Calendar.sample_future_date,
-            "default": default_tomorrow,
-            "display": "date_hao",
-        },
-    }
-    expected_changes = ["selectedDateTs"]
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        actual = input.apps["calendar"]["selectedDateTs"]
-        expected = Calendar.start_of_day_ts(self.p.date)
-        return [
-            {
-                "field": "selectedDateTs",
-                "expected": expected,
-                "actual": actual,
-                "passed": actual == expected,
-            }
-        ]
-
-
 class SearchEventTitle(AnswerTask):
     templates = [
         "日历里关于{keyword}的日程，最早的是哪个",
@@ -299,40 +232,6 @@ class CreateBirthdayEvent(BaseTask):
             calendar.check_event_type(self.p.title, "birthday", fuzzy=True),
             calendar.check_event_on_date(self.p.title, self.p.date, fuzzy=True),
         ]
-
-
-class QueryEventCountOnDate(AnswerTask):
-    templates = [
-        "帮我在日历看看{date}有几个日程",
-    ]
-    apps = ["calendar"]
-    scope = "S1"
-    objective = "query"
-    composition = "sequential"
-    difficulty = "L2"
-    capabilities = ["query"]
-    parameters = {
-        "date": {
-            "type": "string",
-            "sampler": Calendar.sample_seed_date_with_birthday,
-            "default": default_tomorrow,
-            "display": "date_hao",
-        },
-    }
-    expected_changes = ["selectedDateTs"]
-    answer_fields = [{"type": "number", "label": "日程数量"}]
-
-    async def _prepare(self, env):
-        state = await env.get_state()
-        today = sim_today(state.get("os", {}))
-        patch = Calendar.prepare_state_with_seed_events(today)
-        await env.set_state({"apps": {"calendar": patch}}, deep=True, reload=False)
-
-    def get_answer(self, input: JudgeInput) -> Any:
-        calendar = Calendar(input.apps_init["calendar"])
-        return calendar.count_events_on_date(Calendar.parse_ymd(self.p.date))
-
-
 # =============================================================================
 # L3 — Deeper forms / holiday reasoning / multi-setting
 # =============================================================================
@@ -410,40 +309,6 @@ class CreateEventWithReminder(BaseTask):
             calendar.check_event_on_date(self.p.title, self.p.date),
             calendar.check_event_reminder(self.p.title, self.p.reminder),
         ]
-
-
-class EditEventTitle(BaseTask):
-    templates = [
-        "把日历里{old_title}那个日程改名叫{new_title}",
-        "帮我把{old_title}改成{new_title}",
-    ]
-    apps = ["calendar"]
-    scope = "S1"
-    objective = "operate"
-    composition = "sequential"
-    difficulty = "L3"
-    capabilities = ["edit"]
-    parameters = {
-        "old_title": {
-            "type": "enum",
-            "values": CALENDAR_EDIT_TITLES,
-            "default": "团队周会",
-        },
-        "new_title": {"type": "string", "default": "团队例会"},
-    }
-    expected_changes = ["events", "selectedDateTs"]
-
-    async def _prepare(self, env):
-        state = await env.get_state()
-        today = sim_today(state.get("os", {}))
-        patch = Calendar.prepare_state_with_seed_events(today)
-        await env.set_state({"apps": {"calendar": patch}}, deep=True, reload=False)
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        calendar = Calendar(input.apps["calendar"], init=input.apps_init["calendar"])
-        return [calendar.check_event_title_updated(self.p.old_title, self.p.new_title)]
-
-
 class DateCalcForward(AnswerTask):
     templates = [
         "从{date}往后数{days}天是几月几号",
@@ -853,42 +718,6 @@ class SearchDeleteAll(BaseTask):
         ]
         checks.extend(build_answer_checks(deleted_count, input.answer))
         return checks
-
-
-class HolidayFirstDayEvent(BaseTask):
-    templates = [
-        "今年{holiday}假期第一天是几号，帮我在那天创建一个名为{title}的全天日程",
-        "帮我看看今年{holiday}从哪天开始放假，再在第一天创建一个名为{title}的全天日程",
-    ]
-    apps = ["calendar"]
-    scope = "S1"
-    objective = "hybrid"
-    composition = "deep_dive"
-    difficulty = "L4"
-    capabilities = ["create", "reasoning", "explore"]
-    parameters = {
-        "holiday": {
-            "type": "enum",
-            "values": CALENDAR_HOLIDAY_VALUES,
-            "default": "国庆",
-        },
-        "title": {"type": "string", "default": "出游准备"},
-    }
-    expected_changes = ["events", "selectedDateTs"]
-    answer_fields = [{"type": "text", "label": "假期第一天日期", "hint": "如：10月1号", "matcher": "date"}]
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        calendar = Calendar(input.apps["calendar"], init=input.apps_init["calendar"])
-        target_date = HOLIDAY_FIRST_REST[self.p.holiday]
-        checks = [
-            calendar.check_event_created(self.p.title),
-            calendar.check_event_on_date(self.p.title, target_date),
-            calendar.check_event_all_day(self.p.title),
-        ]
-        checks.extend(build_answer_checks(Calendar.date_answer_pattern(target_date, input.os_init), input.answer))
-        return checks
-
-
 class CompareScheduleDensity(AnswerTask):
     templates = [
         "{date1}和{date2}哪天安排更多",

@@ -328,24 +328,6 @@ class TestNotesAccessor:
         labels = Notes.reminder_time_labels(1741597200000)
         assert len(labels) == 4
         assert any(":" in label for label in labels)
-
-
-def _switch_to_todo_positive():
-    return _positive_criteria_case(_tasks_module.SwitchToTodoTab())
-
-
-def _switch_to_todo_negative():
-    return _negative_criteria_case(_tasks_module.SwitchToTodoTab())
-
-
-def _toggle_word_count_positive():
-    return _positive_criteria_case(_tasks_module.ToggleWordCount())
-
-
-def _toggle_word_count_negative():
-    return _negative_criteria_case(_tasks_module.ToggleWordCount())
-
-
 def _read_notes_count_positive():
     return _positive_answer_case(_tasks_module.ReadNotesCount())
 
@@ -412,69 +394,6 @@ def _read_todo_text_positive():
 
 def _read_todo_text_negative():
     return _negative_answer_case(_tasks_module.ReadTodoText())
-
-
-def _delete_note_to_trash_positive():
-    task = _tasks_module.DeleteNoteToTrash()
-    curr = copy.deepcopy(BASE_STATE)
-    note = _require_note(curr, task.p.note_title)
-    note["trashedAt"] = int(note["updatedAt"]) + 999
-    return task, _make_task_input(copy.deepcopy(BASE_STATE), curr)
-
-
-def _delete_note_to_trash_negative():
-    task = _tasks_module.DeleteNoteToTrash()
-    return task, _make_task_input(copy.deepcopy(BASE_STATE), copy.deepcopy(BASE_STATE))
-
-
-def _set_note_private_positive():
-    task = _tasks_module.SetNotePrivate()
-    curr = copy.deepcopy(BASE_STATE)
-    _require_note(curr, task.p.note_title)["isPrivate"] = True
-    return task, _make_task_input(copy.deepcopy(BASE_STATE), curr)
-
-
-def _set_note_private_negative():
-    task = _tasks_module.SetNotePrivate()
-    return task, _make_task_input(copy.deepcopy(BASE_STATE), copy.deepcopy(BASE_STATE))
-
-
-def _create_new_folder_positive():
-    task = _tasks_module.CreateNewFolder()
-    curr = copy.deepcopy(BASE_STATE)
-    _add_folder(curr, task.p.folder_name)
-    return task, _make_task_input(copy.deepcopy(BASE_STATE), curr)
-
-
-def _create_new_folder_negative():
-    task = _tasks_module.CreateNewFolder()
-    return task, _make_task_input(copy.deepcopy(BASE_STATE), copy.deepcopy(BASE_STATE))
-
-
-def _set_note_reminder_positive():
-    task = _tasks_module.SetNoteReminder()
-    curr = copy.deepcopy(BASE_STATE)
-    _require_note(curr, task.p.note_title)["alarmAt"] = 1741597200000
-    return task, _make_task_input(copy.deepcopy(BASE_STATE), curr)
-
-
-def _set_note_reminder_negative():
-    task = _tasks_module.SetNoteReminder()
-    return task, _make_task_input(copy.deepcopy(BASE_STATE), copy.deepcopy(BASE_STATE))
-
-
-def _complete_todo_positive():
-    task = _tasks_module.CompleteTodo()
-    curr = copy.deepcopy(BASE_STATE)
-    _require_todo(curr, task.p.todo_text)["completed"] = True
-    return task, _make_task_input(copy.deepcopy(BASE_STATE), curr)
-
-
-def _complete_todo_negative():
-    task = _tasks_module.CompleteTodo()
-    return task, _make_task_input(copy.deepcopy(BASE_STATE), copy.deepcopy(BASE_STATE))
-
-
 def _delete_todo_positive():
     task = _tasks_module.DeleteTodo()
     curr = copy.deepcopy(BASE_STATE)
@@ -563,16 +482,6 @@ def _search_note_title_positive():
 
 def _search_note_title_negative():
     return _negative_answer_case(_tasks_module.SearchNoteTitle())
-
-
-def _count_todos_completed_positive():
-    return _positive_answer_case(_tasks_module.CountTodosCompleted())
-
-
-def _count_todos_completed_negative():
-    return _negative_answer_case(_tasks_module.CountTodosCompleted())
-
-
 def _create_folder_and_move_note_positive():
     task = _tasks_module.CreateFolderAndMoveNote()
     curr = copy.deepcopy(BASE_STATE)
@@ -586,22 +495,6 @@ def _create_folder_and_move_note_negative():
     curr = copy.deepcopy(BASE_STATE)
     _add_folder(curr, task.p.folder_name)
     return task, _make_task_input(copy.deepcopy(BASE_STATE), curr)
-
-
-def _create_note_and_set_private_positive():
-    task = _tasks_module.CreateNoteAndSetPrivate()
-    curr = copy.deepcopy(BASE_STATE)
-    _add_note(curr, task.p.title, content=task.p.content, is_private=True)
-    return task, _make_task_input(copy.deepcopy(BASE_STATE), curr)
-
-
-def _create_note_and_set_private_negative():
-    task = _tasks_module.CreateNoteAndSetPrivate()
-    curr = copy.deepcopy(BASE_STATE)
-    _add_note(curr, task.p.title, content=task.p.content, is_private=False)
-    return task, _make_task_input(copy.deepcopy(BASE_STATE), curr)
-
-
 def _create_note_with_reminder_positive():
     task = _tasks_module.CreateNoteWithReminder()
     curr = copy.deepcopy(BASE_STATE)
@@ -682,8 +575,6 @@ def _todo_batch_workflow_negative_wrong_state():
 
 
 OFFLINE_JUDGE_POSITIVE_CASES = [
-    ("SwitchToTodoTab", _switch_to_todo_positive),
-    ("ToggleWordCount", _toggle_word_count_positive),
     ("ReadNotesCount", _read_notes_count_positive),
     ("ChangeViewMode", _change_view_mode_positive),
     ("CreateNewNote", _create_new_note_positive),
@@ -691,26 +582,17 @@ OFFLINE_JUDGE_POSITIVE_CASES = [
     ("PinNote", _pin_note_positive),
     ("ReadNoteContent", _read_note_content_positive),
     ("ReadTodoText", _read_todo_text_positive),
-    ("DeleteNoteToTrash", _delete_note_to_trash_positive),
-    ("SetNotePrivate", _set_note_private_positive),
-    ("CreateNewFolder", _create_new_folder_positive),
-    ("SetNoteReminder", _set_note_reminder_positive),
-    ("CompleteTodo", _complete_todo_positive),
     ("DeleteTodo", _delete_todo_positive),
     ("DeleteAllCompletedTodos", _delete_all_completed_todos_positive),
     ("RestoreFromTrash", _restore_from_trash_positive),
     ("SearchNoteTitle", _search_note_title_positive),
-    ("CountTodosCompleted", _count_todos_completed_positive),
     ("CreateFolderAndMoveNote", _create_folder_and_move_note_positive),
-    ("CreateNoteAndSetPrivate", _create_note_and_set_private_positive),
     ("CreateNoteWithReminder", _create_note_with_reminder_positive),
     ("PrivateNotesWorkflow", _private_notes_workflow_positive),
     ("TodoBatchWorkflow", _todo_batch_workflow_positive),
 ]
 
 OFFLINE_JUDGE_NEGATIVE_CASES = [
-    ("SwitchToTodoTab", _switch_to_todo_negative),
-    ("ToggleWordCount", _toggle_word_count_negative),
     ("ReadNotesCount", _read_notes_count_negative),
     ("ChangeViewMode", _change_view_mode_negative),
     ("CreateNewNote", _create_new_note_negative),
@@ -718,11 +600,6 @@ OFFLINE_JUDGE_NEGATIVE_CASES = [
     ("PinNote", _pin_note_negative),
     ("ReadNoteContent", _read_note_content_negative),
     ("ReadTodoText", _read_todo_text_negative),
-    ("DeleteNoteToTrash", _delete_note_to_trash_negative),
-    ("SetNotePrivate", _set_note_private_negative),
-    ("CreateNewFolder", _create_new_folder_negative),
-    ("SetNoteReminder", _set_note_reminder_negative),
-    ("CompleteTodo", _complete_todo_negative),
     ("DeleteTodo", _delete_todo_negative),
     ("DeleteTodo", _delete_todo_negative_wrong_target),
     ("DeleteTodo", _delete_todo_negative_text_cleared),
@@ -731,9 +608,7 @@ OFFLINE_JUDGE_NEGATIVE_CASES = [
     ("DeleteAllCompletedTodos", _delete_all_completed_todos_negative_also_deleted_incomplete),
     ("RestoreFromTrash", _restore_from_trash_negative),
     ("SearchNoteTitle", _search_note_title_negative),
-    ("CountTodosCompleted", _count_todos_completed_negative),
     ("CreateFolderAndMoveNote", _create_folder_and_move_note_negative),
-    ("CreateNoteAndSetPrivate", _create_note_and_set_private_negative),
     ("CreateNoteWithReminder", _create_note_with_reminder_negative_wrong_answer),
     ("CreateNoteWithReminder", _create_note_with_reminder_negative_wrong_state),
     ("PrivateNotesWorkflow", _private_notes_workflow_negative_wrong_answer),

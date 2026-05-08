@@ -73,7 +73,7 @@ python -m bench_env.run --list --suite railway12306 --list-online --env-url http
 
 # 单任务评测
 python -m bench_env.run \
-    --task-id wechat.OpenMyQRCode \
+    --task-id wechat.ReadMyWxid \
     --env-url http://localhost:3000 \
     --model-base-url http://14.103.173.234:8003/v1 \
     --model-name autoglm \
@@ -172,7 +172,7 @@ python -m bench_env.run \
 
 # 人类操作模式
 python -m bench_env.run \
-    --task-id wechat.OpenMyQRCode \
+    --task-id wechat.ReadMyWxid \
     --agent human \
     --env-url http://localhost:3000
 
@@ -187,7 +187,7 @@ python -m bench_env.run \
 
 ### 使用任务 Split (`--split`)
 
-`bench_env/splits/` 下的 txt 文件是任务 id 白名单，用 `--split` 可以把任何命令（list / run / rerun / resume / prune）限制到某个子集。当前内置：`train` / `test` / `payment` / `archived`（即 `bench_env/splits/*.txt`）。
+`bench_env/splits/` 下的 txt 文件是任务 id 白名单，用 `--split` 可以把任何命令（list / run / rerun / resume / prune）限制到某个子集。当前内置：`train` / `test` / `payment` / `high_risk`（即 `bench_env/splits/*.txt`）。
 
 `--split` 与 `--suite` / `--filter-*` / `--task-ids` 是 **AND** 组合。
 
@@ -315,7 +315,7 @@ The `RealDeviceEnv` is currently a **lightweight implementation** with the follo
 ```bash
 # 真机评估（自动启用 VLM judge）
 python -m bench_env.run \
-    --task-id wechat.OpenMyQRCode \
+    --task-id wechat.ReadMyWxid \
     --device real \
     --model-base-url http://14.103.173.234:8003/v1 \
     --model-name autoglm \
@@ -323,7 +323,7 @@ python -m bench_env.run \
 
 # 模拟器强制使用 VLM 评估
 python -m bench_env.run \
-    --task-id wechat.OpenMyQRCode \
+    --task-id wechat.ReadMyWxid \
     --env-url http://localhost:3000 \
     --judge-mode vlm \
     --model-base-url http://14.103.173.234:8003/v1 \
@@ -332,7 +332,7 @@ python -m bench_env.run \
 
 # 使用不同模型做评估（Agent 用 autoglm，评估用 gpt-4o）
 python -m bench_env.run \
-    --task-id wechat.OpenMyQRCode \
+    --task-id wechat.ReadMyWxid \
     --device real \
     --model-base-url http://14.103.173.234:8003/v1 \
     --model-name autoglm \
@@ -373,7 +373,7 @@ VLM 评估基于 Agent 的完整执行轨迹（截图序列 + 动作），判断
 VLM 评估会保存完整的 prompt 和 response 用于调试：
 
 ```
-runs/20260202_xxx/trajectory/wechat_OpenMyQRCode/
+runs/20260202_xxx/trajectory/wechat_ReadMyWxid/
 ├── trajectory.json
 ├── step_001.png
 ├── step_002.png
@@ -406,7 +406,7 @@ The `RunnerConfig` class provides a unified way to configure the benchmark.
 | `delay_after_action` | `1.0`           | Wait time (seconds) after each action                            |
 | `max_steps`          | 自适应          | Maximum steps per episode (未显式指定时按任务难度自适应，见下文) |
 | `quiet`              | `False`         | Suppress INFO logs                                               |
-| `task_id`            | -                 | Run specific task by ID (e.g.,`wechat.OpenMyQRCode`)           |
+| `task_id`            | -                 | Run specific task by ID (e.g.,`wechat.ReadMyWxid`)           |
 | `suite`              | -                 | Filter tasks by suite(s), comma-separated (e.g. `wechat,redbook`)  |
 | `sample_n`           | -                 | Sample N instances per task                                      |
 | `sample_seed`        | -                 | Random seed for task sampling                                    |
@@ -1424,6 +1424,5 @@ bench_env/
     ├── crossapp_content/    # 跨应用内容任务
     ├── crossapp_life/       # 跨应用生活任务
     ├── crossapp_work/       # 跨应用工作任务
-    ├── crossapp_commerce/   # 跨应用消费任务
-    └── device/              # 设备/系统任务
+    └── crossapp_commerce/   # 跨应用消费任务
 ```

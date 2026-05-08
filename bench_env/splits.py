@@ -1,7 +1,7 @@
 """Split resolver for task-id whitelists.
 
 A *split* is a named whitelist of **base** task_ids (no ``_iN`` sampled-instance
-suffix), used for train / test / payment / archived partitioning. Split files
+suffix), used for train / test / payment / high_risk partitioning. Split files
 live at ``bench_env/splits/<name>.txt`` — one task_id per line, blank lines and
 ``#`` comments ignored.
 

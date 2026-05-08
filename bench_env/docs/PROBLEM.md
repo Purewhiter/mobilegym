@@ -82,9 +82,9 @@ rg 'datetime\.datetime\.fromtimestamp\(.*(time\.time|real)' bench_env/task/
 
 | 文件 | 修改数 | 说明 |
 |------|--------|------|
-| `task/alipay/tasks.py` | 8 处 | `EnableDarkMode`、`SetPayOrderCcbYuebaoBalance`、`DisableAllNotifications`、`ConfigureLanguageAndFastPay`、`EnableRefreshSound` → 纯静态类变量；`SetPaymentOrderMode`（`_MODE_MAP` → `display`，参数 `mode_label` → `mode`）；`SetFontSizeLevel`（`_LEVEL_MAP` → `display`，参数 `level_label` → `font_size_level`） |
-| `task/railway12306/tasks.py` | 18 处 | 11 个导航任务（`OpenMyTickets` 等）→ 纯静态 route 类变量；`SetDepartureStation`/`SetArrivalStation`/`SetSearchRoute` → 模板语法；`ToggleStudentTicket`/`EnableFingerprint`/`SwitchToElderVersion` → 纯静态类变量；`SetFontSize`（`_SIZE_MAP` → `display`，参数 `size_label` → `font_size`）；清理未使用的 `Any` import |
-| `task/spotify/tasks.py` | 4 处 | `SetDownloadSettings`/`SetSleepTimer` → 模板语法；`PlayAlbumAndRepeat` → 纯静态类变量；`PrivacySettings`（`not self.p.share_off` → 参数重构为 `share_activity`，语义与 store 一致，用 `display` 映射展示文本） |
+| `task/alipay/tasks.py` | 8 处 | 多个设置任务改为纯静态类变量；支付顺序与字体大小任务改为 `display` 映射 |
+| `task/railway12306/tasks.py` | 18 处 | 多个导航/设置任务改为纯静态类变量或模板语法；清理未使用的 `Any` import |
+| `task/spotify/tasks.py` | 4 处 | 设置任务改为模板语法；播放与隐私任务改为静态类变量或正向参数语义 |
 | `task/wechatreading/tasks.py` | 2 处 | `AppSettings`/`ChangeReaderTheme` → 模板语法 |
 
 ### 附：参数语义反转与模板渲染问题
@@ -480,7 +480,7 @@ return [{"field": "route", "expected": "startsWith /chat", "actual": path}]
 | 偏高 | `EnableDarkMode` | L2 → L1 | 单步设置开关 |
 | 偏高 | `EnableRefreshSound` | L2 → L1 | 同上 |
 | 偏高 | `SetFontSizeLevel` | L2 → L1 | 同上 |
-| 偏高 | `SetPaymentOrderMode` | L2 → L1 | 同上 |
+| 偏高 | 支付顺序设置任务 | L2 → L1 | 同上 |
 | 偏高 | `AnalyzeSpending` | L4 → L3 | 不需要跨月推理 |
 | 偏高 | `DisableAllNotifications` | L4 → L3 | 多开关但路径单一 |
 

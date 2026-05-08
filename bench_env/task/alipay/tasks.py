@@ -2,28 +2,27 @@
 Alipay task definitions.
 """
 # -- Task Index (auto-generated, do not edit) --
-# 20 tasks | L1×8  L2×5  L3×6  L4×1
+# 19 tasks | L1×4  L2×5  L3×9  L4×1
 #
-# [L1] FindFriend                    在支付宝里找到好友'{name}'，告诉我他的电话号码
+# [L3] FindFriend                    在支付宝里找到好友'{name}'，告诉我他的电话号码
 # [L2] MonthlyIncomeByCounterparty   在支付宝账单中查看{month}里来自'{name}'的收入一共有多少
 # [L1] CheckDailyIncome              在支付宝查看昨日理财收益是多少
 # [L1] EnableDarkMode                给支付宝开启深色模式
 # [L2] CheckLatestMessageContent     在支付宝里查看'{name}'最近发来了什么
-# [L1] SetPaymentOrderMode           把支付宝的支付顺序改成{mode}
-# [L3] SetPayOrderCcbYuebaoBalance   在支付宝支付设置里，把支付顺序改成建设银行储蓄卡、余额宝、账户余额
+# [L2] SetPayOrderCcbYuebaoBalance   在支付宝支付设置里，把支付顺序改成建设银行储蓄卡、余额宝、账户余额
 # [L3] AnalyzeSpending               在支付宝账单里看最近 5 笔记录，一共花了多少钱
 # [L3] CountLargeTransferIncomes     在支付宝账单中，有多少笔转账收入超过 {amount} 元
-# [L2] CheckUnreadMessageCount       我支付宝里有多少条好友发来的未读消息
+# [L3] CheckUnreadMessageCount       我支付宝里有多少条好友发来的未读消息
 # [L1] CheckBalance                  看看我理财总资产有多少钱
 # [L3] DisableAllNotifications       关闭支付宝的所有新消息提醒
 # [L1] ShowReceiveQRCode             打开支付宝的收钱二维码
-# [L2] SearchTransferRecords         看看支付宝账单里'{keyword}'有多少条记录
+# [L3] SearchTransferRecords         看看支付宝账单里'{keyword}'有多少条记录
 # [L2] SendMessageToContact          在支付宝给'{contact}'发一条消息，'{text}'
 # [L3] ConfigureLanguageAndFastPay   在支付宝中把语言切换为英文，同时开启极速付款并关闭付款彩蛋
-# [L1] EnableRefreshSound            在支付宝中开启刷新音效
-# [L1] SetFontSizeLevel              把支付宝字体大小调到{font_size_level}
-# [L3] CalculateMonthlyExpenseTrend  在支付宝账单中对比{month1}和{month2}的总支出，哪个月花得多
-# [L4] FindLargestTransferPartner    在支付宝账单里统计累计金额，告诉我总金额最大的交易对象是什么
+# [L2] EnableRefreshSound            在支付宝中开启刷新音效
+# [L3] SetFontSizeLevel              把支付宝字体大小调到{font_size_level}
+# [L4] CalculateMonthlyExpenseTrend  在支付宝账单中对比{month1}和{month2}的总支出，哪个月花得多
+# [L3] FindLargestTransferPartner    在支付宝账单里统计累计金额，告诉我总金额最大的交易对象是什么
 # -- End Task Index --
 
 
@@ -179,34 +178,6 @@ class CheckLatestMessageContent(AnswerTask):
         if conv is None:
             return ""
         return str(conv["lastContent"])
-
-
-class SetPaymentOrderMode(CriteriaTask):
-    """设置支付宝支付顺序模式。
-
-    采样后注入与目标相反的模式，避免默认数据已是「系统自动匹配」时无需操作即可判过。
-    """
-    templates = ["把支付宝的支付顺序改成{mode}"]
-    apps = ["alipay"]
-    scope = "S1"
-    objective = "operate"
-    composition = "atomic"
-    difficulty = "L1"
-    capabilities = ["settings"]
-    parameters = {
-        "mode": {
-            "type": "enum",
-            "values": {"系统自动匹配模式": "system", "自定义模式": "custom"},
-            "default": "custom",
-            "description": "支付顺序模式"
-        }
-    }
-    criteria = {"settings.payment.payOrder.mode": "{mode}"}
-
-    async def _post_sample(self, env: Any) -> None:
-        await self._invert_criteria(env)
-
-
 class SetPayOrderCcbYuebaoBalance(CriteriaTask):
     """自定义支付宝支付顺序"""
     templates = [

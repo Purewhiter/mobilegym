@@ -267,13 +267,6 @@ class TestInitCurrentGuards:
 
 OFFLINE_JUDGE_POSITIVE_CASES = [
     (
-        "OpenStopwatchPage",
-        lambda: (
-            _tasks_module.OpenStopwatchPage(),
-            _make_task_input(copy.deepcopy(DEFAULTS), copy.deepcopy(DEFAULTS), route=STOPWATCH_ROUTE),
-        ),
-    ),
-    (
         "ToggleAlarm",
         lambda: (
             _tasks_module.ToggleAlarm(alarm_id="a1", time="04:30", toggle=False),
@@ -337,21 +330,6 @@ OFFLINE_JUDGE_POSITIVE_CASES = [
                 copy.deepcopy(DEFAULTS),
                 _with_new_alarm(DEFAULTS, alarm_id="t_add2", hour=7, minute=10, repeat="daily", note="晨练"),
             ),
-        ),
-    ),
-    (
-        "EditAlarmTime",
-        lambda: (
-            _tasks_module.EditAlarmTime(
-                alarm_id="a2",
-                old_time="05:00",
-                old_hour=5,
-                old_minute=0,
-                new_time="07:10",
-                new_hour=7,
-                new_minute=10,
-            ),
-            _make_task_input(copy.deepcopy(DEFAULTS), _with_alarm_patch(DEFAULTS, "a2", hour=7, minute=10)),
         ),
     ),
     (
@@ -434,13 +412,6 @@ OFFLINE_JUDGE_POSITIVE_CASES = [
         ),
     ),
     (
-        "AddCityAndFindLatest",
-        lambda: (
-            _tasks_module.AddCityAndFindLatest(city="东京", city_id="tokyo"),
-            _make_task_input(copy.deepcopy(DEFAULTS), _with_added_city(DEFAULTS, "tokyo"), answer="现在时间最晚的是东京"),
-        ),
-    ),
-    (
         "SetupMorningAlarms",
         lambda: (
             _tasks_module.SetupMorningAlarms(
@@ -468,7 +439,6 @@ OFFLINE_JUDGE_POSITIVE_CASES = [
 ]
 
 OFFLINE_JUDGE_NEGATIVE_CASES = [
-    ("OpenStopwatchPage", lambda: (_tasks_module.OpenStopwatchPage(), _make_task_input(copy.deepcopy(DEFAULTS), copy.deepcopy(DEFAULTS), route=TIMER_ROUTE))),
     ("ToggleAlarm", lambda: (_tasks_module.ToggleAlarm(alarm_id="a1", time="04:30", toggle=False), _make_task_input(copy.deepcopy(DEFAULTS), copy.deepcopy(DEFAULTS)))),
     ("CountAlarms", lambda: (_tasks_module.CountAlarms(), _make_task_input(copy.deepcopy(DEFAULTS), copy.deepcopy(DEFAULTS), answer="时钟里一共有6个闹钟"))),
     ("AddAlarm", lambda: (_tasks_module.AddAlarm(time="07:10", hour=7, minute=10), _make_task_input(copy.deepcopy(DEFAULTS), copy.deepcopy(DEFAULTS)))),
@@ -478,7 +448,6 @@ OFFLINE_JUDGE_NEGATIVE_CASES = [
     ("RemoveWorldCity", lambda: (_tasks_module.RemoveWorldCity(city="伦敦", city_id="london"), _make_task_input(copy.deepcopy(DEFAULTS), copy.deepcopy(DEFAULTS)))),
     ("CheckAlarmNote", lambda: (_tasks_module.CheckAlarmNote(alarm_id="a4", time="06:10"), _make_task_input(copy.deepcopy(DEFAULTS), copy.deepcopy(DEFAULTS), answer="06:10 的闹钟备注是开会"))),
     ("AddAlarmWithSettings", lambda: (_tasks_module.AddAlarmWithSettings(time="07:10", hour=7, minute=10, repeat="daily", note="晨练"), _make_task_input(copy.deepcopy(DEFAULTS), _with_new_alarm(DEFAULTS, alarm_id="t_add2", hour=7, minute=10, repeat="daily", note="看球")))),
-    ("EditAlarmTime", lambda: (_tasks_module.EditAlarmTime(alarm_id="a2", old_time="05:00", old_hour=5, old_minute=0, new_time="07:10", new_hour=7, new_minute=10), _make_task_input(copy.deepcopy(DEFAULTS), copy.deepcopy(DEFAULTS)))),
     ("EnableAllAlarms", lambda: (_tasks_module.EnableAllAlarms(), _make_task_input(copy.deepcopy(DEFAULTS), copy.deepcopy(DEFAULTS)))),
     ("CheckCityTime", lambda: (_tasks_module.CheckCityTime(city="巴黎", city_id="paris"), _make_task_input(copy.deepcopy(DEFAULTS), copy.deepcopy(DEFAULTS), answer="巴黎现在是 12:34"))),
     ("CompareCityTimeDiff", lambda: (_tasks_module.CompareCityTimeDiff(city1="巴黎", city2="纽约"), _make_task_input(copy.deepcopy(DEFAULTS), copy.deepcopy(DEFAULTS), answer="巴黎和纽约现在相差5小时"))),
@@ -487,7 +456,6 @@ OFFLINE_JUDGE_NEGATIVE_CASES = [
     ("AddCityAndCheckTime", lambda: (_tasks_module.AddCityAndCheckTime(city="北京", city_id="beijing"), _make_task_input(copy.deepcopy(DEFAULTS), _with_added_city(DEFAULTS, "beijing"), answer="北京现在是 12:34"))),
     ("AddCityAndCompareTimeDiff", lambda: (_tasks_module.AddCityAndCompareTimeDiff(new_city="东京", existing_city="巴黎"), _make_task_input(copy.deepcopy(DEFAULTS), _with_added_city(DEFAULTS, "tokyo"), answer="东京和巴黎相差7小时"))),
     ("ReorganizeWorldClock", lambda: (_tasks_module.ReorganizeWorldClock(remove_city="伦敦", add_city="东京", add_city_id="tokyo"), _make_task_input(copy.deepcopy(DEFAULTS), _with_added_city(DEFAULTS, "tokyo")))),
-    ("AddCityAndFindLatest", lambda: (_tasks_module.AddCityAndFindLatest(city="东京", city_id="tokyo"), _make_task_input(copy.deepcopy(DEFAULTS), _with_added_city(DEFAULTS, "tokyo"), answer="现在时间最晚的是巴黎"))),
     ("SetupMorningAlarms", lambda: (_tasks_module.SetupMorningAlarms(time1="07:10", h1=7, m1=10, time2="07:20", h2=7, m2=20, repeat1="daily", repeat2="weekday"), _make_task_input(copy.deepcopy(DEFAULTS), _with_new_alarm(DEFAULTS, alarm_id="t1", hour=7, minute=10, repeat="daily")))),
 ]
 
@@ -504,13 +472,6 @@ HYBRID_EXTRA_NEGATIVE_CASES = [
         lambda: (
             _tasks_module.AddCityAndCompareTimeDiff(new_city="东京", existing_city="巴黎"),
             _make_task_input(copy.deepcopy(DEFAULTS), copy.deepcopy(DEFAULTS), answer="东京和巴黎相差8小时"),
-        ),
-    ),
-    (
-        "AddCityAndFindLatest_missing_state",
-        lambda: (
-            _tasks_module.AddCityAndFindLatest(city="东京", city_id="tokyo"),
-            _make_task_input(copy.deepcopy(DEFAULTS), copy.deepcopy(DEFAULTS), answer="现在时间最晚的是东京"),
         ),
     ),
     (

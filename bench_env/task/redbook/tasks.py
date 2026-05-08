@@ -2,30 +2,24 @@
 Redbook (小红书) task definitions.
 """
 # -- Task Index (auto-generated, do not edit) --
-# 23 tasks | L1×1  L2×6  L3×9  L4×7
+# 17 tasks | L1×2  L2×6  L3×6  L4×3
 #
 # [L1] CheckMyProfileField                 帮我看看我的小红书{field}
-# [L2] ToggleGeneralSetting                {toggle}小红书设置里的"{setting}"
-# [L2] ChangeLanguage                      把小红书语言改成{language}
-# [L2] ClearStorageCache                   清理小红书缓存
 # [L2] CheckSearchNoteField                在小红书搜"{keyword}"，告诉我第一篇笔记的{field}
 # [L2] CollectSearchNote                   在小红书搜"{keyword}"，收藏排在最前面的那篇笔记
 # [L2] LikeFirstFeedNote                   在小红书首页切到"{category}"这个分类，给这个分类里排最前面的笔记点个赞
 # [L3] CheckSearchUserField                在小红书搜用户"{username}"，看看 TA 的{field}
 # [L3] UncollectFirstCollectedNote         把我小红书收藏列表最前面的那篇笔记取消收藏
 # [L3] DMFollowedUser                      给我关注的"{username}"发条私信"{message}"
-# [L3] LikeRecommendedFeedNoteByKeyword    刷一刷小红书推荐页，给标题里有"{keyword}"的那篇笔记点个赞
-# [L3] CommentOnFeedNote                   在小红书推荐页给标题含"{keyword}"的笔记评论一句"{comment}"
 # [L3] PublishNoteWithTitleAndContent      发一篇小红书笔记，标题写"{title}"，正文写"{content}"
-# [L3] LikeFeedNoteAndReportLikes          给小红书推荐页标题含"{keyword}"的笔记点赞，告诉我它一共多少赞
-# [L3] CheckFollowingUserNoteCount         看看小红书我关注列表里的"{username}"发了多少篇笔记
-# [L3] CheckFirstChatLastMessage           帮我看下小红书最新的那条对话最后发的是什么
+# [L1] LikeFeedNoteAndReportLikes          给小红书推荐页标题含"{keyword}"的笔记点赞，告诉我它一共多少赞
+# [L2] CheckFollowingUserNoteCount         看看小红书我关注列表里的"{username}"发了多少篇笔记
+# [L2] CheckFirstChatLastMessage           帮我看下小红书最新的那条对话最后发的是什么
 # [L4] CheckFirstCollectedAuthorField      去我小红书【收藏】列表里排在最前面的那篇笔记，告诉我作者的{field}
-# [L4] SearchFirstNoteAuthorTopLikedTitle  在小红书搜"{keyword}"，看看第一篇笔记的作者获赞最多的笔记标题是什么
-# [L4] FollowAndCheckLocation              在小红书关注"{username}"，顺便告诉我 TA 的 IP 属地
+# [L3] SearchFirstNoteAuthorTopLikedTitle  在小红书搜"{keyword}"，看看第一篇笔记的作者获赞最多的笔记标题是什么
 # [L4] SearchCollectAndReportAuthor        搜索"{keyword}"，收藏第一篇笔记，告诉我作者有多少粉丝和获赞
-# [L4] CollectFeedNoteAndDMAuthor          收藏推荐页标题含"{keyword}"的笔记，给作者发一句"{message}"
-# [L4] PublishAndShareToFollowing          在小红书发一篇标题叫"{title}"的笔记，然后把这个标题私信给"{username}"
+# [L2] CollectFeedNoteAndDMAuthor          收藏推荐页标题含"{keyword}"的笔记，给作者发一句"{message}"
+# [L3] PublishAndShareToFollowing          在小红书发一篇标题叫"{title}"的笔记，然后把这个标题私信给"{username}"
 # [L4] ReplyToFeedNoteFirstComment         在小红书推荐页找标题含"{keyword}"的笔记，回复第一条评论"{reply}"
 # -- End Task Index --
 
@@ -89,80 +83,6 @@ class CheckMyProfileField(AnswerTask):
 # =============================================================================
 # L2 — Settings / search / simple operate-query
 # =============================================================================
-
-
-class ToggleGeneralSetting(CriteriaTask):
-    templates = [
-        '{toggle}小红书设置里的"{setting}"',
-        '把小红书设置里的"{setting}"{toggle}',
-    ]
-    apps = ["redbook"]
-    scope = "S1"
-    objective = "operate"
-    composition = "sequential"
-    difficulty = "L2"
-    capabilities = ["nav", "settings"]
-    parameters = {
-        "toggle": {
-            "type": "bool",
-            "values": {"开启": True, "关闭": False},
-            "default": True,
-            "description": "开关目标状态",
-        },
-        "setting": {
-            "type": "enum",
-            "values": REDBOOK_GENERAL_SETTING_VALUES,
-            "default": "mobileDownload",
-            "description": "通用设置项",
-        },
-    }
-    criteria = {"settings.general.{setting}": "{toggle}"}
-
-    async def _post_sample(self, env: Any) -> None:
-        await self._invert_criteria(env)
-
-
-class ChangeLanguage(CriteriaTask):
-    templates = [
-        "把小红书语言改成{language}",
-        "把小红书切换到{language}",
-    ]
-    apps = ["redbook"]
-    scope = "S1"
-    objective = "operate"
-    composition = "sequential"
-    difficulty = "L2"
-    capabilities = ["nav", "settings"]
-    parameters = {
-        "language": {
-            "type": "enum",
-            "values": REDBOOK_LANGUAGE_VALUES,
-            "default": "zh-CN",
-            "description": "目标语言",
-        },
-    }
-    criteria = {"settings.language": "{language}"}
-
-    async def _post_sample(self, env: Any) -> None:
-        await self._invert_criteria(env)
-
-
-class ClearStorageCache(CriteriaTask):
-    templates = [
-        "清理小红书缓存",
-        "把小红书的缓存清掉",
-        "Clear the RedNote cache",
-        "Clean up RedNote's storage cache",
-    ]
-    apps = ["redbook"]
-    scope = "S1"
-    objective = "operate"
-    composition = "sequential"
-    difficulty = "L2"
-    capabilities = ["nav", "settings"]
-    criteria = {"storage.cacheSizeBytes": 0}
-
-
 class CheckSearchNoteField(AnswerTask):
     templates = [
         '在小红书搜"{keyword}"，告诉我第一篇笔记的{field}',
@@ -433,113 +353,6 @@ class DMFollowedUser(BaseTask):
             "actual": rb.get_chat(target_user_id),
             "passed": rb.chat_has_message(target_user_id, self.p.message),
         }]
-
-
-class LikeRecommendedFeedNoteByKeyword(BaseTask):
-    templates = [
-        '刷一刷小红书推荐页，给标题里有"{keyword}"的那篇笔记点个赞',
-    ]
-    apps = ["redbook"]
-    scope = "S1"
-    objective = "operate"
-    composition = "sequential"
-    difficulty = "L3"
-    capabilities = ["explore", "social"]
-    parameters = {
-        "keyword": {
-            "type": "string",
-            "default": "分享",
-            "sampler": Redbook.sample_feed_title_keyword,
-            "description": "笔记标题关键词",
-        },
-    }
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        rb = Redbook(input.apps["redbook"], init=input.apps_init["redbook"])
-        kw = str(self.p.keyword or "")
-        candidates = [
-            str(n["id"])
-            for n in rb.visible_discover_notes_for_category("recommend", limit=40)
-            if kw and kw in str(n.get("title") or "")
-        ]
-        liked_any = any(cid in rb.added_to_liked() for cid in candidates)
-        return [{
-            "field": "like_feed_note_by_keyword",
-            "expected": candidates[0] if candidates else None,
-            "actual": rb.liked_notes,
-            "passed": liked_any,
-        }]
-
-    def get_expected_changes(self, input: JudgeInput) -> list[str]:
-        rb = Redbook(input.apps["redbook"], init=input.apps_init["redbook"])
-        kw = str(self.p.keyword or "")
-        candidates = [
-            str(n["id"])
-            for n in rb.visible_discover_notes_for_category("recommend", limit=40)
-            if kw and kw in str(n.get("title") or "")
-        ]
-        chosen = next((cid for cid in candidates if cid in rb.added_to_liked()), candidates[0] if candidates else "")
-        return ["user.likedNotes", f"entities.notesById.{chosen}", "homeState.displayCount", "history"]
-
-
-class CommentOnFeedNote(BaseTask):
-    templates = [
-        '在小红书推荐页给标题含"{keyword}"的笔记评论一句"{comment}"',
-        '在小红书推荐页找到标题含"{keyword}"的那篇笔记，帮我评论"{comment}"',
-    ]
-    apps = ["redbook"]
-    scope = "S1"
-    objective = "operate"
-    composition = "sequential"
-    difficulty = "L3"
-    capabilities = ["explore", "social", "create"]
-    parameters = {
-        "keyword": {
-            "type": "string",
-            "default": "分享",
-            "sampler": Redbook.sample_feed_title_keyword,
-            "description": "搜索关键词",
-        },
-        "comment": {
-            "type": "string",
-            "default": "这条内容很有参考价值",
-            "description": "评论内容",
-        },
-    }
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        rb = Redbook(input.apps["redbook"])
-        kw = str(self.p.keyword or "")
-        candidates = [
-            str(n["id"])
-            for n in rb.visible_discover_notes_for_category("recommend", limit=40)
-            if kw and kw in str(n.get("title") or "")
-        ]
-        passed = any(rb.note_has_comment(cid, self.p.comment) for cid in candidates)
-        return [{
-            "field": "comment_feed_note",
-            "expected": self.p.comment,
-            "actual": " | ".join(candidates),
-            "passed": passed,
-        }]
-
-    def get_expected_changes(self, input: JudgeInput) -> list[str]:
-        rb = Redbook(input.apps["redbook"], init=input.apps_init["redbook"])
-        kw = str(self.p.keyword or "")
-        candidates = [
-            str(n["id"])
-            for n in rb.visible_discover_notes_for_category("recommend", limit=40)
-            if kw and kw in str(n.get("title") or "")
-        ]
-        chosen = next((cid for cid in candidates if rb.note_has_comment(cid, self.p.comment)), candidates[0] if candidates else "")
-        return [
-            f"entities.notesById.{chosen}",
-            "user.commentList",
-            "homeState.displayCount",
-            "history",
-        ]
-
-
 class PublishNoteWithTitleAndContent(BaseTask):
     templates = [
         '发一篇小红书笔记，标题写"{title}"，正文写"{content}"',
@@ -785,7 +598,7 @@ class SearchFirstNoteAuthorTopLikedTitle(AnswerTask):
         return str(max_liked["title"])
 
     def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        # 与 crossapp_content（如 RedbookSearchTitleToWechat / RedbookFavoriteThenMoments）一致：
+        # 与跨应用内容任务一致：
         # 用 norm 去掉标点/emoji 等噪声并统一大小写，再在用户答案的归一化串里做子串匹配。
         expected = str(self.get_answer(input) or "")
         actual = str(input.answer or "")
@@ -797,54 +610,6 @@ class SearchFirstNoteAuthorTopLikedTitle(AnswerTask):
             "actual": actual,
             "passed": passed,
         }]
-
-
-class FollowAndCheckLocation(BaseTask):
-    templates = [
-        '在小红书关注"{username}"，顺便告诉我 TA 的 IP 属地',
-        '在小红书搜索"{username}"并关注，看看 TA 在哪个城市',
-    ]
-    apps = ["redbook"]
-    scope = "S1"
-    objective = "hybrid"
-    composition = "sequential"
-    difficulty = "L4"
-    capabilities = ["search", "social", "query"]
-    parameters = {
-        "username": {
-            "type": "string",
-            "default": "安静岛",
-            "sampler": Redbook.sample_unfollowed_user_name,
-            "description": "待关注用户",
-        },
-    }
-    answer_fields = [{"type": "text", "label": "IP属地", "hint": "如：浙江"}]
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        rb = Redbook(input.apps["redbook"], init=input.apps_init["redbook"])
-        user = rb.init.require_user_by_name(self.p.username)
-        checks = [
-            {
-                "field": "follow_user",
-                "expected": f"follow {self.p.username}",
-                "actual": rb.followings,
-                "passed": str(user["id"]) in rb.added_to_followings(),
-            },
-        ]
-        checks.extend(build_answer_checks(str(user["location"]), input.answer))
-        return checks
-
-    def get_expected_changes(self, input: JudgeInput) -> list[str]:
-        user_id = str(Redbook(input.apps_init["redbook"]).require_user_by_name(self.p.username)["id"])
-        return [
-            "user.followings",
-            "user.following",
-            f"entities.usersById.{user_id}",
-            "searchHistory",
-            "history",
-        ]
-
-
 class SearchCollectAndReportAuthor(BaseTask):
     templates = [
         '搜索"{keyword}"，收藏第一篇笔记，告诉我作者有多少粉丝和获赞',

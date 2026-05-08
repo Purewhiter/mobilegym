@@ -4,43 +4,34 @@ WeChat task definitions.
 Each task is a class inheriting from BaseTask (or its subclasses).
 """
 # -- Task Index (auto-generated, do not edit) --
-# 35 tasks | L1×7  L2×9  L3×14  L4×5
+# 26 tasks | L1×9  L2×7  L3×9  L4×1
 #
-# [L1] OpenMyQRCode                                       打开微信我的二维码页面
-# [L1] OpenRadarAddFriend                                 打开微信雷达加好友页面
-# [L1] OpenNewFriends                                     打开微信好友添加验证记录页面
-# [L2] OpenBlacklist                                      打开微信通讯录黑名单页面
-# [L3] FaceToFaceGroupWithPin                             在微信面对面建群里输入密码 {pin}
-# [L1] ToggleFriendConfirmation                           {toggle}微信加好友验证
-# [L2] ToggleWechatSports                                 {toggle}微信运动功能
-# [L2] ToggleDiscoverEntry                                {toggle}微信发现页的{entry}入口
-# [L2] ToggleMobileAutoPlayMomentsVideo                   {toggle}微信移动网络下朋友圈视频自动播放
-# [L3] SetAddMeSearch                                     设置微信添加好友时仅能通过微信号搜索到我
-# [L2] SetMomentsVisibleRange                             设置微信朋友查看我朋友圈的范围为{range}可见
-# [L2] ToggleStrangerViewMoments                          {toggle}微信允许陌生人查看十条朋友圈
-# [L3] DisableWechatSportsLeaderboard                     开启微信运动功能但是关闭加入步数排行榜
-# [L1] EnableDarkMode                                     开启微信深色模式
-# [L1] ReadContactsTotal                                  看看我微信通讯录里有多少个好友？
-# [L2] SetPatText                                         设置微信拍一拍昵称为'{text}'
-# [L3] PostMomentsText                                    发一条朋友圈，内容为'{content}'
-# [L3] PostMomentsTextWithCity                            发一条朋友圈，内容为'{content}'，定位到 {location}
-# [L3] ScenicPhotoToMomentsWithPhrase                     把{time_hint}拍的{place_name}照片发到朋友圈，配文带上{required_phrase}
-# [L1] ReadMyWxid                                         帮我看看微信里我的微信号是多少
-# [L2] SetSignature                                       把微信里的个性签名改成{text}
-# [L2] SetNotificationSound                               把微信的消息提示音改成{sound}
-# [L3] SendMessageToContact                               在微信里给{contact}发一条消息：{content}
-# [L3] BlacklistContact                                   把微信里的{contact}加入黑名单
-# [L3] DeauthorizeApp                                     取消微信对{app_name}的授权
-# [L3] ReadContactRegion                                  帮我看看微信里{contact}是哪里人
-# [L3] SetFriendChatOnly                                  把微信联系人{contact}的权限改成仅聊天
-# [L3] ReadStepsLeaderboardTop                            打开微信运动功能，然后看看谁走的步数最多
-# [L4] ConditionalReplyToBoss                             在微信里看看Boss之前有没有问过关于{keyword}的消息，有的话给他发{yes_reply}，没有就发{no_reply}
-# [L4] PostMomentFromChat                                 看看微信里{contact}最近给我发了什么消息，把那条消息的内容原封不动发到朋友圈
-# [L4] BlacklistThenNotify                                在微信里把{target}拉黑，然后给{notify_to}发消息说我把{target}拉黑了
-# [L4] CompareStepsAndMessage                             在微信运动里看看{contact1}和{contact2}今天谁的步数更多，把“{content}”发给那个人，并告诉我是谁
-# [L4] StarAndRestrictFriend                              把微信联系人{contact}设为星标好友，不让他看我的朋友圈，也不看他朋友圈
-# [L3] SendAndReadReply                                   在微信里给{contact}发一句「{message}」，看看对方怎么回复的，把回复告诉我
-# [L3] WechatModifyAppPermissionsByRevokingAuthorization  帮我在微信里取消对应用{authorizedAppName}的授权
+# [L1] OpenRadarAddFriend                打开微信雷达加好友页面
+# [L1] OpenNewFriends                    打开微信好友添加验证记录页面
+# [L2] OpenBlacklist                     打开微信通讯录黑名单页面
+# [L1] ToggleFriendConfirmation          {toggle}微信加好友验证
+# [L3] ToggleWechatSports                {toggle}微信运动功能
+# [L3] ToggleDiscoverEntry               {toggle}微信发现页的{entry}入口
+# [L2] ToggleMobileAutoPlayMomentsVideo  {toggle}微信移动网络下朋友圈视频自动播放
+# [L3] SetAddMeSearch                    设置微信添加好友时仅能通过微信号搜索到我
+# [L2] SetMomentsVisibleRange            设置微信朋友查看我朋友圈的范围为{range}可见
+# [L2] ToggleStrangerViewMoments         {toggle}微信允许陌生人查看十条朋友圈
+# [L3] DisableWechatSportsLeaderboard    开启微信运动功能但是关闭加入步数排行榜
+# [L1] EnableDarkMode                    开启微信深色模式
+# [L2] SetPatText                        设置微信拍一拍昵称为'{text}'
+# [L1] PostMomentsText                   发一条朋友圈，内容为'{content}'
+# [L1] PostMomentsTextWithCity           发一条朋友圈，内容为'{content}'，定位到 {location}
+# [L3] ScenicPhotoToMomentsWithPhrase    把{time_hint}拍的{place_name}照片发到朋友圈，配文带上{required_phrase}
+# [L1] ReadMyWxid                        帮我看看微信里我的微信号是多少
+# [L2] SetSignature                      把微信里的个性签名改成{text}
+# [L3] BlacklistContact                  把微信里的{contact}加入黑名单
+# [L1] DeauthorizeApp                    取消微信对{app_name}的授权
+# [L1] ReadContactRegion                 帮我看看微信里{contact}是哪里人
+# [L3] SetFriendChatOnly                 把微信联系人{contact}的权限改成仅聊天
+# [L3] ReadStepsLeaderboardTop           打开微信运动功能，然后看看谁走的步数最多
+# [L2] ConditionalReplyToBoss            在微信里看看Boss之前有没有问过关于{keyword}的消息，有的话给他发{yes_reply}，没有就发{no_reply}
+# [L3] PostMomentFromChat                看看微信里{contact}最近给我发了什么消息，把那条消息的内容原封不动发到朋友圈
+# [L4] StarAndRestrictFriend             把微信联系人{contact}设为星标好友，不让他看我的朋友圈，也不看他朋友圈
 # -- End Task Index --
 
 
@@ -57,27 +48,6 @@ from bench_env.task.wechat.app import Wechat
 # =============================================================================
 # Route tasks (navigate to specific page)
 # =============================================================================
-
-
-class OpenMyQRCode(CriteriaTask):
-    """打开微信我的二维码"""
-    templates = [
-        "打开微信我的二维码页面",
-        "Open the My QR Code page in WeChat",
-    ]
-    apps = ["wechat"]
-    scope = "S1"
-    objective = "operate"
-    composition = "atomic"
-    difficulty = "L1"
-    capabilities = ["nav"]
-    criteria = {"route": "/me/qrcode"}
-    optimal_paths = [[
-        "tab.me",
-        "me.qrcode.open",
-    ]]
-
-
 class OpenRadarAddFriend(CriteriaTask):
     """打开雷达加好友页面"""
     templates = [
@@ -136,37 +106,6 @@ class OpenBlacklist(CriteriaTask):
         "settings.privacy.friends.open",
         "settings.privacy.blacklist.open",
     ]]
-
-
-class FaceToFaceGroupWithPin(CriteriaTask):
-    """进入面对面建群并输入密码"""
-    templates = [
-        "在微信面对面建群里输入密码 {pin}",
-        "Enter the PIN {pin} on the WeChat Face-to-Face Group page",
-    ]
-    apps = ["wechat"]
-    scope = "S1"
-    objective = "operate"
-    composition = "sequential"
-    difficulty = "L3"
-    capabilities = ["nav"]
-    parameters = {
-        "pin": {
-            "type": "string",
-            "pattern": r"\d{4}",
-            "default": "2345",
-            "description": "四位数字 PIN"
-        }
-    }
-    optimal_paths = [[
-        "home.menu.plus.open",
-        "plusMenu.addFriend.open",
-        "addFriend.faceToFace.open",
-        {"id": "faceToFace.join.open", "params": {"pin": "2345"}},
-    ]]
-    criteria = {"route": "/face-to-face-group/join?pin={pin}"}
-
-
 # =============================================================================
 # Setting tasks (toggle a single setting)
 # =============================================================================
@@ -453,21 +392,6 @@ class EnableDarkMode(CriteriaTask):
 # =============================================================================
 # Custom tasks (complex logic)
 # =============================================================================
-
-
-class ReadContactsTotal(AnswerTask):
-    """查询微信好友总数"""
-    templates = ["看看我微信通讯录里有多少个好友？"]
-    apps = ["wechat"]
-    scope = "S1"
-    objective = "query"
-    composition = "atomic"
-    difficulty = "L1"
-    capabilities = ["query"]
-    answer_fields = [{"type": "number", "label": "好友总数"}]
-    optimal_paths = [["tab.contacts"]]
-    answer = (".contacts", len)
-
 class SetPatText(CriteriaTask):
     """设置拍一拍文本"""
     templates = [
@@ -660,82 +584,6 @@ class SetSignature(CriteriaTask):
         "profile.detail.open",
         "profile.signature.open",
     ]]
-
-
-class SetNotificationSound(CriteriaTask):
-    """设置消息提示音。"""
-    templates = [
-        "把微信的消息提示音改成{sound}",
-        "帮我把微信消息提示音设为{sound}",
-        "Change the WeChat notification sound to {sound}",
-        "Set the WeChat notification sound to {sound}",
-    ]
-    apps = ["wechat"]
-    scope = "S1"
-    objective = "operate"
-    composition = "sequential"
-    difficulty = "L2"
-    capabilities = ["nav", "settings"]
-    parameters = {
-        "sound": {
-            "type": "enum",
-            "values": ["积木", "可爱", "空灵", "俏皮", "清脆", "灵动", "优雅"],
-            "default": "积木",
-            "description": "消息提示音",
-        }
-    }
-    criteria = {"settings.notifications.notificationSound": "{sound}"}
-    optimal_paths = [[
-        "tab.me",
-        "me.settings.open",
-        "settings.notifications.open",
-        "settings.notifications.sound.open",
-    ]]
-
-    async def _post_sample(self, env):
-        await self._invert_criteria(env)
-
-
-class SendMessageToContact(BaseTask):
-    """给联系人发送消息。"""
-    templates = [
-        "在微信里给{contact}发一条消息：{content}",
-        "帮我在微信里发消息给{contact}，内容是{content}",
-        "Send a message to {contact} in WeChat: {content}",
-        "In WeChat, send {contact} this message: {content}",
-    ]
-    apps = ["wechat"]
-    scope = "S1"
-    objective = "operate"
-    composition = "sequential"
-    difficulty = "L3"
-    capabilities = ["nav", "edit"]
-    parameters = {
-        "contact": {
-            "type": "enum",
-            "values": ["blank.", "张伟", "Boss"],
-            "default": "张伟",
-            "description": "消息接收人",
-        },
-        "content": {
-            "type": "string",
-            "default": "周末见",
-            "description": "消息内容",
-        },
-    }
-    expected_changes = ["chats[user.name={contact}]"]
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        wechat = Wechat(input.apps["wechat"], init=input.apps_init["wechat"])
-        return [
-            wechat.check_new_sent_to(
-                self.p.contact,
-                self.p.content,
-                field="send_message",
-            )
-        ]
-
-
 class BlacklistContact(CriteriaTask):
     """把联系人加入黑名单。"""
     templates = [
@@ -958,114 +806,6 @@ class PostMomentFromChat(BaseTask):
             wechat.check_new_moment_with(source_text, field="moment_from_chat"),
             wechat.check_new_moment_no_images(),
         ]
-
-
-class BlacklistThenNotify(BaseTask):
-    """拉黑联系人后通知另一个人。"""
-    templates = [
-        "在微信里把{target}拉黑，然后给{notify_to}发消息说我把{target}拉黑了",
-        "先在微信里把{target}加入黑名单，再告诉{notify_to}我把{target}拉黑了",
-    ]
-    apps = ["wechat"]
-    scope = "S1"
-    objective = "operate"
-    composition = "sequential"
-    difficulty = "L4"
-    capabilities = ["nav", "settings", "edit"]
-    parameters = {
-        "target": {"type": "string", "default": "刘浪", "description": "要拉黑的联系人"},
-        "notify_to": {"type": "string", "default": "张伟", "description": "通知对象"},
-        "_pair": {
-            "sampler": Wechat.sample_two_friend_names,
-            "fields": {"target": "target", "notify_to": "notify_to"},
-        },
-    }
-    expected_changes = [
-        "contacts[name={target}]",
-        "chats[user.name={notify_to}]",
-    ]
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        wechat = Wechat(input.apps["wechat"], init=input.apps_init["wechat"])
-        return [
-            wechat.check_blacklisted(self.p.target),
-            wechat.check_new_sent_to(
-                self.p.notify_to, self.p.target, "拉黑",
-                field="notify_message",
-            ),
-        ]
-
-
-class CompareStepsAndMessage(BaseTask):
-    """比较两人步数并给赢家发消息，同时回答赢家是谁。"""
-    templates = [
-        "在微信运动里看看{contact1}和{contact2}今天谁的步数更多，把“{content}”发给那个人，并告诉我是谁",
-        "在微信运动里比较一下{contact1}和{contact2}今天谁走得更多，给走得多的人发“{content}”，再告诉我是谁",
-    ]
-    apps = ["wechat"]
-    scope = "S1"
-    objective = "hybrid"
-    composition = "deep_dive"
-    difficulty = "L4"
-    capabilities = ["query", "reasoning", "edit"]
-    answer_fields = [
-        {"type": "choice", "label": "步数更多的人",
-         "options": ["{contact1}", "{contact2}"]}
-    ]
-    parameters = {
-        "contact1": {
-            "type": "string",
-            "default": "李娜",
-            "description": "联系人1",
-        },
-        "contact2": {
-            "type": "string",
-            "default": "杨杰",
-            "description": "联系人2",
-        },
-        "_step_pair": {
-            "sampler": Wechat.sample_diff_steps_pair,
-            "fields": {"contact1": "contact1", "contact2": "contact2"},
-        },
-        "content": {
-            "type": "string",
-            "default": "今天运动量不错，继续加油！",
-            "description": "鼓励消息内容",
-        },
-    }
-    expected_changes = ["chats"]
-
-    def get_expected_changes(self, input: JudgeInput) -> list[str]:
-        wechat = Wechat(input.apps_init["wechat"])
-        steps1 = wechat.contact_steps(self.p.contact1)
-        steps2 = wechat.contact_steps(self.p.contact2)
-        winner = self.p.contact1 if steps1 > steps2 else self.p.contact2
-        wxid = wechat.find_contact_wxid(winner)
-        return [f"chats[id={wxid}]"] if wxid else ["chats"]
-
-    async def _prepare(self, env):
-        await env.set_state(
-            {"apps": {"wechat": {"settings": {"accessibility": {"wechatSports": {"enabled": True}}}}}},
-            deep=True,
-            reload=False,
-        )
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        wechat = Wechat(input.apps["wechat"], init=input.apps_init["wechat"])
-        steps1 = wechat.contact_steps(self.p.contact1)
-        steps2 = wechat.contact_steps(self.p.contact2)
-        winner = self.p.contact1 if steps1 > steps2 else self.p.contact2
-        checks = [
-            wechat.check_new_sent_to(
-                winner,
-                self.p.content,
-                field="encourage_winner",
-            )
-        ]
-        checks.extend(build_answer_checks(winner, input.answer))
-        return checks
-
-
 class StarAndRestrictFriend(CriteriaTask):
     """星标好友并限制朋友圈权限。"""
     templates = [
@@ -1092,83 +832,4 @@ class StarAndRestrictFriend(CriteriaTask):
         "contacts[name={contact}].isStarred": True,
         "contacts[name={contact}].hideMyMoments": True,
         "contacts[name={contact}].hideTheirMoments": True,
-    }
-
-
-class SendAndReadReply(BaseTask):
-    """验证 Agent 是否给联系人发了消息、等到自动回复后正确报告了回复内容。
-
-    判定两个独立目标：
-    ① sent_message — 使用 Wechat.check_new_sent_to 验证新消息包含 {message}
-    ② answer — 使用 build_answer_checks 验证 Agent 回答包含实际回复内容
-
-    注意：联系人需配置 aiConfig.enabled=true（mock 模式返回随机短句）。
-    回复内容在任务执行后才生成，judge 从 state 中读取实际回复做 ground truth。
-    若 Agent 发了消息但未等到回复就作答，answer check 自然 fail。
-    """
-
-    templates = [
-        "在微信里给{contact}发一句「{message}」，看看对方怎么回复的，把回复告诉我",
-        "帮我在微信给{contact}发「{message}」，等对方回了把回复内容告诉我",
-    ]
-    apps = ["wechat"]
-    scope = "S1"
-    objective = "hybrid"
-    composition = "sequential"
-    difficulty = "L3"
-    capabilities = ["edit", "query"]
-    answer_fields = [{"type": "text", "label": "对方的回复内容"}]
-    parameters = {
-        "contact": {
-            "type": "enum",
-            "values": ["blank.", "张伟", "陈静"],
-            "default": "张伟",
-            "description": "消息接收人（需有自动回复）",
-        },
-        "message": {
-            "type": "string",
-            "default": "在吗",
-            "description": "发送的消息内容",
-        },
-    }
-    expected_changes = ["chats[user.name={contact}]"]
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        wechat = Wechat(input.apps["wechat"], init=input.apps_init["wechat"])
-        replies = wechat.new_received_texts_from(self.p.contact)
-        reply_text = replies[-1] if replies else ""
-        answer_checks = (
-            build_answer_checks(reply_text, input.answer)
-            if reply_text
-            else [{
-                "field": "answer",
-                "expected": "回复内容",
-                "actual": str(input.answer or "") or "(none)",
-                "passed": False,
-            }]
-        )
-        return [
-            wechat.check_new_sent_to(
-                self.p.contact, self.p.message, field="sent_message"
-            ),
-            *answer_checks,
-        ]
-
-
-class WechatModifyAppPermissionsByRevokingAuthorization(CriteriaTask):
-    templates = [
-        "帮我在微信里取消对应用{authorizedAppName}的授权",
-        "Revoke the authorization for the app {authorizedAppName} in WeChat",
-    ]
-    scope = "S1"
-    objective = "operate"
-    composition = "atomic"
-    difficulty = "L3"
-    capabilities = ["settings"]
-    apps = ["wechat"]
-    criteria = {
-        "authorizedApps[name={authorizedAppName}]": None,
-    }
-    parameters = {
-        "authorizedAppName": {"type": "string", "source": "apps.wechat.authorizedApps[name]", "default": "拼多多", "description": "第三方授权应用名称"},
     }

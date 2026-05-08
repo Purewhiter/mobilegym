@@ -345,26 +345,6 @@ class TestSmsAccessor:
         _mark_all_read(curr_state)
         sms = Sms(curr_state, init=copy.deepcopy(BASE_STATE))
         assert sms.check_all_read()["passed"] is True
-
-
-def _open_settings_positive():
-    return _positive_criteria_case(_tasks_module.OpenSmsSettingsPage())
-
-
-def _open_settings_negative():
-    task = _tasks_module.OpenSmsSettingsPage()
-    return task, _make_task_input(copy.deepcopy(BASE_STATE), copy.deepcopy(BASE_STATE))
-
-
-def _read_latest_sender_positive():
-    return _positive_answer_case(_tasks_module.ReadLatestSender())
-
-
-def _read_latest_sender_negative():
-    task = _tasks_module.ReadLatestSender()
-    return task, _make_task_input(copy.deepcopy(BASE_STATE), copy.deepcopy(BASE_STATE), answer="建设银行")
-
-
 def _toggle_main_setting_positive():
     return _positive_criteria_case(_tasks_module.ToggleMainSetting(setting_key="show_avatar", enabled=False))
 
@@ -390,17 +370,6 @@ def _read_unread_count_positive():
 def _read_unread_count_negative():
     task = _tasks_module.ReadUnreadConversationCount()
     return task, _make_task_input(copy.deepcopy(BASE_STATE), copy.deepcopy(BASE_STATE), answer="还有4个未读")
-
-
-def _read_latest_message_positive():
-    return _positive_answer_case(_tasks_module.ReadLatestIncomingMessage(sender="中国联通"))
-
-
-def _read_latest_message_negative():
-    task = _tasks_module.ReadLatestIncomingMessage(sender="中国联通")
-    return task, _make_task_input(copy.deepcopy(BASE_STATE), copy.deepcopy(BASE_STATE), answer="【中国联通】活动结束")
-
-
 def _reply_positive():
     task = _tasks_module.ReplyToConversation(sender="中国联通", content="稍后联系")
     curr = copy.deepcopy(BASE_STATE)
@@ -436,33 +405,6 @@ def _toggle_free_network_positive():
 def _toggle_free_network_negative():
     task = _tasks_module.ToggleFreeNetworkSetting(setting_key="block_strangers", enabled=False)
     return task, _make_task_input(copy.deepcopy(BASE_STATE), copy.deepcopy(BASE_STATE))
-
-
-def _toggle_fiveg_positive():
-    return _positive_criteria_case(
-        _tasks_module.ToggleFiveGSetting(setting_key="5g_read_report", enabled=True)
-    )
-
-
-def _toggle_fiveg_negative():
-    task = _tasks_module.ToggleFiveGSetting(setting_key="5g_read_report", enabled=True)
-    return task, _make_task_input(copy.deepcopy(BASE_STATE), copy.deepcopy(BASE_STATE))
-
-
-def _compose_new_positive():
-    task = _tasks_module.ComposeNewMessage(recipient="张三", content="今天下午三点开会")
-    curr = copy.deepcopy(BASE_STATE)
-    _append_outgoing_message(curr, "张三", "今天下午三点开会", message_id="compose_ok")
-    return task, _make_task_input(copy.deepcopy(BASE_STATE), curr)
-
-
-def _compose_new_negative():
-    task = _tasks_module.ComposeNewMessage(recipient="张三", content="今天下午三点开会")
-    curr = copy.deepcopy(BASE_STATE)
-    _append_outgoing_message(curr, "张三", "明天再说", message_id="compose_bad")
-    return task, _make_task_input(copy.deepcopy(BASE_STATE), curr)
-
-
 def _compare_count_positive():
     return _positive_answer_case(
         _tasks_module.CompareConversationMessageCount(sender1="中国电信", sender2="中国联通")
@@ -472,27 +414,6 @@ def _compare_count_positive():
 def _compare_count_negative():
     task = _tasks_module.CompareConversationMessageCount(sender1="中国电信", sender2="中国联通")
     return task, _make_task_input(copy.deepcopy(BASE_STATE), copy.deepcopy(BASE_STATE), answer="中国联通")
-
-
-def _configure_free_sms_positive():
-    return _positive_criteria_case(
-        _tasks_module.ConfigureFreeNetworkSmsSettings(
-            auto_convert_sms=False,
-            auto_convert_mms=True,
-            block_strangers=False,
-        )
-    )
-
-
-def _configure_free_sms_negative():
-    task = _tasks_module.ConfigureFreeNetworkSmsSettings(
-        auto_convert_sms=False,
-        auto_convert_mms=True,
-        block_strangers=False,
-    )
-    return task, _make_task_input(copy.deepcopy(BASE_STATE), copy.deepcopy(BASE_STATE))
-
-
 def _delete_conversation_positive():
     task = _tasks_module.DeleteConversation(sender="建设银行")
     curr = copy.deepcopy(BASE_STATE)
@@ -535,38 +456,26 @@ def _find_and_reply_keyword_negative():
 
 
 OFFLINE_JUDGE_POSITIVE_CASES = [
-    ("OpenSmsSettingsPage", _open_settings_positive),
-    ("ReadLatestSender", _read_latest_sender_positive),
     ("ToggleMainSetting", _toggle_main_setting_positive),
     ("OpenConversationBySender", _open_conversation_positive),
     ("ReadUnreadConversationCount", _read_unread_count_positive),
-    ("ReadLatestIncomingMessage", _read_latest_message_positive),
     ("ReplyToConversation", _reply_positive),
     ("MarkAllConversationsRead", _mark_all_read_positive),
     ("ToggleFreeNetworkSetting", _toggle_free_network_positive),
-    ("ToggleFiveGSetting", _toggle_fiveg_positive),
-    ("ComposeNewMessage", _compose_new_positive),
     ("CompareConversationMessageCount", _compare_count_positive),
-    ("ConfigureFreeNetworkSmsSettings", _configure_free_sms_positive),
     ("DeleteConversation", _delete_conversation_positive),
     ("ReplyToLatestUnread", _reply_to_latest_unread_positive),
     ("FindAndReplySendersByKeyword", _find_and_reply_keyword_positive),
 ]
 
 OFFLINE_JUDGE_NEGATIVE_CASES = [
-    ("OpenSmsSettingsPage", _open_settings_negative),
-    ("ReadLatestSender", _read_latest_sender_negative),
     ("ToggleMainSetting", _toggle_main_setting_negative),
     ("OpenConversationBySender", _open_conversation_negative),
     ("ReadUnreadConversationCount", _read_unread_count_negative),
-    ("ReadLatestIncomingMessage", _read_latest_message_negative),
     ("ReplyToConversation", _reply_negative),
     ("MarkAllConversationsRead", _mark_all_read_negative),
     ("ToggleFreeNetworkSetting", _toggle_free_network_negative),
-    ("ToggleFiveGSetting", _toggle_fiveg_negative),
-    ("ComposeNewMessage", _compose_new_negative),
     ("CompareConversationMessageCount", _compare_count_negative),
-    ("ConfigureFreeNetworkSmsSettings", _configure_free_sms_negative),
     ("DeleteConversation", _delete_conversation_negative),
     ("ReplyToLatestUnread", _reply_to_latest_unread_negative),
     ("FindAndReplySendersByKeyword", _find_and_reply_keyword_negative),

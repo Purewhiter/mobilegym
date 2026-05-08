@@ -255,7 +255,7 @@ class TaskRegistry:
         return tasks[task_name]
     
     def get_by_id(self, task_id: str) -> Type[BaseTask]:
-        """Get task class by full ID (e.g. "wechat.OpenMyQRCode")."""
+        """Get task class by full ID (e.g. "wechat.ReadMyWxid")."""
         if "." not in task_id:
             raise ValueError(f"Invalid task ID format: {task_id}. Expected 'suite.TaskName'")
         

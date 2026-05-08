@@ -523,7 +523,7 @@ class SetDepartureStation(CriteriaTask):
 
 ```python
 # ✅ 正确：values dict {展示文本: 内部值}，自动生成展示映射
-class SetFontSize(CriteriaTask):
+class SetFontSizeLevel(CriteriaTask):
     parameters = {
         "font_size": {
             "type": "enum",
@@ -535,7 +535,7 @@ class SetFontSize(CriteriaTask):
 
 # ❌ 禁止：手动映射字典
 _SIZE_MAP = {"最小": 0, "较小": 1, ...}
-class SetFontSize(CriteriaTask):
+class SetFontSizeLevel(CriteriaTask):
     @property
     def criteria(self):
         return {"settings.general.fontSizeLevel": _SIZE_MAP[self.p.size_label]}
@@ -914,7 +914,7 @@ class ShareMeetingToWechat(BaseTask):
         ]
 
 # ✅ 任务特有的复杂逻辑 — 保持内联
-class WeatherTripToMoments(BaseTask):
+class WeatherSummaryToWechat(BaseTask):
     def check_goals(self, input):
         weather = Weather(input.apps["weather"])
         wechat = Wechat(input.apps["wechat"])
@@ -1430,7 +1430,7 @@ class PostMomentsText(CriteriaTask):
 纯查询任务不改变状态，通常不需要 `expected_changes`。但如果查询过程会产生副作用（如搜索历史），需要声明：
 
 ```python
-class SearchPlaceAddress(AnswerTask):
+class CheckCurrentWeather(AnswerTask):
     expected_changes = ["searchHistory", "currentView"]
 ```
 
@@ -1526,8 +1526,8 @@ class MyTask(CriteriaTask):
 `optimal_paths` 声明任务的最优解路径（对应 navigation graph 中的步骤序列），用于评估 Agent 的操作效率。
 
 ```python
-class OpenMyAccount(AnswerTask):
-    optimal_paths = [["tab.my", "my.account"]]
+class ReadMyWxid(AnswerTask):
+    optimal_paths = [["tab.me", "me.profile"]]
 
 class OpenServicePhone(CriteriaTask):
     optimal_paths = [["service.servicePhone"]]
@@ -1821,7 +1821,7 @@ docstring 的价值在于补充类名、模板和代码**无法直接传达**的
 **简单任务 — 类名 + 模板已自证，docstring 精简**：
 
 ```python
-class WeatherCurrentToWechat(BaseTask):
+class WeatherSummaryToWechat(BaseTask):
     """判定：微信新消息包含 {city} 当前天气状况和温度。"""
 
     templates = [

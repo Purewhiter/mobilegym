@@ -315,16 +315,6 @@ def _open_ranking_positive():
 
 def _open_ranking_negative():
     return _negative_criteria_case(_tasks_module.OpenRankingTask())
-
-
-def _clear_search_history_positive():
-    return _positive_criteria_case(_tasks_module.ClearSearchHistoryTask())
-
-
-def _clear_search_history_negative():
-    return _negative_criteria_case(_tasks_module.ClearSearchHistoryTask())
-
-
 def _view_profile_stat_positive():
     return _positive_answer_case(_tasks_module.ViewProfileStatTask())
 
@@ -378,16 +368,6 @@ def _update_nickname_positive():
 
 def _update_nickname_negative():
     return _negative_criteria_case(_tasks_module.UpdateNicknameTask())
-
-
-def _ranking_rank_title_positive():
-    return _positive_answer_case(_tasks_module.RankingTabFindRankTitleTask())
-
-
-def _ranking_rank_title_negative():
-    return _negative_answer_case(_tasks_module.RankingTabFindRankTitleTask())
-
-
 def _video_online_positive():
     task = _tasks_module.VideoAnswerOnlineTask()
     curr = _with_open_video(task.p.title)
@@ -558,14 +538,12 @@ def _comment_location_negative():
 
 OFFLINE_JUDGE_POSITIVE_CASES = [
     ("OpenRankingTask", _open_ranking_positive),
-    ("ClearSearchHistoryTask", _clear_search_history_positive),
     ("ViewProfileStatTask", _view_profile_stat_positive),
     ("SubscribeTask", _subscribe_positive),
     ("UpdateSignTask", _update_sign_positive),
     ("CoinVideoTask", _coin_video_positive),
     ("ViewMyUidTask", _view_my_uid_positive),
     ("UpdateNicknameTask", _update_nickname_positive),
-    ("RankingTabFindRankTitleTask", _ranking_rank_title_positive),
     ("VideoAnswerOnlineTask", _video_online_positive),
     ("VideoAnswerTagsTask", _video_tags_positive),
     ("ToggleAnimeSubscriptionTask", _toggle_anime_positive),
@@ -583,14 +561,12 @@ OFFLINE_JUDGE_POSITIVE_CASES = [
 
 OFFLINE_JUDGE_NEGATIVE_CASES = [
     ("OpenRankingTask", _open_ranking_negative),
-    ("ClearSearchHistoryTask", _clear_search_history_negative),
     ("ViewProfileStatTask", _view_profile_stat_negative),
     ("SubscribeTask", _subscribe_negative),
     ("UpdateSignTask", _update_sign_negative),
     ("CoinVideoTask", _coin_video_negative),
     ("ViewMyUidTask", _view_my_uid_negative),
     ("UpdateNicknameTask", _update_nickname_negative),
-    ("RankingTabFindRankTitleTask", _ranking_rank_title_negative),
     ("VideoAnswerOnlineTask", _video_online_negative),
     ("VideoAnswerTagsTask", _video_tags_negative),
     ("ToggleAnimeSubscriptionTask", _toggle_anime_negative),

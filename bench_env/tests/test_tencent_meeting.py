@@ -379,8 +379,6 @@ OFFLINE_JUDGE_POSITIVE_CASES = [
             },
         ),
     )),
-    ("ConfigGeneralSettings", lambda: _positive_criteria_case(_tasks_module.ConfigGeneralSettings(safe_drive=False, dark_mode=False))),
-    ("ConfigVideoSettings", lambda: _positive_criteria_case(_tasks_module.ConfigVideoSettings(mirror=False, preview=True))),
     ("ChatInMeeting", lambda: (
         _tasks_module.ChatInMeeting(host_name="老王", topic="老王的快速会议", message="大家好，我到了"),
         _make_input(
@@ -407,24 +405,6 @@ OFFLINE_JUDGE_POSITIVE_CASES = [
     ("ConfigPrivacySettings", lambda: _positive_criteria_case(_tasks_module.ConfigPrivacySettings(hide_non_video=True, hide_self=True))),
     ("ConfigShowIdentity", lambda: _positive_criteria_case(_tasks_module.ConfigShowIdentity(show_identity=True))),
     ("CheckPendingMeetingId", lambda: _positive_answer_case(_tasks_module.CheckPendingMeetingId(topic="项目例会"), _clone_state())),
-    ("CountOngoingMeetings", lambda: _positive_answer_case(_tasks_module.CountOngoingMeetings(), _clone_state())),
-    ("ModifyScheduledMeetingTopic", lambda: (
-        _tasks_module.ModifyScheduledMeetingTopic(old_topic="项目例会", new_topic="产品需求评审"),
-        _make_input(
-            _clone_state(),
-            {
-                **_clone_state(),
-                "scheduledMeetings": [
-                    {
-                        **meeting,
-                        "title": "产品需求评审",
-                    }
-                    if meeting["title"] == "项目例会" else meeting
-                    for meeting in _clone_state()["scheduledMeetings"]
-                ],
-            },
-        ),
-    )),
     ("CheckScheduledMeetingEndTime", lambda: _positive_answer_case(_tasks_module.CheckScheduledMeetingEndTime(topic="项目例会"), _clone_state())),
     ("JoinMeetingAndRename", lambda: (
         _tasks_module.JoinMeetingAndRename(host_name="李四", topic="技术方案评审", name="小明-北京", mute_on=True),
@@ -442,7 +422,6 @@ OFFLINE_JUDGE_POSITIVE_CASES = [
             },
         ),
     )),
-    ("CheckMeetingAttendees", lambda: _positive_answer_case(_tasks_module.CheckMeetingAttendees(), _clone_state())),
     ("ScheduleMeeting", lambda: (
         _tasks_module.ScheduleMeeting(topic="预算评审会", duration=60, pin="2468"),
         _make_input(
@@ -457,24 +436,10 @@ OFFLINE_JUDGE_POSITIVE_CASES = [
             answer="888 666 1234",
         ),
     )),
-    ("ScheduleRegularMeeting", lambda: (
-        _tasks_module.ScheduleRegularMeeting(topic="每周同步会", repeat_type="weekly"),
-        _make_input(
-            _clone_state(),
-            {
-                **_clone_state(),
-                "scheduledMeetings": [
-                    _make_new_scheduled_meeting(topic="每周同步会", repeat_type="weekly"),
-                    *_clone_state()["scheduledMeetings"],
-                ],
-            },
-        ),
-    )),
     ("CountFriendMeetings", lambda: _positive_answer_case(_tasks_module.CountFriendMeetings(), _clone_state())),
     ("GetSecondParticipationTime", lambda: _positive_answer_case(_tasks_module.GetSecondParticipationTime(topic="长时间研讨会"), _clone_state())),
     ("FindLongestMeeting", lambda: _positive_answer_case(_tasks_module.FindLongestMeeting(), _clone_state())),
     ("FindMeetingWithMostParticipants", lambda: _positive_answer_case(_tasks_module.FindMeetingWithMostParticipants(), _clone_state())),
-    ("CountMeetingsByDate", lambda: _positive_answer_case(_tasks_module.CountMeetingsByDate(date="2026-02-03"), _clone_state())),
     ("ShareScreenAndConfirm", lambda: (
         _tasks_module.ShareScreenAndConfirm(host_name="张三", topic="产品需求讨论", message="共享结束了"),
         _make_input(
@@ -522,24 +487,6 @@ OFFLINE_JUDGE_POSITIVE_CASES = [
             },
         ),
     )),
-    ("ScheduleTeamMeeting", lambda: (
-        _tasks_module.ScheduleTeamMeeting(topic="跨组同步会"),
-        _make_input(
-            _clone_state(),
-            {
-                **_clone_state(),
-                "scheduledMeetings": [
-                    _make_new_scheduled_meeting(
-                        topic="跨组同步会",
-                        invitees=[{"id": "user_zhangsan", "name": "张三"}, {"id": "user_lisi", "name": "李四"}],
-                        calendar=False,
-                        auto_use_overtime_card=True,
-                    ),
-                    *_clone_state()["scheduledMeetings"],
-                ],
-            },
-        ),
-    )),
     ("CalculateTotalMeetingDuration", lambda: _positive_answer_case(_tasks_module.CalculateTotalMeetingDuration(date="2026-02-03"), _clone_state())),
     ("CompareParticipationDurations", lambda: _positive_answer_case(_tasks_module.CompareParticipationDurations(topic1="小明的快速会议", topic2="长时间研讨会"), _clone_state())),
 ]
@@ -567,30 +514,19 @@ OFFLINE_JUDGE_NEGATIVE_CASES = [
             },
         ),
     )),
-    ("ConfigGeneralSettings", lambda: _negative_criteria_case(_tasks_module.ConfigGeneralSettings(safe_drive=False, dark_mode=False))),
-    ("ConfigVideoSettings", lambda: _negative_criteria_case(_tasks_module.ConfigVideoSettings(mirror=False, preview=True))),
     ("ChatInMeeting", lambda: (_tasks_module.ChatInMeeting(host_name="老王", topic="老王的快速会议", message="大家好，我到了"), _make_input(_clone_state(), {**_clone_state(), "activeMeeting": _make_active_meeting(title="老王的快速会议", host_id="host_laowang", host_name="老王")}))),
     ("ConfigPrivacySettings", lambda: _negative_criteria_case(_tasks_module.ConfigPrivacySettings(hide_non_video=True, hide_self=True))),
     ("ConfigShowIdentity", lambda: _negative_criteria_case(_tasks_module.ConfigShowIdentity(show_identity=True))),
     ("CheckPendingMeetingId", lambda: _negative_answer_case(_tasks_module.CheckPendingMeetingId(topic="项目例会"), _clone_state())),
-    ("CountOngoingMeetings", lambda: _negative_answer_case(_tasks_module.CountOngoingMeetings(), _clone_state())),
-    ("ModifyScheduledMeetingTopic", lambda: (
-        _tasks_module.ModifyScheduledMeetingTopic(old_topic="项目例会", new_topic="产品需求评审"),
-        _make_input(_clone_state(), _clone_state()),
-    )),
     ("CheckScheduledMeetingEndTime", lambda: _negative_answer_case(_tasks_module.CheckScheduledMeetingEndTime(topic="项目例会"), _clone_state())),
     ("JoinMeetingAndRename", lambda: (_tasks_module.JoinMeetingAndRename(host_name="李四", topic="技术方案评审", name="小明-北京", mute_on=True), _make_input(_clone_state(), {**_clone_state(), "activeMeeting": _make_active_meeting(title="技术方案评审", host_id="user_lisi", host_name="李四", user_name="小明", is_muted=False)}))),
-    ("CheckMeetingAttendees", lambda: _negative_answer_case(_tasks_module.CheckMeetingAttendees(), _clone_state())),
     ("ScheduleMeeting", lambda: (_tasks_module.ScheduleMeeting(topic="预算评审会", duration=60, pin="2468"), _make_input(_clone_state(), _clone_state(), answer="888 666 1234"))),
-    ("ScheduleRegularMeeting", lambda: (_tasks_module.ScheduleRegularMeeting(topic="每周同步会", repeat_type="weekly"), _make_input(_clone_state(), _clone_state()))),
     ("CountFriendMeetings", lambda: _negative_answer_case(_tasks_module.CountFriendMeetings(), _clone_state())),
     ("GetSecondParticipationTime", lambda: _negative_answer_case(_tasks_module.GetSecondParticipationTime(topic="长时间研讨会"), _clone_state())),
     ("FindLongestMeeting", lambda: _negative_answer_case(_tasks_module.FindLongestMeeting(), _clone_state())),
     ("FindMeetingWithMostParticipants", lambda: _negative_answer_case(_tasks_module.FindMeetingWithMostParticipants(), _clone_state())),
-    ("CountMeetingsByDate", lambda: _negative_answer_case(_tasks_module.CountMeetingsByDate(date="2026-02-03"), _clone_state())),
     ("ShareScreenAndConfirm", lambda: (_tasks_module.ShareScreenAndConfirm(host_name="张三", topic="产品需求讨论", message="共享结束了"), _make_input(_clone_state(), {**_clone_state(), "activeMeeting": _make_active_meeting(title="产品需求讨论", host_id="user_zhangsan", host_name="张三", is_sharing=True)}))),
     ("ChatWithSpecificUser", lambda: (_tasks_module.ChatWithSpecificUser(host_name="李四", topic="技术方案评审", target_user="李四", message="我单独发你一下"), _make_input(_clone_state(), {**_clone_state(), "activeMeeting": _make_active_meeting(title="技术方案评审", host_id="user_lisi", host_name="李四", extra_messages=[{"id": "msg_004", "text": "我单独发你一下", "sender": "小明", "senderId": "user_001", "time": TEST_OS_STATE["time"]["timestamp"], "to": "所有人", "toId": "all"}])}))),
-    ("ScheduleTeamMeeting", lambda: (_tasks_module.ScheduleTeamMeeting(topic="跨组同步会"), _make_input(_clone_state(), _clone_state()))),
     ("CalculateTotalMeetingDuration", lambda: _negative_answer_case(_tasks_module.CalculateTotalMeetingDuration(date="2026-02-03"), _clone_state())),
     ("CompareParticipationDurations", lambda: _negative_answer_case(_tasks_module.CompareParticipationDurations(topic1="小明的快速会议", topic2="长时间研讨会"), _clone_state())),
 ]

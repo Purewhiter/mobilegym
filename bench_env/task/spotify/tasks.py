@@ -2,35 +2,30 @@
 Spotify app task definitions.
 """
 # -- Task Index (auto-generated, do not edit) --
-# 27 tasks | L1×2  L2×9  L3×9  L4×7
+# 22 tasks | L1×4  L2×9  L3×8  L4×1
 #
-# [L2] PlayFirstRecentTrack         打开Spotify最近播放，把今天最早听的那首歌播起来。
 # [L1] TogglePrivacy                {toggle}Spotify的向他人展示收听活动
-# [L1] ToggleShuffle                {toggle}Spotify的随机播放
 # [L2] CreateNewPlaylist            在Spotify中创建一个名为 {name} 的新歌单
 # [L2] LikeSongFromSearch           在Spotify帮我把{song}加到喜欢的歌里
 # [L2] AddToQueueAndPlay            把{song}加到Spotify的待播清单，然后直接切过去播放
-# [L2] CheckRecentPlayInfo          Spotify最近播放里面的《{song}》谁唱的、多长时间
-# [L2] ListLibraryArtists           Spotify音乐库里收藏了哪些艺人，帮我列出来
-# [L2] FindRecentArtistSongs        Spotify最近播放里有没有{artist}的歌，有的话告诉我歌名
-# [L2] PlaySongFromSearch           帮我在Spotify播放《{song}》
+# [L3] ListLibraryArtists           Spotify音乐库里收藏了哪些艺人，帮我列出来
+# [L4] FindRecentArtistSongs        Spotify最近播放里有没有{artist}的歌，有的话告诉我歌名
+# [L1] PlaySongFromSearch           帮我在Spotify播放《{song}》
 # [L2] SetSleepTimer                帮我设一个{minutes}分钟的Spotify睡眠定时器
-# [L3] QueueAndLikeSong             帮我在Spotify搜一下{song}，加到播放队列并收藏到我喜欢的歌里
+# [L1] QueueAndLikeSong             帮我在Spotify搜一下{song}，加到播放队列并收藏到我喜欢的歌里
 # [L3] QueueTopArtistSongs          在Spotify中搜一下最近播放中《{song}》的作者，进入艺人页把最靠前的{count}首歌加入播放队列。
-# [L3] PlayAlbumAndRepeat           在Spotify播放专辑《{album}》，并把播放模式改成循环且不随机。
-# [L3] AddArtistSongsToPlaylist     给Spotify创建一个歌单叫 {playlist} ，并往里补至少{min_count}首{artist}的歌。
+# [L2] AddArtistSongsToPlaylist     给Spotify创建一个歌单叫 {playlist} ，并往里补至少{min_count}首{artist}的歌。
 # [L3] SearchAlbumInfo              搜索Spotify的专辑{album}，告诉我这张专辑一共有多少首歌，是哪年发行的
-# [L3] SearchPlayAndReport          在Spotify中搜索《{song}》播放起来，告诉我这首歌的艺人名和时长
+# [L1] SearchPlayAndReport          在Spotify中搜索《{song}》播放起来，告诉我这首歌的艺人名和时长
 # [L3] FollowAndPlayArtist          Spotify搜一下{artist}，关注TA，然后播TA最火的一首歌
 # [L3] LikeAndAddToPlaylist         把Spotify现在放的歌收藏一下，再加到歌单《{playlist}》里
-# [L3] SwapSongInPlaylist           把歌单《{playlist}》里的《{old_song}》换成《{new_song}》
-# [L4] FilterLikedSongsToPlaylist   帮我把已收藏里所有{artist}的歌移动到一个叫 {playlist} 的新歌单里
-# [L4] CreatePlaylistFromRecent     创建一个名叫 {playlist} 的歌单，把Spotify最近播放里{artist}的歌都加进去，告诉我一共加了几首
-# [L4] SearchBuildPlaylistAndPlay   在Spotify里搜索 {keyword}，把搜到的前{count}首歌加入一个叫 {playlist} 的新歌单，然后播放这个歌单并设为循环模式
-# [L4] MoveArtistToNewPlaylist      看看歌单《{playlist}》里有没有{artist}的歌，有的话移到新歌单《{new_playlist}》里
-# [L4] DiscoverSaveAndReport        在Spotify搜一下{artist}，把搜索结果里最靠前的前{count}首歌收藏起来，告诉我分别叫什么
-# [L4] CollectLikedRecentAndPlay    把Spotify我今天听过的歌里面我收藏过的歌整理到歌单《{playlist}》里，然后播放这个歌单
-# [L4] BuildPlaylistFromTwoArtists  建一个叫《{playlist}》的歌单，搜{artist1}和{artist2}各加{count}首歌进去，然后播放
+# [L2] SwapSongInPlaylist           把歌单《{playlist}》里的《{old_song}》换成《{new_song}》
+# [L3] FilterLikedSongsToPlaylist   帮我把已收藏里所有{artist}的歌移动到一个叫 {playlist} 的新歌单里
+# [L2] SearchBuildPlaylistAndPlay   在Spotify里搜索 {keyword}，把搜到的前{count}首歌加入一个叫 {playlist} 的新歌单，然后播放这个歌单并设为循环模式
+# [L3] MoveArtistToNewPlaylist      看看歌单《{playlist}》里有没有{artist}的歌，有的话移到新歌单《{new_playlist}》里
+# [L2] DiscoverSaveAndReport        在Spotify搜一下{artist}，把搜索结果里最靠前的前{count}首歌收藏起来，告诉我分别叫什么
+# [L3] CollectLikedRecentAndPlay    把Spotify我今天听过的歌里面我收藏过的歌整理到歌单《{playlist}》里，然后播放这个歌单
+# [L2] BuildPlaylistFromTwoArtists  建一个叫《{playlist}》的歌单，搜{artist1}和{artist2}各加{count}首歌进去，然后播放
 # -- End Task Index --
 
 from __future__ import annotations
@@ -52,31 +47,6 @@ from bench_env.task.utils import to_simplified
 # =============================================================================
 # L1 — Atomic operations
 # =============================================================================
-
-
-class PlayFirstRecentTrack(BaseTask):
-    templates = [
-        "打开Spotify最近播放，把今天最早听的那首歌播起来。",
-        "Open Spotify's recently played and start playing the earliest song I listened to today.",
-    ]
-    apps = ["spotify"]
-    scope = "S1"
-    objective = "operate"
-    composition = "atomic"
-    difficulty = "L2"
-    capabilities = ["nav"]
-    parameters = {}
-    expected_changes = ["currentTrack", "currentTrack.cover", "isPlaying", "recentPlays", "queue", "playHistory"]
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        sp = Spotify(input.apps["spotify"])
-        sp_init = Spotify(input.apps_init["spotify"])
-        # 这里沿用 Spotify.nth_today_play() 的 bench 近似语义：
-        # 按最近播放页可见顺序近似“今天最早听的那首歌”。
-        first_title = sp_init.nth_today_play(1)["title"]
-        return [sp.check_is_playing(), sp.check_current_track(first_title)]
-
-
 class TogglePrivacy(CriteriaTask):
     templates = [
         "{toggle}Spotify的向他人展示收听活动",
@@ -98,32 +68,6 @@ class TogglePrivacy(CriteriaTask):
 
     async def _post_sample(self, env):
         await self._invert_criteria(env)
-
-
-class ToggleShuffle(CriteriaTask):
-    templates = [
-        "{toggle}Spotify的随机播放",
-    ]
-    apps = ["spotify"]
-    scope = "S1"
-    objective = "operate"
-    composition = "atomic"
-    difficulty = "L1"
-    capabilities = ["nav"]
-    parameters = {
-        "toggle": {
-            "type": "bool",
-            "values": {"开启": True, "关闭": False},
-            "default": False,
-        },
-    }
-    criteria = {"shuffle": "{toggle}"}
-    expected_changes = ["currentTrack"]
-
-    async def _post_sample(self, env):
-        await self._invert_criteria(env)
-
-
 # =============================================================================
 # L2 — Multi-step operations & simple queries
 # =============================================================================
@@ -191,41 +135,6 @@ class AddToQueueAndPlay(BaseTask):
     def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
         sp = Spotify(input.apps["spotify"])
         return [sp.check_current_track(self.p.song), sp.check_in_queue(self.p.song)]
-
-
-class CheckRecentPlayInfo(BaseTask):
-    templates = [
-        "Spotify最近播放里面的《{song}》谁唱的、多长时间",
-        "帮我看看Spotify最近播放里面的《{song}》，艺人和时长分别是什么",
-    ]
-    apps = ["spotify"]
-    scope = "S1"
-    objective = "query"
-    composition = "atomic"
-    difficulty = "L2"
-    capabilities = ["query", "nav"]
-    parameters = {
-        "song": {
-            "source": "apps.spotify.recentPlays[title]",
-            "default": "Bad Habits",
-        },
-    }
-    expected_changes = ["currentTrack", "currentTrack.cover", "isPlaying", "queue", "recentPlays", "playHistory"]
-    answer_fields = [
-        {"type": "text", "label": "艺人名", "hint": "如：陈奕迅", "matcher": "exact_tc"},
-        {"type": "text", "label": "时长", "hint": "如：4:12"},
-    ]
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        sp = Spotify(input.apps["spotify"])
-        sp_init = Spotify(input.apps_init["spotify"])
-        recent_play = sp_init.find_recent_play(self.p.song)
-        return [
-            sp.check_answer_artist(recent_play["artist"], input.answer),
-            sp.check_answer_duration(recent_play["duration"], input.answer),
-        ]
-
-
 class ListLibraryArtists(AnswerTask):
     templates = [
         "Spotify音乐库里收藏了哪些艺人，帮我列出来",
@@ -391,42 +300,6 @@ class QueueTopArtistSongs(BaseTask):
             sp.check_searched(artist),
             sp.check_queue_has_top_artist_tracks(artist, int(self.p.count)),
         ]
-
-
-class PlayAlbumAndRepeat(CriteriaTask):
-    templates = [
-        "在Spotify播放专辑《{album}》，并把播放模式改成循环且不随机。",
-        "Play the album '{album}' on Spotify, then set the playback mode to repeat (loop) with shuffle off.",
-    ]
-    apps = ["spotify"]
-    scope = "S1"
-    objective = "operate"
-    composition = "sequential"
-    difficulty = "L3"
-    capabilities = ["search", "nav"]
-    parameters = {
-        "album": {"type": "string", "default": "Thriller"},
-    }
-    criteria = {
-        "isPlaying": True,
-        "repeat": "context",
-        "shuffle": False,
-    }
-    # Opening an album via search typically updates the Spotify search history
-    # (e.g. apps.spotify.searchHistory[0]).
-    expected_changes = ["currentTrack", "currentTrack.cover", "isPlaying", "queue", "repeat", "shuffle", "analytics", "recentPlays", "playHistory", "searchHistory"]
-
-    async def _post_sample(self, env):
-        await self._invert_criteria(env)
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        sp = Spotify(input.apps["spotify"])
-        checks = []
-        checks.extend(super()._check_criteria(input))
-        checks.append(sp.check_album_played(self.p.album))
-        return checks
-
-
 class AddArtistSongsToPlaylist(BaseTask):
     templates = [
         "给Spotify创建一个歌单叫 {playlist} ，并往里补至少{min_count}首{artist}的歌。",
@@ -727,47 +600,6 @@ class FilterLikedSongsToPlaylist(BaseTask):
                 "passed": artist_still_liked == 0,
             },
         ]
-
-
-class CreatePlaylistFromRecent(BaseTask):
-    templates = [
-        "创建一个名叫 {playlist} 的歌单，把Spotify最近播放里{artist}的歌都加进去，告诉我一共加了几首",
-        "帮我在Spotify新建歌单 {playlist}，然后把最近播放中所有{artist}的歌加进去，一共加了多少首",
-    ]
-    apps = ["spotify"]
-    scope = "S1"
-    objective = "hybrid"
-    composition = "deep_dive"
-    difficulty = "L4"
-    capabilities = ["create", "nav", "query"]
-    parameters = {
-        "playlist": {"type": "string", "default": "我的精选"},
-        "artist": {
-            "source": "apps.spotify.recentPlays[artist]",
-            "default": "Taylor Swift",
-        },
-    }
-    expected_changes = ["customPlaylists", "currentTrack", "currentTrack.cover", "playHistory", "recentPlays"]
-    answer_fields = [{"type": "number", "label": "歌曲数量"}]
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        sp = Spotify(input.apps["spotify"], init=input.apps_init["spotify"])
-        expected_titles = sp.init.recent_play_titles_by_artist_aliased(self.p.artist)
-        if not expected_titles:
-            raise RuntimeError(f"任务设计错误：recentPlays 中不存在艺人 {self.p.artist} 的歌曲")
-
-        checks: list[dict[str, Any]] = [
-            sp.check_playlist_exists(self.p.playlist),
-            sp.check_playlist_has_titles(
-                self.p.playlist,
-                expected_titles,
-                field="playlist_contains_recent_artist_titles",
-            ),
-        ]
-        checks.extend(build_answer_checks(len(expected_titles), input.answer))
-        return checks
-
-
 class SearchBuildPlaylistAndPlay(BaseTask):
     templates = [
         "在Spotify里搜索 {keyword}，把搜到的前{count}首歌加入一个叫 {playlist} 的新歌单，然后播放这个歌单并设为循环模式",

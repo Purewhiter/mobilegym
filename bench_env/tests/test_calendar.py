@@ -434,7 +434,6 @@ class TestCalendarAccessor:
 
 
 OFFLINE_JUDGE_POSITIVE_CASES = [
-    ("ChangeWeekStartDay", lambda: _positive_criteria_case(_tasks_module.ChangeWeekStartDay(day="sunday"))),
     ("ToggleShowWeekNumber", lambda: _positive_criteria_case(_tasks_module.ToggleShowWeekNumber(toggle=True))),
     ("ChangeDefaultReminder", lambda: _positive_criteria_case(_tasks_module.ChangeDefaultReminder(reminder="60_minutes_before"))),
     (
@@ -451,13 +450,6 @@ OFFLINE_JUDGE_POSITIVE_CASES = [
             _make_task_input(copy.deepcopy(SEEDED_STATE), _remove_title(SEEDED_STATE, "团队周会")),
         ),
     ),
-    (
-        "JumpToDate",
-        lambda: (
-            _tasks_module.JumpToDate(date="2026-04-15"),
-            _make_task_input(copy.deepcopy(BASE_STATE), _set_selected_date(BASE_STATE, "2026-04-15")),
-        ),
-    ),
     ("SearchEventTitle", lambda: _positive_answer_case(_tasks_module.SearchEventTitle(keyword="项目"), SEEDED_STATE)),
     ("CalculateDateInterval", lambda: _positive_answer_case(_tasks_module.CalculateDateInterval(date1="2026-03-20", date2="2026-03-25"), BASE_STATE)),
     (
@@ -470,7 +462,6 @@ OFFLINE_JUDGE_POSITIVE_CASES = [
             ),
         ),
     ),
-    ("QueryEventCountOnDate", lambda: _positive_answer_case(_tasks_module.QueryEventCountOnDate(date=SEED_A), SEEDED_STATE)),
     (
         "CreateTimedEvent",
         lambda: (
@@ -489,13 +480,6 @@ OFFLINE_JUDGE_POSITIVE_CASES = [
                 copy.deepcopy(BASE_STATE),
                 _add_event(BASE_STATE, title="出差提醒", date_value="2026-03-20", reminder=30),
             ),
-        ),
-    ),
-    (
-        "EditEventTitle",
-        lambda: (
-            _tasks_module.EditEventTitle(old_title="团队周会", new_title="团队例会"),
-            _make_task_input(copy.deepcopy(SEEDED_STATE), _rename_title(SEEDED_STATE, "团队周会", "团队例会")),
         ),
     ),
     ("DateCalcForward", lambda: _positive_answer_case(_tasks_module.DateCalcForward(date="2026-03-20", days=5), BASE_STATE)),
@@ -546,17 +530,6 @@ OFFLINE_JUDGE_POSITIVE_CASES = [
             _make_task_input(copy.deepcopy(SEEDED_STATE), _delete_keyword_matches(SEEDED_STATE, "项目"), answer="一共删了6个"),
         ),
     ),
-    (
-        "HolidayFirstDayEvent",
-        lambda: (
-            _tasks_module.HolidayFirstDayEvent(holiday="国庆", title="出游准备"),
-            _make_task_input(
-                copy.deepcopy(BASE_STATE),
-                _add_event(BASE_STATE, title="出游准备", date_value=HOLIDAY_FIRST_REST["国庆"], all_day=True),
-                answer="第一天是10月1日",
-            ),
-        ),
-    ),
     ("CompareScheduleDensity", lambda: _positive_answer_case(_tasks_module.CompareScheduleDensity(date1=SEED_A, date2=NO_EVENT_DATE), SEEDED_STATE)),
     (
         "EditAndReportNewTime",
@@ -573,7 +546,6 @@ OFFLINE_JUDGE_POSITIVE_CASES = [
 
 
 OFFLINE_JUDGE_NEGATIVE_CASES = [
-    ("ChangeWeekStartDay", lambda: _negative_criteria_case(_tasks_module.ChangeWeekStartDay(day="sunday"))),
     ("ToggleShowWeekNumber", lambda: _negative_criteria_case(_tasks_module.ToggleShowWeekNumber(toggle=True))),
     ("ChangeDefaultReminder", lambda: _negative_criteria_case(_tasks_module.ChangeDefaultReminder(reminder="60_minutes_before"))),
     (
@@ -590,13 +562,6 @@ OFFLINE_JUDGE_NEGATIVE_CASES = [
             _make_task_input(copy.deepcopy(SEEDED_STATE), copy.deepcopy(SEEDED_STATE)),
         ),
     ),
-    (
-        "JumpToDate",
-        lambda: (
-            _tasks_module.JumpToDate(date="2026-04-15"),
-            _make_task_input(copy.deepcopy(BASE_STATE), _set_selected_date(BASE_STATE, "2026-03-20")),
-        ),
-    ),
     ("SearchEventTitle", lambda: _negative_answer_case(_tasks_module.SearchEventTitle(keyword="项目"), SEEDED_STATE)),
     ("CalculateDateInterval", lambda: _negative_answer_case(_tasks_module.CalculateDateInterval(date1="2026-03-20", date2="2026-03-25"), BASE_STATE)),
     (
@@ -609,7 +574,6 @@ OFFLINE_JUDGE_NEGATIVE_CASES = [
             ),
         ),
     ),
-    ("QueryEventCountOnDate", lambda: _negative_answer_case(_tasks_module.QueryEventCountOnDate(date=SEED_A), SEEDED_STATE)),
     (
         "CreateTimedEvent",
         lambda: (
@@ -628,13 +592,6 @@ OFFLINE_JUDGE_NEGATIVE_CASES = [
                 copy.deepcopy(BASE_STATE),
                 _add_event(BASE_STATE, title="出差提醒", date_value="2026-03-20", reminder=15),
             ),
-        ),
-    ),
-    (
-        "EditEventTitle",
-        lambda: (
-            _tasks_module.EditEventTitle(old_title="团队周会", new_title="团队例会"),
-            _make_task_input(copy.deepcopy(SEEDED_STATE), copy.deepcopy(SEEDED_STATE)),
         ),
     ),
     ("DateCalcForward", lambda: _negative_answer_case(_tasks_module.DateCalcForward(date="2026-03-20", days=5), BASE_STATE)),
@@ -704,24 +661,6 @@ OFFLINE_JUDGE_NEGATIVE_CASES = [
         lambda: (
             _tasks_module.SearchDeleteAll(keyword="项目"),
             _make_task_input(copy.deepcopy(SEEDED_STATE), copy.deepcopy(SEEDED_STATE), answer="一共删了6个"),
-        ),
-    ),
-    (
-        "HolidayFirstDayEvent",
-        lambda: (
-            _tasks_module.HolidayFirstDayEvent(holiday="国庆", title="出游准备"),
-            _make_task_input(
-                copy.deepcopy(BASE_STATE),
-                _add_event(BASE_STATE, title="出游准备", date_value=HOLIDAY_FIRST_REST["国庆"], all_day=True),
-                answer="第一天是10月2日",
-            ),
-        ),
-    ),
-    (
-        "HolidayFirstDayEvent__wrong_state",
-        lambda: (
-            _tasks_module.HolidayFirstDayEvent(holiday="国庆", title="出游准备"),
-            _make_task_input(copy.deepcopy(BASE_STATE), copy.deepcopy(BASE_STATE), answer="第一天是10月1日"),
         ),
     ),
     ("CompareScheduleDensity", lambda: _negative_answer_case(_tasks_module.CompareScheduleDensity(date1=SEED_A, date2=NO_EVENT_DATE), SEEDED_STATE)),

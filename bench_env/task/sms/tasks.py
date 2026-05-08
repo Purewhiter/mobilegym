@@ -2,21 +2,15 @@
 SMS app task definitions.
 """
 # -- Task Index (auto-generated, do not edit) --
-# 16 tasks | L1×2  L2×4  L3×6  L4×4
+# 10 tasks | L1×2  L2×3  L3×3  L4×2
 #
-# [L1] OpenSmsSettingsPage              打开短信设置页
-# [L1] ReadLatestSender                 看看当前排在最上面的短信是谁发来的
 # [L2] ToggleMainSetting                把短信的{setting_key}设为{enabled}
-# [L2] OpenConversationBySender         打开来自{conversation_id}的短信会话
+# [L1] OpenConversationBySender         打开来自{conversation_id}的短信会话
 # [L2] ReadUnreadConversationCount      数一下短信里现在有几个未读会话
-# [L2] ReadLatestIncomingMessage        看看来自{sender}的最新一条短信写了什么
 # [L3] ReplyToConversation              给{sender}回复一条短信，内容是"{content}"
 # [L3] MarkAllConversationsRead         把短信里的所有会话都标成已读
-# [L3] ToggleFreeNetworkSetting         把短信里{setting_key}设为{enabled}
-# [L3] ToggleFiveGSetting               把短信 5G 消息里的{setting_key}设为{enabled}
-# [L3] ComposeNewMessage                给{recipient}发一条新短信，内容是"{content}"
-# [L4] CompareConversationMessageCount  {sender1}和{sender2}这两个短信会话里，哪个消息更多
-# [L4] ConfigureFreeNetworkSmsSettings  把短信的网络短信设置成：自动转为短信{auto_convert_sms}，自动转为彩信{auto_convert_mms}，屏蔽陌生人{block_strangers}
+# [L1] ToggleFreeNetworkSetting         把短信里{setting_key}设为{enabled}
+# [L2] CompareConversationMessageCount  {sender1}和{sender2}这两个短信会话里，哪个消息更多
 # [L4] DeleteConversation               帮我把{sender}的短信会话删掉
 # [L4] ReplyToLatestUnread              看看最新的未读短信是哪个发来的，帮我回复他「{content}」
 # [L3] FindAndReplySendersByKeyword     把之前给我发过提到{keyword}短信的人都找出来，统一回一句{reply}
@@ -36,37 +30,6 @@ from bench_env.task.sms.app import (
     sms_from_input,
     sms_init_from_input,
 )
-
-
-class OpenSmsSettingsPage(CriteriaTask):
-    templates = [
-        "打开短信设置页",
-        "Open the SMS settings page",
-    ]
-    apps = ["sms"]
-    scope = "S1"
-    objective = "operate"
-    composition = "atomic"
-    difficulty = "L1"
-    capabilities = ["nav"]
-    criteria = {"route": "/settings"}
-    optimal_paths = [["settings.open"]]
-
-
-class ReadLatestSender(AnswerTask):
-    templates = ["看看当前排在最上面的短信是谁发来的"]
-    apps = ["sms"]
-    scope = "S1"
-    objective = "query"
-    composition = "atomic"
-    difficulty = "L1"
-    capabilities = ["query"]
-    answer_fields = [{"type": "text", "label": "发送者", "hint": "如：中国移动"}]
-
-    def get_answer(self, input: JudgeInput) -> Any:
-        return sms_init_from_input(input).conversations[0]["sender"]
-
-
 class ToggleMainSetting(CriteriaTask):
     templates = ["把短信的{setting_key}设为{enabled}"]
     apps = ["sms"]
@@ -137,33 +100,6 @@ class ReadUnreadConversationCount(AnswerTask):
 
     def get_answer(self, input: JudgeInput) -> Any:
         return sms_init_from_input(input).unread_conversation_count
-
-
-class ReadLatestIncomingMessage(AnswerTask):
-    templates = [
-        "看看来自{sender}的最新一条短信写了什么",
-        "帮我看看{sender}最近发来的那条短信内容是什么",
-    ]
-    apps = ["sms"]
-    scope = "S1"
-    objective = "query"
-    composition = "sequential"
-    difficulty = "L2"
-    capabilities = ["query"]
-    parameters = {
-        "sender": {
-            "type": "enum",
-            "values": SMS_EXISTING_SENDERS,
-            "default": "华为云",
-        },
-    }
-    expected_changes = ["os.providers.sms.conversations"]
-    answer_fields = [{"type": "text", "label": "短信内容", "hint": "请填写完整的短信原文"}]
-
-    def get_answer(self, input: JudgeInput) -> Any:
-        return sms_init_from_input(input).latest_incoming_content_from(self.p.sender)
-
-
 class ReplyToConversation(BaseTask):
     templates = [
         '给{sender}回复一条短信，内容是"{content}"',
@@ -241,73 +177,6 @@ class ToggleFreeNetworkSetting(CriteriaTask):
 
     async def _post_sample(self, env) -> None:
         await self._invert_criteria(env)
-
-
-class ToggleFiveGSetting(CriteriaTask):
-    templates = ["把短信 5G 消息里的{setting_key}设为{enabled}"]
-    apps = ["sms"]
-    scope = "S1"
-    objective = "operate"
-    composition = "sequential"
-    difficulty = "L3"
-    capabilities = ["settings"]
-    parameters = {
-        "setting_key": {
-            "type": "enum",
-            "values": {
-                "自动转为短信": "5g_auto_sms",
-                "自动转为彩信": "5g_auto_mms",
-                "回执报告": "5g_read_report",
-            },
-            "default": "5g_read_report",
-        },
-        "enabled": {
-            "type": "bool",
-            "values": {"开启": True, "关闭": False},
-            "default": True,
-        },
-    }
-    criteria = {"settings.{setting_key}": "{enabled}"}
-
-    async def _post_sample(self, env) -> None:
-        await self._invert_criteria(env)
-
-
-class ComposeNewMessage(BaseTask):
-    templates = [
-        '给{recipient}发一条新短信，内容是"{content}"',
-        'Send a new SMS to {recipient} saying "{content}"',
-    ]
-    apps = ["sms"]
-    scope = "S1"
-    objective = "operate"
-    composition = "sequential"
-    difficulty = "L3"
-    capabilities = ["create"]
-    parameters = {
-        "recipient": {
-            "type": "enum",
-            "values": SMS_NEW_RECIPIENTS,
-            "default": "张三",
-        },
-        "content": {
-            "type": "string",
-            "default": "今天下午三点开会",
-        },
-    }
-    expected_changes = ["os.providers.sms.conversations", "os.providers.sms.messagesByConversationId"]
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        sms = sms_from_input(input)
-        return [
-            sms.check_new_sent_to(
-                self.p.recipient,
-                self.p.content,
-                field="compose_message",
-            ),
-        ]
-
-
 class CompareConversationMessageCount(AnswerTask):
     templates = [
         "{sender1}和{sender2}这两个短信会话里，哪个消息更多",
@@ -339,45 +208,6 @@ class CompareConversationMessageCount(AnswerTask):
     def get_answer(self, input: JudgeInput) -> Any:
         sms = sms_init_from_input(input)
         return sms.sender_with_more_messages(self.p.sender1, self.p.sender2)
-
-
-class ConfigureFreeNetworkSmsSettings(CriteriaTask):
-    templates = [
-        "把短信的网络短信设置成：自动转为短信{auto_convert_sms}，自动转为彩信{auto_convert_mms}，屏蔽陌生人{block_strangers}",
-    ]
-    apps = ["sms"]
-    scope = "S1"
-    objective = "operate"
-    composition = "deep_dive"
-    difficulty = "L4"
-    capabilities = ["settings"]
-    parameters = {
-        "auto_convert_sms": {
-            "type": "bool",
-            "values": {"开启": True, "关闭": False},
-            "default": False,
-        },
-        "auto_convert_mms": {
-            "type": "bool",
-            "values": {"开启": True, "关闭": False},
-            "default": True,
-        },
-        "block_strangers": {
-            "type": "bool",
-            "values": {"开启": True, "关闭": False},
-            "default": False,
-        },
-    }
-    criteria = {
-        "settings.auto_convert_sms": "{auto_convert_sms}",
-        "settings.auto_convert_mms": "{auto_convert_mms}",
-        "settings.block_strangers": "{block_strangers}",
-    }
-
-    async def _post_sample(self, env) -> None:
-        await self._invert_criteria(env)
-
-
 class DeleteConversation(BaseTask):
     templates = [
         "帮我把{sender}的短信会话删掉",

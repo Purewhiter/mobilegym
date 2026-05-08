@@ -144,7 +144,7 @@ python -m bench_env.run \
 ```bash
 # 单任务评测
 python -m bench_env.run \
-  --task-id wechat.OpenMyQRCode \
+  --task-id wechat.ReadMyWxid \
   --env-url http://localhost:5173 \
   --model-base-url "http://localhost:8001/v1" \
   --model-name autoglm-phone-9b \

@@ -5,21 +5,21 @@ Cross-app Commerce & Finance (crossapp_commerce) task definitions.
 核心信息流：eBay / Alipay → Notes / WeChat。
 """
 # -- Task Index (auto-generated, do not edit) --
-# 15 tasks | L2×1  L3×8  L4×6
+# 15 tasks | L2×2  L3×5  L4×8
 #
 # [L2] AlipayBalanceToWechat            查一下我支付宝余额，发微信告诉{contact}
 # [L3] AlipayMonthlySpendToWechat       看看我支付宝这个月花了多少钱，发微信告诉{contact}
 # [L3] AlipayRecentTransactionsToNotes  查看我支付宝最近5笔交易，在笔记里记录每笔的金额和交易内容
 # [L3] EbayLowestPriceToNotes           在eBay搜{query}，找到最便宜的那个，把标题和价格记到笔记里
-# [L3] EbayProductShareToWechat         帮我在eBay找最便宜的全新{query}，把商品名称和价格(包含运费)微信发给{contact}，问问他觉得怎么样
-# [L3] AlipayLargestExpenseToNotes      查查支付宝交易记录里支出金额最大的一笔是什么、花了多少钱，在笔记里记录下来，提醒自己控制开支
-# [L4] EbayDualItemCompareToNotes       分别在eBay搜{item1}和{item2}的最低价，在笔记里记下哪个更便宜、便宜多少
-# [L3] AlipayLargestExpenseToMoments    翻翻支付宝账单，找到花钱最多的那笔，发条朋友圈吐槽一下
+# [L4] EbayProductShareToWechat         帮我在eBay找最便宜的全新{query}，把商品名称和价格(包含运费)微信发给{contact}，问问他觉得怎么样
+# [L4] AlipayLargestExpenseToNotes      查查支付宝交易记录里支出金额最大的一笔是什么、花了多少钱，在笔记里记录下来，提醒自己控制开支
+# [L3] EbayDualItemCompareToNotes       分别在eBay搜{item1}和{item2}的最低价，在笔记里记下哪个更便宜、便宜多少
+# [L4] AlipayLargestExpenseToMoments    翻翻支付宝账单，找到花钱最多的那笔，发条朋友圈吐槽一下
 # [L3] AlipayMonthlyToNotesAndWechat    查支付宝这个月总支出，在笔记新建一条记录，再发微信告诉{contact}花了多少
 # [L4] EbayBalanceDiffToNotes           在eBay查一下最便宜的全新{query}，看看我用支付宝余额买的话还剩多少钱，在笔记把这个商品、价格和剩余余额写下来
 # [L4] EbayDualItemBalanceToNotes       分别在eBay搜{item1}和{item2}最便宜的，看看都买的话支付宝还剩多少钱，在笔记里记下两个商品名、各自价格和剩余余额
 # [L4] FullShoppingDecisionFlow         帮我在eBay找最便宜的全新{query}，看购买后支付宝余额还剩下多少，在笔记记录下商品和余额，然后给微信{contact}发消息看他要不要一起买这款商品
-# [L3] AlipayShareBillDetail            在支付宝看最近一笔支出账单，把交易标题和交易金额微信发给{contact}
+# [L2] AlipayShareBillDetail            在支付宝看最近一笔支出账单，把交易标题和交易金额微信发给{contact}
 # [L4] FinancialReportToNotes           帮我查一下支付宝的余额和最近一笔消费，记到笔记里。
 # [L4] EbayPriceBelowBudgetToNotes      帮我在Ebay看看{product}现在最便宜要多少钱，如果低于我的预算{price_limit}元就记到备忘录里。
 # -- End Task Index --

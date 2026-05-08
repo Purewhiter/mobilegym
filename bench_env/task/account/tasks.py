@@ -4,13 +4,13 @@ Account specialized task definitions.
 覆盖注册、登录、改密、找回密码、验证码、设备信任、注销等账号流程。
 """
 # -- Task Index (auto-generated, do not edit) --
-# 5 tasks | L3×2  L4×3
+# 5 tasks | L2×2  L3×2  L4×1
 #
-# [L4] Railway12306LoginWithAccount     备忘录里标题为{noteTitle}的笔记记着铁路12306账号{username}的几个候选密码，帮我试出哪个能登录，并把笔记改成只保留正确密码
-# [L3] Railway12306RegisterThenLogin    帮我注册一个新的铁路12306账号{username}，密码是{password}，姓名{name}，身份证{idNo}，手机号{phone}，邮箱{email}，然后登陆
-# [L3] Railway12306ChangePassword       帮我把铁路12306的登录密码从{oldPassword}改成{newPassword}
-# [L4] WechatAccountCancellation        帮我把微信账号注销掉
-# [L4] Railway12306ForgotPasswordReset  帮我用手机号{accountPhone}和证件号{idNo}找回 12306 密码，把新密码设成{newPassword}，再用新密码登录一次
+# [L3] Railway12306LoginWithAccount     备忘录里标题为{noteTitle}的笔记记着铁路12306账号{username}的几个候选密码，帮我试出哪个能登录，并把笔记改成只保留正确密码
+# [L4] Railway12306RegisterThenLogin    帮我注册一个新的铁路12306账号{username}，密码是{password}，姓名{name}，身份证{idNo}，手机号{phone}，邮箱{email}，然后登陆
+# [L2] Railway12306ChangePassword       帮我把铁路12306的登录密码从{oldPassword}改成{newPassword}
+# [L2] WechatAccountCancellation        帮我把微信账号注销掉
+# [L3] Railway12306ForgotPasswordReset  帮我用手机号{accountPhone}和证件号{idNo}找回 12306 密码，把新密码设成{newPassword}，再用新密码登录一次
 # -- End Task Index --
 
 

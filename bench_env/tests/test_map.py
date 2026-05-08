@@ -604,26 +604,6 @@ def _query_driving_distance_same_name_duplicate_positive_case():
         copy.deepcopy(BASE_STATE),
         answer=f"我看到的是{route['distance']}",
     )
-
-
-def _check_place_detail_full_non_alias_negative_case():
-    task = _tasks_module.CheckPlaceDetailFull(place="国家图书馆")
-    wrong_place = next(
-        place for place in Map.geo_search("国家图书馆", limit=0)
-        if place["name"] == "国家图书馆古籍馆"
-    )
-    wrong_answer = _natural_answer({
-        "rating": Map.extract_rating(wrong_place),
-        "address": Map.extract_address(wrong_place),
-        "phone": Map.extract_phone(wrong_place),
-    })
-    return task, _make_task_input(
-        copy.deepcopy(BASE_STATE),
-        copy.deepcopy(BASE_STATE),
-        answer=wrong_answer,
-    )
-
-
 def _best_rated_route_case_state(
     task: BaseTask,
     *,
@@ -709,71 +689,23 @@ def _best_rated_with_walk_route_filtered_subbrand_negative_case():
 
 
 PRIMARY_POSITIVE_CASES = [
-    (
-        "SearchPlaceAddress",
-        lambda: (
-            task := _tasks_module.SearchPlaceAddress(place="中国国家博物馆"),
-            _make_task_input(
-                copy.deepcopy(BASE_STATE),
-                _state(search_results=MUSEUM_RESULTS),
-                answer=_natural_answer(_search_place_address_expected("中国国家博物馆")),
-            ),
-        ),
-    ),
-    ("CheckFavoritePlaceCount", lambda: _positive_answer_case(_tasks_module.CheckFavoritePlaceCount(), copy.deepcopy(BASE_STATE))),
     ("CheckDriveRoute", _check_drive_route_positive_case),
     ("CheckHighestRatedPlace", lambda: _positive_answer_case(_tasks_module.CheckHighestRatedPlace(category="咖啡馆"), _with_new_search(_state(search_results=CAFE_RESULTS), "咖啡馆"))),
     ("CheckNearestPlaceAddress", lambda: _positive_answer_case(_tasks_module.CheckNearestPlaceAddress(category="咖啡馆"), _with_new_search(_state(search_results=CAFE_RESULTS), "咖啡馆"))),
     ("SetMapNorthUp", lambda: _positive_criteria_case(_tasks_module.SetMapNorthUp())),
     ("ModifyMultiSettings", lambda: _positive_criteria_case(_tasks_module.ModifyMultiSettings())),
     ("DarkModeSettings", lambda: _positive_criteria_case(_tasks_module.DarkModeSettings())),
-    ("SetOfflineMapDownloadPreference", lambda: _positive_criteria_case(_tasks_module.SetOfflineMapDownloadPreference())),
     ("FindNearestWithRating", lambda: _positive_answer_case(_tasks_module.FindNearestWithRating(category="咖啡馆"), _with_new_search(_state(search_results=CAFE_RESULTS), "咖啡馆"))),
-    (
-        "CheckPlaceDetailFull",
-        lambda: (
-            task := _tasks_module.CheckPlaceDetailFull(place="中国国家博物馆"),
-            _make_task_input(
-                copy.deepcopy(BASE_STATE),
-                _with_new_search(_state(search_results=MUSEUM_RESULTS, active_poi=NATIONAL_MUSEUM), "中国国家博物馆"),
-                answer=_natural_answer(_place_detail_full_expected("中国国家博物馆")),
-            ),
-        ),
-    ),
 ]
 
 PRIMARY_NEGATIVE_CASES = [
-    (
-        "SearchPlaceAddress",
-        lambda: (
-            task := _tasks_module.SearchPlaceAddress(place="中国国家博物馆"),
-            _make_task_input(
-                copy.deepcopy(BASE_STATE),
-                _state(search_results=MUSEUM_RESULTS),
-                answer=_wrong_answer(_search_place_address_expected("中国国家博物馆")),
-            ),
-        ),
-    ),
-    ("CheckFavoritePlaceCount", lambda: _negative_answer_case(_tasks_module.CheckFavoritePlaceCount(), copy.deepcopy(BASE_STATE))),
     ("CheckDriveRoute", _check_drive_route_negative_case),
     ("CheckHighestRatedPlace", lambda: _negative_answer_case(_tasks_module.CheckHighestRatedPlace(category="咖啡馆"), _with_new_search(_state(search_results=CAFE_RESULTS), "咖啡馆"))),
     ("CheckNearestPlaceAddress", lambda: _negative_answer_case(_tasks_module.CheckNearestPlaceAddress(category="咖啡馆"), _with_new_search(_state(search_results=CAFE_RESULTS), "咖啡馆"))),
     ("SetMapNorthUp", lambda: _negative_criteria_case(_tasks_module.SetMapNorthUp())),
     ("ModifyMultiSettings", lambda: _negative_criteria_case(_tasks_module.ModifyMultiSettings())),
     ("DarkModeSettings", lambda: _negative_criteria_case(_tasks_module.DarkModeSettings())),
-    ("SetOfflineMapDownloadPreference", lambda: _negative_criteria_case(_tasks_module.SetOfflineMapDownloadPreference())),
     ("FindNearestWithRating", lambda: _negative_answer_case(_tasks_module.FindNearestWithRating(category="咖啡馆"), _with_new_search(_state(search_results=CAFE_RESULTS), "咖啡馆"))),
-    (
-        "CheckPlaceDetailFull",
-        lambda: (
-            task := _tasks_module.CheckPlaceDetailFull(place="中国国家博物馆"),
-            _make_task_input(
-                copy.deepcopy(BASE_STATE),
-                _with_new_search(_state(search_results=MUSEUM_RESULTS, active_poi=NATIONAL_MUSEUM), "中国国家博物馆"),
-                answer=_wrong_answer(_place_detail_full_expected("中国国家博物馆")),
-            ),
-        ),
-    ),
 ]
 
 EXTRA_POSITIVE_CASES: list[tuple[str, Any]] = [
@@ -784,7 +716,6 @@ EXTRA_POSITIVE_CASES: list[tuple[str, Any]] = [
 ]
 
 EXTRA_NEGATIVE_CASES: list[tuple[str, Any]] = [
-    ("CheckPlaceDetailFull_non_alias_child", _check_place_detail_full_non_alias_negative_case),
     ("FindBestRatedAndRoute_filtered_subbrand_answer", _find_best_rated_and_route_filtered_subbrand_negative_case),
     ("BestRatedWithWalkRoute_filtered_subbrand_answer", _best_rated_with_walk_route_filtered_subbrand_negative_case),
 ]
