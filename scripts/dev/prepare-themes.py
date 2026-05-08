@@ -18,7 +18,7 @@ Outputs:
 
 Note: manifest.json's `widgets[].variants[].preview` field is emitted as
 `/themes/{themeId}/{clockCode}/preview.png` (legacy absolute prefix).
-At runtime, os/maml/MamlWidgetService.ts#getWidgetPreviewUrl detects
+At runtime, os/wmr/WmrWidgetService.ts#getWidgetPreviewUrl detects
 this prefix and rewrites it to the CDN URL via os/utils/cdn.ts. Kept
 this way to avoid touching every existing manifest entry.
 
@@ -1221,12 +1221,12 @@ def extract_clock_widget_mrc(mrc_path: Path, out_dir: Path) -> bool:
         return False
 
 
-def extract_standalone_maml_widget(
+def extract_standalone_wmr_widget(
     widget_dir: Path,
     dest_root: Path,
 ) -> Optional[dict]:
     """
-    Extract a standalone MAML widget from themes/maml_widget/<id>/.
+    Extract a standalone WMR widget from external themes/maml_widget/<id>/ resources.
     Returns a manifest entry dict, or None on failure.
     """
     meta_path = widget_dir / "meta.json"
@@ -1440,7 +1440,7 @@ def main() -> None:
     parser.add_argument(
         "--no-widgets",
         action="store_true",
-        help="Do NOT include standalone MAML widgets under themes/maml_widget",
+        help="Do NOT include standalone WMR widgets under themes/maml_widget",
     )
     parser.add_argument(
         "--clean",
@@ -1797,7 +1797,7 @@ def main() -> None:
             if extracted_names:
                 extracted["mms"] = {"count": len(extracted_names)}
 
-        # ---- Clock widgets (MAML, from theme subResources) ----
+        # ---- Clock widgets (WMR, from theme subResources) ----
         for clock_code in CLOCK_WIDGET_CODES:
             clock_local_id = sub_map.get(clock_code)
             if not clock_local_id:
@@ -1898,13 +1898,13 @@ def main() -> None:
             ],
         })
 
-    # ---- Standalone MAML widgets ----
-    src_maml_widget = src_root / "maml_widget"
-    if not args.no_widgets and src_maml_widget.exists():
-        for widget_dir in sorted(src_maml_widget.iterdir()):
+    # ---- Standalone WMR widgets ----
+    src_widget_dir = src_root / "maml_widget"
+    if not args.no_widgets and src_widget_dir.exists():
+        for widget_dir in sorted(src_widget_dir.iterdir()):
             if not widget_dir.is_dir():
                 continue
-            entry = extract_standalone_maml_widget(widget_dir, dest_root)
+            entry = extract_standalone_wmr_widget(widget_dir, dest_root)
             if entry:
                 widgets_out.append(entry)
 

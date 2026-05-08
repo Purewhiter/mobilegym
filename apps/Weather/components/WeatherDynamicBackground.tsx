@@ -1,9 +1,9 @@
 import React, { useMemo } from 'react';
-import { MamlRenderer } from '../../../os/maml/MamlRenderer';
+import { WmrRenderer } from '../../../os/wmr/WmrRenderer';
 import {
-  WEATHER_BACKGROUND_MAML_BUNDLE,
-  WEATHER_BACKGROUND_MAML_PREVIEW_URL,
-} from '../maml/weatherBackgroundBundle';
+  WEATHER_BACKGROUND_WMR_BUNDLE,
+  WEATHER_BACKGROUND_WMR_PREVIEW_URL,
+} from '../wmr/weatherBackgroundBundle';
 
 interface WeatherDynamicBackgroundProps {
   cityId?: string | null;
@@ -29,9 +29,9 @@ export const WeatherDynamicBackground: React.FC<WeatherDynamicBackgroundProps> =
       className={`pointer-events-none sticky top-0 z-0 overflow-hidden ${className}`.trim()}
       style={{ height: '100svh', marginBottom: '-100svh' }}
     >
-      <MamlRenderer
-        bundleSource={WEATHER_BACKGROUND_MAML_BUNDLE}
-        previewUrl={WEATHER_BACKGROUND_MAML_PREVIEW_URL}
+      <WmrRenderer
+        bundleSource={WEATHER_BACKGROUND_WMR_BUNDLE}
+        previewUrl={WEATHER_BACKGROUND_WMR_PREVIEW_URL}
         preferredAspectRatio={9 / 19.5}
         className="h-full w-full pointer-events-none [&>canvas]:!rounded-none [&>div]:!rounded-none"
         active

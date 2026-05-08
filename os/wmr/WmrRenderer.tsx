@@ -1,25 +1,25 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { VarContext } from './engine/variables';
-import { MamlCanvasRenderer } from './engine/renderer';
+import { WmrCanvasRenderer } from './engine/renderer';
 import { timeDigitSrcs, loadImage } from './engine/imageCache';
-import { injectProviderData, handleMamlHostBroadcast } from './engine/contentProviders';
-import { handleMamlIntent } from './engine/intentResolver';
-import type { MamlDocument, MamlNode } from './engine/types';
+import { injectProviderData, handleWmrHostBroadcast } from './engine/contentProviders';
+import { handleWmrIntent } from './engine/intentResolver';
+import type { WmrDocument, WmrNode } from './engine/types';
 import * as TimeService from '../TimeService';
 import BroadcastBus from '../BroadcastBus';
 import QuickSettingsService from '../QuickSettingsService';
 import {
-  loadMamlBundle,
-  type MamlBundleAnalysis,
-  type MamlInlineBundleSource,
-} from './MamlBundleCache';
-import { beginMamlPerf } from './MamlPerf';
+  loadWmrBundle,
+  type WmrBundleAnalysis,
+  type WmrInlineBundleSource,
+} from './WmrBundleCache';
+import { beginWmrPerf } from './WmrPerf';
 
-interface MamlRendererProps {
+interface WmrRendererProps {
   /** URL to the widget's manifest.xml directory, e.g. "/themes/<id>/clock_2x4/" */
   xmlBaseUrl?: string;
   /** Inline app-owned bundle source, used when the widget resources live inside an app instead of public/themes */
-  bundleSource?: MamlInlineBundleSource;
+  bundleSource?: WmrInlineBundleSource;
   /** 保留给上层数据结构，运行时出错时不再回退到预览图 */
   previewUrl: string;
   /** Grid ratio from the launcher placement, e.g. 4 / 2 or 2 / 2 */
@@ -56,7 +56,7 @@ function getPassiveDataUpdateDelayMs(updaters: string[]): number {
   return 60_000;
 }
 
-export const MamlRenderer: React.FC<MamlRendererProps> = ({
+export const WmrRenderer: React.FC<WmrRendererProps> = ({
   xmlBaseUrl,
   bundleSource,
   previewUrl,
@@ -76,10 +76,10 @@ export const MamlRenderer: React.FC<MamlRendererProps> = ({
   const [ready, setReady] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const docRef = useRef<MamlDocument | null>(null);
+  const docRef = useRef<WmrDocument | null>(null);
   const varsRef = useRef<VarContext | null>(null);
-  const rendererRef = useRef<MamlCanvasRenderer | null>(null);
-  const bundleAnalysisRef = useRef<MamlBundleAnalysis | null>(null);
+  const rendererRef = useRef<WmrCanvasRenderer | null>(null);
+  const bundleAnalysisRef = useRef<WmrBundleAnalysis | null>(null);
   const hasMarqueeRef = useRef(false);
 
   // Long-press state
@@ -95,19 +95,19 @@ export const MamlRenderer: React.FC<MamlRendererProps> = ({
   const reportError = useCallback((stage: string, error: unknown) => {
     const detail = error instanceof Error ? error.message : String(error);
     const message = `[${stage}] ${detail}`;
-    console.error('[MAML] Widget error', { sourceKey, stage, error });
+    console.error('[WMR] Widget error', { sourceKey, stage, error });
     setReady(false);
     setErrorMessage(message);
   }, [sourceKey]);
 
   const shouldInit = shouldLoad || ready || !!docRef.current;
 
-  // ---- Load and parse MAML XML ----
+  // ---- Load and parse WMR XML ----
   useEffect(() => {
     if (!shouldInit) return;
     if (!xmlBaseUrl && !bundleSource) {
       setReady(false);
-      setErrorMessage('[load] 缺少 MAML 来源');
+      setErrorMessage('[load] 缺少 WMR 来源');
       return;
     }
 
@@ -121,9 +121,9 @@ export const MamlRenderer: React.FC<MamlRendererProps> = ({
     bundleAnalysisRef.current = null;
 
     (async () => {
-      const stopInit = beginMamlPerf('widget.init', sourceKey);
+      const stopInit = beginWmrPerf('widget.init', sourceKey);
       try {
-        const bundle = await loadMamlBundle(bundleSource ?? xmlBaseUrl!);
+        const bundle = await loadWmrBundle(bundleSource ?? xmlBaseUrl!);
         if (cancelled) return;
         const { xml, doc, resourceStrings, analysis, assetUrlResolver } = bundle;
         docRef.current = doc;
@@ -136,8 +136,8 @@ export const MamlRenderer: React.FC<MamlRendererProps> = ({
         vars.refreshBuiltins();
         vars.setProviderData(resourceStrings);
         vars.registerFramerateControllers(doc.framerateControllers);
-        vars.registerIntentHandler(handleMamlIntent);
-        const { width: designW, height: designH } = resolveMamlViewport(doc, preferredAspectRatio, spanX, spanY);
+        vars.registerIntentHandler(handleWmrIntent);
+        const { width: designW, height: designH } = resolveWmrViewport(doc, preferredAspectRatio, spanX, spanY);
         vars.setScreenSize(designW, designH);
         vars.initFromNodes(doc.root.children);
         if (initialVariables) {
@@ -198,10 +198,10 @@ export const MamlRenderer: React.FC<MamlRendererProps> = ({
         ]);
         if (cancelled) return;
 
-        const renderer = new MamlCanvasRenderer(vars, {
+        const renderer = new WmrCanvasRenderer(vars, {
           basePath: xmlBaseUrl ?? '',
           assetUrlResolver,
-          onIntent: handleMamlIntent,
+          onIntent: handleWmrIntent,
           enableHitRegions: analysis.hasInteractiveNodes,
           enableMeasurePass: analysis.needsMeasurePass,
         }, designW, designH, doc.root.tag !== 'Widget');
@@ -232,7 +232,7 @@ export const MamlRenderer: React.FC<MamlRendererProps> = ({
     const renderer = rendererRef.current;
     if (!doc || !vars || !renderer) return;
 
-    const { width: designW, height: designH } = resolveMamlViewport(doc, preferredAspectRatio, spanX, spanY);
+    const { width: designW, height: designH } = resolveWmrViewport(doc, preferredAspectRatio, spanX, spanY);
     vars.setScreenSize(designW, designH);
     renderer.setViewport(designW, designH, doc.root.tag !== 'Widget');
 
@@ -254,7 +254,7 @@ export const MamlRenderer: React.FC<MamlRendererProps> = ({
     try {
       vars.executeTriggerList(doc.root.externalTriggers, active ? 'resume' : 'pause');
       if (active) {
-        const stopRefresh = beginMamlPerf('widget.lifecycleRefresh', sourceKey);
+        const stopRefresh = beginWmrPerf('widget.lifecycleRefresh', sourceKey);
         vars.refreshBuiltins();
         injectProviderData(vars, {
           binders: analysis?.binders,
@@ -262,7 +262,7 @@ export const MamlRenderer: React.FC<MamlRendererProps> = ({
         });
         vars.reevaluateVars(doc.root.children);
         stopRefresh();
-        const stopRender = beginMamlPerf('widget.lifecycleRender', sourceKey);
+        const stopRender = beginWmrPerf('widget.lifecycleRender', sourceKey);
         renderer.render(canvas, doc.root.children);
         stopRender();
       }
@@ -306,7 +306,7 @@ export const MamlRenderer: React.FC<MamlRendererProps> = ({
         const shouldRefreshData = now - lastDataRefresh >= dataRefreshInterval;
         if (shouldRefreshData) {
           lastDataRefresh = now;
-          const stopRefresh = beginMamlPerf('widget.dataRefresh', sourceKey);
+          const stopRefresh = beginWmrPerf('widget.dataRefresh', sourceKey);
           vars.refreshBuiltins();
           injectProviderData(vars, {
             binders: analysis.binders,
@@ -319,11 +319,11 @@ export const MamlRenderer: React.FC<MamlRendererProps> = ({
         if (now - lastRender >= renderInterval) {
           lastRender = now;
           if (currentFrameRate > 0) {
-            const stopAnim = beginMamlPerf('widget.animationRefresh', sourceKey);
+            const stopAnim = beginWmrPerf('widget.animationRefresh', sourceKey);
             vars.reevaluateVars(doc.root.children, { includeAnimations: true, includeBinders: false });
             stopAnim();
           }
-          const stopRender = beginMamlPerf('widget.render', sourceKey);
+          const stopRender = beginWmrPerf('widget.render', sourceKey);
           renderer.render(canvas, doc.root.children);
           stopRender();
         }
@@ -427,7 +427,7 @@ export const MamlRenderer: React.FC<MamlRendererProps> = ({
         style={{ position: 'relative' }}
       >
         <div className="w-full h-full rounded-[16px] border border-red-500/40 bg-red-950/80 text-red-100 p-3 flex flex-col justify-center">
-          <div className="text-sm font-semibold tracking-wide">MAML 渲染失败</div>
+          <div className="text-sm font-semibold tracking-wide">WMR 渲染失败</div>
           <div className="mt-2 text-[11px] leading-5 break-all font-mono opacity-90">
             {errorMessage}
           </div>
@@ -490,8 +490,8 @@ const DEFAULT_WIDGET_VIEWPORTS: Record<string, { width: number; height: number }
   '4x2': { width: 916, height: 440 },
 };
 
-function resolveMamlViewport(
-  doc: MamlDocument,
+function resolveWmrViewport(
+  doc: WmrDocument,
   preferredAspectRatio?: number,
   spanX?: number,
   spanY?: number,
@@ -521,7 +521,7 @@ function resolveMamlViewport(
 }
 
 function registerBroadcastBinders(
-  nodes: MamlNode[],
+  nodes: WmrNode[],
   vars: VarContext,
   cleanups: Array<() => void>,
 ): void {
@@ -557,8 +557,8 @@ function registerBroadcastBinders(
 
 function registerHostBroadcastHandlers(
   vars: VarContext,
-  nodes: MamlNode[],
-  analysis: MamlBundleAnalysis,
+  nodes: WmrNode[],
+  analysis: WmrBundleAnalysis,
 ): () => void {
   const actions = [
     'com.miui.intent.action.CLEAN_MEMORY',
@@ -567,7 +567,7 @@ function registerHostBroadcastHandlers(
     'miui.intent.action.MAML_WIDGET_ADDED',
   ];
   const unregisters = actions.map((action) => BroadcastBus.registerReceiver(action, (intent) => {
-    const handled = handleMamlHostBroadcast(action, intent.extras ?? {}, {
+    const handled = handleWmrHostBroadcast(action, intent.extras ?? {}, {
       cleanableMemory: vars.getNum('cleanableMemory'),
       memoryCleanable: vars.getNum('memoryCleanable'),
       memoryCleanableAniVal: vars.getNum('memoryCleanableAniVal'),
@@ -585,7 +585,7 @@ function registerHostBroadcastHandlers(
 }
 
 function seedBroadcastBinder(
-  node: Extract<MamlNode, { tag: 'BroadcastBinder' }>,
+  node: Extract<WmrNode, { tag: 'BroadcastBinder' }>,
   vars: VarContext,
 ): void {
   const extras = getSyntheticBroadcastExtras(node.action ?? '', vars);

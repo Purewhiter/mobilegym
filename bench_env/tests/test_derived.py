@@ -350,7 +350,7 @@ def _launcher_state(
             {
                 "slot": {"cellX": 2, "cellY": 2},
                 "kind": "widget",
-                "widgetType": "maml",
+                "widgetType": "wmr",
                 "widgetId": widget_id,
                 "variant": "widget_2x2",
                 "previewUrl": f"/themes/{widget_id}/preview/widget_2x2.png",
@@ -518,7 +518,7 @@ def test_change_wallpaper_and_add_widget_rejects_partial_wallpaper_only():
     )
 
 
-def test_change_wallpaper_and_add_widget_rejects_wrong_maml_widget():
+def test_change_wallpaper_and_add_widget_rejects_wrong_wmr_widget():
     task = ChangeWallpaperAndAddWidget()
     init_state = {
         "apps": {},

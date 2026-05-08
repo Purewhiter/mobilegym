@@ -133,14 +133,14 @@ class Launcher(BaseApp):
             return [folder for folder in raw if isinstance(folder, dict)]
         return []
 
-    def maml_widget_ids(self) -> list[str]:
+    def wmr_widget_ids(self) -> list[str]:
         ids: list[str] = []
         seen: set[str] = set()
 
         def add(item: Any) -> None:
             if not isinstance(item, dict):
                 return
-            if item.get("kind") != "widget" or item.get("widgetType") != "maml":
+            if item.get("kind") != "widget" or item.get("widgetType") != "wmr":
                 return
             widget_id = str(item.get("widgetId") or "")
             if widget_id and widget_id not in seen:
@@ -173,16 +173,16 @@ class Launcher(BaseApp):
                 add(items_by_id.get(entry.get("itemId")))
         return ids
 
-    def check_maml_widget_added(
+    def check_wmr_widget_added(
         self,
         widget_id: str,
         *,
         label: str | None = None,
-        field: str = "maml_widget_added",
+        field: str = "wmr_widget_added",
     ) -> dict[str, Any]:
-        """验证指定 MAML 小组件是本次操作新增的，而不是初始状态已有。"""
-        current_ids = set(self.maml_widget_ids())
-        init_ids = set(self.init.maml_widget_ids())
+        """验证指定 WMR 小组件是本次操作新增的，而不是初始状态已有。"""
+        current_ids = set(self.wmr_widget_ids())
+        init_ids = set(self.init.wmr_widget_ids())
         passed = widget_id in current_ids and widget_id not in init_ids
         expected = f"{label or widget_id}小组件已添加"
         return {

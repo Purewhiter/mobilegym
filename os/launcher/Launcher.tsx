@@ -36,9 +36,9 @@ import type {
   LauncherScreen,
   LauncherWallpaper,
 } from './types';
-import { listMamlWidgets, getWidgetPreviewUrl, getWidgetXmlBaseUrl } from '../maml/MamlWidgetService';
-import type { MamlWidgetMeta } from '../maml/MamlWidgetService';
-import { MamlRenderer } from '../maml/MamlRenderer';
+import { listWmrWidgets, getWidgetPreviewUrl, getWidgetXmlBaseUrl } from '../wmr/WmrWidgetService';
+import type { WmrWidgetMeta } from '../wmr/WmrWidgetService';
+import { WmrRenderer } from '../wmr/WmrRenderer';
 
 function imageWallpaperStyle(imageUrl: string): React.CSSProperties {
   return {
@@ -1214,7 +1214,7 @@ const WorkspaceGrid = React.memo(function WorkspaceGrid(props: {
   grid: LauncherGrid;
   screen: LauncherScreen;
   active: boolean;
-  shouldLoadMaml: boolean;
+  shouldLoadWmr: boolean;
   previewPlacements?: LauncherPlacement[] | null;
   items: Record<string, LauncherItem>;
   folders: Record<string, LauncherFolder>;
@@ -1241,7 +1241,7 @@ const WorkspaceGrid = React.memo(function WorkspaceGrid(props: {
     grid,
     screen,
     active,
-    shouldLoadMaml,
+    shouldLoadWmr,
     previewPlacements,
     items,
     folders,
@@ -1296,8 +1296,8 @@ const WorkspaceGrid = React.memo(function WorkspaceGrid(props: {
                 onClick={() => onLaunchApp('clock')}
                 onLongPress={(el) => onLongPressItem(p.itemId, el)}
               />
-            ) : item.widgetType === 'maml' ? (
-              <MamlRenderer
+            ) : item.widgetType === 'wmr' ? (
+              <WmrRenderer
                 xmlBaseUrl={item.xmlBaseUrl ?? inferXmlBaseUrl(item.widgetId, item.variant)}
                 previewUrl={item.previewUrl}
                 preferredAspectRatio={p.spanX / p.spanY}
@@ -1306,7 +1306,7 @@ const WorkspaceGrid = React.memo(function WorkspaceGrid(props: {
                 className="w-full h-full"
                 persistNamespace={`launcher:${p.itemId}`}
                 active={active}
-                shouldLoad={shouldLoadMaml}
+                shouldLoad={shouldLoadWmr}
                 onClick={item.variant.startsWith('clock_') ? () => onLaunchApp('clock') : undefined}
                 onLongPress={(el) => onLongPressItem(p.itemId, el)}
               />
@@ -1685,7 +1685,7 @@ export const Launcher: React.FC = () => {
   const [folderNameEditing, setFolderNameEditing] = useState<{ folderId: string; draft: string; original: string } | null>(null);
   const folderNameInputRef = useRef<HTMLInputElement | null>(null);
   const [widgetPickerOpen, setWidgetPickerOpen] = useState(false);
-  const [mamlWidgets, setMamlWidgets] = useState<MamlWidgetMeta[]>([]);
+  const [wmrWidgets, setWmrWidgets] = useState<WmrWidgetMeta[]>([]);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const searchInputRef = useRef<HTMLInputElement | null>(null);
@@ -1720,7 +1720,7 @@ export const Launcher: React.FC = () => {
 
   useEffect(() => {
     let cancelled = false;
-    listMamlWidgets().then(w => { if (!cancelled) setMamlWidgets(w); });
+    listWmrWidgets().then(w => { if (!cancelled) setWmrWidgets(w); });
     return () => { cancelled = true; };
   }, []);
   const [appInfoOpen, setAppInfoOpen] = useState<{ appId: AppId } | null>(null);
@@ -2576,7 +2576,7 @@ export const Launcher: React.FC = () => {
     placeWidgetItem({ id: makeId(`widget_${widgetType}`), kind: 'widget', widgetType }, span);
   };
 
-  const addMamlWidgetToCurrentScreen = (
+  const addWmrWidgetToCurrentScreen = (
     widgetId: string,
     variant: string,
     spanX: number,
@@ -2585,7 +2585,7 @@ export const Launcher: React.FC = () => {
     xmlBaseUrl?: string,
   ) => {
     placeWidgetItem(
-      { id: makeId('widget_maml'), kind: 'widget', widgetType: 'maml', widgetId, variant, previewUrl, xmlBaseUrl },
+      { id: makeId('widget_wmr'), kind: 'widget', widgetType: 'wmr', widgetId, variant, previewUrl, xmlBaseUrl },
       { spanX, spanY },
     );
   };
@@ -2956,7 +2956,7 @@ export const Launcher: React.FC = () => {
                 <WorkspaceGrid
                   grid={layout.grid}
                   active={screenIdx === currentPage}
-                  shouldLoadMaml={Math.abs(screenIdx - currentPage) <= 1}
+                  shouldLoadWmr={Math.abs(screenIdx - currentPage) <= 1}
                   screen={screen}
                   previewPlacements={previewScreensById?.[screen.id] ?? null}
                   items={layout.items}
@@ -3325,7 +3325,7 @@ export const Launcher: React.FC = () => {
                 <div className="text-gray-500 text-xs">{locale === 'en' ? 'Add' : '添加'}</div>
               </button>
 
-              {mamlWidgets.map(w => w.variants.map(v => (
+              {wmrWidgets.map(w => w.variants.map(v => (
                 <button
                   key={`${w.id}_${v.entry}`}
                   type="button"
@@ -3334,7 +3334,7 @@ export const Launcher: React.FC = () => {
                     const l = layoutRef.current;
                     const s = l.screens[currentPageRef.current];
                     const canPlace = !!(s && findFirstVacantRect(l.grid, s.placements, v.spanX, v.spanY));
-                    addMamlWidgetToCurrentScreen(w.id, v.entry, v.spanX, v.spanY, getWidgetPreviewUrl(w.id, v), getWidgetXmlBaseUrl(w, v));
+                    addWmrWidgetToCurrentScreen(w.id, v.entry, v.spanX, v.spanY, getWidgetPreviewUrl(w.id, v), getWidgetXmlBaseUrl(w, v));
                     if (canPlace) setWidgetPickerOpen(false);
                   }}
                 >
@@ -3467,7 +3467,7 @@ export const Launcher: React.FC = () => {
                 : item.kind === 'folder'
                   ? (layout.folders[item.folderId]?.name ?? getDefaultFolderName())
                   : (item.widgetType === 'clock' ? (locale === 'en' ? 'Clock' : '时钟')
-                    : item.widgetType === 'maml' ? (mamlWidgets.find(w => w.id === item.widgetId)?.title ?? (locale === 'en' ? 'Widget' : '小组件'))
+                    : item.widgetType === 'wmr' ? (wmrWidgets.find(w => w.id === item.widgetId)?.title ?? (locale === 'en' ? 'Widget' : '小组件'))
                     : (locale === 'en' ? 'Weather' : '天气'));
 
             const actions: Array<{ id: string; label: string; onClick: () => void }> = [];

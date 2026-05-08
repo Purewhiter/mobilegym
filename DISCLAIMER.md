@@ -34,8 +34,10 @@ and evaluation targets for research agents. They are NOT, and are not
 intended to be, a substitute, replacement, or competing implementation
 of any third-party application. Specifically, they:
 
-- do NOT contain proprietary code, assets, or backend logic from the
-  original applications;
+- are not intended to include proprietary code or backend logic from
+  the original applications; third-party visual assets, icons, theme
+  resources, fonts, images, or derived representations are addressed in
+  the dedicated section below;
 - do NOT connect to, interact with, or impersonate the real services
   of those applications;
 - do NOT provide any of the real-world functionality (messaging,
@@ -92,9 +94,32 @@ for ensuring that their own training procedure complies with each
 relevant platform's developer terms regarding the use of platform
 content for AI / ML.
 
+### Third-party themes, icons, and visual assets
+
+Some simulated UI modules may include visual assets, icons, theme-like
+resources, fonts, images, or derived representations used solely to
+reproduce the research environment for non-commercial academic
+evaluation. The maintainers do not claim ownership over any third-party
+trademarks, theme resources, icons, fonts, wallpapers, images, or other
+visual materials.
+
+Where metadata is available, attribution such as theme names and
+author or designer names is preserved in the corresponding app UI or
+resource metadata. We are grateful to the original creators whose work
+helps make the research environment more realistic.
+
+If you are a rights holder and believe that any asset, theme resource,
+icon, font, image, or derived representation in this repository
+infringes your rights or should not be redistributed, please contact
+the maintainers or open a GitHub issue. We will promptly review the
+request and remove, replace, or disable the relevant material.
+
 ### Takedown
 
-If you are a rights holder and believe that any content in thisrepository infringes your rights, please open a GitHub issue or contactthe maintainers. We will review and remove or modify the relevantcontent promptly.
+If you are a rights holder and believe that any content in this
+repository infringes your rights, please open a GitHub issue or contact
+the maintainers. We will review and remove or modify the relevant
+content promptly.
 
 ---
 
@@ -114,9 +139,9 @@ mobile-gym 是用于**训练和评测**手机操作 Agent的研究**环境**。�
 
 本仓库中的模拟应用仅作为研究 Agent 的训练与评测对象，**不构成、也不意图构成**对所提及的任何第三方应用的替代、替换或竞争性实现。具体而言，它们——
 
-- 不包含原应用的专有代码、素材、后端逻辑；
+- 不意图包含原应用的专有代码或后端逻辑；第三方视觉素材、图标、类主题资源、字体、图片或其派生表示见下方专门说明；
 - 不会连接、调用、冒充原应用的真实服务；
-- 不向最终用户提供原应用的任何真实功能（消息收发、支付、内容分发、社交互动、票等）；
+- 不向最终用户提供原应用的任何真实功能（消息收发、支付、内容分发、社交互动、购票等服务）；
 - 使用合成数据或 AI 生成内容替代任何真实的用户产生内容（UGC）。
 
 视觉设计、命名、行为上的相似仅限于使本环境对 Agent 训练与评测真实可用所必需的范围。
@@ -140,6 +165,14 @@ mobile-gym 是用于**训练和评测**手机操作 Agent的研究**环境**。�
 - 用于构建或改进基于上述平台内容的生成式模型而再分发的语料。
 
 维护者**未曾、也不会**使用本数据训练直接任何机器学习模型。若使用者将本环境用于下游的 Agent 训练（例如基于在模拟 UI 内采集的交互轨迹开展强化学习），应自行确保其训练流程符合相关平台关于将平台内容用于 AI / ML 的开发者条款。
+
+### 第三方主题、图标与视觉素材
+
+部分模拟 UI 模块可能包含用于复现实验环境的视觉素材、图标、类主题资源、字体、图片或其派生表示，仅用于非商业学术研究与评测。维护者不主张对任何第三方商标、主题资源、图标、字体、壁纸、图片或其他视觉材料享有所有权。
+
+若相关元数据可用，主题名称、作者或设计师名称等来源信息会尽量保留在对应 App UI 或资源元数据中。我们感谢原始创作者的工作，这些内容使研究环境更加真实。
+
+若您是相关权利人，并认为本仓库中的任何素材、主题资源、图标、字体、图片或其派生表示侵犯了您的权益，或不应被再分发，请通过 GitHub Issue 或邮件联系维护者。我们将及时审阅，并删除、替换或禁用相关内容。
 
 ### 侵权处理
 

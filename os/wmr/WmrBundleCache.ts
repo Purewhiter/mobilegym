@@ -1,4 +1,4 @@
-import { parseMaml } from './engine/parser';
+import { parseWmr } from './engine/parser';
 import {
   collectImageSrcs,
   createPrefixedAssetUrlResolver,
@@ -6,44 +6,44 @@ import {
   loadImage,
   type AssetUrlResolver,
 } from './engine/imageCache';
-import { loadMamlResourceStrings } from './engine/resourceStrings';
+import { loadWmrResourceStrings } from './engine/resourceStrings';
 import type {
-  MamlContentProviderBinder,
-  MamlDocument,
-  MamlNode,
-  MamlProviderDependencies,
+  WmrContentProviderBinder,
+  WmrDocument,
+  WmrNode,
+  WmrProviderDependencies,
   VarValue,
 } from './engine/types';
-import { beginMamlPerf } from './MamlPerf';
+import { beginWmrPerf } from './WmrPerf';
 
-export interface MamlBundleAnalysis {
+export interface WmrBundleAnalysis {
   hasMarquee: boolean;
   hasAnimations: boolean;
   hasInteractiveNodes: boolean;
   needsMeasurePass: boolean;
-  binders: MamlContentProviderBinder[];
-  providerDependencies: MamlProviderDependencies;
+  binders: WmrContentProviderBinder[];
+  providerDependencies: WmrProviderDependencies;
   inferredFrameRate: number;
 }
 
-export interface MamlBundle {
+export interface WmrBundle {
   xml: string;
-  doc: MamlDocument;
+  doc: WmrDocument;
   resourceStrings: Record<string, VarValue>;
   staticImageSrcs: string[];
-  analysis: MamlBundleAnalysis;
+  analysis: WmrBundleAnalysis;
   assetUrlResolver: AssetUrlResolver;
   sourceKey: string;
 }
 
-export interface MamlInlineBundleSource {
+export interface WmrInlineBundleSource {
   cacheKey: string;
   xml: string;
   resourceStrings?: Record<string, VarValue>;
   assetUrlResolver: AssetUrlResolver;
 }
 
-const bundleCache = new Map<string, Promise<MamlBundle>>();
+const bundleCache = new Map<string, Promise<WmrBundle>>();
 const indexedWarmupKeys = new Set<string>();
 
 const WEATHER_PATTERN = /\b(weather_|hasweather|customEditLocalId|selected_city|weather_version|aqi\b)\b/;
@@ -53,22 +53,22 @@ const MUSIC_PATTERN = /\bmusic_control\./;
 const HOST_FLAGS_PATTERN = /\b(lang|wifi_state|data_state|__darkmode|isPreviewMode|enable_background_blur|is_bo_cn)\b/;
 const MEASURE_PROP_PATTERN = /\.(?:bmp|text)_(?:width|height)\b/;
 
-export async function loadMamlBundle(
-  source: string | MamlInlineBundleSource,
-): Promise<MamlBundle> {
+export async function loadWmrBundle(
+  source: string | WmrInlineBundleSource,
+): Promise<WmrBundle> {
   const sourceKey = typeof source === 'string' ? source : source.cacheKey;
   let pending = bundleCache.get(sourceKey);
   if (pending) return pending;
 
   pending = (async () => {
-    const stopTotal = beginMamlPerf('bundle.total', sourceKey);
+    const stopTotal = beginWmrPerf('bundle.total', sourceKey);
     try {
       let xml = '';
       let resourceStrings: Record<string, VarValue> = {};
       let assetUrlResolver: AssetUrlResolver;
 
       if (typeof source === 'string') {
-        const stopFetch = beginMamlPerf('bundle.fetch', sourceKey);
+        const stopFetch = beginWmrPerf('bundle.fetch', sourceKey);
         const xmlUrl = source + 'manifest.xml';
         const resp = await fetch(xmlUrl);
         if (!resp.ok) {
@@ -77,20 +77,20 @@ export async function loadMamlBundle(
         xml = await resp.text();
         stopFetch();
         assetUrlResolver = createPrefixedAssetUrlResolver(source);
-        resourceStrings = await loadMamlResourceStrings(source);
+        resourceStrings = await loadWmrResourceStrings(source);
       } else {
         xml = source.xml;
         resourceStrings = source.resourceStrings ?? {};
         assetUrlResolver = source.assetUrlResolver;
       }
 
-      const stopParse = beginMamlPerf('bundle.parse', sourceKey);
-      const doc = parseMaml(xml);
-      const analysis = analyzeMamlDocument(doc);
+      const stopParse = beginWmrPerf('bundle.parse', sourceKey);
+      const doc = parseWmr(xml);
+      const analysis = analyzeWmrDocument(doc);
       const staticImageSrcs = collectImageSrcs(doc.root.children);
       stopParse();
 
-      const stopAssets = beginMamlPerf('bundle.assets', sourceKey);
+      const stopAssets = beginWmrPerf('bundle.assets', sourceKey);
       await preloadAll(assetUrlResolver, staticImageSrcs);
       stopAssets();
 
@@ -116,8 +116,8 @@ export async function loadMamlBundle(
   return pending;
 }
 
-function analyzeMamlDocument(doc: MamlDocument): MamlBundleAnalysis {
-  const binders: MamlContentProviderBinder[] = [];
+function analyzeWmrDocument(doc: WmrDocument): WmrBundleAnalysis {
+  const binders: WmrContentProviderBinder[] = [];
   const collectedStrings: string[] = [];
   let hasMarquee = false;
   let hasAnimations = doc.framerateControllers.length > 0 || doc.frameRate > 0;
@@ -143,7 +143,7 @@ function analyzeMamlDocument(doc: MamlDocument): MamlBundleAnalysis {
   });
 
   const joined = collectedStrings.join('\n');
-  const providerDependencies: MamlProviderDependencies = {
+  const providerDependencies: WmrProviderDependencies = {
     weather: WEATHER_PATTERN.test(joined),
     device: DEVICE_PATTERN.test(joined),
     clock: CLOCK_PATTERN.test(joined),
@@ -162,7 +162,7 @@ function analyzeMamlDocument(doc: MamlDocument): MamlBundleAnalysis {
   };
 }
 
-function hasNodeAnimations(node: MamlNode): boolean {
+function hasNodeAnimations(node: WmrNode): boolean {
   if ('animations' in node && Array.isArray((node as { animations?: unknown[] }).animations) && (node as { animations?: unknown[] }).animations!.length > 0) {
     return true;
   }
@@ -172,17 +172,17 @@ function hasNodeAnimations(node: MamlNode): boolean {
   return false;
 }
 
-function visitNodes(nodes: MamlNode[], visit: (node: MamlNode) => void): void {
+function visitNodes(nodes: WmrNode[], visit: (node: WmrNode) => void): void {
   for (const node of nodes) {
     visit(node);
-    if ('children' in node && Array.isArray((node as { children?: MamlNode[] }).children)) {
-      visitNodes((node as { children: MamlNode[] }).children, visit);
+    if ('children' in node && Array.isArray((node as { children?: WmrNode[] }).children)) {
+      visitNodes((node as { children: WmrNode[] }).children, visit);
     }
-    if ('normalChildren' in node && Array.isArray((node as { normalChildren?: MamlNode[] }).normalChildren)) {
-      visitNodes((node as { normalChildren: MamlNode[] }).normalChildren, visit);
+    if ('normalChildren' in node && Array.isArray((node as { normalChildren?: WmrNode[] }).normalChildren)) {
+      visitNodes((node as { normalChildren: WmrNode[] }).normalChildren, visit);
     }
-    if ('pressedChildren' in node && Array.isArray((node as { pressedChildren?: MamlNode[] }).pressedChildren)) {
-      visitNodes((node as { pressedChildren: MamlNode[] }).pressedChildren, visit);
+    if ('pressedChildren' in node && Array.isArray((node as { pressedChildren?: WmrNode[] }).pressedChildren)) {
+      visitNodes((node as { pressedChildren: WmrNode[] }).pressedChildren, visit);
     }
   }
 }

@@ -1,17 +1,17 @@
 /**
- * MAML XML parser.  Turns manifest.xml text into a typed MamlDocument.
+ * WMR XML parser.  Turns manifest.xml text into a typed WmrDocument.
  */
 import type {
-  MamlDocument, MamlRoot, MamlNode, MamlGroup, MamlImage, MamlText,
-  MamlDateTime, MamlRectangle, MamlArc, MamlCircle, MamlButton, MamlVar, MamlVarArray,
-  MamlContentProviderBinder, MamlProviderVariable, MamlProviderTrigger,
-  MamlTrigger, MamlCommand, MamlBaseAttrs, MamlImageNumber, MamlMask,
-  MamlArray, MamlTime, MamlMusicControl, MamlVariableAnimation,
-  MamlBroadcastBinder, MamlFramerateController, MamlFunction, MamlLine,
-  MamlVirtualElement, MamlFolmeState, MamlFolmeConfig, MamlPropertyAnimation,
+  WmrDocument, WmrRoot, WmrNode, WmrGroup, WmrImage, WmrText,
+  WmrDateTime, WmrRectangle, WmrArc, WmrCircle, WmrButton, WmrVar, WmrVarArray,
+  WmrContentProviderBinder, WmrProviderVariable, WmrProviderTrigger,
+  WmrTrigger, WmrCommand, WmrBaseAttrs, WmrImageNumber, WmrMask,
+  WmrArray, WmrTime, WmrMusicControl, WmrVariableAnimation,
+  WmrBroadcastBinder, WmrFramerateController, WmrFunction, WmrLine,
+  WmrVirtualElement, WmrFolmeState, WmrFolmeConfig, WmrPropertyAnimation,
 } from './types';
 
-function sanitizeMamlXml(xml: string): string {
+function sanitizeWmrXml(xml: string): string {
   const normalized = xml.replace(/^\uFEFF/, '');
 
   return normalized.replace(
@@ -53,7 +53,7 @@ function parseXmlDocument(xml: string): XMLDocument {
     return initialDoc;
   }
 
-  const sanitized = sanitizeMamlXml(xml);
+  const sanitized = sanitizeWmrXml(xml);
   if (sanitized !== xml || hasParseError) {
     const sanitizedDoc = parser.parseFromString(sanitized, 'text/xml');
     const sanitizedHasRoot = !!sanitizedDoc.querySelector('Clock, Widget');
@@ -80,7 +80,7 @@ function directChild(parent: Element, tagName: string): Element | null {
   return directChildren(parent, tagName)[0] ?? null;
 }
 
-function parseBaseAttrs(el: Element): MamlBaseAttrs {
+function parseBaseAttrs(el: Element): WmrBaseAttrs {
   return {
     name: attr(el, 'name'),
     x: attr(el, 'x'),
@@ -92,8 +92,8 @@ function parseBaseAttrs(el: Element): MamlBaseAttrs {
     width: attr(el, 'width'),
     height: attr(el, 'height'),
     scale: attr(el, 'scale'),
-    align: attr(el, 'align') as MamlBaseAttrs['align'],
-    alignV: attr(el, 'alignV') as MamlBaseAttrs['alignV'],
+    align: attr(el, 'align') as WmrBaseAttrs['align'],
+    alignV: attr(el, 'alignV') as WmrBaseAttrs['alignV'],
     alpha: attr(el, 'alpha'),
     visibility: attr(el, 'visibility'),
     pivotX: attr(el, 'pivotX'),
@@ -104,8 +104,8 @@ function parseBaseAttrs(el: Element): MamlBaseAttrs {
   };
 }
 
-function parseVariableAnimations(el: Element): MamlVariableAnimation[] {
-  const animations: MamlVariableAnimation[] = [];
+function parseVariableAnimations(el: Element): WmrVariableAnimation[] {
+  const animations: WmrVariableAnimation[] = [];
   for (const animEl of directChildren(el, 'VariableAnimation')) {
     const frames = parseAnimationFrames(animEl);
     if (frames.length === 0) continue;
@@ -138,9 +138,9 @@ function parseAnimationFrames(animEl: Element) {
     }));
 }
 
-function parsePropertyAnimations(el: Element): MamlPropertyAnimation[] {
-  const animations: MamlPropertyAnimation[] = [];
-  const defs: Array<{ tag: string; kind: MamlPropertyAnimation['kind'] }> = [
+function parsePropertyAnimations(el: Element): WmrPropertyAnimation[] {
+  const animations: WmrPropertyAnimation[] = [];
+  const defs: Array<{ tag: string; kind: WmrPropertyAnimation['kind'] }> = [
     { tag: 'PositionAnimation', kind: 'position' },
     { tag: 'ScaleAnimation', kind: 'scale' },
     { tag: 'AlphaAnimation', kind: 'alpha' },
@@ -164,7 +164,7 @@ function parsePropertyAnimations(el: Element): MamlPropertyAnimation[] {
   return animations;
 }
 
-function parseRectangleFillShader(el: Element): MamlRectangle['fillShader'] {
+function parseRectangleFillShader(el: Element): WmrRectangle['fillShader'] {
   const shadersEl = directChild(el, 'FillShaders');
   const linearEl = shadersEl ? directChild(shadersEl, 'LinearGradient') : directChild(el, 'LinearGradient');
   if (!linearEl) return undefined;
@@ -183,8 +183,8 @@ function parseRectangleFillShader(el: Element): MamlRectangle['fillShader'] {
   };
 }
 
-function parseCommands(triggerEl: Element): MamlCommand[] {
-  const cmds: MamlCommand[] = [];
+function parseCommands(triggerEl: Element): WmrCommand[] {
+  const cmds: WmrCommand[] = [];
   for (const ch of Array.from(triggerEl.children)) {
     switch (ch.tagName) {
       case 'IntentCommand':
@@ -342,8 +342,8 @@ function parseCommands(triggerEl: Element): MamlCommand[] {
   return cmds;
 }
 
-function parseTriggers(parentEl: Element): MamlTrigger[] {
-  const triggers: MamlTrigger[] = [];
+function parseTriggers(parentEl: Element): WmrTrigger[] {
+  const triggers: WmrTrigger[] = [];
   const triggerParents = directChild(parentEl, 'Triggers')
     ? directChildren(directChild(parentEl, 'Triggers')!, 'Trigger')
     : directChildren(parentEl, 'Trigger');
@@ -357,7 +357,7 @@ function parseTriggers(parentEl: Element): MamlTrigger[] {
   return triggers;
 }
 
-function parseNode(el: Element): MamlNode | null {
+function parseNode(el: Element): WmrNode | null {
   const tag = el.tagName;
   switch (tag) {
     case 'Group':
@@ -369,7 +369,7 @@ function parseNode(el: Element): MamlNode | null {
         triggers: parseTriggers(el),
         animations: parsePropertyAnimations(el),
         children: parseChildren(el),
-      } as MamlGroup;
+      } as WmrGroup;
 
     case 'Image':
       return {
@@ -382,7 +382,7 @@ function parseNode(el: Element): MamlNode | null {
         xfermode: attr(el, 'xfermode'),
         xfermodeNum: attr(el, 'xfermodeNum'),
         animations: parsePropertyAnimations(el),
-      } as MamlImage;
+      } as WmrImage;
 
     case 'Text':
       return {
@@ -399,7 +399,7 @@ function parseNode(el: Element): MamlNode | null {
         marqueeSpeed: attr(el, 'marqueeSpeed'),
         multiLine: attr(el, 'multiLine') === 'true',
         animations: parsePropertyAnimations(el),
-      } as MamlText;
+      } as WmrText;
 
     case 'DateTime':
       return {
@@ -414,7 +414,7 @@ function parseNode(el: Element): MamlNode | null {
         fontFamily: attr(el, 'fontFamily'),
         marqueeSpeed: attr(el, 'marqueeSpeed'),
         animations: parsePropertyAnimations(el),
-      } as MamlDateTime;
+      } as WmrDateTime;
 
     case 'Rectangle':
       return {
@@ -430,7 +430,7 @@ function parseNode(el: Element): MamlNode | null {
         xfermodeNum: attr(el, 'xfermodeNum'),
         triggers: parseTriggers(el),
         animations: parsePropertyAnimations(el),
-      } as MamlRectangle;
+      } as WmrRectangle;
 
     case 'Arc':
       return {
@@ -447,7 +447,7 @@ function parseNode(el: Element): MamlNode | null {
         xfermode: attr(el, 'xfermode'),
         xfermodeNum: attr(el, 'xfermodeNum'),
         animations: parsePropertyAnimations(el),
-      } as MamlArc;
+      } as WmrArc;
 
     case 'Circle':
       return {
@@ -460,7 +460,7 @@ function parseNode(el: Element): MamlNode | null {
         xfermode: attr(el, 'xfermode'),
         xfermodeNum: attr(el, 'xfermodeNum'),
         animations: parsePropertyAnimations(el),
-      } as MamlCircle;
+      } as WmrCircle;
 
     case 'Button':
       const normalEl = directChild(el, 'Normal');
@@ -473,7 +473,7 @@ function parseNode(el: Element): MamlNode | null {
         children: parseChildren(el),
         normalChildren: normalEl ? parseChildren(normalEl) : undefined,
         pressedChildren: pressedEl ? parseChildren(pressedEl) : undefined,
-      } as MamlButton;
+      } as WmrButton;
 
     case 'Var':
       const animations = parseVariableAnimations(el);
@@ -490,10 +490,10 @@ function parseNode(el: Element): MamlNode | null {
         triggers: parseTriggers(el),
         animation: animations[0],
         animations,
-      } as MamlVar;
+      } as WmrVar;
 
     case 'VarArray': {
-      const vars: MamlVar[] = [];
+      const vars: WmrVar[] = [];
       const items: string[] = [];
       const varsParent = directChild(el, 'Vars');
       for (const varsEl of varsParent ? directChildren(varsParent, 'Var') : []) {
@@ -515,12 +515,12 @@ function parseNode(el: Element): MamlNode | null {
         type: attr(el, 'type'),
         vars,
         items,
-      } as MamlVarArray;
+      } as WmrVarArray;
     }
 
     case 'ContentProviderBinder': {
-      const variables: MamlProviderVariable[] = [];
-      const triggers: MamlProviderTrigger[] = [];
+      const variables: WmrProviderVariable[] = [];
+      const triggers: WmrProviderTrigger[] = [];
       for (const ch of Array.from(el.children)) {
         if (ch.tagName === 'Variable') {
           variables.push({
@@ -546,11 +546,11 @@ function parseNode(el: Element): MamlNode | null {
         dependency: attr(el, 'dependency'),
         variables,
         triggers,
-      } as MamlContentProviderBinder;
+      } as WmrContentProviderBinder;
     }
 
     case 'BroadcastBinder': {
-      const variables: MamlProviderVariable[] = [];
+      const variables: WmrProviderVariable[] = [];
       for (const ch of Array.from(el.children)) {
         if (ch.tagName !== 'Variable') continue;
         variables.push({
@@ -566,7 +566,7 @@ function parseNode(el: Element): MamlNode | null {
         action: attr(el, 'action'),
         variables,
         triggers: parseTriggers(el),
-      } as MamlBroadcastBinder;
+      } as WmrBroadcastBinder;
     }
 
     case 'ImageNumber':
@@ -576,7 +576,7 @@ function parseNode(el: Element): MamlNode | null {
         src: attr(el, 'src'),
         textExp: attr(el, 'textExp'),
         animations: parsePropertyAnimations(el),
-      } as MamlImageNumber;
+      } as WmrImageNumber;
 
     case 'Mask':
       return {
@@ -584,7 +584,7 @@ function parseNode(el: Element): MamlNode | null {
         tag: 'Mask',
         animations: parsePropertyAnimations(el),
         children: parseChildren(el),
-      } as MamlMask;
+      } as WmrMask;
 
     case 'Array':
       return {
@@ -594,7 +594,7 @@ function parseNode(el: Element): MamlNode | null {
         indexName: attr(el, 'indexName'),
         animations: parsePropertyAnimations(el),
         children: parseChildren(el),
-      } as MamlArray;
+      } as WmrArray;
 
     case 'Time':
       return {
@@ -606,17 +606,17 @@ function parseNode(el: Element): MamlNode | null {
         formatExp: attr(el, 'formatExp'),
         space: attr(el, 'space'),
         animations: parsePropertyAnimations(el),
-      } as MamlTime;
+      } as WmrTime;
 
     case 'MusicControl':
-      return { ...parseBaseAttrs(el), tag: 'MusicControl', children: parseChildren(el) } as MamlMusicControl;
+      return { ...parseBaseAttrs(el), tag: 'MusicControl', children: parseChildren(el) } as WmrMusicControl;
 
     case 'Function':
       return {
         tag: 'Function',
         name: attr(el, 'name') ?? '',
         commands: parseCommands(el),
-      } as MamlFunction;
+      } as WmrFunction;
 
     case 'Line':
       return {
@@ -627,14 +627,14 @@ function parseNode(el: Element): MamlNode | null {
         strokeColor: attr(el, 'strokeColor'),
         weight: attr(el, 'weight'),
         cap: attr(el, 'cap'),
-      } as MamlLine;
+      } as WmrLine;
 
     case 'VirtualElement':
       return {
         ...parseBaseAttrs(el),
         tag: 'VirtualElement',
         folmeMode: attr(el, 'folmeMode') === 'true',
-      } as MamlVirtualElement;
+      } as WmrVirtualElement;
 
     case 'FolmeState':
       return {
@@ -646,7 +646,7 @@ function parseNode(el: Element): MamlNode | null {
         scaleX: attr(el, 'scaleX'),
         scaleY: attr(el, 'scaleY'),
         rotation: attr(el, 'rotation'),
-      } as MamlFolmeState;
+      } as WmrFolmeState;
 
     case 'FolmeConfig':
       return {
@@ -659,7 +659,7 @@ function parseNode(el: Element): MamlNode | null {
           property: attr(specialEl, 'property') ?? '',
           ease: attr(specialEl, 'ease'),
         })),
-      } as MamlFolmeConfig;
+      } as WmrFolmeConfig;
 
     default:
       return null;
@@ -678,7 +678,7 @@ const SKIP_TAGS = new Set([
   'Consequent', 'Alternate', 'Fallback',
 ]);
 
-function parseFramerateControllers(rootEl: Element): MamlFramerateController[] {
+function parseFramerateControllers(rootEl: Element): WmrFramerateController[] {
   return directChildren(rootEl, 'FramerateController').map((controllerEl) => ({
     name: attr(controllerEl, 'name') ?? '',
     loop: attr(controllerEl, 'loop') === 'true',
@@ -690,8 +690,8 @@ function parseFramerateControllers(rootEl: Element): MamlFramerateController[] {
   })).filter((controller) => controller.name && controller.controlPoints.length > 0);
 }
 
-function parseChildren(parent: Element): MamlNode[] {
-  const nodes: MamlNode[] = [];
+function parseChildren(parent: Element): WmrNode[] {
+  const nodes: WmrNode[] = [];
   for (const ch of directChildren(parent)) {
     if (SKIP_TAGS.has(ch.tagName)) continue;
     const node = parseNode(ch);
@@ -708,12 +708,12 @@ function parseChildren(parent: Element): MamlNode[] {
   return nodes;
 }
 
-export function parseMaml(xml: string): MamlDocument {
+export function parseWmr(xml: string): WmrDocument {
   const doc = parseXmlDocument(xml);
   const rootEl = doc.querySelector('Clock, Widget');
-  if (!rootEl) throw new Error('MAML: no <Clock>/<Widget> root element');
+  if (!rootEl) throw new Error('WMR: no <Clock>/<Widget> root element');
 
-  const root: MamlRoot = {
+  const root: WmrRoot = {
     tag: rootEl.tagName === 'Widget' ? 'Widget' : 'Clock',
     attrs: {
       frameRate: attr(rootEl, 'frameRate'),

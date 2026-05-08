@@ -1,5 +1,5 @@
 /**
- * MAML (Markup Animation Markup Language) engine types.
+ * WMR (Markup Animation Markup Language) engine types.
  * Covers the XML element model, expression AST, and runtime variable context.
  */
 
@@ -7,12 +7,12 @@
 // XML element model (output of parser)
 // ---------------------------------------------------------------------------
 
-export type MamlAlign = 'left' | 'center' | 'right';
-export type MamlAlignV = 'top' | 'center' | 'bottom';
-export type MamlRootTag = 'Clock' | 'Widget';
+export type WmrAlign = 'left' | 'center' | 'right';
+export type WmrAlignV = 'top' | 'center' | 'bottom';
+export type WmrRootTag = 'Clock' | 'Widget';
 
 /** Common positional / visual attributes shared by most layout elements. */
-export interface MamlBaseAttrs {
+export interface WmrBaseAttrs {
   name?: string;
   x?: string;       // expression
   y?: string;       // expression
@@ -23,8 +23,8 @@ export interface MamlBaseAttrs {
   width?: string;   // alias of w
   height?: string;  // alias of h
   scale?: string;
-  align?: MamlAlign;
-  alignV?: MamlAlignV;
+  align?: WmrAlign;
+  alignV?: WmrAlignV;
   alpha?: string;    // expression (0-255)
   visibility?: string; // expression – truthy = visible
   pivotX?: string;
@@ -32,11 +32,11 @@ export interface MamlBaseAttrs {
   scaleX?: string;
   scaleY?: string;
   rotation?: string;
-  animations?: MamlPropertyAnimation[];
+  animations?: WmrPropertyAnimation[];
 }
 
-export interface MamlRoot {
-  tag: MamlRootTag;
+export interface WmrRoot {
+  tag: WmrRootTag;
   attrs: {
     frameRate?: string;
     screenWidth?: string;
@@ -47,19 +47,19 @@ export interface MamlRoot {
     useVariableUpdater?: string;
     version?: string;
   };
-  children: MamlNode[];
-  externalTriggers?: MamlTrigger[];
+  children: WmrNode[];
+  externalTriggers?: WmrTrigger[];
 }
 
-export interface MamlGroup extends MamlBaseAttrs {
+export interface WmrGroup extends WmrBaseAttrs {
   tag: 'Group';
   layered?: boolean;
   clip?: boolean;
-  triggers?: MamlTrigger[];
-  children: MamlNode[];
+  triggers?: WmrTrigger[];
+  children: WmrNode[];
 }
 
-export interface MamlImage extends MamlBaseAttrs {
+export interface WmrImage extends WmrBaseAttrs {
   tag: 'Image';
   src?: string;
   srcExp?: string;
@@ -69,7 +69,7 @@ export interface MamlImage extends MamlBaseAttrs {
   xfermodeNum?: string;
 }
 
-export interface MamlText extends MamlBaseAttrs {
+export interface WmrText extends WmrBaseAttrs {
   tag: 'Text';
   text?: string;     // static text
   textExp?: string;  // expression
@@ -83,7 +83,7 @@ export interface MamlText extends MamlBaseAttrs {
   multiLine?: boolean;
 }
 
-export interface MamlDateTime extends MamlBaseAttrs {
+export interface WmrDateTime extends WmrBaseAttrs {
   tag: 'DateTime';
   format?: string;
   formatExp?: string;  // expression
@@ -95,7 +95,7 @@ export interface MamlDateTime extends MamlBaseAttrs {
   marqueeSpeed?: string;
 }
 
-export interface MamlRectangle extends MamlBaseAttrs {
+export interface WmrRectangle extends WmrBaseAttrs {
   tag: 'Rectangle';
   fillColor?: string;
   fillShader?: {
@@ -115,10 +115,10 @@ export interface MamlRectangle extends MamlBaseAttrs {
   weight?: string;
   strokeAlign?: string;
   xfermodeNum?: string;
-  triggers?: MamlTrigger[];
+  triggers?: WmrTrigger[];
 }
 
-export interface MamlArc extends MamlBaseAttrs {
+export interface WmrArc extends WmrBaseAttrs {
   tag: 'Arc';
   startAngle?: string;
   sweep?: string;
@@ -132,7 +132,7 @@ export interface MamlArc extends MamlBaseAttrs {
   xfermodeNum?: string;
 }
 
-export interface MamlCircle extends MamlBaseAttrs {
+export interface WmrCircle extends WmrBaseAttrs {
   tag: 'Circle';
   r?: string;
   fillColor?: string;
@@ -142,7 +142,7 @@ export interface MamlCircle extends MamlBaseAttrs {
   xfermodeNum?: string;
 }
 
-export interface MamlLine extends MamlBaseAttrs {
+export interface WmrLine extends WmrBaseAttrs {
   tag: 'Line';
   x1?: string;
   y1?: string;
@@ -151,28 +151,28 @@ export interface MamlLine extends MamlBaseAttrs {
   cap?: string;
 }
 
-export interface MamlButton extends MamlBaseAttrs {
+export interface WmrButton extends WmrBaseAttrs {
   tag: 'Button';
-  triggers: MamlTrigger[];
-  children: MamlNode[];
-  normalChildren?: MamlNode[];
-  pressedChildren?: MamlNode[];
+  triggers: WmrTrigger[];
+  children: WmrNode[];
+  normalChildren?: WmrNode[];
+  pressedChildren?: WmrNode[];
 }
 
-export interface MamlTrigger {
+export interface WmrTrigger {
   action: string; // 'up' | 'double'
   condition?: string;
-  commands: MamlCommand[];
+  commands: WmrCommand[];
 }
 
-export interface MamlIntentExtra {
+export interface WmrIntentExtra {
   name: string;
   type?: string;
   expression?: string;
 }
 
-export type MamlCommand =
-  | { type: 'intent'; action?: string; actionExp?: string; package?: string; packageExp?: string; class?: string; classExp?: string; broadcast?: boolean; condition?: string; delay?: number; extras?: MamlIntentExtra[]; fallback?: MamlCommand[] }
+export type WmrCommand =
+  | { type: 'intent'; action?: string; actionExp?: string; package?: string; packageExp?: string; class?: string; classExp?: string; broadcast?: boolean; condition?: string; delay?: number; extras?: WmrIntentExtra[]; fallback?: WmrCommand[] }
   | { type: 'variable'; name: string; expression: string; persist?: boolean; delay?: number; condition?: string; index?: string; valueType?: string }
   | { type: 'animation'; target: string; command: string; tags?: string; delay?: number; condition?: string }
   | { type: 'frameRate'; rate: string; delay?: number; condition?: string }
@@ -180,12 +180,12 @@ export type MamlCommand =
   | { type: 'function'; target: string; delay?: number; condition?: string }
   | { type: 'method'; target: string; targetType?: string; method: string; params?: string; paramTypes?: string; delay?: number; condition?: string }
   | { type: 'folme'; target: string; states?: string; config?: string; command: string; delay?: number; condition?: string }
-  | { type: 'multi'; condition?: string; commands: MamlCommand[] }
-  | { type: 'if'; condition?: string; consequent: MamlCommand[]; alternate?: MamlCommand[] }
-  | { type: 'loop'; count: string; indexName?: string; condition?: string; commands: MamlCommand[] }
+  | { type: 'multi'; condition?: string; commands: WmrCommand[] }
+  | { type: 'if'; condition?: string; consequent: WmrCommand[]; alternate?: WmrCommand[] }
+  | { type: 'loop'; count: string; indexName?: string; condition?: string; commands: WmrCommand[] }
   | { type: 'extern'; command: string; condition?: string; delay?: number };
 
-export interface MamlAniFrame {
+export interface WmrAniFrame {
   time: string;
   relative?: boolean;
   value?: string;
@@ -198,26 +198,26 @@ export interface MamlAniFrame {
   easeType?: string;
 }
 
-export interface MamlVariableAnimation {
+export interface WmrVariableAnimation {
   name?: string;
   tag?: string;
-  frames: MamlAniFrame[];
+  frames: WmrAniFrame[];
   loop?: boolean;
   initPause?: boolean;
-  triggers?: MamlTrigger[];
+  triggers?: WmrTrigger[];
 }
 
-export interface MamlPropertyAnimation {
+export interface WmrPropertyAnimation {
   kind: 'position' | 'scale' | 'alpha' | 'rotation';
   name?: string;
   tag?: string;
-  frames: MamlAniFrame[];
+  frames: WmrAniFrame[];
   loop?: boolean;
   initPause?: boolean;
-  triggers?: MamlTrigger[];
+  triggers?: WmrTrigger[];
 }
 
-export interface MamlVar {
+export interface WmrVar {
   tag: 'Var';
   name: string;
   expression: string;
@@ -227,20 +227,20 @@ export interface MamlVar {
   values?: string[];
   persist?: boolean;
   threshold?: string;
-  triggers?: MamlTrigger[];
-  animation?: MamlVariableAnimation;
-  animations?: MamlVariableAnimation[];
+  triggers?: WmrTrigger[];
+  animation?: WmrVariableAnimation;
+  animations?: WmrVariableAnimation[];
 }
 
-export interface MamlVarArray {
+export interface WmrVarArray {
   tag: 'VarArray';
   name?: string;
   type?: string;
-  vars: MamlVar[];
+  vars: WmrVar[];
   items: string[];
 }
 
-export interface MamlContentProviderBinder {
+export interface WmrContentProviderBinder {
   tag: 'ContentProviderBinder';
   name?: string;
   uri?: string;
@@ -249,11 +249,11 @@ export interface MamlContentProviderBinder {
   columns?: string;
   countName?: string;
   dependency?: string;
-  variables: MamlProviderVariable[];
-  triggers: MamlProviderTrigger[];
+  variables: WmrProviderVariable[];
+  triggers: WmrProviderTrigger[];
 }
 
-export interface MamlProviderVariable {
+export interface WmrProviderVariable {
   column: string;
   name: string;
   type: string;
@@ -261,29 +261,29 @@ export interface MamlProviderVariable {
   row?: string;
 }
 
-export interface MamlProviderTrigger {
-  commands: MamlCommand[];
+export interface WmrProviderTrigger {
+  commands: WmrCommand[];
 }
 
-export interface MamlImageNumber extends MamlBaseAttrs {
+export interface WmrImageNumber extends WmrBaseAttrs {
   tag: 'ImageNumber';
   src?: string;
   textExp?: string;
 }
 
-export interface MamlMask extends MamlBaseAttrs {
+export interface WmrMask extends WmrBaseAttrs {
   tag: 'Mask';
-  children: MamlNode[];
+  children: WmrNode[];
 }
 
-export interface MamlArray extends MamlBaseAttrs {
+export interface WmrArray extends WmrBaseAttrs {
   tag: 'Array';
   count?: string;
   indexName?: string;
-  children: MamlNode[];
+  children: WmrNode[];
 }
 
-export interface MamlTime extends MamlBaseAttrs {
+export interface WmrTime extends WmrBaseAttrs {
   tag: 'Time';
   src?: string;        // static sprite base path, e.g. "time/0/t.png"
   srcExp?: string;     // expression → sprite base path
@@ -292,23 +292,23 @@ export interface MamlTime extends MamlBaseAttrs {
   space?: string;      // expression: spacing between character images
 }
 
-export interface MamlMusicControl extends MamlBaseAttrs {
+export interface WmrMusicControl extends WmrBaseAttrs {
   tag: 'MusicControl';
-  children: MamlNode[];
+  children: WmrNode[];
 }
 
-export interface MamlFunction {
+export interface WmrFunction {
   tag: 'Function';
   name: string;
-  commands: MamlCommand[];
+  commands: WmrCommand[];
 }
 
-export interface MamlVirtualElement extends MamlBaseAttrs {
+export interface WmrVirtualElement extends WmrBaseAttrs {
   tag: 'VirtualElement';
   folmeMode?: boolean;
 }
 
-export interface MamlFolmeState {
+export interface WmrFolmeState {
   tag: 'FolmeState';
   name: string;
   x?: string;
@@ -319,50 +319,50 @@ export interface MamlFolmeState {
   rotation?: string;
 }
 
-export interface MamlFolmeConfigSpecial {
+export interface WmrFolmeConfigSpecial {
   property: string;
   ease?: string;
 }
 
-export interface MamlFolmeConfig {
+export interface WmrFolmeConfig {
   tag: 'FolmeConfig';
   name: string;
   ease?: string;
   delay?: string;
   onComplete?: string;
-  specials: MamlFolmeConfigSpecial[];
+  specials: WmrFolmeConfigSpecial[];
 }
 
-export interface MamlBroadcastBinder {
+export interface WmrBroadcastBinder {
   tag: 'BroadcastBinder';
   action?: string;
-  variables: MamlProviderVariable[];
-  triggers?: MamlTrigger[];
+  variables: WmrProviderVariable[];
+  triggers?: WmrTrigger[];
 }
 
-export type MamlNode =
-  | MamlGroup
-  | MamlImage
-  | MamlText
-  | MamlDateTime
-  | MamlRectangle
-  | MamlArc
-  | MamlCircle
-  | MamlLine
-  | MamlButton
-  | MamlVar
-  | MamlVarArray
-  | MamlContentProviderBinder
-  | MamlBroadcastBinder
-  | MamlImageNumber
-  | MamlMask
-  | MamlArray
-  | MamlTime
-  | MamlMusicControl
-  | MamlFunction
-  | MamlVirtualElement
-  | MamlFolmeState
-  | MamlFolmeConfig;
+export type WmrNode =
+  | WmrGroup
+  | WmrImage
+  | WmrText
+  | WmrDateTime
+  | WmrRectangle
+  | WmrArc
+  | WmrCircle
+  | WmrLine
+  | WmrButton
+  | WmrVar
+  | WmrVarArray
+  | WmrContentProviderBinder
+  | WmrBroadcastBinder
+  | WmrImageNumber
+  | WmrMask
+  | WmrArray
+  | WmrTime
+  | WmrMusicControl
+  | WmrFunction
+  | WmrVirtualElement
+  | WmrFolmeState
+  | WmrFolmeConfig;
 
 // ---------------------------------------------------------------------------
 // Expression AST
@@ -393,7 +393,7 @@ export type UnaryOp = '-' | '!';
 
 export type VarValue = number | string | boolean | null | Record<string, unknown> | unknown[];
 
-export interface MamlVarContext {
+export interface WmrVarContext {
   get(name: string): VarValue;
   has(name: string): boolean;
   getStr(name: string): string;
@@ -406,22 +406,22 @@ export interface MamlVarContext {
 }
 
 // ---------------------------------------------------------------------------
-// Parsed MAML document
+// Parsed WMR document
 // ---------------------------------------------------------------------------
 
-export interface MamlFramerateControlPoint {
+export interface WmrFramerateControlPoint {
   time: number;
   frameRate: number;
 }
 
-export interface MamlFramerateController {
+export interface WmrFramerateController {
   name: string;
   loop?: boolean;
   initPause?: boolean;
-  controlPoints: MamlFramerateControlPoint[];
+  controlPoints: WmrFramerateControlPoint[];
 }
 
-export interface MamlProviderDependencies {
+export interface WmrProviderDependencies {
   weather: boolean;
   device: boolean;
   clock: boolean;
@@ -429,11 +429,11 @@ export interface MamlProviderDependencies {
   hostFlags: boolean;
 }
 
-export interface MamlDocument {
-  root: MamlRoot;
+export interface WmrDocument {
+  root: WmrRoot;
   designWidth: number;
   designHeight?: number;
   frameRate: number;
   useVariableUpdater: string[];
-  framerateControllers: MamlFramerateController[];
+  framerateControllers: WmrFramerateController[];
 }

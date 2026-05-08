@@ -161,7 +161,7 @@ export function buildDefaultLauncherLayout(appRegistry: AppManifest[]): Launcher
   const widgets = Array.isArray(launcherDefaults.screen1?.widgets) ? launcherDefaults.screen1.widgets : [];
   for (const widget of widgets) {
     let widgetItem: LauncherItem;
-    if (widget?.widgetType === 'maml' && widget.widgetId && widget.variant) {
+    if (widget?.widgetType === 'wmr' && widget.widgetId && widget.variant) {
       const xmlBaseUrl = typeof widget === 'object'
         && widget !== null
         && 'xmlBaseUrl' in widget
@@ -169,9 +169,9 @@ export function buildDefaultLauncherLayout(appRegistry: AppManifest[]): Launcher
         ? widget.xmlBaseUrl
         : undefined;
       widgetItem = {
-        id: makeId('widget_maml'),
+        id: makeId('widget_wmr'),
         kind: 'widget',
-        widgetType: 'maml',
+        widgetType: 'wmr',
         widgetId: String(widget.widgetId),
         variant: String(widget.variant),
         previewUrl: String(widget.previewUrl ?? ''),

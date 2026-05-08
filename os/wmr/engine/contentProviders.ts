@@ -1,5 +1,5 @@
 /**
- * Maps MAML ContentProviderBinder URIs to app store data.
+ * Maps WMR ContentProviderBinder URIs to app store data.
  */
 import { getStore } from '../../createAppStore';
 import ContentResolver from '../../ContentResolver';
@@ -13,13 +13,13 @@ import { DEFAULT_WALLPAPER_CHOICES } from '../../launcher/layout';
 import { getNextTrigger, pad2 } from '../../../system/Clock/utils';
 import * as TimeService from '../../TimeService';
 import BroadcastBus from '../../BroadcastBus';
-import type { VarValue, MamlNode, MamlContentProviderBinder, MamlProviderDependencies } from './types';
+import type { VarValue, WmrNode, WmrContentProviderBinder, WmrProviderDependencies } from './types';
 
 /**
  * Map Chinese weather text to Xiaomi widget weather_id.
  *
  * Important:
- * - Background category / particle logic in the original MAML relies on these ids.
+ * - Background category / particle logic in the original WMR relies on these ids.
  * - 23/24 are haze/float-dust family, 22/25 are hail/freezing-rain family.
  */
 function mapWeatherTextToId(text: string): number {
@@ -512,7 +512,7 @@ function getNetworkAssistantProviderData(): Record<string, VarValue | VarValue[]
   };
 }
 
-function queryGenericProviderColumns(binder: MamlContentProviderBinder): Record<string, VarValue | VarValue[]> {
+function queryGenericProviderColumns(binder: WmrContentProviderBinder): Record<string, VarValue | VarValue[]> {
   const uri = binder.uriFormat ?? binder.uri ?? '';
   if (!uri.startsWith('content://')) return {};
 
@@ -544,7 +544,7 @@ function resolveWeatherCityOverride(ctx?: import('./variables').VarContext): str
 }
 
 function getProviderColumns(
-  binder: MamlContentProviderBinder,
+  binder: WmrContentProviderBinder,
   ctx?: import('./variables').VarContext,
 ): Record<string, VarValue | VarValue[]> {
   const generic = queryGenericProviderColumns(binder);
@@ -605,7 +605,7 @@ function getMusicData(): Record<string, VarValue> {
   return vars;
 }
 
-export function applyBinderData(ctx: import('./variables').VarContext, binder: MamlContentProviderBinder): void {
+export function applyBinderData(ctx: import('./variables').VarContext, binder: WmrContentProviderBinder): void {
   const columns = getProviderColumns(binder, ctx);
   let maxCount = 0;
   for (const variable of binder.variables) {
@@ -640,7 +640,7 @@ export function applyBinderData(ctx: import('./variables').VarContext, binder: M
   }
 }
 
-function walkBinders(nodes: MamlNode[], visit: (binder: MamlContentProviderBinder) => void): void {
+function walkBinders(nodes: WmrNode[], visit: (binder: WmrContentProviderBinder) => void): void {
   for (const node of nodes) {
     if (node.tag === 'ContentProviderBinder') {
       visit(node);
@@ -659,9 +659,9 @@ function walkBinders(nodes: MamlNode[], visit: (binder: MamlContentProviderBinde
 }
 
 export interface InjectProviderDataOptions {
-  nodes?: MamlNode[];
-  binders?: MamlContentProviderBinder[];
-  dependencies?: Partial<MamlProviderDependencies>;
+  nodes?: WmrNode[];
+  binders?: WmrContentProviderBinder[];
+  dependencies?: Partial<WmrProviderDependencies>;
 }
 
 /**
@@ -671,7 +671,7 @@ export function injectProviderData(
   ctx: import('./variables').VarContext,
   options: InjectProviderDataOptions = {},
 ): void {
-  const deps: MamlProviderDependencies = {
+  const deps: WmrProviderDependencies = {
     weather: options.dependencies?.weather ?? true,
     device: options.dependencies?.device ?? true,
     clock: options.dependencies?.clock ?? true,
@@ -721,7 +721,7 @@ export function injectProviderData(
   }
 }
 
-export function handleMamlHostBroadcast(
+export function handleWmrHostBroadcast(
   action: string,
   extras?: Record<string, unknown>,
   valueHints?: Record<string, number>,

@@ -1,5 +1,5 @@
-import type { MamlInlineBundleSource } from '@/os/maml/MamlBundleCache';
-import { buildMamlResourceStrings } from '@/os/maml/engine/resourceStrings';
+import type { WmrInlineBundleSource } from '@/os/wmr/WmrBundleCache';
+import { buildWmrResourceStrings } from '@/os/wmr/engine/resourceStrings';
 
 import manifestXml from './weather-app-bg/manifest.xml?raw';
 import previewUrl from './weather-app-bg/preview/widget_4x2.png';
@@ -17,7 +17,7 @@ const stringFileMap = Object.fromEntries(
   ]),
 );
 
-const bundleBaseUrl = '/@app-assets/Weather/maml/weather-app-bg/';
+const bundleBaseUrl = '/@app-assets/Weather/wmr/weather-app-bg/';
 
 function resolveWeatherBackgroundAssetUrl(src: string): string {
   if (!src) return src;
@@ -25,11 +25,11 @@ function resolveWeatherBackgroundAssetUrl(src: string): string {
   return `${bundleBaseUrl}${src}`;
 }
 
-export const WEATHER_BACKGROUND_MAML_BUNDLE: MamlInlineBundleSource = {
+export const WEATHER_BACKGROUND_WMR_BUNDLE: WmrInlineBundleSource = {
   cacheKey: import.meta.url,
   xml: manifestXml,
-  resourceStrings: buildMamlResourceStrings(stringFileMap),
+  resourceStrings: buildWmrResourceStrings(stringFileMap),
   assetUrlResolver: resolveWeatherBackgroundAssetUrl,
 };
 
-export const WEATHER_BACKGROUND_MAML_PREVIEW_URL = previewUrl;
+export const WEATHER_BACKGROUND_WMR_PREVIEW_URL = previewUrl;

@@ -30,7 +30,7 @@ export function resolveIntent(pkg: string, _cls?: string): string | null {
   return PACKAGE_MAP[pkg] ?? null;
 }
 
-export function handleMamlIntent(pkg: string, cls?: string): boolean {
+export function handleWmrIntent(pkg: string, cls?: string): boolean {
   const appId = resolveIntent(pkg, cls);
   if (appId) {
     (window as any).__OS__?.openApp?.(appId);

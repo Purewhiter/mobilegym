@@ -10,7 +10,7 @@ export type LauncherGrid = {
 
 export type LauncherContainer = 'workspace' | 'hotseat';
 
-export type LauncherWidgetType = 'clock' | 'weather' | 'maml';
+export type LauncherWidgetType = 'clock' | 'weather' | 'wmr';
 
 export type LauncherWallpaper = { kind: 'image'; imageUrl: string };
 
@@ -18,7 +18,7 @@ export type LauncherItem =
   | { id: string; kind: 'app'; appId: AppId }
   | { id: string; kind: 'folder'; folderId: string }
   | { id: string; kind: 'widget'; widgetType: 'clock' | 'weather' }
-  | { id: string; kind: 'widget'; widgetType: 'maml'; widgetId: string; variant: string; previewUrl: string; xmlBaseUrl?: string };
+  | { id: string; kind: 'widget'; widgetType: 'wmr'; widgetId: string; variant: string; previewUrl: string; xmlBaseUrl?: string };
 
 export type LauncherPlacement = {
   itemId: string;

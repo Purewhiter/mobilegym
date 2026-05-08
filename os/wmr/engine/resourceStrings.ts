@@ -43,7 +43,7 @@ export function parseStringsXml(xml: string): Record<string, VarValue> {
   return strings;
 }
 
-export function buildMamlResourceStrings(
+export function buildWmrResourceStrings(
   files: Record<string, string>,
 ): Record<string, VarValue> {
   const merged: Record<string, VarValue> = {};
@@ -70,7 +70,7 @@ async function fetchStringsText(url: string): Promise<string | null> {
   }
 }
 
-export async function loadMamlResourceStrings(xmlBaseUrl: string): Promise<Record<string, VarValue>> {
+export async function loadWmrResourceStrings(xmlBaseUrl: string): Promise<Record<string, VarValue>> {
   const files: Record<string, string> = {};
   const baseXml = await fetchStringsText(`${xmlBaseUrl}strings/strings.xml`);
   if (baseXml) files['strings.xml'] = baseXml;
@@ -81,6 +81,6 @@ export async function loadMamlResourceStrings(xmlBaseUrl: string): Promise<Recor
     files[`strings_${locale}.xml`] = localizedXml;
     break;
   }
-  if (Object.keys(files).length > 0) return buildMamlResourceStrings(files);
+  if (Object.keys(files).length > 0) return buildWmrResourceStrings(files);
   return {};
 }
