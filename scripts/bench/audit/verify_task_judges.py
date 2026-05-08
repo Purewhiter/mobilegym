@@ -23,10 +23,10 @@ bench_env 任务判别函数自动验证脚本 v2。
   - pip install playwright && playwright install chromium
 
 用法:
-    python scripts/bench/verify_task_judges.py                # 全部检查
-    python scripts/bench/verify_task_judges.py --app wechat   # 只检查 wechat
-    python scripts/bench/verify_task_judges.py --verbose       # 显示详细信息
-    python scripts/bench/verify_task_judges.py --offline       # 离线模式（退回 defaults.json）
+    python scripts/bench/audit/verify_task_judges.py                # 全部检查
+    python scripts/bench/audit/verify_task_judges.py --app wechat   # 只检查 wechat
+    python scripts/bench/audit/verify_task_judges.py --verbose       # 显示详细信息
+    python scripts/bench/audit/verify_task_judges.py --offline       # 离线模式（退回 defaults.json）
 """
 
 from __future__ import annotations
@@ -43,7 +43,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT))
 
 from bench_env.task.base import BaseTask, BaseApp

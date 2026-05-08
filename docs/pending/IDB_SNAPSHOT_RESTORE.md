@@ -91,7 +91,7 @@ async function restoreFull(snap: SimSnapshot) {
 
 ## 实测预期
 
-基于 `scripts/bench/mem_microbench.py` 的 `snapshot_restore` 路径（不含 IDB）：
+基于 `scripts/bench/perf/mem_microbench.py` 的 `snapshot_restore` 路径（不含 IDB）：
 
 | 路径 | median | 含义 |
 |---|---|---|
@@ -187,7 +187,7 @@ n=64 并行 browser × 200 MB sdcard = 12.8 GB —— 这是 OS 隔离的固有�
 
 ### Phase 3：验证（~1 小时）
 
-- [ ] 扩 `scripts/bench/mem_microbench.py` 的 `snapshot_restore` 路径，加 `--with-idb` 选项，覆盖 OS 完整路径，实测端到端时延
+- [ ] 扩 `scripts/bench/perf/mem_microbench.py` 的 `snapshot_restore` 路径，加 `--with-idb` 选项，覆盖 OS 完整路径，实测端到端时延
 - [ ] 跑一组 par=64 的 GRPO mini-batch 模拟，对比 reset 时间总和与峰值内存
 - [ ] 跨任务串跑 10 个 task，confirm 文件状态、App store 状态、OS settings 都正确恢复（与每次完整 reset 的状态做 diff）
 

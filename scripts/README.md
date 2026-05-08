@@ -15,7 +15,14 @@
 
 ## bench
 
-Benchmark 运行结果统计、任务数量统计、judge 验证、run patch/rejudge 等实验辅助工具。
+Benchmark 运行、任务审计、judge 验证、离线复判和性能实验工具。
+
+- `bench_real_device.sh`：真机 / ADB sim2real 评测入口，读取 `bench_env/splits/sim2real_instructions.json`
+- `examples.sh`：常用 `bench_env.run` 命令示例，默认不执行
+- `rejudge_vlm_run.py`：基于已保存 trajectory 的离线 VLM 复判
+- `audit/`：任务审计工具，包括 judge 验证、任务数量统计、任务索引更新
+- `generate/`：action task spec / generated task 生成工具
+- `perf/`：LLM 吞吐和浏览器内存等性能实验工具
 
 ## migrate
 

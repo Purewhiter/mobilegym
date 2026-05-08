@@ -9,7 +9,7 @@ source 参数（从 app 状态采样）视为有限离散：
   - 同一 source 被多个参数引用时，用排列数 P(n, k) 而非乘积
 
 用法：
-  python scripts/bench/count_tasks.py [--suite SUITE] [--csv] [--verbose]
+  python scripts/bench/audit/count_tasks.py [--suite SUITE] [--csv] [--verbose]
 """
 
 import sys
@@ -22,7 +22,7 @@ from typing import Type, Any
 from collections import Counter, defaultdict
 
 # ── 路径设置 ────────────────────────────────────────────────────────────────
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT))
 
 # 绕过 bench_env/__init__.py 的重型依赖（openai 等）

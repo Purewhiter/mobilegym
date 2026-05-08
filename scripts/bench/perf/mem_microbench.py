@@ -8,8 +8,8 @@ playwright-launched parents. PSS apportions shared pages, so summing PSS
 across processes gives true physical memory used — no double counting.
 
 Usage:
-  python scripts/bench/mem_microbench.py --url http://localhost:3000 --n 4 --isolation pages
-  python scripts/bench/mem_microbench.py --url http://localhost:3000 --sweep
+  python scripts/bench/perf/mem_microbench.py --url http://localhost:3000 --n 4 --isolation pages
+  python scripts/bench/perf/mem_microbench.py --url http://localhost:3000 --sweep
 """
 
 from __future__ import annotations
@@ -22,7 +22,7 @@ from pathlib import Path
 
 import psutil
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
+REPO_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO_ROOT))
 
 from bench_env.env.pool import EnvPool, Isolation
