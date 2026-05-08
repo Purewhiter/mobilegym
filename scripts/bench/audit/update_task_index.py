@@ -6,9 +6,9 @@ block at the top of each suite's tasks.py, making it easy to see all tasks
 at a glance without scrolling or running external commands.
 
 Usage:
-    python scripts/bench/update_task_index.py              # Update all suites
-    python scripts/bench/update_task_index.py wechat alipay # Update specific suites
-    python scripts/bench/update_task_index.py --check       # Dry-run, report stale
+    python scripts/bench/audit/update_task_index.py              # Update all suites
+    python scripts/bench/audit/update_task_index.py wechat alipay # Update specific suites
+    python scripts/bench/audit/update_task_index.py --check       # Dry-run, report stale
 """
 
 from __future__ import annotations
@@ -17,7 +17,7 @@ import ast
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT))
 
 from bench_env.task.registry import TaskRegistry, _SUITE_MODULES

@@ -3,7 +3,7 @@
 Measure OpenAI-compatible chat completions throughput vs concurrency.
 
 Usage:
-  python scripts/bench/bench_llm_parallel_throughput.py \\
+  python scripts/bench/perf/bench_llm_parallel_throughput.py \\
     --base-url http://127.0.0.1:8001/v1 \\
     --model gelab-zero
 
@@ -43,7 +43,7 @@ from pathlib import Path
 from typing import Any, AsyncIterator
 
 # `python scripts/...` 时 sys.path 不含仓库根目录，无法 import bench_env（vision 下需 AutoGLM system）
-_REPO_ROOT = Path(__file__).resolve().parents[2]
+_REPO_ROOT = Path(__file__).resolve().parents[3]
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 

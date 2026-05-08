@@ -1,4 +1,6 @@
-  TASK_IDS=$(python3 -c "import json; print(','.join(json.load(open('bench_env/splits/sim2real_instructions.json')).keys()))")
+#!/usr/bin/env bash
+
+TASK_IDS=$(python3 -c "import json; print(','.join(json.load(open('bench_env/splits/sim2real_instructions.json')).keys()))")
 
 python3 -m bench_env.run --device real \
   --task-ids "$TASK_IDS" \
