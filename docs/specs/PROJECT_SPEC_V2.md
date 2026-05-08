@@ -1375,10 +1375,10 @@ IME 位于 `os/keyboard/`：
 - `pinyinIme.ts`：拼音分词/候选生成（支持：完整拼音、简拼、半截音节联想、分词符 `'` 强制断词）
 - `pinyinData.ts`：内置小词库（**自动生成，禁止手改**）
 - `public/ime/pinyin_dict.json`：大词库（异步加载）
-- `scripts/build_pinyin_dict.mjs`：从 `all_dicts/`（Rime `.dict.yaml`）生成 `pinyinData.ts` 和 `pinyin_dict.json`
+- `scripts/ime/build_pinyin_dict.mjs`：从 `all_dicts/`（Rime `.dict.yaml`）生成 `pinyinData.ts` 和 `pinyin_dict.json`
 
 维护规则：
-- 词库更新请改 `all_dicts/` 或脚本逻辑，然后运行 `node scripts/build_pinyin_dict.mjs`
+- 词库更新请改 `all_dicts/` 或脚本逻辑，然后运行 `node scripts/ime/build_pinyin_dict.mjs`
 - 不要手写/手改巨型映射（会引入重复 key、体积膨胀、难以审查）
 
 #### 8.4.7 调试注意（DevTools 触摸模拟）

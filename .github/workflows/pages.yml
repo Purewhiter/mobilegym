@@ -15,7 +15,7 @@ on:
       - 'package.json'
       - 'package-lock.json'
       - '.github/workflows/pages.yml'
-      - 'scripts/clean_dist_for_pages.mjs'
+      - 'scripts/dev/clean_dist_for_pages.mjs'
   workflow_dispatch:  # 允许在 GitHub UI 上手动触发
 
 permissions:
@@ -41,7 +41,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: dist
-          key: dist-v2-${{ hashFiles('apps/**', 'os/**', 'system/**', 'public/**', 'index.html', 'main.tsx', 'vite.config.ts', 'package.json', 'package-lock.json', 'scripts/clean_dist_for_pages.mjs', '.github/workflows/pages.yml') }}
+          key: dist-v2-${{ hashFiles('apps/**', 'os/**', 'system/**', 'public/**', 'index.html', 'main.tsx', 'vite.config.ts', 'package.json', 'package-lock.json', 'scripts/dev/clean_dist_for_pages.mjs', '.github/workflows/pages.yml') }}
 
       - name: Setup Node
         if: steps.cache-dist.outputs.cache-hit != 'true'
@@ -68,7 +68,7 @@ jobs:
 
       - name: Strip dev artifacts from dist
         if: steps.cache-dist.outputs.cache-hit != 'true'
-        run: node scripts/clean_dist_for_pages.mjs
+        run: node scripts/dev/clean_dist_for_pages.mjs
 
       - name: Assemble site
         run: |

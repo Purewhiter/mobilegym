@@ -274,7 +274,7 @@ stringToSign = "{method}:{path}:{query}:{app\_key}:{nonce}:{timestamp}"
 - “宜室内运动”：彩云 v2.6 未提供“运动指数”，建议根据温度/风/降水/空气质量派生一个简单规则
 - “今日限行 116”：彩云不提供限行政策/尾号数据
   - **实现建议**：按城市（北京等）用本地规则表 + 日期计算，或接入第三方交通/限行 API
-- “央视天气预报”视频：彩云不提供该视频内容，属于额外内容源（可内置链接/抓取央视公开源/自建）
+- “央视天气预报”视频：彩云不提供该视频内容，属于额外内容源（可内置链接/接入公开源/自建）
 
 ### 4.9 未来 3 天列表 + “查看近15日天气”
 
@@ -310,4 +310,3 @@ stringToSign = "{method}:{path}:{query}:{app\_key}:{nonce}:{timestamp}"
 - **并发策略**：优先只打一次综合 `weather` 接口（`hourlysteps=24&dailysteps=15`）
 - **缓存**：同一城市/坐标建议做 5-10 分钟缓存，减少调用与延迟
 - **QPS**：彩云按套餐有不同 QPS 限制，平台可查看：`https://platform.caiyunapp.com/api/manage?mode=weather`
-

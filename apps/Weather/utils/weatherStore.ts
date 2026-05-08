@@ -55,8 +55,8 @@ const ISO_DATE_RE = /^(\d{4})-(\d{2})-(\d{2})(.*)$/;
 /**
  * 将 weatherBundles.json 中的所有日期字段整体平移到"以模拟当天为基准"。
  *
- * 快照是离线采集的静态数据，其中 daily[0] 代表采集当天，historicalYesterday
- * 代表采集前一天，hourly/indices/airQuality 等同理。读取时按当天为 day 0 整体
+ * 快照是离线生成的静态数据，其中 daily[0] 代表生成当天，historicalYesterday
+ * 代表生成前一天，hourly/indices/airQuality 等同理。读取时按当天为 day 0 整体
  * 平移偏移量 = 模拟今天 - 快照 day 0，可让前端显示和 bench 判定都看到正确日期。
  *
  * 只改写形如 `YYYY-MM-DD` 或 `YYYY-MM-DDTHH:mm...` 的字符串，其他字段保持不变。

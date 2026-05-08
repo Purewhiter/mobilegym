@@ -13,10 +13,10 @@ Treat the goal as root-cause analysis, not pass-rate maximization. Always determ
 
 Read the repository and task context before running anything:
 
-- `/Users/purew/Desktop/mobile-gym/CLAUDE.md`
-- `/Users/purew/Desktop/mobile-gym/bench_env/docs/TASK_DESIGN_GUIDE.md`
-- `/Users/purew/Desktop/mobile-gym/bench_env/docs/TASK_DESIGN_SPEC.md`
-- `/Users/purew/Desktop/mobile-gym/bench_env/docs/TASK_TEST_SPEC.md`
+- `CLAUDE.md`
+- `bench_env/docs/TASK_DESIGN_GUIDE.md`
+- `bench_env/docs/TASK_DESIGN_SPEC.md`
+- `bench_env/docs/TASK_TEST_SPEC.md`
 - The target suite file, usually `bench_env/task/<suite>/tasks.py`
 - Any existing `runs/<timestamp>/results.jsonl` or trajectory folders relevant to the current investigation
 

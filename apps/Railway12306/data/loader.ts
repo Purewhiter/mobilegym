@@ -1,7 +1,7 @@
 /**
  * Railway12306 数据懒加载器
  *
- * 使用 fetch() + JSON.parse() 加载数据（绕过 Vite ESM 转换管线，避免阻塞 dev server）。
+ * 使用 fetch() + JSON.parse() 加载数据（避开 Vite ESM 转换管线，避免阻塞 dev server）。
  * 单例缓存：首次加载后后续调用直接返回缓存数据。
  */
 

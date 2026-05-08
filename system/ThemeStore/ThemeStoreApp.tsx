@@ -176,7 +176,7 @@ function ThemeStoreHomePage() {
           <div className="p-4 text-sm text-app-text-muted">
             <div>{s.no_resources_found}</div>
             <div className="mt-2 text-[12px] font-mono text-black/60">
-              python3 scripts/prepare-themes.py -&gt; public/themes
+              python3 scripts/dev/prepare-themes.py -&gt; public/themes
             </div>
           </div>
         ) : (

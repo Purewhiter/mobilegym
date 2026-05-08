@@ -858,7 +858,7 @@ bench_env/task/*/tasks.py 或 defs/*.py ←── 人工精调/编写任务
 
 | 脚本 | 用途 |
 |------|------|
-| `build_pinyin_dict.mjs` | 从 Rime 词典生成拼音 IME 词库 |
+| `ime/build_pinyin_dict.mjs` | 从 Rime 词典生成拼音 IME 词库 |
 | `lint_store_getters.mjs` | 检测 store 中的查询型 getter 违规 |
 | `verify_task_judges.py` | 验证任务 judge 逻辑正确性 |
 | `fix_strings_i18n.mjs` | 字符串 i18n 修复 |

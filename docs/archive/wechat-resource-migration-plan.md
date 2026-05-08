@@ -123,8 +123,8 @@ icSizeWxidAdd: 13,      // 微信号旁加号
 ```
 
 **迁移脚本：**
-- `scripts/migrate_wechat_icon_sizes.mjs` — 按图标名称+尺寸智能映射
-- `scripts/fix_duplicate_dimens_import.mjs` — 修复重复 import
+- `scripts/migrate/migrate_wechat_icon_sizes.mjs` — 按图标名称+尺寸智能映射
+- `scripts/migrate/fix_duplicate_dimens_import.mjs` — 修复重复 import
 
 **迁移方法论：**
 
@@ -151,17 +151,17 @@ icSizeWxidAdd: 13,      // 微信号旁加号
 | 透明度修饰符 | 不迁移，保留原生语法 |
 | 运行时注入 | `themeToCssVars` 已支持 color/bg/border/placeholder/hover |
 
-**脚本：** `scripts/migrate_colors_to_semantic.mjs`
+**脚本：** `scripts/migrate/migrate_colors_to_semantic.mjs`
 
 ```bash
 # 预览（默认模式，安全！）
-node scripts/migrate_colors_to_semantic.mjs --app=Wechat
+node scripts/migrate/migrate_colors_to_semantic.mjs --app=Wechat
 
 # 执行迁移（需要显式 --execute）
-node scripts/migrate_colors_to_semantic.mjs --app=Wechat --execute
+node scripts/migrate/migrate_colors_to_semantic.mjs --app=Wechat --execute
 
 # 详细模式（显示每处位置）
-node scripts/migrate_colors_to_semantic.mjs --app=Wechat --verbose
+node scripts/migrate/migrate_colors_to_semantic.mjs --app=Wechat --verbose
 ```
 
 **两层颜色架构：**
@@ -199,7 +199,7 @@ node scripts/migrate_colors_to_semantic.mjs --app=Wechat --verbose
 #### 策略 A：语义迁移（当前使用）
 
 ```bash
-node scripts/migrate_colors_to_semantic.mjs --app=Wechat --execute
+node scripts/migrate/migrate_colors_to_semantic.mjs --app=Wechat --execute
 ```
 
 - ✅ 只迁移 100% 确定的（text-gray-900 → text-app-text）
@@ -209,7 +209,7 @@ node scripts/migrate_colors_to_semantic.mjs --app=Wechat --execute
 #### 策略 B：保值迁移（推荐，视觉零差异）
 
 ```bash
-node scripts/migrate_colors_preserve_value.mjs --app=Wechat --execute
+node scripts/migrate/migrate_colors_preserve_value.mjs --app=Wechat --execute
 ```
 
 - ✅ **视觉零差异**（使用 Tailwind 原始 hex 值）
@@ -233,7 +233,7 @@ node scripts/migrate_colors_preserve_value.mjs --app=Wechat --execute
 
 **目标：** 将 `h-[56px]`、`w-[48px]`、`text-[10px]` 等任意值替换为 CSS 变量引用。
 
-**脚本：** `scripts/migrate_dimens_arbitrary.mjs`（启发式命名，数值入变量名保证唯一）
+**脚本：** `scripts/migrate/migrate_dimens_arbitrary.mjs`（启发式命名，数值入变量名保证唯一）
 
 **运行时要求：** `os/utils/themeToCssVars.ts` 必须：
 - 为包含 `textsize`/`text_size` 的尺寸变量注入 **font-size** 规则（避免 TabBar/标题字体异常）
@@ -297,7 +297,7 @@ git checkout -- apps/Wechat/
 git stash
 
 # 方案 3：写反向脚本（如 revert_icon_sizes.mjs）
-node scripts/revert_icon_sizes.mjs --app=Wechat
+node scripts/migrate/revert_icon_sizes.mjs --app=Wechat
 ```
 
 ---
@@ -309,7 +309,7 @@ node scripts/revert_icon_sizes.mjs --app=Wechat
 **思路**：把当前代码里的变量全部替换成 res 中的**原始值**，把旧代码里的灰阶等规范成同一形式，再对比「展开/规范后的 className、style」是否一致（一一对应）。
 
 ```bash
-node scripts/verify_migration_consistency.mjs --app=Wechat [--before=HEAD~1] [--diff]
+node scripts/migrate/verify_migration_consistency.mjs --app=Wechat [--before=HEAD~1] [--diff]
 ```
 
 **参数：**

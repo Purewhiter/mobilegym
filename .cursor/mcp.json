@@ -1,20 +1,20 @@
 {
     "mcpServers": {
         "mobile-gym": {
-            "command": "/Users/purew/miniconda3/envs/agent/bin/python",
+            "command": "python",
             "args": [
                 "bench_env/mcp_server.py"
             ],
-            "cwd": "/Users/purew/Desktop/mobile-gym",
+            "cwd": ".",
             "disabled": true,
             "alwaysAllow": []
         },
         "adb-controller": {
-            "command": "/Users/purew/miniconda3/envs/agent/bin/python",
+            "command": "python",
             "args": [
                 "bench_env/adb_mcp_server.py"
             ],
-            "cwd": "/Users/purew/Desktop/mobile-gym"
+            "cwd": "."
         }
     }
 }

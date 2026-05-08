@@ -215,7 +215,7 @@ export const PlaylistPage: React.FC = () => {
                 const colors = ['from-purple-800', 'from-blue-800', 'from-red-800', 'from-orange-800', 'from-emerald-800', 'from-yellow-800'];
                 setBgColor(colors[Math.floor(Math.random() * colors.length)]);
 
-                // 优先使用预生成的真实数据
+                // 优先使用预生成的离线数据
                 const seededTracks = id ? playlistTracksMap?.[id] : undefined;
                 if (seededTracks && seededTracks.length > 0) {
                     setTracks(seededTracks);

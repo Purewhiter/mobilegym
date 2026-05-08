@@ -7,7 +7,7 @@ import type { Note, User } from '../types';
 const ASSET_EXT_RE = /\.(jpe?g|png|webp|gif|svg|mp4|webm|avif)(\?.*)?$/i;
 
 // RedBook 数据有两种资源源：
-//   1) './images/...' / 'images/...' → 脱敏数据集（CDN, mobilegym-data/redbook/...）
+//   1) './images/...' / 'images/...' → 外部媒体镜像（CDN, mobilegym-data/redbook/...）
 //   2) 其它带 asset 扩展名的裸路径 → 仓库内 bundle 资源（/@app-assets/RedBook/...）
 const resolveAssetUrl = (raw: unknown): unknown => {
   const s = typeof raw === 'string' ? raw : null;

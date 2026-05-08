@@ -734,7 +734,7 @@ python scripts/extract_design_tokens.py \
 
 ```bash
 # 1. 先做 UI Dump（获取运行时布局）
-python scripts/dump_ui_layout.py \
+python scripts/reverse/dump_ui_layout.py \
   --apk-res Weather_decompiled/res
 
 # 2. 再提取设计 Token（获取精确设计参数）

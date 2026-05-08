@@ -12,7 +12,7 @@
 对应规范可参考：
 
 - `docs/PROJECT_SPEC_V2.md`
-- `scripts/prepare-themes.py`
+- `scripts/dev/prepare-themes.py`
 
 其中：
 
@@ -214,7 +214,7 @@ PY
 把原始资源拉到 `themes/` 后，需要重新生成 `public/themes`：
 
 ```bash
-python3 scripts/prepare-themes.py --all-themes
+python3 scripts/dev/prepare-themes.py --all-themes
 ```
 
 脚本输入输出关系：
@@ -226,7 +226,7 @@ python3 scripts/prepare-themes.py --all-themes
 如果只想用脚本默认白名单主题，也可以直接运行：
 
 ```bash
-python3 scripts/prepare-themes.py
+python3 scripts/dev/prepare-themes.py
 ```
 
 ## 验证方式
@@ -251,7 +251,7 @@ PY
 ThemeStore 运行时读取 `public/themes`。如果页面提示：
 
 ```text
-未发现资源。请先运行 python3 scripts/prepare-themes.py 生成 public/themes。
+未发现资源。请先运行 python3 scripts/dev/prepare-themes.py 生成 public/themes。
 ```
 
 说明原始资源已经有了，但静态产物还没生成，或者生成目录为空。
@@ -268,7 +268,7 @@ ThemeStore 运行时读取 `public/themes`。如果页面提示：
 这意味着：
 
 1. 从手机拉回来的原始资源通常不会直接出现在 Git 变更里
-2. 重新运行 `python3 scripts/prepare-themes.py --all-themes` 后，`public/themes/manifest.json` 会更新
+2. 重新运行 `python3 scripts/dev/prepare-themes.py --all-themes` 后，`public/themes/manifest.json` 会更新
 3. 如果脚本重建了 `public/themes/acf4966f-3fd8-460a-93d7-a315ab35003d/`，这个已跟踪目录也可能出现变更
 
 如果你只想同步原始资源，不想动仓库里已跟踪的 `public/themes` 文件，需要在运行生成脚本前先确认是否接受这些改动。
