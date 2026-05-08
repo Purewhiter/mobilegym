@@ -505,7 +505,7 @@ apps = ["os", "wechat"]               # S2：下拉通知栏查看微信消息
 **改进建议**：
 
 - 所有任务补充四轴 + capabilities 标注
-- `ReadContactsTotal` 建议调整为自然语言："微信通讯录里有多少个好友？"
+- `ReadMyWxid` 等查询任务建议保持自然语言表达
 - `SetAddMeSearch` 等设置类任务指令已经比较自然，保留
 - 考虑新增 1-2 个 L3 任务（如多步聊天操作）
 
@@ -513,11 +513,11 @@ apps = ["os", "wechat"]               # S2：下拉通知栏查看微信消息
 
 | 现有任务                       | scope | objective | composition | difficulty | capabilities  |
 | ------------------------------ | ----- | --------- | ----------- | ---------- | ------------- |
-| OpenMyQRCode                   | S1    | operate   | atomic      | L1         | nav           |
+| ReadMyWxid                     | S1    | query     | atomic      | L1         | nav, query    |
 | DisableFriendConfirmation      | S1    | operate   | atomic      | L1         | settings      |
 | SetMomentsVisibleRange         | S1    | operate   | sequential  | L2         | nav, settings |
 | PostMomentsTextWithCity        | S1    | operate   | sequential  | L2         | create        |
-| ReadContactsTotal              | S1    | query     | atomic      | L1         | query         |
+| ReadContactRegion              | S1    | query     | atomic      | L1         | nav, query    |
 | DisableWechatSportsLeaderboard | S1    | operate   | sequential  | L2         | nav, settings |
 
 ---
@@ -676,21 +676,16 @@ apps = ["os", "wechat"]               # S2：下拉通知栏查看微信消息
 | Railway12306LoginWithAccount                                     | ✅ 可行     | 登录流程已实现                      |
 | Railway12306RegisterThenLogin                                    | ✅ 可行     | 注册流程已实现                      |
 | Railway12306ChangePassword                                       | ✅ 可行     | 密码修改已实现                      |
-| BluetoothConnectNamedDevice                                      | ⚠️ 部分   | 需确认蓝牙模拟是否完整              |
-| BluetoothPairMultipleDevicesRecordPairableToNotes                | ⚠️ 部分   | 同上                                |
-| WifiConnectToNamedSSID                                           | ⚠️ 部分   | 需确认WiFi模拟                      |
-| WifiEnableHotspotAndConfigure                                    | ⚠️ 部分   | 需确认热点模拟                      |
-| WifiTryPasswordsFindCorrectOne                                   | ⚠️ 部分   | 需确认密码验证模拟                  |
-| WifiForgetNetworkThenReconnect                                   | ⚠️ 部分   | 同上                                |
+| 系统蓝牙/WiFi 设置候选                                          | ⚠️ 部分   | 需确认系统设置模拟是否完整          |
 | SystemLanguageSwitchThenBack                                     | ✅ 可行     | 系统语言设置已实现                  |
-| SystemTimezoneChange                                             | ⚠️ 需确认 | 时区设置需验证                      |
+| 系统时区设置候选                                                 | ⚠️ 需确认 | 时区设置需验证                      |
 | SystemThemeSwitch                                                | ✅ 可行     | 主题切换已实现                      |
 | SystemFontSizeAdjustThenBack                                     | ✅ 可行     | 字体大小设置已实现                  |
 | WechatAccountCancellation                                        | ✅ 可行     | 微信注销流程已实现                  |
 | RedbookClearCache                                                | ⚠️ 需确认 | 清除缓存功能需验证                  |
-| WechatModifyAppPermissionsByRevokingAuthorization                | ✅ 可行     | 授权管理已实现                      |
+| DeauthorizeApp                                                   | ✅ 可行     | 授权管理已实现                      |
 | OpenFourAppsCloseInRecentsOrder                                  | ⚠️ 需确认 | 最近任务界面需验证                  |
-| BatterySaverEnableWithBrightnessUnder25                          | ⚠️ 需确认 | 电池设置需验证                      |
+| 电池与亮度设置候选                                               | ⚠️ 需确认 | 电池设置需验证                      |
 | SettingsMicloudSyncTogglePattern                                 | ⚠️ 需确认 | 小米云服务设置需验证                |
 | WechatRegisterNewAccountWithPhoneVerificationAndRealName         | ❌ 不可行   | 短信验证码 + 实名认证超出模拟范围   |
 | WechatVerificationCodeExpiryThenRequestNewInvalidatesOld         | ❌ 不可行   | 验证码超时机制超出模拟范围          |

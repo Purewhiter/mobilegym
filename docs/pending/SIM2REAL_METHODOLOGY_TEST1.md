@@ -4,10 +4,8 @@
 
 配套文件：
 
-- [bench_env/splits/train.txt](../../bench_env/splits/train.txt) — 164 任务的实际训练集；与 `train.raw.txt` 内容一致
-- [bench_env/splits/train.raw.txt](../../bench_env/splits/train.raw.txt) — 训练集 provenance，来自 qwen3-vl-4b base 8 次 rollout 中通过次数在 1-7 之间的任务
+- [bench_env/splits/train.txt](../../bench_env/splits/train.txt) — 164 任务的实际训练集
 - [bench_env/splits/test.txt](../../bench_env/splits/test.txt) — 256 任务的最终评测集
-- [bench_env/splits/train.legacy_199.txt](../../bench_env/splits/train.legacy_199.txt) — 旧 199 任务训练 split 备份，不作为 paper 训练口径
 - [sim2real_instructions.json](../../bench_env/splits/sim2real_instructions.json) — test selection 中 59 个真机可执行任务的烘焙指令（53 个已有真机 + 6 个补跑）
 
 待补 artifact：
@@ -116,7 +114,7 @@ selection 67 中：
 | `reddit.Reddit_DeleteSeededChatMessage` | 需预置聊天再删除 |
 | `x.SendDmToConversation` | 需预置 X DM 会话 |
 
-`x.SetChatPrivacyBundle` 的模拟器流程参考 iOS 版 X App，而 Android 真机没有等价设置路径，因此不纳入 test；当前 test 使用 `crossapp_commerce.AlipayShareBillDetail`。
+一个 X 隐私设置候选任务的模拟器流程参考 iOS 版 X App，而 Android 真机没有等价设置路径，因此不纳入 test；当前 test 使用 `crossapp_commerce.AlipayShareBillDetail`。
 
 ---
 

@@ -6,45 +6,31 @@ Cross-app Life & Travel (crossapp_life) task definitions.
 含反向流：WeChat → Map（从聊天提取地点搜索）。
 """
 # -- Task Index (auto-generated, do not edit) --
-# 38 tasks | L2×4  L3×16  L4×18
+# 24 tasks | L2×2  L3×11  L4×11
 #
-# [L2] WeatherCurrentToWechat                 查一下{city}现在天气怎么样，发给微信好友{contact}
-# [L2] MapPlaceToWechat                       帮我在地图上搜一下{place}的地址，发给微信好友{contact}
-# [L2] MapPlaceToNotes                        在地图上搜一下{place}的地址，记到笔记里
-# [L3] WeatherCurrentToSms                    查一下{city}现在天气怎么样，发短信告诉{contact}
-# [L2] WeatherShareMetric                     查一下{city}的{metric}，把结果微信发给{contact}
+# [L3] MapPlaceToWechat                       帮我在地图上搜一下{place}的地址，发给微信好友{contact}
+# [L4] WeatherShareMetric                     查一下{city}的{metric}，把结果微信发给{contact}
 # [L4] WeatherReportToNotes                   帮我查一下{city}现在的温度和天气，简单整理成一条记录保存到备忘录。
-# [L4] WeatherTripToMoments                   查看{city}的天气，如果是雨天，发朋友圈”{rain_content}”，否则发”{sun_content}”
-# [L3] WeatherFilterNonRainyDays              查{city}未来五天天气，把不下雨的日期记在笔记里，标题写'适合出行的日子'
-# [L3] WeatherCompareCityTemp                 帮我看看{city1}和{city2}现在哪个更暖和，具体温度是多少，微信告诉{contact}
+# [L2] WeatherFilterNonRainyDays              查{city}未来五天天气，把不下雨的日期记在笔记里，标题写'适合出行的日子'
 # [L3] WeatherRainBranchNotify                {city}明天要是下雨，给{contact}发消息提醒带伞；不下雨就说'明天天气不错'
 # [L3] RailwayTrainInfoToWechat               帮我查{date}从{from_station}到{to_station}最早的高铁，把车次和发车时间发给微信好友{contact}
-# [L3] RailwayPriceVsBalance                  查{date}从{from_station}到{to_station}最便宜的高铁票多少钱，再看看支付宝余额够不够买
+# [L4] RailwayPriceVsBalance                  查{date}从{from_station}到{to_station}最便宜的高铁票多少钱，再看看支付宝余额够不够买
 # [L3] RailwayDestWeatherQuery                我买了张去{city}的火车票，帮我查一下到达那天{city}的天气和温度
-# [L3] MapRouteDurationToWechat               查从当前位置到{destination}开车要多久，告诉{contact}我大概多久到
-# [L3] MapNearbyBestToWechat                  在地图搜{radius}内评分最高的{category}，把名字、评分和地址微信发给{contact}，评分一样的话优先最近的
-# [L3] MapPlacePhoneToSms                     在地图上搜{place}，把它的电话号码通过短信发给{contact}
-# [L3] WechatMessageToMapSearch               {contact}之前在微信里跟我说想去一个地方玩，帮我看看TA说的是哪，在地图上搜一下具体地址
+# [L4] MapNearbyBestToWechat                  在地图搜{radius}内评分最高的{category}，把名字、评分和地址微信发给{contact}，评分一样的话优先最近的
 # [L3] CalendarEventToWechat                  看看日历明天有什么安排，把第一个事件的主题和时间发给微信好友{contact}
-# [L3] ContactsPhoneToRailwayPassenger        查一下通讯录里{contact}的电话号码，在12306里帮我把他添加为乘车人，他的身份证号是{id_no}
-# [L3] MapWeatherToTripNotes                  我想去{place}，在地图上查一下开车过去要多久，再看看那边城市明天天气怎么样，在笔记里写个出行计划
 # [L4] WeatherFirstNonRainyDayBuyTicket       查{city}未来三天天气，找到第一个不下雨的天，帮我买那天从{from_station}到{city}的高铁票,提交订单即可。
 # [L4] MapRatingConditionBuyTicket            帮我在地图看看{place}的评分，如果超过4分就买明天从{from_station}过去的最早高铁，提交订单即可。
-# [L4] MapRouteEstimateCostToWechat           帮我查一下开车到{destination}多远，按每公里{rate}元估算油费，把距离和油费微信发给{contact}
-# [L4] RailwayWeatherToWechat                 查{date}从{from_station}到{city}的最早高铁和{city}那天天气，把车次和天气一起发给{contact}
-# [L3] RailwayContactsInfoToWechat            查12306我最新一张车票的车次和发车时间，微信发给{contact}
+# [L3] RailwayWeatherToWechat                 查{date}从{from_station}到{city}的最早高铁和{city}那天天气，把车次和天气一起发给{contact}
 # [L4] WeatherFirstSunnyDayCalendarAlarm      查{city}未来两周的天气，找到第一个不下雨的天，在那天日历建个户外运动日程，设个早上8点的闹钟
-# [L4] WeatherConditionPOIToWechat            看看明天天气怎么样，不下雨就搜附近最近的{category}，给{contact}发消息建议一起去
-# [L4] RailwayWeatherNoConflictBuy            看{city}未来两周的天气，找一天不下雨且日历没安排的，买那天从{from_station}到{city}的最早高铁，提交订单即可。
 # [L4] RailwayBalanceConditionalBuyNotify     查{date}从{from_station}到{city}最便宜的高铁票，看支付宝余额够不够，够就直接买票提交订单，微信告诉{contact}我要去{city}，不够就告诉TA没钱了
-# [L4] CalendarFreeWeatherInvite              看看日历下周末哪天没安排，查那天{city}天气，有一天没有安排而且不下雨就给{contact}发消息约出去玩
+# [L3] CalendarFreeWeatherInvite              看看日历下周末哪天没安排，查那天{city}天气，有一天没有安排而且不下雨就给{contact}发消息约出去玩
 # [L4] WechatFoodExtractMapSms                看看{contact}在微信里最近说想吃什么，搜附近最近的那家，把地址用短信发给{sms_contact}
-# [L4] RestaurantRatingInviteCalendar         在地图搜{restaurant}看看评分，超过{rating}分就给{contact}发微信约今晚去吃，顺便在日历建个聚餐日程
+# [L3] RestaurantRatingInviteCalendar         在地图搜{restaurant}看看评分，超过{rating}分就给{contact}发微信约今晚去吃，顺便在日历建个聚餐日程
 # [L4] TripClosedLoopNotify                   查{date}从{from_station}到{to_station}最早的高铁，在日历建标题为出行的事件，设个出发前1小时的闹钟，最后把车次信息微信发给{contact}
 # [L4] FullTripPlanWeatherDriven              我想去{city}出差，查未来两周里第一个不下雨且日历没有安排的日期，给我买从{from_station}出发的最早高铁提交订单即可，并设一个出发前一小时的闹钟
-# [L4] WeekendTripFullPlan                    看看下周六{city}下不下雨，不下雨就查开车去{destination}要多久，在日历建个标题出游的日程，发微信约{contact}一起去
-# [L4] TripMemoAndNotify                      {date}从{from_station}去{city}出差，查最快的高铁和当天天气，在笔记记个出行备忘，发微信通知{contact}接站
-# [L4] TravelPlanToWechat                     帮我查一下{dest}的详细地址和那边城市的当前天气，一起微信发给{contact}。
+# [L2] WeekendTripFullPlan                    看看下周六{city}下不下雨，不下雨就查开车去{destination}要多久，在日历建个标题出游的日程，发微信约{contact}一起去
+# [L3] TripMemoAndNotify                      {date}从{from_station}去{city}出差，查最快的高铁和当天天气，在笔记记个出行备忘，发微信通知{contact}接站
+# [L3] TravelPlanToWechat                     帮我查一下{dest}的详细地址和那边城市的当前天气，一起微信发给{contact}。
 # [L3] WeatherCalendar_CreateEventIfNotSunny  查询 {city} 的天气，如果不是晴天，则在日历中创建一个全天日程，标题为 {event_title}，并在备注中写入当前的温度和天气状况。
 # -- End Task Index --
 
@@ -88,43 +74,6 @@ from bench_env.task.wechat.app import WECHAT_CONTACT_PARAM, WECHAT_MOMENT_CHANGE
 #
 #  模式：A 查到数据 → 原样传递给 B，Agent 不需要中间推理。
 # ══════════════════════════════════════════════════════════════════════════
-
-
-class WeatherCurrentToWechat(BaseTask):
-    """用户想把某城市天气转告微信好友，Agent 需打开天气查看后切到微信发消息。
-
-    判定：微信新消息包含 {city} 当前天气状况和温度。
-    """
-
-    templates = [
-        "查一下{city}现在天气怎么样，发给微信好友{contact}",
-        "帮我看看{city}的天气情况，微信发消息告诉{contact}",
-    ]
-    apps = ["weather", "wechat"]
-    scope = "S2"
-    objective = "operate"
-    composition = "transfer"
-    difficulty = "L2"
-    capabilities = ["query", "transfer"]
-    parameters = {
-        "city": {"type": "enum", "values": WEATHER_SAVED_CITIES, "default": "北京"},
-        "contact": WECHAT_CONTACT_PARAM,
-    }
-    expected_changes = WEATHER_QUERY_CHANGES + WECHAT_SEND_CHANGES
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        weather = Weather(input.apps["weather"])
-        wechat = Wechat(input.apps["wechat"], init=input.apps_init["wechat"])
-        return [
-            wechat.check_new_sent_contains(
-                self.p.contact,
-                weather.current_weather_text(self.p.city),
-                weather.current_temp_str(self.p.city),
-                field="weather_share",
-            )
-        ]
-
-
 class MapPlaceToWechat(BaseTask):
     """用户想把某地点的地址分享给微信好友。Agent 需在地图搜索地点、
     找到地址信息后切到微信发送。
@@ -150,34 +99,6 @@ class MapPlaceToWechat(BaseTask):
         return check_alternatives(
             [wechat.check_new_sent_to(self.p.contact, Map.extract_address(p), field="place_address_share") for p in places],
         )
-
-
-class MapPlaceToNotes(BaseTask):
-    """用户想记录某地点的地址以便之后查看。Agent 搜地图后切到笔记新建条目。
-
-    判定：笔记中出现包含 {place} 地址的新条目。
-    """
-
-    templates = [
-        "在地图上搜一下{place}的地址，记到笔记里",
-    ]
-    apps = ["map", "notes"]
-    scope = "S2"
-    objective = "operate"
-    composition = "transfer"
-    difficulty = "L2"
-    capabilities = ["search", "create", "transfer"]
-    parameters = {"place": PLACE_PARAM}
-    expected_changes = MAP_SEARCH_CHANGES + NOTES_CREATE_CHANGES
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        notes = Notes(input.apps["notes"], init=input.apps_init["notes"])
-        places = Map.resolve_places(str(self.p.place))
-        return check_alternatives(
-            [notes.check_latest_contains(Map.extract_address(p), field="trip_note") for p in places],
-        )
-
-
 # ══════════════════════════════════════════════════════════════════════════
 #  L3 — 2-APP 单源推理/筛选后搬运
 #
@@ -186,48 +107,6 @@ class MapPlaceToNotes(BaseTask):
 
 
 # ---------- 天气相关 ----------
-
-
-class WeatherCurrentToSms(BaseTask):
-    """用户想把天气情况用短信告诉某人。Agent 需查天气、找到
-    {contact} 的手机号、再用该号码发短信。
-
-    判定：短信新消息包含 {city} 当前天气信息，收件人为 {contact} 的手机号。
-    """
-
-    templates = [
-        "查一下{city}现在天气怎么样，发短信告诉{contact}",
-    ]
-    apps = ["weather", "contacts", "sms"]
-    scope = "S3"
-    objective = "operate"
-    composition = "transfer"
-    difficulty = "L3"
-    capabilities = ["query", "search", "transfer"]
-    parameters = {
-        "city": {"type": "enum", "values": WEATHER_SAVED_CITIES, "default": "北京"},
-        "contact": {
-            "type": "string",
-            "source": "os.providers.contacts.contacts[displayName]",
-            "default": "张三",
-            "description": "短信联系人",
-        },
-    }
-    expected_changes = WEATHER_QUERY_CHANGES + SMS_SEND_CHANGES
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        weather = Weather(input.apps["weather"])
-        sms = sms_from_input(input)
-        return [
-            sms.check_new_sent_to(
-                self.p.contact,
-                weather.current_weather_text(self.p.city),
-                weather.current_temp_str(self.p.city),
-                field="weather_sms",
-            )
-        ]
-
-
 class WeatherShareMetric(BaseTask):
     """判定：把指定天气指标发给微信联系人。"""
 
@@ -306,36 +185,6 @@ class WeatherReportToNotes(BaseTask):
             notes.check_latest_contains_any_of(weather_labels, field="weather_report_condition"),
             notes.check_latest_contains_number(target_temp, tolerance=2.0, field="weather_report_temp"),
         ]
-
-
-class WeatherTripToMoments(BaseTask):
-    """判定：按天气分支发布朋友圈。"""
-
-    templates = [
-        "查看{city}的天气，如果是雨天，发朋友圈”{rain_content}”，否则发”{sun_content}”",
-        "Check the weather in {city}. If it's rainy, post \"{rain_content}\" to Moments; otherwise post \"{sun_content}\"",
-    ]
-    apps = ["weather", "wechat"]
-    scope = "S2"
-    objective = "operate"
-    composition = "transfer"
-    difficulty = "L4"
-    capabilities = ["query", "social", "transfer"]
-    parameters = {
-        "city": {"type": "string", "default": "上海"},
-        "rain_content": {"type": "string", "default": "下雨了，适合宅家"},
-        "sun_content": {"type": "string", "default": "天气不错，适合出游"},
-    }
-    expected_changes = WEATHER_QUERY_CHANGES + WECHAT_MOMENT_CHANGES
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        wechat = Wechat(input.apps["wechat"], init=input.apps_init["wechat"])
-        weather = Weather(input.apps["weather"])
-        is_raining = weather.is_raining_text(weather.current_weather_text(self.p.city))
-        expected_text = self.p.rain_content if is_raining else self.p.sun_content
-        return [wechat.check_new_moment_with(expected_text, field="post_decision")]
-
-
 class WeatherFilterNonRainyDays(BaseTask):
     """用户出行前想筛选未来哪些天不下雨。Agent 需浏览多日预报、逐日判断晴雨、
     把符合条件的日期整理到笔记。模板指定了笔记标题"适合出行的日子"，
@@ -390,54 +239,6 @@ class WeatherFilterNonRainyDays(BaseTask):
                 "passed": note is not None and content != init_content and not missing_dates,
             }
         ]
-
-
-class WeatherCompareCityTemp(BaseTask):
-    """用户纠结两个城市哪个更暖和。Agent 需分别查两城温度、比较后得出结论
-    并发给联系人。用温度这种数值做比较，结果客观唯一。
-
-    判定：微信消息包含正确的较暖城市名和温度值。
-    """
-
-    templates = [
-        "帮我看看{city1}和{city2}现在哪个更暖和，具体温度是多少，微信告诉{contact}",
-    ]
-    apps = ["weather", "wechat"]
-    scope = "S2"
-    objective = "operate"
-    composition = "deep_dive"
-    difficulty = "L3"
-    capabilities = ["query", "reasoning", "transfer"]
-    parameters = {
-        "city1": {"type": "string", "default": "北京", "description": "城市1"},
-        "city2": {"type": "string", "default": "上海", "description": "城市2"},
-        "_cities": {
-            "sampler": Weather.sample_two_saved_cities,
-            "fields": {"city1": "city1", "city2": "city2"},
-        },
-        "contact": WECHAT_CONTACT_PARAM,
-    }
-    expected_changes = WEATHER_QUERY_CHANGES + WECHAT_SEND_CHANGES
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        weather = Weather(input.apps["weather"])
-        wechat = Wechat(input.apps["wechat"], init=input.apps_init["wechat"])
-        winner, temp1, temp2 = weather.hotter_city(self.p.city1, self.p.city2)
-        temp1_str = str(int(round(temp1)))
-        temp2_str = str(int(round(temp2)))
-        return [
-            wechat.check_new_sent_compare_city_temp(
-                self.p.contact,
-                city1=self.p.city1,
-                temp1=temp1_str,
-                city2=self.p.city2,
-                temp2=temp2_str,
-                winner=winner,
-                field="compare_city_temp_share",
-            )
-        ]
-
-
 class WeatherRainBranchNotify(BaseTask):
     """用户让 Agent 看明天天气，下雨就提醒带伞，不下雨就说天气不错。
     两个分支的预期消息文本不同，Agent 必须先查天气再决定发哪种内容。
@@ -747,72 +548,6 @@ class RailwayDestWeatherQuery(AnswerTask):
 
 
 # ---------- 地图相关 ----------
-
-
-class MapRouteDurationToWechat(BaseTask):
-    """用户要告诉朋友自己大概几点到。Agent 需查地图路线得到驾车时长，
-    再结合当前时间推算到达时间，然后发微信。"几点到"需要做
-    当前时间 + 驾车时长的简单计算。
-
-    判定：微信消息包含驾车时长或到达时间（与 routes.json 匹配，误差 ≤ 10 分钟）。
-    destination优先选择places.json中的place，可以参数列举几个可选值
-    """
-
-    templates = [
-        "查从当前位置到{destination}开车要多久，告诉{contact}我大概多久到",
-    ]
-    apps = ["map", "wechat"]
-    scope = "S2"
-    objective = "operate"
-    composition = "transfer"
-    difficulty = "L3"
-    capabilities = ["search", "query", "transfer"]
-    parameters = {"destination": PLACE_PARAM, "contact": WECHAT_CONTACT_PARAM}
-    expected_changes = MAP_SEARCH_CHANGES + WECHAT_SEND_CHANGES
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        wechat = Wechat(input.apps["wechat"], init=input.apps_init["wechat"])
-        _, route = Map.resolve_routes_from_current(self.p.destination, "DRIVING")[0]
-        duration = str(route["duration"])
-        duration_minutes = None
-        parsed = duration
-        try:
-            duration_minutes = int(round(float(parsed[:-2]))) if parsed.endswith("分钟") else None
-        except Exception:
-            duration_minutes = None
-        if duration_minutes is None:
-            from bench_env.task.utils import parse_duration_to_minutes  # local import to keep top-level stable
-
-            parsed_minutes = parse_duration_to_minutes(duration)
-            duration_minutes = int(round(parsed_minutes)) if parsed_minutes is not None else None
-        time_check = {
-            "field": "route_duration_arrival_time",
-            "expected": "arrival time derived from route duration",
-            "actual": "(none)",
-            "passed": False,
-        }
-        if duration_minutes is not None:
-            target_dt = sim_datetime(input.os) + datetime.timedelta(minutes=duration_minutes)
-            time_check = wechat.check_new_sent_match_time(
-                self.p.contact,
-                target_dt.strftime("%H:%M"),
-                field="route_duration_arrival_time",
-            )
-        duration_check = wechat.check_new_sent_match_duration(
-            self.p.contact,
-            duration,
-            field="route_duration_duration",
-        )
-        return [
-            {
-                "field": "route_duration_share",
-                "expected": {"duration": duration, "or_arrival_time": True},
-                "actual": duration_check["actual"],
-                "passed": duration_check["passed"] or time_check["passed"],
-            }
-        ]
-
-
 class MapNearbyBestToWechat(BaseTask):
     """用户想把附近评分最高的某类店推荐给朋友。Agent 需搜索附近地点、
     在结果列表中找到评分最高的那家（不是随便一家），再把名字、评分、
@@ -852,94 +587,7 @@ class MapNearbyBestToWechat(BaseTask):
                 field="best_poi_share",
             )
         ]
-
-
-class MapPlacePhoneToSms(BaseTask):
-    """用户想把某商家的电话发给朋友。Agent 需在地图搜索 {place}，
-    找到 POI 详情中的电话号码字段，再通过短信发给联系人。
-    与 MapPlaceToWechat / MapPlaceToNotes（提取地址）不同，
-    这里需要提取电话号码——测试 Agent 是否能识别并提取 POI 的不同信息维度。
-
-    判定：短信新消息包含 {place} 的电话号码（与 places.json 匹配）。
-    """
-
-    templates = [
-        "在地图上搜{place}，把它的电话号码通过短信发给{contact}",
-    ]
-    apps = ["map", "sms"]
-    scope = "S2"
-    objective = "operate"
-    composition = "transfer"
-    difficulty = "L3"
-    capabilities = ["search", "query", "transfer"]
-    parameters = {
-        "place": PLACE_PARAM,
-        "contact": {
-            "type": "string",
-            "source": "os.providers.contacts.contacts[displayName]",
-            "default": "张三",
-            "description": "短信联系人",
-        },
-    }
-    expected_changes = MAP_SEARCH_CHANGES + SMS_SEND_CHANGES
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        sms = sms_from_input(input)
-        candidates = [p for p in Map.resolve_places(str(self.p.place)) if Map.extract_phone(p)]
-        return check_alternatives(
-            [sms.check_new_sent_contains_phone(self.p.contact, Map.extract_phone(p), field="place_phone_sms") for p in candidates],
-        )
-
-
 # ---------- 反向信息流 / 日历信息源 ----------
-
-
-class WechatMessageToMapSearch(BaseTask):
-    """用户让 Agent 从微信聊天中找到朋友提到的地点，然后在地图上搜索。
-    这是本套件中唯一的"反向信息流"任务——信息从聊天消息流向搜索操作，
-    而非查到信息后发消息。Agent 需先打开微信找到 {contact} 的对话、
-    阅读最近消息识别其中的地点名称，再切到地图搜索。
-    模板不透露地点名，Agent 必须自己从聊天内容中提取。
-
-    判定：地图搜索记录中包含 {place} ,Agent回答出具体地址
-    注入：向 {contact} 聊天记录注入包含 {place} 的消息（如"周末去{place}怎么样"）。
-    """
-
-    templates = [
-        "{contact}之前在微信里跟我说想去一个地方玩，帮我看看TA说的是哪，在地图上搜一下具体地址",
-    ]
-    apps = ["wechat", "map"]
-    scope = "S2"
-    objective = "hybrid"
-    composition = "deep_dive"
-    difficulty = "L3"
-    capabilities = ["query", "reasoning", "search"]
-    parameters = {"contact": WECHAT_CONTACT_PARAM, "place": PLACE_PARAM}
-    expected_changes = WECHAT_SEND_CHANGES + MAP_SEARCH_CHANGES
-
-    async def _post_sample(self, env: Any) -> None:
-        state = await env.get_state()
-        wechat_state = Wechat(state["apps"]["wechat"]).prepare_state_with_incoming_text(
-            self.p.contact,
-            f"周末去{self.p.place}怎么样？",
-            message_id=f"crossapp_life_place_{self.p.place}",
-            timestamp=state["os"]["time"]["timestamp"],
-        )
-        await env.set_state(
-            {"apps": {"wechat": wechat_state}},
-            deep=True,
-            reload=False,
-        )
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        map_app = Map(input.apps["map"], init=input.apps_init["map"])
-        places = Map.resolve_places(str(self.p.place))
-        return check_alternatives(
-            [map_app.check_searched_for_place(self.p.place)] * len(places),
-            [Map.check_place_address_answer(input.answer, Map.extract_address(p), field="answer.address") for p in places],
-        )
-
-
 class CalendarEventToWechat(BaseTask):
     """用户想把明天的日程安排告诉朋友。Agent 需先打开日历查看明天的事件，
     找到第一个事件的主题和时间，再切到微信发给联系人。
@@ -1003,112 +651,11 @@ class CalendarEventToWechat(BaseTask):
 
 
 # ---------- 通讯录 + 12306 ----------
-
-
-class ContactsPhoneToRailwayPassenger(BaseTask):
-    """用户要帮朋友买票，需要先从通讯录查到朋友的电话号码，再去 12306
-    用这个号码和指定身份证号添加乘车人。数据跨了两个不同层级：电话在
-    os.providers.contacts（系统 Provider），12306 是普通 App。
-
-    判定：12306 乘车人列表新增同名 + 电话匹配 + 身份证匹配的记录。
-    电话号码比较时归一化（去掉 +86 前缀和非数字字符）。
-    """
-
-    templates = [
-        "查一下通讯录里{contact}的电话号码，在12306里帮我把他添加为乘车人，他的身份证号是{id_no}",
-    ]
-    apps = ["contacts", "railway12306"]
-    scope = "S2"
-    objective = "operate"
-    composition = "transfer"
-    difficulty = "L3"
-    capabilities = ["query", "create", "transfer"]
-    parameters = {
-        "contact": {
-            "type": "enum",
-            "values": ["张三", "李四", "王五", "赵六", "Alice Chen", "Bob",
-                       "Charlie", "David", "Eric", "Fiona"],
-            "default": "张三",
-            "description": "通讯录联系人（排除客服号码）",
-        },
-        "id_no": {
-            "type": "enum",
-            "values": [
-                "110101199901011234",
-                "320106199612183428",
-                "440106199808073516",
-            ],
-            "default": "110101199901011234",
-            "description": "身份证号",
-        },
-    }
-    expected_changes = ["railway12306.passengers"]
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        contacts = contacts_from_input(input)
-        phone = contacts.phone(self.p.contact)
-        rail = Railway12306(input.apps["railway12306"], init=input.apps_init["railway12306"])
-        return [
-            rail.check_new_passenger(
-                name=self.p.contact,
-                id_no=str(self.p.id_no),
-                phone=phone,
-                field="new_passenger",
-            )
-        ]
-
-
 # ══════════════════════════════════════════════════════════════════════════
 #  L3 — 3-APP 信息汇聚
 #
 #  模式：从 2 个信息源提取 → 汇聚到第 3 个 App。
 # ══════════════════════════════════════════════════════════════════════════
-
-
-class MapWeatherToTripNotes(BaseTask):
-    """用户想去某个地方玩，想提前了解路程和天气，让 Agent 整理成出行计划。
-    {place} 是具体地点（如"故宫"），Agent 需要自己推断它在哪个城市、
-    用那个城市查天气。这一步隐含推理是本任务的核心难点。
-
-    判定：笔记新增条目包含驾车时长和目的地天气。
-    注入：确保 {place} 所在城市在 Weather 已保存城市列表中。
-    """
-
-    templates = [
-        "我想去{place}，在地图上查一下开车过去要多久，再看看那边城市明天天气怎么样，在笔记里写个出行计划",
-    ]
-    apps = ["map", "weather", "notes"]
-    scope = "S3"
-    objective = "operate"
-    composition = "transfer"
-    difficulty = "L3"
-    capabilities = ["search", "query", "create", "transfer"]
-    parameters = {"place": PLACE_PARAM}
-    expected_changes = MAP_SEARCH_CHANGES + WEATHER_QUERY_CHANGES + NOTES_CREATE_CHANGES
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        weather = Weather(input.apps["weather"])
-        notes = Notes(input.apps["notes"], init=input.apps_init["notes"])
-        place, route = Map.resolve_routes_from_current(self.p.place, "DRIVING")[0]
-        address = str(place.get("formatted_address") or "")
-        city = Map.city_from_address(address, default="北京")
-        tomorrow_fc = weather.tomorrow_forecast(city)
-        # 笔记中应包含驾车时长、天气描述（textDay 或 textNight 任一）
-        base = notes.check_latest_contains(
-            str(route["duration"]),
-            field="trip_plan_note",
-        )
-        note = notes.latest_note
-        note_text = f"{note.get('title','')}\n{note.get('content','')}" if note else ""
-        weather_ok = Weather.forecast_text_matches(tomorrow_fc, note_text)
-        if not weather_ok:
-            base["passed"] = False
-            td = tomorrow_fc.get("textDay", "")
-            tn = tomorrow_fc.get("textNight", "")
-            base["expected"] = f"contains [{route['duration']!r}, weather({td}/{tn})]"
-        return [base]
-
-
 # ══════════════════════════════════════════════════════════════════════════
 #  L4 — 2-APP 复杂推理
 #
@@ -1251,52 +798,6 @@ class MapRatingConditionBuyTicket(BaseTask):
                 "passed": len(new_orders) == 0,
             }
         ]
-
-
-class MapRouteEstimateCostToWechat(BaseTask):
-    """用户想估算开车到某地的油费并告诉朋友。Agent 需在地图查路线距离，
-    按模板中给定的每公里单价做简单乘法，再把距离和费用一起发给联系人。
-    与 MapRouteDurationToWechat（L3，只传递时长）不同，
-    这里需要"距离 × 单价"的数学计算，是本套件中唯一的计算型推理任务。
-
-    判定：微信消息包含路线距离和估算费用，费用 ≈ 距离(km) × 单价，误差 ≤ 10%。
-    """
-
-    templates = [
-        "帮我查一下开车到{destination}多远，按每公里{rate}元估算油费，把距离和油费微信发给{contact}",
-    ]
-    apps = ["map", "wechat"]
-    scope = "S2"
-    objective = "operate"
-    composition = "deep_dive"
-    difficulty = "L4"
-    capabilities = ["search", "reasoning", "transfer"]
-    parameters = {
-        "destination": PLACE_PARAM,
-        "rate": {"type": "float", "default": 1.5, "min": 0.5, "max": 3.0, "round": 2},
-        "contact": WECHAT_CONTACT_PARAM,
-    }
-    expected_changes = MAP_SEARCH_CHANGES + WECHAT_SEND_CHANGES
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        wechat = Wechat(input.apps["wechat"], init=input.apps_init["wechat"])
-        actual = wechat.joined_new_texts_to(self.p.contact)
-        rate = round(float(self.p.rate), 2)
-        cost_check = Map.check_driving_cost_answer(
-            actual,
-            self.p.destination,
-            rate,
-            field="share.cost",
-        )
-        _, route = Map.resolve_routes_from_current(self.p.destination, "DRIVING")[0]
-        distance_check = Map.check_geo_distance(
-            actual,
-            str(route["distance"]),
-            field="share.distance",
-        )
-        return [distance_check, cost_check]
-
-
 # ══════════════════════════════════════════════════════════════════════════
 #  L4 — 3-APP transfer（多源 → 顺序传递）
 # ══════════════════════════════════════════════════════════════════════════
@@ -1382,41 +883,6 @@ class RailwayWeatherToWechat(BaseTask):
                 "passed": bool(actual) and Weather.forecast_text_matches(day, actual),
             },
         ]
-
-
-class RailwayContactsInfoToWechat(BaseTask):
-    """判定：微信消息包含最新车票的车次号和发车时间。"""
-
-    templates = [
-        "查12306我最新一张车票的车次和发车时间，微信发给{contact}",
-    ]
-    apps = ["railway12306", "contacts", "wechat"]
-    scope = "S3"
-    objective = "operate"
-    composition = "transfer"
-    difficulty = "L3"
-    capabilities = ["query", "transfer"]
-    parameters = {"contact": WECHAT_CONTACT_PARAM}
-    expected_changes = WECHAT_SEND_CHANGES
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        rail = Railway12306(input.apps_init["railway12306"])
-        wechat = Wechat(input.apps["wechat"], init=input.apps_init["wechat"])
-        ticket = rail.my_latest_ticket
-        return [
-            wechat.check_new_sent_contains(
-                self.p.contact,
-                str(ticket["trainNo"]),
-                field="latest_ticket_train_no",
-            ),
-            wechat.check_new_sent_match_time(
-                self.p.contact,
-                str(ticket["departTime"]),
-                field="latest_ticket_depart_time",
-            ),
-        ]
-
-
 # ══════════════════════════════════════════════════════════════════════════
 #  L4 — 3-APP deep_dive（需推理/条件/比较后才能行动）
 # ══════════════════════════════════════════════════════════════════════════
@@ -1458,139 +924,6 @@ class WeatherFirstSunnyDayCalendarAlarm(BaseTask):
             calendar.check_event_on_date("户外运动", target_date, field="event_date", fuzzy=True),
             clock.check_alarm_at(8, 0, field="alarm"),
         ]
-
-
-class WeatherConditionPOIToWechat(BaseTask):
-    """用户想明天出去逛，但下雨就不去了。Agent 先查当前城市明天天气，
-    如果不下雨就搜附近地点并发消息建议一起去；下雨则不发送邀请。
-    天气查询和"附近"搜索都基于用户当前所在城市（地图 currentLocation），
-    无需额外参数化城市。
-
-    判定：不下雨 → 微信含 POI 名字 + 约出去；下雨 → 什么也不做。
-    """
-
-    templates = [
-        "看看明天天气怎么样，不下雨就搜附近最近的{category}，给{contact}发消息建议一起去",
-    ]
-    apps = ["weather", "map", "wechat"]
-    scope = "S3"
-    objective = "operate"
-    composition = "deep_dive"
-    difficulty = "L4"
-    capabilities = ["query", "reasoning", "search", "transfer"]
-    parameters = {"category": CATEGORY_PARAM, "contact": WECHAT_CONTACT_PARAM}
-    expected_changes = WEATHER_QUERY_CHANGES + MAP_SEARCH_CHANGES + WECHAT_SEND_CHANGES
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        weather = Weather(input.apps["weather"])
-        wechat = Wechat(input.apps["wechat"], init=input.apps_init["wechat"])
-        actual = wechat.joined_new_texts_to(self.p.contact)
-        if weather.tomorrow_is_rainy(None):
-            return [
-                {
-                    "field": "rain_branch_no_invite",
-                    "expected": "下雨时不发约玩消息",
-                    "actual": actual or "(none)",
-                    "passed": not actual,
-                }
-            ]
-        poi = Map.nearest_from_results(Map.geo_search(self.p.category, limit=0))
-        return [
-            wechat.check_new_sent_any_of(
-                self.p.contact,
-                ["一起", "去", "约"],
-                str(poi["name"]),
-                field="poi_invite",
-            )
-        ]
-
-
-
-class RailwayWeatherNoConflictBuy(BaseTask):
-    """用户想出行，但要同时满足两个条件：不下雨 + 日历那天没有安排。
-    Agent 需要交叉检查天气和日历，找出同时满足的那一天，再去 12306 买票。
-    这是一个三源约束满足问题。
-
-    判定：pending order 日期同时满足"不下雨"和"日历空闲"。
-    注入：天气和日历数据确保三天中恰好一天同时满足两个条件，消除多解。
-    """
-
-    templates = [
-        "看{city}未来两周的天气，找一天不下雨且日历没安排的，买那天从{from_station}到{city}的最早高铁，提交订单即可。",
-        "Check the weather in {city} for the next two weeks, find a day that's not rainy and has no calendar events, and buy the earliest high-speed train from {from_station} to {city} for that day. Just submit the order.",
-    ]
-    apps = ["weather", "calendar", "railway12306"]
-    scope = "S3"
-    objective = "operate"
-    composition = "deep_dive"
-    difficulty = "L4"
-    capabilities = ["query", "reasoning", "search"]
-    parameters = {
-        "city": {
-            "type": "enum",
-            "values": {"上海": "上海", "深圳": "深圳"},
-            "default": "上海",
-        },
-        "from_station": {"type": "enum", "values": {"北京": "北京", "广州": "广州"}, "default": "北京"},
-    }
-    expected_changes = WEATHER_QUERY_CHANGES + CALENDAR_EVENT_CHANGES + RAIL_BOOKING_CHANGES
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        weather = Weather(input.apps_init["weather"])
-        calendar = Calendar(input.apps_init["calendar"])
-        rail = Railway12306(input.apps["railway12306"], init=input.apps_init["railway12306"])
-        target_date = next(
-            (
-                fx_date
-                for fx_date in weather.non_rainy_dates(self.p.city, 1, 14)
-                if calendar.count_events_on_date(datetime.date.fromisoformat(fx_date))
-                == 0
-            ),
-            None,
-        )
-        if target_date is None:
-            raise ValueError(
-                f"No free non-rainy date found for city {self.p.city!r} in next 14 days"
-            )
-        searched = rail.check_searched(
-            from_station=self.p.from_station,
-            to_station=self.p.city,
-            date=target_date,
-            field="query.searched",
-        )
-        if not searched["passed"]:
-            return [
-                searched,
-                {
-                    "field": "newPendingOrder",
-                    "expected": f"{self.p.from_station}→{self.p.city} {target_date} 最早高铁",
-                    "actual": "未完成车次查询",
-                    "passed": False,
-                },
-            ]
-        train = rail.pick_train_for_route_strict(
-            "earliest",
-            from_station=self.p.from_station,
-            to_station=self.p.city,
-            only_high_speed=True,
-        )
-        if train is None:
-            raise ValueError(
-                f"No high-speed train found for route {self.p.from_station}->{self.p.city}"
-            )
-        return [
-            searched,
-            rail.check_booking_order(
-                from_station=self.p.from_station,
-                to_station=self.p.city,
-                date=target_date,
-                passenger_names=[rail.user_name],
-                expected_train_no=train["trainNo"],
-                field="newPendingOrder",
-            ),
-        ]
-
-
 class RailwayBalanceConditionalBuyNotify(BaseTask):
     """用户让 Agent 帮忙看余额够不够买票——够就直接买并通知朋友，
     不够就告诉用户还差多少。两个分支的行为完全不同（一个要买票+发微信，

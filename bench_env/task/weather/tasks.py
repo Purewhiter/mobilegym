@@ -2,32 +2,29 @@
 Weather app task definitions.
 """
 # -- Task Index (auto-generated, do not edit) --
-# 25 tasks | L1×4  L2×8  L3×8  L4×5
+# 22 tasks | L1×4  L2×9  L3×5  L4×4
 #
 # [L1] CheckCurrentTemp          帮我看看{city}现在多少度
 # [L1] CheckCurrentWeather       {city}当前天气怎么样
-# [L1] DisableMorningAlert       关掉天气的早晚天气提醒
 # [L1] EnableNightDnd            打开天气的夜间免打扰
 # [L2] SwitchTempUnit            把天气的温度单位改成{unit}
 # [L2] SwitchWindUnit            把天气的风速单位改成{unit}
-# [L2] AddCity                   在天气里把{city}添加到我的城市列表
 # [L2] CompareCityTemp           帮我看看{city1}和{city2}哪个城市现在更热
 # [L2] CheckDetailCard           帮我看看{city}的{metric}
 # [L2] OpenDailyForecast         看看{city}{date}的天气怎么样
 # [L2] CheckAQIPollutant         查看{city}当前{pollutant}是多少
 # [L2] CheckLifeIndex            {city}今天{index_type}
 # [L3] WarmestDayInWeek          {city}未来五天里哪天的最高温是最高的，这天天气怎么样
-# [L3] SwitchUnitAndReport       把温度单位切到华氏度，然后告诉我{city}现在华氏多少度
+# [L1] SwitchUnitAndReport       把温度单位切到华氏度，然后告诉我{city}现在华氏多少度
 # [L3] FeelsLikeDiff             {city}现在体感温度和实际温度差几度
 # [L3] CompareTempRange          {city1}和{city2}哪个城市明天温差更大
 # [L3] CompareHumidity           {city1}和{city2}哪个城市现在更潮湿
 # [L3] ColdestDayIn14            {city}未来两周最冷的是哪天（当日最低温最低的一天），最低温是多少
-# [L3] NightLowTemp              帮我看看{city}今晚18点到次日4点的最低气温是多少
-# [L3] ConfigureAllUnits         把天气的温度改摄氏度、风力改米/秒、气压改百帕
-# [L4] AddCityAndFindWarmestDay  把{city}加到天气里，然后看看那边未来一周哪天最暖和
+# [L4] NightLowTemp              帮我看看{city}今晚18点到次日4点的最低气温是多少
+# [L2] AddCityAndFindWarmestDay  把{city}加到天气里，然后看看那边未来一周哪天最暖和
 # [L4] ThreeCityRainCheck        {city1}、{city2}和{city3}未来一周哪个城市最不容易下雨
 # [L4] ConditionalAction         如果{city}现在超过{temp}度就把天气预警提醒打开，没超过就关掉
-# [L4] AddCityFullReport         把{city}加到天气里，告诉我那边现在的温度、湿度和空气质量
+# [L2] AddCityFullReport         把{city}加到天气里，告诉我那边现在的温度、湿度和空气质量
 # [L4] WeekendTempRange3City     周末想出去玩，帮我看看{city1}、{city2}、{city3}周末哪个城市温差小
 # -- End Task Index --
 
@@ -89,25 +86,6 @@ class CheckCurrentWeather(AnswerTask):
 
     def get_answer(self, input: JudgeInput) -> Any:
         return Weather(input.apps_init["weather"]).current_weather_text(self.p.city)
-
-
-class DisableMorningAlert(CriteriaTask):
-    templates = [
-        "关掉天气的早晚天气提醒",
-        "Turn off the morning and evening weather alerts in the Weather app",
-    ]
-    apps = ["weather"]
-    scope = "S1"
-    objective = "operate"
-    composition = "atomic"
-    difficulty = "L1"
-    capabilities = ["settings"]
-    criteria = {"settings.morningEveningAlert": False}
-
-    async def _post_sample(self, env: Any) -> None:
-        await self._invert_criteria(env)
-
-
 class EnableNightDnd(CriteriaTask):
     templates = [
         "打开天气的夜间免打扰",
@@ -171,40 +149,6 @@ class SwitchWindUnit(CriteriaTask):
 
     async def _post_sample(self, env: Any) -> None:
         await self._invert_criteria(env)
-
-
-class AddCity(BaseTask):
-    templates = ["在天气里把{city}添加到我的城市列表"]
-    apps = ["weather"]
-    scope = "S1"
-    objective = "operate"
-    composition = "sequential"
-    difficulty = "L2"
-    capabilities = ["search"]
-    parameters = {
-        "city": {"type": "enum", "values": WEATHER_NEW_CITIES, "default": "南京"},
-    }
-    expected_changes = [
-        "savedCities",
-        "selectedCityId",
-        "bundlesByCityId",
-        "searchHistory",
-        "lastAccess",
-        # Opening Weather first may trigger location-page reverse geocode,
-        # which persists the resulting locationName into the cache layer.
-        "weatherLibrary",
-    ]
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        weather = Weather(input.apps["weather"])
-        return [{
-            "field": "savedCities",
-            "expected": f"contains {self.p.city}",
-            "actual": [str(city["name"]) for city in weather.saved_cities],
-            "passed": weather.saved_city_matches(self.p.city),
-        }]
-
-
 class CompareCityTemp(AnswerTask):
     templates = ["帮我看看{city1}和{city2}哪个城市现在更热"]
     apps = ["weather"]
@@ -667,46 +611,6 @@ class NightLowTemp(AnswerTask):
         if not night_hours:
             raise ValueError(f"No night hourly data for city '{self.p.city}'")
         return min(night_hours)
-
-
-class ConfigureAllUnits(CriteriaTask):
-    templates = [
-        "把天气的温度改摄氏度、风力改米/秒、气压改百帕",
-        "In the Weather app, set temperature to Celsius, wind to m/s, and pressure to hPa",
-    ]
-    apps = ["weather"]
-    scope = "S1"
-    objective = "operate"
-    composition = "sequential"
-    difficulty = "L3"
-    capabilities = ["settings"]
-    criteria = {
-        "settings.tempUnit": "celsius",
-        "settings.windUnit": "ms",
-        "settings.pressureUnit": "hpa",
-    }
-
-    async def _post_sample(self, env: Any) -> None:
-        # Explicitly set a non-target initial state.
-        # _invert_criteria() only inverts bool / enum templates like "{param}",
-        # but this task uses fixed string targets.
-        await env.set_state(
-            {
-                "apps": {
-                    "weather": {
-                        "settings": {
-                            "tempUnit": "fahrenheit",
-                            "windUnit": "beaufort",
-                            "pressureUnit": "mmhg",
-                        }
-                    }
-                }
-            },
-            deep=True,
-            reload=False,
-        )
-
-
 class AddCityAndFindWarmestDay(BaseTask):
     templates = ["把{city}加到天气里，然后看看那边未来一周哪天最暖和"]
     apps = ["weather"]

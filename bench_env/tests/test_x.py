@@ -606,15 +606,6 @@ OFFLINE_JUDGE_POSITIVE_CASES = [
         ),
     ),
     (
-        "SetChatPrivacyBundle",
-        lambda: _positive_criteria_case(
-            _tasks_module.SetChatPrivacyBundle(
-                dm_request_from="verified",
-                debug_log=True,
-            )
-        ),
-    ),
-    (
         "SetCallPermissionsBundle",
         lambda: _positive_criteria_case(_tasks_module.SetCallPermissionsBundle()),
     ),
@@ -719,15 +710,6 @@ OFFLINE_JUDGE_NEGATIVE_CASES = [
                 private_posts=True,
                 protect_videos=True,
                 photo_tagging=False,
-            )
-        ),
-    ),
-    (
-        "SetChatPrivacyBundle",
-        lambda: _negative_criteria_case(
-            _tasks_module.SetChatPrivacyBundle(
-                dm_request_from="verified",
-                debug_log=True,
             )
         ),
     ),

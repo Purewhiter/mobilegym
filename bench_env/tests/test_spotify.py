@@ -386,17 +386,6 @@ class TestTaskJudgeRegression:
             )
         )
         assert not bad.success
-
-    def test_check_recent_play_info_accepts_natural_track_duration(self):
-        task = _tasks_module.CheckRecentPlayInfo(song="Bad Habits")
-        inp = _make_task_input(
-            BASE_STATE,
-            BASE_STATE,
-            answer="《Bad Habits》是 Ed Sheeran 唱的，时长 3分50秒。",
-        )
-        result = task.evaluate(inp)
-        assert result.success, result.issues
-
     def test_search_play_and_report_accepts_natural_track_duration(self):
         task = _tasks_module.SearchPlayAndReport(song="青花瓷")
         curr_state = _state(
@@ -461,26 +450,6 @@ class TestTaskJudgeRegression:
         inp = _make_task_input(init_state, curr_state)
         result = task.evaluate(inp)
         assert result.success, result.issues
-
-    def test_play_album_and_repeat_requires_album_context(self):
-        task = _tasks_module.PlayAlbumAndRepeat(album="Thriller")
-        curr_state = _state(is_playing=True, repeat="context", shuffle=False)
-        inp = _make_task_input(BASE_STATE, curr_state)
-        result = task.evaluate(inp)
-        assert not result.success
-
-    def test_play_album_and_repeat_accepts_matching_album_context(self):
-        task = _tasks_module.PlayAlbumAndRepeat(album="Thriller")
-        curr_state = _state(
-            is_playing=True,
-            repeat="context",
-            shuffle=False,
-            analytics={"lastAlbumInfo": {"album": "Thriller", "trackCount": 9, "year": "1982"}},
-        )
-        inp = _make_task_input(BASE_STATE, curr_state)
-        result = task.evaluate(inp)
-        assert result.success, result.issues
-
     def test_add_artist_songs_to_playlist_requires_new_additions(self):
         task = _tasks_module.AddArtistSongsToPlaylist(
             playlist="华语R&B精选",
@@ -495,41 +464,6 @@ class TestTaskJudgeRegression:
         inp = _make_task_input(init_state, init_state)
         result = task.evaluate(inp)
         assert not result.success
-
-    def test_create_playlist_from_recent_requires_exact_recent_titles(self):
-        task = _tasks_module.CreatePlaylistFromRecent(
-            playlist="我的精选",
-            artist="Taylor Swift",
-        )
-        blank_space = _custom_track("tw_blank_space", "Blank Space", "Taylor Swift", "3:51")
-        curr_state = _state(
-            liked_songs=[blank_space],
-            custom_playlists=[
-                _playlist("我的精选", [_track("Welcome to New York"), blank_space], "pl_recent")
-            ],
-        )
-        inp = _make_task_input(BASE_STATE, curr_state, answer="一共加了 2 首。")
-        result = task.evaluate(inp)
-        assert not result.success
-
-    def test_create_playlist_from_recent_accepts_exact_recent_titles(self):
-        task = _tasks_module.CreatePlaylistFromRecent(
-            playlist="我的精选",
-            artist="Taylor Swift",
-        )
-        curr_state = _state(
-            custom_playlists=[
-                _playlist(
-                    "我的精选",
-                    [_track("Welcome to New York"), _track("Love Story")],
-                    "pl_recent_ok",
-                )
-            ],
-        )
-        inp = _make_task_input(BASE_STATE, curr_state, answer="一共加了 2 首。")
-        result = task.evaluate(inp)
-        assert result.success, result.issues
-
     def test_filter_liked_songs_to_playlist_requires_all_artist_tracks_removed(self):
         task = _tasks_module.FilterLikedSongsToPlaylist(
             artist="Taylor Swift",

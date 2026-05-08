@@ -2,10 +2,8 @@
 Notes app task definitions.
 """
 # -- Task Index (auto-generated, do not edit) --
-# 24 tasks | L1×3  L2×6  L3×10  L4×5
+# 15 tasks | L1×2  L2×9  L3×2  L4×2
 #
-# [L1] SwitchToTodoTab          打开笔记的待办页面
-# [L1] ToggleWordCount          {toggle}笔记的字数统计显示
 # [L1] ReadNotesCount           看看笔记里有几条便签
 # [L2] ChangeViewMode           把笔记的视图模式改成{mode}
 # [L2] CreateNewNote            在笔记里新建一条便签，标题写「{title}」
@@ -13,19 +11,12 @@ Notes app task definitions.
 # [L2] PinNote                  把笔记里标题为「{note_title}」的便签置顶
 # [L2] ReadNoteContent          看看笔记里标题为「{note_title}」的便签写了什么内容
 # [L2] ReadTodoText             看看笔记里的待办事项有哪些
-# [L3] DeleteNoteToTrash        把笔记里「{note_title}」这条便签删掉
-# [L3] SetNotePrivate           把「{note_title}」这条便签设为私密
-# [L3] CreateNewFolder          在笔记里新建一个名叫「{folder_name}」的文件夹
-# [L3] SetNoteReminder          给笔记里「{note_title}」这条便签设个提醒
-# [L3] CompleteTodo             把笔记待办里的「{todo_text}」标记为已完成
-# [L3] DeleteTodo               把笔记待办里的「{todo_text}」删掉
-# [L3] DeleteAllCompletedTodos  把笔记待办里已完成的事项全部删掉
+# [L2] DeleteTodo               把笔记待办里的「{todo_text}」删掉
+# [L2] DeleteAllCompletedTodos  把笔记待办里已完成的事项全部删掉
 # [L3] RestoreFromTrash         把笔记回收站里的「{note_title}」恢复回来
 # [L3] SearchNoteTitle          在笔记里搜索「{keyword}」，告诉我搜到的便签标题
-# [L3] CountTodosCompleted      看看笔记待办里有几条已完成的事项
-# [L4] CreateFolderAndMoveNote  在笔记里新建一个「{folder_name}」文件夹，然后把「{note_title}」移到这个文件夹里
-# [L4] CreateNoteAndSetPrivate  在笔记里新建一条标题为「{title}」的便签，写上「{content}」，然后设为私密
-# [L4] CreateNoteWithReminder   在笔记里新建一条标题为「{title}」的便签，写上「{content}」，设一个提醒，然后告诉我提醒时间
+# [L1] CreateFolderAndMoveNote  在笔记里新建一个「{folder_name}」文件夹，然后把「{note_title}」移到这个文件夹里
+# [L2] CreateNoteWithReminder   在笔记里新建一条标题为「{title}」的便签，写上「{content}」，设一个提醒，然后告诉我提醒时间
 # [L4] PrivateNotesWorkflow     把笔记里「{note_title}」设为私密，然后告诉我现在私密便签里总共有几条
 # [L4] TodoBatchWorkflow        在笔记待办里加一条「{new_todo}」，然后把「{existing_todo}」标为已完成，最后告诉我还有几条没完成的待办
 # -- End Task Index --
@@ -64,44 +55,6 @@ FOLDER_AND_NOTES_CHANGES = ["folders", "selectedFolderId", "notes"]
 # =============================================================================
 # L1 — Atomic operations & simple queries
 # =============================================================================
-
-
-class SwitchToTodoTab(CriteriaTask):
-    templates = [
-        "打开笔记的待办页面",
-        "Open the to-do page in Notes",
-    ]
-    apps = ["notes"]
-    scope = "S1"
-    objective = "operate"
-    composition = "atomic"
-    difficulty = "L1"
-    capabilities = ["nav"]
-    criteria = {"route": "/todo"}
-
-
-class ToggleWordCount(CriteriaTask):
-    templates = ["{toggle}笔记的字数统计显示"]
-    apps = ["notes"]
-    scope = "S1"
-    objective = "operate"
-    composition = "atomic"
-    difficulty = "L1"
-    capabilities = ["settings"]
-    parameters = {
-        "toggle": {
-            "type": "bool",
-            "values": {"开启": True, "关闭": False},
-            "default": False,
-            "description": "目标开关状态",
-        },
-    }
-    criteria = {"settings.showWordCount": "{toggle}"}
-
-    async def _post_sample(self, env):
-        await self._invert_criteria(env)
-
-
 class ReadNotesCount(AnswerTask):
     templates = ["看看笔记里有几条便签"]
     apps = ["notes"]
@@ -329,181 +282,6 @@ class ReadTodoText(AnswerTask):
 # =============================================================================
 # L3 — Multi-step operations & queries
 # =============================================================================
-
-
-class DeleteNoteToTrash(BaseTask):
-    templates = ["把笔记里「{note_title}」这条便签删掉"]
-    apps = ["notes"]
-    scope = "S1"
-    objective = "operate"
-    composition = "sequential"
-    difficulty = "L3"
-    capabilities = ["manage"]
-    parameters = {
-        "note_title": {
-            "type": "string",
-            "default": "购物清单",
-            "description": "目标便签标题",
-        },
-        "_note": {
-            "sampler": Notes._sample_visible_note,
-            "fields": {"note_title": "note_title"},
-        },
-    }
-    expected_changes = NOTES_ONLY_CHANGES
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        notes = Notes(input.apps["notes"])
-        note = notes.find_note_by_title(self.p.note_title)
-        trashed_at = (note or {}).get("trashedAt")
-        passed = isinstance(trashed_at, (int, float)) and trashed_at > 0
-        return [
-            {
-                "field": "notes.note_trashed",
-                "expected": "trashedAt > 0",
-                "actual": trashed_at,
-                "passed": note is not None and passed,
-            }
-        ]
-
-
-class SetNotePrivate(BaseTask):
-    templates = ["把「{note_title}」这条便签设为私密"]
-    apps = ["notes"]
-    scope = "S1"
-    objective = "operate"
-    composition = "sequential"
-    difficulty = "L3"
-    capabilities = ["manage", "nav"]
-    parameters = {
-        "note_title": {
-            "type": "string",
-            "default": "购物清单",
-            "description": "目标便签标题",
-        },
-        "_note": {
-            "sampler": Notes._sample_visible_note,
-            "fields": {"note_title": "note_title"},
-        },
-    }
-    expected_changes = NOTES_ONLY_CHANGES
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        notes = Notes(input.apps["notes"])
-        note = notes.find_note_by_title(self.p.note_title)
-        actual = bool((note or {}).get("isPrivate"))
-        return [
-            {
-                "field": "notes.note_private",
-                "expected": True,
-                "actual": actual,
-                "passed": note is not None and actual,
-            }
-        ]
-
-
-class CreateNewFolder(BaseTask):
-    templates = ["在笔记里新建一个名叫「{folder_name}」的文件夹"]
-    apps = ["notes"]
-    scope = "S1"
-    objective = "operate"
-    composition = "sequential"
-    difficulty = "L3"
-    capabilities = ["create", "nav"]
-    parameters = {
-        "folder_name": {
-            "type": "enum",
-            "values": NOTES_NEW_FOLDER_NAMES,
-            "default": "工作",
-            "description": "新建文件夹名称",
-        },
-    }
-    expected_changes = FOLDER_ONLY_CHANGES
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        notes = Notes(input.apps["notes"])
-        folder = notes.find_folder_by_name(self.p.folder_name)
-        return [
-            {
-                "field": "folders.folder_created",
-                "expected": self.p.folder_name,
-                "actual": folder.get("name") if folder else None,
-                "passed": folder is not None,
-            }
-        ]
-
-
-class SetNoteReminder(BaseTask):
-    templates = ["给笔记里「{note_title}」这条便签设个提醒"]
-    apps = ["notes"]
-    scope = "S1"
-    objective = "operate"
-    composition = "sequential"
-    difficulty = "L3"
-    capabilities = ["manage"]
-    parameters = {
-        "note_title": {
-            "type": "string",
-            "default": "购物清单",
-            "description": "目标便签标题",
-        },
-        "_note": {
-            "sampler": Notes._sample_visible_note,
-            "fields": {"note_title": "note_title"},
-        },
-    }
-    expected_changes = NOTES_ONLY_CHANGES
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        notes = Notes(input.apps["notes"])
-        note = notes.find_note_by_title(self.p.note_title)
-        alarm_at = (note or {}).get("alarmAt")
-        passed = isinstance(alarm_at, (int, float)) and alarm_at > 0
-        return [
-            {
-                "field": "notes.note_reminder",
-                "expected": "alarmAt > 0",
-                "actual": alarm_at,
-                "passed": note is not None and passed,
-            }
-        ]
-
-
-class CompleteTodo(BaseTask):
-    templates = ["把笔记待办里的「{todo_text}」标记为已完成"]
-    apps = ["notes"]
-    scope = "S1"
-    objective = "operate"
-    composition = "sequential"
-    difficulty = "L3"
-    capabilities = ["manage", "nav"]
-    parameters = {
-        "todo_text": {
-            "type": "string",
-            "default": "明天去车站",
-            "description": "目标待办文本",
-        },
-        "_todo": {
-            "sampler": Notes._sample_incomplete_todo,
-            "fields": {"todo_text": "todo_text"},
-        },
-    }
-    expected_changes = TODOS_ONLY_CHANGES
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        notes = Notes(input.apps["notes"])
-        todo = notes.find_todo_by_text(self.p.todo_text)
-        actual = bool((todo or {}).get("completed"))
-        return [
-            {
-                "field": "todos.todo_completed",
-                "expected": True,
-                "actual": actual,
-                "passed": todo is not None and actual,
-            }
-        ]
-
-
 class DeleteTodo(BaseTask):
     templates = ["把笔记待办里的「{todo_text}」删掉"]
     apps = ["notes"]
@@ -638,22 +416,6 @@ class SearchNoteTitle(AnswerTask):
 
     def get_answer(self, input: JudgeInput) -> Any:
         return self.p.note_title
-
-
-class CountTodosCompleted(AnswerTask):
-    templates = ["看看笔记待办里有几条已完成的事项"]
-    apps = ["notes"]
-    scope = "S1"
-    objective = "query"
-    composition = "sequential"
-    difficulty = "L3"
-    capabilities = ["query", "nav"]
-    answer_fields = [{"type": "number", "label": "已完成事项数"}]
-
-    def get_answer(self, input: JudgeInput) -> Any:
-        return len(Notes(input.apps_init["notes"]).completed_todos)
-
-
 # =============================================================================
 # L4 — Deep multi-step & hybrid tasks
 # =============================================================================
@@ -706,59 +468,6 @@ class CreateFolderAndMoveNote(BaseTask):
                 "passed": bool(folder and note and actual_folder_id == target_folder_id),
             },
         ]
-
-
-class CreateNoteAndSetPrivate(BaseTask):
-    templates = ["在笔记里新建一条标题为「{title}」的便签，写上「{content}」，然后设为私密"]
-    apps = ["notes"]
-    scope = "S1"
-    objective = "operate"
-    composition = "sequential"
-    difficulty = "L4"
-    capabilities = ["create", "manage"]
-    parameters = {
-        "title": {
-            "type": "enum",
-            "values": NOTES_PRIVATE_CREATE_TITLES,
-            "default": "密码备忘",
-            "description": "新建便签标题",
-        },
-        "content": {
-            "type": "enum",
-            "values": NOTES_PRIVATE_CREATE_CONTENTS,
-            "default": "这是私密内容",
-            "description": "新建便签内容",
-        },
-    }
-    expected_changes = NOTES_ONLY_CHANGES
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        notes = Notes(input.apps["notes"])
-        note = notes.latest_note_by_title(self.p.title)
-        content = str((note or {}).get("content") or "")
-        actual_private = bool((note or {}).get("isPrivate"))
-        return [
-            {
-                "field": "notes.note_created",
-                "expected": self.p.title,
-                "actual": note.get("title") if note else None,
-                "passed": note is not None,
-            },
-            {
-                "field": "notes.note_content",
-                "expected": self.p.content,
-                "actual": content,
-                "passed": note is not None and self.p.content in content,
-            },
-            {
-                "field": "notes.note_private",
-                "expected": True,
-                "actual": actual_private,
-                "passed": note is not None and actual_private,
-            },
-        ]
-
-
 class CreateNoteWithReminder(BaseTask):
     templates = ["在笔记里新建一条标题为「{title}」的便签，写上「{content}」，设一个提醒，然后告诉我提醒时间"]
     apps = ["notes"]

@@ -2,36 +2,28 @@
 Tencent Meeting task definitions.
 """
 # -- Task Index (auto-generated, do not edit) --
-# 29 tasks | L1×4  L2×11  L3×9  L4×5
+# 21 tasks | L1×2  L2×10  L3×5  L4×4
 #
-# [L1] ConfigAudioSettings              帮我设置一下腾讯会议，入会时麦克风{mic_on}，扬声器{speaker_on}
+# [L2] ConfigAudioSettings              帮我设置一下腾讯会议，入会时麦克风{mic_on}，扬声器{speaker_on}
 # [L1] CheckPersonalRoomId              我的腾讯会议个人会议室号是多少
 # [L1] CheckContactCount                我腾讯会议的通讯录里有多少位好友
-# [L1] ToggleNotification               帮我把腾讯会议的消息通知{notifications}
+# [L2] ToggleNotification               帮我把腾讯会议的消息通知{notifications}
 # [L2] FindMeetingHistory               帮我查一下历史会议里{topic}的开始时间和预定的会议时长
 # [L2] StartFastMeeting                 帮我开一个快速会议，{video_on}视频，麦克风{mute_on}，{use_personal_room}个人会议号
-# [L2] ConfigGeneralSettings            帮我设置一下，安全驾驶模式{safe_drive}，深色模式跟随系统{dark_mode}
-# [L2] ConfigVideoSettings              帮我把视频镜像{mirror}，视频预览{preview}
 # [L2] ChatInMeeting                    进入{host_name}的{topic}会议，在群里发一条消息：{message}
 # [L2] ConfigPrivacySettings            帮我设置一下，隐藏非视频参会者{hide_non_video}，隐藏自己{hide_self}
 # [L2] ConfigShowIdentity               帮我设置一下，对外展示认证身份{show_identity}
 # [L2] CheckPendingMeetingId            帮我查一下预约会议{topic}的会议号是多少
-# [L2] CountOngoingMeetings             腾讯会议首页现在有几场正在进行的会议
-# [L2] ModifyScheduledMeetingTopic      帮我把腾讯会议里主题为{old_topic}的预约会议改成{new_topic}
 # [L2] CheckScheduledMeetingEndTime     帮我看看预约会议{topic}几点结束
 # [L3] JoinMeetingAndRename             加入{host_name}的{topic}会议，把昵称改成{name}，麦克风{mute_on}
-# [L3] CheckMeetingAttendees            帮我看看小明2月4日那场快速会议都有哪些人
-# [L3] ScheduleMeeting                  帮我预约一个会议，主题是{topic}，时长{duration}分钟，密码设为{pin}，然后告诉我会议号
-# [L3] ScheduleRegularMeeting           帮我预约一个周期性会议，主题是{topic}，重复频率是{repeat_type}
+# [L4] ScheduleMeeting                  帮我预约一个会议，主题是{topic}，时长{duration}分钟，密码设为{pin}，然后告诉我会议号
 # [L3] CountFriendMeetings              历史会议里有多少场是我腾讯会议的通讯录好友发起的
 # [L3] GetSecondParticipationTime       帮我查一下{topic}这场会议我第二次加入是几点
 # [L3] FindLongestMeeting               历史会议里开得最久的是哪一场
 # [L3] FindMeetingWithMostParticipants  历史会议里我开的哪一场会议参加的人最多，总共有多少人
-# [L3] CountMeetingsByDate              帮我数一下{date}这天有多少场历史会议
 # [L4] ShareScreenAndConfirm            加入{host_name}的{topic}会议，先共享屏幕，然后给所有人发消息：{message}
 # [L4] ChatWithSpecificUser             进入{host_name}的{topic}会议，单独给{target_user}发一条消息：{message}
-# [L4] ScheduleTeamMeeting              帮我预约一场主题为{topic}的会议，邀请张三和李四，关掉日历提醒，打开自动使用加时卡
-# [L4] CalculateTotalMeetingDuration    帮我算一下{date}这天我一共开了多久会议，多少分钟
+# [L2] CalculateTotalMeetingDuration    帮我算一下{date}这天我一共开了多久会议，多少分钟
 # [L4] CompareParticipationDurations    {topic1}和{topic2}这两场会议，我哪一场参加的时间更长
 # -- End Task Index --
 
@@ -266,70 +258,6 @@ class StartFastMeeting(CriteriaTask):
             )
         )
         return checks
-
-
-class ConfigGeneralSettings(CriteriaTask):
-    templates = ["帮我设置一下，安全驾驶模式{safe_drive}，深色模式跟随系统{dark_mode}"]
-    apps = ["tencent_meeting"]
-    scope = "S1"
-    objective = "operate"
-    composition = "sequential"
-    difficulty = "L2"
-    capabilities = ["settings"]
-    parameters = {
-        "safe_drive": {
-            "type": "boolean",
-            "values": TENCENT_MEETING_BOOL_ACTION_VALUES,
-            "default": False,
-            "description": "是否打开安全驾驶模式",
-        },
-        "dark_mode": {
-            "type": "boolean",
-            "values": TENCENT_MEETING_BOOL_ACTION_VALUES,
-            "default": False,
-            "description": "是否跟随系统深色模式",
-        },
-    }
-    criteria = {
-        "settings.safeDrive": "{safe_drive}",
-        "settings.darkModeFollow": "{dark_mode}",
-    }
-
-    async def _post_sample(self, env):
-        await self._invert_criteria(env)
-
-
-class ConfigVideoSettings(CriteriaTask):
-    templates = ["帮我把视频镜像{mirror}，视频预览{preview}"]
-    apps = ["tencent_meeting"]
-    scope = "S1"
-    objective = "operate"
-    composition = "sequential"
-    difficulty = "L2"
-    capabilities = ["settings"]
-    parameters = {
-        "mirror": {
-            "type": "boolean",
-            "values": TENCENT_MEETING_BOOL_ACTION_VALUES,
-            "default": False,
-            "description": "是否打开视频镜像",
-        },
-        "preview": {
-            "type": "boolean",
-            "values": TENCENT_MEETING_BOOL_ACTION_VALUES,
-            "default": True,
-            "description": "是否打开视频预览",
-        },
-    }
-    criteria = {
-        "settings.videoMirror": "{mirror}",
-        "settings.showPreview": "{preview}",
-    }
-
-    async def _post_sample(self, env):
-        await self._invert_criteria(env)
-
-
 class ChatInMeeting(BaseTask):
     templates = [
         "进入{host_name}的{topic}会议，在群里发一条消息：{message}",
@@ -459,63 +387,6 @@ class CheckPendingMeetingId(AnswerTask):
         tm = TencentMeeting(input.apps_init["tencent_meeting"])
         meeting = tm.find_scheduled_meeting(self.p.topic)
         return [str(meeting["meetingId"])]
-
-
-class CountOngoingMeetings(AnswerTask):
-    templates = ["腾讯会议首页现在有几场正在进行的会议"]
-    apps = ["tencent_meeting"]
-    scope = "S1"
-    objective = "query"
-    composition = "sequential"
-    difficulty = "L2"
-    capabilities = ["query"]
-    answer_fields = [{"type": "number", "label": "正在进行的会议数"}]
-
-    def get_answer(self, input: JudgeInput) -> Any:
-        tm = TencentMeeting(input.apps_init["tencent_meeting"])
-        history_ids = {h["meetingId"] for h in tm.history}
-        return sum(1 for m in tm.ongoing_meetings if m["meetingId"] in history_ids)
-
-
-class ModifyScheduledMeetingTopic(BaseTask):
-    """验证 Agent 是否将预约会议的主题从 old_topic 修改为 new_topic。
-
-    判定：使用 TencentMeeting.check_topic_modified 验证
-    scheduledMeetings 中 old_topic 消失且 new_topic 出现。
-    """
-
-    templates = [
-        "帮我把腾讯会议里主题为{old_topic}的预约会议改成{new_topic}",
-        "把腾讯会议预约的{old_topic}会议主题改成{new_topic}",
-        "Help me change the topic of the scheduled meeting {old_topic} to {new_topic} in Tencent Meeting",
-        "Rename the scheduled Tencent Meeting {old_topic} to {new_topic}",
-    ]
-    apps = ["tencent_meeting"]
-    scope = "S1"
-    objective = "operate"
-    composition = "sequential"
-    difficulty = "L2"
-    capabilities = ["edit"]
-    parameters = {
-        "old_topic": {
-            "type": "enum",
-            "values": TENCENT_MEETING_SCHEDULED_TOPICS,
-            "default": "项目例会",
-            "description": "原会议主题",
-        },
-        "new_topic": {
-            "type": "string",
-            "default": "产品需求评审",
-            "description": "新会议主题",
-        },
-    }
-    expected_changes = ["scheduledMeetings", "currentScheduledMeeting"]
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        tm = TencentMeeting(input.apps["tencent_meeting"])
-        return [tm.check_topic_modified(self.p.old_topic, self.p.new_topic)]
-
-
 class CheckScheduledMeetingEndTime(AnswerTask):
     """查询预约会议的结束时间（startTime + duration 推导）。
 
@@ -612,34 +483,6 @@ class JoinMeetingAndRename(BaseTask):
                 "passed": renamed_me is not None and renamed_me["isMuted"] == self.p.mute_on,
             },
         ]
-
-
-class CheckMeetingAttendees(AnswerTask):
-    templates = ["帮我看看小明2月4日那场快速会议都有哪些人"]
-    apps = ["tencent_meeting"]
-    scope = "S1"
-    objective = "query"
-    composition = "deep_dive"
-    difficulty = "L3"
-    capabilities = ["query", "explore"]
-    answer_fields = [{"type": "text", "label": "参会人员", "hint": "如：王五, 赵六", "repeatable": True}]
-
-    def get_answer(self, input: JudgeInput) -> Any:
-        tm = TencentMeeting(input.apps_init["tencent_meeting"])
-        return ", ".join(tm.history_meeting_attendee_names("小明的快速会议"))
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        tm = TencentMeeting(input.apps_init["tencent_meeting"])
-        expected_names = tm.history_meeting_attendee_names("小明的快速会议")
-        answer_text = str(input.answer or "")
-        return [{
-            "field": "answer",
-            "expected": expected_names,
-            "actual": input.answer,
-            "passed": all(name in answer_text for name in expected_names),
-        }]
-
-
 class ScheduleMeeting(BaseTask):
     templates = ["帮我预约一个会议，主题是{topic}，时长{duration}分钟，密码设为{pin}，然后告诉我会议号"]
     apps = ["tencent_meeting"]
@@ -709,54 +552,6 @@ class ScheduleMeeting(BaseTask):
                 "passed": False,
             })
         return checks
-
-
-class ScheduleRegularMeeting(BaseTask):
-    templates = ["帮我预约一个周期性会议，主题是{topic}，重复频率是{repeat_type}"]
-    apps = ["tencent_meeting"]
-    scope = "S1"
-    objective = "operate"
-    composition = "sequential"
-    difficulty = "L3"
-    capabilities = ["create"]
-    parameters = {
-        "topic": {
-            "type": "enum",
-            "values": TENCENT_MEETING_NEW_REGULAR_TOPICS,
-            "default": "每周同步会",
-            "description": "新周期会议主题",
-        },
-        "repeat_type": {
-            "type": "enum",
-            "values": {
-                "每周": "weekly",
-                "每月": "monthly",
-            },
-            "default": "weekly",
-            "description": "重复频率",
-        },
-    }
-    expected_changes = ["scheduledMeetings", "currentScheduledMeeting"]
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        tm = TencentMeeting(input.apps["tencent_meeting"], init=input.apps_init["tencent_meeting"])
-        new_meeting = tm.new_scheduled_meeting_by_title(self.p.topic)
-        return [
-            {
-                "field": "scheduledMeetings.new.title",
-                "expected": self.p.topic,
-                "actual": new_meeting["title"] if new_meeting is not None else None,
-                "passed": new_meeting is not None and new_meeting["title"] == self.p.topic,
-            },
-            {
-                "field": "scheduledMeetings.new.repeatType",
-                "expected": self.p.repeat_type,
-                "actual": new_meeting["repeatType"] if new_meeting is not None else None,
-                "passed": new_meeting is not None and new_meeting["repeatType"] == self.p.repeat_type,
-            },
-        ]
-
-
 class CountFriendMeetings(AnswerTask):
     templates = ["历史会议里有多少场是我腾讯会议的通讯录好友发起的"]
     apps = ["tencent_meeting"]
@@ -827,30 +622,6 @@ class FindMeetingWithMostParticipants(AnswerTask):
             "title": meeting["title"],
             "count": len(meeting["participants"]),
         }
-
-
-class CountMeetingsByDate(AnswerTask):
-    templates = ["帮我数一下{date}这天有多少场历史会议"]
-    apps = ["tencent_meeting"]
-    scope = "S1"
-    objective = "query"
-    composition = "deep_dive"
-    difficulty = "L3"
-    capabilities = ["query", "reasoning"]
-    answer_fields = [{"type": "number", "label": "历史会议数"}]
-    parameters = {
-        "date": {
-            "type": "enum",
-            "values": TENCENT_MEETING_HISTORY_DATE_VALUES,
-            "default": "2026-02-03",
-            "description": "历史会议日期",
-        },
-    }
-
-    def get_answer(self, input: JudgeInput) -> Any:
-        return TencentMeeting(input.apps_init["tencent_meeting"]).count_history_meetings_on_date(self.p.date)
-
-
 # =============================================================================
 # L4 — Deep multi-step & complex reasoning
 # =============================================================================
@@ -957,62 +728,6 @@ class ChatWithSpecificUser(BaseTask):
                 "passed": sent is not None,
             },
         ]
-
-
-class ScheduleTeamMeeting(BaseTask):
-    templates = [
-        "帮我预约一场主题为{topic}的会议，邀请张三和李四，关掉日历提醒，打开自动使用加时卡",
-        "Schedule a meeting with topic {topic}, invite 张三 and 李四, turn off calendar reminders, and turn on auto-use overtime card",
-    ]
-    apps = ["tencent_meeting"]
-    scope = "S1"
-    objective = "operate"
-    composition = "sequential"
-    difficulty = "L4"
-    capabilities = ["create"]
-    parameters = {
-        "topic": {
-            "type": "enum",
-            "values": TENCENT_MEETING_NEW_TEAM_TOPICS,
-            "default": "跨组同步会",
-            "description": "团队会议主题",
-        },
-    }
-    expected_changes = ["scheduledMeetings", "currentScheduledMeeting"]
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        tm = TencentMeeting(input.apps["tencent_meeting"], init=input.apps_init["tencent_meeting"])
-        new_meeting = tm.new_scheduled_meeting_by_title(self.p.topic)
-        invitees = [invitee["name"] for invitee in new_meeting["invitees"]] if new_meeting is not None else None
-        settings = new_meeting["settings"] if new_meeting is not None else None
-        return [
-            {
-                "field": "scheduledMeetings.new.title",
-                "expected": self.p.topic,
-                "actual": new_meeting["title"] if new_meeting is not None else None,
-                "passed": new_meeting is not None and new_meeting["title"] == self.p.topic,
-            },
-            {
-                "field": "scheduledMeetings.new.invitees",
-                "expected": ["张三", "李四"],
-                "actual": invitees,
-                "passed": invitees is not None and "张三" in invitees and "李四" in invitees,
-            },
-            {
-                "field": "scheduledMeetings.new.settings.calendar",
-                "expected": False,
-                "actual": settings.get("calendar") if settings is not None else None,
-                "passed": settings is not None and settings.get("calendar") is False,
-            },
-            {
-                "field": "scheduledMeetings.new.settings.autoUseOvertimeCard",
-                "expected": True,
-                "actual": settings.get("autoUseOvertimeCard") if settings is not None else None,
-                "passed": settings is not None and settings.get("autoUseOvertimeCard") is True,
-            },
-        ]
-
-
 class CalculateTotalMeetingDuration(AnswerTask):
     templates = ["帮我算一下{date}这天我一共开了多久会议，多少分钟"]
     apps = ["tencent_meeting"]

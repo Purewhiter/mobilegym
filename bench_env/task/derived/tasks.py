@@ -4,6 +4,22 @@ Derived task definitions — 组合已有 App 能力的跨 App 复合任务。
 覆盖：支付宝账单分析+笔记/微信、转账+余额+通知、日历改期+答题卡、
 出行规划、社交约饭、会议预约、内容创作、设备设置+桌面定制等场景。
 """
+# -- Task Index (auto-generated, do not edit) --
+# 11 tasks | L2×1  L3×2  L4×8
+#
+# [L4] MonthCompareThenExplainToNote                     你去支付宝看一下，{month1}和{month2}哪个月总花销更高，顺便把差额也算出来。然后在笔记新建一条"月度花销对比"，写上两个月的各自花销、哪个月花得更多、差多少。
+# [L4] BillTypeYearSummaryToWechat                       去支付宝账单里查一下"{bill_type}"类型今年一共有多少笔，花了多少钱，微信告诉{contact}。
+# [L4] Top3ExpenseSummaryToWechat                        去支付宝看看最近30天里金额最大的3笔支出分别是什么，把交易标题和金额发微信告诉{contact}，最后一句加上"我最近得省着点了"。
+# [L4] CreateEventWithAlarmAndConfirm                    {date}的晚上6点半到8点，帮我在日历里安排一个日程叫"{title}"，再顺手加个提前30分钟提醒，闹钟提醒打开。
+# [L3] RealisticTrip001                                  我后天想去上海出差，你先帮我看那天杭州到上海最早的高铁，再看看上海天气。如果不下雨，就把车次和天气写进一个标题为 上海出差备忘 的笔记里，再微信告诉{contact}我几点到，让她安排接站；如果下雨，就在消息里提醒她来时带伞。
+# [L3] TopRatedNearbyPlaceConditionalWechatOrSmsInvite   帮我找附近{radius}内评分最高的{category}，评分相同优先选距离近的；如果开车不到2公里，就微信问{target}和{notify_to}要不要一起去；如果太远，就把地址发短信给{sms_contact}问TA要不要去。
+# [L4] ScheduleReleaseMeetingAndNotifyViaNotesWechatSms  帮我建一个明天早上 9 点的 版本发布会 ，时长15分钟，密码123456；建好以后把会议信息记进笔记，再微信发给{contact}，短信发给{sms_contact}。
+# [L4] WeeklyReadingAndLikedSpotifySongsToMoment         帮我看微信读书最近一周哪天读得最久，再把Spotify今天听过且已经点赞的歌的歌名和作者汇总一下，最后发条朋友圈，把"最近阅读最投入的一天"和"现在在听的歌"都带上。
+# [L4] ThirdSpotifyPlayRecommendOnRedbookAndPlaylist     看一下我今天在Spotify听的第三首歌是什么，然后去小红书发一条推荐，正文里带上歌名和歌手；发完以后再把这首歌加进一个新歌单"{playlist}"。
+# [L4] WeekendShanghaiTripIfClearAndFree                 我想把下周末的成都行先大概定下来。你先查下周六北京到成都最早的高铁和成都当天的天气，再看看我日历那天上午有没有别的安排；如果天气不是雨天而且日历不冲突，就把车次、天气、出发时间写进一个"周末成都计划"的笔记，再给我设一个出发前1小时的闹钟，最后微信发给{contact}，问她那天见面方不方便。
+# [L2] ChangeWallpaperAndAddWidget                       把桌面背景换一下，然后添加大桔观小组件
+# -- End Task Index --
+
 
 from __future__ import annotations
 

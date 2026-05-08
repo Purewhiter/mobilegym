@@ -3699,7 +3699,7 @@
           if (isRealSuccess(r)) stats.perApp[app].success++;
         }
         
-        // Task type stats (extract verb from task name like OpenMyQRCode -> Open)
+        // Task type stats (extract verb from task name like ReadMyWxid -> Read)
         const taskTypeMatch = taskId?.match(/^[^.]+\.([A-Z][a-z]+)/);
         if (taskTypeMatch) {
           const taskType = taskTypeMatch[1];

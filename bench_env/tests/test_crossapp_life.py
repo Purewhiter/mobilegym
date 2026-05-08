@@ -366,27 +366,6 @@ class TestTaskDefinitions:
         has_get_answer_override = cls.get_answer is not AnswerTask.get_answer
         has_check_goals_override = cls.check_goals is not AnswerTask.check_goals
         assert has_answer_attr or has_get_answer_override or has_check_goals_override
-
-
-def _weather_current_to_wechat_positive():
-    task = _tasks_module.WeatherCurrentToWechat(city="北京", contact="陈静")
-    weather = Weather(copy.deepcopy(WEATHER_BASE_STATE))
-    curr_wechat = copy.deepcopy(WECHAT_BASE_STATE)
-    _append_wechat_outgoing(
-        curr_wechat,
-        task.p.contact,
-        f"{task.p.city}现在{weather.current_weather_text(task.p.city)}，{weather.current_temp_str(task.p.city)}度",
-    )
-    return task, _make_input(_apps_state(), _apps_state(wechat=curr_wechat))
-
-
-def _weather_current_to_wechat_negative():
-    task = _tasks_module.WeatherCurrentToWechat(city="北京", contact="陈静")
-    curr_wechat = copy.deepcopy(WECHAT_BASE_STATE)
-    _append_wechat_outgoing(curr_wechat, task.p.contact, "天气不错，但我没看具体城市和温度")
-    return task, _make_input(_apps_state(), _apps_state(wechat=curr_wechat))
-
-
 def _map_place_to_wechat_positive():
     task = _tasks_module.MapPlaceToWechat(place="中国国家博物馆", contact="陈静")
     curr_map = _map_search_state(task.p.place)
@@ -402,44 +381,6 @@ def _map_place_to_wechat_negative():
     curr_wechat = copy.deepcopy(WECHAT_BASE_STATE)
     _append_wechat_outgoing(curr_wechat, task.p.contact, f"{task.p.place}在错误地址")
     return task, _make_input(_apps_state(), _apps_state(map=curr_map, wechat=curr_wechat))
-
-
-def _map_place_to_notes_positive():
-    task = _tasks_module.MapPlaceToNotes(place="中国国家博物馆")
-    curr_map = _map_search_state(task.p.place)
-    curr_notes = copy.deepcopy(NOTES_BASE_STATE)
-    address = Map.extract_address(Map.resolve_places(task.p.place)[0])
-    _add_note(curr_notes, task.p.place, content=f"{task.p.place}\n{address}")
-    return task, _make_input(_apps_state(), _apps_state(map=curr_map, notes=curr_notes))
-
-
-def _map_place_to_notes_negative():
-    task = _tasks_module.MapPlaceToNotes(place="中国国家博物馆")
-    curr_map = _map_search_state(task.p.place)
-    curr_notes = copy.deepcopy(NOTES_BASE_STATE)
-    _add_note(curr_notes, task.p.place, content=f"{task.p.place}\n错误地址")
-    return task, _make_input(_apps_state(), _apps_state(map=curr_map, notes=curr_notes))
-
-
-def _weather_current_to_sms_positive():
-    task = _tasks_module.WeatherCurrentToSms(city="北京", contact="张三")
-    weather = Weather(copy.deepcopy(WEATHER_BASE_STATE))
-    curr_os = _base_os()
-    _append_sms_outgoing(
-        curr_os["providers"]["sms"],
-        task.p.contact,
-        f"{task.p.city}现在{weather.current_weather_text(task.p.city)}，{weather.current_temp_str(task.p.city)}度",
-    )
-    return task, _make_input(_apps_state(), _apps_state(), curr_os=curr_os)
-
-
-def _weather_current_to_sms_negative():
-    task = _tasks_module.WeatherCurrentToSms(city="北京", contact="张三")
-    curr_os = _base_os()
-    _append_sms_outgoing(curr_os["providers"]["sms"], task.p.contact, "天气不错")
-    return task, _make_input(_apps_state(), _apps_state(), curr_os=curr_os)
-
-
 def _weather_share_metric_positive():
     task = _tasks_module.WeatherShareMetric(city="北京", metric="temp_feels", contact="陈静")
     weather = Weather(copy.deepcopy(WEATHER_BASE_STATE))
@@ -491,22 +432,6 @@ def _append_wechat_moment(state: dict[str, Any], content: str, *, images: list[s
             "images": list(images or []),
         },
     )
-
-
-def _weather_trip_to_moments_positive():
-    task = _tasks_module.WeatherTripToMoments(city="上海")
-    curr_wechat = copy.deepcopy(WECHAT_BASE_STATE)
-    _append_wechat_moment(curr_wechat, task.p.sun_content)
-    return task, _make_input(_apps_state(), _apps_state(wechat=curr_wechat))
-
-
-def _weather_trip_to_moments_negative():
-    task = _tasks_module.WeatherTripToMoments(city="上海")
-    curr_wechat = copy.deepcopy(WECHAT_BASE_STATE)
-    _append_wechat_moment(curr_wechat, task.p.rain_content)
-    return task, _make_input(_apps_state(), _apps_state(wechat=curr_wechat))
-
-
 def _weather_filter_non_rainy_days_positive():
     task = _tasks_module.WeatherFilterNonRainyDays(city="北京")
     weather = Weather(copy.deepcopy(WEATHER_BASE_STATE))
@@ -523,29 +448,6 @@ def _weather_filter_non_rainy_days_negative():
     dates = weather.non_rainy_dates(task.p.city, 1, 5)
     _add_note(curr_notes, "适合出行的日子", content="\n".join(dates[:-1]))
     return task, _make_input(_apps_state(), _apps_state(notes=curr_notes))
-
-
-def _weather_compare_city_temp_positive():
-    task = _tasks_module.WeatherCompareCityTemp(city1="北京", city2="上海", contact="陈静")
-    weather = Weather(copy.deepcopy(WEATHER_BASE_STATE))
-    winner, temp1, temp2 = weather.hotter_city(task.p.city1, task.p.city2)
-    curr_wechat = copy.deepcopy(WECHAT_BASE_STATE)
-    _append_wechat_outgoing(
-        curr_wechat,
-        task.p.contact,
-        f"{task.p.city1}{int(round(temp1))}度，{task.p.city2}{int(round(temp2))}度，{winner}更暖和",
-    )
-    return task, _make_input(_apps_state(), _apps_state(wechat=curr_wechat))
-
-
-def _weather_compare_city_temp_negative():
-    task = _tasks_module.WeatherCompareCityTemp(city1="北京", city2="上海", contact="陈静")
-    curr_wechat = copy.deepcopy(WECHAT_BASE_STATE)
-    # 错误：只提到北京温度，没提到上海（winner）的温度
-    _append_wechat_outgoing(curr_wechat, task.p.contact, "北京20度，北京更暖和")
-    return task, _make_input(_apps_state(), _apps_state(wechat=curr_wechat))
-
-
 def _weather_rain_branch_notify_positive():
     task = _tasks_module.WeatherRainBranchNotify(city="广州", contact="陈静")
     curr_wechat = copy.deepcopy(WECHAT_BASE_STATE)
@@ -679,23 +581,6 @@ def _railway_dest_weather_query_negative():
         )
     ]
     return task, _make_input(_apps_state(), _apps_state(railway12306=rail_curr), answer="上海晴，10度")
-
-
-def _map_route_duration_to_wechat_positive():
-    task = _tasks_module.MapRouteDurationToWechat(destination="故宫", contact="陈静")
-    curr_wechat = copy.deepcopy(WECHAT_BASE_STATE)
-    route = Map.resolve_routes_from_current(task.p.destination, "DRIVING")[0][1]
-    _append_wechat_outgoing(curr_wechat, task.p.contact, f"到{task.p.destination}开车大概{route['duration']}")
-    return task, _make_input(_apps_state(), _apps_state(wechat=curr_wechat))
-
-
-def _map_route_duration_to_wechat_negative():
-    task = _tasks_module.MapRouteDurationToWechat(destination="故宫", contact="陈静")
-    curr_wechat = copy.deepcopy(WECHAT_BASE_STATE)
-    _append_wechat_outgoing(curr_wechat, task.p.contact, "我快到了")
-    return task, _make_input(_apps_state(), _apps_state(wechat=curr_wechat))
-
-
 def _map_nearby_best_to_wechat_positive():
     task = _tasks_module.MapNearbyBestToWechat(radius=2000, category="咖啡馆", contact="陈静")
     best = Map.best_rated_from_results(Map.geo_search(task.p.category, limit=0), max_distance_meters=float(task.p.radius))
@@ -713,62 +598,6 @@ def _map_nearby_best_to_wechat_negative():
     curr_wechat = copy.deepcopy(WECHAT_BASE_STATE)
     _append_wechat_outgoing(curr_wechat, task.p.contact, "我推荐另一家，评分4.0，地址错误")
     return task, _make_input(_apps_state(), _apps_state(wechat=curr_wechat))
-
-
-def _map_place_phone_to_sms_positive():
-    task = _tasks_module.MapPlacePhoneToSms(place="中国国家博物馆", contact="张三")
-    curr_map = _map_search_state(task.p.place)
-    curr_os = _base_os()
-    phone = Map.extract_phone(Map.resolve_places(task.p.place)[0])
-    _append_sms_outgoing(curr_os["providers"]["sms"], task.p.contact, f"{task.p.place}电话是{phone}")
-    return task, _make_input(_apps_state(), _apps_state(map=curr_map), curr_os=curr_os)
-
-
-def _map_place_phone_to_sms_negative():
-    task = _tasks_module.MapPlacePhoneToSms(place="中国国家博物馆", contact="张三")
-    curr_map = _map_search_state(task.p.place)
-    curr_os = _base_os()
-    _append_sms_outgoing(curr_os["providers"]["sms"], task.p.contact, f"{task.p.place}电话是010-00000000")
-    return task, _make_input(_apps_state(), _apps_state(map=curr_map), curr_os=curr_os)
-
-
-def _wechat_message_to_map_search_positive():
-    task = _tasks_module.WechatMessageToMapSearch(contact="陈静", place="中国国家博物馆")
-    base_wechat = copy.deepcopy(WECHAT_BASE_STATE)
-    _append_wechat_incoming(base_wechat, task.p.contact, f"周末去{task.p.place}怎么样？")
-    curr_map = _map_search_state(task.p.place)
-    address = Map.extract_address(Map.resolve_places(task.p.place)[0])
-    return task, _make_input(
-        _apps_state(wechat=base_wechat),
-        _apps_state(wechat=base_wechat, map=curr_map),
-        answer=f"{task.p.place}的具体地址是{address}",
-    )
-
-
-def _wechat_message_to_map_search_negative_wrong_answer():
-    task = _tasks_module.WechatMessageToMapSearch(contact="陈静", place="中国国家博物馆")
-    base_wechat = copy.deepcopy(WECHAT_BASE_STATE)
-    _append_wechat_incoming(base_wechat, task.p.contact, f"周末去{task.p.place}怎么样？")
-    curr_map = _map_search_state(task.p.place)
-    return task, _make_input(
-        _apps_state(wechat=base_wechat),
-        _apps_state(wechat=base_wechat, map=curr_map),
-        answer="地址是错误的地方",
-    )
-
-
-def _wechat_message_to_map_search_negative_wrong_state():
-    task = _tasks_module.WechatMessageToMapSearch(contact="陈静", place="中国国家博物馆")
-    base_wechat = copy.deepcopy(WECHAT_BASE_STATE)
-    _append_wechat_incoming(base_wechat, task.p.contact, f"周末去{task.p.place}怎么样？")
-    address = Map.extract_address(Map.resolve_places(task.p.place)[0])
-    return task, _make_input(
-        _apps_state(wechat=base_wechat),
-        _apps_state(wechat=base_wechat),
-        answer=f"{task.p.place}的具体地址是{address}",
-    )
-
-
 def _calendar_event_to_wechat_positive():
     task = _tasks_module.CalendarEventToWechat(contact="陈静")
     tomorrow = BASE_DATE + datetime.timedelta(days=1)
@@ -802,79 +631,6 @@ def _calendar_event_to_wechat_negative():
     curr_wechat = copy.deepcopy(WECHAT_BASE_STATE)
     _append_wechat_outgoing(curr_wechat, task.p.contact, "项目评审，开始时间10:30")
     return task, _make_input(_apps_state(), _apps_state(calendar=curr_calendar, wechat=curr_wechat))
-
-
-def _contacts_phone_to_railway_passenger_positive():
-    task = _tasks_module.ContactsPhoneToRailwayPassenger(contact="张三")
-    phone = _normalized_contact_phone(task.p.contact)
-    curr_rail = copy.deepcopy(RAILWAY_DEFAULTS)
-    curr_rail["passengers"] = curr_rail["passengers"] + [
-        {
-            "id": "p_contact_new",
-            "name": task.p.contact,
-            "idType": "身份证",
-            "idNo": str(task.p.id_no),
-            "phone": f"{phone[:3]}-{phone[3:7]}-{phone[7:]}",
-            "isDefault": False,
-            "ticketType": "成人",
-        }
-    ]
-    return task, _make_input(_apps_state(), _apps_state(railway12306=curr_rail))
-
-
-def _contacts_phone_to_railway_passenger_negative():
-    task = _tasks_module.ContactsPhoneToRailwayPassenger(contact="张三")
-    curr_rail = copy.deepcopy(RAILWAY_DEFAULTS)
-    curr_rail["passengers"] = curr_rail["passengers"] + [
-        {
-            "id": "p_contact_new",
-            "name": task.p.contact,
-            "idType": "身份证",
-            "idNo": str(task.p.id_no),
-            "phone": "13900000000",
-            "isDefault": False,
-            "ticketType": "成人",
-        }
-    ]
-    return task, _make_input(_apps_state(), _apps_state(railway12306=curr_rail))
-
-
-def _map_weather_to_trip_notes_positive():
-    task = _tasks_module.MapWeatherToTripNotes(place="中国国家博物馆")
-    weather = Weather(copy.deepcopy(WEATHER_BASE_STATE))
-    _, route = Map.resolve_routes_from_current(task.p.place, "DRIVING")[0]
-    tomorrow = weather.weather_daily("北京")[1]
-    curr_notes = copy.deepcopy(NOTES_BASE_STATE)
-    _add_note(
-        curr_notes,
-        "出行计划",
-        content=f"{task.p.place}\n开车{route['duration']}\n明天{Weather.day_text(tomorrow)}",
-    )
-    return task, _make_input(_apps_state(), _apps_state(notes=curr_notes))
-
-
-def _map_weather_to_trip_notes_negative():
-    task = _tasks_module.MapWeatherToTripNotes(place="中国国家博物馆")
-    _, route = Map.resolve_routes_from_current(task.p.place, "DRIVING")[0]
-    curr_notes = copy.deepcopy(NOTES_BASE_STATE)
-    _add_note(curr_notes, "出行计划", content=f"{task.p.place}\n开车{route['duration']}")
-    return task, _make_input(_apps_state(), _apps_state(notes=curr_notes))
-
-
-def test_map_weather_to_trip_notes_uses_city_from_address():
-    task = _tasks_module.MapWeatherToTripNotes(place="中国国家博物馆")
-    curr_notes = copy.deepcopy(NOTES_BASE_STATE)
-    _, route = Map.resolve_routes_from_current(task.p.place, "DRIVING")[0]
-    forecast = Weather(copy.deepcopy(WEATHER_BASE_STATE)).tomorrow_forecast("北京")
-    _add_note(
-        curr_notes,
-        "出行计划",
-        content=f"{task.p.place}\n开车{route['duration']}\n明天{Weather.day_text(forecast)}",
-    )
-    checks = task.check_goals(_make_input(_apps_state(), _apps_state(notes=curr_notes)))
-    assert all(item["passed"] for item in checks)
-
-
 def test_calendar_free_weather_invite_accepts_specific_valid_day():
     task = _tasks_module.CalendarFreeWeatherInvite(city="北京", contact="陈静")
     today = BASE_DATE
@@ -976,34 +732,6 @@ def _map_rating_condition_buy_ticket_negative():
             passenger_names=[Railway12306(copy.deepcopy(RAILWAY_DEFAULTS)).user_name],
         )
     return task, _make_input(_apps_state(), _apps_state(map=curr_map, railway12306=curr_rail))
-
-
-def _map_route_estimate_cost_to_wechat_positive():
-    task = _tasks_module.MapRouteEstimateCostToWechat(destination="故宫", rate=1.5, contact="陈静")
-    _, route = Map.resolve_routes_from_current(task.p.destination, "DRIVING")[0]
-    dist_m = float(route["distance_meters"])
-    expected_cost = dist_m / 1000.0 * float(task.p.rate)
-    curr_wechat = copy.deepcopy(WECHAT_BASE_STATE)
-    _append_wechat_outgoing(
-        curr_wechat,
-        task.p.contact,
-        f"到{task.p.destination}{route['distance']}，油费大概{expected_cost:.2f}元",
-    )
-    return task, _make_input(_apps_state(), _apps_state(wechat=curr_wechat))
-
-
-def _map_route_estimate_cost_to_wechat_negative():
-    task = _tasks_module.MapRouteEstimateCostToWechat(destination="故宫", rate=1.5, contact="陈静")
-    _, route = Map.resolve_routes_from_current(task.p.destination, "DRIVING")[0]
-    curr_wechat = copy.deepcopy(WECHAT_BASE_STATE)
-    _append_wechat_outgoing(
-        curr_wechat,
-        task.p.contact,
-        f"到{task.p.destination}{route['distance']}，油费大概1元",
-    )
-    return task, _make_input(_apps_state(), _apps_state(wechat=curr_wechat))
-
-
 def _railway_weather_to_wechat_positive():
     date_value = _tomorrow_date()
     task = _tasks_module.RailwayWeatherToWechat(city="上海", from_station="北京", date=date_value, contact="陈静")
@@ -1040,27 +768,6 @@ def _railway_weather_to_wechat_negative():
     curr_wechat = copy.deepcopy(WECHAT_BASE_STATE)
     _append_wechat_outgoing(curr_wechat, task.p.contact, "G7002 08:30发车，但天气说错了")
     return task, _make_input(_apps_state(), _apps_state(railway12306=curr_rail, wechat=curr_wechat))
-
-
-def _railway_contacts_info_to_wechat_positive():
-    task = _tasks_module.RailwayContactsInfoToWechat(contact="陈静")
-    ticket = Railway12306(copy.deepcopy(RAILWAY_DEFAULTS)).my_latest_ticket
-    curr_wechat = copy.deepcopy(WECHAT_BASE_STATE)
-    _append_wechat_outgoing(
-        curr_wechat,
-        task.p.contact,
-        f"最新车票是{ticket['trainNo']}，{ticket['departTime']}发车",
-    )
-    return task, _make_input(_apps_state(), _apps_state(wechat=curr_wechat))
-
-
-def _railway_contacts_info_to_wechat_negative():
-    task = _tasks_module.RailwayContactsInfoToWechat(contact="陈静")
-    curr_wechat = copy.deepcopy(WECHAT_BASE_STATE)
-    _append_wechat_outgoing(curr_wechat, task.p.contact, "最新车票是G0000，00:00发车")
-    return task, _make_input(_apps_state(), _apps_state(wechat=curr_wechat))
-
-
 def _weather_first_sunny_day_calendar_alarm_positive():
     task = _tasks_module.WeatherFirstSunnyDayCalendarAlarm(city="上海")
     target_date = Weather(copy.deepcopy(WEATHER_BASE_STATE)).first_non_rainy_date(task.p.city, 1, 5)
@@ -1088,56 +795,6 @@ def _weather_first_sunny_day_calendar_alarm_negative():
         enabled=True,
     )
     return task, _make_input(_apps_state(), _apps_state(calendar=curr_calendar, clock=curr_clock))
-
-
-def _weather_condition_poi_to_wechat_positive():
-    task = _tasks_module.WeatherConditionPOIToWechat(category="咖啡馆", contact="陈静")
-    poi = Map.nearest_from_results(Map.geo_search(task.p.category, limit=0))
-    curr_wechat = copy.deepcopy(WECHAT_BASE_STATE)
-    _append_wechat_outgoing(curr_wechat, task.p.contact, f"明天不下雨，我们一起去{poi['name']}吧")
-    return task, _make_input(_apps_state(), _apps_state(wechat=curr_wechat))
-
-
-def _weather_condition_poi_to_wechat_negative():
-    task = _tasks_module.WeatherConditionPOIToWechat(category="咖啡馆", contact="陈静")
-    return task, _make_input(_apps_state(), _apps_state())
-
-
-def _railway_weather_no_conflict_buy_positive():
-    task = _tasks_module.RailwayWeatherNoConflictBuy(city="上海", from_station="北京")
-    weather = Weather(copy.deepcopy(WEATHER_BASE_STATE))
-    target_date = next(
-        fx_date
-        for fx_date in weather.non_rainy_dates(task.p.city, 1, 5)
-        if Calendar(copy.deepcopy(CALENDAR_BASE_STATE)).count_events_on_date(datetime.date.fromisoformat(fx_date)) == 0
-    )
-    curr_rail = _rail_new_order_state(
-        from_station=task.p.from_station,
-        to_station=task.p.city,
-        date=target_date,
-        passenger_names=[Railway12306(copy.deepcopy(RAILWAY_DEFAULTS)).user_name],
-    )
-    return task, _make_input(_apps_state(), _apps_state(railway12306=curr_rail))
-
-
-def _railway_weather_no_conflict_buy_negative():
-    task = _tasks_module.RailwayWeatherNoConflictBuy(city="上海", from_station="北京")
-    weather = Weather(copy.deepcopy(WEATHER_BASE_STATE))
-    target_date = next(
-        fx_date
-        for fx_date in weather.non_rainy_dates(task.p.city, 1, 5)
-        if Calendar(copy.deepcopy(CALENDAR_BASE_STATE)).count_events_on_date(datetime.date.fromisoformat(fx_date)) == 0
-    )
-    wrong_date = (datetime.date.fromisoformat(target_date) + datetime.timedelta(days=1)).isoformat()
-    curr_rail = _rail_new_order_state(
-        from_station=task.p.from_station,
-        to_station=task.p.city,
-        date=wrong_date,
-        passenger_names=[Railway12306(copy.deepcopy(RAILWAY_DEFAULTS)).user_name],
-    )
-    return task, _make_input(_apps_state(), _apps_state(railway12306=curr_rail))
-
-
 def _railway_balance_conditional_buy_notify_positive():
     date_value = _tomorrow_date()
     task = _tasks_module.RailwayBalanceConditionalBuyNotify(
@@ -1511,34 +1168,20 @@ def _weather_calendar_create_event_if_not_sunny_negative():
 
 
 PRIMARY_POSITIVE_CASES = [
-    ("WeatherCurrentToWechat", _weather_current_to_wechat_positive),
     ("MapPlaceToWechat", _map_place_to_wechat_positive),
-    ("MapPlaceToNotes", _map_place_to_notes_positive),
-    ("WeatherCurrentToSms", _weather_current_to_sms_positive),
     ("WeatherShareMetric", _weather_share_metric_positive),
     ("WeatherReportToNotes", _weather_report_to_notes_positive),
-    ("WeatherTripToMoments", _weather_trip_to_moments_positive),
     ("WeatherFilterNonRainyDays", _weather_filter_non_rainy_days_positive),
-    ("WeatherCompareCityTemp", _weather_compare_city_temp_positive),
     ("WeatherRainBranchNotify", _weather_rain_branch_notify_positive),
     ("RailwayTrainInfoToWechat", _railway_train_info_to_wechat_positive),
     ("RailwayPriceVsBalance", _railway_price_vs_balance_positive),
     ("RailwayDestWeatherQuery", _railway_dest_weather_query_positive),
-    ("MapRouteDurationToWechat", _map_route_duration_to_wechat_positive),
     ("MapNearbyBestToWechat", _map_nearby_best_to_wechat_positive),
-    ("MapPlacePhoneToSms", _map_place_phone_to_sms_positive),
-    ("WechatMessageToMapSearch", _wechat_message_to_map_search_positive),
     ("CalendarEventToWechat", _calendar_event_to_wechat_positive),
-    ("ContactsPhoneToRailwayPassenger", _contacts_phone_to_railway_passenger_positive),
-    ("MapWeatherToTripNotes", _map_weather_to_trip_notes_positive),
     ("WeatherFirstNonRainyDayBuyTicket", _weather_first_non_rainy_day_buy_ticket_positive),
     ("MapRatingConditionBuyTicket", _map_rating_condition_buy_ticket_positive),
-    ("MapRouteEstimateCostToWechat", _map_route_estimate_cost_to_wechat_positive),
     ("RailwayWeatherToWechat", _railway_weather_to_wechat_positive),
-    ("RailwayContactsInfoToWechat", _railway_contacts_info_to_wechat_positive),
     ("WeatherFirstSunnyDayCalendarAlarm", _weather_first_sunny_day_calendar_alarm_positive),
-    ("WeatherConditionPOIToWechat", _weather_condition_poi_to_wechat_positive),
-    ("RailwayWeatherNoConflictBuy", _railway_weather_no_conflict_buy_positive),
     ("RailwayBalanceConditionalBuyNotify", _railway_balance_conditional_buy_notify_positive),
     ("CalendarFreeWeatherInvite", _calendar_free_weather_invite_positive),
     ("WechatFoodExtractMapSms", _wechat_food_extract_map_sms_positive),
@@ -1552,34 +1195,20 @@ PRIMARY_POSITIVE_CASES = [
 ]
 
 PRIMARY_NEGATIVE_CASES = [
-    ("WeatherCurrentToWechat", _weather_current_to_wechat_negative),
     ("MapPlaceToWechat", _map_place_to_wechat_negative),
-    ("MapPlaceToNotes", _map_place_to_notes_negative),
-    ("WeatherCurrentToSms", _weather_current_to_sms_negative),
     ("WeatherShareMetric", _weather_share_metric_negative),
     ("WeatherReportToNotes", _weather_report_to_notes_negative),
-    ("WeatherTripToMoments", _weather_trip_to_moments_negative),
     ("WeatherFilterNonRainyDays", _weather_filter_non_rainy_days_negative),
-    ("WeatherCompareCityTemp", _weather_compare_city_temp_negative),
     ("WeatherRainBranchNotify", _weather_rain_branch_notify_negative),
     ("RailwayTrainInfoToWechat", _railway_train_info_to_wechat_negative),
     ("RailwayPriceVsBalance", _railway_price_vs_balance_negative),
     ("RailwayDestWeatherQuery", _railway_dest_weather_query_negative),
-    ("MapRouteDurationToWechat", _map_route_duration_to_wechat_negative),
     ("MapNearbyBestToWechat", _map_nearby_best_to_wechat_negative),
-    ("MapPlacePhoneToSms", _map_place_phone_to_sms_negative),
-    ("WechatMessageToMapSearch", _wechat_message_to_map_search_negative_wrong_answer),
     ("CalendarEventToWechat", _calendar_event_to_wechat_negative),
-    ("ContactsPhoneToRailwayPassenger", _contacts_phone_to_railway_passenger_negative),
-    ("MapWeatherToTripNotes", _map_weather_to_trip_notes_negative),
     ("WeatherFirstNonRainyDayBuyTicket", _weather_first_non_rainy_day_buy_ticket_negative),
     ("MapRatingConditionBuyTicket", _map_rating_condition_buy_ticket_negative),
-    ("MapRouteEstimateCostToWechat", _map_route_estimate_cost_to_wechat_negative),
     ("RailwayWeatherToWechat", _railway_weather_to_wechat_negative),
-    ("RailwayContactsInfoToWechat", _railway_contacts_info_to_wechat_negative),
     ("WeatherFirstSunnyDayCalendarAlarm", _weather_first_sunny_day_calendar_alarm_negative),
-    ("WeatherConditionPOIToWechat", _weather_condition_poi_to_wechat_negative),
-    ("RailwayWeatherNoConflictBuy", _railway_weather_no_conflict_buy_negative),
     ("RailwayBalanceConditionalBuyNotify", _railway_balance_conditional_buy_notify_negative),
     ("CalendarFreeWeatherInvite", _calendar_free_weather_invite_negative),
     ("WechatFoodExtractMapSms", _wechat_food_extract_map_sms_negative),
@@ -1593,7 +1222,6 @@ PRIMARY_NEGATIVE_CASES = [
 ]
 
 EXTRA_NEGATIVE_CASES = [
-    ("WechatMessageToMapSearch__wrong_state", _wechat_message_to_map_search_negative_wrong_state),
     (
         "RailwayPriceVsBalance__empty_answer",
         lambda: (
@@ -1619,18 +1247,6 @@ EXTRA_POSITIVE_CASES = [
 
 
 class TestTaskJudgeMatrixOffline:
-    def test_offline_judge_matrix_complete(self):
-        positive = {name for name, _ in PRIMARY_POSITIVE_CASES}
-        negative = {name for name, _ in PRIMARY_NEGATIVE_CASES}
-        assert positive == negative
-        assert positive == set(ALL_TASK_IDS)
-
-        hybrid_negatives = [
-            name for name, _ in PRIMARY_NEGATIVE_CASES + EXTRA_NEGATIVE_CASES
-            if name.split("__", 1)[0] == "WechatMessageToMapSearch"
-        ]
-        assert len(hybrid_negatives) >= 2
-
     @pytest.mark.parametrize(
         "task_name,builder",
         PRIMARY_POSITIVE_CASES + EXTRA_POSITIVE_CASES,

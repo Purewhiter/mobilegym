@@ -48,7 +48,7 @@ regression/stable_fail 桶未采样但其 sim pass 都是 0，不影响加权结
 |---|---|---|
 | spotify 0/21、payment 0/6、ebay 0/5 全缺席 | 全落 stable_fail 桶 | Limitations 列出 |
 | crossapp_work 1/20 严重低配 | workflow 跨 app 基本全 fail | Limitations |
-| utility↑ (27.5% vs 18.1%) | weather/device/reddit/bilibili 的 uplift 密度高 | 写为"训练模型在结构化 settings/query 受益最大" |
+| utility↑ (27.5% vs 18.1%) | weather/reddit/bilibili/account 的 uplift 密度高 | 写为"训练模型在结构化 settings/query 受益最大" |
 | cross-app 25% vs 31.4% | stable_pass 里 cross-app 几乎为零 | 轻微低配，可接受 |
 
 **但重加权后无偏**（§2），stratified 设计的价值。
@@ -61,7 +61,7 @@ regression/stable_fail 桶未采样但其 sim pass 都是 0，不影响加权结
 | Content/media (bilibili, redbook, reading, spotify) | 18.1% | 15.0% ↓ |
 | Productivity (calendar, clock, notes) | 9.4% | 10.0% ≈ |
 | Commerce (alipay, ebay) | 5.0% | 1.2% ↓ |
-| Utility (weather, map, device, account, railway) | 18.1% | 27.5% ↑ |
+| Utility (weather, map, account, railway) | 18.1% | 27.5% ↑ |
 | Cross-app | 31.4% | 25.0% |
 
 ---
@@ -164,7 +164,6 @@ Sim→real 典型保留率 50–80%（视觉差异、IME/键盘差异、状态�
 - 所有 `contact`（目前占位 `blank.`）→ 真机微信通讯录里的名字
 - `wechat_reading.UnfollowUser` 的 `user_name='508'` → 真机微信读书已关注用户
 - `railway12306.FindTrainByDate` 的 `2026-02-09` → 真机 12306 里存在的历史车票日期
-- `device.Wifi*` 的 `Xiaomi_AX3` + 密码 → 真机网络环境
 - `wechat.ReadContactRegion` 的 `blank.` → 一个有归属地信息的真实联系人
 
 这些替换不影响 sim↔real 可比性（§6 理由），只需在 Protocol 段标注即可。
@@ -188,7 +187,7 @@ Sim→real 典型保留率 50–80%（视觉差异、IME/键盘差异、状态�
 | uplift | 28 | 24 | B 站投币（账号消耗）、蓝牙配对硬件、WiFi 密码暴力试错、腾讯会议联系人 |
 | stable_pass | 22 | 16 | 12306 改密码（账号不可逆）、WiFi 热点配置、忘记 WiFi 重连、Reddit 删预置消息、X DM 预置会话、X 聊天隐私 |
 | mid | 30 | 26 | 12306 忘记密码、微信注销账号、设置"关于手机"截图、小红书关键词喂流 |
-| **合计** | **80** | **66** | **14 = 6 device/硬件 + 4 account-mutation + 4 consumable** |
+| **合计** | **80** | **66** | **14 = 6 硬件依赖 + 4 account-mutation + 4 consumable** |
 
 ### 7.2 VLM 判定错误率（人工复核）
 
@@ -212,7 +211,7 @@ Sim→real 典型保留率 50–80%（视觉差异、IME/键盘差异、状态�
 | Trained | 6/66 | **9.1%** |
 | 合计 | 9/132 | **6.8%** |
 
-此外，`crossapp_life.RailwayContactsInfoToWechat` base 首轮意外通过（sim 上 0/4，因 base 在 sim 永远先打开微信而不是 12306 就爆失败；真机 pass 可能因为桌面布局差异让 agent 先看到 12306 图标）。追加 2 次重测均 fail，按"多轮取多数"原则判为真实 fail——非 VLM 错误，属于 pass@1 抽样修正。
+此外，有一个跨应用任务的 base 首轮意外通过（sim 上 0/4，因 base 在 sim 永远先打开微信而不是 12306 就爆失败；真机 pass 可能因为桌面布局差异让 agent 先看到 12306 图标）。追加 2 次重测均 fail，按"多轮取多数"原则判为真实 fail——非 VLM 错误，属于 pass@1 抽样修正。
 
 **这是支持 sim 价值的直接证据**：sim 基于状态的判定从机制上避免 VLM 误判，6.1% 的误判率下，sim 比 real 更可信，而 real 必须额外做人工复核才能拿到可引用的数字。
 

@@ -611,32 +611,6 @@ class TestRedbookAccessor:
             allow_draft=True,
         )
         assert check["passed"] is True
-
-
-def _toggle_general_positive_case():
-    return _positive_criteria_case(_tasks_module.ToggleGeneralSetting(setting="mobileDownload", toggle=True))
-
-
-def _toggle_general_negative_case():
-    return _negative_criteria_case(_tasks_module.ToggleGeneralSetting(setting="mobileDownload", toggle=True))
-
-
-def _change_language_positive_case():
-    return _positive_criteria_case(_tasks_module.ChangeLanguage(language="en-US"))
-
-
-def _change_language_negative_case():
-    return _negative_criteria_case(_tasks_module.ChangeLanguage(language="en-US"))
-
-
-def _clear_storage_positive_case():
-    return _positive_criteria_case(_tasks_module.ClearStorageCache())
-
-
-def _clear_storage_negative_case():
-    return _negative_criteria_case(_tasks_module.ClearStorageCache())
-
-
 def _collect_search_positive_case():
     task = _tasks_module.CollectSearchNote(keyword=_current_uncollected_search_keyword())
     curr = copy.deepcopy(BASE_STATE)
@@ -698,36 +672,6 @@ def _dm_negative_case():
         message="你好呀，最近更新很不错",
     )
     return task, _make_task_input(copy.deepcopy(BASE_STATE), copy.deepcopy(BASE_STATE))
-
-
-def _like_feed_positive_case():
-    task = _tasks_module.LikeRecommendedFeedNoteByKeyword(keyword=_current_recommend_keyword())
-    init = copy.deepcopy(BASE_STATE)
-    target = str(_current_recommend_note()["id"])
-    _remove_initial_like(init, target)
-    curr = copy.deepcopy(init)
-    _like_note(curr, target)
-    return task, _make_task_input(init, curr)
-
-
-def _like_feed_negative_case():
-    task = _tasks_module.LikeRecommendedFeedNoteByKeyword(keyword=_current_recommend_keyword())
-    return task, _make_task_input(copy.deepcopy(BASE_STATE), copy.deepcopy(BASE_STATE))
-
-
-def _comment_feed_positive_case():
-    task = _tasks_module.CommentOnFeedNote(keyword=_current_recommend_keyword(), comment="这条内容很有参考价值")
-    curr = copy.deepcopy(BASE_STATE)
-    note_id = _current_recommend_note()["id"]
-    _add_comment(curr, note_id, task.p.comment)
-    return task, _make_task_input(copy.deepcopy(BASE_STATE), curr)
-
-
-def _comment_feed_negative_case():
-    task = _tasks_module.CommentOnFeedNote(keyword=_current_recommend_keyword(), comment="这条内容很有参考价值")
-    return task, _make_task_input(copy.deepcopy(BASE_STATE), copy.deepcopy(BASE_STATE))
-
-
 def _publish_positive_case():
     task = _tasks_module.PublishNoteWithTitleAndContent(
         title="周末逛展记录",
@@ -787,34 +731,6 @@ def _first_chat_negative_case():
     seeded = copy.deepcopy(BASE_STATE)
     _seed_chats(seeded)
     return _negative_answer_case(task, init_state=seeded, curr_state=seeded)
-
-
-def _follow_check_positive_case():
-    task = _tasks_module.FollowAndCheckLocation(username=_current_unfollowed_username_with_location())
-    curr = copy.deepcopy(BASE_STATE)
-    user = Redbook(curr).require_user_by_name(task.p.username)
-    _follow_user(curr, user["id"])
-    return task, _make_task_input(copy.deepcopy(BASE_STATE), curr, answer=f"TA 的 IP 属地是{user['location']}")
-
-
-def _follow_check_negative_case():
-    task = _tasks_module.FollowAndCheckLocation(username=_current_unfollowed_username_with_location())
-    curr = copy.deepcopy(BASE_STATE)
-    user = Redbook(curr).require_user_by_name(task.p.username)
-    _follow_user(curr, user["id"])
-    return task, _make_task_input(copy.deepcopy(BASE_STATE), curr, answer="TA 的 IP 属地是错误地点")
-
-
-def _follow_check_negative_state_case():
-    task = _tasks_module.FollowAndCheckLocation(username=_current_unfollowed_username_with_location())
-    user = Redbook(BASE_STATE).require_user_by_name(task.p.username)
-    return task, _make_task_input(
-        copy.deepcopy(BASE_STATE),
-        copy.deepcopy(BASE_STATE),
-        answer=f"TA 的 IP 属地是{user['location']}",
-    )
-
-
 def _collect_report_positive_case():
     task = _tasks_module.SearchCollectAndReportAuthor(keyword=_current_uncollected_search_keyword())
     curr = copy.deepcopy(BASE_STATE)
@@ -930,24 +846,18 @@ def _following_user_note_count_chinese_positive_case():
 
 OFFLINE_JUDGE_POSITIVE_CASES = [
     ("CheckMyProfileField", lambda: _positive_answer_case(_tasks_module.CheckMyProfileField(field="followers"))),
-    ("ToggleGeneralSetting", _toggle_general_positive_case),
-    ("ChangeLanguage", _change_language_positive_case),
-    ("ClearStorageCache", _clear_storage_positive_case),
     ("CheckSearchNoteField", lambda: _positive_answer_case(_tasks_module.CheckSearchNoteField(keyword=_current_search_keyword(), field="authorName"))),
     ("CollectSearchNote", _collect_search_positive_case),
     ("LikeFirstFeedNote", _like_first_feed_positive_case),
     ("CheckSearchUserField", lambda: _positive_answer_case(_tasks_module.CheckSearchUserField(username=_current_searchable_username(), field="followers"))),
     ("UncollectFirstCollectedNote", _uncollect_positive_case),
     ("DMFollowedUser", _dm_positive_case),
-    ("LikeRecommendedFeedNoteByKeyword", _like_feed_positive_case),
-    ("CommentOnFeedNote", _comment_feed_positive_case),
     ("PublishNoteWithTitleAndContent", _publish_positive_case),
     ("LikeFeedNoteAndReportLikes", _like_feed_report_positive_case),
     ("CheckFollowingUserNoteCount", lambda: _positive_answer_case(_tasks_module.CheckFollowingUserNoteCount(username=_current_followed_username(require_notes=True)))),
     ("CheckFirstChatLastMessage", _first_chat_positive_case),
     ("CheckFirstCollectedAuthorField", lambda: _positive_answer_case(_tasks_module.CheckFirstCollectedAuthorField(field="location"))),
     ("SearchFirstNoteAuthorTopLikedTitle", lambda: _positive_answer_case(_tasks_module.SearchFirstNoteAuthorTopLikedTitle(keyword="美食"))),
-    ("FollowAndCheckLocation", _follow_check_positive_case),
     ("SearchCollectAndReportAuthor", _collect_report_positive_case),
     ("CollectFeedNoteAndDMAuthor", _collect_feed_dm_positive_case),
     ("PublishAndShareToFollowing", _publish_share_positive_case),
@@ -956,24 +866,18 @@ OFFLINE_JUDGE_POSITIVE_CASES = [
 
 OFFLINE_JUDGE_NEGATIVE_CASES = [
     ("CheckMyProfileField", lambda: _negative_answer_case(_tasks_module.CheckMyProfileField(field="followers"))),
-    ("ToggleGeneralSetting", _toggle_general_negative_case),
-    ("ChangeLanguage", _change_language_negative_case),
-    ("ClearStorageCache", _clear_storage_negative_case),
     ("CheckSearchNoteField", lambda: _negative_answer_case(_tasks_module.CheckSearchNoteField(keyword=_current_search_keyword(), field="authorName"))),
     ("CollectSearchNote", _collect_search_negative_case),
     ("LikeFirstFeedNote", _like_first_feed_negative_case),
     ("CheckSearchUserField", lambda: _negative_answer_case(_tasks_module.CheckSearchUserField(username=_current_searchable_username(), field="followers"))),
     ("UncollectFirstCollectedNote", _uncollect_negative_case),
     ("DMFollowedUser", _dm_negative_case),
-    ("LikeRecommendedFeedNoteByKeyword", _like_feed_negative_case),
-    ("CommentOnFeedNote", _comment_feed_negative_case),
     ("PublishNoteWithTitleAndContent", _publish_negative_case),
     ("LikeFeedNoteAndReportLikes", _like_feed_report_negative_case),
     ("CheckFollowingUserNoteCount", lambda: _negative_answer_case(_tasks_module.CheckFollowingUserNoteCount(username=_current_followed_username(require_notes=True)))),
     ("CheckFirstChatLastMessage", _first_chat_negative_case),
     ("CheckFirstCollectedAuthorField", lambda: _negative_answer_case(_tasks_module.CheckFirstCollectedAuthorField(field="location"))),
     ("SearchFirstNoteAuthorTopLikedTitle", lambda: _negative_answer_case(_tasks_module.SearchFirstNoteAuthorTopLikedTitle(keyword="美食"))),
-    ("FollowAndCheckLocation", _follow_check_negative_case),
     ("SearchCollectAndReportAuthor", _collect_report_negative_case),
     ("CollectFeedNoteAndDMAuthor", _collect_feed_dm_negative_case),
     ("PublishAndShareToFollowing", _publish_share_negative_case),
@@ -989,7 +893,6 @@ EXTRA_POSITIVE_CASES = [
 
 EXTRA_NEGATIVE_CASES = [
     ("LikeFeedNoteAndReportLikes_wrong_state", _like_feed_report_negative_state_case),
-    ("FollowAndCheckLocation_wrong_state", _follow_check_negative_state_case),
     ("SearchCollectAndReportAuthor_wrong_state", _collect_report_negative_state_case),
     ("CheckSearchNoteField_empty_answer", _search_note_empty_answer_case),
 ]

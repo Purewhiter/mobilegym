@@ -6,30 +6,20 @@ Cross-app Work & Productivity (crossapp_work).
 详见各 Task 类 docstring；共享判定逻辑在对应 App 的 `app.py`（TencentMeeting / Calendar 等）。
 """
 # -- Task Index (auto-generated, do not edit) --
-# 22 tasks | L3×7  L4×15
+# 12 tasks | L2×2  L3×5  L4×5
 #
-# [L3] ExistingMeetingToCalendar              查一下'{topic}'会议几点开始，帮我在日历里加个事件提醒,开始时间跟会议开始时间一致
-# [L3] UpcomingMeetingNotifyWechat            查一下下一场腾讯会议什么时候开始，发微信提醒{contact}记得准时开会
-# [L3] LatestMeetingIdToSms                   帮我看看最近一次腾讯会议的会议号，发短信提醒{contact}准时参加
-# [L3] CalendarEarliestToAlarm                看看我明天日历上最早的日程几点开始，提前半小时帮我设个闹钟
-# [L3] MeetingLongestInfoToWechat             帮我看看{date}腾讯会议哪场开得最久，把那场的会议号和主题用微信告诉{contact}
-# [L3] MeetingDurationToWechat                查看腾讯会议{date}这天我一共开了多久的会，把总时长发给微信好友{contact}
-# [L4] CalendarCountConditionalAlarm          查一下日历上{date}有几个日程安排，如果超过3个就设一个早上7点的闹钟，备注写'忙碌的一天'，不然就订一个8点的闹钟
-# [L4] MapDurationToMeetingTime               我现在开车去'{place}'，查一下要多久，帮我预约一个大概是到达后十分钟开始的腾讯会议，主题'{topic}'
-# [L4] WeatherConditionalCancelMeeting        看{city}明天天气，如果有雨就在腾讯会议取消主题为'{topic}'的会议；如果不下雨就保留该会议并设置一个该会议开始前半小时的闹钟
-# [L4] SmsConditionalForwardToWechat          看看短信里有没有{sender}的未读消息，有的话把内容微信发给{contact}
-# [L4] MeetingCreateWithPasswordNotify        预约明天{time}的腾讯会议，主题'{topic}'，时长{duration}分钟，密码{pin}，把会议号和密码都微信发给{contact}
-# [L4] MeetingCreateInviteNotify              预约明天{time}的'{topic}'会议并邀请{attendee}参加，然后在微信通知{contact}会议号
-# [L4] MeetingJoinAndNotifySms                加入'{topic}'会议，把昵称改成{name}，然后发短信给{contact}告知已入会
-# [L4] MeetingMultiChannelNotify              帮我在腾讯会议创建一个会议，然后把会议号通过微信发给{contact1}，通过短信发给{contact2}
-# [L4] MeetingRouteEtaToWechat                查一下我下一场腾讯会议几点开始，搜一下走到{place}要多久，发微信告诉{contact}我还有多久到和会议时间
-# [L4] WechatDrivenMeetingNotify              看看微信{contact}发来的消息，预定一个对方要求的会议，然后发短信把会议号告诉{contact2}
-# [L4] MeetingFullFlowToWechat                帮我在腾讯会议预约明天{time}的项目周会，在日历上加个日程提醒，日程设一个提前15分钟的闹钟，最后把会议号微信发给{contact}
-# [L4] FullMeetingConflictCheckBroadcast      检查日历上明天{time}有没有安排，如果有空就在腾讯会议预约主题为「{flow_topic}」的会议，日历创建同名日程（开始时间与会议一致，设提前15分钟的提醒闹钟），会议号微信发给{contact}，短信发给{contact2}；有安排的话微信告诉{contact}那个时间不行
-# [L3] TencentMeetingCheckMeetingDaySchedule  看看腾讯会议待开始的最近一场会议的当天，日历上一共有几个安排
-# [L4] TencentMeetingModifyShare              把腾讯会议里主题为{old_topic}的会议改成{new_topic}，再通知{contact}
-# [L4] MeetingReminderToNotes                 看看腾讯会议有没有待开始的会议，把会议主题和开始时间记到笔记 APP里。如果没有待开的，就把进行中的记下来。
-# [L4] SmsAndCalendarOnDate                   给 {contact} 发短信 {message}，并在明天创建标题为 {event_title} 的日历日程。
+# [L4] ExistingMeetingToCalendar          查一下'{topic}'会议几点开始，帮我在日历里加个事件提醒,开始时间跟会议开始时间一致
+# [L3] CalendarEarliestToAlarm            看看我明天日历上最早的日程几点开始，提前半小时帮我设个闹钟
+# [L2] MeetingLongestInfoToWechat         帮我看看{date}腾讯会议哪场开得最久，把那场的会议号和主题用微信告诉{contact}
+# [L3] MeetingDurationToWechat            查看腾讯会议{date}这天我一共开了多久的会，把总时长发给微信好友{contact}
+# [L2] WeatherConditionalCancelMeeting    看{city}明天天气，如果有雨就在腾讯会议取消主题为'{topic}'的会议；如果不下雨就保留该会议并设置一个该会议开始前半小时的闹钟
+# [L3] MeetingJoinAndNotifySms            加入'{topic}'会议，把昵称改成{name}，然后发短信给{contact}告知已入会
+# [L4] MeetingMultiChannelNotify          帮我在腾讯会议创建一个会议，然后把会议号通过微信发给{contact1}，通过短信发给{contact2}
+# [L3] MeetingRouteEtaToWechat            查一下我下一场腾讯会议几点开始，搜一下走到{place}要多久，发微信告诉{contact}我还有多久到和会议时间
+# [L4] MeetingFullFlowToWechat            帮我在腾讯会议预约明天{time}的项目周会，在日历上加个日程提醒，日程设一个提前15分钟的闹钟，最后把会议号微信发给{contact}
+# [L4] FullMeetingConflictCheckBroadcast  检查日历上明天{time}有没有安排，如果有空就在腾讯会议预约主题为「{flow_topic}」的会议，日历创建同名日程（开始时间与会议一致，设提前15分钟的提醒闹钟），会议号微信发给{contact}，短信发给{contact2}；有安排的话微信告诉{contact}那个时间不行
+# [L4] MeetingReminderToNotes             看看腾讯会议有没有待开始的会议，把会议主题和开始时间记到笔记 APP里。如果没有待开的，就把进行中的记下来。
+# [L3] SmsAndCalendarOnDate               给 {contact} 发短信 {message}，并在明天创建标题为 {event_title} 的日历日程。
 # -- End Task Index --
 
 
@@ -91,63 +81,6 @@ class ExistingMeetingToCalendar(BaseTask):
         return [
             cal.check_event_start_aligns_ms(self.p.topic, target_ms, field="calendar_event_matches_meeting"),
         ]
-
-
-class UpcomingMeetingNotifyWechat(BaseTask):
-    """判定：发给 {contact} 的新消息包含下一场预约会议开始时间（match_time）。"""
-
-    templates = [
-        "查一下下一场腾讯会议什么时候开始，发微信提醒{contact}记得准时开会",
-    ]
-    apps = ["tencent_meeting", "wechat"]
-    scope = "S2"
-    objective = "operate"
-    composition = "transfer"
-    difficulty = "L3"
-    capabilities = ["query", "transfer"]
-    parameters = {"contact": WECHAT_CONTACT_PARAM}
-    expected_changes = WECHAT_SEND_CHANGES
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        tm = TencentMeeting(input.apps_init["tencent_meeting"])
-        wechat = Wechat(input.apps["wechat"], init=input.apps_init["wechat"])
-        m = tm.first_upcoming_scheduled(now_ms(input.os_init))
-        time_str = TencentMeeting.meeting_start_hh_mm(m)
-        return [
-            wechat.check_new_sent_match_time(self.p.contact, time_str, field="wechat_upcoming_time"),
-        ]
-
-
-class LatestMeetingIdToSms(BaseTask):
-    """判定：发往 {contact} 的新短信含最近一场将开始的腾讯会议的会议号。"""
-
-    templates = [
-        "帮我看看最近一次腾讯会议的会议号，发短信提醒{contact}准时参加",
-        "查一下腾讯会议里最近一场会议的会议号，用短信发给{contact}提醒对方记得入会",
-    ]
-    apps = ["tencent_meeting", "sms"]
-    scope = "S2"
-    objective = "operate"
-    composition = "transfer"
-    difficulty = "L3"
-    capabilities = ["query", "transfer"]
-    parameters = {"contact": SMS_RECIPIENT_PARAM}
-    expected_changes = ["os.providers.sms"]
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        tm = TencentMeeting(input.apps_init["tencent_meeting"])
-        sms = sms_from_input(input)
-        mid = tm.nearest_future_meeting_id(now_ms(input.os_init))
-        collapse = re.sub(r"\s+", "", mid)
-        return [
-            sms.check_new_outgoing_contains_meeting_id(
-                self.p.contact,
-                collapse,
-                field="sms_meeting_id",
-            )
-        ]
-
-
 class CalendarEarliestToAlarm(BaseTask):
     """判定：新增闹钟为「明日最早日程」开始前 30 分钟。"""
 
@@ -275,132 +208,6 @@ class MeetingDurationToWechat(BaseTask):
 # ══════════════════════════════════════════════════════════════════════════
 # L4 — 条件 / 计算
 # ══════════════════════════════════════════════════════════════════════════
-
-
-class CalendarCountConditionalAlarm(BaseTask):
-    """日历某日日程数：>3 则 07:00 闹钟且备注「忙碌的一天」，否则 08:00。
-
-    ``{date}`` 与是否注入「凑满 >3 条日程」均在 ``_post_sample`` 内决定（模拟日期的次日 + ``_seed``），
-    不入 ``parameters`` / TaskSampler。
-    """
-
-    templates = [
-        "查一下日历上{date}有几个日程安排，如果超过3个就设一个早上7点的闹钟，备注写'忙碌的一天'，不然就订一个8点的闹钟",
-    ]
-    apps = ["calendar", "clock"]
-    scope = "S2"
-    objective = "operate"
-    composition = "deep_dive"
-    difficulty = "L4"
-    capabilities = ["query", "reasoning", "create"]
-    parameters = {
-        "date": {
-            "type": "string",
-            "display": "date_hao",
-            "default": "2026-03-27",
-            "description": "由 _post_sample 覆写为模拟日期的次日（供模板展示）",
-        },
-    }
-    expected_changes = ["calendar.events", "calendar.selectedDateTs", "clock.alarms"]
-
-    async def _post_sample(self, env: Any) -> None:
-        state = await env.get_state()
-        day_next = sim_today(state["os"]) + datetime.timedelta(days=1)
-        self.params["date"] = day_next.isoformat()
-        rng = random.Random((self._seed or 0) ^ 0xCA1EB00)
-        self._want_busy = rng.choice((False, True))
-        events = list(state["apps"]["calendar"]["events"])
-        events = [e for e in events if not str(e.get("id") or "").startswith("crossapp_work_cal_fill_")]
-        calendar_state = dict(state["apps"]["calendar"])
-        calendar_state["events"] = events
-        cal = Calendar(calendar_state)
-        n = cal.count_events_on_date(day_next)
-        cur = int(state["os"]["time"]["timestamp"])
-        if self._want_busy:
-            need = max(0, 4 - n)
-            for i in range(need):
-                h = 12 + i
-                calendar_state = Calendar(calendar_state).prepare_state_with_event(
-                    event_id=f"crossapp_work_cal_fill_{i}_{day_next.isoformat()}",
-                    title=f"批量填充{i}",
-                    date_text=day_next.isoformat(),
-                    start_time=f"{h:02d}:00",
-                    end_time=f"{h:02d}:30",
-                    created_at=cur,
-                )
-        await env.set_state({"apps": {"calendar": calendar_state}}, deep=True, reload=False)
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        cal = Calendar(input.apps["calendar"], init=input.apps_init["calendar"])
-        clk = Clock(input.apps["clock"], init=input.apps_init["clock"])
-        day = datetime.date.fromisoformat(self.p.date)
-        has_many_events = cal.init.count_events_on_date(day) > 3
-        if has_many_events:
-            return [
-                clk.check_alarm_at(7, 0, note="忙碌的一天", field="alarm_busy_day"),
-            ]
-        return [
-            clk.check_alarm_at(8, 0, field="alarm_normal_day"),
-        ]
-
-
-class MapDurationToMeetingTime(BaseTask):
-    """驾车到 {place} 的路线时长 +10 分钟，预约 {topic} 会议开始时间近似对齐。"""
-
-    templates = [
-        "我现在开车去'{place}'，查一下要多久，帮我预约一个大概是到达后十分钟开始的腾讯会议，主题'{topic}'",
-    ]
-    apps = ["map", "tencent_meeting"]
-    scope = "S2"
-    objective = "operate"
-    composition = "deep_dive"
-    difficulty = "L4"
-    capabilities = ["search", "reasoning", "create"]
-    parameters = {
-        "place": PLACE_PARAM,
-        "topic": {
-            "type": "enum",
-            "values": TENCENT_MEETING_NEW_MEETING_TOPICS,
-            "default": "预算评审会",
-        },
-    }
-    expected_changes = [
-        "map.searchHistory",
-        "map.currentView",
-        "tencent_meeting.scheduledMeetings",
-        "tencent_meeting.currentScheduledMeeting",
-    ]
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        tm = TencentMeeting(input.apps["tencent_meeting"], init=input.apps_init["tencent_meeting"])
-        route = Map.geo_route_to(self.p.place, "DRIVING")
-        dur_text = str(route["duration"])
-        off = parse_duration_to_minutes(dur_text)
-        if off is None:
-            raise ValueError(f"无法解析路线时长: {dur_text!r}")
-        offset_minutes = int(off) + 10
-        now = now_ms(input.os)
-        meeting = tm.new_scheduled_meeting_by_title(self.p.topic)
-        if meeting is None:
-            return [
-                {
-                    "field": "meeting_start_after_route",
-                    "expected": f"驾车历时 {dur_text}（+10 分）→ 新预约 {self.p.topic!r}，开始≈ now+{offset_minutes}min",
-                    "actual": "未创建会议",
-                    "passed": False,
-                }
-            ]
-        chk = tm.check_meeting_start_offset_minutes(meeting, now, offset_minutes, field="meeting_start_offset")
-        route_note = f"驾车历时 {dur_text}（+10 分）→ 目标偏移 {offset_minutes}min"
-        return [
-            {
-                **chk,
-                "field": "meeting_start_after_route",
-                "expected": f"{route_note}；{chk['expected']}",
-            },
-        ]
-
-
 class WeatherConditionalCancelMeeting(BaseTask):
     """有雨→取消会议；不下雨→保留会议 + 设会前 30 分钟闹钟。两个分支返回等长 check list。"""
 
@@ -444,173 +251,9 @@ class WeatherConditionalCancelMeeting(BaseTask):
             tm.check_scheduled_meeting_present(self.p.topic, field="keep_if_dry"),
             clk.check_created_alarm(alarm_dt.hour, alarm_dt.minute, field="alarm_before_meeting_if_dry"),
         ]
-
-
-class SmsConditionalForwardToWechat(BaseTask):
-    """有 {sender} 未读则转发其最新收件内容到微信 {contact}，否则不应新发该内容。
-    仅考虑有未读的这一分支即可
-    """
-
-    templates = [
-        "看看短信里有没有{sender}的未读消息，有的话把内容微信发给{contact}",
-    ]
-    apps = ["sms", "wechat"]
-    scope = "S2"
-    objective = "operate"
-    composition = "deep_dive"
-    difficulty = "L4"
-    capabilities = ["query", "reasoning", "transfer"]
-    parameters = {
-        "sender": {
-            "type": "enum",
-            "values": SMS_UNREAD_SENDERS,
-            "default": "华为云",
-            "description": "短信中有未读消息的联系人",
-        },
-        "contact": WECHAT_CONTACT_PARAM,
-    }
-    expected_changes = WECHAT_SEND_CHANGES + ["os.providers.sms"]
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        sms = sms_from_input(input)
-        wechat = Wechat(input.apps["wechat"], init=input.apps_init["wechat"])
-        body = sms.latest_incoming_content_from(self.p.sender)
-        return [
-            wechat.check_new_sent_contains(
-                self.p.contact,
-                body[:80] if len(body) > 80 else body,
-                field="wechat_forward_sms",
-            )
-        ]
-
-
 # ══════════════════════════════════════════════════════════════════════════
 # L4 — 创建 + 通知
 # ══════════════════════════════════════════════════════════════════════════
-
-
-class MeetingCreateWithPasswordNotify(BaseTask):
-    """新预约会议带密码 {pin}，微信新消息含会议号与密码。"""
-
-    templates = [
-        "预约明天{time}的腾讯会议，主题'{topic}'，时长{duration}分钟，密码{pin}，把会议号和密码都微信发给{contact}",
-    ]
-    apps = ["tencent_meeting", "wechat"]
-    scope = "S2"
-    objective = "operate"
-    composition = "transfer"
-    difficulty = "L4"
-    capabilities = ["create", "transfer"]
-    parameters = {
-        "time": {"type": "string", "default": "09:00", "description": "开始时间 HH:MM（明日）"},
-        "topic": {
-            "type": "enum",
-            "values": TENCENT_MEETING_NEW_MEETING_TOPICS,
-            "default": "预算评审会",
-        },
-        "duration": {
-            "type": "int",
-            "default": 60,
-            "sampler": lambda _state, rng: rng.choice(range(15, 181, 5)),
-        },
-        "pin": {"type": "string", "pattern": r"\d{4,8}", "default": "123456"},
-        "contact": WECHAT_CONTACT_PARAM,
-    }
-    expected_changes = [
-        "tencent_meeting.scheduledMeetings",
-        "tencent_meeting.currentScheduledMeeting",
-    ] + WECHAT_SEND_CHANGES
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        tm = TencentMeeting(input.apps["tencent_meeting"], init=input.apps_init["tencent_meeting"])
-        wechat = Wechat(input.apps["wechat"], init=input.apps_init["wechat"])
-        target_ms = Calendar.tomorrow_timestamp_ms_at_hh_mm(input.os, self.p.time)
-        pwd_chk = tm.check_new_scheduled_password(self.p.topic, self.p.pin)
-        st_dur_chk = tm.check_new_scheduled_start_and_duration(
-            self.p.topic,
-            target_ms,
-            int(self.p.duration),
-            time_hhmm=self.p.time,
-            field="scheduled_time_duration",
-        )
-        meeting = tm.new_scheduled_meeting_by_title(self.p.topic)
-        if meeting is None:
-            return [
-                pwd_chk,
-                st_dur_chk,
-                {
-                    "field": "wechat_share",
-                    "expected": f"会议号+密码 {self.p.pin}",
-                    "actual": "(无新会议)",
-                    "passed": False,
-                },
-            ]
-        mid = str(meeting["meetingId"])
-        wx_chk = wechat.check_new_sent_meeting_id_and_password(
-            self.p.contact,
-            mid,
-            self.p.pin,
-            field="wechat_share",
-        )
-        return [st_dur_chk, pwd_chk, wx_chk]
-
-
-class MeetingCreateInviteNotify(BaseTask):
-    """新预约会议邀请 {attendee}，微信消息含会议号。"""
-
-    templates = [
-        "预约明天{time}的'{topic}'会议并邀请{attendee}参加，然后在微信通知{contact}会议号",
-    ]
-    apps = ["tencent_meeting", "wechat"]
-    scope = "S2"
-    objective = "operate"
-    composition = "transfer"
-    difficulty = "L4"
-    capabilities = ["create", "transfer"]
-    parameters = {
-        "time": {"type": "string", "default": "14:00"},
-        "topic": {
-            "type": "enum",
-            "values": TENCENT_MEETING_NEW_MEETING_TOPICS,
-            "default": "版本发布会",
-        },
-        "attendee": {
-            "type": "string",
-            "source": "apps.tencent_meeting.contacts[name]",
-            "default": "张三",
-        },
-        "contact": WECHAT_CONTACT_PARAM,
-    }
-    expected_changes = [
-        "tencent_meeting.scheduledMeetings",
-        "tencent_meeting.currentScheduledMeeting",
-    ] + WECHAT_SEND_CHANGES
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        tm = TencentMeeting(input.apps["tencent_meeting"], init=input.apps_init["tencent_meeting"])
-        wechat = Wechat(input.apps["wechat"], init=input.apps_init["wechat"])
-        target_ms = Calendar.tomorrow_timestamp_ms_at_hh_mm(input.os, self.p.time)
-        inv_chk = tm.check_new_scheduled_has_invitee(self.p.topic, self.p.attendee)
-        st_chk = tm.check_new_scheduled_start_time(
-            self.p.topic,
-            target_ms,
-            time_hhmm=self.p.time,
-            field="scheduled_time",
-        )
-        meeting = tm.new_scheduled_meeting_by_title(self.p.topic)
-        if meeting is None:
-            wx_chk = {
-                "field": "wechat_meeting_id",
-                "expected": f"含新会议 {self.p.topic!r} 的会议号",
-                "actual": "(未创建新会议)",
-                "passed": False,
-            }
-        else:
-            mid = str(meeting["meetingId"])
-            wx_chk = wechat.check_new_sent_meeting_id(self.p.contact, mid, field="wechat_meeting_id")
-        return [st_chk, inv_chk, wx_chk]
-
-
 class MeetingJoinAndNotifySms(BaseTask):
     """加入「{topic}」会议，改名 {name}，发短信表示已入会。"""
 
@@ -749,65 +392,6 @@ class MeetingRouteEtaToWechat(BaseTask):
                 field="wechat_eta_and_meeting",
             ),
         ]
-
-
-class WechatDrivenMeetingNotify(BaseTask):
-    """从 {contact} 聊天中读取要求的会议主题并预约，再将会议号短信给 {contact2}。"""
-
-    templates = [
-        "看看微信{contact}发来的消息，预定一个对方要求的会议，然后发短信把会议号告诉{contact2}",
-    ]
-    apps = ["wechat", "tencent_meeting", "sms"]
-    scope = "S3"
-    objective = "operate"
-    composition = "deep_dive"
-    difficulty = "L4"
-    capabilities = ["query", "reasoning", "create", "transfer"]
-    parameters = {
-        "contact": WECHAT_CONTACT_PARAM,
-        "meeting_subject": {
-            "type": "enum",
-            "values": ["产品需求对齐会", "季度复盘会"],
-            "default": "产品需求对齐会",
-        },
-        "contact2": SMS_RECIPIENT_PARAM,
-    }
-    expected_changes = WECHAT_SEND_CHANGES + [
-        "tencent_meeting.scheduledMeetings",
-        "tencent_meeting.currentScheduledMeeting",
-        "os.providers.sms",
-    ]
-
-    async def _post_sample(self, env: Any) -> None:
-        state = await env.get_state()
-        wechat_state = Wechat(state["apps"]["wechat"]).prepare_state_with_incoming_text(
-            self.p.contact,
-            f"麻烦帮我预约一场「{self.p.meeting_subject}」，辛苦啦",
-            message_id=f"crossapp_work_tm_req_{self.p.meeting_subject}",
-            timestamp=state["os"]["time"]["timestamp"],
-        )
-        await env.set_state({"apps": {"wechat": wechat_state}}, deep=True, reload=False)
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        tm = TencentMeeting(input.apps["tencent_meeting"], init=input.apps_init["tencent_meeting"])
-        sms = sms_from_input(input)
-        title_chk = tm.check_new_scheduled_title_matches(self.p.meeting_subject, field="scheduled_from_wechat")
-        if not title_chk["passed"]:
-            return [
-                title_chk,
-                {
-                    "field": "sms_id",
-                    "expected": "含会议号",
-                    "actual": "(跳过)",
-                    "passed": False,
-                },
-            ]
-        m = tm.new_scheduled_meeting_by_title(self.p.meeting_subject)
-        mid = re.sub(r"\s+", "", str(m["meetingId"]))
-        sms_chk = sms.check_new_outgoing_contains_meeting_id(self.p.contact2, mid, field="sms_meeting_id")
-        return [title_chk, sms_chk]
-
-
 # ══════════════════════════════════════════════════════════════════════════
 # L4 — 长流程
 # ══════════════════════════════════════════════════════════════════════════
@@ -959,81 +543,6 @@ class FullMeetingConflictCheckBroadcast(BaseTask):
             wechat.check_new_sent_meeting_id(self.p.contact, mid, field="free_flow_wechat"),
             sms.check_new_outgoing_contains_meeting_id(self.p.contact2, mid, field="free_flow_sms"),
         ]
-
-
-class TencentMeetingCheckMeetingDaySchedule(AnswerTask):
-    """查询下一场会议那天，日历上一共有几个安排。"""
-
-    templates = ["看看腾讯会议待开始的最近一场会议的当天，日历上一共有几个安排"]
-    apps = ["tencent_meeting", "calendar"]
-    scope = "S2"
-    objective = "query"
-    composition = "deep_dive"
-    difficulty = "L3"
-    capabilities = ["query", "reasoning"]
-    answer_fields = [{"type": "number", "label": "安排数量"}]
-    expected_changes = ["calendar.selectedDateTs"]
-
-    async def _post_sample(self, env: Any) -> None:
-        state = await env.get_state()
-        tm = TencentMeeting(state["apps"]["tencent_meeting"])
-        # scheduledMeetings 是腾讯会议预约列表，按业务约定仅包含未开始会议，且列表顺序即首页展示顺序。
-        upcoming, _ = tm.upcoming_or_ongoing()
-        day = TencentMeeting.parse_meeting_time(upcoming[0]["startTime"]).date()
-        cur = int(state["os"]["time"]["timestamp"])
-        rng = random.Random((self._seed or 0) ^ 0xDA7E)
-        n = rng.randint(1, 4)
-        calendar_state = dict(state["apps"]["calendar"])
-        for i in range(n):
-            h = 9 + i * 2
-            calendar_state = Calendar(calendar_state).prepare_state_with_event(
-                event_id=f"crossapp_work_schedule_check_{i}_{day.isoformat()}",
-                title=f"日程安排{i + 1}",
-                date_text=day.isoformat(),
-                start_time=f"{h:02d}:00",
-                end_time=f"{h:02d}:45",
-                created_at=cur,
-            )
-        await env.set_state({"apps": {"calendar": calendar_state}}, deep=True, reload=False)
-
-    def get_answer(self, input: JudgeInput) -> Any:
-        meeting = TencentMeeting(input.apps_init["tencent_meeting"])
-        calendar = Calendar(input.apps["calendar"], init=input.apps_init["calendar"])
-        # scheduledMeetings 是腾讯会议预约列表，按业务约定仅包含未开始会议，且列表顺序即首页展示顺序。
-        upcoming, _ = meeting.upcoming_or_ongoing()
-        day = TencentMeeting.parse_meeting_time(upcoming[0]["startTime"]).date()
-        return calendar.count_events_on_date(day)
-
-
-class TencentMeetingModifyShare(BaseTask):
-    """判定：修改会议主题后通知联系人。"""
-
-    templates = ["把腾讯会议里主题为{old_topic}的会议改成{new_topic}，再通知{contact}"]
-    apps = ["tencent_meeting", "wechat"]
-    scope = "S2"
-    objective = "operate"
-    composition = "sequential"
-    difficulty = "L4"
-    capabilities = ["edit", "transfer"]
-    parameters = {
-        "old_topic": {"type": "string", "default": "项目例会"},
-        "new_topic": {"type": "string", "default": "产品需求评审"},
-        "contact": WECHAT_CONTACT_PARAM,
-    }
-    expected_changes = [
-        "tencent_meeting.scheduledMeetings",
-        "tencent_meeting.currentScheduledMeeting",
-    ] + WECHAT_SEND_CHANGES
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        meeting = TencentMeeting(input.apps["tencent_meeting"])
-        wechat = Wechat(input.apps["wechat"], init=input.apps_init["wechat"])
-        return [
-            meeting.check_topic_modified(self.p.old_topic, self.p.new_topic),
-            wechat.check_new_sent_to(self.p.contact, self.p.new_topic, field="notified"),
-        ]
-
-
 class MeetingReminderToNotes(BaseTask):
     """判定：把待开始或进行中的会议主题和开始时间记到备忘录。"""
 

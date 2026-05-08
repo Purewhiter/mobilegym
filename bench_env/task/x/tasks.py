@@ -1,18 +1,17 @@
 # -- Task Index (auto-generated, do not edit) --
-# 12 tasks | L2×2  L3×7  L4×3
+# 11 tasks | L1×4  L2×3  L3×2  L4×2
 #
 # [L3] SetAudiencePrivacyBundle           我想改一下X的隐私设置：帖子私密{private_posts}，视频保护{protect_videos}，照片圈人{photo_tagging}
-# [L3] SetChatPrivacyBundle               我想调一下X的聊天隐私，只开聊天推送，私信请求改成{dm_request_from}，调试日志设为{debug_log}
-# [L3] SetCallPermissionsBundle           我想在X打开音视频通话，只让我关注的人和认证用户能打给我，不让通话记录里的人打过来
+# [L1] SetCallPermissionsBundle           我想在X设置里打开音视频通话，只让我关注的人和认证用户能打给我，不让通讯录里的人打过来
 # [L3] SetPushNotificationMix             我想改改X的推送，把推荐类推送关掉，保留紧急警报和专业版相关的通知
 # [L4] QuotePostAndTweet                  我想找到{author_handle}发的那条带「{post_preview}」的推文，引用它再发一条新推文，内容是「{content}」
-# [L2] SendDmToConversation               我想在X私信里找到和{participant_handle}的聊天框，发一句「{content}」
+# [L1] SendDmToConversation               我想在X私信里找到和{participant_handle}的聊天框，发一句「{content}」
 # [L2] SearchAndBookmark                  我想在X搜「{keyword}」，从结果里找一条相关推文收藏
-# [L3] FollowUserAndLikeTheirPost         我想在X上关注{user_handle}（{user_name}），再给TA发的随便一条推文点个赞
-# [L3] ReplyAndRetweetSamePost            我想找到{author_handle}发的有「{post_preview}」的推文，先评论「{reply_content}」，再把这条推文转发出去
-# [L4] ComplexSettingsChain               帮我统一调一下X的几个设置：帖子互动显示互动量，关闭探索页里“显示你当前所在位置的内容”，过滤器只留重要通知，只开聊天推送，再把推送通知里的“推荐”关掉
+# [L1] FollowUserAndLikeTheirPost         我想在X上关注{user_handle}（{user_name}），再给TA发的随便一条推文点个赞
+# [L2] ReplyAndRetweetSamePost            我想找到{author_handle}发的有「{post_preview}」的推文，先评论「{reply_content}」，再把这条推文转发出去
+# [L2] ComplexSettingsChain               帮我统一调一下X的几个设置：帖子互动显示互动量，关闭探索页里“显示你当前所在位置的内容”，过滤器只留重要通知，只开聊天推送，再把推送通知里的“推荐”关掉
 # [L4] SearchMultipleKeywordsAndInteract  我想先在X搜「{keyword1}」，给一条相关推文点赞，再搜「{keyword2}」，把一条相关推文收藏起来
-# [L3] PostWithImageAndReply              我想在X发一条推文说「{content}」，再给自己这条推文回复一句「{reply_content}」
+# [L1] PostWithImageAndReply              我想在X发一条推文说「{content}」，再给自己这条推文回复一句「{reply_content}」
 # -- End Task Index --
 
 from __future__ import annotations
@@ -55,43 +54,6 @@ class SetAudiencePrivacyBundle(CriteriaTask):
         "settings.protectVideos": "{protect_videos}",
         "settings.photoTagging": "{photo_tagging}",
     }
-
-
-class SetChatPrivacyBundle(CriteriaTask):
-    templates = [
-        "我想调一下X的聊天隐私，只开聊天推送，私信请求改成{dm_request_from}，调试日志设为{debug_log}",
-        "帮我设置下X的聊天隐私，聊天推送打开，私信请求来源选{dm_request_from}，再把调试日志调成{debug_log}",
-    ]
-    apps = ["x"]
-    scope = "S1"
-    objective = "operate"
-    composition = "sequential"
-    difficulty = "L3"
-    capabilities = ["nav", "settings"]
-
-    async def _post_sample(self, env: Any) -> None:
-        await self._invert_criteria(env)
-
-    parameters = {
-        "dm_request_from": {
-            "type": "enum",
-            "values": {
-                "没有人": "none",
-                "认证用户": "verified",
-                "每个人": "everyone",
-            },
-            "default": "verified",
-            "description": "私信请求来源限制",
-        },
-        "debug_log": {"type": "bool", "default": True, "description": "是否启用调试日志"},
-    }
-    criteria = {
-        "settings.pushOnlyDm": True,
-        "settings.dmRequestFrom": "{dm_request_from}",
-        "settings.enableDebugLog": "{debug_log}",
-    }
-
-
 class SetCallPermissionsBundle(CriteriaTask):
     templates = [
         "我想在X设置里打开音视频通话，只让我关注的人和认证用户能打给我，不让通讯录里的人打过来",

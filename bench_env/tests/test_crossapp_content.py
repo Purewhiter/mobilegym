@@ -329,17 +329,6 @@ def _build_redbook_search_title_to_wechat():
     title = Redbook(curr_apps["redbook"]).first_search_note("数分")["title"]
     _append_wechat_outgoing(curr_apps["wechat"], "陈静", title)
     return task, _make_input(init_apps, curr_apps)
-
-
-def _build_sms_content_forward_to_wechat():
-    task = _tasks_module.SmsContentForwardToWechat(sender="中国联通", contact="陈静")
-    init_apps = _apps_state()
-    curr_apps = _apps_state()
-    text = Sms(_base_os()["providers"]["sms"]).latest_incoming_content_from("中国联通")
-    _append_wechat_outgoing(curr_apps["wechat"], "陈静", text)
-    return task, _make_input(init_apps, curr_apps)
-
-
 def _build_spotify_today_nth_play_to_redbook():
     task = _tasks_module.SpotifyTodayNthPlayToRedbook(nth=2)
     init_apps = _apps_state()
@@ -348,38 +337,12 @@ def _build_spotify_today_nth_play_to_redbook():
     target = curr_apps["spotify"]["recentPlays"][-2]
     _publish_note(curr_apps["redbook"], target["title"], f"{target['artist']} 的歌")
     return task, _make_input(init_apps, curr_apps)
-
-
-def _build_bilibili_search_up_followers_to_sms():
-    task = _tasks_module.BilibiliSearchUpFollowersToSms(up_name="流光视界", phone="中国联通")
-    init_apps = _apps_state()
-    curr_apps = _apps_state()
-    followers = Bilibili.author_follower_display("流光视界")
-    curr_os = _base_os()
-    _append_sms_outgoing(curr_os["providers"]["sms"], "中国联通", f"流光视界现在有{followers}粉丝")
-    return task, _make_input(init_apps, curr_apps, curr_os=curr_os)
-
-
 def _build_wechat_reading_best_book_to_wechat():
     task = _tasks_module.WechatReadingBestBookToWechat(category="商业", contact="陈静")
     init_apps = _apps_state()
     curr_apps = _apps_state()
     _append_wechat_outgoing(curr_apps["wechat"], "陈静", "推荐《纳瓦尔宝典》，推荐值 92.5")
     return task, _make_input(init_apps, curr_apps)
-
-
-def _build_wechat_reading_compare_to_wechat():
-    task = _tasks_module.WechatReadingCompareToWechat(
-        book1="纳瓦尔宝典",
-        book2="原则",
-        contact="陈静",
-    )
-    init_apps = _apps_state()
-    curr_apps = _apps_state()
-    _append_wechat_outgoing(curr_apps["wechat"], "陈静", "更推荐《纳瓦尔宝典》")
-    return task, _make_input(init_apps, curr_apps)
-
-
 def _build_wechat_reading_stats_to_wechat():
     task = _tasks_module.WechatReadingStatsToWechat(contact="陈静")
     init_apps = _apps_state()
@@ -427,23 +390,6 @@ def _build_x_latest_post_to_reddit_with_title_format():
         body="elonmusk:Mars base alpha is on schedule.",
     )
     return task, _make_input(init_apps, curr_apps)
-
-
-def test_redbook_research_to_notes_positive():
-    task = _tasks_module.RedbookResearchToNotes(keyword="数分", n=1)
-    init_apps = _apps_state()
-    curr_apps = _apps_state()
-    rb = Redbook(curr_apps["redbook"], init=init_apps["redbook"])
-    titles = [
-        str(note.get("title") or "")
-        for note in rb.sorted_search_notes(task.p.keyword, "likes")[: task.p.n]
-        if str(note.get("title") or "")
-    ]
-    _add_note(curr_apps["notes"], "调研整理", content=" | ".join(titles))
-    checks = task.check_goals(_make_input(init_apps, curr_apps))
-    assert all(item["passed"] for item in checks)
-
-
 def _build_file_manager_send_file_to_wechat_contact():
     task = _tasks_module.FileManagerSendFileToWechatContact(contact="陈静")
     init_apps = _apps_state()
@@ -461,58 +407,12 @@ def _build_redbook_following_note_count_to_sms():
     curr_os = _base_os()
     _append_sms_outgoing(curr_os["providers"]["sms"], "中国联通", f"西柚慢行发了{count}篇笔记")
     return task, _make_input(init_apps, curr_apps, curr_os=curr_os)
-
-
-def _build_spotify_song_to_wechat_and_notes():
-    task = _tasks_module.SpotifySongToWechatAndNotes(artist="周杰伦", contact="陈静")
-    init_apps = _apps_state()
-    curr_apps = _apps_state()
-    # Dynamically resolve the first search result (matches task's check_goals logic)
-    song_title = Spotify(curr_apps["spotify"]).resolve_search_results("周杰伦", limit=1)[0]["title"]
-    _append_wechat_outgoing(curr_apps["wechat"], "陈静", f"推荐你听{song_title}")
-    _add_note(curr_apps["notes"], "听歌记录", content=f"今天推荐：{song_title}")
-    return task, _make_input(init_apps, curr_apps)
-
-
-def _build_wechat_reading_best_to_notes_and_wechat():
-    task = _tasks_module.WechatReadingBestToNotesAndWechat(category="商业", contact="陈静")
-    init_apps = _apps_state()
-    curr_apps = _apps_state()
-    _append_wechat_outgoing(curr_apps["wechat"], "陈静", "推荐《纳瓦尔宝典》")
-    _add_note(curr_apps["notes"], "商业高分书", content="纳瓦尔宝典 92.5")
-    return task, _make_input(init_apps, curr_apps)
-
-
-def _build_bilibili_ranking_to_redbook_and_x():
-    task = _tasks_module.BilibiliRankingToRedbookAndX(partition="音乐")
-    init_apps = _apps_state()
-    curr_apps = _apps_state()
-    title = Bilibili.ranking_entry("音乐", 1)["title"]
-    _publish_note(curr_apps["redbook"], title, f"推荐视频：{title}")
-    _append_x_post(curr_apps["x"], f"安利一个视频：{title}")
-    return task, _make_input(init_apps, curr_apps)
-
-
 def _build_spotify_song_full_details_to_redbook():
     task = _tasks_module.SpotifySongFullDetailsToRedbook(song="搁浅")
     init_apps = _apps_state()
     curr_apps = _apps_state()
     _publish_note(curr_apps["redbook"], "搁浅", "周杰伦 演唱，时长 3:58")
     return task, _make_input(init_apps, curr_apps)
-
-
-def _build_wechat_reading_compare_books_to_redbook():
-    task = _tasks_module.WechatReadingCompareBooksToRedbook(book1="纳瓦尔宝典", book2="原则")
-    init_apps = _apps_state()
-    curr_apps = _apps_state()
-    _publish_note(
-        curr_apps["redbook"],
-        "读书对比",
-        "纳瓦尔宝典 推荐值 92.5 字数 150000；原则 推荐值 91 字数 450000；更推荐纳瓦尔宝典",
-    )
-    return task, _make_input(init_apps, curr_apps)
-
-
 def _build_bilibili_triple_like_then_moments():
     task = _tasks_module.BilibiliTripleLikeThenMoments(partition="音乐", rank=1)
     init_apps = _apps_state()
@@ -541,18 +441,6 @@ def _build_bilibili_triple_like_then_moments_duplicate_title():
     curr_apps["bilibili"]["activeVideoId"] = video_id
     _append_wechat_moment(curr_apps["wechat"], f"推荐一个视频：{title}")
     return task, _make_input(init_apps, curr_apps)
-
-
-def _build_redbook_favorite_then_moments():
-    task = _tasks_module.RedbookFavoriteThenMoments(keyword="数分")
-    init_apps = _apps_state()
-    curr_apps = _apps_state()
-    note = Redbook(curr_apps["redbook"]).first_search_note("数分")
-    _collect_note(curr_apps["redbook"], note["id"])
-    _append_wechat_moment(curr_apps["wechat"], note["title"])
-    return task, _make_input(init_apps, curr_apps)
-
-
 def _build_redbook_dm_then_wechat_report():
     task = _tasks_module.RedbookDmThenWechatReport(
         username="西柚慢行",
@@ -565,35 +453,6 @@ def _build_redbook_dm_then_wechat_report():
     _append_redbook_chat_message(curr_apps["redbook"], user["id"], "你好呀")
     _append_wechat_outgoing(curr_apps["wechat"], "陈静", "已经联系西柚慢行了")
     return task, _make_input(init_apps, curr_apps)
-
-
-def _build_spotify_to_redbook_to_wechat():
-    task = _tasks_module.SpotifyToRedbookToWechat(artist="周杰伦", contact="陈静")
-    init_apps = _apps_state()
-    curr_apps = _apps_state()
-    song_title = Spotify(curr_apps["spotify"]).resolve_search_results("周杰伦", limit=1)[0]["title"]
-    _publish_note(curr_apps["redbook"], song_title, f"推荐大家听{song_title}")
-    _append_wechat_outgoing(curr_apps["wechat"], "陈静", f"歌名是{song_title}")
-    return task, _make_input(init_apps, curr_apps)
-
-
-def _build_wechat_reading_notes_wechat_plan():
-    task = _tasks_module.WechatReadingNotesWechatPlan(book="纳瓦尔宝典", contact="陈静")
-    init_apps = _apps_state()
-    curr_apps = _apps_state()
-    _add_note(curr_apps["notes"], "读书计划", content="纳瓦尔宝典 推荐值 92.5，本周开始读")
-    _append_wechat_outgoing(curr_apps["wechat"], "陈静", "推荐你看纳瓦尔宝典")
-    return task, _make_input(init_apps, curr_apps)
-
-
-def _build_bilibili_up_to_spotify_conditional():
-    task = _tasks_module.BilibiliUpToSpotifyConditional(partition="科技数码", contact="陈静")
-    init_apps = _apps_state()
-    curr_apps = _apps_state()
-    _append_wechat_outgoing(curr_apps["wechat"], "陈静", "没找到")
-    return task, _make_input(init_apps, curr_apps)
-
-
 def _build_notes_content_to_redbook_and_x():
     task = _tasks_module.NotesContentToRedbookAndX(topic="AI代理")
     init_apps = _apps_state()
@@ -614,19 +473,6 @@ def _build_cultural_checklist_to_redbook():
     _add_note(curr_apps["notes"], "今日文化清单", content=f"{song}\n{book}")
     _publish_note(curr_apps["redbook"], "今日文化清单", f"{song}\n{book}")
     return task, _make_input(init_apps, curr_apps)
-
-
-def _build_spotify_now_playing_to_moments():
-    task = _tasks_module.SpotifyNowPlayingToMoments(mood="今日单曲循环")
-    init_apps = _apps_state()
-    curr_apps = _apps_state()
-    init_apps["spotify"]["currentTrack"] = _track("搁浅")
-    curr_apps["spotify"]["currentTrack"] = copy.deepcopy(init_apps["spotify"]["currentTrack"])
-    artist = curr_apps["spotify"]["currentTrack"]["artist"]
-    _append_wechat_moment(curr_apps["wechat"], f"正在听：搁浅 {artist}，{task.p.mood}")
-    return task, _make_input(init_apps, curr_apps)
-
-
 def _build_daily_log_to_moments():
     task = _tasks_module.DailyLogToMoments()
     init_apps = _apps_state()
@@ -652,30 +498,18 @@ POSITIVE_CASES: list[tuple[str, Callable[[], tuple[BaseTask, JudgeInput]]]] = [
     ("SpotifyNowPlayingToWechat", _build_spotify_now_playing_to_wechat),
     ("BilibiliRankingToWechat", _build_bilibili_ranking_to_wechat),
     ("RedbookSearchTitleToWechat", _build_redbook_search_title_to_wechat),
-    ("SmsContentForwardToWechat", _build_sms_content_forward_to_wechat),
     ("SpotifyTodayNthPlayToRedbook", _build_spotify_today_nth_play_to_redbook),
-    ("BilibiliSearchUpFollowersToSms", _build_bilibili_search_up_followers_to_sms),
     ("WechatReadingBestBookToWechat", _build_wechat_reading_best_book_to_wechat),
-    ("WechatReadingCompareToWechat", _build_wechat_reading_compare_to_wechat),
     ("WechatReadingStatsToWechat", _build_wechat_reading_stats_to_wechat),
     ("RedbookAuthorFollowersToWechat", _build_redbook_author_followers_to_wechat),
     ("XLatestPostToReddit_WithTitleFormat", _build_x_latest_post_to_reddit_with_title_format),
     ("FileManagerSendFileToWechatContact", _build_file_manager_send_file_to_wechat_contact),
     ("RedbookFollowingNoteCountToSms", _build_redbook_following_note_count_to_sms),
-    ("SpotifySongToWechatAndNotes", _build_spotify_song_to_wechat_and_notes),
-    ("WechatReadingBestToNotesAndWechat", _build_wechat_reading_best_to_notes_and_wechat),
-    ("BilibiliRankingToRedbookAndX", _build_bilibili_ranking_to_redbook_and_x),
     ("SpotifySongFullDetailsToRedbook", _build_spotify_song_full_details_to_redbook),
-    ("WechatReadingCompareBooksToRedbook", _build_wechat_reading_compare_books_to_redbook),
     ("BilibiliTripleLikeThenMoments", _build_bilibili_triple_like_then_moments),
-    ("RedbookFavoriteThenMoments", _build_redbook_favorite_then_moments),
     ("RedbookDmThenWechatReport", _build_redbook_dm_then_wechat_report),
-    ("SpotifyToRedbookToWechat", _build_spotify_to_redbook_to_wechat),
-    ("WechatReadingNotesWechatPlan", _build_wechat_reading_notes_wechat_plan),
-    ("BilibiliUpToSpotifyConditional", _build_bilibili_up_to_spotify_conditional),
     ("NotesContentToRedbookAndX", _build_notes_content_to_redbook_and_x),
     ("CulturalChecklistToRedbook", _build_cultural_checklist_to_redbook),
-    ("SpotifyNowPlayingToMoments", _build_spotify_now_playing_to_moments),
     ("DailyLogToMoments", _build_daily_log_to_moments),
     ("EbayCheapToRedbook", _build_ebay_cheap_to_redbook),
 ]
@@ -733,22 +567,6 @@ class TestCrossappContentOfflineJudge:
         _publish_note(curr_apps["redbook"], wrong["title"], f"{wrong['artist']} 强烈推荐")
         checks = task.check_goals(_make_input(init_apps, curr_apps))
         assert any(not check["passed"] for check in checks), checks
-
-    def test_spotify_song_to_wechat_unrelated_history_fails(self):
-        """搜索历史里只有无关艺人时，应判定失败，不能用无关结果当正确答案。"""
-        task = _tasks_module.SpotifySongToWechatAndNotes(artist="周杰伦", contact="陈静")
-        init_apps = _apps_state()
-        curr_apps = _apps_state()
-        # 只保留 Taylor Swift 的搜索历史，没有周杰伦
-        curr_apps["spotify"]["searchHistory"] = [
-            {"query": "Taylor Swift", "tracks": [{"id": "t1", "title": "Love Story", "artist": "Taylor Swift"}]}
-        ]
-        _append_wechat_outgoing(curr_apps["wechat"], "陈静", "推荐你听 Love Story")
-        _add_note(curr_apps["notes"], "歌曲推荐", content="Love Story")
-        checks = task.check_goals(_make_input(init_apps, curr_apps))
-        # 用本地曲库搜索周杰伦，Love Story 不应是周杰伦的歌，判定应失败
-        assert any(not check["passed"] for check in checks), checks
-
     def test_spotify_now_playing_to_wechat_requires_liked_song(self):
         task = _tasks_module.SpotifyNowPlayingToWechat(contact="陈静")
         init_apps = _apps_state()

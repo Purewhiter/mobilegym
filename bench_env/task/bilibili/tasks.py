@@ -2,29 +2,27 @@
 Bilibili app task definitions.
 """
 # -- Task Index (auto-generated, do not edit) --
-# 22 tasks | L1×3  L2×8  L3×9  L4×2
+# 20 tasks | L1×3  L2×12  L3×3  L4×2
 #
 # [L1] OpenRankingTask                         打开B站排行榜。
-# [L1] ClearSearchHistoryTask                  清空B站的搜索历史。
 # [L1] ViewProfileStatTask                     我B站现在有多少{stat}？
 # [L2] SubscribeTask                           在B站关注UP主'{up_name}'。
 # [L2] UpdateSignTask                          在B站把个人签名改成'{new_sign}'。
-# [L3] CoinVideoTask                           给B站视频'{title}'投1个币，不要点赞。
+# [L2] CoinVideoTask                           给B站视频'{title}'投1个币，不要点赞。
 # [L2] ViewMyUidTask                           去看看我的b站UID是多少？
 # [L2] UpdateNicknameTask                      把我的B站昵称改成'{new_name}'。
-# [L2] RankingTabFindRankTitleTask             看看B站排行榜里'{partition}'分区第{rank}名的视频叫什么。
 # [L2] VideoAnswerOnlineTask                   打开b站视频'{title}'，看看现在有多少人在线。
 # [L3] VideoAnswerTagsTask                     打开b站视频'{title}'，说出其中任意3个标签。
-# [L3] ToggleAnimeSubscriptionTask             帮我追番'{anime_title}'。
-# [L3] SetSexTask                              把B站账号资料里的性别改成'{sex}'。
+# [L4] ToggleAnimeSubscriptionTask             帮我追番'{anime_title}'。
+# [L1] SetSexTask                              把B站账号资料里的性别改成'{sex}'。
 # [L2] ViewFavoritesFolderCountTask            看看我B站的'{folder_title}'收藏夹里有多少个内容。
 # [L2] SearchUserFollowerCountTask             在B站搜一下'{up_name}'，ta现在有多少粉丝？
-# [L3] SanlianTask                             在B站排行榜里找到视频'{title}'，给它一键三连。
-# [L3] FollowRecommendationTask                先关注UP主'{target_up_name}'，再从推荐列表里关注一位不同的UP主。
-# [L3] UnfollowAndClearHistoryTask             取消关注UP主'{up_name}'，并把B站搜索记录清空。
+# [L2] SanlianTask                             在B站排行榜里找到视频'{title}'，给它一键三连。
+# [L2] FollowRecommendationTask                先关注UP主'{target_up_name}'，再从推荐列表里关注一位不同的UP主。
+# [L2] UnfollowAndClearHistoryTask             取消关注UP主'{up_name}'，并把B站搜索记录清空。
 # [L3] SetBirthdayTask                         在B站个人资料里把生日设为1980年{month}月{day}日。
 # [L3] FavVideoAndCountTask                    把B站'{partition}'排行榜的第{rank}名收藏到默认收藏夹，然后告诉我默认收藏夹现在有多少个内容。
-# [L4] VideoCommentContainsAnswerUidTask       帮我在b站视频'{title}'的评论区里找到提到'{snippet}'的那条评论，告诉我评论者的UID。
+# [L2] VideoCommentContainsAnswerUidTask       帮我在b站视频'{title}'的评论区里找到提到'{snippet}'的那条评论，告诉我评论者的UID。
 # [L4] VideoCommentContainsAnswerLocationTask  在b站视频'{title}'的评论区找到提到'{snippet}'的那条评论，告诉我它显示的IP属地。
 # -- End Task Index --
 
@@ -78,24 +76,6 @@ class OpenRankingTask(CriteriaTask):
                 "passed": passed,
             }
         ]
-
-
-class ClearSearchHistoryTask(CriteriaTask):
-    apps = ["bilibili"]
-    templates = [
-        "清空B站的搜索历史。",
-        "把B站搜索记录清空。",
-        "Clear the search history on Bilibili.",
-        "Delete all search history on Bilibili.",
-    ]
-    scope = "S1"
-    objective = "operate"
-    composition = "sequential"
-    difficulty = "L1"
-    capabilities = ["search"]
-    criteria = {"user.searchHistory": []}
-
-
 class ViewProfileStatTask(AnswerTask):
     apps = ["bilibili"]
     templates = [
@@ -230,40 +210,6 @@ class UpdateNicknameTask(CriteriaTask):
         "new_name": {"type": "string", "default": "xiaoming2026", "description": "新昵称"},
     }
     criteria = {"user.name": "{new_name}"}
-
-
-class RankingTabFindRankTitleTask(AnswerTask):
-    apps = ["bilibili"]
-    templates = ["看看B站排行榜里'{partition}'分区第{rank}名的视频叫什么。"]
-    scope = "S1"
-    objective = "query"
-    composition = "sequential"
-    difficulty = "L2"
-    capabilities = ["query"]
-    parameters = {
-        "partition": {
-            "type": "enum",
-            "values": RANKING_PARTITIONS,
-            "default": "番剧",
-            "description": "排行榜分区",
-        },
-        "rank": {
-            "type": "int",
-            "default": 2,
-            "min": 1,
-            "max": 15,
-            "description": "榜单名次",
-        },
-    }
-    # 允许在完成任务过程中点击/打开视频，导致 activeVideoId 发生变化
-    expected_changes = ["activeVideoId"]
-    answer_fields = [{"type": "text", "label": "视频标题"}]
-
-    def get_answer(self, input: JudgeInput) -> Any:
-        entry = Bilibili.ranking_entry(self.p.partition, int(self.p.rank))
-        return entry["title"]
-
-
 class VideoAnswerOnlineTask(AnswerTask):
     apps = ["bilibili"]
     templates = ["打开b站视频'{title}'，看看现在有多少人在线。"]

@@ -2,26 +2,24 @@
 Railway12306 task definitions.
 """
 # -- Task Index (auto-generated, do not edit) --
-# 18 tasks | L1×3  L2×6  L3×9
+# 16 tasks | L1×2  L2×4  L3×6  L4×4
 #
-# [L2] OpenMyAccount                   查看我的12306账号是什么
-# [L1] OpenAllApps                     找到12306的全部应用页面
+# [L3] OpenAllApps                     找到12306的全部应用页面
 # [L2] OpenServicePhone                在12306中查一下{region}的客服电话区号是多少
 # [L2] OpenInvoice                     在12306里添加一个发票抬头{name}，{make_default}默认，并把发票邮箱设置为{email}
-# [L2] SetFontSize                     把12306字体大小调成{font_size}，同时{high_contrast}高对比度
-# [L1] CheckPassengerCount             看看12306里一共添加了几个乘车人
+# [L2] CheckPassengerCount             看看12306里一共添加了几个乘车人
 # [L1] CheckDefaultPassengerName       看看12306里默认乘车人叫什么名字
 # [L3] CheckStudentVerify              看看我的学生票优惠区间是哪里
 # [L3] CheckRecentTripCities           看看我最近的车票，我都{direction}
 # [L3] CheckIdVerificationStatus       进入人证核验页面，看看我的12306是否人证核验成功
 # [L3] BuyReturnTicketFromLatestOrder  看看我最新的一张车票，给我买一张明天任意时间的返程票，提交订单即可
-# [L2] FindTrainByDate                 看看我{date}坐了哪趟车
+# [L1] FindTrainByDate                 看看我{date}坐了哪趟车
 # [L2] CheckTicketPriceByDate          看看我{date}坐的那趟车花了多少钱
-# [L3] QueryAndCheckRoute              帮我看看明天{from_station}到{to_station}的所有车次，其中发车最晚的是哪一趟
-# [L3] BuyTicketForPassenger           帮我给{name}买一张{date}从{from_station}到{to_station}的高铁票，要有票的{schedule_pref}的班次，{seat_type}，提交订单即可
-# [L3] BuyTicketsForTwoPassengers      帮我给{name}和{name2}各买一张{date}从{from_station}到{to_station}的高铁票，要有票的{schedule_pref}的班次，{seat_type}，提交订单即可
+# [L4] QueryAndCheckRoute              帮我看看明天{from_station}到{to_station}的所有车次，其中发车最晚的是哪一趟
+# [L4] BuyTicketForPassenger           帮我给{name}买一张{date}从{from_station}到{to_station}的高铁票，要有票的{schedule_pref}的班次，{seat_type}，提交订单即可
+# [L4] BuyTicketsForTwoPassengers      帮我给{name}和{name2}各买一张{date}从{from_station}到{to_station}的高铁票，要有票的{schedule_pref}的班次，{seat_type}，提交订单即可
 # [L3] BuyTicketForNewPassenger        帮我给{name}买一张{date}从{from_station}到{to_station}的高铁票，要{schedule_pref}的有票的班次，{seat_type}，他的身份证号是{id_no}，手机号是{phone},提交订单即可
-# [L3] QueryFastestTrainDetails        帮我看看{date}从{from_station}到{to_station}的车票，最快的车是哪一趟，要多久，始发站是哪里，几点到地方
+# [L4] QueryFastestTrainDetails        帮我看看{date}从{from_station}到{to_station}的车票，最快的车是哪一趟，要多久，始发站是哪里，几点到地方
 # -- End Task Index --
 
 
@@ -67,23 +65,6 @@ BOOKING_WITH_PASSENGER_CHANGES = BOOKING_EXPECTED_CHANGES + ["passengers"]
 # ═════════════════════════════════════════════════════════════════════
 # Simple tasks
 # ═════════════════════════════════════════════════════════════════════
-
-
-class OpenMyAccount(AnswerTask):
-    """查看当前 12306 账号"""
-
-    apps = ["railway12306"]
-    templates = ["查看我的12306账号是什么", "帮我看一下我的12306账号"]
-    scope = "S1"
-    objective = "query"
-    composition = "atomic"
-    difficulty = "L2"
-    optimal_paths = [["tab.my", "my.account"]]
-    capabilities = ["query"]
-    answer = ".account.personalInfo.username"
-    answer_fields = [{"type": "text", "label": "账号", "hint": "如：liming789"}]
-
-
 class OpenAllApps(CriteriaTask):
     """打开全部应用页"""
 
@@ -178,42 +159,6 @@ class OpenInvoice(CriteriaTask):
         "invoiceHeaders[name={name}].isDefault": "{make_default}",
         "invoiceEmail": "{email}",
     }
-
-
-class SetFontSize(CriteriaTask):
-    """调整字体大小和高对比度"""
-
-    apps = ["railway12306"]
-    templates = ["把12306字体大小调成{font_size}，同时{high_contrast}高对比度"]
-    scope = "S1"
-    objective = "operate"
-    composition = "sequential"
-    difficulty = "L2"
-    capabilities = ["settings"]
-    parameters = {
-        "font_size": {
-            "type": "enum",
-            "values": {"小": "small", "标准": "medium", "大": "large"},
-            "default": "medium",
-            "description": "字体大小档位",
-        },
-        "high_contrast": {
-            "type": "bool",
-            "values": {"开启": True, "关闭": False},
-            "default": False,
-            "description": "是否开启高对比度",
-        },
-    }
-    optimal_paths = [["tab.my", "my.settings", "settings.fontSize"]]
-    criteria = {
-        "settings.fontSize": "{font_size}",
-        "settings.highContrast": "{high_contrast}",
-    }
-
-    async def _post_sample(self, env: Any) -> None:
-        await self._invert_criteria(env)
-
-
 class CheckPassengerCount(AnswerTask):
     """查看乘车人数量"""
 

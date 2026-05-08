@@ -26,7 +26,7 @@
 from bench_env.task import BaseTask
 from bench_env.task.judge import JudgeInput
 
-class OpenMyQRCode(BaseTask):
+class ExampleOpenPage(BaseTask):
     """最简单的任务：导航到指定页面"""
     
     templates = ["打开微信我的二维码页面"]
@@ -564,7 +564,7 @@ Runner 结束后
 │                                         │
 │  每个 EpisodeResult 包含:               │
 │  字段:                                  │
-│  - task_id: "wechat.OpenMyQRCode" 等    │
+│  - task_id: "wechat.ReadMyWxid" 等      │
 │  - task_name: 任务描述                   │
 │  - suite: 任务集名称                     │
 │  - apps: 涉及的 App 列表                │
@@ -604,7 +604,7 @@ Runner 结束后
 ```bash
 # 运行单个任务
 python -m bench_env.run \
-    --task-id wechat.OpenMyQRCode \
+    --task-id wechat.ReadMyWxid \
     --agent gelab \
     --env-url http://localhost:3000
 
@@ -643,7 +643,7 @@ python -m bench_env.run \
 
 ```bash
 python -m bench_env.run \
-    --task-id wechat.OpenMyQRCode \
+    --task-id wechat.ReadMyWxid \
     --agent human \
     --env-url http://localhost:3000
 ```

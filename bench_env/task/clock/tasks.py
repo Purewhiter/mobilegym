@@ -2,29 +2,26 @@
 Clock app task definitions.
 """
 # -- Task Index (auto-generated, do not edit) --
-# 21 tasks | L1×3  L2×7  L3×8  L4×3
+# 18 tasks | L1×2  L2×9  L3×4  L4×3
 #
-# [L1] OpenStopwatchPage          打开时钟的秒表
 # [L1] ToggleAlarm                {toggle}{time}的闹钟
-# [L1] CountAlarms                时钟里一共有几个闹钟
+# [L2] CountAlarms                时钟里一共有几个闹钟
 # [L2] AddAlarm                   帮我设一个{time}的闹钟
 # [L2] DeleteAlarm                帮我把{time}的闹钟删掉
 # [L2] SetAlarmRepeat             把{time}的闹钟改成{repeat}
 # [L2] AddWorldCity               在世界时钟里添加{city}
 # [L2] RemoveWorldCity            把{city}从世界时钟里删掉
 # [L2] CheckAlarmNote             时钟里{time}的闹钟备注写的什么
-# [L3] AddAlarmWithSettings       设一个{time}的闹钟，重复模式{repeat}，备注写“{note}”
-# [L3] EditAlarmTime              把{old_time}的闹钟改到{new_time}
-# [L3] EnableAllAlarms            帮我把时钟里所有闹钟都打开
+# [L4] AddAlarmWithSettings       设一个{time}的闹钟，重复模式{repeat}，备注写“{note}”
+# [L4] EnableAllAlarms            帮我把时钟里所有闹钟都打开
 # [L3] CheckCityTime              帮我看看世界时钟里{city}现在几点
-# [L3] CompareCityTimeDiff        {city1}和{city2}现在差几个小时
+# [L2] CompareCityTimeDiff        {city1}和{city2}现在差几个小时
 # [L3] CityLocalTimeDiff          世界时钟里{city}比咱们这儿快还是慢，差多久
 # [L3] LatestTimezoneCity         世界时钟里的城市，哪个现在时间最晚
 # [L2] AddCityAndCheckTime        在世界时钟里加上{city}，然后告诉我那边现在几点
-# [L4] AddCityAndCompareTimeDiff  把{new_city}加到世界时钟，然后告诉我{new_city}和{existing_city}差几个小时
+# [L1] AddCityAndCompareTimeDiff  把{new_city}加到世界时钟，然后告诉我{new_city}和{existing_city}差几个小时
 # [L4] ReorganizeWorldClock       把世界时钟里的{remove_city}删掉，换成{add_city}
-# [L3] AddCityAndFindLatest       把{city}加到世界时钟，然后告诉我现在所有城市里哪个时间最晚
-# [L4] SetupMorningAlarms         帮我设两个起床闹钟：{time1}的设成{repeat1}，{time2}的设成{repeat2}
+# [L3] SetupMorningAlarms         帮我设两个起床闹钟：{time1}的设成{repeat1}，{time2}的设成{repeat2}
 # -- End Task Index --
 
 from __future__ import annotations
@@ -35,23 +32,6 @@ from bench_env.task.base import BaseTask
 from bench_env.task.common_tasks import AnswerTask, CriteriaTask, build_answer_checks
 from bench_env.task.judge import JudgeInput
 from bench_env.task.clock.app import CLOCK_NOTE_VALUES, CLOCK_REPEAT_VALUES, Clock
-
-
-class OpenStopwatchPage(CriteriaTask):
-    templates = [
-        "打开时钟的秒表",
-        "Open the stopwatch in Clock",
-    ]
-    apps = ["clock"]
-    scope = "S1"
-    objective = "operate"
-    composition = "atomic"
-    difficulty = "L1"
-    capabilities = ["nav"]
-    criteria = {"route": "/stopwatch"}
-    optimal_paths = [["tab.stopwatch"]]
-
-
 class ToggleAlarm(CriteriaTask):
     templates = ["{toggle}{time}的闹钟"]
     apps = ["clock"]
@@ -291,49 +271,6 @@ class AddAlarmWithSettings(BaseTask):
         return [clock.check_created_alarm(
             self.p.hour, self.p.minute, repeat=self.p.repeat, note=self.p.note,
         )]
-
-
-class EditAlarmTime(BaseTask):
-    templates = [
-        "把{old_time}的闹钟改到{new_time}",
-        "Change the {old_time} alarm to {new_time}",
-    ]
-    apps = ["clock"]
-    scope = "S1"
-    objective = "operate"
-    composition = "sequential"
-    difficulty = "L3"
-    capabilities = ["edit"]
-    parameters = {
-        "alarm_id": {"type": "string", "default": "a1", "description": "闹钟 id"},
-        "old_time": {"type": "string", "default": "04:30", "description": "原始闹钟时间"},
-        "old_hour": {"type": "int", "default": 4, "description": "原始小时"},
-        "old_minute": {"type": "int", "default": 30, "description": "原始分钟"},
-        "new_time": {"type": "string", "default": "07:10", "description": "新闹钟时间"},
-        "new_hour": {"type": "int", "default": 7, "description": "新小时"},
-        "new_minute": {"type": "int", "default": 10, "description": "新分钟"},
-        "_alarm_time": {
-            "sampler": Clock.sample_existing_alarm_and_new_time,
-            "fields": {
-                "alarm_id": "alarm_id",
-                "old_time": "old_time",
-                "old_hour": "old_hour",
-                "old_minute": "old_minute",
-                "new_time": "new_time",
-                "new_hour": "new_hour",
-                "new_minute": "new_minute",
-            },
-        },
-    }
-    expected_changes = ["alarms[id={alarm_id}]"]
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        clock = Clock(input.apps["clock"], init=input.apps_init["clock"])
-        return [clock.check_alarm_fields(
-            self.p.alarm_id, hour=self.p.new_hour, minute=self.p.new_minute,
-        )]
-
-
 class EnableAllAlarms(BaseTask):
     templates = [
         "帮我把时钟里所有闹钟都打开",
@@ -567,45 +504,6 @@ class ReorganizeWorldClock(BaseTask):
                 "passed": clock.selected_city_matches(self.p.add_city) and not clock.init.selected_city_matches(self.p.add_city),
             },
         ]
-
-
-class AddCityAndFindLatest(BaseTask):
-    templates = ["把{city}加到世界时钟，然后告诉我现在所有城市里哪个时间最晚"]
-    apps = ["clock"]
-    scope = "S1"
-    objective = "hybrid"
-    composition = "deep_dive"
-    difficulty = "L3"
-    capabilities = ["nav", "search", "query", "reasoning"]
-    parameters = {
-        "city": {"type": "string", "default": "东京", "description": "城市名称"},
-        "_city": {
-            "sampler": Clock.sample_latest_addable_city,
-            "fields": {"city": "city"},
-        },
-    }
-    expected_changes = ["selectedCityIds", "selectedCities[name={city}]"]
-    answer_fields = [{"type": "text", "label": "时间最晚的城市", "hint": "如：纽约"}]
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        clock = Clock(input.apps["clock"], init=input.apps_init["clock"])
-        init_names = [str(city["name"]) for city in clock.init.selected_cities]
-        expected_names = init_names + [self.p.city]
-        checks = [{
-            "field": "selectedCityIds",
-            "expected": f"contains {self.p.city}",
-            "actual": [str(city["name"]) for city in clock.selected_cities],
-            "passed": clock.selected_city_matches(self.p.city) and not clock.init.selected_city_matches(self.p.city),
-        }]
-        checks.extend(
-            build_answer_checks(
-                Clock(input.apps["clock"]).latest_city_name(expected_names),
-                input.answer,
-            )
-        )
-        return checks
-
-
 class SetupMorningAlarms(BaseTask):
     templates = ["帮我设两个起床闹钟：{time1}的设成{repeat1}，{time2}的设成{repeat2}"]
     apps = ["clock"]

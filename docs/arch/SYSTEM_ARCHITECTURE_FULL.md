@@ -758,7 +758,7 @@ Runner 主循环：
 ```
 BaseTask
 ├── CriteriaTask    ← 路由/状态/条件匹配
-│   例: OpenMyQRCode → criteria = {"route": "/me/qrcode"}
+│   例: OpenBlacklist → criteria = {"route": "/contacts/blocked"}
 │
 ├── AnswerTask      ← 问答任务（Agent 需回答问题）
 │   例: CheckOutdoorActivity → answer 从 state 计算

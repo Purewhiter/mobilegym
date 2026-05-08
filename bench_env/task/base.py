@@ -97,7 +97,7 @@ class BaseTask(ABC):
     declare it.
     
     Example:
-        class OpenMyQRCode(BaseTask):
+        class ReadMyWxid(BaseTask):
             templates = ["打开微信【我的二维码】页面"]
             apps = ["wechat"]
             difficulty = "L2"

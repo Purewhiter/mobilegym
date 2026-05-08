@@ -367,45 +367,6 @@ class TestTaskDefinitions:
         assert has_answer_attr or has_get_answer_override
 
 
-class TestInitCurrentGuards:
-    def test_check_reading_distribution_uses_init_os_week_anchor(self):
-        init_os = {"time": {"timestamp": int(datetime.datetime(2026, 1, 27, 12, 0, 0).timestamp() * 1000)}}
-        curr_os = {"time": {"timestamp": int(datetime.datetime(2026, 2, 3, 12, 0, 0).timestamp() * 1000)}}
-        task = _tasks_module.CheckReadingDistribution(weekday_str="一")
-        wr = WechatReading(copy.deepcopy(BASE_STATE))
-
-        init_today = datetime.date.fromtimestamp(init_os["time"]["timestamp"] / 1000.0)
-        curr_today = datetime.date.fromtimestamp(curr_os["time"]["timestamp"] / 1000.0)
-        init_monday = init_today - datetime.timedelta(days=init_today.weekday())
-        curr_monday = curr_today - datetime.timedelta(days=curr_today.weekday())
-        init_answer = wr.reading_minutes_on(init_monday)
-        curr_answer = wr.reading_minutes_on(curr_monday)
-
-        assert init_answer != curr_answer
-
-        ok = task.evaluate(
-            _make_task_input(
-                copy.deepcopy(BASE_STATE),
-                copy.deepcopy(BASE_STATE),
-                answer=str(init_answer),
-                init_os=init_os,
-                curr_os=curr_os,
-            )
-        )
-        assert ok.success, ok.issues
-
-        bad = task.evaluate(
-            _make_task_input(
-                copy.deepcopy(BASE_STATE),
-                copy.deepcopy(BASE_STATE),
-                answer=str(curr_answer),
-                init_os=init_os,
-                curr_os=curr_os,
-            )
-        )
-        assert not bad.success
-
-
 class TestWechatReadingAccessor:
     @pytest.fixture
     def wr(self) -> WechatReading:
@@ -497,7 +458,6 @@ class TestWechatReadingAccessor:
 
 OFFLINE_JUDGE_POSITIVE_CASES = [
     ("AddBookToShelf", lambda: (_tasks_module.AddBookToShelf(book_title="三体"), _make_task_input(copy.deepcopy(BASE_STATE), _with_book_on_shelf("三体")))),
-    ("CheckReadingDistribution", lambda: _positive_answer_case(_tasks_module.CheckReadingDistribution(weekday_str="一"))),
     ("TogglePrivateReading", lambda: (_tasks_module.TogglePrivateReading(book_title="苏菲的世界"), _make_task_input(copy.deepcopy(BASE_STATE), _with_book_private("苏菲的世界", is_private=True)))),
     ("SearchBookAuthor", lambda: _positive_answer_case(_tasks_module.SearchBookAuthor(book_title="活着"))),
     ("CheckHotSearchRank", lambda: _positive_answer_case(_tasks_module.CheckHotSearchRank(rank=1))),
@@ -533,17 +493,6 @@ OFFLINE_JUDGE_POSITIVE_CASES = [
             _make_task_input(copy.deepcopy(BASE_STATE), _with_shelf_book_progress("三体", 20)),
         ),
     ),
-    (
-        "CompareAndAddBetter",
-        lambda: (
-            _tasks_module.CompareAndAddBetter(book1="三体", book2="活着"),
-            _make_task_input(
-                copy.deepcopy(BASE_STATE),
-                _with_book_on_shelf("三体"),
-                answer="答案是三体",
-            ),
-        ),
-    ),
     ("FindLowestProgressAndRead", _find_lowest_progress_and_read_positive),
     (
         "PrivacyAndThemeBundle",
@@ -556,18 +505,10 @@ OFFLINE_JUDGE_POSITIVE_CASES = [
             )
         ),
     ),
-    (
-        "CheckUserThenDecide",
-        lambda: (
-            _tasks_module.CheckUserThenDecide(user_id="user_chenjing", user_name="陈静", threshold_hours=100.0),
-            _make_task_input(copy.deepcopy(BASE_STATE), _with_followed_user("user_chenjing"), answer="已关注"),
-        ),
-    ),
 ]
 
 OFFLINE_JUDGE_NEGATIVE_CASES = [
     ("AddBookToShelf", lambda: (_tasks_module.AddBookToShelf(book_title="三体"), _make_task_input(copy.deepcopy(BASE_STATE), copy.deepcopy(BASE_STATE)))),
-    ("CheckReadingDistribution", lambda: _negative_answer_case(_tasks_module.CheckReadingDistribution(weekday_str="一"))),
     ("TogglePrivateReading", lambda: (_tasks_module.TogglePrivateReading(book_title="苏菲的世界"), _make_task_input(copy.deepcopy(BASE_STATE), copy.deepcopy(BASE_STATE)))),
     ("SearchBookAuthor", lambda: _negative_answer_case(_tasks_module.SearchBookAuthor(book_title="活着"))),
     ("CheckHotSearchRank", lambda: _negative_answer_case(_tasks_module.CheckHotSearchRank(rank=1))),
@@ -599,13 +540,6 @@ OFFLINE_JUDGE_NEGATIVE_CASES = [
             _make_task_input(copy.deepcopy(BASE_STATE), copy.deepcopy(BASE_STATE)),
         ),
     ),
-    (
-        "CompareAndAddBetter",
-        lambda: (
-            _tasks_module.CompareAndAddBetter(book1="三体", book2="活着"),
-            _make_task_input(copy.deepcopy(BASE_STATE), copy.deepcopy(BASE_STATE), answer="错误"),
-        ),
-    ),
     ("FindLowestProgressAndRead", _find_lowest_progress_and_read_negative),
     (
         "PrivacyAndThemeBundle",
@@ -616,13 +550,6 @@ OFFLINE_JUDGE_NEGATIVE_CASES = [
                 setting_key="requireFollowRequest",
                 style="仿真翻页",
             )
-        ),
-    ),
-    (
-        "CheckUserThenDecide",
-        lambda: (
-            _tasks_module.CheckUserThenDecide(user_id="user_chenjing", user_name="陈静", threshold_hours=100.0),
-            _make_task_input(copy.deepcopy(BASE_STATE), copy.deepcopy(BASE_STATE), answer="错误"),
         ),
     ),
 ]

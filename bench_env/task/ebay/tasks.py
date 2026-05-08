@@ -2,17 +2,16 @@
 eBay app task definitions.
 """
 # -- Task Index (auto-generated, do not edit) --
-# 9 tasks | L1×2  L2×2  L3×3  L4×2
+# 8 tasks | L1×1  L2×2  L3×4  L4×1
 #
-# [L1] OpenCategories             打开 eBay 的分类页面，看看有哪些商品分类。
 # [L1] SwitchTheme                把 eBay 的主题切换成{theme}。
 # [L2] SortSearchResults          在 eBay 搜索「{query}」，按{sort}排序。
 # [L2] SearchFirstResult          在 eBay 搜索「{query}」，告诉我第一个商品{metric}。
 # [L3] CountSonyHeadphonesEurope  帮我看看 eBay 上{location}发货的{condition}{brand}{query}，有多少个。
 # [L3] CountNikeSneakersInRange   eBay 上{location}发货的{brand}{query}，要{condition}的，{price_min} 到 {price_max} 块之间的有多少个？
-# [L3] FindCheapestProduct        我想买个{location}发货的{brand}{query}，要{condition}的，最便宜的是哪一个，算上运费多少钱？
-# [L4] CompareTwoProductPrices    帮我在 eBay 上分别搜亚洲发货的{item1}和{item2}，要全新的，看看各自{extreme}的算上运费多少钱，哪个{comparison}？
-# [L4] CompareTwoGroupCounts      帮我比较两组筛选结果：{location1}发货的{condition1} {brand1} {query1}里，{price_min1} 到 {price_max1} 块的；以及{location2}发货的{condition2} {brand2} {query2}里，{price_min2} 到 {price_max2} 块的。哪个选择更多，各有多少个？
+# [L4] FindCheapestProduct        我想买个{location}发货的{brand}{query}，要{condition}的，最便宜的是哪一个，算上运费多少钱？
+# [L3] CompareTwoProductPrices    帮我在 eBay 上分别搜亚洲发货的{item1}和{item2}，要全新的，看看各自{extreme}的算上运费多少钱，哪个{comparison}？
+# [L3] CompareTwoGroupCounts      帮我比较两组筛选结果：{location1}发货的{condition1} {brand1} {query1}里，{price_min1} 到 {price_max1} 块的；以及{location2}发货的{condition2} {brand2} {query2}里，{price_min2} 到 {price_max2} 块的。哪个选择更多，各有多少个？
 # -- End Task Index --
 
 from __future__ import annotations
@@ -38,26 +37,6 @@ from bench_env.task.judge import JudgeInput
 # =============================================================================
 # L1 — Atomic navigation & simple settings
 # =============================================================================
-
-
-
-class OpenCategories(CriteriaTask):
-    templates = [
-        "打开 eBay 的分类页面，看看有哪些商品分类。",
-        "去 eBay 的分类页看一下商品分类。",
-        "Open the eBay categories page to browse product categories.",
-        "Go to eBay's categories page to see what's available.",
-    ]
-    apps = ["ebay"]
-    scope = "S1"
-    objective = "operate"
-    composition = "atomic"
-    difficulty = "L1"
-    capabilities = ["nav"]
-    criteria = {"route": "/categories"}
-    optimal_paths = [["home.quick_filter.categories"]]
-
-
 class SwitchTheme(CriteriaTask):
     templates = [
         "把 eBay 的主题切换成{theme}。",

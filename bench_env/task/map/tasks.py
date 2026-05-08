@@ -2,30 +2,24 @@
 Map task definitions.
 """
 # -- Task Index (auto-generated, do not edit) --
-# 22 tasks | L1×3  L2×7  L3×8  L4×4
+# 16 tasks | L1×1  L2×9  L3×5  L4×1
 #
-# [L1] SearchPlaceAddress               帮我查一下{place}的具体地址
-# [L1] CheckFavoritePlaceCount          我在地图里收藏了几个地方
-# [L2] CheckDriveRoute                  帮我查一下到{place}的驾车路线
-# [L2] CheckHighestRatedPlace           附近{radius}内评分最高的{category}是哪家，优先告诉我离我最近的
-# [L2] CheckNearestPlaceAddress         离我最近的{category}在什么地址
-# [L2] SetMapNorthUp                    把地图设置成始终上北下南
-# [L2] SetOfflineMapDownloadPreference  把离线地图下载偏好改成{download_preference}
-# [L2] QueryWalkingTime                 走路去{place}大概要多久
-# [L2] QueryDrivingDistance             {place}离这儿开车有多远
-# [L3] CheckRouteSuccess                从{origin}开车去{destination}怎么走，前几步告诉我
-# [L3] FindBestRatedAndRoute            附近{radius}内评分最高且最近的{category}是哪家，开车过去大概多远
-# [L3] ModifyMultiSettings              把地图停车位置通知设为{parking_pref}，并将保存近期搜索设为{save_recent_searches}
-# [L1] DarkModeSettings                 把地图主题设为{theme}
-# [L3] FindNearestWithRating            最近的{category}叫什么、评分多少
-# [L3] CompareRouteDuration             查一下去{place}步行和开车哪个更快，各要多久
-# [L3] CheckPlaceDetailFull             帮我查一下{place}的评分、地址和电话
-# [L3] FindNearestAndRoute              帮我找最近的{category}，看看开车过去怎么走
-# [L3] EstimateDrivingCost              帮我算一下开车去{place}的油费，按每公里{rate}元算
-# [L4] NearestInRadiusRatingRank        最近的有评分的{category}在附近{radius}内同类评分里排第几
-# [L4] BestRatedWithWalkRoute           帮我找附近{radius}内的{category}里评分最高且最近的，看看走过去多远
-# [L4] PlaceDetailAndDriveRoute         我想去{place}，查查评分和地址，再看看开车要多久
-# [L4] NearestDetailAndWalkRoute        最近的有评分的{category}叫什么、评分多少，走过去要多久
+# [L1] CheckDriveRoute            帮我查一下到{place}的驾车路线
+# [L2] CheckHighestRatedPlace     附近{radius}内评分最高的{category}是哪家，优先告诉我离我最近的
+# [L2] CheckNearestPlaceAddress   离我最近的{category}在什么地址
+# [L3] SetMapNorthUp              把地图设置成始终上北下南
+# [L2] QueryDrivingDistance       {place}离这儿开车有多远
+# [L4] CheckRouteSuccess          从{origin}开车去{destination}怎么走，前几步告诉我
+# [L3] FindBestRatedAndRoute      附近{radius}内评分最高且最近的{category}是哪家，开车过去大概多远
+# [L2] ModifyMultiSettings        把地图停车位置通知设为{parking_pref}，并将保存近期搜索设为{save_recent_searches}
+# [L2] DarkModeSettings           把地图主题设为{theme}
+# [L3] FindNearestWithRating      最近的{category}叫什么、评分多少
+# [L2] CompareRouteDuration       查一下去{place}步行和开车哪个更快，各要多久
+# [L2] FindNearestAndRoute        帮我找最近的{category}，看看开车过去怎么走
+# [L2] EstimateDrivingCost        帮我算一下开车去{place}的油费，按每公里{rate}元算
+# [L2] NearestInRadiusRatingRank  最近的有评分的{category}在附近{radius}内同类评分里排第几
+# [L3] BestRatedWithWalkRoute     帮我找附近{radius}内的{category}里评分最高且最近的，看看走过去多远
+# [L3] NearestDetailAndWalkRoute  最近的有评分的{category}叫什么、评分多少，走过去要多久
 # -- End Task Index --
 
 
@@ -50,39 +44,6 @@ from bench_env.task.utils import check_alternatives
 # =============================================================================
 # L1 — Atomic queries
 # =============================================================================
-
-class SearchPlaceAddress(AnswerTask):
-    templates = ["帮我查一下{place}的具体地址"]
-    apps = ["map"]
-    scope = "S1"
-    objective = "query"
-    composition = "atomic"
-    difficulty = "L1"
-    capabilities = ["search", "query"]
-    parameters = {"place": PLACE_PARAM}
-    expected_changes = MAP_SEARCH_CHANGES
-    answer_fields = [{"type": "text", "label": "具体地址", "hint": "如：北京市海淀区中关村大街1号"}]
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        answer = input.answer
-        places = Map.resolve_places(self.p.place)
-        return check_alternatives(
-            [Map.check_answer_match(answer, Map.extract_address(p), field="answer.address") for p in places],
-        )
-
-
-class CheckFavoritePlaceCount(AnswerTask):
-    templates = ["我在地图里收藏了几个地方"]
-    apps = ["map"]
-    scope = "S1"
-    objective = "query"
-    composition = "atomic"
-    difficulty = "L1"
-    capabilities = ["query"]
-    answer = ".user.lists.favorites.count"
-    answer_fields = [{"type": "number", "label": "收藏地点数"}]
-
-
 # =============================================================================
 # L2 — Core search and route tasks
 # =============================================================================
@@ -177,54 +138,6 @@ class SetMapNorthUp(CriteriaTask):
 
     async def _post_sample(self, env: Any) -> None:
         await self._invert_criteria(env)
-
-
-class SetOfflineMapDownloadPreference(CriteriaTask):
-    templates = ["把离线地图下载偏好改成{download_preference}"]
-    apps = ["map"]
-    scope = "S1"
-    objective = "operate"
-    composition = "sequential"
-    difficulty = "L2"
-    capabilities = ["settings"]
-    parameters = {
-        "download_preference": {
-            "type": "enum",
-            "values": {
-                "仅通过 WLAN 网络": "仅通过 WLAN 网络",
-                "通过 WLAN 或移动网络": "通过 WLAN 或移动网络",
-            },
-            "default": "通过 WLAN 或移动网络",
-            "description": "离线地图下载偏好",
-        },
-    }
-    criteria = {
-        "settings.offlineMaps.downloadPreference": "{download_preference}",
-    }
-
-    async def _post_sample(self, env: Any) -> None:
-        await self._invert_criteria(env)
-
-
-class QueryWalkingTime(AnswerTask):
-    templates = ["走路去{place}大概要多久"]
-    apps = ["map"]
-    scope = "S1"
-    objective = "query"
-    composition = "sequential"
-    difficulty = "L2"
-    capabilities = ["nav", "query"]
-    parameters = {"place": PLACE_PARAM}
-    expected_changes = MAP_SEARCH_CHANGES
-    answer_fields = [{"type": "text", "label": "步行时长", "hint": "如：22分钟"}]
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        routes = Map.resolve_routes_from_current(self.p.place, "WALKING")
-        return check_alternatives(
-            [Map.check_geo_duration(input.answer, str(r["duration"]), field="answer.walk_duration") for _, r in routes],
-        )
-
-
 class QueryDrivingDistance(AnswerTask):
     templates = ["{place}离这儿开车有多远"]
     apps = ["map"]
@@ -476,59 +389,6 @@ class CompareRouteDuration(AnswerTask):
             [Map.check_geo_duration(answer, str(w["duration"]), field="answer.walk_duration") for w, _ in routes],
             [Map.check_geo_duration(answer, str(d["duration"]), field="answer.drive_duration") for _, d in routes],
         )
-
-
-class CheckPlaceDetailFull(AnswerTask):
-    templates = [
-        "帮我查一下{place}的评分、地址和电话",
-        "查下{place}，把评分、地址和联系电话都告诉我",
-    ]
-    apps = ["map"]
-    scope = "S1"
-    objective = "query"
-    composition = "sequential"
-    difficulty = "L3"
-    capabilities = ["search", "query"] 
-    parameters = {"place": PLACE_PARAM}
-    expected_changes = MAP_SEARCH_CHANGES
-    answer_fields = [
-        {"type": "text", "label": "评分", "hint": "如：3.8"},
-        {"type": "text", "label": "地址", "hint": "如：上海市黄浦区南京东路100号"},
-        {"type": "text", "label": "电话", "hint": "如：021-62345678"},
-    ]
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        m = Map(input.apps["map"], init=input.apps_init["map"])
-        sc = m.check_searched(category=None)
-        if not sc["passed"]:
-            _skip = "前置搜索未完成"
-            return [
-                sc,
-                {"field": "answer.rating", "passed": False, "expected": "地点评分", "actual": _skip},
-                {"field": "answer.address", "passed": False, "expected": "地点地址", "actual": _skip},
-                {"field": "answer.phone", "passed": False, "expected": "地点电话", "actual": _skip},
-            ]
-
-        answer_text = str(input.answer or "")
-        candidates = [
-            p for p in Map.resolve_places(self.p.place)
-            if p.get("rating") is not None
-            and (p.get("formatted_address") or p.get("address"))
-            and p.get("formatted_phone_number")
-        ]
-        if not candidates:
-            raise RuntimeError(
-                f"任务设计错误：'{self.p.place}' 的所有候选均缺少 rating/address/phone，"
-                "无法判定，请检查数据或参数采样范围"
-            )
-        return check_alternatives(
-            [sc] * len(candidates),
-            [Map.check_place_rating_answer(answer_text, Map.extract_rating(p)) for p in candidates],
-            [Map.check_place_address_answer(answer_text, Map.extract_address(p)) for p in candidates],
-            [Map.check_place_phone_answer(answer_text, Map.extract_phone(p)) for p in candidates],
-        )
-
-
 class FindNearestAndRoute(BaseTask):
     templates = ["帮我找最近的{category}，看看开车过去怎么走"]
     apps = ["map"]
@@ -692,58 +552,6 @@ class BestRatedWithWalkRoute(BaseTask):
             Map.check_answer_match(answer, best_name, field="answer.name"),
             Map.check_geo_distance(answer, str(route["distance"]), field="answer.walk_distance"),
         ]
-
-
-class PlaceDetailAndDriveRoute(BaseTask):
-    templates = [
-        "我想去{place}，查查评分和地址，再看看开车要多久",
-        "帮我看看{place}的评分和地址，再说下开车过去要多久",
-    ]
-    apps = ["map"]
-    scope = "S1"
-    objective = "hybrid"
-    composition = "deep_dive"
-    difficulty = "L4"
-    capabilities = ["search", "nav", "query"]
-    parameters = {"place": PLACE_PARAM}
-    expected_changes = MAP_SEARCH_CHANGES
-    answer_fields = [
-        {"type": "text", "label": "评分", "hint": "如：4.2"},
-        {"type": "text", "label": "地址", "hint": "如：北京市海淀区中关村大街1号"},
-        {"type": "text", "label": "驾车时长", "hint": "如：20分钟", "matcher": "duration"},
-    ]
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        m = Map(input.apps["map"])
-        # 与 crossapp_life.MapWeatherToTripNotes / MapRouteEstimateCostToWechat 相同：只取 [0]，不遍历多 POI。
-        place, route = Map.resolve_routes_from_current(self.p.place, "DRIVING")[0]
-        rating = Map.extract_rating(place)
-        full_addr = Map.extract_address(place)
-        addr_hint = full_addr.split("，")[0].split(",")[0].strip() or full_addr
-        return [
-            m.check_route(
-                mode="DRIVING",
-                destination_hint=str(place["name"]),
-                field="drive_route",
-            ),
-            Map.check_place_rating_answer(
-                input.answer,
-                rating,
-                field="answer.rating",
-            ),
-            Map.check_place_address_answer(
-                input.answer,
-                addr_hint,
-                field="answer.address",
-            ),
-            Map.check_geo_duration(
-                input.answer,
-                str(route["duration"]),
-                field="answer.drive_duration",
-            ),
-        ]
-
-
 class NearestDetailAndWalkRoute(BaseTask):
     templates = [
         "最近的有评分的{category}叫什么、评分多少，走过去要多久",

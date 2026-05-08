@@ -6,33 +6,30 @@ ground truth 来源、check 结构与匹配方式；第三段「注意」仅在�
 实现仍须与 docstring 一致；代码是最终依据。
 """
 # -- Task Index (auto-generated, do not edit) --
-# 25 tasks | L1×3  L2×7  L3×9  L4×6
+# 22 tasks | L1×4  L2×8  L3×9  L4×1
 #
 # [L1] CheckCoinBalance                微信读书里书币还有多少
-# [L1] CheckHotSearchRank              微信读书热搜榜第{rank}名是什么书
+# [L3] CheckHotSearchRank              微信读书热搜榜第{rank}名是什么书
 # [L1] CheckBookRating                 帮我看看微信读书里《{book_title}》推荐值多少
 # [L2] AddBookToShelf                  把《{book_title}》加到微信读书书架
-# [L2] ManageShelf                     把微信读书书架里《{book_title}》移出去
+# [L1] ManageShelf                     把微信读书书架里《{book_title}》移出去
 # [L2] SearchBookAuthor                微信读书里《{book_title}》是谁写的
-# [L2] TogglePrivateReading            把书架里的《{book_title}》设成私密阅读
+# [L3] TogglePrivateReading            把书架里的《{book_title}》设成私密阅读
 # [L2] EditProfileName                 把微信读书的昵称改成{new_name}
-# [L2] SetDarkMode                     把微信读书深色模式改成{dark_mode}
+# [L3] SetDarkMode                     把微信读书深色模式改成{dark_mode}
 # [L2] FindAudiobookPlays              微信读书里《{book_title}》有声版播放量多少
-# [L3] CheckReadingDistribution        微信读书上这周星期{weekday_str}读了多长时间
 # [L3] AnalyzeReadingHabit             最近一周在微信读书上哪天读的时间最长
 # [L3] CheckCalendarMonthReading       微信读书{year}年{month}月总共读了多少天
-# [L3] CompareBookLengths              对比微信读书里《{book1}》和《{book2}》的字数，告诉我字数多的那本，然后加到书架
+# [L2] CompareBookLengths              对比微信读书里《{book1}》和《{book2}》的字数，告诉我字数多的那本，然后加到书架
 # [L3] FindHighestRatedBookInCategory  微信读书{category}分类里评分最高的书是哪本
-# [L3] ConfigureReaderSettings         把微信读书的阅读器字体大小调成{font_size}，翻页方式改成{style}
-# [L3] UnfollowUser                    在微信读书取消关注{user_name}
-# [L3] SetProfileVisibility            把微信读书主页可见范围改成{visibility}
+# [L2] ConfigureReaderSettings         把微信读书的阅读器字体大小调成{font_size}，翻页方式改成{style}
+# [L1] UnfollowUser                    在微信读书取消关注{user_name}
+# [L2] SetProfileVisibility            把微信读书主页可见范围改成{visibility}
 # [L3] ReadBookProgress                把微信读书里《{book_title}》翻到{percentage}%的位置
 # [L4] OrganizeShelfByRecommendation   整理微信读书书架，把推荐值不高于{recommendation}%的书都删掉
-# [L4] AddBookAndReadTo                帮我在微信读书找到《{book_title}》加到书架，调整读书进度到{percentage}%
-# [L4] CompareAndAddBetter             告诉我微信读书里《{book1}》和《{book2}》哪本评分高，帮我把评分高的收到书架
-# [L4] FindLowestProgressAndRead       微信读书书架里哪本书我读的进度最低，帮我翻到{percentage}%的位置
-# [L4] PrivacyAndThemeBundle           把微信读书的阅读颜色换成{theme_color}，开启"{privacy_label}"，再把翻页方式改成{style}
-# [L4] CheckUserThenDecide             看看微信读书里{user_name}读了多长时间，有{threshold_hours}小时以上就关注TA，不到的话告诉我具体时长
+# [L2] AddBookAndReadTo                帮我在微信读书找到《{book_title}》加到书架，调整读书进度到{percentage}%
+# [L3] FindLowestProgressAndRead       微信读书书架里哪本书我读的进度最低，帮我翻到{percentage}%的位置
+# [L3] PrivacyAndThemeBundle           把微信读书的阅读颜色换成{theme_color}，开启"{privacy_label}"，再把翻页方式改成{style}
 # -- End Task Index --
 
 
@@ -335,45 +332,6 @@ class FindAudiobookPlays(AnswerTask):
 # =============================================================================
 # L3 — 多步推理与跨功能
 # =============================================================================
-
-
-class CheckReadingDistribution(AnswerTask):
-    """验证本周某日（星期几）在该日的阅读时长（分钟）。
-
-    判定：get_answer 用 sim_today 对齐自然周，reading_minutes_on(目标日)；
-    返回 int；AnswerTask 默认数值匹配。
-
-    注意：weekday_str 与「本周」起算与 OS 模拟日期一致。
-    """
-    templates = [
-        "微信读书上这周星期{weekday_str}读了多长时间",
-        "看看我这个星期{weekday_str}在微信读书读了多久",
-    ]
-    apps = ["wechat_reading"]
-    scope = "S1"
-    objective = "query"
-    composition = "sequential"
-    difficulty = "L3"
-    capabilities = ["query"]
-    parameters = {
-        "weekday_str": {
-            "type": "enum",
-            "values": ["一", "二", "三", "四", "五", "六", "日"],
-            "default": "一",
-            "description": "周几",
-        },
-    }
-    answer_fields = [{"type": "number", "label": "阅读时长（分钟）"}]
-
-    def get_answer(self, input: JudgeInput) -> Any:
-        wr = WechatReading(input.apps_init["wechat_reading"])
-        today = sim_today(input.os_init)
-        start_of_week = today - datetime.timedelta(days=today.weekday())
-        target_idx = {"一": 0, "二": 1, "三": 2, "四": 3, "五": 4, "六": 5, "日": 6}[self.p.weekday_str]
-        target_date = start_of_week + datetime.timedelta(days=target_idx)
-        return wr.reading_minutes_on(target_date)
-
-
 class AnalyzeReadingHabit(BaseTask):
     """验证能否指出最近一周（7 天窗口）阅读时长最长的那一天。
 
@@ -776,56 +734,6 @@ class AddBookAndReadTo(BaseTask):
             wr.check_on_shelf(self.p.book_title, field="shelf_after_add"),
             wr.check_progress(self.p.book_title, float(self.p.percentage), field="read_progress"),
         ]
-
-
-class CompareAndAddBetter(BaseTask):
-    """比较两书评分，将评分更高的一本上架，并在回答中报告该书。
-
-    判定：① check_on_shelf(评分高者)；② build_answer_checks(书名)。
-    评分来自 store.rating；采样保证两书评分不等。
-
-    注意：objective=hybrid。
-    """
-    templates = [
-        "告诉我微信读书里《{book1}》和《{book2}》哪本评分高，帮我把评分高的收到书架",
-        "对比微信读书里《{book1}》和《{book2}》的评分，把好的那本加到书架，告诉我是哪本",
-    ]
-    apps = ["wechat_reading"]
-    scope = "S1"
-    objective = "hybrid"
-    composition = "deep_dive"
-    difficulty = "L4"
-    capabilities = ["query", "reasoning", "create"]
-    parameters = {
-        "book1": {
-            "type": "string",
-            "default": "三体",
-            "description": "书籍1",
-        },
-        "book2": {
-            "type": "string",
-            "default": "活着",
-            "description": "书籍2",
-        },
-        "_book_pair": {
-            "sampler": WechatReading.sample_two_books_unequal_ratings,
-            "fields": {"book1": "book1", "book2": "book2"},
-        },
-    }
-    expected_changes = ["shelf", "bookProgress", "readingBookIds", "allProgressBookIds"]
-    answer_fields = [{"type": "choice", "label": "评分更高的书名", "options": ["{book1}", "{book2}"]}]
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        wr = WechatReading(input.apps["wechat_reading"])
-        b1 = wr.require_book_by_title(self.p.book1)
-        b2 = wr.require_book_by_title(self.p.book2)
-        r1, r2 = float(b1["rating"]), float(b2["rating"])
-        winner = self.p.book1 if r1 > r2 else self.p.book2
-        checks = [wr.check_on_shelf(winner, field="shelf_higher_rating")]
-        checks.extend(build_answer_checks(winner, input.answer))
-        return checks
-
-
 class FindLowestProgressAndRead(BaseTask):
     """将书架中进度最低的书读到目标进度。
 
@@ -928,67 +836,3 @@ class PrivacyAndThemeBundle(CriteriaTask):
 
     async def _post_sample(self, env):
         await self._invert_criteria(env)
-
-
-class CheckUserThenDecide(BaseTask):
-    """按阅读时长与阈值分支：不低于阈值则须关注该用户，否则须在回答中报告时长。
-
-    判定：readingTimeMinutes/60 与 threshold_hours 比较（>=）；达到阈值：
-    check_following(user_id, expected=True)；未达到：用 match_duration 语义匹配
-    回答中的时长（归一化到分钟比较，覆盖「X小时Y分」「X分钟」等等价表达）。
-
-    注意：objective=hybrid；follow 分支改 user.following，report 分支无状态变更。
-    """
-    templates = [
-        "看看微信读书里{user_name}读了多长时间，有{threshold_hours}小时以上就关注TA，不到的话告诉我具体时长",
-        "微信读书上{user_name}的阅读时长达到{threshold_hours}小时了吗，达到了就帮我关注，没到告诉我读了多久",
-    ]
-    apps = ["wechat_reading"]
-    scope = "S1"
-    objective = "hybrid"
-    composition = "deep_dive"
-    difficulty = "L4"
-    capabilities = ["query", "reasoning", "edit"]
-    expected_changes = ["user.following"]
-    parameters = {
-        "user_id": {
-            "type": "string",
-            "default": "user_chenjing",
-        },
-        "user_name": {
-            "type": "string",
-            "default": "陈静",
-        },
-        "threshold_hours": {
-            "type": "float",
-            "default": 100.0,
-            "description": "阅读时长阈值（小时）",
-        },
-        "_cond_follow": {
-            "sampler": WechatReading.sample_conditional_follow_decision,
-            "fields": {
-                "user_id": "user_id",
-                "user_name": "user_name",
-                "threshold_hours": "threshold_hours",
-            },
-        },
-    }
-
-    def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
-        init_wr = WechatReading(input.apps_init["wechat_reading"])
-        wr = WechatReading(input.apps["wechat_reading"])
-        user = init_wr.require_user_by_name(self.p.user_name)
-        total_minutes = int(user["readingTimeMinutes"])
-        hours = total_minutes / 60.0
-        threshold = float(self.p.threshold_hours)
-        if hours >= threshold:
-            return [wr.check_following(self.p.user_id, expected=True, field="follow_after_threshold")]
-        h, m = divmod(total_minutes, 60)
-        expected_duration = f"{h}小时{m}分"
-        answer_text = str(input.answer or "")
-        return [{
-            "field": "answer",
-            "expected": expected_duration,
-            "actual": input.answer,
-            "passed": match_duration(expected_duration, answer_text),
-        }]
