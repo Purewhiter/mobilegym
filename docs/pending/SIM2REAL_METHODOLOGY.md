@@ -4,7 +4,7 @@
 
 - [SIM2REAL_SELECTION.txt](./SIM2REAL_SELECTION.txt) — 80 任务清单（桶标注、sim pass 计数）
 - [SIM2REAL_PARAM_AUDIT.txt](./SIM2REAL_PARAM_AUDIT.txt) — 逐任务参数/模板审计
-- [sim2real_instructions.json](./sim2real_instructions.json) — `--task-instructions` 可直接消费的烘焙指令
+- [sim2real_instructions.json](../../bench_env/splits/sim2real_instructions.json) — `--task-instructions` 可直接消费的烘焙指令
 
 ---
 
@@ -157,7 +157,7 @@ Sim→real 典型保留率 50–80%（视觉差异、IME/键盘差异、状态�
 
 审稿人看到"换了参数"不会扣分，反而加分 —— "没 cherry-pick sim 里的成功 case"。
 
-### 对 [sim2real_instructions.json](./sim2real_instructions.json) 的含义
+### 对 [sim2real_instructions.json](../../bench_env/splits/sim2real_instructions.json) 的含义
 
 当前文件烘焙了 sim defaults 作为 starting point；按策略 B，真机实跑前应把以下字段替换成**真机已有实体**：
 

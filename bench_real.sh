@@ -1,8 +1,8 @@
-  TASK_IDS=$(python3 -c "import json; print(','.join(json.load(open('docs/pending/sim2real_instructions.json')).keys()))")
+  TASK_IDS=$(python3 -c "import json; print(','.join(json.load(open('bench_env/splits/sim2real_instructions.json')).keys()))")
 
 python3 -m bench_env.run --device real \
   --task-ids "$TASK_IDS" \
-  --task-instructions docs/pending/sim2real_instructions.json \
+  --task-instructions bench_env/splits/sim2real_instructions.json \
   --agent generic_v2 \
   --model-name qwen3-vl-4b \
   --model-base-url http://127.0.0.1:8002/v1 \
