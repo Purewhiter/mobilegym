@@ -1,0 +1,799 @@
+{
+  "user": {
+    "wxid": "xiaoming001",
+    "name": "小明",
+    "avatar": "avatars/avatar_64.jpg",
+    "region": "中国大陆 北京",
+    "currentLocation": "中国大陆 北京",
+    "gender": "男",
+    "phone": "17366666695",
+    "signature": "这是我的签名",
+    "pat": "",
+    "qqId": "123456789",
+    "beans": 0,
+    "steps": 599,
+    "likes": 0,
+    "addresses": [],
+    "invoices": []
+  },
+  "auth": {
+    "accounts": [
+      {
+        "phone": "17366666695",
+        "password": "wechat_pwd_123",
+        "createdAt": 0,
+        "activated": true,
+        "realName": "",
+        "idNumber": "",
+        "failedAttempts": 0,
+        "requireCaptcha": false
+      }
+    ],
+    "session": {
+      "loggedIn": true,
+      "phone": "17366666695",
+      "expiresAt": null,
+      "currentDeviceId": "old_device_1"
+    },
+    "trustedDevicesByPhone": {
+      "17366666695": [
+        {
+          "deviceId": "old_device_1",
+          "deviceName": "旧设备",
+          "trustedAt": 0
+        }
+      ]
+    },
+    "verificationCodes": [],
+    "verificationAttempts": [],
+    "loginAttempts": [],
+    "verificationCodeLength": 6,
+    "verificationCodeExpirySec": 60,
+    "captcha": {
+      "requiredAfterFailures": 2
+    },
+    "nextVerificationCodeOverride": null,
+    "pendingTrustDevice": null
+  },
+  "chats": [
+    {
+      "id": "wxid_blank_001",
+      "user": {
+        "wxid": "wxid_blank_001",
+        "name": "blank.",
+        "avatar": "avatars/avatar_65.jpg"
+      },
+      "isMuted": false,
+      "isSticky": false,
+      "isAlert": false,
+      "messages": [
+        {
+          "id": "m1",
+          "type": "time",
+          "content": "14:43",
+          "senderId": "system",
+          "timestamp": "-1h"
+        },
+        {
+          "id": "m2",
+          "type": "system",
+          "content": "你已添加了blank.，现在可以开始聊天了。",
+          "senderId": "system",
+          "timestamp": "-1h"
+        },
+        {
+          "id": "m3",
+          "type": "text",
+          "content": "你好",
+          "senderId": "wxid_blank_001",
+          "timestamp": "-1h"
+        },
+        {
+          "id": "m4",
+          "type": "text",
+          "content": "你好",
+          "senderId": "wxid_w5q69z0jbsuj22",
+          "timestamp": "-1h"
+        }
+      ]
+    },
+    {
+      "id": "wxid_zhangwei_888",
+      "user": {
+        "wxid": "wxid_zhangwei_888",
+        "name": "张伟",
+        "avatar": "avatars/avatar_10.jpg"
+      },
+      "isMuted": false,
+      "isSticky": false,
+      "isAlert": true,
+      "messages": [
+        {
+          "id": "zw_t",
+          "type": "time",
+          "content": "昨天 19:43",
+          "senderId": "system",
+          "timestamp": "-20h"
+        },
+        {
+          "id": "zw1",
+          "type": "text",
+          "content": "明天一起去吃火锅吗？",
+          "senderId": "wxid_zhangwei_888",
+          "timestamp": "-20h"
+        }
+      ]
+    },
+    {
+      "id": "wxid_wangfang_123",
+      "user": {
+        "wxid": "wxid_wangfang_123",
+        "name": "王芳",
+        "avatar": "avatars/avatar_20.jpg"
+      },
+      "isMuted": true,
+      "isSticky": false,
+      "isAlert": false,
+      "messages": [
+        {
+          "id": "wf_t",
+          "type": "time",
+          "content": "昨天 15:43",
+          "senderId": "system",
+          "timestamp": "-1d"
+        },
+        {
+          "id": "wf1",
+          "type": "text",
+          "content": "好的，没问题。",
+          "senderId": "wxid_w5q69z0jbsuj22",
+          "timestamp": "-1d"
+        }
+      ]
+    },
+    {
+      "id": "wxid_boss_007",
+      "user": {
+        "wxid": "wxid_boss_007",
+        "name": "Boss",
+        "avatar": "avatars/avatar_50.jpg"
+      },
+      "isMuted": false,
+      "isSticky": true,
+      "isAlert": true,
+      "messages": [
+        {
+          "id": "b0",
+          "type": "time",
+          "content": "昨天 15:43",
+          "senderId": "system",
+          "timestamp": "-30d"
+        },
+        {
+          "id": "b0_1",
+          "type": "text",
+          "content": "新入职请熟悉一下公司规章制度。",
+          "senderId": "wxid_boss_007",
+          "timestamp": "-30d"
+        },
+        {
+          "id": "b0_2",
+          "type": "text",
+          "content": "好的老板。",
+          "senderId": "wxid_w5q69z0jbsuj22",
+          "timestamp": "-29d23h59m"
+        },
+        {
+          "id": "b_old_1",
+          "type": "text",
+          "content": "上次那个Urgent的任务完成得不错。",
+          "senderId": "wxid_boss_007",
+          "timestamp": "-20d"
+        },
+        {
+          "id": "b_old_2",
+          "type": "text",
+          "content": "谢谢夸奖。",
+          "senderId": "wxid_w5q69z0jbsuj22",
+          "timestamp": "-19d23h59m"
+        },
+        {
+          "id": "b_old_3",
+          "type": "text",
+          "content": "注意一下排版格式。",
+          "senderId": "wxid_boss_007",
+          "timestamp": "-15d"
+        },
+        {
+          "id": "b_old_4",
+          "type": "text",
+          "content": "好的。",
+          "senderId": "wxid_w5q69z0jbsuj22",
+          "timestamp": "-14d23h59m"
+        },
+        {
+          "id": "b1",
+          "type": "time",
+          "content": "昨天 15:43",
+          "senderId": "system",
+          "timestamp": "-5d"
+        },
+        {
+          "id": "b2",
+          "type": "text",
+          "content": "小明，最近的项目进度怎么样了？",
+          "senderId": "wxid_boss_007",
+          "timestamp": "-5d"
+        },
+        {
+          "id": "b3",
+          "type": "text",
+          "content": "正在按计划进行，老板。",
+          "senderId": "wxid_w5q69z0jbsuj22",
+          "timestamp": "-4d23h59m"
+        },
+        {
+          "id": "b4",
+          "type": "time",
+          "content": "昨天 15:43",
+          "senderId": "system",
+          "timestamp": "-3d"
+        },
+        {
+          "id": "b5",
+          "type": "text",
+          "content": "Urgent: 客户那边需要提前演示，周三前准备好PPT。",
+          "senderId": "wxid_boss_007",
+          "timestamp": "-3d"
+        },
+        {
+          "id": "b6",
+          "type": "text",
+          "content": "收到，我马上处理。",
+          "senderId": "wxid_w5q69z0jbsuj22",
+          "timestamp": "-2d23h58m"
+        },
+        {
+          "id": "b7",
+          "type": "time",
+          "content": "昨天 15:43",
+          "senderId": "system",
+          "timestamp": "-1d"
+        },
+        {
+          "id": "b8",
+          "type": "text",
+          "content": "下周的会议改到周二了。",
+          "senderId": "wxid_boss_007",
+          "timestamp": "-1d"
+        },
+        {
+          "id": "b9",
+          "type": "text",
+          "content": "好的。",
+          "senderId": "wxid_w5q69z0jbsuj22",
+          "timestamp": "-23h59m"
+        },
+        {
+          "id": "b10",
+          "type": "text",
+          "content": "辛苦了。",
+          "senderId": "wxid_boss_007",
+          "timestamp": "-23h58m"
+        },
+        {
+          "id": "b11",
+          "type": "text",
+          "content": "记得提交周报。",
+          "senderId": "wxid_boss_007",
+          "timestamp": "-1h"
+        },
+        {
+          "id": "b12",
+          "type": "text",
+          "content": "已提交。",
+          "senderId": "wxid_w5q69z0jbsuj22",
+          "timestamp": "-30m"
+        }
+      ]
+    }
+  ],
+  "contacts": [
+    {
+      "wxid": "wxid_blank_001",
+      "name": "blank.",
+      "avatar": "avatars/avatar_65.jpg",
+      "category": "B",
+      "signature": "学习使人快乐",
+      "alias": "blank.",
+      "region": "马达加斯加",
+      "gender": "男",
+      "source": "对方通过扫一扫添加",
+      "addedTime": "2025年12月",
+      "commonGroups": 0,
+      "memo": "",
+      "isBlacklisted": false,
+      "steps": 6194,
+      "likes": 0,
+      "permissionMode": "all",
+      "hideMyMoments": false,
+      "hideTheirMoments": false,
+      "aiConfig": {
+        "enabled": true,
+        "systemPrompt": "热爱学习的程序员，性格开朗友善，喜欢聊技术话题，偶尔会用代码梗。"
+      }
+    },
+    {
+      "wxid": "wxid_boss_007",
+      "name": "Boss",
+      "avatar": "avatars/avatar_50.jpg",
+      "category": "B",
+      "gender": "男",
+      "region": "中国 杭州",
+      "signature": "Time is money",
+      "steps": 5600,
+      "likes": 1,
+      "permissionMode": "all",
+      "aiConfig": {
+        "enabled": true,
+        "systemPrompt": "雷厉风行，说话简洁明了，只关注结果，经常说\"Urgent\"、\"Deadline\"。"
+      }
+    },
+    {
+      "wxid": "xiaohong_123",
+      "name": "小红",
+      "avatar": "avatars/avatar_88.jpg",
+      "category": "X",
+      "region": "中国上海",
+      "gender": "女",
+      "steps": 7160,
+      "likes": 1,
+      "permissionMode": "all",
+      "aiConfig": {
+        "enabled": true,
+        "systemPrompt": "时尚达人，喜欢购物、美食和旅行，说话偶尔带点上海腔调如\"老好的\"、\"蛮灵的\"，活泼可爱。"
+      }
+    },
+    {
+      "wxid": "wxid_w5q69z0jbsuj22",
+      "name": "小明",
+      "avatar": "avatars/avatar_64.jpg",
+      "category": "X",
+      "gender": "男",
+      "region": "中国大陆 北京",
+      "steps": 599,
+      "likes": 0,
+      "permissionMode": "all",
+      "aiConfig": {
+        "enabled": false
+      }
+    },
+    {
+      "wxid": "wxid_zhangwei_888",
+      "name": "张伟",
+      "avatar": "avatars/avatar_10.jpg",
+      "category": "Z",
+      "gender": "男",
+      "region": "中国 北京",
+      "signature": "海内存知己",
+      "steps": 4250,
+      "likes": 2,
+      "permissionMode": "all",
+      "aiConfig": {
+        "enabled": true,
+        "systemPrompt": "热情好客，喜欢美食和户外运动，说话直爽幽默，偶尔说\"得嘞\"、\"您瞅准了\"这样的北京话。"
+      }
+    },
+    {
+      "wxid": "wxid_wangfang_123",
+      "name": "王芳",
+      "avatar": "avatars/avatar_20.jpg",
+      "category": "W",
+      "gender": "女",
+      "region": "中国 上海",
+      "signature": "平凡的世界",
+      "steps": 3120,
+      "likes": 0,
+      "permissionMode": "all",
+      "aiConfig": {
+        "enabled": true,
+        "systemPrompt": "文艺青年，喜欢读书和写作，说话温文尔雅，偶尔会引用诗句或文学典故。"
+      }
+    },
+    {
+      "wxid": "wxid_lina_lina",
+      "name": "李娜",
+      "avatar": "avatars/avatar_30.jpg",
+      "category": "L",
+      "gender": "女",
+      "region": "中国 广州",
+      "signature": "花开富贵",
+      "steps": 8900,
+      "likes": 5,
+      "permissionMode": "all",
+      "aiConfig": {
+        "enabled": true,
+        "systemPrompt": "温柔体贴，喜欢养花和烹饪粤菜，说话温和，偶尔会用\"靓仔\"、\"饮茶\"、\"好犀利\"这样的粤语词。"
+      }
+    },
+    {
+      "wxid": "wxid_liuyang_sky",
+      "name": "刘浪",
+      "avatar": "avatars/avatar_40.jpg",
+      "category": "L",
+      "gender": "男",
+      "region": "中国 深圳",
+      "signature": "仰望星空",
+      "steps": 1240,
+      "likes": 0,
+      "permissionMode": "all",
+      "aiConfig": {
+        "enabled": true,
+        "systemPrompt": "科技创业爱好者，关注互联网和投资，说话务实但充满梦想，喜欢聊行业动态。"
+      }
+    },
+    {
+      "wxid": "wxid_chenjing_silent",
+      "name": "陈静",
+      "avatar": "avatars/avatar_50.jpg",
+      "category": "C",
+      "gender": "女",
+      "region": "中国 杭州",
+      "signature": "静以修身",
+      "steps": 5600,
+      "likes": 1,
+      "permissionMode": "all",
+      "aiConfig": {
+        "enabled": true,
+        "systemPrompt": "安静内敛，喜欢喝茶、练瑜伽，说话简洁淡然，不爱凑热闹，回复经常很简短。"
+      }
+    },
+    {
+      "wxid": "wxid_yangjie_hero",
+      "name": "杨杰",
+      "avatar": "avatars/avatar_60.jpg",
+      "category": "Y",
+      "gender": "男",
+      "region": "中国 成都",
+      "signature": "志存高远",
+      "steps": 6780,
+      "likes": 2,
+      "permissionMode": "all",
+      "aiConfig": {
+        "enabled": true,
+        "systemPrompt": "乐天派，喜欢打麻将、吃火锅，说话慢条斯理，偶尔说\"巴适\"、\"安逸\"、\"莫得问题\"这样的四川话。"
+      }
+    },
+    {
+      "wxid": "wxid_zhaomin_princess",
+      "name": "赵敏",
+      "avatar": "avatars/avatar_70.jpg",
+      "category": "Z",
+      "gender": "女",
+      "region": "中国 西安",
+      "signature": "敏而好学",
+      "steps": 9200,
+      "likes": 4,
+      "permissionMode": "all",
+      "aiConfig": {
+        "enabled": true,
+        "systemPrompt": "聪明伶俐，对历史文化感兴趣，说话干脆利落，偶尔说\"额滴神\"、\"嫽扎咧\"这样的陕西话。"
+      }
+    },
+    {
+      "wxid": "wxid_huangyong_brave",
+      "name": "黄勇",
+      "avatar": "avatars/avatar_80.jpg",
+      "category": "H",
+      "gender": "男",
+      "region": "中国 武汉",
+      "signature": "勇往直前",
+      "steps": 2300,
+      "likes": 0,
+      "permissionMode": "all",
+      "aiConfig": {
+        "enabled": true,
+        "systemPrompt": "热情豪爽，喜欢吃热干面和看足球，说话爽快大嗓门，偶尔说\"搞么斯\"、\"蛮扎实\"这样的武汉话。"
+      }
+    }
+  ],
+  "moments": [
+    {
+      "id": "mo1",
+      "wxid": "wxid_w5q69z0jbsuj22",
+      "userName": "小明",
+      "userAvatar": "avatars/avatar_64.jpg",
+      "content": "你好",
+      "timestamp": "-2m"
+    },
+    {
+      "id": "mo1b",
+      "wxid": "wxid_w5q69z0jbsuj22",
+      "userName": "小明",
+      "userAvatar": "avatars/avatar_64.jpg",
+      "content": "不错",
+      "images": [
+        "images/moment_1018.jpg"
+      ],
+      "timestamp": "-1d"
+    },
+    {
+      "id": "mo2",
+      "wxid": "wxid_blank_001",
+      "userName": "blank.",
+      "userAvatar": "avatars/avatar_65.jpg",
+      "content": "",
+      "images": [
+        "images/moment_1018.jpg"
+      ],
+      "timestamp": "-30m"
+    },
+    {
+      "id": "mo3",
+      "wxid": "wxid_zhangwei_888",
+      "userName": "张伟",
+      "userAvatar": "avatars/avatar_10.jpg",
+      "content": "周末爬山，风景不错！",
+      "images": [
+        "images/moment_1015.jpg"
+      ],
+      "timestamp": "-5h"
+    },
+    {
+      "id": "mo_old",
+      "wxid": "wxid_w5q69z0jbsuj22",
+      "userName": "小明",
+      "userAvatar": "avatars/avatar_64.jpg",
+      "content": "去年的回忆",
+      "images": [
+        "images/moment_1018.jpg"
+      ],
+      "timestamp": "-400d"
+    }
+  ],
+  "authorizedApps": [
+    {
+      "id": "meeting",
+      "name": "腾讯会议",
+      "icon": "icons/meeting.png",
+      "type": "移动应用",
+      "permissions": [
+        "昵称和头像"
+      ]
+    },
+    {
+      "id": "reader",
+      "name": "微信读书",
+      "icon": "icons/reader.png",
+      "type": "移动应用",
+      "permissions": [
+        "昵称和头像",
+        "朋友关系"
+      ]
+    },
+    {
+      "id": "pdd",
+      "name": "拼多多",
+      "icon": "avatars/avatar_10.jpg",
+      "type": "移动应用",
+      "permissions": [
+        "昵称和头像"
+      ]
+    }
+  ],
+  "nearbyPeople": [
+    {
+      "wxid": "wxid_nearby_001",
+      "name": "懂得珍惜才配拥有",
+      "avatar": "avatars/nearby_01.jpg",
+      "gender": "男",
+      "region": "北京市朝阳区",
+      "signature": "我以为爱情可以填满人生遗憾",
+      "distance": "100米以内"
+    },
+    {
+      "wxid": "wxid_nearby_002",
+      "name": "许你一世温柔",
+      "avatar": "avatars/nearby_02.jpg",
+      "gender": "男",
+      "region": "北京市海淀区",
+      "signature": "你把哥哄高兴了，你想要的...",
+      "distance": "500米以内"
+    },
+    {
+      "wxid": "wxid_nearby_003",
+      "name": "原原",
+      "avatar": "avatars/nearby_03.jpg",
+      "gender": "男",
+      "region": "北京市",
+      "distance": "500米以内"
+    },
+    {
+      "wxid": "wxid_nearby_004",
+      "name": "阿海",
+      "avatar": "avatars/nearby_04.jpg",
+      "gender": "男",
+      "region": "北京市",
+      "distance": "700米以内"
+    },
+    {
+      "wxid": "wxid_nearby_005",
+      "name": "锅锅",
+      "avatar": "avatars/nearby_05.jpg",
+      "gender": "男",
+      "region": "北京市",
+      "distance": "800米以内"
+    },
+    {
+      "wxid": "wxid_nearby_006",
+      "name": "风轻云淡",
+      "avatar": "avatars/nearby_06.jpg",
+      "gender": "男",
+      "region": "北京市朝阳区",
+      "distance": "800米以内"
+    },
+    {
+      "wxid": "wxid_nearby_007",
+      "name": "张二封18818889999",
+      "avatar": "avatars/nearby_07.jpg",
+      "gender": "男",
+      "region": "北京市",
+      "signature": "电话 18818889999",
+      "distance": "800米以内"
+    },
+    {
+      "wxid": "wxid_nearby_008",
+      "name": "王晓华",
+      "avatar": "avatars/nearby_08.jpg",
+      "gender": "男",
+      "region": "北京市西城区",
+      "signature": "敬胜怠，义胜欲；知其雄，守其雌；为天下溪，为天下式",
+      "distance": "800米以内"
+    },
+    {
+      "wxid": "wxid_nearby_009",
+      "name": "浊酒",
+      "avatar": "avatars/nearby_09.jpg",
+      "gender": "男",
+      "region": "北京市",
+      "signature": "我会笑的大方 也会走的坦荡",
+      "distance": "800米以内"
+    },
+    {
+      "wxid": "wxid_nearby_010",
+      "name": "随缘",
+      "avatar": "avatars/nearby_10.jpg",
+      "gender": "男",
+      "region": "北京市",
+      "distance": "900米以内"
+    }
+  ],
+  "momentDraft": {
+    "content": "",
+    "location": null,
+    "selectedImages": []
+  },
+  "textMomentDraft": {
+    "content": "",
+    "location": null
+  },
+  "settings": {
+    "security": {
+      "voiceprint": false
+    },
+    "modes": {
+      "care": false,
+      "minor": false
+    },
+    "notifications": {
+      "message": true,
+      "voiceVideo": true,
+      "displayMode": "full",
+      "notificationSound": "跟随系统",
+      "incomingRingtone": "微信"
+    },
+    "chat": {
+      "speakerMode": true,
+      "sendButton": true
+    },
+    "general": {
+      "darkMode": false,
+      "followSystem": true,
+      "landscape": false,
+      "nfc": true,
+      "autoDownload": "仅Wi-Fi网络",
+      "translationLanguage": "简体中文",
+      "autoTranslate": false,
+      "mediaAutoDownload": true,
+      "savePhotos": true,
+      "saveVideos": true,
+      "imageSearch": false,
+      "keepOriginal": false,
+      "mobileAutoPlay": true,
+      "mobileVoiceQuality": true,
+      "personalizedAudio": true,
+      "losslessAudio": false,
+      "showAudioInRecent": true
+    },
+    "privacy": {
+      "friendConfirmation": true,
+      "recommendAddressBook": true,
+      "addMeMethods": {
+        "searchByWxid": false,
+        "searchByPhone": true,
+        "addByGroup": true,
+        "addByQrCode": true,
+        "addByCard": true,
+        "addByOther": true
+      },
+      "momentsStrangerTen": true,
+      "momentsRange": "最近三天"
+    },
+    "discover": {
+      "moments": {
+        "visible": true,
+        "notify": true
+      },
+      "channels": {
+        "visible": true,
+        "notify": true
+      },
+      "live": {
+        "visible": true,
+        "notify": true
+      },
+      "scan": {
+        "visible": true
+      },
+      "listen": {
+        "visible": true,
+        "notify": true
+      },
+      "topStories": {
+        "visible": true,
+        "notify": true
+      },
+      "search": {
+        "visible": true
+      },
+      "nearby": {
+        "visible": true,
+        "notify": true,
+        "showNearbyPeople": true
+      },
+      "games": {
+        "visible": true,
+        "notify": true
+      }
+    },
+    "accessibility": {
+      "tencentNews": {
+        "enabled": true,
+        "sticky": false,
+        "dnd": false
+      },
+      "broadcast": {
+        "enabled": true,
+        "sticky": false,
+        "dnd": false
+      },
+      "qqMail": {
+        "enabled": false
+      },
+      "wechatSports": {
+        "enabled": false,
+        "sticky": false,
+        "dnd": false,
+        "joinLeaderboard": true,
+        "recvLeaderboardMsg": true,
+        "recvLikeMsg": true
+      },
+      "wechatPay": {
+        "enabled": false
+      },
+      "wechatGames": {
+        "enabled": false
+      }
+    }
+  }
+}

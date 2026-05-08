@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HyperOS Symbol Icons Preview</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0; padding: 20px;
+            background: #f5f5f5;
+        }
+        h1 { text-align: center; margin-bottom: 10px; }
+        .search-box {
+            display: block;
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto 20px;
+            padding: 12px 16px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 12px;
+        }
+        .icon-card {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+        .icon-card:hover {
+            border-color: #07C160;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .icon-card img {
+            width: 32px;
+            height: 32px;
+            display: block;
+            margin: 0 auto 8px;
+        }
+        .icon-name {
+            font-size: 11px;
+            color: #666;
+            word-break: break-all;
+        }
+        .icon-unicode {
+            font-size: 10px;
+            color: #999;
+            margin-top: 4px;
+        }
+        .hidden { display: none; }
+        .stats { text-align: center; color: #666; margin-bottom: 20px; }
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .toast.show { opacity: 1; }
+    </style>
+</head>
+<body>
+    <h1>🎨 HyperOS Symbol Icons</h1>
+    <p class="stats">共 163 个图标 - 点击复制 SVG 路径</p>
+    <input type="text" class="search-box" placeholder="搜索图标名称..." oninput="filterIcons(this.value)">
+    <div class="grid">
+        <div class="icon-card" data-name="reset" onclick="copyPath('reset.svg')">
+            <img src="reset.svg" alt="reset">
+            <div class="icon-name">reset</div>
+            <div class="icon-unicode">U+F0000</div>
+        </div>
+        <div class="icon-card" data-name="replace" onclick="copyPath('replace.svg')">
+            <img src="replace.svg" alt="replace">
+            <div class="icon-name">replace</div>
+            <div class="icon-unicode">U+F0001</div>
+        </div>
+        <div class="icon-card" data-name="play" onclick="copyPath('play.svg')">
+            <img src="play.svg" alt="play">
+            <div class="icon-name">play</div>
+            <div class="icon-unicode">U+F0002</div>
+        </div>
+        <div class="icon-card" data-name="more" onclick="copyPath('more.svg')">
+            <img src="more.svg" alt="more">
+            <div class="icon-name">more</div>
+            <div class="icon-unicode">U+F0003</div>
+        </div>
+        <div class="icon-card" data-name="search" onclick="copyPath('search.svg')">
+            <img src="search.svg" alt="search">
+            <div class="icon-name">search</div>
+            <div class="icon-unicode">U+F0004</div>
+        </div>
+        <div class="icon-card" data-name="redo" onclick="copyPath('redo.svg')">
+            <img src="redo.svg" alt="redo">
+            <div class="icon-name">redo</div>
+            <div class="icon-unicode">U+F0005</div>
+        </div>
+        <div class="icon-card" data-name="undo" onclick="copyPath('undo.svg')">
+            <img src="undo.svg" alt="undo">
+            <div class="icon-name">undo</div>
+            <div class="icon-unicode">U+F0006</div>
+        </div>
+        <div class="icon-card" data-name="pause" onclick="copyPath('pause.svg')">
+            <img src="pause.svg" alt="pause">
+            <div class="icon-name">pause</div>
+            <div class="icon-unicode">U+F0007</div>
+        </div>
+        <div class="icon-card" data-name="ok" onclick="copyPath('ok.svg')">
+            <img src="ok.svg" alt="ok">
+            <div class="icon-name">ok</div>
+            <div class="icon-unicode">U+F0008</div>
+        </div>
+        <div class="icon-card" data-name="close" onclick="copyPath('close.svg')">
+            <img src="close.svg" alt="close">
+            <div class="icon-name">close</div>
+            <div class="icon-unicode">U+F0009</div>
+        </div>
+        <div class="icon-card" data-name="back" onclick="copyPath('back.svg')">
+            <img src="back.svg" alt="back">
+            <div class="icon-name">back</div>
+            <div class="icon-unicode">U+F000A</div>
+        </div>
+        <div class="icon-card" data-name="link" onclick="copyPath('link.svg')">
+            <img src="link.svg" alt="link">
+            <div class="icon-name">link</div>
+            <div class="icon-unicode">U+F000B</div>
+        </div>
+        <div class="icon-card" data-name="hide" onclick="copyPath('hide.svg')">
+            <img src="hide.svg" alt="hide">
+            <div class="icon-name">hide</div>
+            <div class="icon-unicode">U+F000C</div>
+        </div>
+        <div class="icon-card" data-name="show" onclick="copyPath('show.svg')">
+            <img src="show.svg" alt="show">
+            <div class="icon-name">show</div>
+            <div class="icon-unicode">U+F000D</div>
+        </div>
+        <div class="icon-card" data-name="store" onclick="copyPath('store.svg')">
+            <img src="store.svg" alt="store">
+            <div class="icon-name">store</div>
+            <div class="icon-unicode">U+F000E</div>
+        </div>
+        <div class="icon-card" data-name="copy" onclick="copyPath('copy.svg')">
+            <img src="copy.svg" alt="copy">
+            <div class="icon-name">copy</div>
+            <div class="icon-unicode">U+F000F</div>
+        </div>
+        <div class="icon-card" data-name="paste" onclick="copyPath('paste.svg')">
+            <img src="paste.svg" alt="paste">
+            <div class="icon-name">paste</div>
+            <div class="icon-unicode">U+F0010</div>
+        </div>
+        <div class="icon-card" data-name="lock" onclick="copyPath('lock.svg')">
+            <img src="lock.svg" alt="lock">
+            <div class="icon-name">lock</div>
+            <div class="icon-unicode">U+F0011</div>
+        </div>
+        <div class="icon-card" data-name="unlock" onclick="copyPath('unlock.svg')">
+            <img src="unlock.svg" alt="unlock">
+            <div class="icon-name">unlock</div>
+            <div class="icon-unicode">U+F0012</div>
+        </div>
+        <div class="icon-card" data-name="community" onclick="copyPath('community.svg')">
+            <img src="community.svg" alt="community">
+            <div class="icon-name">community</div>
+            <div class="icon-unicode">U+F0013</div>
+        </div>
+        <div class="icon-card" data-name="translate" onclick="copyPath('translate.svg')">
+            <img src="translate.svg" alt="translate">
+            <div class="icon-name">translate</div>
+            <div class="icon-unicode">U+F0014</div>
+        </div>
+        <div class="icon-card" data-name="download" onclick="copyPath('download.svg')">
+            <img src="download.svg" alt="download">
+            <div class="icon-name">download</div>
+            <div class="icon-unicode">U+F0015</div>
+        </div>
+        <div class="icon-card" data-name="scan" onclick="copyPath('scan.svg')">
+            <img src="scan.svg" alt="scan">
+            <div class="icon-name">scan</div>
+            <div class="icon-unicode">U+F0016</div>
+        </div>
+        <div class="icon-card" data-name="delete" onclick="copyPath('delete.svg')">
+            <img src="delete.svg" alt="delete">
+            <div class="icon-name">delete</div>
+            <div class="icon-unicode">U+F0017</div>
+        </div>
+        <div class="icon-card" data-name="file" onclick="copyPath('file.svg')">
+            <img src="file.svg" alt="file">
+            <div class="icon-name">file</div>
+            <div class="icon-unicode">U+F0018</div>
+        </div>
+        <div class="icon-card" data-name="sidebar" onclick="copyPath('sidebar.svg')">
+            <img src="sidebar.svg" alt="sidebar">
+            <div class="icon-name">sidebar</div>
+            <div class="icon-unicode">U+F0019</div>
+        </div>
+        <div class="icon-card" data-name="edit" onclick="copyPath('edit.svg')">
+            <img src="edit.svg" alt="edit">
+            <div class="icon-name">edit</div>
+            <div class="icon-unicode">U+F001A</div>
+        </div>
+        <div class="icon-card" data-name="share" onclick="copyPath('share.svg')">
+            <img src="share.svg" alt="share">
+            <div class="icon-name">share</div>
+            <div class="icon-unicode">U+F001B</div>
+        </div>
+        <div class="icon-card" data-name="move_file" onclick="copyPath('move_file.svg')">
+            <img src="move_file.svg" alt="move_file">
+            <div class="icon-name">move_file</div>
+            <div class="icon-unicode">U+F001C</div>
+        </div>
+        <div class="icon-card" data-name="settings" onclick="copyPath('settings.svg')">
+            <img src="settings.svg" alt="settings">
+            <div class="icon-name">settings</div>
+            <div class="icon-unicode">U+F001D</div>
+        </div>
+        <div class="icon-card" data-name="favorites" onclick="copyPath('favorites.svg')">
+            <img src="favorites.svg" alt="favorites">
+            <div class="icon-name">favorites</div>
+            <div class="icon-unicode">U+F001E</div>
+        </div>
+        <div class="icon-card" data-name="report" onclick="copyPath('report.svg')">
+            <img src="report.svg" alt="report">
+            <div class="icon-name">report</div>
+            <div class="icon-unicode">U+F001F</div>
+        </div>
+        <div class="icon-card" data-name="search_device" onclick="copyPath('search_device.svg')">
+            <img src="search_device.svg" alt="search_device">
+            <div class="icon-name">search_device</div>
+            <div class="icon-unicode">U+F0020</div>
+        </div>
+        <div class="icon-card" data-name="close_2" onclick="copyPath('close_2.svg')">
+            <img src="close_2.svg" alt="close_2">
+            <div class="icon-name">close_2</div>
+            <div class="icon-unicode">U+F0021</div>
+        </div>
+        <div class="icon-card" data-name="refresh" onclick="copyPath('refresh.svg')">
+            <img src="refresh.svg" alt="refresh">
+            <div class="icon-name">refresh</div>
+            <div class="icon-unicode">U+F0022</div>
+        </div>
+        <div class="icon-card" data-name="answer" onclick="copyPath('answer.svg')">
+            <img src="answer.svg" alt="answer">
+            <div class="icon-name">answer</div>
+            <div class="icon-unicode">U+F0023</div>
+        </div>
+        <div class="icon-card" data-name="help" onclick="copyPath('help.svg')">
+            <img src="help.svg" alt="help">
+            <div class="icon-name">help</div>
+            <div class="icon-unicode">U+F0024</div>
+        </div>
+        <div class="icon-card" data-name="more_circle" onclick="copyPath('more_circle.svg')">
+            <img src="more_circle.svg" alt="more_circle">
+            <div class="icon-name">more_circle</div>
+            <div class="icon-unicode">U+F0025</div>
+        </div>
+        <div class="icon-card" data-name="info" onclick="copyPath('info.svg')">
+            <img src="info.svg" alt="info">
+            <div class="icon-name">info</div>
+            <div class="icon-unicode">U+F0026</div>
+        </div>
+        <div class="icon-card" data-name="add_circle" onclick="copyPath('add_circle.svg')">
+            <img src="add_circle.svg" alt="add_circle">
+            <div class="icon-name">add_circle</div>
+            <div class="icon-unicode">U+F0027</div>
+        </div>
+        <div class="icon-card" data-name="update" onclick="copyPath('update.svg')">
+            <img src="update.svg" alt="update">
+            <div class="icon-name">update</div>
+            <div class="icon-unicode">U+F0028</div>
+        </div>
+        <div class="icon-card" data-name="cut" onclick="copyPath('cut.svg')">
+            <img src="cut.svg" alt="cut">
+            <div class="icon-name">cut</div>
+            <div class="icon-unicode">U+F0029</div>
+        </div>
+        <div class="icon-card" data-name="rename" onclick="copyPath('rename.svg')">
+            <img src="rename.svg" alt="rename">
+            <div class="icon-name">rename</div>
+            <div class="icon-unicode">U+F002A</div>
+        </div>
+        <div class="icon-card" data-name="pin" onclick="copyPath('pin.svg')">
+            <img src="pin.svg" alt="pin">
+            <div class="icon-name">pin</div>
+            <div class="icon-unicode">U+F002B</div>
+        </div>
+        <div class="icon-card" data-name="unpin" onclick="copyPath('unpin.svg')">
+            <img src="unpin.svg" alt="unpin">
+            <div class="icon-name">unpin</div>
+            <div class="icon-unicode">U+F002C</div>
+        </div>
+        <div class="icon-card" data-name="select_all" onclick="copyPath('select_all.svg')">
+            <img src="select_all.svg" alt="select_all">
+            <div class="icon-name">select_all</div>
+            <div class="icon-unicode">U+F002D</div>
+        </div>
+        <div class="icon-card" data-name="playlist" onclick="copyPath('playlist.svg')">
+            <img src="playlist.svg" alt="playlist">
+            <div class="icon-name">playlist</div>
+            <div class="icon-unicode">U+F002E</div>
+        </div>
+        <div class="icon-card" data-name="alarm" onclick="copyPath('alarm.svg')">
+            <img src="alarm.svg" alt="alarm">
+            <div class="icon-name">alarm</div>
+            <div class="icon-unicode">U+F002F</div>
+        </div>
+        <div class="icon-card" data-name="world_clock" onclick="copyPath('world_clock.svg')">
+            <img src="world_clock.svg" alt="world_clock">
+            <div class="icon-name">world_clock</div>
+            <div class="icon-unicode">U+F0030</div>
+        </div>
+        <div class="icon-card" data-name="recent" onclick="copyPath('recent.svg')">
+            <img src="recent.svg" alt="recent">
+            <div class="icon-name">recent</div>
+            <div class="icon-unicode">U+F0031</div>
+        </div>
+        <div class="icon-card" data-name="stopwatch" onclick="copyPath('stopwatch.svg')">
+            <img src="stopwatch.svg" alt="stopwatch">
+            <div class="icon-name">stopwatch</div>
+            <div class="icon-unicode">U+F0032</div>
+        </div>
+        <div class="icon-card" data-name="timer" onclick="copyPath('timer.svg')">
+            <img src="timer.svg" alt="timer">
+            <div class="icon-name">timer</div>
+            <div class="icon-unicode">U+F0033</div>
+        </div>
+        <div class="icon-card" data-name="folder_fill" onclick="copyPath('folder_fill.svg')">
+            <img src="folder_fill.svg" alt="folder_fill">
+            <div class="icon-name">folder_fill</div>
+            <div class="icon-unicode">U+F0034</div>
+        </div>
+        <div class="icon-card" data-name="cloud_fill" onclick="copyPath('cloud_fill.svg')">
+            <img src="cloud_fill.svg" alt="cloud_fill">
+            <div class="icon-name">cloud_fill</div>
+            <div class="icon-unicode">U+F0035</div>
+        </div>
+        <div class="icon-card" data-name="photos" onclick="copyPath('photos.svg')">
+            <img src="photos.svg" alt="photos">
+            <div class="icon-name">photos</div>
+            <div class="icon-unicode">U+F0036</div>
+        </div>
+        <div class="icon-card" data-name="album" onclick="copyPath('album.svg')">
+            <img src="album.svg" alt="album">
+            <div class="icon-name">album</div>
+            <div class="icon-unicode">U+F0037</div>
+        </div>
+        <div class="icon-card" data-name="notes_fill" onclick="copyPath('notes_fill.svg')">
+            <img src="notes_fill.svg" alt="notes_fill">
+            <div class="icon-name">notes_fill</div>
+            <div class="icon-unicode">U+F0038</div>
+        </div>
+        <div class="icon-card" data-name="tasks" onclick="copyPath('tasks.svg')">
+            <img src="tasks.svg" alt="tasks">
+            <div class="icon-name">tasks</div>
+            <div class="icon-unicode">U+F0039</div>
+        </div>
+        <div class="icon-card" data-name="phone" onclick="copyPath('phone.svg')">
+            <img src="phone.svg" alt="phone">
+            <div class="icon-name">phone</div>
+            <div class="icon-unicode">U+F003A</div>
+        </div>
+        <div class="icon-card" data-name="favorites_fill" onclick="copyPath('favorites_fill.svg')">
+            <img src="favorites_fill.svg" alt="favorites_fill">
+            <div class="icon-name">favorites_fill</div>
+            <div class="icon-unicode">U+F003B</div>
+        </div>
+        <div class="icon-card" data-name="contacts_circle" onclick="copyPath('contacts_circle.svg')">
+            <img src="contacts_circle.svg" alt="contacts_circle">
+            <div class="icon-name">contacts_circle</div>
+            <div class="icon-unicode">U+F003C</div>
+        </div>
+        <div class="icon-card" data-name="carrier" onclick="copyPath('carrier.svg')">
+            <img src="carrier.svg" alt="carrier">
+            <div class="icon-name">carrier</div>
+            <div class="icon-unicode">U+F003D</div>
+        </div>
+        <div class="icon-card" data-name="messages" onclick="copyPath('messages.svg')">
+            <img src="messages.svg" alt="messages">
+            <div class="icon-name">messages</div>
+            <div class="icon-unicode">U+F003E</div>
+        </div>
+        <div class="icon-card" data-name="promotions" onclick="copyPath('promotions.svg')">
+            <img src="promotions.svg" alt="promotions">
+            <div class="icon-name">promotions</div>
+            <div class="icon-unicode">U+F003F</div>
+        </div>
+        <div class="icon-card" data-name="bank_cards" onclick="copyPath('bank_cards.svg')">
+            <img src="bank_cards.svg" alt="bank_cards">
+            <div class="icon-name">bank_cards</div>
+            <div class="icon-unicode">U+F0040</div>
+        </div>
+        <div class="icon-card" data-name="years" onclick="copyPath('years.svg')">
+            <img src="years.svg" alt="years">
+            <div class="icon-name">years</div>
+            <div class="icon-unicode">U+F0041</div>
+        </div>
+        <div class="icon-card" data-name="months" onclick="copyPath('months.svg')">
+            <img src="months.svg" alt="months">
+            <div class="icon-name">months</div>
+            <div class="icon-unicode">U+F0042</div>
+        </div>
+        <div class="icon-card" data-name="weeks" onclick="copyPath('weeks.svg')">
+            <img src="weeks.svg" alt="weeks">
+            <div class="icon-name">weeks</div>
+            <div class="icon-unicode">U+F0043</div>
+        </div>
+        <div class="icon-card" data-name="location" onclick="copyPath('location.svg')">
+            <img src="location.svg" alt="location">
+            <div class="icon-name">location</div>
+            <div class="icon-unicode">U+F0044</div>
+        </div>
+        <div class="icon-card" data-name="all" onclick="copyPath('all.svg')">
+            <img src="all.svg" alt="all">
+            <div class="icon-name">all</div>
+            <div class="icon-unicode">U+F0045</div>
+        </div>
+        <div class="icon-card" data-name="recording" onclick="copyPath('recording.svg')">
+            <img src="recording.svg" alt="recording">
+            <div class="icon-name">recording</div>
+            <div class="icon-unicode">U+F0046</div>
+        </div>
+        <div class="icon-card" data-name="call_recording" onclick="copyPath('call_recording.svg')">
+            <img src="call_recording.svg" alt="call_recording">
+            <div class="icon-name">call_recording</div>
+            <div class="icon-unicode">U+F0047</div>
+        </div>
+        <div class="icon-card" data-name="app_recording" onclick="copyPath('app_recording.svg')">
+            <img src="app_recording.svg" alt="app_recording">
+            <div class="icon-name">app_recording</div>
+            <div class="icon-unicode">U+F0048</div>
+        </div>
+        <div class="icon-card" data-name="th_1" onclick="copyPath('th_1.svg')">
+            <img src="th_1.svg" alt="th_1">
+            <div class="icon-name">th_1</div>
+            <div class="icon-unicode">U+F0049</div>
+        </div>
+        <div class="icon-card" data-name="th_2" onclick="copyPath('th_2.svg')">
+            <img src="th_2.svg" alt="th_2">
+            <div class="icon-name">th_2</div>
+            <div class="icon-unicode">U+F004A</div>
+        </div>
+        <div class="icon-card" data-name="th_3" onclick="copyPath('th_3.svg')">
+            <img src="th_3.svg" alt="th_3">
+            <div class="icon-name">th_3</div>
+            <div class="icon-unicode">U+F004B</div>
+        </div>
+        <div class="icon-card" data-name="th_4" onclick="copyPath('th_4.svg')">
+            <img src="th_4.svg" alt="th_4">
+            <div class="icon-name">th_4</div>
+            <div class="icon-unicode">U+F004C</div>
+        </div>
+        <div class="icon-card" data-name="th_5" onclick="copyPath('th_5.svg')">
+            <img src="th_5.svg" alt="th_5">
+            <div class="icon-name">th_5</div>
+            <div class="icon-unicode">U+F004D</div>
+        </div>
+        <div class="icon-card" data-name="th_6" onclick="copyPath('th_6.svg')">
+            <img src="th_6.svg" alt="th_6">
+            <div class="icon-name">th_6</div>
+            <div class="icon-unicode">U+F004E</div>
+        </div>
+        <div class="icon-card" data-name="th_7" onclick="copyPath('th_7.svg')">
+            <img src="th_7.svg" alt="th_7">
+            <div class="icon-name">th_7</div>
+            <div class="icon-unicode">U+F004F</div>
+        </div>
+        <div class="icon-card" data-name="th_8" onclick="copyPath('th_8.svg')">
+            <img src="th_8.svg" alt="th_8">
+            <div class="icon-name">th_8</div>
+            <div class="icon-unicode">U+F0050</div>
+        </div>
+        <div class="icon-card" data-name="th_9" onclick="copyPath('th_9.svg')">
+            <img src="th_9.svg" alt="th_9">
+            <div class="icon-name">th_9</div>
+            <div class="icon-unicode">U+F0051</div>
+        </div>
+        <div class="icon-card" data-name="th_10" onclick="copyPath('th_10.svg')">
+            <img src="th_10.svg" alt="th_10">
+            <div class="icon-name">th_10</div>
+            <div class="icon-unicode">U+F0052</div>
+        </div>
+        <div class="icon-card" data-name="th_11" onclick="copyPath('th_11.svg')">
+            <img src="th_11.svg" alt="th_11">
+            <div class="icon-name">th_11</div>
+            <div class="icon-unicode">U+F0053</div>
+        </div>
+        <div class="icon-card" data-name="th_12" onclick="copyPath('th_12.svg')">
+            <img src="th_12.svg" alt="th_12">
+            <div class="icon-name">th_12</div>
+            <div class="icon-unicode">U+F0054</div>
+        </div>
+        <div class="icon-card" data-name="th_13" onclick="copyPath('th_13.svg')">
+            <img src="th_13.svg" alt="th_13">
+            <div class="icon-name">th_13</div>
+            <div class="icon-unicode">U+F0055</div>
+        </div>
+        <div class="icon-card" data-name="th_14" onclick="copyPath('th_14.svg')">
+            <img src="th_14.svg" alt="th_14">
+            <div class="icon-name">th_14</div>
+            <div class="icon-unicode">U+F0056</div>
+        </div>
+        <div class="icon-card" data-name="th_15" onclick="copyPath('th_15.svg')">
+            <img src="th_15.svg" alt="th_15">
+            <div class="icon-name">th_15</div>
+            <div class="icon-unicode">U+F0057</div>
+        </div>
+        <div class="icon-card" data-name="th_16" onclick="copyPath('th_16.svg')">
+            <img src="th_16.svg" alt="th_16">
+            <div class="icon-name">th_16</div>
+            <div class="icon-unicode">U+F0058</div>
+        </div>
+        <div class="icon-card" data-name="th_17" onclick="copyPath('th_17.svg')">
+            <img src="th_17.svg" alt="th_17">
+            <div class="icon-name">th_17</div>
+            <div class="icon-unicode">U+F0059</div>
+        </div>
+        <div class="icon-card" data-name="th_18" onclick="copyPath('th_18.svg')">
+            <img src="th_18.svg" alt="th_18">
+            <div class="icon-name">th_18</div>
+            <div class="icon-unicode">U+F005A</div>
+        </div>
+        <div class="icon-card" data-name="th_19" onclick="copyPath('th_19.svg')">
+            <img src="th_19.svg" alt="th_19">
+            <div class="icon-name">th_19</div>
+            <div class="icon-unicode">U+F005B</div>
+        </div>
+        <div class="icon-card" data-name="th_20" onclick="copyPath('th_20.svg')">
+            <img src="th_20.svg" alt="th_20">
+            <div class="icon-name">th_20</div>
+            <div class="icon-unicode">U+F005C</div>
+        </div>
+        <div class="icon-card" data-name="th_21" onclick="copyPath('th_21.svg')">
+            <img src="th_21.svg" alt="th_21">
+            <div class="icon-name">th_21</div>
+            <div class="icon-unicode">U+F005D</div>
+        </div>
+        <div class="icon-card" data-name="th_22" onclick="copyPath('th_22.svg')">
+            <img src="th_22.svg" alt="th_22">
+            <div class="icon-name">th_22</div>
+            <div class="icon-unicode">U+F005E</div>
+        </div>
+        <div class="icon-card" data-name="th_23" onclick="copyPath('th_23.svg')">
+            <img src="th_23.svg" alt="th_23">
+            <div class="icon-name">th_23</div>
+            <div class="icon-unicode">U+F005F</div>
+        </div>
+        <div class="icon-card" data-name="th_24" onclick="copyPath('th_24.svg')">
+            <img src="th_24.svg" alt="th_24">
+            <div class="icon-name">th_24</div>
+            <div class="icon-unicode">U+F0060</div>
+        </div>
+        <div class="icon-card" data-name="th_25" onclick="copyPath('th_25.svg')">
+            <img src="th_25.svg" alt="th_25">
+            <div class="icon-name">th_25</div>
+            <div class="icon-unicode">U+F0061</div>
+        </div>
+        <div class="icon-card" data-name="th_26" onclick="copyPath('th_26.svg')">
+            <img src="th_26.svg" alt="th_26">
+            <div class="icon-name">th_26</div>
+            <div class="icon-unicode">U+F0062</div>
+        </div>
+        <div class="icon-card" data-name="th_27" onclick="copyPath('th_27.svg')">
+            <img src="th_27.svg" alt="th_27">
+            <div class="icon-name">th_27</div>
+            <div class="icon-unicode">U+F0063</div>
+        </div>
+        <div class="icon-card" data-name="th_28" onclick="copyPath('th_28.svg')">
+            <img src="th_28.svg" alt="th_28">
+            <div class="icon-name">th_28</div>
+            <div class="icon-unicode">U+F0064</div>
+        </div>
+        <div class="icon-card" data-name="th_29" onclick="copyPath('th_29.svg')">
+            <img src="th_29.svg" alt="th_29">
+            <div class="icon-name">th_29</div>
+            <div class="icon-unicode">U+F0065</div>
+        </div>
+        <div class="icon-card" data-name="th_30" onclick="copyPath('th_30.svg')">
+            <img src="th_30.svg" alt="th_30">
+            <div class="icon-name">th_30</div>
+            <div class="icon-unicode">U+F0066</div>
+        </div>
+        <div class="icon-card" data-name="th_31" onclick="copyPath('th_31.svg')">
+            <img src="th_31.svg" alt="th_31">
+            <div class="icon-name">th_31</div>
+            <div class="icon-unicode">U+F0067</div>
+        </div>
+        <div class="icon-card" data-name="sort" onclick="copyPath('sort.svg')">
+            <img src="sort.svg" alt="sort">
+            <div class="icon-name">sort</div>
+            <div class="icon-unicode">U+F0068</div>
+        </div>
+        <div class="icon-card" data-name="create" onclick="copyPath('create.svg')">
+            <img src="create.svg" alt="create">
+            <div class="icon-name">create</div>
+            <div class="icon-unicode">U+F0069</div>
+        </div>
+        <div class="icon-card" data-name="volume_up" onclick="copyPath('volume_up.svg')">
+            <img src="volume_up.svg" alt="volume_up">
+            <div class="icon-name">volume_up</div>
+            <div class="icon-unicode">U+F006A</div>
+        </div>
+        <div class="icon-card" data-name="volume_off" onclick="copyPath('volume_off.svg')">
+            <img src="volume_off.svg" alt="volume_off">
+            <div class="icon-name">volume_off</div>
+            <div class="icon-unicode">U+F006B</div>
+        </div>
+        <div class="icon-card" data-name="trim" onclick="copyPath('trim.svg')">
+            <img src="trim.svg" alt="trim">
+            <div class="icon-name">trim</div>
+            <div class="icon-unicode">U+F006C</div>
+        </div>
+        <div class="icon-card" data-name="filter" onclick="copyPath('filter.svg')">
+            <img src="filter.svg" alt="filter">
+            <div class="icon-name">filter</div>
+            <div class="icon-unicode">U+F006D</div>
+        </div>
+        <div class="icon-card" data-name="import" onclick="copyPath('import.svg')">
+            <img src="import.svg" alt="import">
+            <div class="icon-name">import</div>
+            <div class="icon-unicode">U+F006E</div>
+        </div>
+        <div class="icon-card" data-name="folder" onclick="copyPath('folder.svg')">
+            <img src="folder.svg" alt="folder">
+            <div class="icon-name">folder</div>
+            <div class="icon-unicode">U+F006F</div>
+        </div>
+        <div class="icon-card" data-name="add_folder" onclick="copyPath('add_folder.svg')">
+            <img src="add_folder.svg" alt="add_folder">
+            <div class="icon-name">add_folder</div>
+            <div class="icon-unicode">U+F0070</div>
+        </div>
+        <div class="icon-card" data-name="remove" onclick="copyPath('remove.svg')">
+            <img src="remove.svg" alt="remove">
+            <div class="icon-name">remove</div>
+            <div class="icon-unicode">U+F0071</div>
+        </div>
+        <div class="icon-card" data-name="rotate_left" onclick="copyPath('rotate_left.svg')">
+            <img src="rotate_left.svg" alt="rotate_left">
+            <div class="icon-name">rotate_left</div>
+            <div class="icon-unicode">U+F0072</div>
+        </div>
+        <div class="icon-card" data-name="merge" onclick="copyPath('merge.svg')">
+            <img src="merge.svg" alt="merge">
+            <div class="icon-name">merge</div>
+            <div class="icon-unicode">U+F0073</div>
+        </div>
+        <div class="icon-card" data-name="recording_tape" onclick="copyPath('recording_tape.svg')">
+            <img src="recording_tape.svg" alt="recording_tape">
+            <div class="icon-name">recording_tape</div>
+            <div class="icon-unicode">U+F0074</div>
+        </div>
+        <div class="icon-card" data-name="notes" onclick="copyPath('notes.svg')">
+            <img src="notes.svg" alt="notes">
+            <div class="icon-name">notes</div>
+            <div class="icon-unicode">U+F0075</div>
+        </div>
+        <div class="icon-card" data-name="music" onclick="copyPath('music.svg')">
+            <img src="music.svg" alt="music">
+            <div class="icon-name">music</div>
+            <div class="icon-unicode">U+F0076</div>
+        </div>
+        <div class="icon-card" data-name="remove_contact" onclick="copyPath('remove_contact.svg')">
+            <img src="remove_contact.svg" alt="remove_contact">
+            <div class="icon-name">remove_contact</div>
+            <div class="icon-unicode">U+F0077</div>
+        </div>
+        <div class="icon-card" data-name="blocklist" onclick="copyPath('blocklist.svg')">
+            <img src="blocklist.svg" alt="blocklist">
+            <div class="icon-name">blocklist</div>
+            <div class="icon-unicode">U+F0078</div>
+        </div>
+        <div class="icon-card" data-name="contacts" onclick="copyPath('contacts.svg')">
+            <img src="contacts.svg" alt="contacts">
+            <div class="icon-name">contacts</div>
+            <div class="icon-unicode">U+F0079</div>
+        </div>
+        <div class="icon-card" data-name="contacts_book" onclick="copyPath('contacts_book.svg')">
+            <img src="contacts_book.svg" alt="contacts_book">
+            <div class="icon-name">contacts_book</div>
+            <div class="icon-unicode">U+F007A</div>
+        </div>
+        <div class="icon-card" data-name="theme" onclick="copyPath('theme.svg')">
+            <img src="theme.svg" alt="theme">
+            <div class="icon-name">theme</div>
+            <div class="icon-unicode">U+F007B</div>
+        </div>
+        <div class="icon-card" data-name="convert_file" onclick="copyPath('convert_file.svg')">
+            <img src="convert_file.svg" alt="convert_file">
+            <div class="icon-name">convert_file</div>
+            <div class="icon-unicode">U+F007C</div>
+        </div>
+        <div class="icon-card" data-name="image" onclick="copyPath('image.svg')">
+            <img src="image.svg" alt="image">
+            <div class="icon-name">image</div>
+            <div class="icon-unicode">U+F007D</div>
+        </div>
+        <div class="icon-card" data-name="tune" onclick="copyPath('tune.svg')">
+            <img src="tune.svg" alt="tune">
+            <div class="icon-name">tune</div>
+            <div class="icon-unicode">U+F007E</div>
+        </div>
+        <div class="icon-card" data-name="add" onclick="copyPath('add.svg')">
+            <img src="add.svg" alt="add">
+            <div class="icon-name">add</div>
+            <div class="icon-unicode">U+F007F</div>
+        </div>
+        <div class="icon-card" data-name="mic" onclick="copyPath('mic.svg')">
+            <img src="mic.svg" alt="mic">
+            <div class="icon-name">mic</div>
+            <div class="icon-unicode">U+F0080</div>
+        </div>
+        <div class="icon-card" data-name="mic_slash" onclick="copyPath('mic_slash.svg')">
+            <img src="mic_slash.svg" alt="mic_slash">
+            <div class="icon-name">mic_slash</div>
+            <div class="icon-unicode">U+F0081</div>
+        </div>
+        <div class="icon-card" data-name="reply" onclick="copyPath('reply.svg')">
+            <img src="reply.svg" alt="reply">
+            <div class="icon-name">reply</div>
+            <div class="icon-unicode">U+F0082</div>
+        </div>
+        <div class="icon-card" data-name="reply_all" onclick="copyPath('reply_all.svg')">
+            <img src="reply_all.svg" alt="reply_all">
+            <div class="icon-name">reply_all</div>
+            <div class="icon-unicode">U+F0083</div>
+        </div>
+        <div class="icon-card" data-name="backup" onclick="copyPath('backup.svg')">
+            <img src="backup.svg" alt="backup">
+            <div class="icon-name">backup</div>
+            <div class="icon-unicode">U+F0084</div>
+        </div>
+        <div class="icon-card" data-name="expand_more" onclick="copyPath('expand_more.svg')">
+            <img src="expand_more.svg" alt="expand_more">
+            <div class="icon-name">expand_more</div>
+            <div class="icon-unicode">U+F0085</div>
+        </div>
+        <div class="icon-card" data-name="expand_less" onclick="copyPath('expand_less.svg')">
+            <img src="expand_less.svg" alt="expand_less">
+            <div class="icon-name">expand_less</div>
+            <div class="icon-unicode">U+F0086</div>
+        </div>
+        <div class="icon-card" data-name="mind_map" onclick="copyPath('mind_map.svg')">
+            <img src="mind_map.svg" alt="mind_map">
+            <div class="icon-name">mind_map</div>
+            <div class="icon-unicode">U+F0087</div>
+        </div>
+        <div class="icon-card" data-name="layers" onclick="copyPath('layers.svg')">
+            <img src="layers.svg" alt="layers">
+            <div class="icon-name">layers</div>
+            <div class="icon-unicode">U+F0088</div>
+        </div>
+        <div class="icon-card" data-name="background" onclick="copyPath('background.svg')">
+            <img src="background.svg" alt="background">
+            <div class="icon-name">background</div>
+            <div class="icon-unicode">U+F0089</div>
+        </div>
+        <div class="icon-card" data-name="map_album" onclick="copyPath('map_album.svg')">
+            <img src="map_album.svg" alt="map_album">
+            <div class="icon-name">map_album</div>
+            <div class="icon-unicode">U+F008A</div>
+        </div>
+        <div class="icon-card" data-name="horizontal_split" onclick="copyPath('horizontal_split.svg')">
+            <img src="horizontal_split.svg" alt="horizontal_split">
+            <div class="icon-name">horizontal_split</div>
+            <div class="icon-unicode">U+F008B</div>
+        </div>
+        <div class="icon-card" data-name="vertical_split" onclick="copyPath('vertical_split.svg')">
+            <img src="vertical_split.svg" alt="vertical_split">
+            <div class="icon-name">vertical_split</div>
+            <div class="icon-unicode">U+F008C</div>
+        </div>
+        <div class="icon-card" data-name="chevron_backward" onclick="copyPath('chevron_backward.svg')">
+            <img src="chevron_backward.svg" alt="chevron_backward">
+            <div class="icon-name">chevron_backward</div>
+            <div class="icon-unicode">U+F008D</div>
+        </div>
+        <div class="icon-card" data-name="chevron_forward" onclick="copyPath('chevron_forward.svg')">
+            <img src="chevron_forward.svg" alt="chevron_forward">
+            <div class="icon-name">chevron_forward</div>
+            <div class="icon-unicode">U+F008E</div>
+        </div>
+        <div class="icon-card" data-name="zoom_out" onclick="copyPath('zoom_out.svg')">
+            <img src="zoom_out.svg" alt="zoom_out">
+            <div class="icon-name">zoom_out</div>
+            <div class="icon-unicode">U+F008F</div>
+        </div>
+        <div class="icon-card" data-name="email" onclick="copyPath('email.svg')">
+            <img src="email.svg" alt="email">
+            <div class="icon-name">email</div>
+            <div class="icon-unicode">U+F0090</div>
+        </div>
+        <div class="icon-card" data-name="send" onclick="copyPath('send.svg')">
+            <img src="send.svg" alt="send">
+            <div class="icon-name">send</div>
+            <div class="icon-unicode">U+F0091</div>
+        </div>
+        <div class="icon-card" data-name="forward" onclick="copyPath('forward.svg')">
+            <img src="forward.svg" alt="forward">
+            <div class="icon-name">forward</div>
+            <div class="icon-unicode">U+F0092</div>
+        </div>
+        <div class="icon-card" data-name="file_downloads" onclick="copyPath('file_downloads.svg')">
+            <img src="file_downloads.svg" alt="file_downloads">
+            <div class="icon-name">file_downloads</div>
+            <div class="icon-unicode">U+F0093</div>
+        </div>
+        <div class="icon-card" data-name="top_downloads" onclick="copyPath('top_downloads.svg')">
+            <img src="top_downloads.svg" alt="top_downloads">
+            <div class="icon-name">top_downloads</div>
+            <div class="icon-unicode">U+F0094</div>
+        </div>
+        <div class="icon-card" data-name="clear" onclick="copyPath('clear.svg')">
+            <img src="clear.svg" alt="clear">
+            <div class="icon-name">clear</div>
+            <div class="icon-unicode">U+F0095</div>
+        </div>
+        <div class="icon-card" data-name="upload_cloud" onclick="copyPath('upload_cloud.svg')">
+            <img src="upload_cloud.svg" alt="upload_cloud">
+            <div class="icon-name">upload_cloud</div>
+            <div class="icon-unicode">U+F0096</div>
+        </div>
+        <div class="icon-card" data-name="list_view" onclick="copyPath('list_view.svg')">
+            <img src="list_view.svg" alt="list_view">
+            <div class="icon-name">list_view</div>
+            <div class="icon-unicode">U+F0097</div>
+        </div>
+        <div class="icon-card" data-name="grid_view" onclick="copyPath('grid_view.svg')">
+            <img src="grid_view.svg" alt="grid_view">
+            <div class="icon-name">grid_view</div>
+            <div class="icon-unicode">U+F0098</div>
+        </div>
+        <div class="icon-card" data-name="screen_capture" onclick="copyPath('screen_capture.svg')">
+            <img src="screen_capture.svg" alt="screen_capture">
+            <div class="icon-name">screen_capture</div>
+            <div class="icon-unicode">U+F0099</div>
+        </div>
+        <div class="icon-card" data-name="screen_mirroring" onclick="copyPath('screen_mirroring.svg')">
+            <img src="screen_mirroring.svg" alt="screen_mirroring">
+            <div class="icon-name">screen_mirroring</div>
+            <div class="icon-unicode">U+F009A</div>
+        </div>
+        <div class="icon-card" data-name="read" onclick="copyPath('read.svg')">
+            <img src="read.svg" alt="read">
+            <div class="icon-name">read</div>
+            <div class="icon-unicode">U+F009C</div>
+        </div>
+        <div class="icon-card" data-name="mark_all_as_read" onclick="copyPath('mark_all_as_read.svg')">
+            <img src="mark_all_as_read.svg" alt="mark_all_as_read">
+            <div class="icon-name">mark_all_as_read</div>
+            <div class="icon-unicode">U+F009D</div>
+        </div>
+        <div class="icon-card" data-name="mark_as_read" onclick="copyPath('mark_as_read.svg')">
+            <img src="mark_as_read.svg" alt="mark_as_read">
+            <div class="icon-name">mark_as_read</div>
+            <div class="icon-unicode">U+F009E</div>
+        </div>
+        <div class="icon-card" data-name="save" onclick="copyPath('save.svg')">
+            <img src="save.svg" alt="save">
+            <div class="icon-name">save</div>
+            <div class="icon-unicode">U+F009F</div>
+        </div>
+        <div class="icon-card" data-name="starred" onclick="copyPath('starred.svg')">
+            <img src="starred.svg" alt="starred">
+            <div class="icon-name">starred</div>
+            <div class="icon-unicode">U+F00A0</div>
+        </div>
+        <div class="icon-card" data-name="insufficient_cloud_storage_space" onclick="copyPath('insufficient_cloud_storage_space.svg')">
+            <img src="insufficient_cloud_storage_space.svg" alt="insufficient_cloud_storage_space">
+            <div class="icon-name">insufficient_cloud_storage_space</div>
+            <div class="icon-unicode">U+F00A1</div>
+        </div>
+        <div class="icon-card" data-name="unstar" onclick="copyPath('unstar.svg')">
+            <img src="unstar.svg" alt="unstar">
+            <div class="icon-name">unstar</div>
+            <div class="icon-unicode">U+F00A2</div>
+        </div>
+        <div class="icon-card" data-name="mark_ras_unread" onclick="copyPath('mark_ras_unread.svg')">
+            <img src="mark_ras_unread.svg" alt="mark_ras_unread">
+            <div class="icon-name">mark_ras_unread</div>
+            <div class="icon-unicode">U+F00A3</div>
+        </div>
+    </div>
+    <div class="toast" id="toast">已复制!</div>
+    <script>
+        function filterIcons(query) {
+            const cards = document.querySelectorAll('.icon-card');
+            query = query.toLowerCase();
+            cards.forEach(card => {
+                const name = card.dataset.name.toLowerCase();
+                card.classList.toggle('hidden', !name.includes(query));
+            });
+        }
+        function copyPath(filename) {
+            navigator.clipboard.writeText(filename);
+            const toast = document.getElementById('toast');
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 1500);
+        }
+    </script>
+</body>
+</html>

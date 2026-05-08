@@ -1,0 +1,22 @@
+[
+  {
+    "trainHeader": "T",
+    "seatTypes": "12346",
+    "displayFlag": "Y"
+  },
+  {
+    "trainHeader": "K",
+    "seatTypes": "12346",
+    "displayFlag": "Y"
+  },
+  {
+    "trainHeader": "Z",
+    "seatTypes": "12346",
+    "displayFlag": "Y"
+  },
+  {
+    "trainHeader": "D",
+    "seatTypes": "469MOPQS",
+    "displayFlag": "Y"
+  }
+]

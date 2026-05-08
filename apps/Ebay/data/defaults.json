@@ -1,0 +1,54 @@
+{
+  "user": {
+    "name": "User",
+    "isLoggedIn": false
+  },
+  "recentSearches": [
+    {
+      "id": "1",
+      "query": "电风扇"
+    }
+  ],
+  "savedItems": [],
+  "cartItems": [],
+  "homeProducts": [
+    {
+      "id": "1",
+      "image": "./images/unsplash/photo-1511707171634-5f897ff02aa9.jpg",
+      "title": "Smartphone"
+    },
+    {
+      "id": "2",
+      "image": "./images/unsplash/photo-1584917865442-de89df76afd3.jpg",
+      "title": "Red Handbag"
+    },
+    {
+      "id": "3",
+      "image": "./images/unsplash/photo-1585771724684-38269d6639fd.jpg",
+      "title": "Dyson Fan"
+    }
+  ],
+  "messages": [],
+  "settings": {
+    "themeId": "system"
+  },
+  "search": {
+    "current": {
+      "query": "",
+      "sortOption": "bestMatch",
+      "buyingFormat": "all",
+      "categoryId": null,
+      "brand": null,
+      "location": null,
+      "freeShippingOnly": false,
+      "conditions": [],
+      "priceMin": "",
+      "priceMax": "",
+      "resultsCount": 0,
+      "firstTitle": null,
+      "firstTotalCents": null
+    },
+    "history": [],
+    "lastCompare": null
+  }
+}

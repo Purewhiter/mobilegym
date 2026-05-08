@@ -1,0 +1,17 @@
+项目交接说明
+
+日期：2026-04-25
+负责人：周明
+
+当前版本：
+1. final_contract.pdf 是正式合同，不要删除。
+2. launch_plan_0.docx 是最新上线计划，不要删除。
+3. vendor_list_0.xlsx 是当前供应商清单，不要删除。
+
+历史文件：
+budget_draft_1.txt 是旧预算草稿，可以清理。
+vendor_quote_1.pdf 是旧报价，可以清理。
+design_backup_1.bak 是设计备份，可以清理。
+
+备注：
+这个文件用于测试文件管理器的 .txt 文本预览功能。

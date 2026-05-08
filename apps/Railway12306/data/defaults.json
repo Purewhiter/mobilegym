@@ -1,0 +1,389 @@
+{
+  "user": {
+    "name": "赵宇轩",
+    "phone": "13812348520",
+    "phoneVerified": true,
+    "realNameVerified": true,
+    "memberLevel": "二星会员",
+    "points": 12680,
+    "diningPoints": 0,
+    "pointsExpireDate": "2026年6月30日",
+    "upgradeNeeded": 37320,
+    "avatar": ""
+  },
+  "passengers": [
+    {
+      "id": "p1",
+      "name": "赵宇轩",
+      "idType": "身份证",
+      "idNo": "310101199501017821",
+      "isDefault": true,
+      "ticketType": "学生"
+    },
+    {
+      "id": "p2",
+      "name": "王思雨",
+      "idType": "身份证",
+      "idNo": "320106199803154456",
+      "isDefault": false,
+      "ticketType": "成人"
+    },
+    {
+      "id": "p3",
+      "name": "蒋明辉",
+      "idType": "身份证",
+      "idNo": "412801199207127210",
+      "isDefault": false,
+      "ticketType": "学生"
+    },
+    {
+      "id": "p4",
+      "name": "李博文",
+      "idType": "身份证",
+      "idNo": "110901198605124610",
+      "isDefault": false,
+      "ticketType": "成人"
+    },
+    {
+      "id": "p5",
+      "name": "刘嘉怡",
+      "idType": "身份证",
+      "idNo": "430102199409085170",
+      "isDefault": false,
+      "ticketType": "成人"
+    },
+    {
+      "id": "p6",
+      "name": "吴明德",
+      "idType": "身份证",
+      "idNo": "413804198711074100",
+      "isDefault": false,
+      "ticketType": "成人"
+    },
+    {
+      "id": "p7",
+      "name": "吴晓峰",
+      "idType": "身份证",
+      "idNo": "413800199302154100",
+      "isDefault": false,
+      "ticketType": "成人"
+    },
+    {
+      "id": "p8",
+      "name": "张瑞雪",
+      "idType": "身份证",
+      "idNo": "500104199806130300",
+      "isDefault": false,
+      "ticketType": "学生"
+    },
+    {
+      "id": "p9",
+      "name": "周子涵",
+      "idType": "身份证",
+      "idNo": "410502199105019260",
+      "isDefault": false,
+      "ticketType": "成人"
+    }
+  ],
+  "from": "上海",
+  "to": "南京",
+  "searchHistory": [
+    "杭州--上海",
+    "苏州--南京"
+  ],
+  "invoiceHeaders": [],
+  "stationBoardDepartures": [
+    {
+      "trainNo": "T872",
+      "destination": "成都西",
+      "time": "15:54",
+      "gate": "一候车厅/一候检票口",
+      "status": "正在候车"
+    },
+    {
+      "trainNo": "K1234",
+      "destination": "深圳东",
+      "time": "21:39",
+      "gate": "一候车厅/一候检票口",
+      "status": "正在候车"
+    },
+    {
+      "trainNo": "K9314",
+      "destination": "南宁",
+      "time": "08:00",
+      "gate": "二候车厅/二候检票口",
+      "status": "停止检票"
+    },
+    {
+      "trainNo": "K1804",
+      "destination": "武昌",
+      "time": "08:25",
+      "gate": "一候车厅/一候检票口",
+      "status": "停止检票"
+    },
+    {
+      "trainNo": "5538",
+      "destination": "南丹",
+      "time": "08:55",
+      "gate": "一候车厅/一候检票口",
+      "status": "停止检票"
+    },
+    {
+      "trainNo": "K158",
+      "destination": "北京西",
+      "time": "09:54",
+      "gate": "一候车厅/一候检票口",
+      "status": "停止检票"
+    },
+    {
+      "trainNo": "K4252",
+      "destination": "南京",
+      "time": "12:10",
+      "gate": "二候车厅/二候检票口",
+      "status": "停止检票"
+    },
+    {
+      "trainNo": "K654",
+      "destination": "南部",
+      "time": "13:03",
+      "gate": "一候车厅/一候检票口",
+      "status": "停止检票"
+    }
+  ],
+  "stationBoardArrivals": [
+    {
+      "trainNo": "K653",
+      "origin": "南部",
+      "time": "18:02",
+      "gate": "出站口",
+      "status": "正点"
+    },
+    {
+      "trainNo": "5537",
+      "origin": "南丹",
+      "time": "18:45",
+      "gate": "出站口",
+      "status": "正点"
+    },
+    {
+      "trainNo": "K157",
+      "origin": "北京西",
+      "time": "20:10",
+      "gate": "出站口",
+      "status": "正点"
+    },
+    {
+      "trainNo": "K9313",
+      "origin": "南宁",
+      "time": "22:33",
+      "gate": "出站口",
+      "status": "正点"
+    },
+    {
+      "trainNo": "T8725",
+      "origin": "金城江",
+      "time": "22:47",
+      "gate": "出站口",
+      "status": "正点"
+    },
+    {
+      "trainNo": "K4251",
+      "origin": "南京",
+      "time": "05:31",
+      "gate": "出站口",
+      "status": "早点"
+    },
+    {
+      "trainNo": "K1233",
+      "origin": "深圳东",
+      "time": "06:03",
+      "gate": "出站口",
+      "status": "晚点"
+    },
+    {
+      "trainNo": "K1803",
+      "origin": "武昌",
+      "time": "06:45",
+      "gate": "出站口",
+      "status": "早点"
+    },
+    {
+      "trainNo": "T871",
+      "origin": "成都西",
+      "time": "11:53",
+      "gate": "出站口",
+      "status": "正点"
+    }
+  ],
+  "notifications": [
+    {
+      "id": "n0",
+      "type": "trip",
+      "date": "2026-02-14",
+      "time": "09:00",
+      "title": "铁路行程提醒",
+      "fromStation": "上海虹桥",
+      "toStation": "南京南",
+      "trainNo": "G7002",
+      "weather": {
+        "from": "2°C~8°C 晴",
+        "to": "0°C~7°C 多云"
+      },
+      "departTime": "02月14日 08:30",
+      "departTimestamp": "2026-02-14T08:30:00",
+      "gate": "二层候车室B06检票口",
+      "note": "出行乘客较多，请您务必预留足够的安检、候车检票时间，尽量提前到站，以免耽误您的行程。"
+    },
+    {
+      "id": "n1",
+      "type": "trip",
+      "date": "2026-02-09",
+      "time": "18:53",
+      "title": "铁路行程提醒",
+      "fromStation": "杭州东",
+      "toStation": "上海虹桥",
+      "trainNo": "G7536",
+      "weather": {
+        "from": "4°C~10°C 阴",
+        "to": "2°C~8°C 晴"
+      },
+      "departTime": "02月09日 19:15",
+      "departTimestamp": "2026-02-09T19:15:00",
+      "gate": "一层候车室A03检票口",
+      "note": "出行乘客较多，请您务必预留足够的安检、候车检票时间，尽量提前到站，以免耽误您的行程。"
+    },
+    {
+      "id": "n2",
+      "type": "trip",
+      "date": "2026-02-08",
+      "time": "10:50",
+      "title": "购票成功通知",
+      "fromStation": "苏州站",
+      "toStation": "南京站",
+      "trainNo": "G7104",
+      "orderId": "EK88173520",
+      "departTime": "2026年02月08日 14:22",
+      "departTimestamp": "2026-02-08T14:22:00"
+    }
+  ],
+  "account": {
+    "personalInfo": {
+      "name": "赵宇轩",
+      "username": "xuan123456",
+      "status": "已通过"
+    },
+    "studentQualification": {
+      "desc": "购票优惠，学生专享"
+    },
+    "phone": {
+      "number": "13812348520",
+      "status": "已核验"
+    },
+    "email": {
+      "address": "zhaoyuxuan@example.com",
+      "status": "未通过核验"
+    }
+  },
+  "studentVerify": {
+    "year": "2026学年",
+    "remaining": 2,
+    "from": "上海",
+    "to": "成都"
+  },
+  "orders": [
+    {
+      "id": "EK61728394",
+      "trainNo": "G7536",
+      "fromStation": "杭州东",
+      "toStation": "上海虹桥",
+      "departTime": "19:15",
+      "arriveTime": "20:12",
+      "date": "2026-02-09",
+      "tickets": [
+        { "passengerName": "赵宇轩", "ticketType": "学生票", "seatType": "二等座", "seatNo": "06车 15A号", "price": 58 }
+      ],
+      "status": "completed",
+      "createTime": "2026-02-08T10:30:00"
+    },
+    {
+      "id": "EK88173520",
+      "trainNo": "G7104",
+      "fromStation": "苏州",
+      "toStation": "南京",
+      "departTime": "14:22",
+      "arriveTime": "15:40",
+      "date": "2026-02-08",
+      "tickets": [
+        { "passengerName": "赵宇轩", "ticketType": "成人票", "seatType": "二等座", "seatNo": "08车 07D号", "price": 104.5 }
+      ],
+      "status": "completed",
+      "createTime": "2026-02-07T09:15:00"
+    },
+    {
+      "id": "EK45092836",
+      "trainNo": "D3056",
+      "fromStation": "合肥南",
+      "toStation": "上海虹桥",
+      "departTime": "09:30",
+      "arriveTime": "12:45",
+      "date": "2026-02-08",
+      "tickets": [
+        { "passengerName": "赵宇轩", "ticketType": "学生票", "seatType": "二等座", "seatNo": "03车 10F号", "price": 168 }
+      ],
+      "status": "completed",
+      "createTime": "2026-02-06T14:20:00"
+    }
+  ],
+  "settings": {
+    "fingerprint": false,
+    "notificationEnabled": true,
+    "notificationSound": true,
+    "notificationVibrate": true,
+    "fontSize": "medium",
+    "highContrast": false,
+    "version": "standard",
+    "paymentPassword": false,
+    "recentRecommend": true,
+    "adRecommend": false
+  },
+  "auth": {
+    "accounts": [
+      {
+        "username": "xuan123456",
+        "password": "Zhao@2026",
+        "name": "赵宇轩",
+        "idNo": "310101199501017821",
+        "phone": "13812348520",
+        "email": "zhaoyuxuan@example.com"
+      },
+      {
+        "username": "user_456",
+        "password": "Pass@1234",
+        "name": "李四",
+        "idNo": "110101199201011234",
+        "phone": "13900000000",
+        "email": "user_456@example.com"
+      },
+      {
+        "username": "user_789",
+        "password": "Abc@5678",
+        "name": "王五",
+        "idNo": "110101199301011234",
+        "phone": "13700000000",
+        "email": "user_789@example.com"
+      }
+    ],
+    "loginAttempts": [],
+    "resetVerification": null,
+    "resetVerificationAttempts": [],
+    "session": {
+      "isLoggedIn": true,
+      "loginUser": {
+        "username": "xuan123456",
+        "password": "Zhao@2026",
+        "phone": "13812348520",
+        "email": "zhaoyuxuan@example.com"
+      }
+    }
+  }
+}

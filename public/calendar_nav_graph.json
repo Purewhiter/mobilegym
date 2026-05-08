@@ -1,0 +1,666 @@
+{
+  "app": "calendar",
+  "appDir": "apps/Calendar",
+  "mode": "schema",
+  "dataFile": null,
+  "reachability": null,
+  "routeCount": 10,
+  "transitionCount": 10,
+  "nodes": [
+    {
+      "id": "/",
+      "routePath": "/",
+      "uiStateId": "calendar.home.base",
+      "component": "CalendarHomePage",
+      "entryPoint": true,
+      "entry": {
+        "kind": "home",
+        "home": true,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "页面主内容区"
+        }
+      ],
+      "description": "日历首页",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/settings",
+      "routePath": "/settings",
+      "uiStateId": "calendar.settings.base",
+      "component": "CalendarSettingsPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "页面主内容区"
+        }
+      ],
+      "description": "日历设置页",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/new-event",
+      "routePath": "/new-event",
+      "uiStateId": "calendar.newEvent.base",
+      "component": "CalendarNewEventPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "页面主内容区"
+        }
+      ],
+      "description": "新建日程页",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/event/:eventId",
+      "routePath": "/event/:eventId",
+      "uiStateId": "calendar.eventDetail.base",
+      "component": "CalendarEventDetailPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "deepLink",
+        "home": false,
+        "deepLink": true
+      },
+      "params": {
+        "eventId": "string"
+      },
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "页面主内容区"
+        }
+      ],
+      "description": "日程详情页",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/event/:eventId/edit",
+      "routePath": "/event/:eventId/edit",
+      "uiStateId": "calendar.eventEdit.base",
+      "component": "CalendarNewEventPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "deepLink",
+        "home": false,
+        "deepLink": true
+      },
+      "params": {
+        "eventId": "string"
+      },
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "页面主内容区"
+        }
+      ],
+      "description": "编辑日程页",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/search",
+      "routePath": "/search",
+      "uiStateId": "calendar.search.base",
+      "component": "CalendarSearchPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "页面主内容区"
+        }
+      ],
+      "description": "搜索页",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/date-jump",
+      "routePath": "/date-jump",
+      "uiStateId": "calendar.dateJump.base",
+      "component": "CalendarDateJumpPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "页面主内容区"
+        }
+      ],
+      "description": "日期跳转页",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/date-calculate",
+      "routePath": "/date-calculate",
+      "uiStateId": "calendar.dateCalculate.base",
+      "component": "CalendarDateCalculatePage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "页面主内容区"
+        }
+      ],
+      "description": "日期计算页",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/subscription",
+      "routePath": "/subscription",
+      "uiStateId": "calendar.subscription.base",
+      "component": "CalendarSubscriptionPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "页面主内容区"
+        }
+      ],
+      "description": "订阅管理页",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/desk-theme",
+      "routePath": "/desk-theme",
+      "uiStateId": "calendar.deskTheme.base",
+      "component": "CalendarDeskThemePage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "页面主内容区"
+        }
+      ],
+      "description": "桌面组件主题页",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    }
+  ],
+  "edges": [
+    {
+      "source": "/",
+      "sourceNodeId": "/",
+      "target": "/settings",
+      "targetNodeId": "/settings",
+      "id": "settings.open",
+      "label": "打开日历设置页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "settings",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/",
+      "sourceNodeId": "/",
+      "target": "/new-event",
+      "targetNodeId": "/new-event",
+      "id": "new-event.open",
+      "label": "打开新建日程页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "add",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/",
+      "sourceNodeId": "/",
+      "target": "/event/:eventId",
+      "targetNodeId": "/event/:eventId",
+      "id": "event.open",
+      "label": "打开日程详情页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {
+        "eventId": "string"
+      },
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "event",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search",
+      "sourceNodeId": "/search",
+      "target": "/event/:eventId",
+      "targetNodeId": "/event/:eventId",
+      "id": "event.open",
+      "label": "打开日程详情页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {
+        "eventId": "string"
+      },
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "event",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/new-event",
+      "sourceNodeId": "/new-event",
+      "target": "/event/:eventId",
+      "targetNodeId": "/event/:eventId",
+      "id": "event.open",
+      "label": "打开日程详情页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {
+        "eventId": "string"
+      },
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "event",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/event/:eventId/edit",
+      "sourceNodeId": "/event/:eventId/edit",
+      "target": "/event/:eventId",
+      "targetNodeId": "/event/:eventId",
+      "id": "event.open",
+      "label": "打开日程详情页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {
+        "eventId": "string"
+      },
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "event",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/event/:eventId",
+      "sourceNodeId": "/event/:eventId",
+      "target": "/event/:eventId/edit",
+      "targetNodeId": "/event/:eventId/edit",
+      "id": "event.edit",
+      "label": "打开编辑日程页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {
+        "eventId": "string"
+      },
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "edit",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/",
+      "sourceNodeId": "/",
+      "target": "/search",
+      "targetNodeId": "/search",
+      "id": "search.open",
+      "label": "打开搜索页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "search",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/",
+      "sourceNodeId": "/",
+      "target": "/date-jump",
+      "targetNodeId": "/date-jump",
+      "id": "date-jump.open",
+      "label": "打开日期跳转页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "calendar",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/",
+      "sourceNodeId": "/",
+      "target": "/date-calculate",
+      "targetNodeId": "/date-calculate",
+      "id": "date-calculate.open",
+      "label": "打开日期计算页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "calculate",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/",
+      "sourceNodeId": "/",
+      "target": "/subscription",
+      "targetNodeId": "/subscription",
+      "id": "subscription.open",
+      "label": "打开订阅管理页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "subscription",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/",
+      "sourceNodeId": "/",
+      "target": "/desk-theme",
+      "targetNodeId": "/desk-theme",
+      "id": "desk-theme.open",
+      "label": "打开桌面主题页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "theme",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/settings",
+      "sourceNodeId": "/settings",
+      "target": "/",
+      "targetNodeId": "/",
+      "id": "home.open",
+      "label": "返回日历首页",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "none",
+        "icon": "home",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/new-event",
+      "sourceNodeId": "/new-event",
+      "target": "/",
+      "targetNodeId": "/",
+      "id": "home.open",
+      "label": "返回日历首页",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "none",
+        "icon": "home",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/event/:eventId",
+      "sourceNodeId": "/event/:eventId",
+      "target": "/",
+      "targetNodeId": "/",
+      "id": "home.open",
+      "label": "返回日历首页",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "none",
+        "icon": "home",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/event/:eventId/edit",
+      "sourceNodeId": "/event/:eventId/edit",
+      "target": "/",
+      "targetNodeId": "/",
+      "id": "home.open",
+      "label": "返回日历首页",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "none",
+        "icon": "home",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search",
+      "sourceNodeId": "/search",
+      "target": "/",
+      "targetNodeId": "/",
+      "id": "home.open",
+      "label": "返回日历首页",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "none",
+        "icon": "home",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/date-jump",
+      "sourceNodeId": "/date-jump",
+      "target": "/",
+      "targetNodeId": "/",
+      "id": "home.open",
+      "label": "返回日历首页",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "none",
+        "icon": "home",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/date-calculate",
+      "sourceNodeId": "/date-calculate",
+      "target": "/",
+      "targetNodeId": "/",
+      "id": "home.open",
+      "label": "返回日历首页",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "none",
+        "icon": "home",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/subscription",
+      "sourceNodeId": "/subscription",
+      "target": "/",
+      "targetNodeId": "/",
+      "id": "home.open",
+      "label": "返回日历首页",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "none",
+        "icon": "home",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/desk-theme",
+      "sourceNodeId": "/desk-theme",
+      "target": "/",
+      "targetNodeId": "/",
+      "id": "home.open",
+      "label": "返回日历首页",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "none",
+        "icon": "home",
+        "gesture": "tap"
+      }
+    }
+  ]
+}

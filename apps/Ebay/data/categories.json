@@ -1,0 +1,445 @@
+[
+  {
+    "id": "electronics",
+    "label": "电子产品",
+    "types": [
+      {
+        "id": "fan",
+        "label": "电风扇",
+        "image": "./images/unsplash/photo-1585771724684-38269d6639fd.jpg",
+        "brands": [
+          "Dyson",
+          "Midea",
+          "Gree",
+          "Panasonic",
+          "Xiaomi"
+        ]
+      },
+      {
+        "id": "laptop",
+        "label": "电脑",
+        "image": "./images/unsplash/photo-1517336714731-489689fd1ca8.jpg",
+        "brands": [
+          "Apple",
+          "Dell",
+          "Lenovo",
+          "HP",
+          "Asus",
+          "Acer"
+        ]
+      },
+      {
+        "id": "tv",
+        "label": "电视",
+        "image": "./images/unsplash/photo-1588459468346-7c1d4a5963d8.jpg",
+        "brands": [
+          "Sony",
+          "Samsung",
+          "LG",
+          "TCL",
+          "Hisense"
+        ]
+      },
+      {
+        "id": "watch",
+        "label": "手表",
+        "image": "./images/unsplash/photo-1523275335684-37898b6baf30.jpg",
+        "brands": [
+          "Apple",
+          "Garmin",
+          "Huawei",
+          "Xiaomi",
+          "Fitbit"
+        ]
+      },
+      {
+        "id": "phone",
+        "label": "手机",
+        "image": "./images/unsplash/photo-1512499617640-c2f999098c30.jpg",
+        "brands": [
+          "Apple",
+          "Samsung",
+          "Huawei",
+          "Xiaomi",
+          "OnePlus",
+          "Google"
+        ]
+      },
+      {
+        "id": "tablet",
+        "label": "平板",
+        "image": "./images/unsplash/photo-1542751110-97427bbecf20.jpg",
+        "brands": [
+          "Apple",
+          "Samsung",
+          "Huawei",
+          "Lenovo"
+        ]
+      },
+      {
+        "id": "camera",
+        "label": "相机",
+        "image": "./images/unsplash/photo-1519183071298-a2962be96ec4.jpg",
+        "brands": [
+          "Canon",
+          "Nikon",
+          "Sony",
+          "Fujifilm",
+          "Panasonic"
+        ]
+      },
+      {
+        "id": "headphones",
+        "label": "耳机",
+        "image": "./images/unsplash/photo-1519677108350-2d4d8b2126e1.jpg",
+        "brands": [
+          "Sony",
+          "Bose",
+          "Sennheiser",
+          "Apple",
+          "Beats"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "home-garden",
+    "label": "家庭和花园",
+    "types": [
+      {
+        "id": "sofa",
+        "label": "沙发",
+        "image": "./images/unsplash/photo-1540574163026-643ea20ade25.jpg",
+        "brands": [
+          "Ikea",
+          "Wayfair",
+          "Ashley",
+          "Muji"
+        ]
+      },
+      {
+        "id": "lamp",
+        "label": "灯具",
+        "image": "./images/unsplash/photo-1518614189403-1d5d7c17298e.jpg",
+        "brands": [
+          "Philips",
+          "Osram",
+          "Yeelight",
+          "Nanoleaf"
+        ]
+      },
+      {
+        "id": "desk",
+        "label": "书桌",
+        "image": "./images/unsplash/photo-1519710164239-da123dc03ef4.jpg",
+        "brands": [
+          "Ikea",
+          "HermanMiller",
+          "Muji"
+        ]
+      },
+      {
+        "id": "chair",
+        "label": "椅子",
+        "image": "./images/unsplash/photo-1519710164239-da123dc03ef4.jpg",
+        "brands": [
+          "Ikea",
+          "HermanMiller",
+          "Steelcase"
+        ]
+      },
+      {
+        "id": "vacuum",
+        "label": "吸尘器",
+        "image": "./images/unsplash/photo-1581578019600-85d4e3bc5e66.jpg",
+        "brands": [
+          "Dyson",
+          "Midea",
+          "Philips",
+          "Samsung"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "fashion",
+    "label": "服装、鞋子和配饰",
+    "types": [
+      {
+        "id": "sneaker",
+        "label": "运动鞋",
+        "image": "./images/unsplash/photo-1519741497674-611481863552.jpg",
+        "brands": [
+          "Nike",
+          "Adidas",
+          "Puma",
+          "NewBalance",
+          "Skechers"
+        ]
+      },
+      {
+        "id": "dress",
+        "label": "连衣裙",
+        "image": "./images/unsplash/photo-1520975954735-40a44c32c1d1.jpg",
+        "brands": [
+          "Zara",
+          "H&M",
+          "Uniqlo",
+          "Shein"
+        ]
+      },
+      {
+        "id": "sunglasses",
+        "label": "太阳镜",
+        "image": "./images/unsplash/photo-1511497584788-876760111969.jpg",
+        "brands": [
+          "RayBan",
+          "Oakley",
+          "Gucci",
+          "Prada"
+        ]
+      },
+      {
+        "id": "watch-fashion",
+        "label": "时尚手表",
+        "image": "./images/unsplash/photo-1523275335684-37898b6baf30.jpg",
+        "brands": [
+          "MichaelKors",
+          "Fossil",
+          "Casio"
+        ]
+      },
+      {
+        "id": "bag",
+        "label": "包袋",
+        "image": "./images/unsplash/photo-1547955006-81f97ff1a28b.jpg",
+        "brands": [
+          "LV",
+          "Gucci",
+          "Prada",
+          "Coach"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "motors",
+    "label": "eBay 汽车",
+    "types": [
+      {
+        "id": "pickup",
+        "label": "皮卡车",
+        "image": "./images/unsplash/photo-1541899481282-d53bffe3c35d.jpg",
+        "brands": [
+          "Ford",
+          "Chevrolet",
+          "Toyota",
+          "Nissan"
+        ]
+      },
+      {
+        "id": "radiator-fan",
+        "label": "散热风扇",
+        "image": "./images/unsplash/photo-1565691079548-77275b22b91a.jpg",
+        "brands": [
+          "DNA",
+          "DaviesCraig",
+          "Mishimoto"
+        ]
+      },
+      {
+        "id": "tire",
+        "label": "轮胎",
+        "image": "./images/unsplash/photo-1533642339136-95bbf2905433.jpg",
+        "brands": [
+          "Michelin",
+          "Goodyear",
+          "Bridgestone"
+        ]
+      },
+      {
+        "id": "engine",
+        "label": "发动机零件",
+        "image": "./images/unsplash/photo-1541516160078-ffe09a618181.jpg",
+        "brands": [
+          "Bosch",
+          "Denso",
+          "NGK"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sports",
+    "label": "运动用品",
+    "types": [
+      {
+        "id": "dumbbell",
+        "label": "哑铃",
+        "image": "./images/unsplash/photo-1517964603305-11c1f3f71fd2.jpg",
+        "brands": [
+          "Bowflex",
+          "Yes4All",
+          "Rogue"
+        ]
+      },
+      {
+        "id": "yoga-mat",
+        "label": "瑜伽垫",
+        "image": "./images/unsplash/photo-1518313451760-4eac1a1b2656.jpg",
+        "brands": [
+          "Liforme",
+          "Manduka",
+          "Gaiam"
+        ]
+      },
+      {
+        "id": "bicycle",
+        "label": "自行车",
+        "image": "./images/unsplash/photo-1485968579580-b6d095142e6e.jpg",
+        "brands": [
+          "Giant",
+          "Trek",
+          "Specialized"
+        ]
+      },
+      {
+        "id": "treadmill",
+        "label": "跑步机",
+        "image": "./images/unsplash/photo-1584466977775-95db157f652b.jpg",
+        "brands": [
+          "LifeFitness",
+          "NordicTrack",
+          "Horizon"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "pets",
+    "label": "宠物用品",
+    "types": [
+      {
+        "id": "pet-bed",
+        "label": "宠物床",
+        "image": "./images/unsplash/photo-1548199973-03cce0bbc87b.jpg",
+        "brands": [
+          "PetFusion",
+          "Furhaven",
+          "Kuranda"
+        ]
+      },
+      {
+        "id": "dog-food",
+        "label": "狗粮",
+        "image": "./images/unsplash/photo-1589927986089-35812386f249.jpg",
+        "brands": [
+          "RoyalCanin",
+          "Purina",
+          "Orijen"
+        ]
+      },
+      {
+        "id": "cat-litter",
+        "label": "猫砂",
+        "image": "./images/unsplash/photo-1574158622682-e40e69881006.jpg",
+        "brands": [
+          "FreshStep",
+          "Arm&Hammer",
+          "DrElsey"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "travel",
+    "label": "机票及旅游",
+    "types": [
+      {
+        "id": "ticket",
+        "label": "机票",
+        "image": "./images/unsplash/photo-1500530855697-b586d89ba3ee.jpg",
+        "brands": [
+          "AirAsia",
+          "Qantas",
+          "United",
+          "Delta"
+        ]
+      },
+      {
+        "id": "luggage",
+        "label": "行李箱",
+        "image": "./images/unsplash/photo-1502920917128-1aa500764cbd.jpg",
+        "brands": [
+          "Samsonite",
+          "Away",
+          "Rimowa"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "giftcards",
+    "label": "礼品卡和优惠券",
+    "types": [
+      {
+        "id": "gift-card",
+        "label": "礼品卡",
+        "image": "./images/unsplash/photo-1601598851547-4302969d0614.jpg",
+        "brands": [
+          "eBay",
+          "Apple",
+          "Amazon",
+          "Starbucks"
+        ]
+      },
+      {
+        "id": "voucher",
+        "label": "代金券",
+        "image": "./images/unsplash/photo-1521412644187-c49fa049e84d.jpg",
+        "brands": [
+          "Uber",
+          "Grab",
+          "JD"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "jewelry",
+    "label": "珠宝和手表",
+    "types": [
+      {
+        "id": "watch",
+        "label": "腕表",
+        "image": "./images/unsplash/photo-1523275335684-37898b6baf30.jpg",
+        "brands": [
+          "Rolex",
+          "Omega",
+          "Seiko",
+          "Casio"
+        ]
+      },
+      {
+        "id": "ring",
+        "label": "戒指",
+        "image": "./images/unsplash/photo-1522335789203-aabd1fc54bc9.jpg",
+        "brands": [
+          "Cartier",
+          "Tiffany",
+          "Pandora"
+        ]
+      },
+      {
+        "id": "necklace",
+        "label": "项链",
+        "image": "./images/unsplash/photo-1519710164239-da123dc03ef4.jpg",
+        "brands": [
+          "Cartier",
+          "Tiffany",
+          "Pandora"
+        ]
+      }
+    ]
+  }
+]

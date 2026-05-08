@@ -1,0 +1,111 @@
+{
+  "grid": {
+    "columns": 4,
+    "rows": 6
+  },
+  "wallpaper": {
+    "kind": "image",
+    "imageUrl": "themes/af0f7f90-04fb-417b-941e-ae7b549fe5e5/wallpaper/default.jpg"
+  },
+  "wallpaperChoices": [
+    {
+      "id": "aurora_night",
+      "labelZh": "极光夜色",
+      "labelEn": "Aurora Night",
+      "isDark": true,
+      "wallpaper": {
+        "kind": "image",
+        "imageUrl": "wallpapers/default/aurora_night.svg"
+      }
+    },
+    {
+      "id": "lake_morning",
+      "labelZh": "晨湖蓝",
+      "labelEn": "Morning Lake",
+      "isDark": false,
+      "wallpaper": {
+        "kind": "image",
+        "imageUrl": "wallpapers/default/lake_morning.svg"
+      }
+    },
+    {
+      "id": "light_sky",
+      "labelZh": "晴空",
+      "labelEn": "Clear Sky",
+      "isDark": false,
+      "wallpaper": {
+        "kind": "image",
+        "imageUrl": "wallpapers/default/light_sky.svg"
+      }
+    }
+  ],
+  "hotseatApps": [
+    "phone",
+    "sms",
+    "browser",
+    "wechat"
+  ],
+  "screen1": {
+    "widgets": [
+      {
+        "widgetType": "clock",
+        "cellX": 0,
+        "cellY": 0,
+        "spanX": 4,
+        "spanY": 2
+      },
+      {
+        "widgetType": "maml",
+        "widgetId": "b8006e83-c497-4642-9815-f674b82842b0",
+        "variant": "widget_2x2",
+        "previewUrl": "/themes/b8006e83-c497-4642-9815-f674b82842b0/preview/widget_2x2.png",
+        "cellX": 0,
+        "cellY": 2,
+        "spanX": 2,
+        "spanY": 2
+      }
+    ],
+    "pinnedApps": [
+      {
+        "appId": "calculator",
+        "cellX": 0,
+        "cellY": 4
+      },
+      {
+        "appId": "compass",
+        "cellX": 1,
+        "cellY": 4
+      },
+      {
+        "appId": "notes",
+        "cellX": 2,
+        "cellY": 4
+      },
+      {
+        "appId": "file_manager",
+        "cellX": 3,
+        "cellY": 4
+      },
+      {
+        "appId": "settings",
+        "cellX": 0,
+        "cellY": 5
+      },
+      {
+        "appId": "gallery",
+        "cellX": 1,
+        "cellY": 5
+      },
+      {
+        "appId": "calendar",
+        "cellX": 2,
+        "cellY": 5
+      },
+      {
+        "appId": "clock",
+        "cellX": 3,
+        "cellY": 5
+      }
+    ]
+  }
+}

@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>UI Graph Console</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="/vendor/cytoscape.min.js"></script>
+    <script src="/vendor/dagre.min.js"></script>
+    <script src="/vendor/cytoscape-dagre.min.js"></script>
+    <script>
+        (function ensureDagreRegistered() {
+            const register = () => {
+                const cy = window.cytoscape;
+                const plugin = window.cytoscapeDagre || window.cytoscape_dagre || window.dagreCytoscape;
+                if (cy && plugin && !register.done) {
+                    cy.use(plugin);
+                    register.done = true;
+                    console.info('[UI Graph] cytoscape-dagre registered');
+                    return true;
+                }
+                return false;
+            };
+
+            if (!register()) {
+                const interval = setInterval(() => {
+                    if (register()) {
+                        clearInterval(interval);
+                    }
+                }, 50);
+                setTimeout(() => clearInterval(interval), 5000);
+            }
+        })();
+    </script>
+    <style>
+        :root {
+            color-scheme: dark;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: 'Inter', 'SF Pro Text', 'PingFang SC', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            background: radial-gradient(circle at top, rgba(14, 165, 233, 0.15), transparent 45%),
+                radial-gradient(circle at 20% 20%, rgba(139, 92, 246, 0.25), transparent 35%),
+                rgb(2, 6, 23);
+            color: #e2e8f0;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: linear-gradient(rgba(148, 163, 184, 0.08) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(148, 163, 184, 0.06) 1px, transparent 1px);
+            background-size: 80px 80px;
+            pointer-events: none;
+            opacity: 0.4;
+        }
+
+        #cy {
+            position: absolute;
+            inset: 0;
+        }
+
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.72);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 28px;
+            box-shadow: 0 20px 60px rgba(2, 6, 23, 0.6);
+            backdrop-filter: blur(26px);
+        }
+
+        .inspector {
+            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            will-change: transform;
+        }
+
+        .inspector.translate-x-full {
+            pointer-events: none;
+        }
+
+        .action-overlay {
+            position: absolute;
+            border: 3px solid rgba(248, 113, 113, 0.9);
+            border-radius: 16px;
+            background: rgba(239, 68, 68, 0.15);
+            box-shadow: 0 0 0 6px rgba(239, 68, 68, 0.08);
+            pointer-events: none;
+        }
+
+        .dimmed {
+            opacity: 0.15 !important;
+        }
+
+        .toast {
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .toast.hidden {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+    </style>
+</head>
+
+<body class="h-screen overflow-hidden">
+    <main class="relative z-10 h-screen flex flex-col">
+        <header class="px-8 pt-8 pb-4 flex flex-wrap gap-4 items-center justify-between">
+            <div>
+                <p class="text-xs uppercase tracking-[0.4em] text-slate-400/80">Dynamic UI Explorer</p>
+                <h1 class="mt-2 text-3xl font-semibold text-white tracking-tight">UI Graph Console</h1>
+                <p id="datasetStatus" class="mt-3 text-sm text-slate-300 max-w-2xl">
+                    请选择或导入由 <code class="px-2 py-0.5 bg-white/10 rounded-md text-xs">scripts/dynamic_ui_explorer.py</code>
+                    生成的 JSON 文件进行可视化。
+                </p>
+            </div>
+            <div class="flex flex-wrap items-center gap-3">
+                <div class="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-full border border-white/10">
+                    <span class="text-[11px] uppercase tracking-widest text-slate-400/90">当前数据集</span>
+                    <span id="datasetChip" class="text-sm font-semibold text-white">未选择</span>
+                </div>
+                <select id="datasetSelect"
+                    class="bg-slate-900/70 border border-white/15 rounded-full px-4 py-2 text-sm text-white/90 focus:ring-2 focus:ring-cyan-400/50 focus:outline-none">
+            </select>
+                <button id="uploadTrigger"
+                    class="rounded-full px-4 py-2 text-sm font-medium border border-white/10 text-white/90 bg-white/5 hover:bg-white/10 transition-colors">
+                    导入 JSON
+                </button>
+                <button id="directionToggle"
+                    class="rounded-full px-4 py-2 text-sm font-medium border border-white/10 text-indigo-200 bg-indigo-500/10 hover:bg-indigo-500/20 transition-colors">
+                    横向排布
+                </button>
+                <button id="relayoutBtn"
+                    class="rounded-full px-4 py-2 text-sm font-medium border border-white/10 text-cyan-200 bg-cyan-500/10 hover:bg-cyan-500/20 transition-colors">
+                    重新布局
+                </button>
+                <button id="fitBtn"
+                    class="rounded-full px-4 py-2 text-sm font-medium border border-white/10 text-emerald-200 bg-emerald-500/10 hover:bg-emerald-500/20 transition-colors">
+                    全图视角
+                </button>
+            </div>
+        </header>
+
+        <div class="flex-1 px-8 pb-8 relative">
+            <div class="h-full flex gap-6">
+                <aside class="glass-panel w-80 shrink-0 p-5 flex flex-col gap-6 overflow-y-auto">
+                    <div>
+                        <p class="text-xs uppercase tracking-[0.3em] text-slate-400/80">数据源</p>
+                        <p id="datasetMeta" class="mt-2 text-sm text-slate-100 font-medium leading-relaxed">
+                            尚未加载数据
+                        </p>
+                    </div>
+                    <div>
+                        <p class="text-xs uppercase tracking-[0.3em] text-slate-400/80 mb-3">图谱概览</p>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+                                <p class="text-[10px] uppercase tracking-widest text-slate-400/80">状态</p>
+                                <p id="statNodes" class="mt-2 text-2xl font-semibold text-white">0</p>
+                            </div>
+                            <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+                                <p class="text-[10px] uppercase tracking-widest text-slate-400/80">转移</p>
+                                <p id="statEdges" class="mt-2 text-2xl font-semibold text-white">0</p>
+                            </div>
+                            <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+                                <p class="text-[10px] uppercase tracking-widest text-slate-400/80">平均分支</p>
+                                <p id="statBranching" class="mt-2 text-2xl font-semibold text-white">0</p>
+                            </div>
+                            <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+                                <p class="text-[10px] uppercase tracking-widest text-slate-400/80">错误</p>
+                                <p id="statErrors" class="mt-2 text-2xl font-semibold text-white">0</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="text-xs uppercase tracking-[0.3em] text-slate-400/80">节点搜索</p>
+                        <div class="mt-3 flex gap-2">
+                            <div class="flex-1 relative">
+                                <input id="nodeSearch" type="text" placeholder="输入路由片段，例如 /discover"
+                                    class="w-full bg-slate-900/70 border border-white/10 rounded-2xl px-4 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-400/40" />
+                                <span
+                                    class="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] uppercase tracking-widest text-slate-500">⌘K</span>
+                            </div>
+                            <button id="clearSearch"
+                                class="rounded-2xl px-3 py-2 text-xs font-semibold border border-white/10 text-slate-200 bg-white/5 hover:bg-white/10">
+                                清空
+                            </button>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex items-center justify-between">
+                            <p class="text-xs uppercase tracking-[0.3em] text-slate-400/80">问题</p>
+                            <span id="issueBadge"
+                                class="text-[10px] uppercase tracking-widest text-slate-300 border border-white/10 rounded-full px-2 py-0.5">0</span>
+                        </div>
+                        <div id="issueList" class="mt-3 space-y-3 text-sm text-slate-300">
+                            <p class="text-slate-500 text-sm">暂无已知错误</p>
+        </div>
+    </div>
+                    <div class="text-xs text-slate-400/90 leading-relaxed">
+                        提示：滚轮缩放、拖拽平移、点击节点/边查看详情；导入本地 JSON 可以立即对比多次探索结果。
+                    </div>
+                </aside>
+
+                <section class="flex-1 relative rounded-[36px] border border-white/10 bg-slate-900/40 overflow-hidden">
+    <div id="cy"></div>
+                    <div id="graphLoading"
+                        class="absolute inset-0 hidden bg-slate-900/80 backdrop-blur text-white flex flex-col items-center justify-center gap-3 text-sm tracking-wide">
+                        <div class="w-10 h-10 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+                        正在加载图数据...
+                    </div>
+                    <div id="graphEmpty"
+                        class="absolute inset-0 hidden flex flex-col items-center justify-center text-center px-16 text-slate-400 space-y-4">
+                        <div class="text-4xl">🛰️</div>
+                        <div>
+                            <p data-empty-title class="text-lg font-semibold text-white mb-1">暂无数据</p>
+                            <p data-empty-detail class="text-sm text-slate-400">请加载一个动态探索结果或导入本地 JSON</p>
+                        </div>
+                    </div>
+                    <div
+                        class="absolute bottom-4 left-4 text-[11px] uppercase tracking-[0.3em] text-slate-400/80 bg-black/40 backdrop-blur-md px-4 py-2 rounded-full border border-white/10">
+                        Scroll 缩放 · Drag 平移 · Double Tap 清空选中
+                    </div>
+                </section>
+            </div>
+
+            <div id="inspector"
+                class="inspector glass-panel absolute top-0 bottom-0 right-0 w-[420px] p-5 flex flex-col translate-x-full">
+                <div class="flex items-center justify-between border-b border-white/10 pb-3 mb-4">
+                    <div>
+                        <p id="inspectorTitle" class="text-sm uppercase tracking-[0.4em] text-slate-400/80">详情</p>
+                        <p id="inspectorLabel" class="text-lg font-semibold text-white mt-1 truncate">-</p>
+                    </div>
+                    <button id="inspectorClose"
+                        class="text-slate-400 hover:text-white transition-colors rounded-full border border-white/10 p-2">
+                        ✕
+            </button>
+                </div>
+                <div id="inspectorContent" class="flex-1 overflow-y-auto pr-1 text-sm text-slate-200 space-y-4">
+                    <p class="text-slate-500 text-sm leading-relaxed">点击任意节点或边即可在此查看路由信息、截图以及触发动作详情。</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="toast"
+            class="toast hidden fixed top-6 right-6 z-50 bg-slate-900/90 border border-white/10 rounded-full px-4 py-2 text-sm shadow-2xl">
+            -
+        </div>
+        <input type="file" id="fileInput" accept=".json,application/json" class="hidden" />
+    </main>
+
+    <script>
+        // DATASETS will be populated dynamically from /api/list-public-files
+        let DATASETS = [];
+        const SCREENSHOT_BASE = '/screenshots/';
+        const PLACEHOLDER_IMAGE = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="360" height="720" viewBox="0 0 360 720" fill="none"><rect width="360" height="720" rx="48" fill="#030712"/><path d="M120 160h120M92 210h176M92 260h176M92 310h176M92 360h176" stroke="#1F2937" stroke-width="6" stroke-linecap="round"/><rect x="140" y="470" width="80" height="120" rx="16" stroke="#1F2937" stroke-width="6" fill="none"/><rect x="150" y="480" width="60" height="64" rx="14" fill="#111827"/><rect x="140" y="606" width="80" height="20" rx="10" fill="#1F29376e"/></svg>')}`;
+
+        const PIXEL_RATIO = Math.min(window.devicePixelRatio || 1, 2);
+        let cyInstance = null;
+        let currentGraph = null;
+        let currentDatasetLabel = '';
+        let toastTimer = null;
+        let activeLayoutName = 'dagre';
+        let layoutDirection = 'horizontal';
+        const FALLBACK_LAYOUT = 'breadthfirst';
+
+        const dom = {};
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            cacheDom();
+            updateDirectionToggleLabel();
+            attachEventHandlers();
+            await fetchAndHydrateDatasets();
+        });
+
+        async function fetchAndHydrateDatasets() {
+            try {
+                const response = await fetch('/api/list-public-files');
+                if (!response.ok) throw new Error('无法获取文件列表');
+                const data = await response.json();
+                DATASETS = (data.ui_graphs || []).map(item => ({
+                    ...item,
+                    app: item.label.split(' ')[0] || 'Unknown',
+                    description: item.file,
+                }));
+                hydrateDatasetOptions();
+                preloadDefaultDataset();
+            } catch (error) {
+                console.error('[UI Graph] 获取数据集列表失败:', error);
+                setDatasetStatus('无法自动发现数据集，请手动导入 JSON 文件');
+                showToast('自动发现数据集失败，请手动导入', 'error');
+            }
+        }
+
+        function cacheDom() {
+            dom.datasetSelect = document.getElementById('datasetSelect');
+            dom.datasetChip = document.getElementById('datasetChip');
+            dom.datasetMeta = document.getElementById('datasetMeta');
+            dom.datasetStatus = document.getElementById('datasetStatus');
+            dom.nodeSearch = document.getElementById('nodeSearch');
+            dom.clearSearch = document.getElementById('clearSearch');
+            dom.relayoutBtn = document.getElementById('relayoutBtn');
+            dom.fitBtn = document.getElementById('fitBtn');
+            dom.uploadTrigger = document.getElementById('uploadTrigger');
+            dom.fileInput = document.getElementById('fileInput');
+            dom.graphLoading = document.getElementById('graphLoading');
+            dom.graphEmpty = document.getElementById('graphEmpty');
+            dom.issueList = document.getElementById('issueList');
+            dom.issueBadge = document.getElementById('issueBadge');
+            dom.statNodes = document.getElementById('statNodes');
+            dom.statEdges = document.getElementById('statEdges');
+            dom.statBranching = document.getElementById('statBranching');
+            dom.statErrors = document.getElementById('statErrors');
+            dom.inspector = document.getElementById('inspector');
+            dom.inspectorTitle = document.getElementById('inspectorTitle');
+            dom.inspectorLabel = document.getElementById('inspectorLabel');
+            dom.inspectorContent = document.getElementById('inspectorContent');
+            dom.inspectorClose = document.getElementById('inspectorClose');
+            dom.toast = document.getElementById('toast');
+            dom.directionToggle = document.getElementById('directionToggle');
+        }
+
+        function hydrateDatasetOptions() {
+            dom.datasetSelect.innerHTML = '';
+            DATASETS.forEach((dataset, index) => {
+                const option = document.createElement('option');
+                option.value = dataset.id;
+                option.textContent = dataset.label;
+                dom.datasetSelect.appendChild(option);
+                if (index === 0) {
+                    dom.datasetSelect.value = dataset.id;
+                }
+            });
+        }
+
+        function attachEventHandlers() {
+            dom.datasetSelect.addEventListener('change', (event) => {
+                const dataset = DATASETS.find(item => item.id === event.target.value);
+                if (dataset) {
+                    loadGraphFromFile(dataset);
+                }
+            });
+
+            dom.relayoutBtn.addEventListener('click', () => runLayout(true));
+            dom.fitBtn.addEventListener('click', () => {
+                if (cyInstance) {
+                    cyInstance.fit(undefined, 60);
+                    showToast('已将视图适配至全图');
+                }
+            });
+            dom.directionToggle?.addEventListener('click', () => {
+                layoutDirection = layoutDirection === 'horizontal' ? 'vertical' : 'horizontal';
+                updateDirectionToggleLabel();
+                runLayout();
+                showToast(`已切换为${layoutDirection === 'horizontal' ? '横向' : '纵向'}排布`);
+            });
+
+            const debouncedSearch = debounce((value) => applySearchFilter(value), 160);
+            dom.nodeSearch.addEventListener('input', (event) => debouncedSearch(event.target.value));
+            dom.clearSearch.addEventListener('click', () => {
+                dom.nodeSearch.value = '';
+                applySearchFilter('');
+            });
+
+            dom.uploadTrigger.addEventListener('click', () => dom.fileInput.click());
+            dom.fileInput.addEventListener('change', handleLocalFile);
+
+            dom.inspectorClose.addEventListener('click', () => {
+                hideInspector();
+                clearHighlights();
+            });
+
+            window.addEventListener('resize', () => cyInstance?.resize());
+            window.addEventListener('keydown', (event) => {
+                if (event.key?.toLowerCase() === 'k' && (event.metaKey || event.ctrlKey)) {
+                    dom.nodeSearch.focus();
+                    event.preventDefault();
+                }
+                if (event.key === 'Escape') {
+                    hideInspector();
+                    clearHighlights();
+                }
+            });
+        }
+
+        function preloadDefaultDataset() {
+            if (DATASETS.length > 0) {
+                loadGraphFromFile(DATASETS[0]);
+            }
+        }
+
+        async function loadGraphFromFile(dataset) {
+            if (!dataset?.file) return;
+            currentDatasetLabel = dataset.label;
+            updateDatasetChip(dataset.label);
+            setDatasetStatus(`正在加载 ${dataset.label} ...`);
+            toggleLoading(true);
+            hideInspector();
+            clearHighlights();
+
+            try {
+                const response = await fetch(dataset.file, { cache: 'no-store' });
+                if (!response.ok) {
+                    throw new Error(`无法加载数据 (HTTP ${response.status})`);
+                }
+                const data = await response.json();
+                loadGraphFromData(data, dataset.label);
+                showToast(`已加载 ${dataset.label}`);
+            } catch (error) {
+                console.error(error);
+                setDatasetStatus('加载失败，请检查 JSON 文件路径。');
+                showToast(error.message || '加载失败', 'error');
+                setGraphEmptyState(true, '加载失败', error.message || '无法读取图数据');
+            } finally {
+                toggleLoading(false);
+            }
+        }
+
+        function loadGraphFromData(data, label = '自定义数据') {
+            if (!data || !data.states) {
+                setGraphEmptyState(true, '数据格式错误', '缺少 states 字段');
+                return;
+            }
+            currentGraph = data;
+            currentDatasetLabel = label;
+            updateDatasetChip(label);
+            updateDatasetMeta(data.app, data.timestamp);
+            updateStats(data);
+            updateIssues(data.errors);
+            setGraphEmptyState(Object.keys(data.states).length === 0);
+            setDatasetStatus(`${label} · ${data.app || '未知应用'} · ${formatTimestamp(data.timestamp)}`);
+            buildGraph(data);
+        }
+
+        function buildGraph(data) {
+            const nodeMap = new Map();
+            const states = data.states || {};
+
+            Object.values(states).forEach((state, index) => {
+                const id = state.route || state.id || `state-${index}`;
+                nodeMap.set(id, {
+                    id,
+                    label: state.route || state.id || `状态 ${index + 1}`,
+                    screenshot: getScreenshotUrl(state.screenshot),
+                    classes: state.placeholder ? 'placeholder' : '',
+                });
+            });
+
+            const transitions = data.transitions || [];
+            transitions.forEach((transition, index) => {
+                transition.__cyId = transition.__cyId || `edge-${index}`;
+                ensureNode(nodeMap, transition.source);
+                ensureNode(nodeMap, transition.target);
+            });
+
+            const elements = [
+                ...Array.from(nodeMap.values()).map(node => ({
+                    data: {
+                        id: node.id,
+                        label: node.label,
+                        image: node.screenshot || PLACEHOLDER_IMAGE,
+                        screenshot: node.screenshot || PLACEHOLDER_IMAGE,
+                    },
+                    classes: node.classes,
+                })),
+                ...transitions.map(transition => ({
+                    data: {
+                        id: transition.__cyId,
+                        source: transition.source,
+                        target: transition.target,
+                        action: transition.action || 'click',
+                        trigger: transition.trigger || null,
+                        label: transition.trigger?.label || transition.action || '',
+                    }
+                })),
+            ];
+
+            renderGraph(elements);
+        }
+
+        function ensureNode(nodeMap, id) {
+            if (!nodeMap.has(id)) {
+                nodeMap.set(id, {
+                    id,
+                    label: id,
+                    screenshot: PLACEHOLDER_IMAGE,
+                    classes: 'placeholder',
+                });
+            }
+        }
+
+        function renderGraph(elements) {
+            if (cyInstance) {
+                cyInstance.destroy();
+            }
+
+            const createInstance = (layoutName) => cytoscape({
+                container: document.getElementById('cy'),
+                elements,
+                wheelSensitivity: 0.2,
+                minZoom: 0.2,
+                maxZoom: 3.5,
+                pixelRatio: PIXEL_RATIO,
+                boxSelectionEnabled: false,
+                autoungrabify: false,
+                style: [
+                    {
+                        selector: 'node',
+                        style: {
+                            'shape': 'round-rectangle',
+                            'background-color': '#020617',
+                            'background-image': 'data(image)',
+                            'background-fit': 'cover cover',
+                            'background-clip': 'node',
+                            'width': 120,
+                            'height': 240,
+                            'border-width': 6,
+                            'border-color': '#0f172a',
+                            'border-opacity': 0.8,
+                            'shadow-blur': 25,
+                            'shadow-color': '#020617',
+                            'shadow-opacity': 0.6,
+                            'label': 'data(label)',
+                            'font-size': 11,
+                            'font-weight': 600,
+                            'text-margin-y': -8,
+                            'text-wrap': 'wrap',
+                            'text-max-width': 140,
+                            'text-halign': 'center',
+                            'text-valign': 'top',
+                            'color': '#e2e8f0',
+                            'text-background-opacity': 0.85,
+                            'text-background-color': '#020617cc',
+                            'text-background-padding': 4,
+                            'text-background-shape': 'roundrectangle',
+                        }
+                    },
+                    {
+                        selector: 'node.placeholder',
+                        style: {
+                            'filter': 'grayscale(1)',
+                            'opacity': 0.6,
+                            'border-style': 'dashed',
+                            'border-color': '#475569',
+                        }
+                    },
+                    {
+                        selector: 'node.dimmed',
+                        style: { 'opacity': 0.15 }
+                    },
+                    {
+                        selector: 'node.active-node',
+                        style: {
+                            'border-color': '#38bdf8',
+                            'border-width': 10,
+                            'shadow-color': '#0ea5e9',
+                            'shadow-opacity': 0.9,
+                        }
+                    },
+                    {
+                        selector: 'edge',
+                        style: {
+                            'width': 2.5,
+                            'line-color': '#475569',
+                            'target-arrow-color': '#475569',
+                            'target-arrow-shape': 'triangle',
+                            'curve-style': 'bezier',
+                            'label': 'data(label)',
+                            'font-size': 9,
+                            'color': '#94a3b8',
+                            'text-rotation': 'autorotate',
+                            'text-background-opacity': 0.8,
+                            'text-background-color': '#020617dd',
+                            'text-background-padding': 2.5,
+                            'text-background-shape': 'roundrectangle',
+                        }
+                    },
+                    {
+                        selector: 'edge.active-edge',
+                        style: {
+                            'width': 5,
+                            'line-color': '#38bdf8',
+                            'target-arrow-color': '#38bdf8',
+                            'color': '#e0f2fe',
+                        }
+                    },
+                    {
+                        selector: 'edge.dimmed',
+                        style: { 'opacity': 0.12 }
+                    },
+                ],
+                layout: getLayoutOptions(layoutName)
+            });
+
+            try {
+                activeLayoutName = 'dagre';
+                cyInstance = createInstance(activeLayoutName);
+            } catch (error) {
+                const message = String(error?.message || error || '');
+                if (message.includes('No such layout `dagre`')) {
+                    console.warn('[UI Graph] Dagre layout unavailable, switching to fallback layout.');
+                    activeLayoutName = FALLBACK_LAYOUT;
+                    showToast('未检测到 dagre 布局，已切换为 Breadthfirst。', 'error');
+                    setDatasetStatus(`${currentDatasetLabel} · ${currentGraph?.app || '未知应用'} (dagre 不可用，已使用 Breadthfirst)`);
+                    cyInstance = createInstance(activeLayoutName);
+                } else {
+                    setGraphEmptyState(true, '渲染失败', message || '未知错误');
+                    throw error;
+                }
+            }
+
+            cyInstance.ready(() => cyInstance.fit(undefined, 80));
+
+            cyInstance.on('tap', 'node', (event) => selectNode(event.target));
+            cyInstance.on('tap', 'edge', (event) => selectEdge(event.target));
+            cyInstance.on('tap', (event) => {
+                if (event.target === cyInstance) {
+                    clearHighlights();
+                    hideInspector();
+                }
+            });
+        }
+
+        function getLayoutOptions(layoutName = activeLayoutName) {
+            const isHorizontal = layoutDirection === 'horizontal';
+            if (layoutName === 'dagre') {
+                return {
+                    name: 'dagre',
+                    rankDir: isHorizontal ? 'LR' : 'TB',
+                    nodeSep: isHorizontal ? 160 : 120,
+                    rankSep: isHorizontal ? 220 : 160,
+                    edgeSep: 20,
+                    padding: 50,
+                    animate: true,
+                    animationDuration: 500,
+                };
+            }
+
+            if (layoutName === 'breadthfirst') {
+                return {
+                    name: 'breadthfirst',
+                    directed: true,
+                    spacingFactor: isHorizontal ? 1.1 : 1.3,
+                    circle: false,
+                    padding: 60,
+                    animate: true,
+                    animationDuration: 500,
+                };
+            }
+
+            return {
+                name: 'cose',
+                fit: true,
+                padding: 50,
+                animate: true,
+                animationDuration: 500,
+            };
+        }
+
+        function runLayout(withToast = false) {
+            if (!cyInstance) return;
+            const layout = cyInstance.layout(getLayoutOptions(activeLayoutName));
+            layout.run();
+            if (withToast) {
+                showToast('已重新计算布局');
+            }
+        }
+
+        function selectNode(node) {
+            if (!node) return;
+            clearHighlights();
+            node.addClass('active-node');
+            node.connectedEdges().addClass('active-edge');
+            showNodeDetails(node);
+            cyInstance.animate({ center: { eles: node }, duration: 300, easing: 'ease' });
+        }
+
+        function selectEdge(edge) {
+            if (!edge) return;
+            clearHighlights();
+            edge.addClass('active-edge');
+            edge.source().addClass('active-node');
+            edge.target().addClass('active-node');
+            showEdgeDetails(edge);
+            cyInstance.animate({ center: { eles: edge }, duration: 300, easing: 'ease' });
+        }
+
+        function clearHighlights() {
+            if (!cyInstance) return;
+            cyInstance.nodes().removeClass('active-node dimmed');
+            cyInstance.edges().removeClass('active-edge dimmed');
+        }
+
+        function showNodeDetails(node) {
+            if (!currentGraph) return;
+            const route = node.id();
+            const state = currentGraph.states?.[route];
+            const outgoing = (currentGraph.transitions || []).filter(t => t.source === route);
+            const incoming = (currentGraph.transitions || []).filter(t => t.target === route);
+
+            dom.inspectorTitle.textContent = '状态详情';
+            dom.inspectorLabel.textContent = route;
+            dom.inspectorContent.innerHTML = `
+                <div class="space-y-5">
+                    <div>
+                        <p class="text-xs uppercase tracking-[0.4em] text-slate-400/90 mb-2">路由</p>
+                        <div class="bg-slate-900/60 border border-white/10 rounded-2xl px-4 py-3 font-mono text-xs break-all">
+                            ${route}
+                        </div>
+                    </div>
+                    <div>
+                        <p class="text-xs uppercase tracking-[0.4em] text-slate-400/90 mb-2">截图</p>
+                        <div class="border border-white/10 rounded-2xl overflow-hidden">
+                            <img src="${node.data('screenshot')}" alt="状态截图" class="w-full block" />
+                        </div>
+                    </div>
+                    <div>
+                        <p class="text-xs uppercase tracking-[0.4em] text-slate-400/90 mb-2">出度 (${outgoing.length})</p>
+                        ${renderTransitionList(outgoing, 'target')}
+                    </div>
+                    <div>
+                        <p class="text-xs uppercase tracking-[0.4em] text-slate-400/90 mb-2">入度 (${incoming.length})</p>
+                        ${renderTransitionList(incoming, 'source')}
+                    </div>
+                </div>
+            `;
+
+            attachInlineEdgePreviewHandlers();
+            showInspector();
+        }
+
+        function showEdgeDetails(edge) {
+            const data = edge.data();
+            const trigger = data.trigger || {};
+            const bbox = trigger.bbox;
+            const sourceScreenshot = cyInstance.getElementById(data.source).data('screenshot') || PLACEHOLDER_IMAGE;
+            const targetScreenshot = cyInstance.getElementById(data.target).data('screenshot') || PLACEHOLDER_IMAGE;
+
+            dom.inspectorTitle.textContent = '转移详情';
+            dom.inspectorLabel.textContent = `${data.source} → ${data.target}`;
+            dom.inspectorContent.innerHTML = `
+                <div class="space-y-5">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+                            <p class="text-[10px] uppercase tracking-widest text-slate-400/80">动作</p>
+                            <p class="mt-2 text-lg font-semibold text-white">${data.action || '-'}</p>
+                        </div>
+                        <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+                            <p class="text-[10px] uppercase tracking-widest text-slate-400/80">元素</p>
+                            <p class="mt-2 text-lg font-semibold text-white">${trigger.tag || '未知元素'}</p>
+                        </div>
+                    </div>
+                    <div class="rounded-2xl border border-white/10 bg-slate-900/40 px-4 py-3 text-xs space-y-2">
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">Label</span>
+                            <span class="text-white">${trigger.label || '—'}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">Text</span>
+                            <span class="text-white">${trigger.text || '—'}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">BBox</span>
+                            <span class="text-white">${bbox ? `${bbox.x}, ${bbox.y}, ${bbox.width}×${bbox.height}` : '—'}</span>
+                         </div>
+                    </div>
+                    <div>
+                        <p class="text-xs uppercase tracking-[0.4em] text-slate-400/90 mb-2">动作可视化</p>
+                        <div class="relative border border-white/10 rounded-2xl overflow-hidden">
+                            <img src="${sourceScreenshot}" alt="源状态截图" id="actionPreview" class="w-full block" />
+                            <div id="actionOverlay" class="action-overlay ${bbox ? '' : 'hidden'}"></div>
+                    </div>
+                        <p class="mt-2 text-xs text-slate-400">红色高亮区域即为点击/交互的真实坐标位置。</p>
+                    </div>
+                    <div>
+                        <p class="text-xs uppercase tracking-[0.4em] text-slate-400/90 mb-2">目标状态预览</p>
+                        <div class="border border-white/10 rounded-2xl overflow-hidden">
+                            <img src="${targetScreenshot}" alt="目标状态截图" class="w-full block" />
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            paintOverlay(bbox);
+            showInspector();
+        }
+
+        function renderTransitionList(list, key) {
+            if (!list.length) {
+                return '<p class="text-slate-500 text-sm">无记录</p>';
+            }
+            return `
+                <div class="space-y-2">
+                    ${list.map(item => `
+                        <button class="w-full text-left bg-slate-900/50 hover:bg-slate-800/70 border border-white/10 rounded-2xl px-4 py-2 flex flex-col gap-1 transition-colors"
+                            data-edge-id="${item.__cyId}">
+                            <span class="text-xs text-slate-400 uppercase tracking-[0.4em]">${key === 'target' ? 'TO' : 'FROM'}</span>
+                            <span class="text-sm text-white break-all">${item[key]}</span>
+                            <span class="text-xs text-slate-400">${item.action || 'click'} · ${item.trigger?.label || '未命名元素'}</span>
+                        </button>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function attachInlineEdgePreviewHandlers() {
+            dom.inspectorContent.querySelectorAll('[data-edge-id]').forEach(button => {
+                button.addEventListener('click', () => {
+                    const edgeId = button.getAttribute('data-edge-id');
+                    const edge = cyInstance?.getElementById(edgeId);
+                    if (edge) {
+                        selectEdge(edge);
+                        cyInstance.fit(edge, 80);
+                    }
+                });
+            });
+        }
+
+        function paintOverlay(bbox) {
+            const overlay = document.getElementById('actionOverlay');
+            const preview = document.getElementById('actionPreview');
+            if (!overlay || !preview || !bbox) return;
+
+            const render = () => {
+                const width = preview.clientWidth;
+                if (!width) return;
+                const scale = width / 360; // DOMRect 是 360px 视口
+                overlay.style.left = `${bbox.x * scale}px`;
+                overlay.style.top = `${bbox.y * scale}px`;
+                overlay.style.width = `${bbox.width * scale}px`;
+                overlay.style.height = `${bbox.height * scale}px`;
+                overlay.classList.remove('hidden');
+            };
+
+            if (preview.complete) {
+                render();
+            } else {
+                preview.onload = render;
+            }
+        }
+
+        function applySearchFilter(query) {
+            if (!cyInstance) return;
+            const keyword = query.trim().toLowerCase();
+            cyInstance.nodes().removeClass('dimmed');
+            cyInstance.edges().removeClass('dimmed');
+
+            if (!keyword) return;
+
+            cyInstance.nodes().forEach(node => {
+                const matches = node.id().toLowerCase().includes(keyword) ||
+                    (node.data('label') || '').toLowerCase().includes(keyword);
+                if (!matches) {
+                    node.addClass('dimmed');
+                }
+            });
+
+            cyInstance.edges().forEach(edge => {
+                if (edge.source().hasClass('dimmed') && edge.target().hasClass('dimmed')) {
+                    edge.addClass('dimmed');
+                }
+            });
+        }
+
+        function handleLocalFile(event) {
+            const file = event.target.files?.[0];
+            if (!file) return;
+
+            setDatasetStatus(`正在解析 ${file.name} ...`);
+            toggleLoading(true);
+            hideInspector();
+            clearHighlights();
+
+            const reader = new FileReader();
+            reader.onload = () => {
+                try {
+                    const data = JSON.parse(reader.result);
+                    loadGraphFromData(data, `${file.name} (本地)`);
+                    showToast(`已导入 ${file.name}`);
+                } catch (error) {
+                    console.error(error);
+                    setDatasetStatus('解析 JSON 失败，请检查文件内容。');
+                    showToast('解析 JSON 失败', 'error');
+                } finally {
+                    toggleLoading(false);
+                    dom.fileInput.value = '';
+                }
+            };
+            reader.onerror = () => {
+                showToast('读取文件失败', 'error');
+                toggleLoading(false);
+            };
+            reader.readAsText(file, 'utf-8');
+        }
+
+        function getScreenshotUrl(relativePath) {
+            if (!relativePath) return PLACEHOLDER_IMAGE;
+            if (relativePath.startsWith('http')) return relativePath;
+            return `${SCREENSHOT_BASE}${relativePath}`;
+        }
+
+        function updateDatasetMeta(appName, timestamp) {
+            dom.datasetMeta.textContent = `${appName || '未知应用'} · ${formatTimestamp(timestamp)}`;
+        }
+
+        function updateDatasetChip(label) {
+            dom.datasetChip.textContent = label || '未选择';
+        }
+
+        function formatTimestamp(value) {
+            if (!value) return '未提供时间戳';
+            try {
+                return new Date(value).toLocaleString();
+            } catch {
+                return value;
+            }
+        }
+
+        function updateStats(data) {
+            const states = data?.stats?.total_states ?? Object.keys(data.states || {}).length;
+            const transitions = data?.stats?.total_transitions ?? (data.transitions || []).length;
+            const errors = data?.stats?.total_errors ?? (data.errors || []).length;
+            const branching = states ? (transitions / states).toFixed(2) : '0.00';
+
+            dom.statNodes.textContent = states;
+            dom.statEdges.textContent = transitions;
+            dom.statErrors.textContent = errors;
+            dom.statBranching.textContent = `${branching}x`;
+        }
+
+        function updateIssues(errors = []) {
+            if (!errors.length) {
+                dom.issueList.innerHTML = '<p class="text-slate-500 text-sm">暂无已知错误</p>';
+                dom.issueBadge.textContent = '0';
+                return;
+            }
+            dom.issueBadge.textContent = String(errors.length);
+            dom.issueList.innerHTML = errors.map((item, idx) => `
+                <div class="rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3">
+                    <p class="text-xs text-red-200 uppercase tracking-[0.4em]">#${idx + 1} · ${item.route || '未知路由'}</p>
+                    <p class="mt-1 text-sm text-red-100">${item.error || '未提供错误信息'}</p>
+                </div>
+            `).join('');
+        }
+
+        function setDatasetStatus(message) {
+            dom.datasetStatus.textContent = message;
+        }
+
+        function toggleLoading(isLoading) {
+            dom.graphLoading.classList.toggle('hidden', !isLoading);
+        }
+
+        function setGraphEmptyState(isEmpty, title = '暂无数据', detail = '加载 JSON 后即可开始探索') {
+            if (isEmpty) {
+                dom.graphEmpty.querySelector('[data-empty-title]').textContent = title;
+                dom.graphEmpty.querySelector('[data-empty-detail]').textContent = detail;
+                dom.graphEmpty.classList.remove('hidden');
+            } else {
+                dom.graphEmpty.classList.add('hidden');
+            }
+        }
+
+        function showInspector() {
+            dom.inspector.classList.remove('translate-x-full');
+        }
+
+        function hideInspector() {
+            dom.inspector.classList.add('translate-x-full');
+        }
+
+        function debounce(fn, delay = 200) {
+            let timer = null;
+            return (...args) => {
+                clearTimeout(timer);
+                timer = setTimeout(() => fn(...args), delay);
+            };
+        }
+
+        function updateDirectionToggleLabel() {
+            if (!dom.directionToggle) return;
+            const isHorizontal = layoutDirection === 'horizontal';
+            dom.directionToggle.textContent = isHorizontal ? '横向排布' : '纵向排布';
+            dom.directionToggle.title = '点击切换布局方向';
+            dom.directionToggle.setAttribute('aria-pressed', String(isHorizontal));
+        }
+
+        function showToast(message, variant = 'info') {
+            if (!dom.toast) return;
+            dom.toast.textContent = message;
+            dom.toast.classList.remove('hidden');
+            dom.toast.classList.toggle('bg-red-600/80', variant === 'error');
+            dom.toast.classList.toggle('bg-slate-900/90', variant !== 'error');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => dom.toast.classList.add('hidden'), 2600);
+        }
+    </script>
+</body>
+
+</html>

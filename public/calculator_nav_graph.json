@@ -1,0 +1,36 @@
+{
+  "app": "calculator",
+  "appDir": "apps/Calculator",
+  "mode": "schema",
+  "dataFile": null,
+  "reachability": null,
+  "routeCount": 1,
+  "transitionCount": 0,
+  "nodes": [
+    {
+      "id": "/",
+      "routePath": "/",
+      "uiStateId": "calculator.home.base",
+      "component": "CalculatorContent",
+      "entryPoint": true,
+      "entry": {
+        "kind": "home",
+        "home": true,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "页面主内容区"
+        }
+      ],
+      "description": "计算器主页",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    }
+  ],
+  "edges": []
+}

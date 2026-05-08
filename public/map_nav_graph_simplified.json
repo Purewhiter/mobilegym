@@ -1,0 +1,570 @@
+{
+  "app": "map",
+  "appDir": "apps/Map",
+  "mode": "schema",
+  "routeCount": 17,
+  "edgeCount": 20,
+  "nodes": [
+    {
+      "id": "/",
+      "routePath": "/",
+      "component": "ExplorePage",
+      "entryPoint": true,
+      "entry": {
+        "kind": "home",
+        "home": true,
+        "deepLink": false
+      },
+      "description": "探索首页-地图视图",
+      "stateCount": 2,
+      "states": [
+        "/",
+        "/?category=string"
+      ],
+      "actionCount": 2,
+      "actionIds": [
+        "placeResults.sheet.close",
+        "placeResults.result.select.item"
+      ],
+      "actions": [
+        {
+          "id": "placeResults.sheet.close",
+          "label": "关闭搜索结果",
+          "behavior": "submit"
+        },
+        {
+          "id": "placeResults.result.select.item",
+          "label": "点击搜索结果",
+          "behavior": "select",
+          "scope": "item",
+          "paramsSchema": {
+            "itemId": "string"
+          }
+        }
+      ]
+    },
+    {
+      "id": "/me",
+      "routePath": "/me",
+      "component": "MePage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "我-个人页（列表/保存）",
+      "stateCount": 1,
+      "states": [
+        "/me"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/contribute",
+      "routePath": "/contribute",
+      "component": "ContributePage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "贡献首页",
+      "stateCount": 1,
+      "states": [
+        "/contribute"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/search",
+      "routePath": "/search",
+      "component": "SearchPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "搜索页-历史记录",
+      "stateCount": 1,
+      "states": [
+        "/search"
+      ],
+      "actionCount": 2,
+      "actionIds": [
+        "search.bar.input",
+        "search.voice.tap"
+      ],
+      "actions": [
+        {
+          "id": "search.bar.input",
+          "label": "搜索地点",
+          "behavior": "input",
+          "paramsSchema": {
+            "value": "string"
+          }
+        },
+        {
+          "id": "search.voice.tap",
+          "label": "语音搜索",
+          "behavior": "other"
+        }
+      ]
+    },
+    {
+      "id": "/profile",
+      "routePath": "/profile",
+      "component": "ProfilePage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "个人资料菜单",
+      "stateCount": 1,
+      "states": [
+        "/profile"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/settings",
+      "routePath": "/settings",
+      "component": "SettingsPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "设置主页",
+      "stateCount": 1,
+      "states": [
+        "/settings"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/settings/app-display",
+      "routePath": "/settings/app-display",
+      "component": "AppDisplayPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "应用和显示设置",
+      "stateCount": 1,
+      "states": [
+        "/settings/app-display"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/settings/app-display/language",
+      "routePath": "/settings/app-display/language",
+      "component": "LanguagePage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "应用语言",
+      "stateCount": 1,
+      "states": [
+        "/settings/app-display/language"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/settings/nav",
+      "routePath": "/settings/nav",
+      "component": "NavSettingsPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "导航设置",
+      "stateCount": 1,
+      "states": [
+        "/settings/nav"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/settings/getting-around",
+      "routePath": "/settings/getting-around",
+      "component": "GettingAroundPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "出行设置",
+      "stateCount": 1,
+      "states": [
+        "/settings/getting-around"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/settings/location-privacy",
+      "routePath": "/settings/location-privacy",
+      "component": "LocationPrivacyPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "位置信息和隐私",
+      "stateCount": 1,
+      "states": [
+        "/settings/location-privacy"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/settings/offline-maps",
+      "routePath": "/settings/offline-maps",
+      "component": "OfflineMapsSettingsPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "离线地图设置",
+      "stateCount": 1,
+      "states": [
+        "/settings/offline-maps"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/settings/notifications",
+      "routePath": "/settings/notifications",
+      "component": "NotificationsPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "通知设置",
+      "stateCount": 1,
+      "states": [
+        "/settings/notifications"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/settings/notifications/traffic",
+      "routePath": "/settings/notifications/traffic",
+      "component": "TrafficInfoPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "交通信息通知",
+      "stateCount": 1,
+      "states": [
+        "/settings/notifications/traffic"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/settings/notifications/traffic/:subId",
+      "routePath": "/settings/notifications/traffic/:subId",
+      "component": "TrafficSubPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "交通信息子页",
+      "stateCount": 1,
+      "states": [
+        "/settings/notifications/traffic/:subId"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/settings/notifications/recommendations",
+      "routePath": "/settings/notifications/recommendations",
+      "component": "RecommendationsPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "个性化推荐通知",
+      "stateCount": 1,
+      "states": [
+        "/settings/notifications/recommendations"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/settings/notifications/recommendations/:subId",
+      "routePath": "/settings/notifications/recommendations/:subId",
+      "component": "RecommendationSubPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "推荐子页",
+      "stateCount": 1,
+      "states": [
+        "/settings/notifications/recommendations/:subId"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    }
+  ],
+  "edges": [
+    {
+      "source": "/me",
+      "target": "/",
+      "transitions": [
+        "tab.explore"
+      ],
+      "type": "navigation",
+      "label": "tab.explore",
+      "id": "tab.explore"
+    },
+    {
+      "source": "/contribute",
+      "target": "/",
+      "transitions": [
+        "tab.explore"
+      ],
+      "type": "navigation",
+      "label": "tab.explore",
+      "id": "tab.explore"
+    },
+    {
+      "source": "/",
+      "target": "/me",
+      "transitions": [
+        "tab.me"
+      ],
+      "type": "navigation",
+      "label": "tab.me",
+      "id": "tab.me"
+    },
+    {
+      "source": "/contribute",
+      "target": "/me",
+      "transitions": [
+        "tab.me"
+      ],
+      "type": "navigation",
+      "label": "tab.me",
+      "id": "tab.me"
+    },
+    {
+      "source": "/",
+      "target": "/contribute",
+      "transitions": [
+        "tab.contribute"
+      ],
+      "type": "navigation",
+      "label": "tab.contribute",
+      "id": "tab.contribute"
+    },
+    {
+      "source": "/me",
+      "target": "/contribute",
+      "transitions": [
+        "tab.contribute"
+      ],
+      "type": "navigation",
+      "label": "tab.contribute",
+      "id": "tab.contribute"
+    },
+    {
+      "source": "/",
+      "target": "/search",
+      "transitions": [
+        "search.open"
+      ],
+      "type": "navigation",
+      "label": "search.open",
+      "id": "search.open"
+    },
+    {
+      "source": "/",
+      "target": "/profile",
+      "transitions": [
+        "profile.open"
+      ],
+      "type": "navigation",
+      "label": "profile.open",
+      "id": "profile.open"
+    },
+    {
+      "source": "/profile",
+      "target": "/settings",
+      "transitions": [
+        "settings.open"
+      ],
+      "type": "navigation",
+      "label": "settings.open",
+      "id": "settings.open"
+    },
+    {
+      "source": "/settings",
+      "target": "/settings/app-display",
+      "transitions": [
+        "settings.app-display.open"
+      ],
+      "type": "navigation",
+      "label": "settings.app-display.open",
+      "id": "settings.app-display.open"
+    },
+    {
+      "source": "/settings/app-display",
+      "target": "/settings/app-display/language",
+      "transitions": [
+        "settings.app-display.language.open"
+      ],
+      "type": "navigation",
+      "label": "settings.app-display.language.open",
+      "id": "settings.app-display.language.open"
+    },
+    {
+      "source": "/settings",
+      "target": "/settings/nav",
+      "transitions": [
+        "settings.nav.open"
+      ],
+      "type": "navigation",
+      "label": "settings.nav.open",
+      "id": "settings.nav.open"
+    },
+    {
+      "source": "/settings",
+      "target": "/settings/getting-around",
+      "transitions": [
+        "settings.getting-around.open"
+      ],
+      "type": "navigation",
+      "label": "settings.getting-around.open",
+      "id": "settings.getting-around.open"
+    },
+    {
+      "source": "/settings",
+      "target": "/settings/location-privacy",
+      "transitions": [
+        "settings.location-privacy.open"
+      ],
+      "type": "navigation",
+      "label": "settings.location-privacy.open",
+      "id": "settings.location-privacy.open"
+    },
+    {
+      "source": "/settings",
+      "target": "/settings/offline-maps",
+      "transitions": [
+        "settings.offline-maps.open"
+      ],
+      "type": "navigation",
+      "label": "settings.offline-maps.open",
+      "id": "settings.offline-maps.open"
+    },
+    {
+      "source": "/settings",
+      "target": "/settings/notifications",
+      "transitions": [
+        "settings.notifications.open"
+      ],
+      "type": "navigation",
+      "label": "settings.notifications.open",
+      "id": "settings.notifications.open"
+    },
+    {
+      "source": "/settings/notifications",
+      "target": "/settings/notifications/traffic",
+      "transitions": [
+        "settings.notifications.traffic.open"
+      ],
+      "type": "navigation",
+      "label": "settings.notifications.traffic.open",
+      "id": "settings.notifications.traffic.open"
+    },
+    {
+      "source": "/settings/notifications/traffic",
+      "target": "/settings/notifications/traffic/:subId",
+      "transitions": [
+        "settings.notifications.traffic.sub.open"
+      ],
+      "type": "navigation",
+      "label": "settings.notifications.traffic.sub.open",
+      "id": "settings.notifications.traffic.sub.open"
+    },
+    {
+      "source": "/settings/notifications",
+      "target": "/settings/notifications/recommendations",
+      "transitions": [
+        "settings.notifications.recommendations.open"
+      ],
+      "type": "navigation",
+      "label": "settings.notifications.recommendations.open",
+      "id": "settings.notifications.recommendations.open"
+    },
+    {
+      "source": "/settings/notifications/recommendations",
+      "target": "/settings/notifications/recommendations/:subId",
+      "transitions": [
+        "settings.notifications.rec.sub.open"
+      ],
+      "type": "navigation",
+      "label": "settings.notifications.rec.sub.open",
+      "id": "settings.notifications.rec.sub.open"
+    }
+  ]
+}

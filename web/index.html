@@ -1,0 +1,1290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MobileGym: A Verifiable and Scalable Simulation Environment for Mobile GUI Agent Research</title>
+<meta name="description" content="MobileGym is a verifiable and scalable simulation environment for mobile GUI agent research — code-level state verification, structured state snapshots, identical-state replication, and scalable online RL across 28 mobile apps." />
+<link rel="canonical" href="https://mobilegym.dev/paper/" />
+<meta property="og:title" content="MobileGym: A Verifiable and Scalable Simulation Environment for Mobile GUI Agent Research" />
+<meta property="og:description" content="Structured environment state enables verifiable evaluation (vs. 10.2% VLM-judge misjudgment) and scalable online training (single-machine batch-parallel GRPO). 28 apps, 416 parameterized task templates, +40.7 pt Sim-to-Real." />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://mobilegym.dev/paper/" />
+<meta property="og:image" content="https://mobilegym.dev/paper/figures/figure1.png" />
+<meta property="og:image:width" content="2400" />
+<meta property="og:image:height" content="1366" />
+<meta property="og:image:alt" content="MobileGym: GUI agent interacts with the simulator via screenshots and actions; the environment performs task setup and parallel rollouts; a state-based judge produces reward signals and an optional AnswerSheet." />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="MobileGym: A Verifiable and Scalable Simulation Environment for Mobile GUI Agent Research" />
+<meta name="twitter:description" content="28 apps, 416 parameterized task templates, code-level state verification, scalable online RL, +40.7 pt Sim-to-Real." />
+<meta name="twitter:image" content="https://mobilegym.dev/paper/figures/figure1.png" />
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%B1%3C/text%3E%3C/svg%3E" />
+
+<link rel="stylesheet" href="tailwind.css" />
+<link rel="stylesheet" href="styles.css" />
+<script defer src="scripts/state-builder.js"></script>
+<script defer src="scripts/boot-hero.js"></script>
+<script defer src="scripts/trace-viewer.js"></script>
+<script defer src="scripts/bibtex-copy.js"></script>
+</head>
+
+<body class="text-stone-900 gradient-bg">
+
+<a href="#paper" class="skip-link">Skip to paper</a>
+
+<section id="demo" class="hero-demo scroll-mt-8" aria-label="MobileGym live simulator">
+  <div class="hero-demo-brand">
+    <span class="hero-demo-brand-name">MobileGym</span>
+    <span class="hero-demo-brand-meta">Live demo</span>
+  </div>
+  <div class="hero-demo-actions">
+    <a href="https://arxiv.org/abs/XXXX.XXXXX" target="_blank" rel="noopener"
+       class="hero-demo-action hero-demo-action-arxiv" aria-label="Read paper on arXiv">
+      <span class="hero-demo-arxiv-mark">arXiv</span>
+    </a>
+    <a href="https://github.com/Purewhiter/mobile-gym" target="_blank" rel="noopener"
+       class="hero-demo-action" aria-label="View source on GitHub">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.4 3-.405 1.02.005 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+    </a>
+    <button type="button" id="demo-poweroff-btn" class="hero-demo-poweroff hidden">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v10"/><path d="M18.4 6.6a9 9 0 1 1-12.77.04"/></svg>
+      <span>Power off</span>
+    </button>
+  </div>
+  <div class="demo-layout ui">
+    <div class="demo-phone-wrap">
+      <!-- 现代全面屏：iframe 尺寸严格匹配 simulator 原生 360×800 设计视口，
+           避免 simulator 的 #root 居中后产生黑色边距 -->
+      <div class="phone-rig relative" style="width: 360px; height: 800px;">
+        <!-- 侧边按钮（极简装饰） -->
+        <span class="absolute -right-[1.5px] top-[170px] w-[2px] h-[74px] rounded-r-sm pointer-events-none"
+              style="background: #2a2c32;"></span>
+        <span class="absolute -left-[1.5px] top-[132px] w-[2px] h-[32px] rounded-l-sm pointer-events-none"
+              style="background: #2a2c32;"></span>
+        <span class="absolute -left-[1.5px] top-[185px] w-[2px] h-[55px] rounded-l-sm pointer-events-none"
+              style="background: #2a2c32;"></span>
+        <span class="absolute -left-[1.5px] top-[254px] w-[2px] h-[55px] rounded-l-sm pointer-events-none"
+              style="background: #2a2c32;"></span>
+
+        <!-- 手机壳 = 屏幕本身（圆角直接裁屏幕内容，无 padding bezel）。
+             box-shadow 移到 CSS 里以便在 hero pre-boot 状态下隐藏（让电源键
+             浮在纯黑虚空中），post-boot 再 fade-in。 -->
+        <div id="demo-frame"
+             class="relative overflow-hidden bg-black"
+             style="
+               width: 360px;
+               height: 800px;
+               border-radius: 44px;
+             ">
+          <!-- 开机占位（点击后被替换为 iframe） -->
+          <button type="button" id="demo-boot-btn"
+                  class="ui group w-full h-full flex flex-col items-center justify-center bg-stone-950 text-stone-400 hover:text-white transition cursor-pointer focus:outline-none">
+            <span class="w-[72px] h-[72px] rounded-full border-2 border-stone-600 flex items-center justify-center mb-5 group-hover:border-stone-300 group-hover:scale-105 transition">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v10"/><path d="M18.4 6.6a9 9 0 1 1-12.77.04"/></svg>
+            </span>
+            <span class="hero-boot-label">Click to start</span>
+          </button>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- State Dock — 6 个外挂图标贴在手机右边缘，点击打开右侧抽屉。     -->
+        <!-- 每个 .state-dock-tab 同时带 data-studio-tab，复用现有 JS。     -->
+        <!-- ============================================================ -->
+        <aside class="state-dock ui" aria-label="State Builder dock" role="toolbar">
+          <span class="state-dock-eyebrow" aria-hidden="true">State Builder</span>
+          <span class="state-dock-divider" aria-hidden="true"></span>
+          <button type="button" class="state-dock-tab" data-studio-tab="session" data-state-dock-tab="session" aria-selected="true" aria-label="Session snapshots">
+            <span class="state-dock-tab-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
+            </span>
+          </button>
+          <button type="button" class="state-dock-tab" data-studio-tab="language" data-state-dock-tab="language" aria-selected="false" aria-label="Phone language">
+            <span class="state-dock-tab-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>
+            </span>
+            <span class="state-dock-tab-badge" id="state-dock-language-badge" aria-hidden="true">中</span>
+          </button>
+          <button type="button" class="state-dock-tab" data-studio-tab="device" data-state-dock-tab="device" aria-selected="false" aria-label="Device controls">
+            <span class="state-dock-tab-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="2.5" width="10" height="19" rx="2.6"/><path d="M10.5 18.5h3"/></svg>
+            </span>
+          </button>
+          <button type="button" class="state-dock-tab" data-studio-tab="wechat" data-state-dock-tab="wechat" aria-selected="false" aria-label="WeChat data">
+            <span class="state-dock-tab-icon state-dock-tab-icon-img">
+              <img src="figures/icons/com.tencent.mm.png" alt="" loading="lazy" />
+            </span>
+          </button>
+          <button type="button" class="state-dock-tab" data-studio-tab="alipay" data-state-dock-tab="alipay" aria-selected="false" aria-label="Alipay data">
+            <span class="state-dock-tab-icon state-dock-tab-icon-img">
+              <img src="figures/icons/com.eg.android.AlipayGphone.png" alt="" loading="lazy" />
+            </span>
+          </button>
+          <button type="button" class="state-dock-tab" data-studio-tab="sms" data-state-dock-tab="sms" aria-selected="false" aria-label="SMS data">
+            <span class="state-dock-tab-icon state-dock-tab-icon-img">
+              <img src="figures/icons/com.android.mms.png" alt="" loading="lazy" />
+            </span>
+          </button>
+          <button type="button" class="state-dock-tab" data-studio-tab="railway" data-state-dock-tab="railway" aria-selected="false" aria-label="12306 data">
+            <span class="state-dock-tab-icon state-dock-tab-icon-img">
+              <img src="figures/icons/com.MobileTicket.png" alt="" loading="lazy" />
+            </span>
+          </button>
+        </aside>
+        <span class="state-dock-hint" aria-hidden="true">Patch state</span>
+      </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- State Popover — 锚定在 dock 右侧的浮层卡片，无遮罩。点击 dock  -->
+    <!-- 任意 tab 滑出，点击卡片外区域 / ESC 关闭。复用原有              -->
+    <!-- .state-builder-tabs / .state-builder-panel-shell 子树。       -->
+    <!-- ============================================================ -->
+    <aside id="state-drawer" class="state-drawer" data-open="false" aria-label="State Builder" aria-hidden="true">
+      <div class="state-drawer-head">
+        <div>
+          <div class="state-builder-board-kicker">State Builder · Live Injection</div>
+          <h3 class="state-builder-board-title">Patch runtime state without restarting the device</h3>
+          <p class="state-builder-board-lede">Snapshot · time-travel · inject cross-app data while the simulator keeps running.</p>
+        </div>
+        <button type="button" id="state-drawer-close" class="state-drawer-close" aria-label="Close State Builder">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      </div>
+      <div class="state-drawer-body">
+      <div class="state-builder-board">
+        <div class="state-builder-tabs" role="tablist" aria-label="State Builder capabilities">
+          <button type="button" class="state-builder-tab" data-studio-tab="session" aria-selected="true" aria-controls="state-panel-session">
+            <span class="state-builder-tab-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
+            </span>
+            <span class="state-builder-tab-label">Session</span>
+          </button>
+          <button type="button" class="state-builder-tab" data-studio-tab="language" aria-selected="false" aria-controls="state-panel-language">
+            <span class="state-builder-tab-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>
+            </span>
+            <span class="state-builder-tab-label">Language</span>
+          </button>
+          <button type="button" class="state-builder-tab" data-studio-tab="device" aria-selected="false" aria-controls="state-panel-device">
+            <span class="state-builder-tab-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="2.5" width="10" height="19" rx="2.6"/><path d="M10.5 18.5h3"/></svg>
+            </span>
+            <span class="state-builder-tab-label">Device</span>
+          </button>
+          <button type="button" class="state-builder-tab" data-studio-tab="wechat" aria-selected="false" aria-controls="state-panel-wechat">
+            <span class="state-builder-tab-icon state-builder-tab-icon-img">
+              <img src="figures/icons/com.tencent.mm.png" alt="" loading="lazy" />
+            </span>
+            <span class="state-builder-tab-label">WeChat</span>
+          </button>
+          <button type="button" class="state-builder-tab" data-studio-tab="alipay" aria-selected="false" aria-controls="state-panel-alipay">
+            <span class="state-builder-tab-icon state-builder-tab-icon-img">
+              <img src="figures/icons/com.eg.android.AlipayGphone.png" alt="" loading="lazy" />
+            </span>
+            <span class="state-builder-tab-label">Alipay</span>
+          </button>
+          <button type="button" class="state-builder-tab" data-studio-tab="sms" aria-selected="false" aria-controls="state-panel-sms">
+            <span class="state-builder-tab-icon state-builder-tab-icon-img">
+              <img src="figures/icons/com.android.mms.png" alt="" loading="lazy" />
+            </span>
+            <span class="state-builder-tab-label">SMS</span>
+          </button>
+          <button type="button" class="state-builder-tab" data-studio-tab="railway" aria-selected="false" aria-controls="state-panel-railway">
+            <span class="state-builder-tab-icon state-builder-tab-icon-img">
+              <img src="figures/icons/com.MobileTicket.png" alt="" loading="lazy" />
+            </span>
+            <span class="state-builder-tab-label">12306</span>
+          </button>
+        </div>
+
+        <div class="state-builder-panel-shell">
+        <section id="state-panel-session" class="studio-panel space-y-3" data-studio-panel="session" data-active="true">
+              <div class="studio-action-rail" role="tablist" aria-label="Session state actions">
+                <button type="button" class="studio-action-tab" data-studio-action="session-reset" aria-selected="true">Reset</button>
+                <button type="button" class="studio-action-tab" data-studio-action="session-save" aria-selected="false">Save</button>
+                <button type="button" class="studio-action-tab" data-studio-action="session-restore" aria-selected="false">Restore</button>
+              </div>
+              <div class="studio-action-panel space-y-3" data-studio-action-panel="session-reset" data-active="true">
+                <div class="studio-snapshot-meta">Reset clears the simulator and reloads a fresh session. Saved snapshots stay in this browser.</div>
+                <button type="button" id="studio-reset-session" class="studio-action w-full">Reset simulator</button>
+              </div>
+              <div class="studio-action-panel space-y-3" data-studio-action-panel="session-save" data-active="false">
+                <div class="studio-field">
+                  <label for="studio-snapshot-name">Snapshot name</label>
+                  <input id="studio-snapshot-name" class="studio-input" value="Snapshot" />
+                </div>
+                <button type="button" id="studio-save-snapshot" class="studio-action w-full">Save snapshot</button>
+              </div>
+              <div class="studio-action-panel space-y-3" data-studio-action-panel="session-restore" data-active="false">
+                <div class="studio-field">
+                  <label for="studio-snapshot-select">Snapshot</label>
+                  <select id="studio-snapshot-select" class="studio-input"><option value="">No snapshots yet</option></select>
+                </div>
+                <button type="button" id="studio-restore-snapshot" class="studio-action w-full">Restore snapshot</button>
+                <button type="button" id="studio-delete-snapshot" class="studio-action w-full">Delete snapshot</button>
+              </div>
+            </section>
+        <section id="state-panel-language" class="studio-panel space-y-3" data-studio-panel="language" data-active="false">
+              <div class="studio-snapshot-meta">
+                Sets the simulated phone's language. Also clears per-app overrides (Alipay, Bilibili, RedBook, Map) so every app follows the new system locale.
+              </div>
+              <div class="studio-language-choices" role="radiogroup" aria-label="Phone language">
+                <button type="button" class="studio-language-choice" data-language-choice="zh-Hans" role="radio" aria-checked="true">
+                  <span class="studio-language-choice-name">中文</span>
+                  <span class="studio-language-choice-meta">Simplified Chinese</span>
+                </button>
+                <button type="button" class="studio-language-choice" data-language-choice="en" role="radio" aria-checked="false">
+                  <span class="studio-language-choice-name">English</span>
+                  <span class="studio-language-choice-meta">United States</span>
+                </button>
+              </div>
+              <button type="button" id="studio-apply-language" class="studio-action w-full">Apply language</button>
+            </section>
+        <section id="state-panel-device" class="studio-panel space-y-3" data-studio-panel="device" data-active="false">
+              <div class="studio-action-rail" role="tablist" aria-label="Device state actions">
+                <button type="button" class="studio-action-tab" data-studio-action="device-time" aria-selected="true">Time</button>
+                <button type="button" class="studio-action-tab" data-studio-action="device-battery" aria-selected="false">Battery</button>
+                <button type="button" class="studio-action-tab" data-studio-action="device-location" aria-selected="false">Location</button>
+              </div>
+              <div class="studio-action-panel space-y-3" data-studio-action-panel="device-time" data-active="true">
+                <div class="grid grid-cols-2 gap-3">
+                  <div class="studio-field">
+                    <label for="studio-device-time-mode">Mode</label>
+                    <select id="studio-device-time-mode" class="studio-input">
+                      <option value="real">Real</option>
+                      <option value="simulated">Simulated</option>
+                    </select>
+                  </div>
+                  <div class="studio-field">
+                    <label for="studio-device-time-flow">Flow</label>
+                    <select id="studio-device-time-flow" class="studio-input"><option value="flow">Flow</option></select>
+                  </div>
+                </div>
+                <div class="studio-field" id="studio-device-time-value-field" hidden>
+                  <label for="studio-device-time-value">Device time</label>
+                  <input id="studio-device-time-value" class="studio-input" type="datetime-local" />
+                </div>
+                <button type="button" id="studio-apply-device-time" class="studio-action w-full">Apply time</button>
+              </div>
+              <div class="studio-action-panel space-y-3" data-studio-action-panel="device-battery" data-active="false">
+                <div class="grid grid-cols-2 gap-3">
+                  <div class="studio-field">
+                    <label for="studio-device-battery-level">Battery</label>
+                    <input id="studio-device-battery-level" class="studio-input" type="number" min="0" max="100" step="1" value="80" />
+                  </div>
+                  <div class="studio-field">
+                    <label for="studio-device-battery-status">Status</label>
+                    <select id="studio-device-battery-status" class="studio-input">
+                      <option value="unplugged">Unplugged</option>
+                      <option value="charging">Charging</option>
+                      <option value="fast">Fast charge</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="studio-field">
+                  <label for="studio-device-battery-saver">Battery saver</label>
+                  <select id="studio-device-battery-saver" class="studio-input">
+                    <option value="off">Off</option>
+                    <option value="on">On</option>
+                  </select>
+                </div>
+                <button type="button" id="studio-apply-device-battery" class="studio-action w-full">Apply battery</button>
+              </div>
+              <div class="studio-action-panel space-y-3" data-studio-action-panel="device-location" data-active="false">
+                <div class="studio-field">
+                  <label for="studio-device-location-preset">Preset</label>
+                  <select id="studio-device-location-preset" class="studio-input">
+                    <option value="beijing">Beijing</option>
+                    <option value="shanghai">Shanghai</option>
+                    <option value="guangzhou">Guangzhou</option>
+                    <option value="shenzhen">Shenzhen</option>
+                    <option value="hangzhou">Hangzhou</option>
+                    <option value="chengdu">Chengdu</option>
+                    <option value="wuhan">Wuhan</option>
+                    <option value="nanjing">Nanjing</option>
+                    <option value="newyork">New York</option>
+                    <option value="london">London</option>
+                    <option value="tokyo">Tokyo</option>
+                    <option value="custom">Custom coordinates</option>
+                  </select>
+                </div>
+                <div class="grid grid-cols-2 gap-3" id="studio-device-location-custom" hidden>
+                  <div class="studio-field">
+                    <label for="studio-device-location-lat">Latitude</label>
+                    <input id="studio-device-location-lat" class="studio-input" type="number" step="0.000001" value="39.9042" />
+                  </div>
+                  <div class="studio-field">
+                    <label for="studio-device-location-lon">Longitude</label>
+                    <input id="studio-device-location-lon" class="studio-input" type="number" step="0.000001" value="116.4074" />
+                  </div>
+                </div>
+                <button type="button" id="studio-apply-device-location" class="studio-action w-full">Apply location</button>
+              </div>
+            </section>
+        <section id="state-panel-wechat" class="studio-panel space-y-3" data-studio-panel="wechat" data-active="false">
+              <div class="studio-action-rail" role="tablist" aria-label="WeChat data actions">
+                <button type="button" class="studio-action-tab" data-studio-action="wechat-message" aria-selected="true">Message</button>
+                <button type="button" class="studio-action-tab" data-studio-action="wechat-contact" aria-selected="false">Contact</button>
+              </div>
+              <div class="studio-action-panel space-y-3" data-studio-action-panel="wechat-message" data-active="true">
+                <div class="studio-field">
+                  <label for="studio-wechat-contact">Chat</label>
+                  <select id="studio-wechat-contact" class="studio-input"><option value="">陈静</option></select>
+                </div>
+                <div class="studio-field">
+                  <label for="studio-wechat-time">Message time</label>
+                  <input id="studio-wechat-time" class="studio-input" type="datetime-local" />
+                </div>
+                <div class="studio-field">
+                  <label for="studio-wechat-message">Incoming message</label>
+                  <textarea id="studio-wechat-message" class="studio-input min-h-[82px] resize-none">今晚 7 点开会，记得带材料。</textarea>
+                </div>
+                <button type="button" id="studio-insert-wechat-message" class="studio-action w-full">Insert message</button>
+              </div>
+              <div class="studio-action-panel space-y-3" data-studio-action-panel="wechat-contact" data-active="false">
+                <div class="grid grid-cols-2 gap-3">
+                  <div class="studio-field">
+                    <label for="studio-wechat-new-name">New contact</label>
+                    <input id="studio-wechat-new-name" class="studio-input" value="林小雨" />
+                  </div>
+                  <div class="studio-field">
+                    <label for="studio-wechat-new-wxid">WeChat ID</label>
+                    <input id="studio-wechat-new-wxid" class="studio-input" value="linxiaoyu_2026" />
+                  </div>
+                </div>
+                <div class="studio-field">
+                  <label>Avatar</label>
+                  <div class="avatar-picker" id="studio-wechat-avatar-picker" aria-label="Choose WeChat avatar">
+                    <button type="button" class="avatar-choice" data-avatar="avatars/avatar_default.jpg" aria-pressed="true" title="Default"><img src="/@app-assets/Wechat/avatars/avatar_default.jpg" alt="" /></button>
+                    <button type="button" class="avatar-choice" data-avatar="avatars/avatar_88.jpg" aria-pressed="false" title="Avatar 88"><img src="/@app-assets/Wechat/avatars/avatar_88.jpg" alt="" /></button>
+                    <button type="button" class="avatar-choice" data-avatar="avatars/avatar_64.jpg" aria-pressed="false" title="Avatar 64"><img src="/@app-assets/Wechat/avatars/avatar_64.jpg" alt="" /></button>
+                    <button type="button" class="avatar-choice" data-avatar="avatars/avatar_10.jpg" aria-pressed="false" title="Avatar 10"><img src="/@app-assets/Wechat/avatars/avatar_10.jpg" alt="" /></button>
+                    <button type="button" class="avatar-choice" data-avatar="avatars/avatar_20.jpg" aria-pressed="false" title="Avatar 20"><img src="/@app-assets/Wechat/avatars/avatar_20.jpg" alt="" /></button>
+                    <button type="button" class="avatar-choice" data-avatar="avatars/avatar_50.jpg" aria-pressed="false" title="Avatar 50"><img src="/@app-assets/Wechat/avatars/avatar_50.jpg" alt="" /></button>
+                  </div>
+                </div>
+                <div class="studio-field">
+                  <label for="studio-wechat-new-signature">Signature</label>
+                  <input id="studio-wechat-new-signature" class="studio-input" value="明天会更好" />
+                </div>
+                <button type="button" id="studio-add-wechat-contact" class="studio-action w-full">Add contact</button>
+              </div>
+            </section>
+        <section id="state-panel-alipay" class="studio-panel space-y-3" data-studio-panel="alipay" data-active="false">
+              <div class="studio-action-rail" role="tablist" aria-label="Alipay data actions">
+                <button type="button" class="studio-action-tab" data-studio-action="alipay-balance" aria-selected="true">Balance</button>
+                <button type="button" class="studio-action-tab" data-studio-action="alipay-bill" aria-selected="false">Bill</button>
+              </div>
+              <div class="studio-action-panel space-y-3" data-studio-action-panel="alipay-balance" data-active="true">
+                <div class="studio-field">
+                  <label for="studio-alipay-balance">Account balance</label>
+                  <input id="studio-alipay-balance" class="studio-input" type="number" step="0.01" value="520.13" />
+                </div>
+                <button type="button" id="studio-set-alipay-balance" class="studio-action w-full">Set balance</button>
+              </div>
+              <div class="studio-action-panel space-y-3" data-studio-action-panel="alipay-bill" data-active="false">
+                <div class="grid grid-cols-2 gap-3">
+                  <div class="studio-field">
+                    <label for="studio-alipay-amount">Bill amount</label>
+                    <input id="studio-alipay-amount" class="studio-input" type="number" step="0.01" value="32" />
+                  </div>
+                  <div class="studio-field">
+                    <label for="studio-alipay-direction">Type</label>
+                    <select id="studio-alipay-direction" class="studio-input">
+                      <option value="expense">Expense</option>
+                      <option value="income">Income</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="studio-field">
+                  <label for="studio-alipay-title">Bill title</label>
+                  <input id="studio-alipay-title" class="studio-input" value="星巴克" />
+                </div>
+                <div class="studio-field">
+                  <label for="studio-alipay-note">Note</label>
+                  <input id="studio-alipay-note" class="studio-input" value="拿铁" />
+                </div>
+                <button type="button" id="studio-add-alipay-bill" class="studio-action w-full">Add bill</button>
+              </div>
+            </section>
+        <section id="state-panel-sms" class="studio-panel space-y-3" data-studio-panel="sms" data-active="false">
+              <div class="studio-action-rail" role="tablist" aria-label="SMS and contacts data actions">
+                <button type="button" class="studio-action-tab" data-studio-action="sms-contact" aria-selected="true">Contact</button>
+                <button type="button" class="studio-action-tab" data-studio-action="sms-message" aria-selected="false">SMS</button>
+              </div>
+              <div class="studio-action-panel space-y-3" data-studio-action-panel="sms-contact" data-active="true">
+                <div class="grid grid-cols-2 gap-3">
+                  <div class="studio-field">
+                    <label for="studio-contact-name">Contact name</label>
+                    <input id="studio-contact-name" class="studio-input" value="张三" />
+                  </div>
+                  <div class="studio-field">
+                    <label for="studio-contact-phone">Phone</label>
+                    <input id="studio-contact-phone" class="studio-input" value="13800138000" />
+                  </div>
+                </div>
+                <button type="button" id="studio-save-contact" class="studio-action w-full">Save contact</button>
+              </div>
+              <div class="studio-action-panel space-y-3" data-studio-action-panel="sms-message" data-active="false">
+                <div class="studio-field">
+                  <label for="studio-sms-sender">SMS sender</label>
+                  <input id="studio-sms-sender" class="studio-input" value="12306" />
+                </div>
+                <div class="studio-field">
+                  <label for="studio-sms-body">Message content</label>
+                  <textarea id="studio-sms-body" class="studio-input min-h-[88px] resize-none">您的验证码是 482913，用于 MobileGym 场景演示，请勿泄露。</textarea>
+                </div>
+                <button type="button" id="studio-send-sms" class="studio-action w-full">Receive SMS</button>
+              </div>
+            </section>
+        <section id="state-panel-railway" class="studio-panel space-y-3" data-studio-panel="railway" data-active="false">
+              <div class="studio-action-rail" role="tablist" aria-label="12306 data actions">
+                <button type="button" class="studio-action-tab" data-studio-action="railway-order" aria-selected="true">Ticket order</button>
+              </div>
+              <div class="studio-action-panel space-y-3" data-studio-action-panel="railway-order" data-active="true">
+                <div class="grid grid-cols-2 gap-3">
+                  <div class="studio-field">
+                    <label for="studio-railway-train">Train</label>
+                    <input id="studio-railway-train" class="studio-input" value="G123" />
+                  </div>
+                  <div class="studio-field">
+                    <label for="studio-railway-status">Status</label>
+                    <select id="studio-railway-status" class="studio-input">
+                      <option value="completed">Paid</option>
+                      <option value="pending">Unpaid</option>
+                      <option value="cancelled">Cancelled</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                  <div class="studio-field">
+                    <label for="studio-railway-from">From station</label>
+                    <input id="studio-railway-from" class="studio-input" value="北京南" />
+                  </div>
+                  <div class="studio-field">
+                    <label for="studio-railway-to">To station</label>
+                    <input id="studio-railway-to" class="studio-input" value="上海虹桥" />
+                  </div>
+                </div>
+                <div class="studio-field">
+                  <label for="studio-railway-date">Date</label>
+                  <input id="studio-railway-date" class="studio-input" type="date" value="2026-05-03" />
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                  <div class="studio-field">
+                    <label for="studio-railway-depart">Depart</label>
+                    <input id="studio-railway-depart" class="studio-input" value="09:30" />
+                  </div>
+                  <div class="studio-field">
+                    <label for="studio-railway-arrive">Arrive</label>
+                    <input id="studio-railway-arrive" class="studio-input" value="14:48" />
+                  </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                  <div class="studio-field">
+                    <label for="studio-railway-passenger">Passenger</label>
+                    <input id="studio-railway-passenger" class="studio-input" value="林小雨" />
+                  </div>
+                  <div class="studio-field">
+                    <label for="studio-railway-price">Price</label>
+                    <input id="studio-railway-price" class="studio-input" type="number" step="0.5" value="553" />
+                  </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                  <div class="studio-field">
+                    <label for="studio-railway-seat-type">Seat type</label>
+                    <select id="studio-railway-seat-type" class="studio-input">
+                      <option value="商务座">商务座</option>
+                      <option value="一等座">一等座</option>
+                      <option value="二等座">二等座</option>
+                      <option value="高级软卧">高级软卧</option>
+                      <option value="软卧">软卧</option>
+                      <option value="硬卧">硬卧</option>
+                      <option value="软座">软座</option>
+                      <option value="硬座">硬座</option>
+                      <option value="无座">无座</option>
+                    </select>
+                  </div>
+                  <div class="studio-field">
+                    <label for="studio-railway-seat-no">Seat</label>
+                    <input id="studio-railway-seat-no" class="studio-input" value="03车 08A号" />
+                  </div>
+                </div>
+                <button type="button" id="studio-add-railway-order" class="studio-action w-full">Add ticket/order</button>
+              </div>
+            </section>
+        </div>
+
+        <div id="studio-status" class="studio-status" data-kind="warn" role="status" aria-live="polite">
+          Power on the phone, then apply a scenario.
+        </div>
+
+        <p class="state-builder-board-foot">
+          One <code>setState</code> patch per action · persists across reloads
+        </p>
+      </div>
+      </div>
+    </aside>
+  </div>
+  <div class="hero-demo-foot">
+    <div class="hero-demo-scroll-hint" aria-hidden="true">
+      <span>Scroll to read paper</span>
+      <svg width="11" height="14" viewBox="0 0 11 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M5.5 1v11"/>
+        <path d="M2 8.5l3.5 3.5L9 8.5"/>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- HEADER                                                       -->
+<!-- ============================================================ -->
+<header id="paper" class="container-narrow mx-auto px-6 pt-16 pb-8">
+  <div class="text-sm ui text-stone-500 mb-3 tracking-wide uppercase">Paper · 2026</div>
+
+  <h1 class="text-3xl md:text-5xl font-bold leading-tight tracking-tight mb-6 text-stone-900">
+    <span class="text-brand-os">MobileGym</span>: A Verifiable and Scalable<br/>
+    Simulation Environment for Mobile GUI Agent Research
+  </h1>
+
+  <!-- Authors (placeholder; replace before publishing) -->
+  <div class="ui text-stone-700 text-base mb-3 leading-relaxed">
+    <span class="font-medium">Author One</span><sup>1</sup>,
+    <span class="font-medium">Author Two</span><sup>1</sup>,
+    <span class="font-medium">Author Three</span><sup>2</sup>
+  </div>
+  <div class="ui text-sm text-stone-500 mb-8">
+    <sup>1</sup>Affiliation One &nbsp;·&nbsp;
+    <sup>2</sup>Affiliation Two
+  </div>
+
+  <!-- Action buttons -->
+  <nav aria-label="Paper resources" class="paper-actions ui">
+    <a href="https://arxiv.org/abs/XXXX.XXXXX" target="_blank" rel="noopener"
+       class="paper-action paper-action-arxiv" aria-label="Read paper on arXiv">
+      <span class="paper-action-arxiv-mark">arXiv</span>
+    </a>
+    <a href="https://github.com/Purewhiter/mobile-gym" target="_blank" rel="noopener"
+       class="paper-action">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.4 3-.405 1.02.005 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+      <span>Code</span>
+    </a>
+    <a href="#bibtex" class="paper-action">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h6a4 4 0 0 1 4 4 4 4 0 0 1-4 4H5z"/><path d="M5 12h7a4 4 0 0 1 4 4 4 4 0 0 1-4 4H5z"/></svg>
+      <span>BibTeX</span>
+    </a>
+    <a href="#demo" class="paper-action">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="2.5"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+      <span>Live demo</span>
+    </a>
+  </nav>
+</header>
+
+<main>
+
+<!-- ============================================================ -->
+<!-- TLDR / KEY STATS                                             -->
+<!-- ============================================================ -->
+<section class="container-narrow mx-auto px-6 py-10">
+  <div class="relative rounded-2xl border border-blue-200/60 bg-gradient-to-br from-blue-50/70 via-white to-emerald-50/30 p-7 md:p-8 mb-12 shadow-sm">
+    <span class="absolute -top-2.5 left-6 px-2 bg-white text-[10px] ui font-bold uppercase tracking-[0.22em] text-brand-os">TL;DR</span>
+    <p class="text-lg leading-relaxed text-stone-800">
+      MobileGym is a verifiable and scalable simulation environment for mobile GUI agent research — the first to make <span class="font-semibold text-stone-900">online RL training and deterministic evaluation feasible on commercial apps</span>, long a structural blind spot of real-device pipelines. It covers <span class="font-semibold text-stone-900">28 mobile apps (12 commercial + 16 system)</span> in the browser. Across the released validation suite, <span class="font-semibold text-stone-900">code-level state judges</span> show no false accept/reject cases over 416 parameterized task templates (vs. 10.2% misjudgment when the same real-device trajectories are scored by a VLM), giving a clean RL reward signal; <span class="font-semibold text-stone-900">structured state replication</span> (∼400 MB per browser instance) makes single-machine batch-parallel GRPO cheap. <span class="font-semibold text-emerald-700">Sim-to-Real</span>: GRPO fine-tuning of Qwen3-VL-4B lifts simulation SR by +42.8 pt; on a 59-task real-device-runnable subset, the gain is preserved at <span class="font-semibold text-stone-900">+40.7&nbsp;pt</span> — 95% retention.
+    </p>
+  </div>
+
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-6 ui">
+    <div>
+      <svg class="w-5 h-5 mb-2 text-brand-os" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="5" y="2" width="14" height="20" rx="2"/>
+        <line x1="12" y1="18" x2="12.01" y2="18"/>
+      </svg>
+      <div class="stat-num text-4xl font-bold text-brand-os">28</div>
+      <div class="text-xs uppercase tracking-wider text-stone-500 mt-1">Apps simulated<br/><span class="normal-case tracking-normal text-stone-400">12 commercial + 16 system</span></div>
+    </div>
+    <div>
+      <svg class="w-5 h-5 mb-2 text-brand-app" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M9 2h6a2 2 0 0 1 2 2v0a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2v0a2 2 0 0 1 2-2z"/>
+        <path d="M5 7v13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7"/>
+        <path d="m9 14 2 2 4-4"/>
+      </svg>
+      <div class="stat-num text-4xl font-bold text-brand-app">416</div>
+      <div class="text-xs uppercase tracking-wider text-stone-500 mt-1">Parameterized task templates<br/><span class="normal-case tracking-normal text-stone-400">256 test + 160 train</span></div>
+    </div>
+    <div>
+      <svg class="w-5 h-5 mb-2 text-brand-bench" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        <path d="m9 12 2 2 4-4"/>
+      </svg>
+      <div class="stat-num text-4xl font-bold text-brand-bench">0</div>
+      <div class="text-xs uppercase tracking-wider text-stone-500 mt-1">False accept/reject<br/><span class="normal-case tracking-normal text-stone-400">released checks vs. 10.2% VLM judge error</span></div>
+    </div>
+    <div>
+      <svg class="w-5 h-5 mb-2 text-stone-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/>
+        <polyline points="16 7 22 7 22 13"/>
+      </svg>
+      <div class="stat-num text-4xl font-bold text-stone-900">+40.7<span class="text-2xl">pt</span></div>
+      <div class="text-xs uppercase tracking-wider text-stone-500 mt-1">Real-device gain<br/><span class="normal-case tracking-normal text-stone-400">Qwen3-VL-4B trained on sim</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- OVERVIEW FIGURE                                              -->
+<!-- ============================================================ -->
+<section class="container-narrow mx-auto px-6 py-10 border-t border-stone-200">
+  <figure class="space-y-3">
+    <img src="figures/figure1.png" alt="MobileGym overview pipeline: a GUI agent interacts with the MobileGym environment via screenshots and actions; the environment performs Task Setup and parallel rollouts; a state-based judge produces reward signals and an optional AnswerSheet."
+         class="w-full rounded-lg border border-stone-200 shadow-sm" />
+    <figcaption class="text-sm leading-relaxed text-stone-600 ui">
+      <strong class="text-stone-900">Overview.</strong>
+      Each task template is instantiated by applying a small <em>data patch</em> to a shared global base and pairing it with a <em>judge spec</em>. This lets one template produce many concrete starting conditions without rebuilding the world. From the same condition, the runtime forks <em>K</em> identical instances for batched on-policy rollouts, and the judge reads the environment's structured state to produce a deterministic, verifiable reward.
+    </figcaption>
+  </figure>
+</section>
+
+<!-- ============================================================ -->
+<!-- LIVE DEMO (embedded simulator)                               -->
+<!-- ============================================================ -->
+
+<!-- ============================================================ -->
+<!-- 28 APPS WALL (auto-scrolling marquee)                        -->
+<!-- ============================================================ -->
+<section id="apps" class="container-narrow mx-auto px-6 py-12 border-t border-stone-200 scroll-mt-8">
+  <div class="mb-7 ui">
+    <h2 class="text-2xl font-bold text-stone-900 mb-2">Inside the Sandbox: 28 Apps</h2>
+    <p class="text-stone-700 leading-relaxed">
+      Each app is a faithful in-browser re-implementation in React/TypeScript, with Android-style task stacks, Intent routing, ContentProviders, and permission flows. <span class="text-stone-400">Hover a row to pause.</span>
+    </p>
+  </div>
+
+  <div class="apps-marquee-row">
+    <div class="apps-marquee-meta">
+      <span class="bar" style="background:#10B981"></span>
+      <span class="apps-marquee-meta-label">Commercial</span>
+      <span class="apps-marquee-meta-count">12</span>
+    </div>
+    <div class="apps-marquee">
+      <div class="apps-marquee-track">
+        <a href="#demo" class="app-tile" title="微信">
+          <span class="app-icon"><img src="figures/icons/com.tencent.mm.png" alt="WeChat" loading="lazy" /></span>
+          <span class="app-name">WeChat</span>
+        </a>
+        <a href="#demo" class="app-tile" title="支付宝">
+          <span class="app-icon"><img src="figures/icons/com.eg.android.AlipayGphone.png" alt="Alipay" loading="lazy" /></span>
+          <span class="app-name">Alipay</span>
+        </a>
+        <a href="#demo" class="app-tile" title="小红书">
+          <span class="app-icon"><img src="figures/icons/com.xingin.xhs.png" alt="RedNote" loading="lazy" /></span>
+          <span class="app-name">RedNote</span>
+        </a>
+        <a href="#demo" class="app-tile" title="哔哩哔哩">
+          <span class="app-icon"><img src="figures/icons/com.bilibili.app.in.png" alt="Bilibili" loading="lazy" /></span>
+          <span class="app-name">Bilibili</span>
+        </a>
+        <a href="#demo" class="app-tile" title="铁路12306">
+          <span class="app-icon"><img src="figures/icons/com.MobileTicket.png" alt="Railway 12306" loading="lazy" /></span>
+          <span class="app-name">Railway</span>
+        </a>
+        <a href="#demo" class="app-tile" title="地图">
+          <span class="app-icon"><img src="figures/icons/com.autonavi.minimap.png" alt="Maps" loading="lazy" /></span>
+          <span class="app-name">Maps</span>
+        </a>
+        <a href="#demo" class="app-tile" title="Reddit">
+          <span class="app-icon"><img src="figures/icons/com.reddit.frontpage.png" alt="Reddit" loading="lazy" /></span>
+          <span class="app-name">Reddit</span>
+        </a>
+        <a href="#demo" class="app-tile" title="X">
+          <span class="app-icon"><img src="figures/icons/com.twitter.android.png" alt="X" loading="lazy" /></span>
+          <span class="app-name">X</span>
+        </a>
+        <a href="#demo" class="app-tile" title="Spotify">
+          <span class="app-icon"><img src="figures/icons/com.spotify.music.png" alt="Spotify" loading="lazy" /></span>
+          <span class="app-name">Spotify</span>
+        </a>
+        <a href="#demo" class="app-tile" title="eBay">
+          <span class="app-icon"><img src="figures/icons/com.ebay.mobile.png" alt="eBay" loading="lazy" /></span>
+          <span class="app-name">eBay</span>
+        </a>
+        <a href="#demo" class="app-tile" title="微信读书">
+          <span class="app-icon"><img src="figures/icons/com.tencent.weread.png" alt="WeRead" loading="lazy" /></span>
+          <span class="app-name">WeRead</span>
+        </a>
+        <a href="#demo" class="app-tile" title="腾讯会议">
+          <span class="app-icon"><img src="figures/icons/com.tencent.wemeet.app.png" alt="Tencent Meeting" loading="lazy" /></span>
+          <span class="app-name">Meeting</span>
+        </a>
+        <!-- duplicates for seamless loop -->
+        <a href="#demo" class="app-tile" title="微信" aria-hidden="true" tabindex="-1">
+          <span class="app-icon"><img src="figures/icons/com.tencent.mm.png" alt="" loading="lazy" /></span>
+          <span class="app-name">WeChat</span>
+        </a>
+        <a href="#demo" class="app-tile" title="支付宝" aria-hidden="true" tabindex="-1">
+          <span class="app-icon"><img src="figures/icons/com.eg.android.AlipayGphone.png" alt="" loading="lazy" /></span>
+          <span class="app-name">Alipay</span>
+        </a>
+        <a href="#demo" class="app-tile" title="小红书" aria-hidden="true" tabindex="-1">
+          <span class="app-icon"><img src="figures/icons/com.xingin.xhs.png" alt="" loading="lazy" /></span>
+          <span class="app-name">RedNote</span>
+        </a>
+        <a href="#demo" class="app-tile" title="哔哩哔哩" aria-hidden="true" tabindex="-1">
+          <span class="app-icon"><img src="figures/icons/com.bilibili.app.in.png" alt="" loading="lazy" /></span>
+          <span class="app-name">Bilibili</span>
+        </a>
+        <a href="#demo" class="app-tile" title="铁路12306" aria-hidden="true" tabindex="-1">
+          <span class="app-icon"><img src="figures/icons/com.MobileTicket.png" alt="" loading="lazy" /></span>
+          <span class="app-name">Railway</span>
+        </a>
+        <a href="#demo" class="app-tile" title="地图" aria-hidden="true" tabindex="-1">
+          <span class="app-icon"><img src="figures/icons/com.autonavi.minimap.png" alt="" loading="lazy" /></span>
+          <span class="app-name">Maps</span>
+        </a>
+        <a href="#demo" class="app-tile" title="Reddit" aria-hidden="true" tabindex="-1">
+          <span class="app-icon"><img src="figures/icons/com.reddit.frontpage.png" alt="" loading="lazy" /></span>
+          <span class="app-name">Reddit</span>
+        </a>
+        <a href="#demo" class="app-tile" title="X" aria-hidden="true" tabindex="-1">
+          <span class="app-icon"><img src="figures/icons/com.twitter.android.png" alt="" loading="lazy" /></span>
+          <span class="app-name">X</span>
+        </a>
+        <a href="#demo" class="app-tile" title="Spotify" aria-hidden="true" tabindex="-1">
+          <span class="app-icon"><img src="figures/icons/com.spotify.music.png" alt="" loading="lazy" /></span>
+          <span class="app-name">Spotify</span>
+        </a>
+        <a href="#demo" class="app-tile" title="eBay" aria-hidden="true" tabindex="-1">
+          <span class="app-icon"><img src="figures/icons/com.ebay.mobile.png" alt="" loading="lazy" /></span>
+          <span class="app-name">eBay</span>
+        </a>
+        <a href="#demo" class="app-tile" title="微信读书" aria-hidden="true" tabindex="-1">
+          <span class="app-icon"><img src="figures/icons/com.tencent.weread.png" alt="" loading="lazy" /></span>
+          <span class="app-name">WeRead</span>
+        </a>
+        <a href="#demo" class="app-tile" title="腾讯会议" aria-hidden="true" tabindex="-1">
+          <span class="app-icon"><img src="figures/icons/com.tencent.wemeet.app.png" alt="" loading="lazy" /></span>
+          <span class="app-name">Meeting</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="apps-marquee-row">
+    <div class="apps-marquee-meta">
+      <span class="bar" style="background:#3B82F6"></span>
+      <span class="apps-marquee-meta-label">System</span>
+      <span class="apps-marquee-meta-count">16</span>
+    </div>
+    <div class="apps-marquee">
+      <div class="apps-marquee-track is-reverse">
+        <a href="#demo" class="app-tile" title="桌面 / Launcher">
+          <span class="app-icon fallback is-light" style="background:linear-gradient(160deg,#f5f7fa 0%,#e2e8f0 100%); color:#475569;">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+          </span>
+          <span class="app-name">Launcher</span>
+        </a>
+        <a href="#demo" class="app-tile" title="设置">
+          <span class="app-icon"><img src="figures/icons/com.android.settings.png" alt="Settings" loading="lazy" /></span>
+          <span class="app-name">Settings</span>
+        </a>
+        <a href="#demo" class="app-tile" title="电话">
+          <span class="app-icon"><img src="figures/icons/com.android.contacts.png" alt="Phone" loading="lazy" /></span>
+          <span class="app-name">Phone</span>
+        </a>
+        <a href="#demo" class="app-tile" title="短信">
+          <span class="app-icon"><img src="figures/icons/com.android.mms.png" alt="Messages" loading="lazy" /></span>
+          <span class="app-name">Messages</span>
+        </a>
+        <a href="#demo" class="app-tile" title="日历">
+          <span class="app-icon"><img src="figures/icons/com.android.calendar.png" alt="Calendar" loading="lazy" /></span>
+          <span class="app-name">Calendar</span>
+        </a>
+        <a href="#demo" class="app-tile" title="时钟">
+          <span class="app-icon"><img src="figures/icons/com.android.deskclock.png" alt="Clock" loading="lazy" /></span>
+          <span class="app-name">Clock</span>
+        </a>
+        <a href="#demo" class="app-tile" title="天气">
+          <span class="app-icon"><img src="figures/icons/com.miui.weather2.png" alt="Weather" loading="lazy" /></span>
+          <span class="app-name">Weather</span>
+        </a>
+        <a href="#demo" class="app-tile" title="相册">
+          <span class="app-icon"><img src="figures/icons/com.miui.gallery.png" alt="Gallery" loading="lazy" /></span>
+          <span class="app-name">Gallery</span>
+        </a>
+        <a href="#demo" class="app-tile" title="计算器">
+          <span class="app-icon"><img src="figures/icons/com.miui.calculator.png" alt="Calculator" loading="lazy" /></span>
+          <span class="app-name">Calculator</span>
+        </a>
+        <a href="#demo" class="app-tile" title="计算器2 (AOSP)">
+          <span class="app-icon"><img src="figures/icons/com.android.calculator2.png" alt="Calculator 2" loading="lazy" /></span>
+          <span class="app-name">Calc&nbsp;(AOSP)</span>
+        </a>
+        <a href="#demo" class="app-tile" title="指南针">
+          <span class="app-icon"><img src="figures/icons/com.miui.compass.png" alt="Compass" loading="lazy" /></span>
+          <span class="app-name">Compass</span>
+        </a>
+        <a href="#demo" class="app-tile" title="笔记">
+          <span class="app-icon"><img src="figures/icons/com.miui.notes.png" alt="Notes" loading="lazy" /></span>
+          <span class="app-name">Notes</span>
+        </a>
+        <a href="#demo" class="app-tile" title="文件">
+          <span class="app-icon"><img src="figures/icons/com.android.fileexplorer.png" alt="Files" loading="lazy" /></span>
+          <span class="app-name">Files</span>
+        </a>
+        <a href="#demo" class="app-tile" title="主题商店">
+          <span class="app-icon"><img src="figures/icons/com.android.thememanager.png" alt="Themes" loading="lazy" /></span>
+          <span class="app-name">Themes</span>
+        </a>
+        <a href="#demo" class="app-tile" title="浏览器">
+          <span class="app-icon fallback is-light" style="background:linear-gradient(160deg,#ffffff 0%,#f5f7fa 100%); color:#3b82f6;">
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          </span>
+          <span class="app-name">Browser</span>
+        </a>
+        <a href="#demo" class="app-tile" title="答题卡">
+          <span class="app-icon fallback" style="background:linear-gradient(160deg,#3b82f6 0%,#2563eb 100%); color:#fff;">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2.5"/><path d="M9 12l2 2 4-4"/></svg>
+          </span>
+          <span class="app-name">AnswerSheet</span>
+        </a>
+        <!-- duplicates for seamless loop -->
+        <a href="#demo" class="app-tile" title="桌面 / Launcher" aria-hidden="true" tabindex="-1">
+          <span class="app-icon fallback is-light" style="background:linear-gradient(160deg,#f5f7fa 0%,#e2e8f0 100%); color:#475569;">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+          </span>
+          <span class="app-name">Launcher</span>
+        </a>
+        <a href="#demo" class="app-tile" title="设置" aria-hidden="true" tabindex="-1">
+          <span class="app-icon"><img src="figures/icons/com.android.settings.png" alt="" loading="lazy" /></span>
+          <span class="app-name">Settings</span>
+        </a>
+        <a href="#demo" class="app-tile" title="电话" aria-hidden="true" tabindex="-1">
+          <span class="app-icon"><img src="figures/icons/com.android.contacts.png" alt="" loading="lazy" /></span>
+          <span class="app-name">Phone</span>
+        </a>
+        <a href="#demo" class="app-tile" title="短信" aria-hidden="true" tabindex="-1">
+          <span class="app-icon"><img src="figures/icons/com.android.mms.png" alt="" loading="lazy" /></span>
+          <span class="app-name">Messages</span>
+        </a>
+        <a href="#demo" class="app-tile" title="日历" aria-hidden="true" tabindex="-1">
+          <span class="app-icon"><img src="figures/icons/com.android.calendar.png" alt="" loading="lazy" /></span>
+          <span class="app-name">Calendar</span>
+        </a>
+        <a href="#demo" class="app-tile" title="时钟" aria-hidden="true" tabindex="-1">
+          <span class="app-icon"><img src="figures/icons/com.android.deskclock.png" alt="" loading="lazy" /></span>
+          <span class="app-name">Clock</span>
+        </a>
+        <a href="#demo" class="app-tile" title="天气" aria-hidden="true" tabindex="-1">
+          <span class="app-icon"><img src="figures/icons/com.miui.weather2.png" alt="" loading="lazy" /></span>
+          <span class="app-name">Weather</span>
+        </a>
+        <a href="#demo" class="app-tile" title="相册" aria-hidden="true" tabindex="-1">
+          <span class="app-icon"><img src="figures/icons/com.miui.gallery.png" alt="" loading="lazy" /></span>
+          <span class="app-name">Gallery</span>
+        </a>
+        <a href="#demo" class="app-tile" title="计算器" aria-hidden="true" tabindex="-1">
+          <span class="app-icon"><img src="figures/icons/com.miui.calculator.png" alt="" loading="lazy" /></span>
+          <span class="app-name">Calculator</span>
+        </a>
+        <a href="#demo" class="app-tile" title="计算器2 (AOSP)" aria-hidden="true" tabindex="-1">
+          <span class="app-icon"><img src="figures/icons/com.android.calculator2.png" alt="" loading="lazy" /></span>
+          <span class="app-name">Calc&nbsp;(AOSP)</span>
+        </a>
+        <a href="#demo" class="app-tile" title="指南针" aria-hidden="true" tabindex="-1">
+          <span class="app-icon"><img src="figures/icons/com.miui.compass.png" alt="" loading="lazy" /></span>
+          <span class="app-name">Compass</span>
+        </a>
+        <a href="#demo" class="app-tile" title="笔记" aria-hidden="true" tabindex="-1">
+          <span class="app-icon"><img src="figures/icons/com.miui.notes.png" alt="" loading="lazy" /></span>
+          <span class="app-name">Notes</span>
+        </a>
+        <a href="#demo" class="app-tile" title="文件" aria-hidden="true" tabindex="-1">
+          <span class="app-icon"><img src="figures/icons/com.android.fileexplorer.png" alt="" loading="lazy" /></span>
+          <span class="app-name">Files</span>
+        </a>
+        <a href="#demo" class="app-tile" title="主题商店" aria-hidden="true" tabindex="-1">
+          <span class="app-icon"><img src="figures/icons/com.android.thememanager.png" alt="" loading="lazy" /></span>
+          <span class="app-name">Themes</span>
+        </a>
+        <a href="#demo" class="app-tile" title="浏览器" aria-hidden="true" tabindex="-1">
+          <span class="app-icon fallback is-light" style="background:linear-gradient(160deg,#ffffff 0%,#f5f7fa 100%); color:#3b82f6;">
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          </span>
+          <span class="app-name">Browser</span>
+        </a>
+        <a href="#demo" class="app-tile" title="答题卡" aria-hidden="true" tabindex="-1">
+          <span class="app-icon fallback" style="background:linear-gradient(160deg,#3b82f6 0%,#2563eb 100%); color:#fff;">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2.5"/><path d="M9 12l2 2 4-4"/></svg>
+          </span>
+          <span class="app-name">AnswerSheet</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <p class="ui text-xs text-stone-500 mt-8 text-center leading-relaxed">
+    All registered via <code class="mono text-stone-700 bg-stone-100 px-1.5 py-0.5 rounded">manifest auto-discovery</code> — adding a new app needs zero changes to the OS or benchmark layer. <span class="text-stone-400">~3–4 person-days per commercial app, &lt;1 day per system app.</span>
+  </p>
+</section>
+
+<!-- ============================================================ -->
+<!-- THE GAP                                                      -->
+<!-- ============================================================ -->
+<section class="container-narrow mx-auto px-6 py-12 border-t border-stone-200">
+  <h2 class="ui text-2xl font-bold mb-5 text-stone-900">What's Missing: Verification and Training at Scale</h2>
+  <p class="text-stone-700 leading-relaxed mb-4">
+    Trustworthy evaluation and scalable online training both require uniform state programmability — yet existing real-device and emulator-based pipelines provide it only partially. We identify three gaps that affect all mobile GUI tasks but are most acute on <em>account-bound, backend-dependent, and high-consequence commercial-app tasks</em>.
+  </p>
+  <div class="grid md:grid-cols-3 gap-4 my-6 ui">
+    <div class="border border-stone-200 rounded-lg p-5 bg-white">
+      <div class="text-xs uppercase tracking-wider text-stone-500 mb-2">Gap 1</div>
+      <div class="font-semibold text-stone-900 mb-2">State programmability is not uniform</div>
+      <div class="text-sm text-stone-600">State access relies on heterogeneous mechanisms (adb, uiautomator, accessibility tree, screenshot parsing) whose availability varies across apps. This often forces benchmarks to fall back to VLM-as-judge, where we measure 10.2% misjudgment.</div>
+    </div>
+    <div class="border border-stone-200 rounded-lg p-5 bg-white">
+      <div class="text-xs uppercase tracking-wider text-stone-500 mb-2">Gap 2</div>
+      <div class="font-semibold text-stone-900 mb-2">Hard to clone initial states at scale</div>
+      <div class="text-sm text-stone-600">GRPO requires multiple rollouts from <em>identical</em> initial states. Real-device state spans app-local data, system settings, account-server state, and cross-app context — bit-identical, isolated copies are at best engineering-intensive.</div>
+    </div>
+    <div class="border border-stone-200 rounded-lg p-5 bg-white">
+      <div class="text-xs uppercase tracking-wider text-stone-500 mb-2">Gap 3</div>
+      <div class="font-semibold text-stone-900 mb-2">Interactions pollute state — and some are irreversible</div>
+      <div class="text-sm text-stone-600">Every interaction modifies the environment; emulator file-snapshot reset costs seconds and often can't reach app internals. Money transfers, account deactivation, and ticket purchases carry real-world consequences and cannot be safely explored on a real device.</div>
+    </div>
+  </div>
+  <p class="text-stone-700 leading-relaxed">
+    MobileGym addresses all three gaps with a single mechanism — <strong>explicit, structured environment state</strong>. The same controllability that makes outcomes verifiable (code-level state judges replace VLM-as-judge) also makes online RL feasible (state snapshot/restore + multi-instance launch from the same environment data). Categories like payment, ticketing, and account management — long set aside by real-device pipelines — become accessible to programmatic evaluation and large-scale online RL.
+  </p>
+</section>
+
+<!-- ============================================================ -->
+<!-- ARCHITECTURE                                                 -->
+<!-- ============================================================ -->
+<section class="container-narrow mx-auto px-6 py-12 border-t border-stone-200">
+  <h2 class="ui text-2xl font-bold mb-5 text-stone-900">Simulator Internals</h2>
+  <p class="text-stone-700 leading-relaxed mb-8">
+    The whole stack runs in a single browser tab on top of React + TypeScript + Vite. A thin <strong>OS Semantics Kernel</strong> reproduces Android-style task / activity lifecycle, intent routing, dispatch, and shared data access; apps plug in through a uniform module contract; all runtime state lives in a single structured substrate that the benchmark can snapshot, patch, reset, and fork.
+  </p>
+
+  <figure>
+    <img src="figures/figure2.png"
+         alt="MobileGym simulator internals: a rendered phone surface on top of an OS Semantics Kernel (Task & Window Model, Routing & IPC, System Dispatch, Device State & Settings), an App Module Contract, a Structured State Substrate, and Benchmark-only Control APIs that inject synthetic input and read state to drive a deterministic JudgeResult."
+         class="w-full rounded-lg border border-stone-200 shadow-sm" />
+  </figure>
+</section>
+
+<!-- ============================================================ -->
+<!-- KEY RESULTS                                                  -->
+<!-- ============================================================ -->
+<section class="container-narrow mx-auto px-6 py-12 border-t border-stone-200">
+  <h2 class="ui text-2xl font-bold mb-5 text-stone-900">Headline Results</h2>
+
+  <div class="space-y-10">
+    <!-- Result 1: Leaderboard -->
+    <div>
+      <h3 class="ui text-lg font-semibold mb-3 text-stone-900">Leaderboard on MobileGym-Bench (test set, 256 tasks)</h3>
+      <p class="text-stone-700 leading-relaxed mb-4">
+        We evaluate 9 representative agents on the test set. <strong>L1-L4</strong> are PR-calibrated diagnostic strata; L1 is relatively saturated, while L4 captures frontier-level tasks. <strong>SR</strong> is overall Success Rate.
+      </p>
+
+      <div class="overflow-x-auto ui">
+        <table class="w-full text-sm border-collapse">
+          <thead>
+            <tr class="border-b-2 border-stone-300 text-left">
+              <th class="py-2 pr-4">Model</th>
+              <th class="py-2 px-2 text-right">L1<br/><span class="font-normal text-xs text-stone-400">(32)</span></th>
+              <th class="py-2 px-2 text-right">L2<br/><span class="font-normal text-xs text-stone-400">(72)</span></th>
+              <th class="py-2 px-2 text-right">L3<br/><span class="font-normal text-xs text-stone-400">(83)</span></th>
+              <th class="py-2 px-2 text-right">L4<br/><span class="font-normal text-xs text-stone-400">(69)</span></th>
+              <th class="py-2 pl-4 pr-1 text-right border-l border-stone-200">SR</th>
+            </tr>
+          </thead>
+          <tbody class="text-stone-700">
+            <tr class="bg-stone-50">
+              <td class="py-1.5 pr-4 text-xs uppercase tracking-wider text-stone-500" colspan="6">Closed-source flagship</td>
+            </tr>
+            <tr class="border-b border-stone-100">
+              <td class="py-2 pr-4 font-medium">Gemini 3.1 Pro</td>
+              <td class="py-2 px-2 text-right stat-num">96.9</td>
+              <td class="py-2 px-2 text-right stat-num">75.0</td>
+              <td class="py-2 px-2 text-right stat-num">57.8</td>
+              <td class="py-2 px-2 text-right stat-num">25.4</td>
+              <td class="py-2 pl-4 pr-1 text-right stat-num font-semibold border-l border-stone-200 relative"><div class="absolute top-1.5 bottom-1.5 left-1 bg-blue-100/70 rounded-sm" style="width: 58.8%;"></div><span class="relative">58.8</span></td>
+            </tr>
+            <tr class="border-b border-stone-100">
+              <td class="py-2 pr-4 font-medium">Doubao-Seed-2.0-Pro</td>
+              <td class="py-2 px-2 text-right stat-num">93.8</td>
+              <td class="py-2 px-2 text-right stat-num">83.3</td>
+              <td class="py-2 px-2 text-right stat-num">45.8</td>
+              <td class="py-2 px-2 text-right stat-num">7.2</td>
+              <td class="py-2 pl-4 pr-1 text-right stat-num font-semibold border-l border-stone-200 relative"><div class="absolute top-1.5 bottom-1.5 left-1 bg-blue-100/70 rounded-sm" style="width: 52.0%;"></div><span class="relative">52.0</span></td>
+            </tr>
+            <tr class="border-b border-stone-100">
+              <td class="py-2 pr-4 font-medium">Qwen3.6-Plus</td>
+              <td class="py-2 px-2 text-right stat-num">96.9</td>
+              <td class="py-2 px-2 text-right stat-num">63.9</td>
+              <td class="py-2 px-2 text-right stat-num">44.6</td>
+              <td class="py-2 px-2 text-right stat-num">4.3</td>
+              <td class="py-2 pl-4 pr-1 text-right stat-num font-semibold border-l border-stone-200 relative"><div class="absolute top-1.5 bottom-1.5 left-1 bg-blue-100/70 rounded-sm" style="width: 45.7%;"></div><span class="relative">45.7</span></td>
+            </tr>
+            <tr class="bg-stone-50">
+              <td class="py-1.5 pr-4 text-xs uppercase tracking-wider text-stone-500" colspan="6">Open-source GUI agents</td>
+            </tr>
+            <tr class="border-b border-stone-100">
+              <td class="py-2 pr-4 font-medium">AutoGLM-Phone-9B</td>
+              <td class="py-2 px-2 text-right stat-num">75.0</td>
+              <td class="py-2 px-2 text-right stat-num">26.7</td>
+              <td class="py-2 px-2 text-right stat-num">7.8</td>
+              <td class="py-2 px-2 text-right stat-num">2.2</td>
+              <td class="py-2 pl-4 pr-1 text-right stat-num font-semibold border-l border-stone-200 relative"><div class="absolute top-1.5 bottom-1.5 left-1 bg-emerald-100/70 rounded-sm" style="width: 20.0%;"></div><span class="relative">20.0</span></td>
+            </tr>
+            <tr class="border-b border-stone-100">
+              <td class="py-2 pr-4 font-medium">UI-TARS-1.5-8B</td>
+              <td class="py-2 px-2 text-right stat-num">60.2</td>
+              <td class="py-2 px-2 text-right stat-num">18.4</td>
+              <td class="py-2 px-2 text-right stat-num">1.8</td>
+              <td class="py-2 px-2 text-right stat-num">1.8</td>
+              <td class="py-2 pl-4 pr-1 text-right stat-num font-semibold border-l border-stone-200 relative"><div class="absolute top-1.5 bottom-1.5 left-1 bg-emerald-100/70 rounded-sm" style="width: 13.8%;"></div><span class="relative">13.8</span></td>
+            </tr>
+            <tr class="border-b border-stone-100">
+              <td class="py-2 pr-4 font-medium">UI-Venus-1.5-8B</td>
+              <td class="py-2 px-2 text-right stat-num">62.5</td>
+              <td class="py-2 px-2 text-right stat-num">19.4</td>
+              <td class="py-2 px-2 text-right stat-num">4.8</td>
+              <td class="py-2 px-2 text-right stat-num">2.2</td>
+              <td class="py-2 pl-4 pr-1 text-right stat-num font-semibold border-l border-stone-200 relative"><div class="absolute top-1.5 bottom-1.5 left-1 bg-emerald-100/70 rounded-sm" style="width: 15.4%;"></div><span class="relative">15.4</span></td>
+            </tr>
+            <tr class="border-b border-stone-100">
+              <td class="py-2 pr-4 font-medium">GUI-Owl-1.5-8B-Think</td>
+              <td class="py-2 px-2 text-right stat-num">61.7</td>
+              <td class="py-2 px-2 text-right stat-num">20.5</td>
+              <td class="py-2 px-2 text-right stat-num">3.9</td>
+              <td class="py-2 px-2 text-right stat-num">1.4</td>
+              <td class="py-2 pl-4 pr-1 text-right stat-num font-semibold border-l border-stone-200 relative"><div class="absolute top-1.5 bottom-1.5 left-1 bg-emerald-100/70 rounded-sm" style="width: 15.1%;"></div><span class="relative">15.1</span></td>
+            </tr>
+            <tr class="border-b border-stone-100">
+              <td class="py-2 pr-4 font-medium">Step-GUI-4B</td>
+              <td class="py-2 px-2 text-right stat-num">64.8</td>
+              <td class="py-2 px-2 text-right stat-num">12.5</td>
+              <td class="py-2 px-2 text-right stat-num">2.4</td>
+              <td class="py-2 px-2 text-right stat-num">1.8</td>
+              <td class="py-2 pl-4 pr-1 text-right stat-num font-semibold border-l border-stone-200 relative"><div class="absolute top-1.5 bottom-1.5 left-1 bg-emerald-100/70 rounded-sm" style="width: 12.9%;"></div><span class="relative">12.9</span></td>
+            </tr>
+            <tr class="bg-stone-50">
+              <td class="py-1.5 pr-4 text-xs uppercase tracking-wider text-stone-500" colspan="6">General-purpose VLM</td>
+            </tr>
+            <tr class="border-b border-stone-100">
+              <td class="py-2 pr-4 font-medium">Qwen3-VL-4B</td>
+              <td class="py-2 px-2 text-right stat-num">50.8</td>
+              <td class="py-2 px-2 text-right stat-num">10.1</td>
+              <td class="py-2 px-2 text-right stat-num">0.3</td>
+              <td class="py-2 px-2 text-right stat-num">0.4</td>
+              <td class="py-2 pl-4 pr-1 text-right stat-num font-semibold border-l border-stone-200 relative"><div class="absolute top-1.5 bottom-1.5 left-1 bg-stone-200/70 rounded-sm" style="width: 10.7%;"></div><span class="relative">10.7</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="text-xs text-stone-500 ui mt-3">
+        Even Gemini 3.1 Pro reaches only <strong>25.4</strong> on L4, indicating substantial remaining headroom for future mobile GUI agents. Difficulty bins are PR-calibrated against the 8-model reference panel; calibration excludes Qwen3-VL-4B and its fine-tuned variants.
+      </p>
+    </div>
+
+    <!-- Result 2: Sim-to-Real -->
+    <div>
+      <h3 class="ui text-lg font-semibold mb-3 text-stone-900">Sim-to-Real Transfer: +42.8 pt → +40.7 pt</h3>
+      <p class="text-stone-700 leading-relaxed mb-4">
+        Reinforcement-fine-tuning Qwen3-VL-4B with GRPO on a single 3×RTX Pro 6000 node (∼3 hours, 96-way concurrent rollouts) lifts simulation SR from 9.4% → 22.2% (+12.8 pt). On a 59-task real-device subset, the training gain transfers consistently from simulation to the device:
+      </p>
+
+      <div class="overflow-x-auto ui">
+        <table class="w-full text-sm border-collapse">
+          <thead>
+            <tr>
+              <th class="py-2 pr-4 text-left align-bottom border-b-2 border-stone-300" rowspan="2">Bucket</th>
+              <th class="py-2 px-3 text-right align-bottom border-b-2 border-stone-300" rowspan="2">n</th>
+              <th class="pt-2 pb-1 px-3 text-center text-[10px] uppercase tracking-[0.18em] font-semibold text-stone-400" colspan="2">Base</th>
+              <th class="pt-2 pb-1 px-3 text-center text-[10px] uppercase tracking-[0.18em] font-semibold text-brand-os bg-blue-50/60 rounded-t-md" colspan="2">Trained (after GRPO)</th>
+            </tr>
+            <tr>
+              <th class="py-2 px-3 text-right text-stone-500 font-medium border-b-2 border-stone-300">Sim</th>
+              <th class="py-2 px-3 text-right text-stone-500 font-medium border-b-2 border-stone-300">Real</th>
+              <th class="py-2 px-3 text-right text-brand-os font-medium bg-blue-50/60 border-b-2 border-stone-300">Sim</th>
+              <th class="py-2 px-3 text-right text-brand-os font-medium bg-blue-50/60 border-b-2 border-stone-300">Real</th>
+            </tr>
+          </thead>
+          <tbody class="text-stone-700">
+            <tr class="border-b border-stone-100">
+              <td class="py-2 pr-4">Uplift</td>
+              <td class="py-2 px-3 text-right stat-num text-stone-500">23</td>
+              <td class="py-2 px-3 text-right stat-num text-stone-500">2.3%</td>
+              <td class="py-2 px-3 text-right stat-num text-stone-500">17.4%</td>
+              <td class="py-2 px-3 text-right stat-num font-semibold bg-blue-50/60">80.7%</td>
+              <td class="py-2 px-3 text-right stat-num font-semibold bg-blue-50/60">73.9%</td>
+            </tr>
+            <tr class="border-b border-stone-100">
+              <td class="py-2 pr-4">Stable-pass</td>
+              <td class="py-2 px-3 text-right stat-num text-stone-500">18</td>
+              <td class="py-2 px-3 text-right stat-num text-stone-500">95.8%</td>
+              <td class="py-2 px-3 text-right stat-num text-stone-500">61.1%</td>
+              <td class="py-2 px-3 text-right stat-num font-semibold bg-blue-50/60">95.8%</td>
+              <td class="py-2 px-3 text-right stat-num font-semibold bg-blue-50/60">94.4%</td>
+            </tr>
+            <tr class="border-b border-stone-100">
+              <td class="py-2 pr-4">Mid</td>
+              <td class="py-2 px-3 text-right stat-num text-stone-500">18</td>
+              <td class="py-2 px-3 text-right stat-num text-stone-500">11.8%</td>
+              <td class="py-2 px-3 text-right stat-num text-stone-500">22.2%</td>
+              <td class="py-2 px-3 text-right stat-num font-semibold bg-blue-50/60">52.6%</td>
+              <td class="py-2 px-3 text-right stat-num font-semibold bg-blue-50/60">50.0%</td>
+            </tr>
+            <tr class="font-semibold border-t-2 border-stone-300 bg-stone-50/70">
+              <td class="py-2.5 pr-4">Total</td>
+              <td class="py-2.5 px-3 text-right stat-num text-stone-600">59</td>
+              <td class="py-2.5 px-3 text-right stat-num text-stone-700">33.9%</td>
+              <td class="py-2.5 px-3 text-right stat-num text-stone-700">32.2%</td>
+              <td class="py-2.5 px-3 text-right stat-num text-brand-os bg-blue-100/60 rounded-b-md">76.7%</td>
+              <td class="py-2.5 px-3 text-right stat-num text-brand-os bg-blue-100/60 rounded-b-md">72.9%</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-50 border border-emerald-200 ui">
+        <svg class="w-4 h-4 text-emerald-600 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+        <span class="text-sm text-stone-700">Δ retention sim → real: <strong class="text-emerald-700 font-semibold stat-num">95.1%</strong> — gains preserved on real device</span>
+      </div>
+
+      <!-- Reddit case study: emergent OOD generalization -->
+      <p class="text-stone-700 leading-relaxed mt-8 mb-5">
+        The gains are not only aggregate: the trained model also recovers from an out-of-distribution real-device constraint. On <code class="mono text-stone-700 bg-stone-100 px-1.5 py-0.5 rounded text-[0.95em]">Reddit_CreatePostToCommunity</code>, the real-device community requires a flair tag on every post — <strong>a constraint the simulator does not enforce</strong>. The base model loops on a greyed-out "Post" button for the full 60-step budget; the trained model, after two failed clicks, notices the asterisk on the flair selector, picks a flair, and submits successfully.
+      </p>
+
+      <div class="trace-grid ui">
+        <div class="trace-side" data-trace="base">
+          <div class="trace-header">
+            <span class="trace-badge trace-badge-base">Base</span>
+          </div>
+          <div class="trace-image-wrap is-base">
+            <img class="trace-frame" alt="Base model trajectory frame" width="540" height="1150" />
+          </div>
+          <div class="trace-controls">
+            <input type="range" class="trace-slider" min="0" max="7" value="4" step="1" aria-label="Base trajectory step" />
+            <div class="trace-ticks" aria-hidden="true"></div>
+            <p class="trace-action"></p>
+          </div>
+        </div>
+        <div class="trace-side" data-trace="trained">
+          <div class="trace-header">
+            <span class="trace-badge trace-badge-trained">Trained</span>
+          </div>
+          <div class="trace-image-wrap is-trained">
+            <img class="trace-frame" alt="Trained model trajectory frame" width="540" height="1150" />
+          </div>
+          <div class="trace-controls">
+            <input type="range" class="trace-slider is-trained" min="0" max="8" value="5" step="1" aria-label="Trained trajectory step" />
+            <div class="trace-ticks" aria-hidden="true"></div>
+            <p class="trace-action is-trained"></p>
+          </div>
+        </div>
+      </div>
+
+      <p class="text-xs text-stone-500 ui mt-4 leading-relaxed">
+        The flair-required behavior is unique to the real-device community and is absent from the simulator's training distribution. Recovery is driven by visual reasoning over the greyed button + asterisk cue, a concrete example of the behavior that online RL on a controllable substrate can induce. Full trace and verbatim think-trace in the paper appendix.
+      </p>
+    </div>
+
+    <!-- Result 3: Efficiency -->
+    <div>
+      <h3 class="ui text-lg font-semibold mb-3 text-stone-900">Order-of-Magnitude Efficiency</h3>
+      <p class="text-stone-700 leading-relaxed mb-4">
+        Single-instance, headless, measured against a Docker AndroidWorld setup (no KVM). MobileGym uses roughly <strong>one-tenth the memory</strong> and less than <strong>one-hundredth the disk footprint</strong> of the emulator baseline. Its structured JSON state can be restored and forked directly, which enables GRPO-style same-initial-state parallel sampling at single-machine scale.
+      </p>
+      <div class="space-y-2.5 ui">
+        <div class="flex items-center gap-4 px-4 py-3.5 rounded-lg border border-stone-200 bg-white">
+          <div class="flex-1 min-w-0">
+            <div class="text-[10px] uppercase tracking-[0.18em] text-stone-400 mb-1.5">Memory / instance</div>
+            <div class="flex items-baseline gap-3 stat-num">
+              <span class="text-base font-semibold text-brand-os">∼400 MB</span>
+              <span class="text-xs text-stone-300">vs</span>
+              <span class="text-sm text-stone-400">∼4.5 GB</span>
+            </div>
+          </div>
+          <div class="text-right flex-shrink-0">
+            <div class="text-2xl font-bold text-brand-os stat-num leading-none">~11×</div>
+            <div class="text-[10px] text-stone-500 mt-1 uppercase tracking-wider">lighter</div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-4 px-4 py-3.5 rounded-lg border border-stone-200 bg-white">
+          <div class="flex-1 min-w-0">
+            <div class="text-[10px] uppercase tracking-[0.18em] text-stone-400 mb-1.5">Disk footprint</div>
+            <div class="flex items-baseline gap-3 stat-num">
+              <span class="text-base font-semibold text-brand-os">∼50 MB</span>
+              <span class="text-xs text-stone-300">vs</span>
+              <span class="text-sm text-stone-400">∼20 GB</span>
+            </div>
+          </div>
+          <div class="text-right flex-shrink-0">
+            <div class="text-2xl font-bold text-brand-os stat-num leading-none">~400×</div>
+            <div class="text-[10px] text-stone-500 mt-1 uppercase tracking-wider">smaller</div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-4 px-4 py-3.5 rounded-lg border border-stone-200 bg-white">
+          <div class="flex-1 min-w-0">
+            <div class="text-[10px] uppercase tracking-[0.18em] text-stone-400 mb-1.5">Cold start</div>
+            <div class="flex items-baseline gap-3 stat-num">
+              <span class="text-base font-semibold text-brand-os">∼3 s</span>
+              <span class="text-xs text-stone-300">vs</span>
+              <span class="text-sm text-stone-400">∼78 s</span>
+            </div>
+          </div>
+          <div class="text-right flex-shrink-0">
+            <div class="text-2xl font-bold text-brand-os stat-num leading-none">~26×</div>
+            <div class="text-[10px] text-stone-500 mt-1 uppercase tracking-wider">faster</div>
+          </div>
+        </div>
+      </div>
+      <p class="text-xs text-stone-500 ui mt-4">
+        Headless / single instance, measured against Docker AndroidWorld (no KVM); see paper Appendix for measurement details.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- BIBTEX                                                       -->
+<!-- ============================================================ -->
+<section id="bibtex" class="container-narrow mx-auto px-6 py-12 border-t border-stone-200">
+  <h2 class="ui text-2xl font-bold mb-5 text-stone-900">Citation</h2>
+  <div class="relative">
+    <pre class="bg-stone-900 text-stone-100 text-sm rounded-lg p-5 overflow-x-auto mono leading-relaxed"><code>@article{mobilegym2026,
+  title   = {MobileGym: A Verifiable and Scalable Simulation
+             Environment for Mobile GUI Agent Research},
+  author  = {Author One and Author Two and Author Three},
+  journal = {arXiv preprint arXiv:XXXX.XXXXX},
+  year    = {2026}
+}</code></pre>
+    <button type="button" data-bibtex-copy
+            class="ui absolute top-3 right-3 text-xs px-3 py-1.5 rounded-md bg-stone-700 text-stone-200 hover:bg-stone-600 transition">Copy</button>
+  </div>
+</section>
+
+</main>
+
+<!-- ============================================================ -->
+<!-- FOOTER                                                       -->
+<!-- ============================================================ -->
+<footer class="container-narrow mx-auto px-6 py-10 mt-8 border-t border-stone-200 ui text-sm text-stone-500">
+  <div class="flex flex-wrap justify-between items-center gap-3">
+    <div>
+      <a href="https://github.com/Purewhiter/mobile-gym" class="hover:text-stone-900 transition">github.com/Purewhiter/mobile-gym</a>
+    </div>
+    <div class="text-stone-400">Page template by the authors.</div>
+  </div>
+</footer>
+
+</body>
+</html>

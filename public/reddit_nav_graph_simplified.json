@@ -1,0 +1,1323 @@
+{
+  "app": "reddit",
+  "appDir": "apps/Reddit",
+  "mode": "schema",
+  "routeCount": 16,
+  "edgeCount": 53,
+  "nodes": [
+    {
+      "id": "/",
+      "routePath": "/",
+      "component": "HomePage",
+      "entryPoint": true,
+      "entry": {
+        "kind": "home",
+        "home": true,
+        "deepLink": false
+      },
+      "description": "主页",
+      "stateCount": 3,
+      "states": [
+        "/",
+        "/?menu=home",
+        "/?menu=drawer"
+      ],
+      "actionCount": 4,
+      "actionIds": [
+        "homeFeed.item.vote.select.up",
+        "homeFeed.item.vote.select.down",
+        "homeFeed.item.join.toggle",
+        "homeFeed.item.share"
+      ],
+      "actions": [
+        {
+          "id": "homeFeed.item.vote.select.up",
+          "label": "信息流-帖子-点踩/点赞：赞",
+          "behavior": "select",
+          "scope": "item",
+          "paramsSchema": {
+            "postId": "string"
+          }
+        },
+        {
+          "id": "homeFeed.item.vote.select.down",
+          "label": "信息流-帖子-点踩/点赞：踩",
+          "behavior": "select",
+          "scope": "item",
+          "paramsSchema": {
+            "postId": "string"
+          }
+        },
+        {
+          "id": "homeFeed.item.join.toggle",
+          "label": "信息流-加入社区",
+          "behavior": "toggle",
+          "scope": "item",
+          "paramsSchema": {
+            "communityId": "string"
+          }
+        },
+        {
+          "id": "homeFeed.item.share",
+          "label": "信息流-分享帖子",
+          "behavior": "other",
+          "scope": "item",
+          "paramsSchema": {
+            "postId": "string"
+          }
+        }
+      ]
+    },
+    {
+      "id": "/communities",
+      "routePath": "/communities",
+      "component": "CommunitiesPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "Reddit Answers",
+      "stateCount": 2,
+      "states": [
+        "/communities",
+        "/communities?menu=drawer"
+      ],
+      "actionCount": 1,
+      "actionIds": [
+        "communities.item.join.toggle"
+      ],
+      "actions": [
+        {
+          "id": "communities.item.join.toggle",
+          "label": "社区列表-加入社区",
+          "behavior": "toggle",
+          "scope": "item",
+          "paramsSchema": {
+            "communityId": "string"
+          }
+        }
+      ]
+    },
+    {
+      "id": "/create",
+      "routePath": "/create",
+      "component": "CreatePage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "发布页",
+      "stateCount": 1,
+      "states": [
+        "/create"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/create/community",
+      "routePath": "/create/community",
+      "component": "SelectCommunityPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "选择社区页",
+      "stateCount": 1,
+      "states": [
+        "/create/community"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/chat",
+      "routePath": "/chat",
+      "component": "ChatPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "Messages Tab",
+      "stateCount": 8,
+      "states": [
+        "/chat?tab=messages",
+        "/chat?tab=unread",
+        "/chat?tab=requests",
+        "/chat?tab=threads",
+        "/chat?tab=messages&menu=drawer",
+        "/chat?tab=unread&menu=drawer",
+        "/chat?tab=requests&menu=drawer",
+        "/chat?tab=threads&menu=drawer"
+      ],
+      "actionCount": 2,
+      "actionIds": [
+        "chat.fab.create",
+        "chat.welcome.explore"
+      ],
+      "actions": [
+        {
+          "id": "chat.fab.create",
+          "label": "聊天页-FAB-创建聊天",
+          "behavior": "other"
+        },
+        {
+          "id": "chat.welcome.explore",
+          "label": "聊天页-探索频道",
+          "behavior": "other"
+        }
+      ]
+    },
+    {
+      "id": "/chat/new",
+      "routePath": "/chat/new",
+      "component": "NewChatPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "新建聊天页",
+      "stateCount": 1,
+      "states": [
+        "/chat/new"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/chat/:username",
+      "routePath": "/chat/:username",
+      "component": "ChatThreadPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "聊天会话页",
+      "stateCount": 1,
+      "states": [
+        "/chat/:username"
+      ],
+      "actionCount": 6,
+      "actionIds": [
+        "chatThread.message.submit",
+        "chatThread.message.longPress.open",
+        "chatThread.message.menu.reply",
+        "chatThread.message.menu.copy",
+        "chatThread.message.menu.share",
+        "chatThread.message.menu.delete"
+      ],
+      "actions": [
+        {
+          "id": "chatThread.message.submit",
+          "label": "会话-发送消息",
+          "behavior": "submit",
+          "paramsSchema": {
+            "username": "string",
+            "body": "string"
+          }
+        },
+        {
+          "id": "chatThread.message.longPress.open",
+          "label": "会话-长按消息-打开菜单",
+          "behavior": "other",
+          "scope": "item",
+          "paramsSchema": {
+            "username": "string",
+            "messageId": "string"
+          }
+        },
+        {
+          "id": "chatThread.message.menu.reply",
+          "label": "会话-消息菜单-回复",
+          "behavior": "other",
+          "scope": "item",
+          "paramsSchema": {
+            "username": "string",
+            "messageId": "string"
+          }
+        },
+        {
+          "id": "chatThread.message.menu.copy",
+          "label": "会话-消息菜单-复制文本",
+          "behavior": "other",
+          "scope": "item",
+          "paramsSchema": {
+            "username": "string",
+            "messageId": "string"
+          }
+        },
+        {
+          "id": "chatThread.message.menu.share",
+          "label": "会话-消息菜单-分享",
+          "behavior": "other",
+          "scope": "item",
+          "paramsSchema": {
+            "username": "string",
+            "messageId": "string"
+          }
+        },
+        {
+          "id": "chatThread.message.menu.delete",
+          "label": "会话-消息菜单-删除消息",
+          "behavior": "other",
+          "scope": "item",
+          "paramsSchema": {
+            "username": "string",
+            "messageId": "string"
+          }
+        }
+      ]
+    },
+    {
+      "id": "/chat/:username/thread/:messageId",
+      "routePath": "/chat/:username/thread/:messageId",
+      "component": "ChatMessageThreadPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "消息 Thread",
+      "stateCount": 1,
+      "states": [
+        "/chat/:username/thread/:messageId"
+      ],
+      "actionCount": 1,
+      "actionIds": [
+        "chatThread.reply.submit"
+      ],
+      "actions": [
+        {
+          "id": "chatThread.reply.submit",
+          "label": "Thread-发送回复",
+          "behavior": "submit",
+          "paramsSchema": {
+            "username": "string",
+            "messageId": "string",
+            "body": "string"
+          }
+        }
+      ]
+    },
+    {
+      "id": "/inbox",
+      "routePath": "/inbox",
+      "component": "InboxPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "通知 Tab",
+      "stateCount": 4,
+      "states": [
+        "/inbox?tab=notifications",
+        "/inbox?tab=messages",
+        "/inbox?tab=notifications&menu=drawer",
+        "/inbox?tab=messages&menu=drawer"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/me",
+      "routePath": "/me",
+      "component": "ProfilePage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "个人主页-Posts",
+      "stateCount": 3,
+      "states": [
+        "/me?tab=posts",
+        "/me?tab=comments",
+        "/me?tab=about"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/me/edit",
+      "routePath": "/me/edit",
+      "component": "EditProfilePage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "编辑个人资料页",
+      "stateCount": 1,
+      "states": [
+        "/me/edit"
+      ],
+      "actionCount": 3,
+      "actionIds": [
+        "editProfile.displayName.input",
+        "editProfile.bio.input",
+        "editProfile.save.submit"
+      ],
+      "actions": [
+        {
+          "id": "editProfile.displayName.input",
+          "label": "编辑资料-显示名称输入",
+          "behavior": "input",
+          "paramsSchema": {
+            "value": "string"
+          }
+        },
+        {
+          "id": "editProfile.bio.input",
+          "label": "编辑资料-个人介绍输入",
+          "behavior": "input",
+          "paramsSchema": {
+            "value": "string"
+          }
+        },
+        {
+          "id": "editProfile.save.submit",
+          "label": "编辑资料-保存",
+          "behavior": "submit"
+        }
+      ]
+    },
+    {
+      "id": "/me/settings",
+      "routePath": "/me/settings",
+      "component": "SettingsPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "设置页",
+      "stateCount": 1,
+      "states": [
+        "/me/settings"
+      ],
+      "actionCount": 33,
+      "actionIds": [
+        "settings.theme.select.light",
+        "settings.theme.select.dark",
+        "settings.theme.select.auto",
+        "settings.showNSFW.toggle",
+        "settings.blurNSFW.toggle",
+        "settings.showCommunityStyles.toggle",
+        "settings.autoplayVideo.select.always",
+        "settings.autoplayVideo.select.wifi",
+        "settings.autoplayVideo.select.never",
+        "settings.quietAudio.toggle",
+        "settings.inboxNotifications.toggle",
+        "settings.commentReplyNotifications.toggle",
+        "settings.upvoteNotifications.toggle",
+        "settings.mentionNotifications.toggle",
+        "settings.chatMessageNotifications.toggle",
+        "settings.communityAlerts.toggle",
+        "settings.trendingNotifications.toggle",
+        "settings.defaultCommentSort.select.best",
+        "settings.defaultCommentSort.select.top",
+        "settings.defaultCommentSort.select.new",
+        "settings.defaultCommentSort.select.controversial",
+        "settings.rememberPerPostSort.toggle",
+        "settings.homeFeedRecommendations.toggle",
+        "settings.showOnlineStatus.toggle",
+        "settings.allowCookies.toggle",
+        "settings.personalizedAds.toggle",
+        "settings.textSize.select.small",
+        "settings.textSize.select.default",
+        "settings.textSize.select.large",
+        "settings.textSize.select.extraLarge",
+        "settings.reduceAnimations.toggle",
+        "settings.openLinksInApp.toggle",
+        "settings.defaultMarkdown.toggle"
+      ],
+      "actions": [
+        {
+          "id": "settings.theme.select.light",
+          "label": "设置-主题：浅色",
+          "behavior": "select"
+        },
+        {
+          "id": "settings.theme.select.dark",
+          "label": "设置-主题：深色",
+          "behavior": "select"
+        },
+        {
+          "id": "settings.theme.select.auto",
+          "label": "设置-主题：自动",
+          "behavior": "select"
+        },
+        {
+          "id": "settings.showNSFW.toggle",
+          "label": "设置-显示NSFW内容：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "settings.blurNSFW.toggle",
+          "label": "设置-模糊NSFW图片：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "settings.showCommunityStyles.toggle",
+          "label": "设置-显示社区样式：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "settings.autoplayVideo.select.always",
+          "label": "设置-视频自动播放：始终",
+          "behavior": "select"
+        },
+        {
+          "id": "settings.autoplayVideo.select.wifi",
+          "label": "设置-视频自动播放：仅WiFi",
+          "behavior": "select"
+        },
+        {
+          "id": "settings.autoplayVideo.select.never",
+          "label": "设置-视频自动播放：从不",
+          "behavior": "select"
+        },
+        {
+          "id": "settings.quietAudio.toggle",
+          "label": "设置-静音模式：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "settings.inboxNotifications.toggle",
+          "label": "设置-收件箱通知：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "settings.commentReplyNotifications.toggle",
+          "label": "设置-评论回复通知：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "settings.upvoteNotifications.toggle",
+          "label": "设置-点赞通知：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "settings.mentionNotifications.toggle",
+          "label": "设置-提及通知：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "settings.chatMessageNotifications.toggle",
+          "label": "设置-聊天消息通知：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "settings.communityAlerts.toggle",
+          "label": "设置-社区提醒：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "settings.trendingNotifications.toggle",
+          "label": "设置-热门帖子通知：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "settings.defaultCommentSort.select.best",
+          "label": "设置-默认评论排序：最佳",
+          "behavior": "select"
+        },
+        {
+          "id": "settings.defaultCommentSort.select.top",
+          "label": "设置-默认评论排序：热门",
+          "behavior": "select"
+        },
+        {
+          "id": "settings.defaultCommentSort.select.new",
+          "label": "设置-默认评论排序：最新",
+          "behavior": "select"
+        },
+        {
+          "id": "settings.defaultCommentSort.select.controversial",
+          "label": "设置-默认评论排序：争议",
+          "behavior": "select"
+        },
+        {
+          "id": "settings.rememberPerPostSort.toggle",
+          "label": "设置-记住每帖排序：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "settings.homeFeedRecommendations.toggle",
+          "label": "设置-首页推荐：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "settings.showOnlineStatus.toggle",
+          "label": "设置-显示在线状态：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "settings.allowCookies.toggle",
+          "label": "设置-允许Cookie：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "settings.personalizedAds.toggle",
+          "label": "设置-个性化广告：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "settings.textSize.select.small",
+          "label": "设置-文字大小：小",
+          "behavior": "select"
+        },
+        {
+          "id": "settings.textSize.select.default",
+          "label": "设置-文字大小：默认",
+          "behavior": "select"
+        },
+        {
+          "id": "settings.textSize.select.large",
+          "label": "设置-文字大小：大",
+          "behavior": "select"
+        },
+        {
+          "id": "settings.textSize.select.extraLarge",
+          "label": "设置-文字大小：超大",
+          "behavior": "select"
+        },
+        {
+          "id": "settings.reduceAnimations.toggle",
+          "label": "设置-减少动画：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "settings.openLinksInApp.toggle",
+          "label": "设置-应用内打开链接：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "settings.defaultMarkdown.toggle",
+          "label": "设置-默认Markdown编辑器：开关",
+          "behavior": "toggle"
+        }
+      ]
+    },
+    {
+      "id": "/user/:username",
+      "routePath": "/user/:username",
+      "component": "UserProfilePage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "用户主页-Posts",
+      "stateCount": 3,
+      "states": [
+        "/user/:username?tab=posts",
+        "/user/:username?tab=comments",
+        "/user/:username?tab=about"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/post/:postId",
+      "routePath": "/post/:postId",
+      "component": "PostCommentsPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "评论页",
+      "stateCount": 1,
+      "states": [
+        "/post/:postId?commentId=:commentId"
+      ],
+      "actionCount": 5,
+      "actionIds": [
+        "postComments.comment.submit",
+        "postComments.item.vote.select.up",
+        "postComments.item.vote.select.down",
+        "postComments.item.more.open",
+        "postComments.item.share"
+      ],
+      "actions": [
+        {
+          "id": "postComments.comment.submit",
+          "label": "评论页-发送评论/回复",
+          "behavior": "submit",
+          "paramsSchema": {
+            "postId": "string",
+            "body": "string",
+            "parentId": "string"
+          }
+        },
+        {
+          "id": "postComments.item.vote.select.up",
+          "label": "评论-顶",
+          "behavior": "select",
+          "scope": "item",
+          "paramsSchema": {
+            "postId": "string",
+            "commentId": "string"
+          }
+        },
+        {
+          "id": "postComments.item.vote.select.down",
+          "label": "评论-踩",
+          "behavior": "select",
+          "scope": "item",
+          "paramsSchema": {
+            "postId": "string",
+            "commentId": "string"
+          }
+        },
+        {
+          "id": "postComments.item.more.open",
+          "label": "评论-更多菜单（三点）",
+          "behavior": "other",
+          "scope": "item",
+          "paramsSchema": {
+            "postId": "string",
+            "commentId": "string"
+          }
+        },
+        {
+          "id": "postComments.item.share",
+          "label": "评论-转发",
+          "behavior": "other",
+          "scope": "item",
+          "paramsSchema": {
+            "postId": "string",
+            "commentId": "string"
+          }
+        }
+      ]
+    },
+    {
+      "id": "/post/:postId/reply/:commentId",
+      "routePath": "/post/:postId/reply/:commentId",
+      "component": "CommentReplyPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "回复页",
+      "stateCount": 1,
+      "states": [
+        "/post/:postId/reply/:commentId"
+      ],
+      "actionCount": 1,
+      "actionIds": [
+        "commentReply.post.submit"
+      ],
+      "actions": [
+        {
+          "id": "commentReply.post.submit",
+          "label": "回复页-发表回复",
+          "behavior": "submit",
+          "paramsSchema": {
+            "postId": "string",
+            "commentId": "string",
+            "body": "string"
+          }
+        }
+      ]
+    },
+    {
+      "id": "/post/:postId/edit/:commentId",
+      "routePath": "/post/:postId/edit/:commentId",
+      "component": "CommentEditPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "编辑页",
+      "stateCount": 1,
+      "states": [
+        "/post/:postId/edit/:commentId"
+      ],
+      "actionCount": 1,
+      "actionIds": [
+        "commentEdit.post.submit"
+      ],
+      "actions": [
+        {
+          "id": "commentEdit.post.submit",
+          "label": "编辑页-保存评论",
+          "behavior": "submit",
+          "paramsSchema": {
+            "postId": "string",
+            "commentId": "string",
+            "body": "string"
+          }
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "source": "/communities",
+      "target": "/",
+      "transitions": [
+        "tab.home"
+      ],
+      "type": "navigation",
+      "label": "tab.home",
+      "id": "tab.home"
+    },
+    {
+      "source": "/chat",
+      "target": "/",
+      "transitions": [
+        "tab.home"
+      ],
+      "type": "navigation",
+      "label": "tab.home",
+      "id": "tab.home"
+    },
+    {
+      "source": "/inbox",
+      "target": "/",
+      "transitions": [
+        "tab.home"
+      ],
+      "type": "navigation",
+      "label": "tab.home",
+      "id": "tab.home"
+    },
+    {
+      "source": "/create",
+      "target": "/",
+      "transitions": [
+        "tab.home"
+      ],
+      "type": "navigation",
+      "label": "tab.home",
+      "id": "tab.home"
+    },
+    {
+      "source": "/me",
+      "target": "/",
+      "transitions": [
+        "tab.home"
+      ],
+      "type": "navigation",
+      "label": "tab.home",
+      "id": "tab.home"
+    },
+    {
+      "source": "/user/:username",
+      "target": "/",
+      "transitions": [
+        "tab.home"
+      ],
+      "type": "navigation",
+      "label": "tab.home",
+      "id": "tab.home"
+    },
+    {
+      "source": "/",
+      "target": "/communities",
+      "transitions": [
+        "tab.communities"
+      ],
+      "type": "navigation",
+      "label": "tab.communities",
+      "id": "tab.communities"
+    },
+    {
+      "source": "/chat",
+      "target": "/communities",
+      "transitions": [
+        "tab.communities"
+      ],
+      "type": "navigation",
+      "label": "tab.communities",
+      "id": "tab.communities"
+    },
+    {
+      "source": "/inbox",
+      "target": "/communities",
+      "transitions": [
+        "tab.communities"
+      ],
+      "type": "navigation",
+      "label": "tab.communities",
+      "id": "tab.communities"
+    },
+    {
+      "source": "/create",
+      "target": "/communities",
+      "transitions": [
+        "tab.communities"
+      ],
+      "type": "navigation",
+      "label": "tab.communities",
+      "id": "tab.communities"
+    },
+    {
+      "source": "/me",
+      "target": "/communities",
+      "transitions": [
+        "tab.communities"
+      ],
+      "type": "navigation",
+      "label": "tab.communities",
+      "id": "tab.communities"
+    },
+    {
+      "source": "/user/:username",
+      "target": "/communities",
+      "transitions": [
+        "tab.communities"
+      ],
+      "type": "navigation",
+      "label": "tab.communities",
+      "id": "tab.communities"
+    },
+    {
+      "source": "/",
+      "target": "/create",
+      "transitions": [
+        "tab.create",
+        "drawer.create.open"
+      ],
+      "type": "navigation",
+      "label": "tab.create, drawer.create.open",
+      "id": "tab.create"
+    },
+    {
+      "source": "/communities",
+      "target": "/create",
+      "transitions": [
+        "tab.create",
+        "drawer.create.open"
+      ],
+      "type": "navigation",
+      "label": "tab.create, drawer.create.open",
+      "id": "tab.create"
+    },
+    {
+      "source": "/chat",
+      "target": "/create",
+      "transitions": [
+        "tab.create",
+        "drawer.create.open"
+      ],
+      "type": "navigation",
+      "label": "tab.create, drawer.create.open",
+      "id": "tab.create"
+    },
+    {
+      "source": "/inbox",
+      "target": "/create",
+      "transitions": [
+        "tab.create",
+        "drawer.create.open"
+      ],
+      "type": "navigation",
+      "label": "tab.create, drawer.create.open",
+      "id": "tab.create"
+    },
+    {
+      "source": "/me",
+      "target": "/create",
+      "transitions": [
+        "tab.create"
+      ],
+      "type": "navigation",
+      "label": "tab.create",
+      "id": "tab.create"
+    },
+    {
+      "source": "/user/:username",
+      "target": "/create",
+      "transitions": [
+        "tab.create"
+      ],
+      "type": "navigation",
+      "label": "tab.create",
+      "id": "tab.create"
+    },
+    {
+      "source": "/create",
+      "target": "/create/community",
+      "transitions": [
+        "create.community.open"
+      ],
+      "type": "navigation",
+      "label": "create.community.open",
+      "id": "create.community.open"
+    },
+    {
+      "source": "/",
+      "target": "/chat",
+      "transitions": [
+        "tab.chat"
+      ],
+      "type": "navigation",
+      "label": "tab.chat",
+      "id": "tab.chat"
+    },
+    {
+      "source": "/communities",
+      "target": "/chat",
+      "transitions": [
+        "tab.chat"
+      ],
+      "type": "navigation",
+      "label": "tab.chat",
+      "id": "tab.chat"
+    },
+    {
+      "source": "/inbox",
+      "target": "/chat",
+      "transitions": [
+        "tab.chat"
+      ],
+      "type": "navigation",
+      "label": "tab.chat",
+      "id": "tab.chat"
+    },
+    {
+      "source": "/create",
+      "target": "/chat",
+      "transitions": [
+        "tab.chat"
+      ],
+      "type": "navigation",
+      "label": "tab.chat",
+      "id": "tab.chat"
+    },
+    {
+      "source": "/me",
+      "target": "/chat",
+      "transitions": [
+        "tab.chat"
+      ],
+      "type": "navigation",
+      "label": "tab.chat",
+      "id": "tab.chat"
+    },
+    {
+      "source": "/user/:username",
+      "target": "/chat",
+      "transitions": [
+        "tab.chat"
+      ],
+      "type": "navigation",
+      "label": "tab.chat",
+      "id": "tab.chat"
+    },
+    {
+      "source": "/",
+      "target": "/inbox",
+      "transitions": [
+        "tab.inbox"
+      ],
+      "type": "navigation",
+      "label": "tab.inbox",
+      "id": "tab.inbox"
+    },
+    {
+      "source": "/communities",
+      "target": "/inbox",
+      "transitions": [
+        "tab.inbox"
+      ],
+      "type": "navigation",
+      "label": "tab.inbox",
+      "id": "tab.inbox"
+    },
+    {
+      "source": "/chat",
+      "target": "/inbox",
+      "transitions": [
+        "tab.inbox"
+      ],
+      "type": "navigation",
+      "label": "tab.inbox",
+      "id": "tab.inbox"
+    },
+    {
+      "source": "/create",
+      "target": "/inbox",
+      "transitions": [
+        "tab.inbox"
+      ],
+      "type": "navigation",
+      "label": "tab.inbox",
+      "id": "tab.inbox"
+    },
+    {
+      "source": "/me",
+      "target": "/inbox",
+      "transitions": [
+        "tab.inbox"
+      ],
+      "type": "navigation",
+      "label": "tab.inbox",
+      "id": "tab.inbox"
+    },
+    {
+      "source": "/user/:username",
+      "target": "/inbox",
+      "transitions": [
+        "tab.inbox"
+      ],
+      "type": "navigation",
+      "label": "tab.inbox",
+      "id": "tab.inbox"
+    },
+    {
+      "source": "/chat",
+      "target": "/chat/new",
+      "transitions": [
+        "chat.new.open"
+      ],
+      "type": "navigation",
+      "label": "chat.new.open",
+      "id": "chat.new.open"
+    },
+    {
+      "source": "/chat",
+      "target": "/chat/:username",
+      "transitions": [
+        "chat.thread.open"
+      ],
+      "type": "navigation",
+      "label": "chat.thread.open",
+      "id": "chat.thread.open"
+    },
+    {
+      "source": "/chat/:username",
+      "target": "/chat/:username/thread/:messageId",
+      "transitions": [
+        "chatThread.message.thread.open"
+      ],
+      "type": "navigation",
+      "label": "chatThread.message.thread.open",
+      "id": "chatThread.message.thread.open"
+    },
+    {
+      "source": "/",
+      "target": "/post/:postId",
+      "transitions": [
+        "post.comments.open"
+      ],
+      "type": "navigation",
+      "label": "post.comments.open",
+      "id": "post.comments.open"
+    },
+    {
+      "source": "/communities",
+      "target": "/post/:postId",
+      "transitions": [
+        "post.comments.open"
+      ],
+      "type": "navigation",
+      "label": "post.comments.open",
+      "id": "post.comments.open"
+    },
+    {
+      "source": "/chat",
+      "target": "/post/:postId",
+      "transitions": [
+        "post.comments.open"
+      ],
+      "type": "navigation",
+      "label": "post.comments.open",
+      "id": "post.comments.open"
+    },
+    {
+      "source": "/inbox",
+      "target": "/post/:postId",
+      "transitions": [
+        "post.comments.open"
+      ],
+      "type": "navigation",
+      "label": "post.comments.open",
+      "id": "post.comments.open"
+    },
+    {
+      "source": "/me",
+      "target": "/post/:postId",
+      "transitions": [
+        "post.comments.open"
+      ],
+      "type": "navigation",
+      "label": "post.comments.open",
+      "id": "post.comments.open"
+    },
+    {
+      "source": "/post/:postId",
+      "target": "/post/:postId/reply/:commentId",
+      "transitions": [
+        "comment.reply.open"
+      ],
+      "type": "navigation",
+      "label": "comment.reply.open",
+      "id": "comment.reply.open"
+    },
+    {
+      "source": "/post/:postId",
+      "target": "/post/:postId/edit/:commentId",
+      "transitions": [
+        "comment.edit.open"
+      ],
+      "type": "navigation",
+      "label": "comment.edit.open",
+      "id": "comment.edit.open"
+    },
+    {
+      "source": "/",
+      "target": "/me",
+      "transitions": [
+        "profile.me.open"
+      ],
+      "type": "navigation",
+      "label": "profile.me.open",
+      "id": "profile.me.open"
+    },
+    {
+      "source": "/communities",
+      "target": "/me",
+      "transitions": [
+        "profile.me.open"
+      ],
+      "type": "navigation",
+      "label": "profile.me.open",
+      "id": "profile.me.open"
+    },
+    {
+      "source": "/chat",
+      "target": "/me",
+      "transitions": [
+        "profile.me.open"
+      ],
+      "type": "navigation",
+      "label": "profile.me.open",
+      "id": "profile.me.open"
+    },
+    {
+      "source": "/inbox",
+      "target": "/me",
+      "transitions": [
+        "profile.me.open"
+      ],
+      "type": "navigation",
+      "label": "profile.me.open",
+      "id": "profile.me.open"
+    },
+    {
+      "source": "/me",
+      "target": "/me/edit",
+      "transitions": [
+        "profile.edit.open"
+      ],
+      "type": "navigation",
+      "label": "profile.edit.open",
+      "id": "profile.edit.open"
+    },
+    {
+      "source": "/me",
+      "target": "/me/settings",
+      "transitions": [
+        "profile.settings.open"
+      ],
+      "type": "navigation",
+      "label": "profile.settings.open",
+      "id": "profile.settings.open"
+    },
+    {
+      "source": "/",
+      "target": "/user/:username",
+      "transitions": [
+        "profile.user.open"
+      ],
+      "type": "navigation",
+      "label": "profile.user.open",
+      "id": "profile.user.open"
+    },
+    {
+      "source": "/communities",
+      "target": "/user/:username",
+      "transitions": [
+        "profile.user.open"
+      ],
+      "type": "navigation",
+      "label": "profile.user.open",
+      "id": "profile.user.open"
+    },
+    {
+      "source": "/chat",
+      "target": "/user/:username",
+      "transitions": [
+        "profile.user.open"
+      ],
+      "type": "navigation",
+      "label": "profile.user.open",
+      "id": "profile.user.open"
+    },
+    {
+      "source": "/inbox",
+      "target": "/user/:username",
+      "transitions": [
+        "profile.user.open"
+      ],
+      "type": "navigation",
+      "label": "profile.user.open",
+      "id": "profile.user.open"
+    },
+    {
+      "source": "/me",
+      "target": "/user/:username",
+      "transitions": [
+        "profile.user.open"
+      ],
+      "type": "navigation",
+      "label": "profile.user.open",
+      "id": "profile.user.open"
+    },
+    {
+      "source": "/post/:postId",
+      "target": "/user/:username",
+      "transitions": [
+        "profile.user.open"
+      ],
+      "type": "navigation",
+      "label": "profile.user.open",
+      "id": "profile.user.open"
+    }
+  ]
+}

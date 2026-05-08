@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="RTL">0</string>
+  <string name="high_i18n">High </string>
+  <string name="low_i18n">Low </string>
+  <string name="aqi_good_i18n">Good</string>
+  <string name="aqi_moderate_i18n">Fair</string>
+  <string name="aqi_pollution_i18n">Moderate</string>
+  <string name="aqi_unhealthy_i18n">Unhealthy</string>
+  <string name="aqi_dangerous_i18n">Severe</string>
+  <string name="aqi_hazardous_i18n">Hazardous</string>
+  <string name="humidness_i18n">Humidity</string>
+  <string name="now_i18n">Now</string>
+  <string name="location_i18n">Location</string>
+  <string name="weather_i18n">Weather</string>
+  <string name="low_temp_i18n">Low</string>
+  <string name="aqi_i18n">AQI</string>
+  <string name="weather_auth_tip_i18n">Tap to get weather info</string>
+  <string name="weather_auth_tip_1_i18n">Grant permissions in Weather</string>
+  <string name="tomorrow_i18n">Tomorrow</string>
+  <string name="sunrise_i18n">Sunrise</string>
+  <string name="sunset_i18n">Sunset</string>
+  <string name="sunrising_i18n">Sun is rising</string>
+  <string name="sunseting_i18n">Sun is setting</string>
+  <string name="sunrise_sunset_i18n">Sunrise and sunset</string>
+  <string name="hour_after_i18n">\'In \'+#sun_hour+\'h\'</string>
+  <string name="minute_after_i18n">\'In \'+#sun_minute+\'m\'</string>
+  <string name="morning_i18n">#sun_morning+\' AM\'</string>
+  <string name="afternoon_i18n">#sun_afternoon+\' PM\'</string>
+  <string name="authorization_and_open_i18n">Grant permissions to view weather</string>
+  <string name="wind_level_i18n"></string>
+  <string name="aqi_null_i18n">AQI--</string>
+  <string name="talkback_temperature_range">Maximum temperature: 变量1. Minimum temperature: 变量2</string>
+  <string name="talkback_humidity">Humidity: 变量3</string>
+  <string name="talkback_wind">Wind: Force 变量4</string>
+</resources>

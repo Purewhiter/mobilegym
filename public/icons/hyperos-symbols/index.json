@@ -1,0 +1,659 @@
+{
+  "font": "HyperOS Symbols VF",
+  "source": "misymbol_vf.ttf",
+  "total_glyphs": 163,
+  "glyphs": {
+    "reset": {
+      "unicode": "U+F0000",
+      "file": "reset.svg"
+    },
+    "replace": {
+      "unicode": "U+F0001",
+      "file": "replace.svg"
+    },
+    "play": {
+      "unicode": "U+F0002",
+      "file": "play.svg"
+    },
+    "more": {
+      "unicode": "U+F0003",
+      "file": "more.svg"
+    },
+    "search": {
+      "unicode": "U+F0004",
+      "file": "search.svg"
+    },
+    "redo": {
+      "unicode": "U+F0005",
+      "file": "redo.svg"
+    },
+    "undo": {
+      "unicode": "U+F0006",
+      "file": "undo.svg"
+    },
+    "pause": {
+      "unicode": "U+F0007",
+      "file": "pause.svg"
+    },
+    "ok": {
+      "unicode": "U+F0008",
+      "file": "ok.svg"
+    },
+    "close": {
+      "unicode": "U+F0009",
+      "file": "close.svg"
+    },
+    "back": {
+      "unicode": "U+F000A",
+      "file": "back.svg"
+    },
+    "link": {
+      "unicode": "U+F000B",
+      "file": "link.svg"
+    },
+    "hide": {
+      "unicode": "U+F000C",
+      "file": "hide.svg"
+    },
+    "show": {
+      "unicode": "U+F000D",
+      "file": "show.svg"
+    },
+    "store": {
+      "unicode": "U+F000E",
+      "file": "store.svg"
+    },
+    "copy": {
+      "unicode": "U+F000F",
+      "file": "copy.svg"
+    },
+    "paste": {
+      "unicode": "U+F0010",
+      "file": "paste.svg"
+    },
+    "lock": {
+      "unicode": "U+F0011",
+      "file": "lock.svg"
+    },
+    "unlock": {
+      "unicode": "U+F0012",
+      "file": "unlock.svg"
+    },
+    "community": {
+      "unicode": "U+F0013",
+      "file": "community.svg"
+    },
+    "translate": {
+      "unicode": "U+F0014",
+      "file": "translate.svg"
+    },
+    "download": {
+      "unicode": "U+F0015",
+      "file": "download.svg"
+    },
+    "scan": {
+      "unicode": "U+F0016",
+      "file": "scan.svg"
+    },
+    "delete": {
+      "unicode": "U+F0017",
+      "file": "delete.svg"
+    },
+    "file": {
+      "unicode": "U+F0018",
+      "file": "file.svg"
+    },
+    "sidebar": {
+      "unicode": "U+F0019",
+      "file": "sidebar.svg"
+    },
+    "edit": {
+      "unicode": "U+F001A",
+      "file": "edit.svg"
+    },
+    "share": {
+      "unicode": "U+F001B",
+      "file": "share.svg"
+    },
+    "move_file": {
+      "unicode": "U+F001C",
+      "file": "move_file.svg"
+    },
+    "settings": {
+      "unicode": "U+F001D",
+      "file": "settings.svg"
+    },
+    "favorites": {
+      "unicode": "U+F001E",
+      "file": "favorites.svg"
+    },
+    "report": {
+      "unicode": "U+F001F",
+      "file": "report.svg"
+    },
+    "search_device": {
+      "unicode": "U+F0020",
+      "file": "search_device.svg"
+    },
+    "close_2": {
+      "unicode": "U+F0021",
+      "file": "close_2.svg"
+    },
+    "refresh": {
+      "unicode": "U+F0022",
+      "file": "refresh.svg"
+    },
+    "answer": {
+      "unicode": "U+F0023",
+      "file": "answer.svg"
+    },
+    "help": {
+      "unicode": "U+F0024",
+      "file": "help.svg"
+    },
+    "more_circle": {
+      "unicode": "U+F0025",
+      "file": "more_circle.svg"
+    },
+    "info": {
+      "unicode": "U+F0026",
+      "file": "info.svg"
+    },
+    "add_circle": {
+      "unicode": "U+F0027",
+      "file": "add_circle.svg"
+    },
+    "update": {
+      "unicode": "U+F0028",
+      "file": "update.svg"
+    },
+    "cut": {
+      "unicode": "U+F0029",
+      "file": "cut.svg"
+    },
+    "rename": {
+      "unicode": "U+F002A",
+      "file": "rename.svg"
+    },
+    "pin": {
+      "unicode": "U+F002B",
+      "file": "pin.svg"
+    },
+    "unpin": {
+      "unicode": "U+F002C",
+      "file": "unpin.svg"
+    },
+    "select_all": {
+      "unicode": "U+F002D",
+      "file": "select_all.svg"
+    },
+    "playlist": {
+      "unicode": "U+F002E",
+      "file": "playlist.svg"
+    },
+    "alarm": {
+      "unicode": "U+F002F",
+      "file": "alarm.svg"
+    },
+    "world_clock": {
+      "unicode": "U+F0030",
+      "file": "world_clock.svg"
+    },
+    "recent": {
+      "unicode": "U+F0031",
+      "file": "recent.svg"
+    },
+    "stopwatch": {
+      "unicode": "U+F0032",
+      "file": "stopwatch.svg"
+    },
+    "timer": {
+      "unicode": "U+F0033",
+      "file": "timer.svg"
+    },
+    "folder_fill": {
+      "unicode": "U+F0034",
+      "file": "folder_fill.svg"
+    },
+    "cloud_fill": {
+      "unicode": "U+F0035",
+      "file": "cloud_fill.svg"
+    },
+    "photos": {
+      "unicode": "U+F0036",
+      "file": "photos.svg"
+    },
+    "album": {
+      "unicode": "U+F0037",
+      "file": "album.svg"
+    },
+    "notes_fill": {
+      "unicode": "U+F0038",
+      "file": "notes_fill.svg"
+    },
+    "tasks": {
+      "unicode": "U+F0039",
+      "file": "tasks.svg"
+    },
+    "phone": {
+      "unicode": "U+F003A",
+      "file": "phone.svg"
+    },
+    "favorites_fill": {
+      "unicode": "U+F003B",
+      "file": "favorites_fill.svg"
+    },
+    "contacts_circle": {
+      "unicode": "U+F003C",
+      "file": "contacts_circle.svg"
+    },
+    "carrier": {
+      "unicode": "U+F003D",
+      "file": "carrier.svg"
+    },
+    "messages": {
+      "unicode": "U+F003E",
+      "file": "messages.svg"
+    },
+    "promotions": {
+      "unicode": "U+F003F",
+      "file": "promotions.svg"
+    },
+    "bank_cards": {
+      "unicode": "U+F0040",
+      "file": "bank_cards.svg"
+    },
+    "years": {
+      "unicode": "U+F0041",
+      "file": "years.svg"
+    },
+    "months": {
+      "unicode": "U+F0042",
+      "file": "months.svg"
+    },
+    "weeks": {
+      "unicode": "U+F0043",
+      "file": "weeks.svg"
+    },
+    "location": {
+      "unicode": "U+F0044",
+      "file": "location.svg"
+    },
+    "all": {
+      "unicode": "U+F0045",
+      "file": "all.svg"
+    },
+    "recording": {
+      "unicode": "U+F0046",
+      "file": "recording.svg"
+    },
+    "call_recording": {
+      "unicode": "U+F0047",
+      "file": "call_recording.svg"
+    },
+    "app_recording": {
+      "unicode": "U+F0048",
+      "file": "app_recording.svg"
+    },
+    "th_1": {
+      "unicode": "U+F0049",
+      "file": "th_1.svg"
+    },
+    "th_2": {
+      "unicode": "U+F004A",
+      "file": "th_2.svg"
+    },
+    "th_3": {
+      "unicode": "U+F004B",
+      "file": "th_3.svg"
+    },
+    "th_4": {
+      "unicode": "U+F004C",
+      "file": "th_4.svg"
+    },
+    "th_5": {
+      "unicode": "U+F004D",
+      "file": "th_5.svg"
+    },
+    "th_6": {
+      "unicode": "U+F004E",
+      "file": "th_6.svg"
+    },
+    "th_7": {
+      "unicode": "U+F004F",
+      "file": "th_7.svg"
+    },
+    "th_8": {
+      "unicode": "U+F0050",
+      "file": "th_8.svg"
+    },
+    "th_9": {
+      "unicode": "U+F0051",
+      "file": "th_9.svg"
+    },
+    "th_10": {
+      "unicode": "U+F0052",
+      "file": "th_10.svg"
+    },
+    "th_11": {
+      "unicode": "U+F0053",
+      "file": "th_11.svg"
+    },
+    "th_12": {
+      "unicode": "U+F0054",
+      "file": "th_12.svg"
+    },
+    "th_13": {
+      "unicode": "U+F0055",
+      "file": "th_13.svg"
+    },
+    "th_14": {
+      "unicode": "U+F0056",
+      "file": "th_14.svg"
+    },
+    "th_15": {
+      "unicode": "U+F0057",
+      "file": "th_15.svg"
+    },
+    "th_16": {
+      "unicode": "U+F0058",
+      "file": "th_16.svg"
+    },
+    "th_17": {
+      "unicode": "U+F0059",
+      "file": "th_17.svg"
+    },
+    "th_18": {
+      "unicode": "U+F005A",
+      "file": "th_18.svg"
+    },
+    "th_19": {
+      "unicode": "U+F005B",
+      "file": "th_19.svg"
+    },
+    "th_20": {
+      "unicode": "U+F005C",
+      "file": "th_20.svg"
+    },
+    "th_21": {
+      "unicode": "U+F005D",
+      "file": "th_21.svg"
+    },
+    "th_22": {
+      "unicode": "U+F005E",
+      "file": "th_22.svg"
+    },
+    "th_23": {
+      "unicode": "U+F005F",
+      "file": "th_23.svg"
+    },
+    "th_24": {
+      "unicode": "U+F0060",
+      "file": "th_24.svg"
+    },
+    "th_25": {
+      "unicode": "U+F0061",
+      "file": "th_25.svg"
+    },
+    "th_26": {
+      "unicode": "U+F0062",
+      "file": "th_26.svg"
+    },
+    "th_27": {
+      "unicode": "U+F0063",
+      "file": "th_27.svg"
+    },
+    "th_28": {
+      "unicode": "U+F0064",
+      "file": "th_28.svg"
+    },
+    "th_29": {
+      "unicode": "U+F0065",
+      "file": "th_29.svg"
+    },
+    "th_30": {
+      "unicode": "U+F0066",
+      "file": "th_30.svg"
+    },
+    "th_31": {
+      "unicode": "U+F0067",
+      "file": "th_31.svg"
+    },
+    "sort": {
+      "unicode": "U+F0068",
+      "file": "sort.svg"
+    },
+    "create": {
+      "unicode": "U+F0069",
+      "file": "create.svg"
+    },
+    "volume_up": {
+      "unicode": "U+F006A",
+      "file": "volume_up.svg"
+    },
+    "volume_off": {
+      "unicode": "U+F006B",
+      "file": "volume_off.svg"
+    },
+    "trim": {
+      "unicode": "U+F006C",
+      "file": "trim.svg"
+    },
+    "filter": {
+      "unicode": "U+F006D",
+      "file": "filter.svg"
+    },
+    "import": {
+      "unicode": "U+F006E",
+      "file": "import.svg"
+    },
+    "folder": {
+      "unicode": "U+F006F",
+      "file": "folder.svg"
+    },
+    "add_folder": {
+      "unicode": "U+F0070",
+      "file": "add_folder.svg"
+    },
+    "remove": {
+      "unicode": "U+F0071",
+      "file": "remove.svg"
+    },
+    "rotate_left": {
+      "unicode": "U+F0072",
+      "file": "rotate_left.svg"
+    },
+    "merge": {
+      "unicode": "U+F0073",
+      "file": "merge.svg"
+    },
+    "recording_tape": {
+      "unicode": "U+F0074",
+      "file": "recording_tape.svg"
+    },
+    "notes": {
+      "unicode": "U+F0075",
+      "file": "notes.svg"
+    },
+    "music": {
+      "unicode": "U+F0076",
+      "file": "music.svg"
+    },
+    "remove_contact": {
+      "unicode": "U+F0077",
+      "file": "remove_contact.svg"
+    },
+    "blocklist": {
+      "unicode": "U+F0078",
+      "file": "blocklist.svg"
+    },
+    "contacts": {
+      "unicode": "U+F0079",
+      "file": "contacts.svg"
+    },
+    "contacts_book": {
+      "unicode": "U+F007A",
+      "file": "contacts_book.svg"
+    },
+    "theme": {
+      "unicode": "U+F007B",
+      "file": "theme.svg"
+    },
+    "convert_file": {
+      "unicode": "U+F007C",
+      "file": "convert_file.svg"
+    },
+    "image": {
+      "unicode": "U+F007D",
+      "file": "image.svg"
+    },
+    "tune": {
+      "unicode": "U+F007E",
+      "file": "tune.svg"
+    },
+    "add": {
+      "unicode": "U+F007F",
+      "file": "add.svg"
+    },
+    "mic": {
+      "unicode": "U+F0080",
+      "file": "mic.svg"
+    },
+    "mic_slash": {
+      "unicode": "U+F0081",
+      "file": "mic_slash.svg"
+    },
+    "reply": {
+      "unicode": "U+F0082",
+      "file": "reply.svg"
+    },
+    "reply_all": {
+      "unicode": "U+F0083",
+      "file": "reply_all.svg"
+    },
+    "backup": {
+      "unicode": "U+F0084",
+      "file": "backup.svg"
+    },
+    "expand_more": {
+      "unicode": "U+F0085",
+      "file": "expand_more.svg"
+    },
+    "expand_less": {
+      "unicode": "U+F0086",
+      "file": "expand_less.svg"
+    },
+    "mind_map": {
+      "unicode": "U+F0087",
+      "file": "mind_map.svg"
+    },
+    "layers": {
+      "unicode": "U+F0088",
+      "file": "layers.svg"
+    },
+    "background": {
+      "unicode": "U+F0089",
+      "file": "background.svg"
+    },
+    "map_album": {
+      "unicode": "U+F008A",
+      "file": "map_album.svg"
+    },
+    "horizontal_split": {
+      "unicode": "U+F008B",
+      "file": "horizontal_split.svg"
+    },
+    "vertical_split": {
+      "unicode": "U+F008C",
+      "file": "vertical_split.svg"
+    },
+    "chevron_backward": {
+      "unicode": "U+F008D",
+      "file": "chevron_backward.svg"
+    },
+    "chevron_forward": {
+      "unicode": "U+F008E",
+      "file": "chevron_forward.svg"
+    },
+    "zoom_out": {
+      "unicode": "U+F008F",
+      "file": "zoom_out.svg"
+    },
+    "email": {
+      "unicode": "U+F0090",
+      "file": "email.svg"
+    },
+    "send": {
+      "unicode": "U+F0091",
+      "file": "send.svg"
+    },
+    "forward": {
+      "unicode": "U+F0092",
+      "file": "forward.svg"
+    },
+    "file_downloads": {
+      "unicode": "U+F0093",
+      "file": "file_downloads.svg"
+    },
+    "top_downloads": {
+      "unicode": "U+F0094",
+      "file": "top_downloads.svg"
+    },
+    "clear": {
+      "unicode": "U+F0095",
+      "file": "clear.svg"
+    },
+    "upload_cloud": {
+      "unicode": "U+F0096",
+      "file": "upload_cloud.svg"
+    },
+    "list_view": {
+      "unicode": "U+F0097",
+      "file": "list_view.svg"
+    },
+    "grid_view": {
+      "unicode": "U+F0098",
+      "file": "grid_view.svg"
+    },
+    "screen_capture": {
+      "unicode": "U+F0099",
+      "file": "screen_capture.svg"
+    },
+    "screen_mirroring": {
+      "unicode": "U+F009A",
+      "file": "screen_mirroring.svg"
+    },
+    "read": {
+      "unicode": "U+F009C",
+      "file": "read.svg"
+    },
+    "mark_all_as_read": {
+      "unicode": "U+F009D",
+      "file": "mark_all_as_read.svg"
+    },
+    "mark_as_read": {
+      "unicode": "U+F009E",
+      "file": "mark_as_read.svg"
+    },
+    "save": {
+      "unicode": "U+F009F",
+      "file": "save.svg"
+    },
+    "starred": {
+      "unicode": "U+F00A0",
+      "file": "starred.svg"
+    },
+    "insufficient_cloud_storage_space": {
+      "unicode": "U+F00A1",
+      "file": "insufficient_cloud_storage_space.svg"
+    },
+    "unstar": {
+      "unicode": "U+F00A2",
+      "file": "unstar.svg"
+    },
+    "mark_ras_unread": {
+      "unicode": "U+F00A3",
+      "file": "mark_ras_unread.svg"
+    }
+  }
+}

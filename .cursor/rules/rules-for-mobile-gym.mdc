@@ -1,0 +1,214 @@
+---
+alwaysApply: false
+---
+# Mobile-gym 项目 Commands（必须遵循）
+
+> 目标：你将根据截图与需求实现页面/功能。你必须遵循本仓库的声明式导航、手势打标、Actions 与工具链规范，确保“源码/声明/图输出”一致。
+
+## 0. 必读（动手前）
+
+- **以 `docs/PROJECT_SPEC_V2.md` 为最高权威**。如果截图需求与规范冲突，先提出冲突点并给出两种方案（改实现 vs 调整声明/规范），不要擅自更改语义。如果用户遇到什么bug让你修改，先查找文档中有没有相关示例或者要求。
+- 进行导航/Actions/条件相关改动前，至少扫一遍：
+  - `docs/NAVIGATION_DECLARATION_PROPOSAL.md`
+  - `docs/ACTIONS_DECLARATION_PROPOSAL.md`
+  - `docs/DATA_SOURCE_PROPOSAL.md`
+  - `docs/UI_GRAPH_GENERATION.md`
+
+### 0.1 截图驱动的“缺信息处理”（必须）
+
+- 如果截图/需求不足以推断以下信息，**先提问再写代码**（不要脑补扩需求）：
+  - 目标 `AppName`、目标 `routePath`（pathname 模板）
+  - 是否存在 tab/modal/menu/select 等**离散状态**（需要落到 `uiStates`）
+  - 需要参数区分的入口（Tab 目标值、列表项 id 等；决定 `data-trigger-params` / `data-action-params`）
+  - 这个入口到底是 **transition（会改 URL）** 还是 **action（不改 URL）**
+
+### 0.2 截图界面的实现（必须）
+
+- 如果用户发给你截图让你实现，你首先应该充分理解截图的界面和布局，首先详细描述截图的内容，然后根据截图的内容实现页面。你应该确保实现的页面与截图一致，包括布局、样式、内容（这个根据需求，比如联系人这种具体数据，可以不与截图一致，但是展示逻辑要一致）等。
+
+## 1. 目录与文件边界（硬约束）
+
+- **新增/修改页面必须落在对应 App 的 `apps/<AppName>/pages/`**。
+- App 配置/初始数据必须放在 `apps/<AppName>/data/<appName>Config.ts`（或已存在的 config 文件），“配置优先（config-first）”。
+- **新增 routePath 时必须同步注册 React Router 路由**（通常在 `apps/<AppName>/<AppName>App.tsx` 的 `<Routes>`），否则运行时会出现 `No routes matched location "/xxx"`。
+- **禁止在业务页面直接使用 `useNavigate()/navigate()`**。
+  - 允许的例外：`apps/<AppName>/navigation.ts`（实现 `go/back`）与 `os/hooks/useAppNavigationHandler.ts`。
+
+### 1.1 App 导航注册（硬约束）
+
+- 每个 App 的入口（通常 `apps/<AppName>/<AppName>App.tsx`）必须在 `<MemoryRouter>` 内调用 `useAppNavigationHandler(appId, options)` hook，完成：
+  - **路由观测**：通过 `AppNavigatorRegistry` 实时注册路由信息，可通过 `window.__OS__.getAppRoute()` 读取。
+  - **返回处理**：通过 `BackDispatcher` 注册 `onBack` handler；能在 App 内返回则 `return true`，否则 `return false` 交给系统。
+  - **外部导航**：通过 `onNavigate` 回调接收 `__OS__.openApp(appId, path)` 指令；推荐对”非法地址”直接拒绝而非静默 normalize。
+  - **生命周期**：可选通过 `onForeground`/`onBackground`/`onDestroy` 回调接收生命周期事件。
+  - **外部任务隔离**：当 App 实例渲染在其他 App 的 Task 内（如 `startActivityForResult` 将支付宝压入 12306 的 Task），hook 检测到 `task.rootAppId !== appId` 后跳过 app 级 Navigator / BackDispatcher / Lifecycle 注册，仅使用 activity 级 Navigator 路由，避免覆盖后台同 App 实例的注册。
+
+## 2. 声明式导航（必须）
+
+### 2.1 路由与状态
+
+- 每个 App 必须维护 `apps/<AppName>/navigation.declaration.ts`。
+- `routes[].uiStates` **必选**：每个 route 都必须显式提供 `uiStates` 数组。
+- `routes[].queryParams` **必选**：没有动态 query 参数也写 `{}`，不要省略。
+- base state 规则（与一致性工具一致）：
+  - 若页面存在“裸路由”状态：必须声明且仅声明一个 base `uiState`，满足 `search:{}` 且 `id` 以 `.base` 结尾。
+  - 若页面“必须带离散 query 才合法”（如必须有 `tab/sub`）：不要声明 base `uiState`，只枚举实际可达状态。
+- **主 TabBar（App 底部/顶部主导航）必须使用独立 pathname 路由区分 Tab**：例如 `'/','/contacts','/me'`，**禁止**用 `/?tab=xxx` 把主 Tab 挤在同一个 pathname 下（便于对外直达/调试，也符合 V2 的“主 Tab 常驻 + 子页互斥”模式）。
+  - 页面内部 Tab/subtab/筛选/频道等“同一路由内的离散状态”，仍推荐用 query（如 `?tab=xxx&sub=yyy`）并在 `uiStates` 中枚举。
+- **pathname 命名必须与页面语义一致（硬约束）**：不要把 UI 文案是“我/个人中心”的主 Tab 写成 `/saved` 这种“已保存/收藏”语义的路径。
+  - **优先复用仓库既有约定**（看同类 App）：例如“我/个人中心”统一用 `/me`（见 WeChat/WechatReading/Bilibili 等）。
+  - **路径用英文 token，但语义必须对齐**：`我→/me`，`探索→/` 或 `/explore`（若不是根路由），`贡献→/contribute`，`设置→/settings`，`搜索→/search`。
+  - 若截图/需求无法判断该页究竟是“我”还是“已保存/收藏”，**必须先提问再定 path**（避免后续对外直达/图/任务全部反复改名）。
+- `routes[].scrollContainers` **必选**：不用就写 `[]`（滚动观测依赖该声明）。
+- Transition ID 命名约定（推荐硬化）：`<feature>.<action>[.<detail>]`（例：`chat.open`、`modal.shelf.open`、`myReading.tab.switch`）。
+
+### 2.2 Transition 规则
+
+- `transitions[].to` **必填**（即使同 pathname 的 tab/modal/menu 切换，也必须写出目标 pathname 模板）。
+- 不推荐 `from: '*'`；尽量显式列出来源（提升静态可分析性）。
+- 若某个路由**没有** `search:{}` 的 base `uiState`（必须带 `tab/sub/...` 才合法），则 `transition.from` **不得**写成裸路径字符串（如 `'/ranking'`）；必须用 `FromConstraint` 约束离散参数或枚举可达 `uiStates`，否则图里会产生误导的“裸路径节点”。
+- `transition.ui.gesture` 必须与 UI 侧绑定的手势一致（`bindTap`→`tap`，`bindLongPress`→`longPress`，`bindDoubleTap`→`doubleTap`）。
+- **离散 UI 状态必须落到 URL（硬约束）**：凡是会改变页面“可见 UI 模式”的离散状态（`tab/modal/menu/select/...`）必须通过 **`go()` + transition 改写 URL** 来驱动，且在 `routes[].uiStates[].search` 中可枚举；**禁止仅用 React `setState`/context state 在同一路由内“私自开关弹窗/切 tab”**（否则 `__OS__.getAppRoute()` 不可对照、图/任务/回放无法识别状态）。
+  - 允许例外：toast/tooltip/非阻塞面板等“不进入 URL 的局部 UI”，应建模为 `localStates`（语义）+ action effects（不参与路由图），而不是伪造 query。
+- **mode 选择必须符合“返回语义”（硬约束）**：
+  - **同页面 Tab/subtab 切换**：通常用 `mode: 'replace'`（避免历史栈堆积；返回不应该一步步回退 tab）。
+  - **Modal/菜单/抽屉等“可被返回键关闭”的覆盖层**：打开用 `mode: 'push'`（形成 history entry），关闭用 `bindBack()`/`back()`（不要再额外声明“关闭 modal”的 transition/action）。
+- `.switch`：**同一路由内** Tab/subtab 等“有限集合”但运行时传参的切换，优先用单个 `.switch` + `searchParams`，避免 N 个重复 transition；**不用于主 TabBar**（主 TabBar 用独立 pathname + replace 切换）。
+- `preserveParams`：切换某个参数同时保留其它 query 时使用。
+- `cases`：非空必须以 `{ when: { op:'always' } }` 结尾。
+
+### 2.3 语义标签（用于图/任务/调试，必须可读）
+
+- `routes[].description` / `uiStates[].description` / `transitions[].label` / `actions[].label` 必须是**人类可读**的中文，不要直接复用 id，不要写空/占位词（它们会进入图、路径查找与任务数据）。
+- `uiStates[].description` 必须能区分离散状态差异（例如：`阅读统计-周视图`、`书架-删除确认弹窗`），避免多个 uiState 复用同一句描述。
+- `.switch` transition 的 `label` 要写“切换 xx Tab/子 Tab”等**泛化语义**；具体目标差异通过 `data-trigger-params`（运行时）或 analyzer 展开的目标状态描述体现。
+- `transition.ui` 的语义要真实：
+  - `placement` 必须反映入口位置（`tabbar/topbar/content/fab/none`），否则一致性检查/可视化会误导。
+  - `icon` 必须是稳定 token（建议 `snake_case`），不要依赖中文/动态值；它会被 viewer/任务步骤透传用于展示与调试。
+- **边可用性（availability）**：当入口“存在但并非总可用”（典型：依赖运行时访问记忆的恢复入口），用 `availability:'requires_prior_visit'` + `availabilityNote` 标注（可放在 transition 或 case 分支上）；不要用 `condition` 强行表达这种运行时记忆。
+
+## 3. 手势与 DOM 打标（必须）
+
+### 3.1 一切入口都要打标
+
+- 所有“导航跳转/状态切换”的入口必须用 App 封装手势 Hook（如 `use<App>Gestures()`）或 `useTriggerGestures()` 绑定，产出：
+  - `data-trigger`
+  - `data-trigger-type`（`tap`/`longPress`/`doubleTap`/`back`）
+  - `data-trigger-params`（可选）
+- 所有“动作（actions）”入口必须用 action 模式绑定，产出：
+  - `data-action`
+  - `data-action-type`
+  - `data-action-params`（可选）
+  - 说明：action 模式手势层只调用 `onTrigger`（不走 execute 的 `go/back`）；如需“回退型提交（完成/确定/发表）”，允许在 `onTrigger` 内显式调用 `back()` 关闭当前页面/弹窗。
+- **同一“手势类型”下二选一**：一个入口要么是 `data-trigger`（transition），要么是 `data-action`（action）。允许例外仅限“同一节点承载不同手势”（如 tap 触发导航、doubleTap 触发 action），但必须保证同一次手势不会同时触发 `go()` 与 `onTrigger`。
+
+### 3.1.2 共享组件/间接绑定入口（TopBar/FAB 等）
+
+当某个可点击入口的 **DOM 元素渲染在共享组件**（如 TopBar 右侧按钮、全局 FAB、统一弹窗容器），而其具体 `transitionId/actionId` 由页面通过 context/store “配置”时，必须满足：
+
+- **最终仍要打标**：共享组件内部必须使用手势 Hook 绑定，产出 `data-trigger-*` 或 `data-action-*`；不要只写 `onClick`（否则工具链/回放无法识别）。
+- **字段名写死为 `id`（必须）**：页面侧配置时，入口标识字段必须叫 `id`（不要用 `actionId`/`transitionId`/`key` 等别名），以便工具链跨 App 统一识别。
+- **id 必须可静态发现（必须）**：`id` 必须以**字符串字面量**出现在 object literal 中（例如 `setHeaderAction({ id: 'profile.name.submit', onTrigger })`），禁止用变量/拼接/计算得到（否则静态一致性检查与任务生成无法可靠发现该入口）。
+
+### 3.1.3 ID 必须字面量绑定（必须，禁止动态拼接/变量传入）
+
+为确保静态一致性检查与任务生成**可完全覆盖**，TransitionId/ActionId 在“绑定点”必须静态可发现：
+
+- **TransitionId（必须字面量）**：`go('...')` / `bindTap('...')` / `bindLongPress('...')` / `bindDoubleTap('...')` 的第一个参数必须是字符串字面量；禁止 `bindTap(tid)` / `go(tid)` / `bindTap(props.triggerId)` 等。
+- **ActionId（必须字面量）**：`bindTap({ kind:'action', id:'...' })` 的 `id` 必须是字符串字面量；禁止 `id: someVar`、模板字符串拼接（`` `a.${x}.b` ``）等。
+- **组件复用写法（推荐）**：复用列表项/通用组件时，传入 **已绑定的 props**（如 `tapProps={bindTap('xxx')}`、`actionProps={bindTap({kind:'action', id:'yyy'}, ...)}`），不要传 `triggerId/actionId` 再在子组件里 `bind*`。
+- **共享组件例外**：共享组件内部可以使用来自 context/store 的 `id` 变量做最终绑定（例如 TopBar 右键），但页面侧必须遵守 3.1.2 的 `{ id: '...' }` 字面量配置规则。
+
+### 3.1.1 何时必须提供 params（强约束）
+
+- **`data-trigger-params` 必须提供**：当多个控件复用同一个 `transitionId` 且目标/参数不同（Tab 切换、列表项打开详情等），必须通过 params 让 Agent 可区分（优先用手势 Hook 自动生成 JSON）。
+- **`data-trigger-params` 的 key 约束**：只允许提供 `transition.params`（path params）与 `transition.searchParams`（动态 query）中声明过的 key；避免塞无关字段（图/任务/回放都无法解释）。
+- **`data-action-params` 必须提供**：当 action 需要“实例区分”（通常 `scope:'item'`）时，必须提供对象标识字段（并保证是合法 JSON；尽量走 hook）。
+- **`data-action-params` 可选但一旦提供必须合法**：如果 action 声明了 `paramsSchema` 且你选择提供 params（例如 input 的 `value`、toggle 的 `to`），则必须保证：
+  - key 集合与 `paramsSchema` 一致
+  - 值类型符合 schema
+  - 字符串是合法 JSON（不要手写拼错，尽量走 hook）
+
+### 3.2 返回（Back）必须这样做
+
+- UI 上的“返回键/关闭遮罩返回上一页”必须使用 `bindBack()`。
+  - `bindBack()` 绑定的是系统内建触发：`data-trigger="system.back"`，不会进入 `navigation.declaration.ts`。
+  - **不要**把“返回/取消/关闭遮罩”声明成 transition 或 action（只需 `system.back`）。
+
+### 3.3 只打标“可执行控件”（必须）
+
+- **仅对真实实现了跳转/动作的控件打标**；占位/未实现（点击无效果）的控件不要添加 `data-trigger` / `data-action`（避免污染图与任务）。
+
+### 3.4 滚动容器语义打标（必须）
+
+- 所有需要被观测/回放的滚动容器，必须在 DOM 上添加：
+  - `data-scroll-container="<name>"`
+  - `data-scroll-direction="vertical|horizontal"`
+- `navigation.declaration.ts` 中 `routes[].scrollContainers[].name/direction` 必须与 DOM 属性**严格一致**（工具链/`window.__getScrollMeta__()` 依赖此语义；隐藏容器会被自动过滤）。
+
+## 4. Actions（原地动作）规范
+
+- Actions 声明挂在 `routes[].uiStates[].actions[]`。
+- 命名规范：`<domain>.<control>.<verb>`（select 需 `.select.<option>`，input 需 `.input`，submit 需 `.submit`）。
+- `scope:'item'` 必须声明 `paramsSchema` 且包含至少一个对象标识字段（string|number）。
+- `behavior:'input'` 必须声明 `paramsSchema.value` 为 `string|number`。
+
+## 5. 条件与 dataSource（暂不使用）
+
+> **注意**：鉴于 dataSource 配置的复杂程度（不同 `from` 页面进入同一目标需要不同数据源），**当前默认不生成 data 图，也不必配置 dataSource**。详见 `TODO.md`。
+
+以下为参考说明（仅在需要时使用）：
+
+- `uiStates[].stateCondition`：状态节点是否存在（schema 标注；data-mode 可剪枝）。
+- `transition.ui.condition`：入口是否显示（schema 标注；data-mode 可剪枝）。
+- `transition.dataSource`：仅用于 **data-mode** 展开动态 path params，**不影响运行时**。
+- data-mode 只读取 config 快照，不读取 localStorage/运行时 React state；不要用 data 条件去"模拟运行时记忆"。
+- 遇到"记住上次 tab/子页面"等 **runtime 记忆**：
+  - 优先用 `cases`（基于运行时 `params`/`search`/`appState` 的 Condition）表达"恢复到哪个子状态"，并对"恢复分支"标注 `availability:'requires_prior_visit'` + `availabilityNote`（语义：存在但不保证首次可用）。
+  - **禁止用 ConfigData +（`uiStates[].stateCondition` / `transition.ui.condition` / `actions[].condition`）去表达或"初始化"这类 UI 记忆**（不符合真实 App 语义）。记忆应由运行时实现（例如主 Tab 常驻 + React state/context），并在点击入口时通过 `go(id, params)`/`data-trigger-params` 把"恢复目标参数"传入。
+  - data-mode/建图工具不会模拟"交互后记忆如何更新"；因此这类恢复分支在图里应被保留但标注为 `requires_prior_visit`，供路径规划时默认避开（工具会输出 fallback(no availability edges)）。
+
+## 6. UI/布局一致性（建议硬化为 checklist）
+
+- 页面顶部预留状态栏空间（见 V2 规范，常用 `pt-10`）。
+- 已知状态栏前景色时，推荐添加 `data-status-bar-foreground="dark|light"`（性能更优）。
+- 当底部手势条前景与状态栏不一致时，使用 `data-navigation-bar-foreground="dark|light"` 单独声明。
+- 尽量复用现有组件/样式（Tailwind className 风格保持一致）。
+- 列表/Tab/Modal 的“离散状态”必须能映射到 URL（`uiStates` 可枚举），不要用动态拼路由表达有限状态。
+
+---
+
+## 9. 资源层易错补充
+
+> 完整资源规范见 `docs/APP_DESIGN_SPEC.md`（v3.0 简化版：只关注图标、主题色、关键尺寸、字符串翻译）。
+
+- **图标文件路径**：`res/icons.tsx`（扁平），**不是** `res/drawable/icons.tsx`（旧路径已废弃）。
+- **`res/colors.ts` 和 `res/dimens.ts` 是可选文件**：只有多处复用的特殊颜色/关键尺寸才需要抽取；标准 Tailwind 颜色和一次性尺寸保持内联即可。图标 size 可直接硬编码。
+- **主题色用 `manifest.ts` 的 `theme.colors`**，通过 `text-app-primary` 等 Tailwind 类使用。
+- **Intent 声明**：`intentFilters` / `queries` 放 `manifest.ts`，不放 `navigation.declaration.ts`（后者只管 App 内部路由）。
+
+---
+
+## 7. 每次提交前的自检命令（必须贴出结果摘要）
+
+在完成改动后，至少运行并检查输出（可只贴关键信息）：
+
+```bash
+# 推荐一键（默认）：检查(transitions+actions) + 建图(schema) + tasks
+# - 默认不生成 data 图（dataSource 配置复杂，暂不使用）
+# - tasks 默认只保留"最短路径集合"（含多条同长度最短路径，受上限控制），体积相对可控
+# - 只想更新图、不生成 tasks：加 --skip-tasks
+# - 如需枚举非最短路径：加 --tasks-all-paths
+node scripts/build_nav_artifacts.mjs <AppName> [--skip-tasks] [--tasks-all-paths] [--tasks-max-depth 30] [--tasks-max-paths 20]
+
+# 拆分调试：见 docs/APP_MIGRATION_GUIDE.md（Step 5.x）
+```
+
+- **自检输出必须包含“明细”（硬约束）**：如果检查结果出现 `ERROR/WARN`（尤其是 `missingInDeclaration` / `fromMismatches` / `unusedInCode` / action schema issues），**不要只贴 summary 计数**；必须贴出对应的 **ID 列表 +（若有）file:line:col 示例**（可只贴前 5~10 条），并解释你如何修复/为何可接受。
+
+## 8. 交付输出格式（你回复用户时必须包含）
+
+- **改动摘要**：实现了哪些截图元素/交互。
+- **涉及文件列表**：每个文件改了什么（1 句话）。
+- **新增/修改的 IDs**：新增 transitionId/actionId 列表。
+- **自检结论**：一致性检查与建图是否通过（有 WARN/ERROR 必须解释）。

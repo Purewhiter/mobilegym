@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="RTL">0</string>
+  <string name="high_i18n">ئەڭ يۇقىرى</string>
+  <string name="low_i18n">ئەڭ تۆۋەن</string>
+  <string name="aqi_good_i18n">ھاۋا سۈپىتى ئەلا</string>
+  <string name="aqi_moderate_i18n">ھاۋا سۈپىتى ياخشى</string>
+  <string name="aqi_pollution_i18n">يېنىك بۇلغىنىش</string>
+  <string name="aqi_unhealthy_i18n">ئوتتۇرھال بۇلغىنىش</string>
+  <string name="aqi_dangerous_i18n">ئېغىر دەرىجىدىكى بۇلغىنىش</string>
+  <string name="aqi_hazardous_i18n">قاتتىق بۇلغىنىش</string>
+  <string name="humidness_i18n">نەملىك</string>
+  <string name="now_i18n">ھازىر</string>
+  <string name="location_i18n">تۇرۇشلۇق ئورنى</string>
+  <string name="weather_i18n">ھاۋارايى</string>
+  <string name="low_temp_i18n">ئەڭ تۆۋەن تېمپىراتۇرا</string>
+  <string name="aqi_i18n">ھاۋا سۈپىتى</string>
+  <string name="weather_auth_tip_i18n">چېكىپ ھاۋارايى ئۇچۇرىغا ئېرىشىڭ</string>
+  <string name="weather_auth_tip_1_i18n">\"ھاۋارايى\"نى ئېچىپ ھوقۇقلاندۇرۇڭ</string>
+  <string name="tomorrow_i18n">ئەتە</string>
+  <string name="sunrise_i18n">كۈن چىقىش</string>
+  <string name="sunset_i18n">كۈن ئولتۇرۇش</string>
+  <string name="sunrising_i18n">كۈن چىقىۋاتىدۇ</string>
+  <string name="sunseting_i18n">كۈن ئولتۇرىۋاتىدۇ</string>
+  <string name="sunrise_sunset_i18n">كۈن چىقىش ۋە پېتىش</string>
+  <string name="hour_after_i18n">#sun_hour+\'سائەتتىن كېيىن\'</string>
+  <string name="minute_after_i18n">#sun_minute+\'مىنۇتتىن كېيىن\'</string>
+  <string name="morning_i18n">\'چۈشتىن بۇرۇن\'+#sun_morning</string>
+  <string name="afternoon_i18n">\'چۈشتىن كېيىن\'+#sun_afternoon</string>
+  <string name="authorization_and_open_i18n">ھوقۇقلاندۇرۇپ، ھاۋارايىنى ئېچىڭ</string>
+  <string name="wind_level_i18n">دەرىجە</string>
+  <string name="aqi_null_i18n">AQI--</string>
+
+  <string name="talkback_temperature_range">ཆེས་མཐོ་བའི་དྲོད་ཚད།变量1 ཆེས་དམའ་བའི་དྲོད་ཚད།变量2</string>
+  <string name="talkback_humidity">དྲོད་ཚད།变量3</string>
+  <string name="talkback_wind">རླུང་ཤུགས།变量4</string>
+</resources>

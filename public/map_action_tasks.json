@@ -1,0 +1,328 @@
+[
+  {
+    "app": "map",
+    "graphFile": "public/map_nav_graph.json",
+    "taskId": "map:search.bar.input",
+    "start": {
+      "nodeId": "/"
+    },
+    "target": {
+      "nodeId": "/search",
+      "routePath": "/search",
+      "uiStateId": "search.base"
+    },
+    "trajectoryCount": 1,
+    "shortestLength": 1,
+    "trajectories": [
+      {
+        "nodes": [
+          "/",
+          "/search"
+        ],
+        "transitions": [
+          "search.open"
+        ],
+        "length": 1
+      }
+    ],
+    "trajectoriesDetailed": [
+      {
+        "nodes": [
+          "/",
+          "/search"
+        ],
+        "transitions": [
+          "search.open"
+        ],
+        "length": 1,
+        "steps": [
+          {
+            "index": 0,
+            "kind": "transition",
+            "from": {
+              "nodeId": "/",
+              "routePath": "/",
+              "uiStateId": "explore.base",
+              "component": "ExplorePage",
+              "description": "探索首页-地图视图",
+              "entryPoint": true,
+              "search": {},
+              "queryParams": {},
+              "params": {},
+              "scrollContainers": [],
+              "stateCondition": null,
+              "actionsCount": 0
+            },
+            "edge": {
+              "transitionId": "search.open",
+              "label": "打开搜索页",
+              "type": "navigation",
+              "mode": "push",
+              "source": "/",
+              "target": "/search",
+              "uiMeta": {
+                "placement": "topbar",
+                "icon": "search_bar",
+                "gesture": "tap"
+              },
+              "uiCondition": null,
+              "fromConstraint": null,
+              "search": {},
+              "searchParams": {},
+              "params": {},
+              "preserveParams": [],
+              "binding": null,
+              "expandedFrom": null,
+              "dataSourceRef": null
+            },
+            "to": {
+              "nodeId": "/search",
+              "routePath": "/search",
+              "uiStateId": "search.base",
+              "component": "SearchPage",
+              "description": "搜索页-历史记录",
+              "entryPoint": false,
+              "search": {},
+              "queryParams": {},
+              "params": {},
+              "scrollContainers": [
+                {
+                  "name": "main",
+                  "direction": "vertical",
+                  "description": "主内容区"
+                }
+              ],
+              "stateCondition": null,
+              "actionsCount": 2
+            },
+            "ui": {
+              "trigger": {
+                "dataTrigger": "search.open",
+                "dataTriggerType": "tap",
+                "paramsSchema": {},
+                "searchParamsSchema": {}
+              },
+              "placement": "topbar",
+              "icon": "search_bar",
+              "gesture": "tap"
+            }
+          },
+          {
+            "kind": "action",
+            "at": {
+              "nodeId": "/search",
+              "routePath": "/search",
+              "uiStateId": "search.base",
+              "component": "SearchPage",
+              "description": "搜索页-历史记录",
+              "entryPoint": false,
+              "search": {},
+              "queryParams": {},
+              "params": {},
+              "scrollContainers": [
+                {
+                  "name": "main",
+                  "direction": "vertical",
+                  "description": "主内容区"
+                }
+              ],
+              "stateCondition": null,
+              "actionsCount": 2
+            },
+            "ui": {
+              "trigger": {
+                "dataAction": "search.bar.input",
+                "dataActionType": "tap",
+                "paramsSchema": {
+                  "value": "string"
+                }
+              }
+            },
+            "action": {
+              "id": "search.bar.input",
+              "label": "搜索地点",
+              "description": null,
+              "behavior": "input",
+              "scope": null,
+              "paramsSchema": {
+                "value": "string"
+              }
+            },
+            "codeUsages": [],
+            "index": 1
+          }
+        ]
+      }
+    ],
+    "action": {
+      "id": "search.bar.input",
+      "label": "搜索地点",
+      "description": null,
+      "behavior": "input",
+      "scope": null,
+      "paramsSchema": {
+        "value": "string"
+      }
+    }
+  },
+  {
+    "app": "map",
+    "graphFile": "public/map_nav_graph.json",
+    "taskId": "map:search.voice.tap",
+    "start": {
+      "nodeId": "/"
+    },
+    "target": {
+      "nodeId": "/search",
+      "routePath": "/search",
+      "uiStateId": "search.base"
+    },
+    "trajectoryCount": 1,
+    "shortestLength": 1,
+    "trajectories": [
+      {
+        "nodes": [
+          "/",
+          "/search"
+        ],
+        "transitions": [
+          "search.open"
+        ],
+        "length": 1
+      }
+    ],
+    "trajectoriesDetailed": [
+      {
+        "nodes": [
+          "/",
+          "/search"
+        ],
+        "transitions": [
+          "search.open"
+        ],
+        "length": 1,
+        "steps": [
+          {
+            "index": 0,
+            "kind": "transition",
+            "from": {
+              "nodeId": "/",
+              "routePath": "/",
+              "uiStateId": "explore.base",
+              "component": "ExplorePage",
+              "description": "探索首页-地图视图",
+              "entryPoint": true,
+              "search": {},
+              "queryParams": {},
+              "params": {},
+              "scrollContainers": [],
+              "stateCondition": null,
+              "actionsCount": 0
+            },
+            "edge": {
+              "transitionId": "search.open",
+              "label": "打开搜索页",
+              "type": "navigation",
+              "mode": "push",
+              "source": "/",
+              "target": "/search",
+              "uiMeta": {
+                "placement": "topbar",
+                "icon": "search_bar",
+                "gesture": "tap"
+              },
+              "uiCondition": null,
+              "fromConstraint": null,
+              "search": {},
+              "searchParams": {},
+              "params": {},
+              "preserveParams": [],
+              "binding": null,
+              "expandedFrom": null,
+              "dataSourceRef": null
+            },
+            "to": {
+              "nodeId": "/search",
+              "routePath": "/search",
+              "uiStateId": "search.base",
+              "component": "SearchPage",
+              "description": "搜索页-历史记录",
+              "entryPoint": false,
+              "search": {},
+              "queryParams": {},
+              "params": {},
+              "scrollContainers": [
+                {
+                  "name": "main",
+                  "direction": "vertical",
+                  "description": "主内容区"
+                }
+              ],
+              "stateCondition": null,
+              "actionsCount": 2
+            },
+            "ui": {
+              "trigger": {
+                "dataTrigger": "search.open",
+                "dataTriggerType": "tap",
+                "paramsSchema": {},
+                "searchParamsSchema": {}
+              },
+              "placement": "topbar",
+              "icon": "search_bar",
+              "gesture": "tap"
+            }
+          },
+          {
+            "kind": "action",
+            "at": {
+              "nodeId": "/search",
+              "routePath": "/search",
+              "uiStateId": "search.base",
+              "component": "SearchPage",
+              "description": "搜索页-历史记录",
+              "entryPoint": false,
+              "search": {},
+              "queryParams": {},
+              "params": {},
+              "scrollContainers": [
+                {
+                  "name": "main",
+                  "direction": "vertical",
+                  "description": "主内容区"
+                }
+              ],
+              "stateCondition": null,
+              "actionsCount": 2
+            },
+            "ui": {
+              "trigger": {
+                "dataAction": "search.voice.tap",
+                "dataActionType": "tap",
+                "paramsSchema": null
+              }
+            },
+            "action": {
+              "id": "search.voice.tap",
+              "label": "语音搜索",
+              "description": null,
+              "behavior": "other",
+              "scope": null,
+              "paramsSchema": null
+            },
+            "codeUsages": [],
+            "index": 1
+          }
+        ]
+      }
+    ],
+    "action": {
+      "id": "search.voice.tap",
+      "label": "语音搜索",
+      "description": null,
+      "behavior": "other",
+      "scope": null,
+      "paramsSchema": null
+    }
+  }
+]

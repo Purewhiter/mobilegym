@@ -1,0 +1,19 @@
+/* Calculator2 动画 — AOSP Material Design */
+
+/* Ripple 扩展动画 */
+@keyframes ripple-expand {
+  from {
+    width: 0;
+    height: 0;
+    opacity: 1;
+  }
+  to {
+    width: 300px;
+    height: 300px;
+    opacity: 0;
+  }
+}
+
+.animate-ripple {
+  animation: ripple-expand 0.6s ease-out forwards;
+}

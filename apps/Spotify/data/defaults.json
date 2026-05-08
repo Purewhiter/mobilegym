@@ -1,0 +1,828 @@
+{
+  "user": {
+    "id": "u1",
+    "name": "Ju Zheng",
+    "initial": "J",
+    "color": "bg-amber-700"
+  },
+  "recentPlays": [
+    {
+      "id": "t1",
+      "title": "搁浅",
+      "artist": "周杰伦",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/29/c1/2d/29c12de6-54b4-f549-9d9f-07d8a04221ea/JAY.jpg/600x600bb.jpg",
+      "duration": "3:58"
+    },
+    {
+      "id": "rp1",
+      "title": "Bad Habits",
+      "artist": "Ed Sheeran",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/63/45/cc/6345cc98-aa83-ad6e-e3c9-1a36ff9838a4/190296614316.jpg/600x600bb.jpg",
+      "duration": "3:50"
+    },
+    {
+      "id": "rp2",
+      "title": "bad guy",
+      "artist": "Billie Eilish",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/1a/37/d1/1a37d1b1-8508-54f2-f541-bf4e437dda76/19UMGIM05028.rgb.jpg/600x600bb.jpg",
+      "duration": "3:14"
+    },
+    {
+      "id": "rp3",
+      "title": "Welcome to New York",
+      "artist": "Taylor Swift",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/89/4a/4a/894a4ab9-b0b0-9ea5-ca41-8da0b9b79453/14UMDIM03405.rgb.jpg/600x600bb.jpg",
+      "duration": "3:32"
+    },
+    {
+      "id": "rp4",
+      "title": "Love Story",
+      "artist": "Taylor Swift",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/cb/6e/a7/cb6ea70a-6cb8-89a0-4da7-91e2d04a7bba/08PNDIM05386.rgb.jpg/600x600bb.jpg",
+      "duration": "3:55"
+    },
+    {
+      "id": "rp5",
+      "title": "Rolling In the Deep",
+      "artist": "Adele",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/eb/ca/25/ebca2596-cd1e-b295-91a3-771c868d0a79/191404113868.png/600x600bb.jpg",
+      "duration": "3:48"
+    }
+  ],
+  "startListening": [
+    {
+      "id": "t1",
+      "title": "搁浅",
+      "artist": "周杰伦",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/29/c1/2d/29c12de6-54b4-f549-9d9f-07d8a04221ea/JAY.jpg/600x600bb.jpg",
+      "duration": "3:58"
+    },
+    {
+      "id": "t2",
+      "title": "修炼爱情",
+      "artist": "林俊杰",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/86/80/48/86804834-eb90-62a1-2170-cd96f9963cac/4711099729722.jpg/600x600bb.jpg",
+      "duration": "4:47"
+    },
+    {
+      "id": "t3",
+      "title": "有何不可",
+      "artist": "许嵩",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music69/v4/ae/fe/97/aefe975b-08f9-4bdb-d05a-491ade09a926/dj.emhqpwbp.jpg/600x600bb.jpg",
+      "duration": "4:06"
+    }
+  ],
+  "recommendedTracks": [
+    {
+      "id": "t1",
+      "title": "搁浅",
+      "artist": "周杰伦",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/29/c1/2d/29c12de6-54b4-f549-9d9f-07d8a04221ea/JAY.jpg/600x600bb.jpg",
+      "duration": "3:58"
+    },
+    {
+      "id": "t2",
+      "title": "修炼爱情",
+      "artist": "林俊杰",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/86/80/48/86804834-eb90-62a1-2170-cd96f9963cac/4711099729722.jpg/600x600bb.jpg",
+      "duration": "4:47"
+    },
+    {
+      "id": "t3",
+      "title": "有何不可",
+      "artist": "许嵩",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music69/v4/ae/fe/97/aefe975b-08f9-4bdb-d05a-491ade09a926/dj.emhqpwbp.jpg/600x600bb.jpg",
+      "duration": "4:06"
+    }
+  ],
+  "extraTracks": [
+    {
+      "id": "mt1",
+      "title": "青花瓷",
+      "artist": "周杰伦",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/04/cd/89/04cd8946-11c0-e50e-4841-9409a6362afb/23UM1IM58502.rgb.jpg/600x600bb.jpg",
+      "duration": "3:59"
+    },
+    {
+      "id": "mt2",
+      "title": "稻香",
+      "artist": "周杰伦",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/8e/65/08/8e6508f4-e97d-4d1d-11a2-c60a66158b32/24UMGIM64882.rgb.jpg/600x600bb.jpg",
+      "duration": "3:43"
+    },
+    {
+      "id": "mt3",
+      "title": "晴天",
+      "artist": "周杰伦",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/04/cd/89/04cd8946-11c0-e50e-4841-9409a6362afb/23UM1IM58502.rgb.jpg/600x600bb.jpg",
+      "duration": "4:29"
+    },
+    {
+      "id": "mt4",
+      "title": "后来遇见他",
+      "artist": "胡66",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/29/9b/2c/299b2cd6-b0ad-1415-e81e-1128d50d4855/4894972349610.jpg/600x600bb.jpg",
+      "duration": "3:21"
+    },
+    {
+      "id": "mt5",
+      "title": "爱我还是他",
+      "artist": "陶喆",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/b6/84/dd/b684dd6f-e752-0c1d-5f10-523a0cf364ad/4711126592275.jpg/600x600bb.jpg",
+      "duration": "4:52"
+    },
+    {
+      "id": "mt6",
+      "title": "爱爱爱",
+      "artist": "方大同",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music/c3/d0/e5/mzi.kdgffvqb.jpg/600x600bb.jpg",
+      "duration": "3:33"
+    },
+    {
+      "id": "mt7",
+      "title": "用背脊唱情歌",
+      "artist": "Gareth.T",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/f8/44/d1/f844d1ca-9db5-e05a-21c2-f1619daa4eea/5021732818638.jpg/600x600bb.jpg",
+      "duration": "3:45"
+    },
+    {
+      "id": "mt8",
+      "title": "Don't Say You Love Me",
+      "artist": "Jin",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music49/v4/bd/00/6f/bd006fcd-66fc-e1f9-1254-bf3f0131f56b/cover-_DS.jpg/600x600bb.jpg",
+      "duration": "3:12"
+    },
+    {
+      "id": "mt9",
+      "title": "你要倔强",
+      "artist": "姜涛",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/df/3b/d5/df3bd580-3a15-49bc-dd28-186a23ec2f09/4897004797489.jpg/600x600bb.jpg",
+      "duration": "4:01"
+    }
+  ],
+  "personalizedPlaylists": [
+    {
+      "id": "p1",
+      "title": "华语R&B精选",
+      "subtitle": "周杰伦、陶喆、林宥嘉",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/14/b9/fa/14b9fa3f-ef0c-01de-3721-93ff740062b5/23UM1IM56711.rgb.jpg/600x600bb.jpg"
+    },
+    {
+      "id": "p2",
+      "title": "轻声摇滚",
+      "subtitle": "房东的猫、告五人",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/d8/4c/f4/d84cf4fb-26a1-f2c3-84ae-794ee9c19f29/4894944913764.jpg/600x600bb.jpg"
+    },
+    {
+      "id": "p3",
+      "title": "夜幕City Pop",
+      "subtitle": "Lamp、Vaundy、Anri",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/8a/ab/cb/8aabcb3d-4262-63d8-2152-6dea346b14db/758.jpg/600x600bb.jpg"
+    },
+    {
+      "id": "p4",
+      "title": "公路旅行",
+      "subtitle": "落日飞车、陈粒",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/af/46/2f/af462f36-c070-b795-eae4-68e35f392cd5/8052869208419.jpg/600x600bb.jpg"
+    }
+  ],
+  "dailyPicks": [
+    {
+      "id": "radio_1",
+      "title": "有何不可 电台",
+      "subtitle": "Spotify • Radio",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music69/v4/ae/fe/97/aefe975b-08f9-4bdb-d05a-491ade09a926/dj.emhqpwbp.jpg/600x600bb.jpg",
+      "type": "playlist"
+    },
+    {
+      "id": "dp1",
+      "title": "新的心跳",
+      "subtitle": "邓紫棋",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/55/bb/c7/55bbc782-299e-7f24-bc4a-ae129e6d8030/mzm.rpqttxch.jpg/600x600bb.jpg"
+    },
+    {
+      "id": "dp2",
+      "title": "林忆莲",
+      "subtitle": "林忆莲",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music118/v4/f4/4c/73/f44c73ff-d59b-da32-e079-f0241ae72374/886447255032.jpg/600x600bb.jpg"
+    },
+    {
+      "id": "dp3",
+      "title": "雨爱",
+      "subtitle": "杨丞琳",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music114/v4/07/51/39/075139cf-7910-68c9-7c91-c6c000718794/mzi.vmzravef.jpg/600x600bb.jpg"
+    },
+    {
+      "id": "dp4",
+      "title": "薛之谦",
+      "subtitle": "薛之谦",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/95/7a/a1/957aa172-9511-69d4-9d2f-b6179cb761f9/6942219354632.jpg/600x600bb.jpg"
+    },
+    {
+      "id": "dp5",
+      "title": "忍了吧",
+      "subtitle": "陈奕迅",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/27/cb/d6/27cbd6b4-c991-cd95-49e3-b6019462ff97/00602517338845.rgb.jpg/600x600bb.jpg"
+    },
+    {
+      "id": "dp6",
+      "title": "The Moment",
+      "subtitle": "孙燕姿",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/8a/91/d7/8a91d731-cdb1-01b5-17a9-c88cf66d6e01/5050466855725.jpg/600x600bb.jpg"
+    }
+  ],
+  "libraryArtists": [
+    {
+      "id": "a1",
+      "name": "许嵩",
+      "subtitle": "与相似的更多艺人",
+      "avatar": "/spotify-assets/dp6.jpg"
+    },
+    {
+      "id": "a2",
+      "name": "林俊杰",
+      "subtitle": "艺人",
+      "avatar": "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/94/28/36/94283609-93bb-db1c-e997-44e82c157e90/00602567261216.rgb.jpg/600x600bb.jpg"
+    },
+    {
+      "id": "a3",
+      "name": "周杰伦",
+      "subtitle": "艺人",
+      "avatar": "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/94/28/36/94283609-93bb-db1c-e997-44e82c157e90/00602567261216.rgb.jpg/600x600bb.jpg"
+    }
+  ],
+  "followedArtists": [
+    "许嵩",
+    "林俊杰",
+    "周杰伦"
+  ],
+  "similarArtistSections": [
+    {
+      "id": "s1",
+      "anchor": "許嵩",
+      "avatar": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/23/65/4a/23654a78-6769-a2ec-bfd7-e032ea71c65a/191018640989.jpg/600x600bb.jpg",
+      "playlists": [
+        {
+          "id": "sa1",
+          "title": "2010年代 華語最流行",
+          "subtitle": "鄧紫棋,盧廣仲,周興哲,汪蘇瀧,告五人",
+          "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/23/65/4a/23654a78-6769-a2ec-bfd7-e032ea71c65a/191018640989.jpg/600x600bb.jpg",
+          "type": "playlist"
+        },
+        {
+          "id": "sa2",
+          "title": "經典傳唱",
+          "subtitle": "陳奕迅,蔡健雅,李聖傑,韋禮安,莫文蔚",
+          "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/75/2b/f0/752bf0af-2a56-5294-93c7-072427c70d64/00602577299612.rgb.jpg/600x600bb.jpg",
+          "type": "playlist"
+        },
+        {
+          "id": "sa3",
+          "title": "暖",
+          "subtitle": "汪蘇瀧,陳華",
+          "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music122/v4/93/6f/3a/936f3ad8-5c23-8eb4-0c48-dde9ca52613d/4894894423085.jpg/600x600bb.jpg",
+          "type": "playlist"
+        }
+      ]
+    },
+    {
+      "id": "s2",
+      "anchor": "林俊傑",
+      "avatar": "https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/03/ba/15/03ba151a-35de-85b0-1782-78342c564f99/23UM1IM58495.rgb.jpg/600x600bb.jpg",
+      "playlists": [
+        {
+          "id": "sb1",
+          "title": "十年全精選: 華語流行",
+          "subtitle": "周杰倫, 陳奕迅, 鄧紫棋, 林俊傑, 周興哲",
+          "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/03/ba/15/03ba151a-35de-85b0-1782-78342c564f99/23UM1IM58495.rgb.jpg/600x600bb.jpg",
+          "type": "playlist"
+        },
+        {
+          "id": "sb2",
+          "title": "情歌不敗",
+          "subtitle": "鄧紫棋,盧廣仲,周興哲,孙燕姿,陶喆",
+          "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/e3/02/f6/e302f698-bc3a-8073-8bed-9a0b2e8d956b/8718857320753.jpg/600x600bb.jpg",
+          "type": "playlist"
+        },
+        {
+          "id": "sb3",
+          "title": "雨愛",
+          "subtitle": "楊丞琳",
+          "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music114/v4/07/51/39/075139cf-7910-68c9-7c91-c6c000718794/mzi.vmzravef.jpg/600x600bb.jpg",
+          "type": "album"
+        }
+      ]
+    },
+    {
+      "id": "s3",
+      "anchor": "周杰倫",
+      "avatar": "https://is1-ssl.mzstatic.com/image/thumb/Music118/v4/7f/81/42/7f8142ac-e6d9-dde9-9985-b3ed9be040bc/00602557434705.rgb.jpg/600x600bb.jpg",
+      "playlists": [
+        {
+          "id": "sc1",
+          "title": "華語R&B精選",
+          "subtitle": "周杰倫,陶喆,方大同,林宥嘉",
+          "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music118/v4/7f/81/42/7f8142ac-e6d9-dde9-9985-b3ed9be040bc/00602557434705.rgb.jpg/600x600bb.jpg",
+          "type": "playlist"
+        },
+        {
+          "id": "sc2",
+          "title": "情歌天王",
+          "subtitle": "周杰倫,陶喆,林俊傑,陳奕迅",
+          "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music112/v4/53/89/95/538995e7-4cf2-48dc-31e1-a7f9fb7441f0/21UMGIM87777.rgb.jpg/600x600bb.jpg",
+          "type": "playlist"
+        },
+        {
+          "id": "sc3",
+          "title": "獨特嗓音",
+          "subtitle": "林宥嘉,方大同,韋禮安",
+          "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/b4/1c/c2/b41cc2e8-1af7-2c11-8d7f-a174a1d947af/cover.jpg/600x600bb.jpg",
+          "type": "playlist"
+        }
+      ]
+    }
+  ],
+  "charts": [
+    {
+      "id": "c1",
+      "title": "Top 50 Hong Kong",
+      "subtitle": "每日更新的热门曲目",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/10/5a/bb/105abb14-b42e-c74a-e499-d6e3c0c87302/717340554819_cover.jpg/600x600bb.jpg"
+    },
+    {
+      "id": "c2",
+      "title": "最Hit粤语榜",
+      "subtitle": "粤语流行精选",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/14/40/b1/1440b17c-ac99-9373-d0c4-ec311efec318/5059460276161.jpg/600x600bb.jpg"
+    }
+  ],
+  "featuredCharts": [
+    {
+      "id": "fc1",
+      "title": "Viral 50 Hong Kong",
+      "subtitle": "飙升最快的歌曲",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music114/v4/8d/91/25/8d9125c6-b997-afee-f0ce-f1961d5a2eab/8033773006919.jpg/600x600bb.jpg"
+    },
+    {
+      "id": "fc2",
+      "title": "Top Songs Hong Kong",
+      "subtitle": "每周最热单曲",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/f1/76/7d/f1767d61-4fe2-d06d-e01b-f0a012120ed8/4897004793733.jpg/600x600bb.jpg"
+    }
+  ],
+  "recommendedArtists": [
+    {
+      "id": "ra1",
+      "name": "张芸京",
+      "subtitle": "摇滚女声",
+      "avatar": "https://is1-ssl.mzstatic.com/image/thumb/Features124/v4/69/03/b1/6903b121-cc33-ba9d-1653-af6339425b44/dj.bzpsgdpy.jpg/600x600bb.jpg"
+    },
+    {
+      "id": "ra2",
+      "name": "胡彦斌",
+      "subtitle": "全能制作人",
+      "avatar": "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/9e/33/bc/9e33bcb4-6057-14bf-c1c0-f956cbd6ed25/fengmian.jpg/600x600bb.jpg"
+    },
+    {
+      "id": "ra3",
+      "name": "王心凌",
+      "subtitle": "甜蜜情歌",
+      "avatar": "https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/78/df/dc/78dfdc34-e8b1-c4d8-3090-753f2c1c1946/196871431026.jpg/600x600bb.jpg"
+    }
+  ],
+  "throwback": [
+    {
+      "id": "tb1",
+      "title": "2000年代华语金曲",
+      "subtitle": "Jay Chou, Eason Chan, David Tao",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/95/cf/99/95cf99db-07c9-13dd-321f-353c070df8cb/23UM1IM58386.rgb.jpg/600x600bb.jpg"
+    },
+    {
+      "id": "tb2",
+      "title": "Tokyo City Pop",
+      "subtitle": "Vaundy、宇多田光",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/e4/c2/05/e4c20589-baae-7954-8036-1b9683dbd407/197189888120.jpg/600x600bb.jpg"
+    }
+  ],
+  "newHotSelections": [
+    {
+      "id": "nh1",
+      "title": "还好有你",
+      "subtitle": "Hayden 黄程晗, Ge1nes",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music112/v4/3b/36/ce/3b36ced2-21e5-c56e-5037-4abe48258506/196589623263.jpg/600x600bb.jpg"
+    },
+    {
+      "id": "nh2",
+      "title": "灵魂共振",
+      "subtitle": "方立维 ALI",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/53/63/c5/5363c5f2-8419-84e3-b0d3-ec0ee2338054/193017195187.jpg/600x600bb.jpg"
+    }
+  ],
+  "hottestToday": [
+    {
+      "id": "ht1",
+      "title": "高人气金曲",
+      "subtitle": "Eason Chan, Khalil Fong",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/32/7e/11/327e1126-4f17-69ca-ea96-60b0dffdd531/16UMGIM86615.rgb.jpg/600x600bb.jpg"
+    },
+    {
+      "id": "ht2",
+      "title": "K-Ost Center",
+      "subtitle": "韩剧OST精选",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music113/v4/ef/31/ee/ef31ee3d-85fe-8a0d-e80e-26fd82f5bf18/4892775050238.jpg/600x600bb.jpg"
+    }
+  ],
+  "allNewMusic": [
+    {
+      "id": "nm1",
+      "title": "新歌热播",
+      "subtitle": "Terence Lam, Andy Lau",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music113/v4/9d/95/c5/9d95c50a-1e5a-143f-9e74-bfe9b706df2e/886448203223.jpg/600x600bb.jpg"
+    },
+    {
+      "id": "nm2",
+      "title": "听台湾 Team TAIWAN",
+      "subtitle": "张惠妹, 蕭敬腾, 陈零九",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/6e/9f/74/6e9f74cc-8a97-c6d4-98fd-5b8d840e9975/25UMGIM42320.rgb.jpg/600x600bb.jpg"
+    }
+  ],
+  "party": [
+    {
+      "id": "pt1",
+      "title": "Girls’ Night",
+      "subtitle": "Taylor Swift, Ariana Grande",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/39/a7/0b/39a70bb5-355d-dc42-e8d3-43b1f105ee1b/artwork.jpg/600x600bb.jpg"
+    },
+    {
+      "id": "pt2",
+      "title": "Happy Birthday",
+      "subtitle": "Katy Perry, Black Eyed Peas",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/13/69/af/1369af3d-4103-ce42-65d5-57772545be7b/25CRGIM51251.rgb.jpg/600x600bb.jpg"
+    }
+  ],
+  "joyful": [
+    {
+      "id": "jf1",
+      "title": "Morning K-Pop!",
+      "subtitle": "K-Pop醒神歌单",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/f5/f3/0d/f5f30da6-fd56-c7f0-b50e-e450290fc0f6/075679780911.jpg/600x600bb.jpg"
+    },
+    {
+      "id": "jf2",
+      "title": "我爱K歌",
+      "subtitle": "周杰伦, 卢广仲, 陶喆",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/03/ba/15/03ba151a-35de-85b0-1782-78342c564f99/23UM1IM58495.rgb.jpg/600x600bb.jpg"
+    }
+  ],
+  "sadSongs": [
+    {
+      "id": "sd1",
+      "title": "Sad 00s",
+      "subtitle": "Rihanna, Coldplay",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/2b/c0/81/2bc081c8-25f0-ba43-d451-587a54613778/16UMGIM59202.rgb.jpg/600x600bb.jpg"
+    },
+    {
+      "id": "sd2",
+      "title": "All The Feels",
+      "subtitle": "Rihanna, Frank Ocean",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music112/v4/e9/a0/16/e9a016aa-a82f-8e67-50b2-f1101e0be964/22UM1IM30248.rgb.jpg/600x600bb.jpg"
+    }
+  ],
+  "singAlong": [
+    {
+      "id": "sa-sing-1",
+      "title": "Karaoke K-Pop Bests",
+      "subtitle": "노래방 인기곡",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music112/v4/f2/48/ba/f248baf2-4e12-f11e-43d8-0b379929f35a/cover_KM0015418_1.jpg/600x600bb.jpg"
+    },
+    {
+      "id": "sa-sing-2",
+      "title": "Songs To Sing In The Car",
+      "subtitle": "The Weeknd, Bruno Mars",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/6f/4b/3e/6f4b3e21-d943-de6c-9ced-3380191e5880/8800344687224.jpg/600x600bb.jpg"
+    }
+  ],
+  "trendingForYou": [
+    {
+      "id": "tfy1",
+      "title": "WHERE YOU AT",
+      "artist": "ALLDAY PROJECT, ANNIE, WOOCHAN",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/aa/c5/18/aac518e1-afcc-7d5e-b5ab-cc257bf1e2e8/8800340039973.jpg/600x600bb.jpg",
+      "duration": "3:12"
+    },
+    {
+      "id": "tfy2",
+      "title": "JANE DOE",
+      "artist": "米津玄師, 宇多田光",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/73/91/aa/7391aabc-81d8-2bcb-3b0f-8e24bc855745/4547366775211.jpg/600x600bb.jpg",
+      "duration": "3:48"
+    },
+    {
+      "id": "tfy3",
+      "title": "NOT CUTE ANYMORE",
+      "artist": "ILLIT",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/a5/de/95/a5de954b-4e07-975b-1621-7681fd218e15/198704763106_Cover.jpg/600x600bb.jpg",
+      "duration": "2:59"
+    }
+  ],
+  "chill": [
+    {
+      "id": "ch1",
+      "title": "K Ballad Hits",
+      "subtitle": "Roy Kim, TAEHYUN, Huh Gak",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/69/bf/8e/69bf8ea7-5d7a-26fa-f8ea-ea54f61ee336/8800340039966_cover.jpg/600x600bb.jpg"
+    },
+    {
+      "id": "ch2",
+      "title": "Morning Stroll",
+      "subtitle": "Taylor Swift, The Weeknd",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music118/v4/37/0d/ea/370dea10-ae1d-38b9-8516-d83438c718a6/cover.jpg/600x600bb.jpg"
+    }
+  ],
+  "instrumentals": [
+    {
+      "id": "ins1",
+      "title": "安寧鋼琴聲",
+      "subtitle": "沉浸放松的钢琴曲",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/f0/8d/7c/f08d7c29-60b4-b943-941e-6cc321574c41/4711502630935.jpg/600x600bb.jpg"
+    },
+    {
+      "id": "ins2",
+      "title": "Afternoon Catnap",
+      "subtitle": "慵懒午后，温柔陪伴",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/14/9f/73/149f7340-d61c-4445-50f5-72e87390f4c9/cover.jpg/600x600bb.jpg"
+    }
+  ],
+  "searchDiscover": [
+    {
+      "id": "sd1",
+      "title": "#华语流行音乐",
+      "image": "https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/2b/c0/81/2bc081c8-25f0-ba43-d451-587a54613778/16UMGIM59202.rgb.jpg/600x600bb.jpg",
+      "bg": "bg-[#1E3264]"
+    },
+    {
+      "id": "sd2",
+      "title": "#love",
+      "image": "https://is1-ssl.mzstatic.com/image/thumb/Music112/v4/e9/a0/16/e9a016aa-a82f-8e67-50b2-f1101e0be964/22UM1IM30248.rgb.jpg/600x600bb.jpg",
+      "bg": "bg-[#8F3C3C]"
+    },
+    {
+      "id": "sd3",
+      "title": "#vulnerable",
+      "image": "https://is1-ssl.mzstatic.com/image/thumb/Music128/v4/96/32/aa/9632aa5f-7be3-12af-0ac9-27eb5d263156/00731453078628.rgb.jpg/600x600bb.jpg",
+      "bg": "bg-[#432A11]"
+    }
+  ],
+  "likedSongs": [
+    {
+      "id": "ls_1",
+      "title": "Love Story",
+      "artist": "Taylor Swift",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/c3/d0/1c/c3d01c88-73e7-187e-fd62-e1744de979a6/21UMGIM09915.rgb.jpg/600x600bb.jpg",
+      "duration": "3:55"
+    },
+    {
+      "id": "ls_2",
+      "title": "Shake It Off",
+      "artist": "Taylor Swift",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/a7/98/d8/a798d867-344d-2bf2-fbfe-d2d1412dcef8/14UMDIM03793.rgb.jpg/600x600bb.jpg",
+      "duration": "3:39"
+    },
+    {
+      "id": "ls_3",
+      "title": "Welcome to New York",
+      "artist": "Taylor Swift",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/89/4a/4a/894a4ab9-b0b0-9ea5-ca41-8da0b9b79453/14UMDIM03405.rgb.jpg/600x600bb.jpg",
+      "duration": "3:32"
+    },
+    {
+      "id": "ls_4",
+      "title": "Shape of You",
+      "artist": "Ed Sheeran",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/15/e6/e8/15e6e8a4-4190-6a8b-86c3-ab4a51b88288/190295851286.jpg/600x600bb.jpg",
+      "duration": "3:53"
+    },
+    {
+      "id": "ls_5",
+      "title": "Perfect",
+      "artist": "Ed Sheeran",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/15/e6/e8/15e6e8a4-4190-6a8b-86c3-ab4a51b88288/190295851286.jpg/600x600bb.jpg",
+      "duration": "4:23"
+    },
+    {
+      "id": "ls_6",
+      "title": "Bad Habits",
+      "artist": "Ed Sheeran",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/63/45/cc/6345cc98-aa83-ad6e-e3c9-1a36ff9838a4/190296614316.jpg/600x600bb.jpg",
+      "duration": "3:50"
+    },
+    {
+      "id": "ls_7",
+      "title": "Hello",
+      "artist": "Adele",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/08/8c/24/088c2405-2e33-801b-5c38-e967f2c01e69/191404113974.png/600x600bb.jpg",
+      "duration": "4:55"
+    },
+    {
+      "id": "ls_8",
+      "title": "Rolling In the Deep",
+      "artist": "Adele",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/eb/ca/25/ebca2596-cd1e-b295-91a3-771c868d0a79/191404113868.png/600x600bb.jpg",
+      "duration": "3:48"
+    },
+    {
+      "id": "ls_9",
+      "title": "bad guy",
+      "artist": "Billie Eilish",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/1a/37/d1/1a37d1b1-8508-54f2-f541-bf4e437dda76/19UMGIM05028.rgb.jpg/600x600bb.jpg",
+      "duration": "3:14"
+    },
+    {
+      "id": "ls_10",
+      "title": "Happier Than Ever",
+      "artist": "Billie Eilish",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/d5/0c/53/d50c5343-58d1-9dfa-22ea-b6ea25b6327b/21UMGIM36684.rgb.jpg/600x600bb.jpg",
+      "duration": "4:58"
+    }
+  ],
+  "settings": {
+    "dataSaver": {
+      "saverMode": 1,
+      "downloadCellular": false,
+      "downloadAudioOnly": false,
+      "streamAudioOnly": false
+    },
+    "mediaQuality": {
+      "wifiQuality": "Automatic",
+      "cellQuality": "Automatic",
+      "downloadQuality": "Normal"
+    },
+    "playback": {
+      "gapless": false,
+      "automix": true,
+      "crossfade": 0,
+      "autoplay": true,
+      "monoAudio": false,
+      "broadcast": false,
+      "sleepTimer": 0,
+      "sleepFade": false,
+      "lyricsEnabled": true
+    },
+    "privacy": {
+      "shareActivity": true,
+      "privateSession": false,
+      "recentArtists": false,
+      "publicPlaylists": true,
+      "profilePlaylists": true
+    },
+    "contentDisplay": {
+      "reduceMotion": false,
+      "canvas": true,
+      "explicit": true,
+      "unavailable": false,
+      "createBtn": true
+    },
+    "appsDevices": {
+      "voiceAssistant": true,
+      "connectControl": true,
+      "localVisibility": false,
+      "localFiles": false
+    }
+  },
+  "podcastData": [
+    {
+      "id": "pod_1000744018924",
+      "title": "How to Become 37.78 Times Better at Anything: An Easy & Proven Way to Build Habits",
+      "podcastName": "The Mel Robbins Podcast",
+      "description": "In today's episode, you're going to learn an easy and proven way to build good habits and break bad ones. \nHere to offer you a guide to improving your life, no matter what your goals are, is James Clear – the #1 New York Times bestselling author of Atomic Habits, which is one of Mel's favorite books. \nJames Clear is one of the world's leading experts on habit formation and behavior change. His work has helped millions of people lose weight, quit smoking and vaping, stop drinking, build businesses, start new chapters, achieve lifelong goals, and become the person they want to be. \nIn this conversation, James reveals a simple truth most people never learn: if you're struggling to change your habits, the problem isn't you – it's your systems. \nBad habits don't repeat because you lack motivation or willpower. They repeat because your system is designed to produce them. \nJames breaks down the proven frameworks behind lasting change and explains how tiny, consistent improvements compound into extraordinary results over time. \nAnd even if you have read the book Atomic Habits, which Mel has several times, there are things in the interview today that James says that he has never shared before. \nHe will also cover the things he wished he had written about when he wrote Atomic Habits 7 years ago! \nIn this episode, you'll learn how to: \n-Make time for new habits \n-Overcome a lack of motivation \n-Design your environment to make success easier \n-Get back on track quickly when you fall off course \n-How 1% improvements compound into extraordinary results \n-The difference between goals and systems - How to break bad habits without relying on willpower \n-The identity shift that makes change permanent \nBy the end of this episode, you'll understand why change has felt so hard in the past - and you'll walk away with a proven system you can use for the rest of your life. \nFor more resources related to today's episode, click here for the podcast episode page.  \nIf you liked the episode, check out this one next: How to Get Things Done, Stay Focused and Be More Productive\nConnect with Mel:  \n \nOrder Pure Genius ProteinGet Mel's newsletter, packed with tools, coaching, and inspiration.Get Mel's #1 bestselling book, The Let Them TheoryWatch the episodes on YouTubeFollow Mel on Instagram The Mel Robbins Podcast InstagramMel's TikTok Subscribe to SiriusXM Podcasts+ to listen to new episodes ad-freeDisclaimer\n Hosted by Simplecast, an AdsWizz company. See pcm.adswizz.com for information about our collection and use of personal data for advertising.",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Podcasts211/v4/2a/9f/c7/2a9fc792-c6a7-e159-0e10-a4442eec27d5/mza_5919882476720095362.jpg/600x600bb.jpg",
+      "date": "2026/1/8",
+      "duration": "90 分钟"
+    },
+    {
+      "id": "pod_1000742817710",
+      "title": "7 Things to Tell Yourself Every Day",
+      "podcastName": "The Mel Robbins Podcast",
+      "description": "This episode is about taking your power back and giving yourself the credit you deserve. \nEveryone needs a friend who reminds you who you really are. Today, Mel is that friend. \nIn this episode, Mel shares 7 powerful things to remind yourself every day. These carefully chosen sentences pull you back into your strength, your courage, and your confidence. \nThey are the words you need to hear that activate the most capable version of you. \nThis episode will help you: \n-Reclaim your power when you've been playing small or second-guessing yourself \n-Set boundaries that protect your energy without guilt \n-Stop letting other people's moods, opinions, or expectations dictate your day \n-Get out of comparison and focus on your own progress \n-Let go of what's draining you and refocus on what actually matters \n-Move forward with more clarity, confidence, and intention \nThese powerful reminders are paired with the science behind why they work, so you're not just inspired in the moment, but so you understand how to make changes that last. \nMel reminds you what you need to hear most: you are not powerless. \nThis episode is not about fixing what is wrong with you. You are not broken. It's about remembering who you are and how capable you've always been.\nYou'll walk away feeling more grounded, more in control, and more like yourself. \nHit play when you want to feel clear, steady, and back in charge. \nFor more resources related to today's episode, click here for the podcast episode page.  \nIf you liked the episode, check out this one next: How to Make 2026 the Best Year: 6 Questions to Ask Yourself\nAs a gift to listeners of The Mel Robbins Podcast, Mel has created a free 20-page workbook to help you make 2026 a great year. This workbook is designed using the latest research to help you get clear about what you want and empower you to take the next step forward in your life. And the cool part? It takes less than a minute for you to get your hands on it. Just sign up at melrobbins.com/bestyear. \nConnect with Mel:  \n \nGet Mel's brand new product, Pure Genius ProteinGet Mel's newsletter, packed with tools, coaching, and inspiration.Get Mel's #1 bestselling book, The Let Them TheoryWatch the episodes on YouTubeFollow Mel on Instagram The Mel Robbins Podcast InstagramMel's TikTok Subscribe to SiriusXM Podcasts+ to listen to new episodes ad-freeDisclaimer\n Hosted by Simplecast, an AdsWizz company. See pcm.adswizz.com for information about our collection and use of personal data for advertising.",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Podcasts211/v4/2a/9f/c7/2a9fc792-c6a7-e159-0e10-a4442eec27d5/mza_5919882476720095362.jpg/600x600bb.jpg",
+      "date": "2026/1/5",
+      "duration": "66 分钟"
+    },
+    {
+      "id": "pod_1000742817259",
+      "title": "2026 Body Reset: How to Get Stronger, Lose Fat, & Take Control of Your Health",
+      "podcastName": "The Mel Robbins Podcast",
+      "description": "Today's episode is a MUST listen. \nThis is your 2026 Body Reset and it's all about taking control of your health once and for all. \nIf you want to get stronger, lose fat, move better, and feel good in your body again –  without extreme workouts, punishing diets, or guessing what actually works – this episode will give you a clear, proven path forward. \nFor too long, people have been told to ignore pain, push through exhaustion, and accept stiffness, weight gain, and chronic discomfort as \"part of getting older.\"\nThat ends now. \nToday, Mel sits down with Dr. Betsy Grunch, one of the top neurosurgeons and spine surgeons in the world, known to millions online as Lady Spine Doc, where her advice on health has earned her over 185 million likes on TikTok alone. \nIn this powerful, practical episode, Dr. Grunch breaks down how to eat, sleep, and move in a way that protects your body, builds strength, and keeps you out of pain.  \nShe shares her own transformation from caregiver to neurosurgeon to losing over 85 pounds and rebuilding her own health, and what that taught her about sustainable change. \nThen, she reveals the proven protocol she uses with patients every day to help them lose fat, regain strength, and take control of their health. \nShe also explains why most people are unknowingly damaging their bodies through everyday habits, why pain is a warning sign you should never ignore, and how small changes compound into massive results over time. \nIn this episode, you'll learn: \n-The everyday habits that quietly damage your spine (and speed up aging) \n-The biggest posture and movement mistakes most people make \n-What tech neck is and how to reverse it\n-How to sleep for better spine health (including the best positions and pillow) \n-How to rebuild muscle and gain mobility with 2 simple exercises \n-How to get stronger and lose fat without wrecking your joints or back \n-Why sitting, sleeping, and lifting the wrong way accelerates aging \n-The simple strength principles that protect your body for life \nIf you want 2026 to be the year you feel stronger, leaner, and more capable in your body, this episode is for you. \nFor more resources related to today's episode, click here for the podcast episode page.  \nAs a gift to listeners of The Mel Robbins Podcast, Mel has created a free 20-page workbook to help you make 2026 a great year. This workbook is designed using the latest research to help you get clear about what you want and empower you to take the next step forward in your life. And the cool part? It takes less than a minute for you to get your hands on it. Just sign up at melrobbins.com/bestyear. \nIf you liked the episode, check out this one next: Change Your Body & Your Life in 1 Month: 4 Small Habits That Actually Work\nConnect with Mel:  \n \nGet on the waitlist for Pure GeniusGet Mel's newsletter, packed with tools, coaching, and inspiration.Get Mel's #1 bestselling book, The Let Them TheoryWatch the episodes on YouTubeFollow Mel on Instagram The Mel Robbins Podcast InstagramMel's TikTok Subscribe to SiriusXM Podcasts+ to listen to new episodes ad-freeDisclaimer\n Hosted by Simplecast, an AdsWizz company. See pcm.adswizz.com for information about our collection and use of personal data for advertising.",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Podcasts211/v4/2a/9f/c7/2a9fc792-c6a7-e159-0e10-a4442eec27d5/mza_5919882476720095362.jpg/600x600bb.jpg",
+      "date": "2026/1/1",
+      "duration": "87 分钟"
+    },
+    {
+      "id": "pod_1000744202370",
+      "title": "The Mosquito Chef/Suing Dinos",
+      "podcastName": "Story Pirates",
+      "description": "Rachel and Siegfried unknowingly compete with each other's chair-building startups. Featuring two new stories: \"The Mosquito Chef\", about a mosquito who can't stop eating other bugs, written by Shalva, age 9, Adiv, age 7, and Elena, age 9, from Illinois, and \"Suing Dinos\", a story about a dinosaur dentist who is accused of malpractice, written by siblings Olaniyi, age 10, and Olaiya, age 4, from New York. Peter and Lee also read more stories written by kids in the latest installment of Story Love.\n Last chance to get a personalized video for an imaginative kid in your life from Lee or Peter at storypirates.com/support\n Submit kids' stories at storypirates.com/submit-a-story\n Check out Story Quest, our in-school digital creative writing program, at storypirates.com/about-story-quest\n Learn about Story Love, our corporate volunteer program, at storypirateschangemakers.org/story-love\nSee omnystudio.com/listener for privacy information.",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Podcasts221/v4/bc/49/7a/bc497abc-d92e-6459-7cde-105a056e27db/mza_5759126513657136241.jpg/600x600bb.jpg",
+      "date": "2026/1/8",
+      "duration": "48 分钟"
+    },
+    {
+      "id": "pod_1000743651504",
+      "title": "Welcome to The Koala Kingdom",
+      "podcastName": "Koala Moon: Kids Bedtime Stories & Sleep Stories for Kids Podcast",
+      "description": "Throughout January, we'll be taking you on brand-new journeys through the magical Koala Kingdom.\n\nFrom the soft slopes of Pillowy Peaks to the peaceful shores of Harmony Cove, and from Wonder Jungle to Moonbeam Heights, each story is filled with soothing adventures and comforting characters - guaranteed to give you that warm, sleepy feeling!",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Podcasts221/v4/7a/68/29/7a682902-e310-6d87-abba-5059d093d9ca/mza_5416033673761790614.jpeg/600x600bb.jpg",
+      "date": "2026/1/4",
+      "duration": "6 分钟"
+    },
+    {
+      "id": "pod_1000744252549",
+      "title": "The Spider Weaver-Storytelling Podcast for Kids",
+      "podcastName": "Journey with Story - A Storytelling Podcast for Kids",
+      "description": "A beautiful tale from Japan that explains why the Japanese language uses the same name for a spider and a cloud. An episode from Journey with Story, a storytelling podcast for kids ages 4-10. (duration 11 minutes)",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Podcasts221/v4/04/06/e2/0406e203-dda4-a53a-e93c-070524c7504f/mza_4572777784564029532.jpg/600x600bb.jpg",
+      "date": "2026/1/8",
+      "duration": "10 分钟"
+    },
+    {
+      "id": "pod_1000739438470",
+      "title": "War, Peace, and Power - Diplomatic History of Europe, 1500–2000",
+      "podcastName": "Knowledge = Power",
+      "description": "War, Peace, and Power - Diplomatic History of Europe, 1500–2000",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Podcasts126/v4/c6/51/97/c6519729-1511-43d8-6bd9-ca4d809dc003/mza_11284597922155357616.jpg/600x600bb.jpg",
+      "date": "2025/12/3",
+      "duration": "116 分钟"
+    },
+    {
+      "id": "pod_1000743409767",
+      "title": "How to Build Good Habits & Break Bad Ones | James Clear",
+      "podcastName": "The Knowledge Project",
+      "description": "James Clear is the author of Atomic Habits, a global bestseller that has shaped how millions of people think about habits, consistency, and long-term change.",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Podcasts221/v4/37/b8/bf/37b8bf09-4497-b04b-8fe2-8407cb618b70/mza_16888439647966195850.jpeg/600x600bb.jpg",
+      "date": "2026/1/1",
+      "duration": "137 分钟"
+    },
+    {
+      "id": "pod_1000743473325",
+      "title": "#1106: December 4, 2025",
+      "podcastName": "Knowledge Fight",
+      "description": "In this installment, Dan and Jordan check in to hear Alex discuss his endorsement of war with Venezuela, Trump's plans for world domination, and the gents discuss a very dumb court case.",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Podcasts116/v4/dc/55/61/dc5561e6-9426-5e8a-4af5-883fcadf2eb3/mza_17043919745019168501.jpg/600x600bb.jpg",
+      "date": "2026/1/2",
+      "duration": "140 分钟"
+    },
+    {
+      "id": "pod_1000744303298",
+      "title": "A History of Magical Orders, Archonic Worship, Creation of the Modern Moonchild | Ani Osaru",
+      "podcastName": "Forbidden Knowledge News",
+      "description": "Ani's links - YouTube, Patreon, Instagram, Twitter. Forbidden Knowledge Network.",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Podcasts221/v4/9e/89/bd/9e89bd45-f3f6-ff1f-9177-79a8df9f5864/mza_1113393864075970422.jpg/600x600bb.jpg",
+      "date": "2026/1/8",
+      "duration": "70 分钟"
+    }
+  ],
+  "wrappedData": [
+    {
+      "id": "wrap_490179410",
+      "title": "2024 35 Top Hits - Workout Mixes (Unmixed Workout Music Ideal for Gym, Jogging, Running, Cycling, Cardio and Fitness)",
+      "subtitle": "Power Music Workout",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music/f3/b9/7e/mzi.jcsdwmrf.jpg/600x600bb.jpg",
+      "type": "Wrapped Collection"
+    },
+    {
+      "id": "wrap_1786046177",
+      "title": "2024 Top Hits 2024 - EP",
+      "subtitle": "Various Artists",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/85/e7/61/85e7619d-e714-bf82-5e45-2328cbd26f2c/8905574832106.jpg/600x600bb.jpg",
+      "type": "Wrapped Collection"
+    },
+    {
+      "id": "wrap_1534042277",
+      "title": "2024 Top",
+      "subtitle": "YoungBoy Never Broke Again",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music114/v4/e7/d8/80/e7d880c5-0a13-0da1-036c-2a35fca4c59d/075679803573.jpg/600x600bb.jpg",
+      "type": "Wrapped Collection"
+    },
+    {
+      "id": "wrap_1440811338",
+      "title": "2024 Hits",
+      "subtitle": "Dru Hill",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Music122/v4/7c/92/dd/7c92dd78-928e-1d77-6be9-e904c6912955/06UMGIM12221.rgb.jpg/600x600bb.jpg",
+      "type": "Wrapped Collection"
+    },
+    {
+      "id": "wrap_177422219",
+      "title": "2024 Hits!",
+      "subtitle": "Boz Scaggs",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Features124/v4/b2/3b/7d/b23b7d36-c61d-d207-a3bd-670466ed9dd1/dj.fcmnjull.jpg/600x600bb.jpg",
+      "type": "Wrapped Collection"
+    },
+    {
+      "id": "wrap_128076661",
+      "title": "2024 Hits",
+      "subtitle": "Joni Mitchell",
+      "cover": "https://is1-ssl.mzstatic.com/image/thumb/Features2/v4/65/d2/17/65d217a9-a3e7-271f-93ba-6b5918f1fa0e/dj.uqndsgvp.jpg/600x600bb.jpg",
+      "type": "Wrapped Collection"
+    }
+  ]
+}

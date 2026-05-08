@@ -1,0 +1,236 @@
+{
+  "app": "clock",
+  "appDir": "apps/Clock",
+  "mode": "schema",
+  "routeCount": 5,
+  "edgeCount": 13,
+  "nodes": [
+    {
+      "id": "/",
+      "routePath": "/",
+      "component": "ClockRootRedirect",
+      "entryPoint": true,
+      "entry": {
+        "kind": "home",
+        "home": true,
+        "deepLink": false
+      },
+      "description": "时钟根路由",
+      "stateCount": 1,
+      "states": [
+        "/"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/alarm",
+      "routePath": "/alarm",
+      "component": "AlarmPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "闹钟页",
+      "stateCount": 1,
+      "states": [
+        "/alarm"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/world",
+      "routePath": "/world",
+      "component": "WorldClockPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "世界时钟页",
+      "stateCount": 1,
+      "states": [
+        "/world"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/stopwatch",
+      "routePath": "/stopwatch",
+      "component": "StopwatchPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "秒表页",
+      "stateCount": 1,
+      "states": [
+        "/stopwatch"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/timer",
+      "routePath": "/timer",
+      "component": "TimerPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "计时器页",
+      "stateCount": 1,
+      "states": [
+        "/timer"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    }
+  ],
+  "edges": [
+    {
+      "source": "/",
+      "target": "/world",
+      "transitions": [
+        "tab.world"
+      ],
+      "type": "navigation",
+      "label": "tab.world",
+      "id": "tab.world"
+    },
+    {
+      "source": "/alarm",
+      "target": "/world",
+      "transitions": [
+        "tab.world"
+      ],
+      "type": "navigation",
+      "label": "tab.world",
+      "id": "tab.world"
+    },
+    {
+      "source": "/stopwatch",
+      "target": "/world",
+      "transitions": [
+        "tab.world"
+      ],
+      "type": "navigation",
+      "label": "tab.world",
+      "id": "tab.world"
+    },
+    {
+      "source": "/timer",
+      "target": "/world",
+      "transitions": [
+        "tab.world"
+      ],
+      "type": "navigation",
+      "label": "tab.world",
+      "id": "tab.world"
+    },
+    {
+      "source": "/alarm",
+      "target": "/stopwatch",
+      "transitions": [
+        "tab.stopwatch"
+      ],
+      "type": "navigation",
+      "label": "tab.stopwatch",
+      "id": "tab.stopwatch"
+    },
+    {
+      "source": "/world",
+      "target": "/stopwatch",
+      "transitions": [
+        "tab.stopwatch"
+      ],
+      "type": "navigation",
+      "label": "tab.stopwatch",
+      "id": "tab.stopwatch"
+    },
+    {
+      "source": "/timer",
+      "target": "/stopwatch",
+      "transitions": [
+        "tab.stopwatch"
+      ],
+      "type": "navigation",
+      "label": "tab.stopwatch",
+      "id": "tab.stopwatch"
+    },
+    {
+      "source": "/alarm",
+      "target": "/timer",
+      "transitions": [
+        "tab.timer"
+      ],
+      "type": "navigation",
+      "label": "tab.timer",
+      "id": "tab.timer"
+    },
+    {
+      "source": "/world",
+      "target": "/timer",
+      "transitions": [
+        "tab.timer"
+      ],
+      "type": "navigation",
+      "label": "tab.timer",
+      "id": "tab.timer"
+    },
+    {
+      "source": "/stopwatch",
+      "target": "/timer",
+      "transitions": [
+        "tab.timer"
+      ],
+      "type": "navigation",
+      "label": "tab.timer",
+      "id": "tab.timer"
+    },
+    {
+      "source": "/world",
+      "target": "/alarm",
+      "transitions": [
+        "tab.alarm"
+      ],
+      "type": "navigation",
+      "label": "tab.alarm",
+      "id": "tab.alarm"
+    },
+    {
+      "source": "/stopwatch",
+      "target": "/alarm",
+      "transitions": [
+        "tab.alarm"
+      ],
+      "type": "navigation",
+      "label": "tab.alarm",
+      "id": "tab.alarm"
+    },
+    {
+      "source": "/timer",
+      "target": "/alarm",
+      "transitions": [
+        "tab.alarm"
+      ],
+      "type": "navigation",
+      "label": "tab.alarm",
+      "id": "tab.alarm"
+    }
+  ]
+}

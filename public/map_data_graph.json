@@ -1,0 +1,296 @@
+{
+  "app": "map",
+  "appDir": "apps/Map",
+  "mode": "data",
+  "dataFile": "data/index.ts",
+  "reachability": {
+    "entryNodes": [
+      "/"
+    ],
+    "reachableNodeCount": 4,
+    "reachableEdgeCount": 7,
+    "unreachableNodeCount": 1,
+    "unreachableEdgeCount": 0,
+    "unreachableNodeIds": [
+      "/?category=string"
+    ]
+  },
+  "routeCount": 5,
+  "transitionCount": 5,
+  "nodes": [
+    {
+      "id": "/",
+      "routePath": "/",
+      "uiStateId": "explore.base",
+      "component": "ExplorePage",
+      "entryPoint": true,
+      "entry": {
+        "kind": "home",
+        "home": true,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [],
+      "description": "探索首页-地图视图",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/?category=string",
+      "routePath": "/",
+      "uiStateId": "explore.category_search",
+      "component": "ExplorePage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "home",
+        "home": true,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [],
+      "description": "探索-分类搜索结果（如购物）",
+      "search": {
+        "category": "string"
+      },
+      "queryParams": {},
+      "actions": [
+        {
+          "id": "placeResults.sheet.close",
+          "label": "关闭搜索结果",
+          "behavior": "submit"
+        },
+        {
+          "id": "placeResults.result.select.item",
+          "label": "点击搜索结果",
+          "behavior": "select",
+          "scope": "item",
+          "paramsSchema": {
+            "itemId": "string"
+          }
+        }
+      ]
+    },
+    {
+      "id": "/me",
+      "routePath": "/me",
+      "uiStateId": "me.base",
+      "component": "MePage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区"
+        }
+      ],
+      "description": "我-个人页（列表/保存）",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/contribute",
+      "routePath": "/contribute",
+      "uiStateId": "contribute.base",
+      "component": "ContributePage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区"
+        }
+      ],
+      "description": "贡献首页",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/search",
+      "routePath": "/search",
+      "uiStateId": "search.base",
+      "component": "SearchPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区"
+        }
+      ],
+      "description": "搜索页-历史记录",
+      "search": {},
+      "queryParams": {},
+      "actions": [
+        {
+          "id": "search.bar.input",
+          "label": "搜索地点",
+          "behavior": "input",
+          "paramsSchema": {
+            "value": "string"
+          }
+        },
+        {
+          "id": "search.voice.tap",
+          "label": "语音搜索",
+          "behavior": "other"
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "source": "/me",
+      "sourceNodeId": "/me",
+      "target": "/",
+      "targetNodeId": "/",
+      "id": "tab.explore",
+      "label": "切换到探索",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "tab_explore",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/contribute",
+      "sourceNodeId": "/contribute",
+      "target": "/",
+      "targetNodeId": "/",
+      "id": "tab.explore",
+      "label": "切换到探索",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "tab_explore",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/",
+      "sourceNodeId": "/",
+      "target": "/me",
+      "targetNodeId": "/me",
+      "id": "tab.me",
+      "label": "切换到我",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "tab_me",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/contribute",
+      "sourceNodeId": "/contribute",
+      "target": "/me",
+      "targetNodeId": "/me",
+      "id": "tab.me",
+      "label": "切换到我",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "tab_me",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/",
+      "sourceNodeId": "/",
+      "target": "/contribute",
+      "targetNodeId": "/contribute",
+      "id": "tab.contribute",
+      "label": "切换到贡献",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "tab_contribute",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/me",
+      "sourceNodeId": "/me",
+      "target": "/contribute",
+      "targetNodeId": "/contribute",
+      "id": "tab.contribute",
+      "label": "切换到贡献",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "tab_contribute",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/",
+      "sourceNodeId": "/",
+      "target": "/search",
+      "targetNodeId": "/search",
+      "id": "search.open",
+      "label": "打开搜索页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "search_bar",
+        "gesture": "tap"
+      }
+    }
+  ]
+}

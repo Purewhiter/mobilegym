@@ -1,0 +1,17 @@
+TASK_IDS=$(python3 -c "import json; print(','.join(json.load(open('docs/pending/sim2real_instructions.json')).keys()))")
+
+python3 -m bench_env.run --device real \
+  --task-ids "$TASK_IDS" \
+  --task-instructions docs/pending/sim2real_instructions.json \
+  --agent generic_v2 \
+  --model-name qwen3-vl-4b \
+  --model-base-url http://127.0.0.1:8002/v1 \
+  --judge-mode vlm \
+  --judge-model qwen3.6-plus --judge-base-url https://dashscope.aliyuncs.com/compatible-mode/v1 --judge-api-key sk-5ecfea8fb2ad4da585ec489762443936 \
+  --runs-dir runs/qwen3-vl-4b-real
+
+python3 -m bench_env.run --rerun runs/qwen3-vl-4b-real \
+  --rerun-scope all \
+  --task-ids "crossapp_content.RedbookCommentAndShare" \
+  --task-instructions docs/pending/sim2real_instructions.json \
+  --judge-api-key sk-5ecfea8fb2ad4da585ec489762443936

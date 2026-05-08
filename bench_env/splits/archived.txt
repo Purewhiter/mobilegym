@@ -1,0 +1,10 @@
+device.BatterySaverEnableWithBrightnessUnder25
+device.BluetoothConnectNamedDevice
+device.BluetoothPairMultipleDevicesRecordPairableToNotes
+device.BrightnessAndClockTask
+device.SettingsAboutPhoneToNotes
+device.SystemTimezoneChange
+device.WifiConnectToNamedSSID
+device.WifiEnableHotspotAndConfigure
+device.WifiForgetNetworkThenReconnect
+device.WifiTryPasswordsFindCorrectOne

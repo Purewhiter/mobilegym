@@ -1,0 +1,243 @@
+{
+  "app": "sms",
+  "appDir": "apps/Sms",
+  "mode": "schema",
+  "routeCount": 8,
+  "edgeCount": 8,
+  "nodes": [
+    {
+      "id": "/",
+      "routePath": "/",
+      "component": "ConversationListPage",
+      "entryPoint": true,
+      "entry": {
+        "kind": "home",
+        "home": true,
+        "deepLink": false
+      },
+      "description": "会话列表页",
+      "stateCount": 1,
+      "states": [
+        "/"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/new",
+      "routePath": "/new",
+      "component": "NewMessagePage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "新建短信页",
+      "stateCount": 1,
+      "states": [
+        "/new"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/conversation/:conversationId",
+      "routePath": "/conversation/:conversationId",
+      "component": "ConversationDetailPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "deepLink",
+        "home": false,
+        "deepLink": true
+      },
+      "description": "短信会话详情页",
+      "stateCount": 1,
+      "states": [
+        "/conversation/:conversationId"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/settings",
+      "routePath": "/settings",
+      "component": "SettingsPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "短信设置页",
+      "stateCount": 1,
+      "states": [
+        "/settings"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/settings/free-network-sms",
+      "routePath": "/settings/free-network-sms",
+      "component": "FreeNetworkSmsPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "免费网络短信设置页",
+      "stateCount": 1,
+      "states": [
+        "/settings/free-network-sms"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/settings/advanced",
+      "routePath": "/settings/advanced",
+      "component": "AdvancedSettingsPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "高级设置页",
+      "stateCount": 1,
+      "states": [
+        "/settings/advanced"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/settings/5g-message",
+      "routePath": "/settings/5g-message",
+      "component": "FiveGMessagePage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "5G消息设置页",
+      "stateCount": 1,
+      "states": [
+        "/settings/5g-message"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/settings/*",
+      "routePath": "/settings/*",
+      "component": "SettingsPlaceholderPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "设置占位页",
+      "stateCount": 1,
+      "states": [
+        "/settings/*"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    }
+  ],
+  "edges": [
+    {
+      "source": "/",
+      "target": "/new",
+      "transitions": [
+        "compose.open"
+      ],
+      "type": "navigation",
+      "label": "compose.open",
+      "id": "compose.open"
+    },
+    {
+      "source": "/",
+      "target": "/settings",
+      "transitions": [
+        "settings.open"
+      ],
+      "type": "navigation",
+      "label": "settings.open",
+      "id": "settings.open"
+    },
+    {
+      "source": "/",
+      "target": "/conversation/:conversationId",
+      "transitions": [
+        "conversation.open"
+      ],
+      "type": "navigation",
+      "label": "conversation.open",
+      "id": "conversation.open"
+    },
+    {
+      "source": "/new",
+      "target": "/conversation/:conversationId",
+      "transitions": [
+        "conversation.open"
+      ],
+      "type": "navigation",
+      "label": "conversation.open",
+      "id": "conversation.open"
+    },
+    {
+      "source": "/settings",
+      "target": "/settings/free-network-sms",
+      "transitions": [
+        "settings.free-network.open"
+      ],
+      "type": "navigation",
+      "label": "settings.free-network.open",
+      "id": "settings.free-network.open"
+    },
+    {
+      "source": "/settings",
+      "target": "/settings/advanced",
+      "transitions": [
+        "settings.advanced.open"
+      ],
+      "type": "navigation",
+      "label": "settings.advanced.open",
+      "id": "settings.advanced.open"
+    },
+    {
+      "source": "/settings",
+      "target": "/settings/5g-message",
+      "transitions": [
+        "settings.5g.open"
+      ],
+      "type": "navigation",
+      "label": "settings.5g.open",
+      "id": "settings.5g.open"
+    },
+    {
+      "source": "/settings",
+      "target": "/settings/*",
+      "transitions": [
+        "settings.placeholder.open"
+      ],
+      "type": "navigation",
+      "label": "settings.placeholder.open",
+      "id": "settings.placeholder.open"
+    }
+  ]
+}

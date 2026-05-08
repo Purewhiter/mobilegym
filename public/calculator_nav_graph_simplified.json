@@ -1,0 +1,29 @@
+{
+  "app": "calculator",
+  "appDir": "apps/Calculator",
+  "mode": "schema",
+  "routeCount": 1,
+  "edgeCount": 0,
+  "nodes": [
+    {
+      "id": "/",
+      "routePath": "/",
+      "component": "CalculatorContent",
+      "entryPoint": true,
+      "entry": {
+        "kind": "home",
+        "home": true,
+        "deepLink": false
+      },
+      "description": "计算器主页",
+      "stateCount": 1,
+      "states": [
+        "/"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    }
+  ],
+  "edges": []
+}

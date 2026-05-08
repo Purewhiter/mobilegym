@@ -1,0 +1,122 @@
+{
+  "contacts": [
+    {
+      "id": "c_zhangsan",
+      "displayName": "张三",
+      "sectionKey": "Z",
+      "avatarColor": "#FF7A45",
+      "starred": true,
+      "phones": [{ "id": "p1", "label": "手机", "number": "+86 13800138000", "isPrimary": true }],
+      "company": "米家科技",
+      "title": "产品经理",
+      "createdAt": 1700000000000,
+      "updatedAt": 1700000000000,
+      "lastContactedAt": 1737000000000
+    },
+    {
+      "id": "c_lisi",
+      "displayName": "李四",
+      "sectionKey": "L",
+      "avatarColor": "#3482FF",
+      "phones": [{ "id": "p1", "label": "手机", "number": "+86 15600001111", "isPrimary": true }],
+      "createdAt": 1700000000001,
+      "updatedAt": 1700000000001,
+      "lastContactedAt": 1732000000000
+    },
+    {
+      "id": "c_wangwu",
+      "displayName": "王五",
+      "sectionKey": "W",
+      "avatarColor": "#10B981",
+      "phones": [{ "id": "p1", "label": "手机", "number": "+86 13912345678", "isPrimary": true }],
+      "createdAt": 1700000000002,
+      "updatedAt": 1700000000002,
+      "lastContactedAt": 1735000000000
+    },
+    {
+      "id": "c_zhaoliu",
+      "displayName": "赵六",
+      "sectionKey": "Z",
+      "avatarColor": "#7C3AED",
+      "phones": [{ "id": "p1", "label": "手机", "number": "+86 18612340000", "isPrimary": true }],
+      "createdAt": 1700000000003,
+      "updatedAt": 1700000000003
+    },
+    {
+      "id": "c_kefu_10086",
+      "displayName": "中国移动",
+      "sectionKey": "Z",
+      "avatarColor": "#06B6D4",
+      "starred": true,
+      "phones": [{ "id": "p1", "label": "客服", "number": "10086", "isPrimary": true }],
+      "createdAt": 1700000000004,
+      "updatedAt": 1700000000004,
+      "lastContactedAt": 1738000000000
+    },
+    {
+      "id": "c_kefu_10010",
+      "displayName": "中国联通",
+      "sectionKey": "Z",
+      "avatarColor": "#EF4444",
+      "phones": [{ "id": "p1", "label": "客服", "number": "10010", "isPrimary": true }],
+      "createdAt": 1700000000005,
+      "updatedAt": 1700000000005
+    },
+    {
+      "id": "c_alice",
+      "displayName": "Alice Chen",
+      "sectionKey": "A",
+      "avatarColor": "#F59E0B",
+      "phones": [{ "id": "p1", "label": "手机", "number": "+86 13900138001", "isPrimary": true }],
+      "emails": [{ "id": "e1", "label": "Work", "email": "alice.chen@example.com", "isPrimary": true }],
+      "createdAt": 1700000000006,
+      "updatedAt": 1700000000006
+    },
+    {
+      "id": "c_bob",
+      "displayName": "Bob",
+      "sectionKey": "B",
+      "avatarColor": "#111827",
+      "phones": [{ "id": "p1", "label": "手机", "number": "+86 15800002222", "isPrimary": true }],
+      "createdAt": 1700000000007,
+      "updatedAt": 1700000000007
+    },
+    {
+      "id": "c_charlie",
+      "displayName": "Charlie",
+      "sectionKey": "C",
+      "avatarColor": "#22C55E",
+      "starred": true,
+      "phones": [{ "id": "p1", "label": "手机", "number": "+86 13712345678", "isPrimary": true }],
+      "createdAt": 1700000000008,
+      "updatedAt": 1700000000008
+    },
+    {
+      "id": "c_david",
+      "displayName": "David",
+      "sectionKey": "D",
+      "avatarColor": "#3B82F6",
+      "phones": [{ "id": "p1", "label": "手机", "number": "+86 18600556666", "isPrimary": true }],
+      "createdAt": 1700000000009,
+      "updatedAt": 1700000000009
+    },
+    {
+      "id": "c_eric",
+      "displayName": "Eric",
+      "sectionKey": "E",
+      "avatarColor": "#A855F7",
+      "phones": [{ "id": "p1", "label": "手机", "number": "+86 18810889999", "isPrimary": true }],
+      "createdAt": 1700000000010,
+      "updatedAt": 1700000000010
+    },
+    {
+      "id": "c_fiona",
+      "displayName": "Fiona",
+      "sectionKey": "F",
+      "avatarColor": "#F97316",
+      "phones": [{ "id": "p1", "label": "手机", "number": "+86 17512340000", "isPrimary": true }],
+      "createdAt": 1700000000011,
+      "updatedAt": 1700000000011
+    }
+  ]
+}

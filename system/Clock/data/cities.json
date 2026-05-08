@@ -1,0 +1,17 @@
+[
+  { "id": "abidjan", "name": "阿比让", "country": "科特迪瓦", "gmtOffsetMinutes": 0 },
+  { "id": "adelaide", "name": "阿德莱德", "country": "澳大利亚", "gmtOffsetMinutes": 630 },
+  { "id": "albuquerque", "name": "阿尔伯克基", "country": "美国", "gmtOffsetMinutes": -420 },
+  { "id": "algiers", "name": "阿尔及尔", "country": "阿尔及利亚", "gmtOffsetMinutes": 60 },
+  { "id": "accra", "name": "阿克拉", "country": "加纳", "gmtOffsetMinutes": 0 },
+  { "id": "aktau", "name": "阿克套", "country": "哈萨克斯坦", "gmtOffsetMinutes": 300 },
+  { "id": "almaty", "name": "阿拉木图", "country": "哈萨克斯坦", "gmtOffsetMinutes": 300 },
+  { "id": "amsterdam", "name": "阿姆斯特丹", "country": "荷兰", "gmtOffsetMinutes": 60 },
+  { "id": "london", "name": "伦敦", "country": "英国", "gmtOffsetMinutes": 0 },
+  { "id": "newyork", "name": "纽约", "country": "美国", "gmtOffsetMinutes": -300 },
+  { "id": "beijing", "name": "北京", "country": "中国", "gmtOffsetMinutes": 480 },
+  { "id": "tokyo", "name": "东京", "country": "日本", "gmtOffsetMinutes": 540 },
+  { "id": "losangeles", "name": "洛杉矶", "country": "美国", "gmtOffsetMinutes": -480 },
+  { "id": "paris", "name": "巴黎", "country": "法国", "gmtOffsetMinutes": 60 },
+  { "id": "sydney", "name": "悉尼", "country": "澳大利亚", "gmtOffsetMinutes": 600 }
+]

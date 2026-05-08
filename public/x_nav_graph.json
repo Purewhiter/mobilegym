@@ -1,0 +1,7489 @@
+{
+  "app": "x",
+  "appDir": "apps/X",
+  "mode": "schema",
+  "dataFile": null,
+  "reachability": null,
+  "routeCount": 52,
+  "transitionCount": 58,
+  "nodes": [
+    {
+      "id": "/?tab=foryou",
+      "routePath": "/",
+      "uiStateId": "home.tab.foryou",
+      "component": "HomePage",
+      "entryPoint": true,
+      "entry": {
+        "kind": "home",
+        "home": true,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区"
+        }
+      ],
+      "description": "首页-为你推荐信息流",
+      "search": {
+        "tab": "foryou"
+      },
+      "queryParams": {},
+      "actions": [
+        {
+          "id": "home.foryou.post.retweet",
+          "label": "转发推文",
+          "behavior": "submit",
+          "paramsSchema": {
+            "id": "string"
+          }
+        },
+        {
+          "id": "home.foryou.post.like",
+          "label": "点赞推文",
+          "behavior": "submit",
+          "paramsSchema": {
+            "id": "string"
+          }
+        },
+        {
+          "id": "home.foryou.post.share",
+          "label": "分享推文",
+          "behavior": "submit",
+          "paramsSchema": {
+            "id": "string"
+          }
+        },
+        {
+          "id": "home.foryou.post.bookmark",
+          "label": "书签推文",
+          "behavior": "submit",
+          "paramsSchema": {
+            "id": "string"
+          }
+        },
+        {
+          "id": "home.foryou.user.follow",
+          "label": "关注用户",
+          "behavior": "submit",
+          "paramsSchema": {
+            "id": "string"
+          }
+        }
+      ]
+    },
+    {
+      "id": "/?tab=following",
+      "routePath": "/",
+      "uiStateId": "home.tab.following",
+      "component": "HomePage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "home",
+        "home": true,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区"
+        }
+      ],
+      "description": "首页-正在关注信息流",
+      "search": {
+        "tab": "following"
+      },
+      "queryParams": {},
+      "actions": [
+        {
+          "id": "home.following.post.retweet",
+          "label": "转发推文",
+          "behavior": "submit",
+          "paramsSchema": {
+            "id": "string"
+          }
+        },
+        {
+          "id": "home.following.post.like",
+          "label": "点赞推文",
+          "behavior": "submit",
+          "paramsSchema": {
+            "id": "string"
+          }
+        },
+        {
+          "id": "home.following.post.share",
+          "label": "分享推文",
+          "behavior": "submit",
+          "paramsSchema": {
+            "id": "string"
+          }
+        },
+        {
+          "id": "home.following.post.bookmark",
+          "label": "书签推文",
+          "behavior": "submit",
+          "paramsSchema": {
+            "id": "string"
+          }
+        },
+        {
+          "id": "home.following.user.follow",
+          "label": "关注用户",
+          "behavior": "submit",
+          "paramsSchema": {
+            "id": "string"
+          }
+        }
+      ]
+    },
+    {
+      "id": "/?tab=foryou&menu=drawer",
+      "routePath": "/",
+      "uiStateId": "home.tab.foryou.menu.drawer",
+      "component": "HomePage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "home",
+        "home": true,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区"
+        }
+      ],
+      "description": "首页-为你推荐-侧边栏",
+      "search": {
+        "tab": "foryou",
+        "menu": "drawer"
+      },
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/?tab=following&menu=drawer",
+      "routePath": "/",
+      "uiStateId": "home.tab.following.menu.drawer",
+      "component": "HomePage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "home",
+        "home": true,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区"
+        }
+      ],
+      "description": "首页-正在关注-侧边栏",
+      "search": {
+        "tab": "following",
+        "menu": "drawer"
+      },
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/search?tab=foryou",
+      "routePath": "/search",
+      "uiStateId": "search.tab.foryou",
+      "component": "SearchPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区"
+        }
+      ],
+      "description": "搜索-为你推荐",
+      "search": {
+        "tab": "foryou"
+      },
+      "queryParams": {},
+      "actions": [
+        {
+          "id": "search.foryou.post.retweet",
+          "label": "转发推文",
+          "behavior": "submit",
+          "paramsSchema": {
+            "id": "string"
+          }
+        },
+        {
+          "id": "search.foryou.post.like",
+          "label": "点赞推文",
+          "behavior": "submit",
+          "paramsSchema": {
+            "id": "string"
+          }
+        },
+        {
+          "id": "search.foryou.post.share",
+          "label": "分享推文",
+          "behavior": "submit",
+          "paramsSchema": {
+            "id": "string"
+          }
+        },
+        {
+          "id": "search.foryou.post.bookmark",
+          "label": "书签推文",
+          "behavior": "submit",
+          "paramsSchema": {
+            "id": "string"
+          }
+        },
+        {
+          "id": "search.foryou.user.follow",
+          "label": "关注用户",
+          "behavior": "submit",
+          "paramsSchema": {
+            "id": "string"
+          }
+        }
+      ]
+    },
+    {
+      "id": "/search?tab=trending",
+      "routePath": "/search",
+      "uiStateId": "search.tab.trending",
+      "component": "SearchPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区"
+        }
+      ],
+      "description": "搜索-当前趋势",
+      "search": {
+        "tab": "trending"
+      },
+      "queryParams": {},
+      "actions": [
+        {
+          "id": "search.trending.post.retweet",
+          "label": "转发推文",
+          "behavior": "submit",
+          "paramsSchema": {
+            "id": "string"
+          }
+        },
+        {
+          "id": "search.trending.post.like",
+          "label": "点赞推文",
+          "behavior": "submit",
+          "paramsSchema": {
+            "id": "string"
+          }
+        },
+        {
+          "id": "search.trending.post.share",
+          "label": "分享推文",
+          "behavior": "submit",
+          "paramsSchema": {
+            "id": "string"
+          }
+        },
+        {
+          "id": "search.trending.post.bookmark",
+          "label": "书签推文",
+          "behavior": "submit",
+          "paramsSchema": {
+            "id": "string"
+          }
+        },
+        {
+          "id": "search.trending.user.follow",
+          "label": "关注用户",
+          "behavior": "submit",
+          "paramsSchema": {
+            "id": "string"
+          }
+        }
+      ]
+    },
+    {
+      "id": "/search?tab=news",
+      "routePath": "/search",
+      "uiStateId": "search.tab.news",
+      "component": "SearchPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区"
+        }
+      ],
+      "description": "搜索-新闻",
+      "search": {
+        "tab": "news"
+      },
+      "queryParams": {},
+      "actions": [
+        {
+          "id": "search.news.post.retweet",
+          "label": "转发推文",
+          "behavior": "submit",
+          "paramsSchema": {
+            "id": "string"
+          }
+        },
+        {
+          "id": "search.news.post.like",
+          "label": "点赞推文",
+          "behavior": "submit",
+          "paramsSchema": {
+            "id": "string"
+          }
+        },
+        {
+          "id": "search.news.post.share",
+          "label": "分享推文",
+          "behavior": "submit",
+          "paramsSchema": {
+            "id": "string"
+          }
+        },
+        {
+          "id": "search.news.post.bookmark",
+          "label": "书签推文",
+          "behavior": "submit",
+          "paramsSchema": {
+            "id": "string"
+          }
+        },
+        {
+          "id": "search.news.user.follow",
+          "label": "关注用户",
+          "behavior": "submit",
+          "paramsSchema": {
+            "id": "string"
+          }
+        }
+      ]
+    },
+    {
+      "id": "/search?tab=sports",
+      "routePath": "/search",
+      "uiStateId": "search.tab.sports",
+      "component": "SearchPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区"
+        }
+      ],
+      "description": "搜索-体育",
+      "search": {
+        "tab": "sports"
+      },
+      "queryParams": {},
+      "actions": [
+        {
+          "id": "search.sports.post.retweet",
+          "label": "转发推文",
+          "behavior": "submit",
+          "paramsSchema": {
+            "id": "string"
+          }
+        },
+        {
+          "id": "search.sports.post.like",
+          "label": "点赞推文",
+          "behavior": "submit",
+          "paramsSchema": {
+            "id": "string"
+          }
+        },
+        {
+          "id": "search.sports.post.share",
+          "label": "分享推文",
+          "behavior": "submit",
+          "paramsSchema": {
+            "id": "string"
+          }
+        },
+        {
+          "id": "search.sports.post.bookmark",
+          "label": "书签推文",
+          "behavior": "submit",
+          "paramsSchema": {
+            "id": "string"
+          }
+        },
+        {
+          "id": "search.sports.user.follow",
+          "label": "关注用户",
+          "behavior": "submit",
+          "paramsSchema": {
+            "id": "string"
+          }
+        }
+      ]
+    },
+    {
+      "id": "/search?tab=entertainment",
+      "routePath": "/search",
+      "uiStateId": "search.tab.entertainment",
+      "component": "SearchPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区"
+        }
+      ],
+      "description": "搜索-娱乐",
+      "search": {
+        "tab": "entertainment"
+      },
+      "queryParams": {},
+      "actions": [
+        {
+          "id": "search.entertainment.post.retweet",
+          "label": "转发推文",
+          "behavior": "submit",
+          "paramsSchema": {
+            "id": "string"
+          }
+        },
+        {
+          "id": "search.entertainment.post.like",
+          "label": "点赞推文",
+          "behavior": "submit",
+          "paramsSchema": {
+            "id": "string"
+          }
+        },
+        {
+          "id": "search.entertainment.post.share",
+          "label": "分享推文",
+          "behavior": "submit",
+          "paramsSchema": {
+            "id": "string"
+          }
+        },
+        {
+          "id": "search.entertainment.post.bookmark",
+          "label": "书签推文",
+          "behavior": "submit",
+          "paramsSchema": {
+            "id": "string"
+          }
+        },
+        {
+          "id": "search.entertainment.user.follow",
+          "label": "关注用户",
+          "behavior": "submit",
+          "paramsSchema": {
+            "id": "string"
+          }
+        }
+      ]
+    },
+    {
+      "id": "/search?tab=foryou&menu=drawer",
+      "routePath": "/search",
+      "uiStateId": "search.tab.foryou.menu.drawer",
+      "component": "SearchPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区"
+        }
+      ],
+      "description": "搜索-为你推荐-侧边栏",
+      "search": {
+        "tab": "foryou",
+        "menu": "drawer"
+      },
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/search?tab=trending&menu=drawer",
+      "routePath": "/search",
+      "uiStateId": "search.tab.trending.menu.drawer",
+      "component": "SearchPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区"
+        }
+      ],
+      "description": "搜索-当前趋势-侧边栏",
+      "search": {
+        "tab": "trending",
+        "menu": "drawer"
+      },
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/search?tab=news&menu=drawer",
+      "routePath": "/search",
+      "uiStateId": "search.tab.news.menu.drawer",
+      "component": "SearchPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区"
+        }
+      ],
+      "description": "搜索-新闻-侧边栏",
+      "search": {
+        "tab": "news",
+        "menu": "drawer"
+      },
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/search?tab=sports&menu=drawer",
+      "routePath": "/search",
+      "uiStateId": "search.tab.sports.menu.drawer",
+      "component": "SearchPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区"
+        }
+      ],
+      "description": "搜索-体育-侧边栏",
+      "search": {
+        "tab": "sports",
+        "menu": "drawer"
+      },
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/search?tab=entertainment&menu=drawer",
+      "routePath": "/search",
+      "uiStateId": "search.tab.entertainment.menu.drawer",
+      "component": "SearchPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区"
+        }
+      ],
+      "description": "搜索-娱乐-侧边栏",
+      "search": {
+        "tab": "entertainment",
+        "menu": "drawer"
+      },
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/search/input",
+      "routePath": "/search/input",
+      "uiStateId": "searchInput.base",
+      "component": "SearchInputPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区"
+        }
+      ],
+      "description": "搜索输入页",
+      "search": {},
+      "queryParams": {},
+      "actions": [
+        {
+          "id": "search.query.input",
+          "label": "输入搜索关键字",
+          "behavior": "input",
+          "paramsSchema": {
+            "value": "string"
+          }
+        },
+        {
+          "id": "search.post.like",
+          "label": "搜索结果-点赞帖子",
+          "behavior": "submit",
+          "paramsSchema": {
+            "id": "string"
+          }
+        },
+        {
+          "id": "search.post.retweet",
+          "label": "搜索结果-转发帖子",
+          "behavior": "submit",
+          "paramsSchema": {
+            "id": "string"
+          }
+        },
+        {
+          "id": "search.post.bookmark",
+          "label": "搜索结果-书签帖子",
+          "behavior": "submit",
+          "paramsSchema": {
+            "id": "string"
+          }
+        }
+      ]
+    },
+    {
+      "id": "/grok",
+      "routePath": "/grok",
+      "uiStateId": "grok.base",
+      "component": "GrokPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区"
+        }
+      ],
+      "description": "Grok-对话首页",
+      "search": {},
+      "queryParams": {},
+      "actions": [
+        {
+          "id": "grok.prompt.input",
+          "label": "输入提问内容",
+          "behavior": "input",
+          "paramsSchema": {
+            "value": "string"
+          }
+        },
+        {
+          "id": "grok.mode.open",
+          "label": "打开模式选择",
+          "behavior": "toggle"
+        },
+        {
+          "id": "grok.history.open",
+          "label": "打开历史记录",
+          "behavior": "submit"
+        },
+        {
+          "id": "grok.chat.new",
+          "label": "新建对话",
+          "behavior": "submit"
+        },
+        {
+          "id": "grok.quick.createImage",
+          "label": "创建图片",
+          "behavior": "submit"
+        },
+        {
+          "id": "grok.quick.editImage",
+          "label": "编辑图片",
+          "behavior": "submit"
+        },
+        {
+          "id": "grok.quick.voiceMode",
+          "label": "进入语音模式",
+          "behavior": "submit"
+        },
+        {
+          "id": "grok.file.attach",
+          "label": "添加附件",
+          "behavior": "submit"
+        },
+        {
+          "id": "grok.message.send",
+          "label": "发送消息",
+          "behavior": "submit",
+          "paramsSchema": {
+            "content": "string"
+          }
+        }
+      ]
+    },
+    {
+      "id": "/notifications?tab=all",
+      "routePath": "/notifications",
+      "uiStateId": "notifications.tab.all",
+      "component": "NotificationsPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区"
+        }
+      ],
+      "description": "通知-全部",
+      "search": {
+        "tab": "all"
+      },
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/notifications?tab=verified",
+      "routePath": "/notifications",
+      "uiStateId": "notifications.tab.verified",
+      "component": "NotificationsPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区"
+        }
+      ],
+      "description": "通知-已认证",
+      "search": {
+        "tab": "verified"
+      },
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/notifications?tab=mentions",
+      "routePath": "/notifications",
+      "uiStateId": "notifications.tab.mentions",
+      "component": "NotificationsPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区"
+        }
+      ],
+      "description": "通知-提及",
+      "search": {
+        "tab": "mentions"
+      },
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/messages?tab=all",
+      "routePath": "/messages",
+      "uiStateId": "messages.tab.all",
+      "component": "MessagesPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区"
+        }
+      ],
+      "description": "消息-全部",
+      "search": {
+        "tab": "all"
+      },
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/messages?tab=unread",
+      "routePath": "/messages",
+      "uiStateId": "messages.tab.unread",
+      "component": "MessagesPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区"
+        }
+      ],
+      "description": "消息-未读",
+      "search": {
+        "tab": "unread"
+      },
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/messages?tab=groups",
+      "routePath": "/messages",
+      "uiStateId": "messages.tab.groups",
+      "component": "MessagesPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区"
+        }
+      ],
+      "description": "消息-群组",
+      "search": {
+        "tab": "groups"
+      },
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/messages?tab=requests",
+      "routePath": "/messages",
+      "uiStateId": "messages.tab.requests",
+      "component": "MessagesPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区"
+        }
+      ],
+      "description": "消息-请求",
+      "search": {
+        "tab": "requests"
+      },
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/profile",
+      "routePath": "/profile",
+      "uiStateId": "profile.base",
+      "component": "ProfilePage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "deepLink",
+        "home": false,
+        "deepLink": true
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区"
+        }
+      ],
+      "description": "个人主页",
+      "search": {},
+      "queryParams": {},
+      "actions": [
+        {
+          "id": "profile.post.retweet",
+          "label": "转发推文",
+          "behavior": "submit",
+          "paramsSchema": {
+            "id": "string"
+          }
+        },
+        {
+          "id": "profile.post.like",
+          "label": "点赞推文",
+          "behavior": "submit",
+          "paramsSchema": {
+            "id": "string"
+          }
+        },
+        {
+          "id": "profile.post.share",
+          "label": "分享推文",
+          "behavior": "submit",
+          "paramsSchema": {
+            "id": "string"
+          }
+        },
+        {
+          "id": "profile.post.bookmark",
+          "label": "书签推文",
+          "behavior": "submit",
+          "paramsSchema": {
+            "id": "string"
+          }
+        },
+        {
+          "id": "profile.user.follow",
+          "label": "关注用户",
+          "behavior": "submit",
+          "paramsSchema": {
+            "id": "string"
+          }
+        }
+      ]
+    },
+    {
+      "id": "/user/:id",
+      "routePath": "/user/:id",
+      "uiStateId": "userProfile.base",
+      "component": "UserProfilePage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "deepLink",
+        "home": false,
+        "deepLink": true
+      },
+      "params": {
+        "id": "string"
+      },
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区"
+        }
+      ],
+      "description": "用户主页",
+      "search": {},
+      "queryParams": {},
+      "actions": [
+        {
+          "id": "userProfile.post.retweet",
+          "label": "转发推文",
+          "behavior": "submit",
+          "paramsSchema": {
+            "id": "string"
+          }
+        },
+        {
+          "id": "userProfile.post.like",
+          "label": "点赞推文",
+          "behavior": "submit",
+          "paramsSchema": {
+            "id": "string"
+          }
+        },
+        {
+          "id": "userProfile.post.share",
+          "label": "分享推文",
+          "behavior": "submit",
+          "paramsSchema": {
+            "id": "string"
+          }
+        },
+        {
+          "id": "userProfile.post.bookmark",
+          "label": "书签推文",
+          "behavior": "submit",
+          "paramsSchema": {
+            "id": "string"
+          }
+        },
+        {
+          "id": "userProfile.user.follow",
+          "label": "关注用户",
+          "behavior": "submit",
+          "paramsSchema": {
+            "id": "string"
+          }
+        }
+      ]
+    },
+    {
+      "id": "/reply/:id",
+      "routePath": "/reply/:id",
+      "uiStateId": "reply.base",
+      "component": "ReplyPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "deepLink",
+        "home": false,
+        "deepLink": true
+      },
+      "params": {
+        "id": "string"
+      },
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区"
+        }
+      ],
+      "description": "回复编辑页",
+      "search": {},
+      "queryParams": {},
+      "actions": [
+        {
+          "id": "reply.content.input",
+          "label": "输入回复内容",
+          "behavior": "input",
+          "paramsSchema": {
+            "value": "string"
+          }
+        },
+        {
+          "id": "reply.post.submit",
+          "label": "发布回复",
+          "behavior": "submit",
+          "paramsSchema": {
+            "postId": "string",
+            "content": "string"
+          }
+        }
+      ]
+    },
+    {
+      "id": "/compose",
+      "routePath": "/compose",
+      "uiStateId": "compose.base",
+      "component": "ComposePage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "deepLink",
+        "home": false,
+        "deepLink": true
+      },
+      "params": {},
+      "scrollContainers": [],
+      "description": "发布帖子",
+      "search": {},
+      "queryParams": {},
+      "actions": [
+        {
+          "id": "compose.content.input",
+          "label": "输入帖子内容",
+          "behavior": "input",
+          "paramsSchema": {
+            "value": "string"
+          }
+        },
+        {
+          "id": "compose.post.submit",
+          "label": "发布帖子",
+          "behavior": "submit",
+          "paramsSchema": {
+            "content": "string"
+          }
+        }
+      ]
+    },
+    {
+      "id": "/messages/:id",
+      "routePath": "/messages/:id",
+      "uiStateId": "chat.base",
+      "component": "ChatPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "deepLink",
+        "home": false,
+        "deepLink": true
+      },
+      "params": {
+        "id": "string"
+      },
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区"
+        }
+      ],
+      "description": "聊天详情",
+      "search": {},
+      "queryParams": {},
+      "actions": [
+        {
+          "id": "chat.message.input",
+          "label": "输入私信内容",
+          "behavior": "input",
+          "paramsSchema": {
+            "value": "string"
+          }
+        },
+        {
+          "id": "chat.message.send",
+          "label": "发送私信",
+          "behavior": "submit",
+          "paramsSchema": {
+            "conversationId": "string",
+            "content": "string"
+          }
+        }
+      ]
+    },
+    {
+      "id": "/connections/:id?type=following",
+      "routePath": "/connections/:id",
+      "uiStateId": "connections.tab.following",
+      "component": "UserConnectionsPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {
+        "id": "string"
+      },
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区"
+        }
+      ],
+      "description": "正在关注列表",
+      "search": {
+        "type": "following"
+      },
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/connections/:id?type=followers",
+      "routePath": "/connections/:id",
+      "uiStateId": "connections.tab.followers",
+      "component": "UserConnectionsPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {
+        "id": "string"
+      },
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区"
+        }
+      ],
+      "description": "关注者列表",
+      "search": {
+        "type": "followers"
+      },
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/status/:id",
+      "routePath": "/status/:id",
+      "uiStateId": "status.base",
+      "component": "PostDetailsPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "deepLink",
+        "home": false,
+        "deepLink": true
+      },
+      "params": {
+        "id": "string"
+      },
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区"
+        }
+      ],
+      "description": "帖子详情",
+      "search": {},
+      "queryParams": {},
+      "actions": [
+        {
+          "id": "post.item.retweet",
+          "label": "转发推文",
+          "behavior": "submit",
+          "paramsSchema": {
+            "id": "string"
+          }
+        },
+        {
+          "id": "post.item.like",
+          "label": "点赞推文",
+          "behavior": "submit",
+          "paramsSchema": {
+            "id": "string"
+          }
+        },
+        {
+          "id": "post.item.share",
+          "label": "分享推文",
+          "behavior": "submit",
+          "paramsSchema": {
+            "id": "string"
+          }
+        },
+        {
+          "id": "post.item.bookmark",
+          "label": "书签推文",
+          "behavior": "submit",
+          "paramsSchema": {
+            "id": "string"
+          }
+        },
+        {
+          "id": "user.item.follow",
+          "label": "关注用户",
+          "behavior": "submit",
+          "paramsSchema": {
+            "id": "string"
+          }
+        },
+        {
+          "id": "status.post.like",
+          "label": "点赞帖子",
+          "behavior": "submit",
+          "paramsSchema": {
+            "id": "string"
+          }
+        },
+        {
+          "id": "status.post.bookmark",
+          "label": "书签帖子",
+          "behavior": "submit",
+          "paramsSchema": {
+            "id": "string"
+          }
+        }
+      ]
+    },
+    {
+      "id": "/status/:id/activity?tab=quotes",
+      "routePath": "/status/:id/activity",
+      "uiStateId": "status.activity.tab.quotes",
+      "component": "PostActivityPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {
+        "id": "string"
+      },
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区"
+        }
+      ],
+      "description": "帖子活动-引用",
+      "search": {
+        "tab": "quotes"
+      },
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/status/:id/activity?tab=retweets",
+      "routePath": "/status/:id/activity",
+      "uiStateId": "status.activity.tab.retweets",
+      "component": "PostActivityPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {
+        "id": "string"
+      },
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区"
+        }
+      ],
+      "description": "帖子活动-转帖",
+      "search": {
+        "tab": "retweets"
+      },
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/settings",
+      "routePath": "/settings",
+      "uiStateId": "settings.base",
+      "component": "SettingsPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区"
+        }
+      ],
+      "description": "设置主页",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/settings/account",
+      "routePath": "/settings/account",
+      "uiStateId": "settings.account.base",
+      "component": "SettingsAccountPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区"
+        }
+      ],
+      "description": "账号设置",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/settings/account/info",
+      "routePath": "/settings/account/info",
+      "uiStateId": "settings.account.info.base",
+      "component": "SettingsAccountInfoPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区"
+        }
+      ],
+      "description": "账号信息",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/settings/privacy",
+      "routePath": "/settings/privacy",
+      "uiStateId": "settings.privacy.base",
+      "component": "SettingsPrivacyPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区"
+        }
+      ],
+      "description": "隐私和安全",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/settings/privacy/audience",
+      "routePath": "/settings/privacy/audience",
+      "uiStateId": "settings.privacy.audience.base",
+      "component": "SettingsPrivacyAudiencePage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区"
+        }
+      ],
+      "description": "受众和圈人",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/settings/privacy/your-posts",
+      "routePath": "/settings/privacy/your-posts",
+      "uiStateId": "settings.privacy.yourPosts.base",
+      "component": "SettingsPrivacyYourPostsPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区"
+        }
+      ],
+      "description": "你的帖子",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/settings/privacy/chat",
+      "routePath": "/settings/privacy/chat",
+      "uiStateId": "settings.privacy.chat.base",
+      "component": "SettingsPrivacyChatPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区"
+        }
+      ],
+      "description": "聊天隐私",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/settings/privacy/space",
+      "routePath": "/settings/privacy/space",
+      "uiStateId": "settings.privacy.space.base",
+      "component": "SettingsPrivacySpacePage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区"
+        }
+      ],
+      "description": "空间隐私",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/settings/privacy/find-contacts",
+      "routePath": "/settings/privacy/find-contacts",
+      "uiStateId": "settings.privacy.findContacts.base",
+      "component": "SettingsPrivacyFindContactsPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区"
+        }
+      ],
+      "description": "联系人隐私",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/settings/privacy/about-account",
+      "routePath": "/settings/privacy/about-account",
+      "uiStateId": "settings.privacy.aboutAccount.base",
+      "component": "SettingsPrivacyAboutAccountPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区"
+        }
+      ],
+      "description": "关于你的账号",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/settings/privacy/seen",
+      "routePath": "/settings/privacy/seen",
+      "uiStateId": "settings.seen.base",
+      "component": "SettingsSeenContentPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区"
+        }
+      ],
+      "description": "你看到的内容",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/settings/privacy/seen/explore",
+      "routePath": "/settings/privacy/seen/explore",
+      "uiStateId": "settings.seen.explore.base",
+      "component": "SettingsSeenExplorePage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区"
+        }
+      ],
+      "description": "探索设置",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/settings/notifications",
+      "routePath": "/settings/notifications",
+      "uiStateId": "settings.notifications.base",
+      "component": "SettingsNotificationsPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区"
+        }
+      ],
+      "description": "通知设置",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/settings/notifications/preferences",
+      "routePath": "/settings/notifications/preferences",
+      "uiStateId": "settings.notifications.preferences.base",
+      "component": "SettingsNotificationPreferencesPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区"
+        }
+      ],
+      "description": "通知偏好设置",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/settings/notifications/preferences/push",
+      "routePath": "/settings/notifications/preferences/push",
+      "uiStateId": "settings.notifications.preferences.push.base",
+      "component": "SettingsNotificationPushPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区"
+        }
+      ],
+      "description": "推送通知设置",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/settings/notifications/filter",
+      "routePath": "/settings/notifications/filter",
+      "uiStateId": "settings.notifications.filter.base",
+      "component": "SettingsNotificationFilterPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区"
+        }
+      ],
+      "description": "通知过滤器",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/settings/timeline",
+      "routePath": "/settings/timeline",
+      "uiStateId": "settings.timeline.base",
+      "component": "SettingsTimelinePage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区"
+        }
+      ],
+      "description": "时间线设置",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/settings/timeline/interactions",
+      "routePath": "/settings/timeline/interactions",
+      "uiStateId": "settings.timeline.interactions.base",
+      "component": "SettingsTimelineInteractionsPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区"
+        }
+      ],
+      "description": "帖子互动设置",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/settings/timeline/home-tags",
+      "routePath": "/settings/timeline/home-tags",
+      "uiStateId": "settings.timeline.homeTags.base",
+      "component": "SettingsTimelineHomeTagsPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区"
+        }
+      ],
+      "description": "\"主页\"标签设置",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    }
+  ],
+  "edges": [
+    {
+      "source": "*",
+      "target": "/?tab=foryou",
+      "targetNodeId": "/?tab=foryou",
+      "id": "tab.home",
+      "label": "切换到首页",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {
+        "tab": "foryou"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "tab_home",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "*",
+      "target": "/search?tab=foryou",
+      "targetNodeId": "/search?tab=foryou",
+      "id": "tab.search",
+      "label": "切换到搜索",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {
+        "tab": "foryou"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "tab_search",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "*",
+      "target": "/grok",
+      "targetNodeId": "/grok",
+      "id": "tab.grok",
+      "label": "切换到 Grok",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "tab_grok",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "*",
+      "target": "/notifications?tab=all",
+      "targetNodeId": "/notifications?tab=all",
+      "id": "tab.notifications",
+      "label": "切换到通知",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {
+        "tab": "all"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "tab_notifications",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "*",
+      "target": "/messages?tab=all",
+      "targetNodeId": "/messages?tab=all",
+      "id": "tab.messages",
+      "label": "切换到消息",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {
+        "tab": "all"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "tab_messages",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/?tab=following",
+      "sourceNodeId": "/?tab=following",
+      "target": "/?tab=foryou",
+      "targetNodeId": "/?tab=foryou",
+      "id": "home.feed.tab.toForyou",
+      "label": "切换到为你推荐",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "foryou"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/",
+        "search": {
+          "tab": "following"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "home_tab_foryou",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/?tab=foryou&menu=drawer",
+      "sourceNodeId": "/?tab=foryou&menu=drawer",
+      "target": "/?tab=foryou",
+      "targetNodeId": "/?tab=foryou",
+      "id": "home.feed.tab.toForyou",
+      "label": "切换到为你推荐",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "foryou"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/",
+        "search": {
+          "tab": "foryou",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "home_tab_foryou",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/?tab=following&menu=drawer",
+      "sourceNodeId": "/?tab=following&menu=drawer",
+      "target": "/?tab=foryou",
+      "targetNodeId": "/?tab=foryou",
+      "id": "home.feed.tab.toForyou",
+      "label": "切换到为你推荐",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "foryou"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/",
+        "search": {
+          "tab": "following",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "home_tab_foryou",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/?tab=foryou",
+      "sourceNodeId": "/?tab=foryou",
+      "target": "/?tab=following",
+      "targetNodeId": "/?tab=following",
+      "id": "home.feed.tab.toFollowing",
+      "label": "切换到正在关注",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "following"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/",
+        "search": {
+          "tab": "foryou"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "home_tab_following",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/?tab=foryou&menu=drawer",
+      "sourceNodeId": "/?tab=foryou&menu=drawer",
+      "target": "/?tab=following",
+      "targetNodeId": "/?tab=following",
+      "id": "home.feed.tab.toFollowing",
+      "label": "切换到正在关注",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "following"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/",
+        "search": {
+          "tab": "foryou",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "home_tab_following",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/?tab=following&menu=drawer",
+      "sourceNodeId": "/?tab=following&menu=drawer",
+      "target": "/?tab=following",
+      "targetNodeId": "/?tab=following",
+      "id": "home.feed.tab.toFollowing",
+      "label": "切换到正在关注",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "following"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/",
+        "search": {
+          "tab": "following",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "home_tab_following",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=trending",
+      "sourceNodeId": "/search?tab=trending",
+      "target": "/search?tab=foryou",
+      "targetNodeId": "/search?tab=foryou",
+      "id": "search.tab.toForyou",
+      "label": "切换搜索到为你推荐",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "foryou"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "trending"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "search_tab_foryou",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=news",
+      "sourceNodeId": "/search?tab=news",
+      "target": "/search?tab=foryou",
+      "targetNodeId": "/search?tab=foryou",
+      "id": "search.tab.toForyou",
+      "label": "切换搜索到为你推荐",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "foryou"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "news"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "search_tab_foryou",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=sports",
+      "sourceNodeId": "/search?tab=sports",
+      "target": "/search?tab=foryou",
+      "targetNodeId": "/search?tab=foryou",
+      "id": "search.tab.toForyou",
+      "label": "切换搜索到为你推荐",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "foryou"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "sports"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "search_tab_foryou",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=entertainment",
+      "sourceNodeId": "/search?tab=entertainment",
+      "target": "/search?tab=foryou",
+      "targetNodeId": "/search?tab=foryou",
+      "id": "search.tab.toForyou",
+      "label": "切换搜索到为你推荐",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "foryou"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "entertainment"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "search_tab_foryou",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=foryou&menu=drawer",
+      "sourceNodeId": "/search?tab=foryou&menu=drawer",
+      "target": "/search?tab=foryou",
+      "targetNodeId": "/search?tab=foryou",
+      "id": "search.tab.toForyou",
+      "label": "切换搜索到为你推荐",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "foryou"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "foryou",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "search_tab_foryou",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=trending&menu=drawer",
+      "sourceNodeId": "/search?tab=trending&menu=drawer",
+      "target": "/search?tab=foryou",
+      "targetNodeId": "/search?tab=foryou",
+      "id": "search.tab.toForyou",
+      "label": "切换搜索到为你推荐",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "foryou"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "trending",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "search_tab_foryou",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=news&menu=drawer",
+      "sourceNodeId": "/search?tab=news&menu=drawer",
+      "target": "/search?tab=foryou",
+      "targetNodeId": "/search?tab=foryou",
+      "id": "search.tab.toForyou",
+      "label": "切换搜索到为你推荐",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "foryou"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "news",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "search_tab_foryou",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=sports&menu=drawer",
+      "sourceNodeId": "/search?tab=sports&menu=drawer",
+      "target": "/search?tab=foryou",
+      "targetNodeId": "/search?tab=foryou",
+      "id": "search.tab.toForyou",
+      "label": "切换搜索到为你推荐",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "foryou"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "sports",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "search_tab_foryou",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=entertainment&menu=drawer",
+      "sourceNodeId": "/search?tab=entertainment&menu=drawer",
+      "target": "/search?tab=foryou",
+      "targetNodeId": "/search?tab=foryou",
+      "id": "search.tab.toForyou",
+      "label": "切换搜索到为你推荐",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "foryou"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "entertainment",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "search_tab_foryou",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=foryou",
+      "sourceNodeId": "/search?tab=foryou",
+      "target": "/search?tab=trending",
+      "targetNodeId": "/search?tab=trending",
+      "id": "search.tab.toTrending",
+      "label": "切换搜索到当前趋势",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "trending"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "foryou"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "search_tab_trending",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=news",
+      "sourceNodeId": "/search?tab=news",
+      "target": "/search?tab=trending",
+      "targetNodeId": "/search?tab=trending",
+      "id": "search.tab.toTrending",
+      "label": "切换搜索到当前趋势",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "trending"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "news"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "search_tab_trending",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=sports",
+      "sourceNodeId": "/search?tab=sports",
+      "target": "/search?tab=trending",
+      "targetNodeId": "/search?tab=trending",
+      "id": "search.tab.toTrending",
+      "label": "切换搜索到当前趋势",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "trending"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "sports"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "search_tab_trending",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=entertainment",
+      "sourceNodeId": "/search?tab=entertainment",
+      "target": "/search?tab=trending",
+      "targetNodeId": "/search?tab=trending",
+      "id": "search.tab.toTrending",
+      "label": "切换搜索到当前趋势",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "trending"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "entertainment"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "search_tab_trending",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=foryou&menu=drawer",
+      "sourceNodeId": "/search?tab=foryou&menu=drawer",
+      "target": "/search?tab=trending",
+      "targetNodeId": "/search?tab=trending",
+      "id": "search.tab.toTrending",
+      "label": "切换搜索到当前趋势",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "trending"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "foryou",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "search_tab_trending",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=trending&menu=drawer",
+      "sourceNodeId": "/search?tab=trending&menu=drawer",
+      "target": "/search?tab=trending",
+      "targetNodeId": "/search?tab=trending",
+      "id": "search.tab.toTrending",
+      "label": "切换搜索到当前趋势",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "trending"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "trending",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "search_tab_trending",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=news&menu=drawer",
+      "sourceNodeId": "/search?tab=news&menu=drawer",
+      "target": "/search?tab=trending",
+      "targetNodeId": "/search?tab=trending",
+      "id": "search.tab.toTrending",
+      "label": "切换搜索到当前趋势",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "trending"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "news",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "search_tab_trending",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=sports&menu=drawer",
+      "sourceNodeId": "/search?tab=sports&menu=drawer",
+      "target": "/search?tab=trending",
+      "targetNodeId": "/search?tab=trending",
+      "id": "search.tab.toTrending",
+      "label": "切换搜索到当前趋势",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "trending"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "sports",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "search_tab_trending",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=entertainment&menu=drawer",
+      "sourceNodeId": "/search?tab=entertainment&menu=drawer",
+      "target": "/search?tab=trending",
+      "targetNodeId": "/search?tab=trending",
+      "id": "search.tab.toTrending",
+      "label": "切换搜索到当前趋势",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "trending"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "entertainment",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "search_tab_trending",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=foryou",
+      "sourceNodeId": "/search?tab=foryou",
+      "target": "/search?tab=news",
+      "targetNodeId": "/search?tab=news",
+      "id": "search.tab.toNews",
+      "label": "切换搜索到新闻",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "news"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "foryou"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "search_tab_news",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=trending",
+      "sourceNodeId": "/search?tab=trending",
+      "target": "/search?tab=news",
+      "targetNodeId": "/search?tab=news",
+      "id": "search.tab.toNews",
+      "label": "切换搜索到新闻",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "news"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "trending"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "search_tab_news",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=sports",
+      "sourceNodeId": "/search?tab=sports",
+      "target": "/search?tab=news",
+      "targetNodeId": "/search?tab=news",
+      "id": "search.tab.toNews",
+      "label": "切换搜索到新闻",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "news"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "sports"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "search_tab_news",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=entertainment",
+      "sourceNodeId": "/search?tab=entertainment",
+      "target": "/search?tab=news",
+      "targetNodeId": "/search?tab=news",
+      "id": "search.tab.toNews",
+      "label": "切换搜索到新闻",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "news"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "entertainment"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "search_tab_news",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=foryou&menu=drawer",
+      "sourceNodeId": "/search?tab=foryou&menu=drawer",
+      "target": "/search?tab=news",
+      "targetNodeId": "/search?tab=news",
+      "id": "search.tab.toNews",
+      "label": "切换搜索到新闻",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "news"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "foryou",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "search_tab_news",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=trending&menu=drawer",
+      "sourceNodeId": "/search?tab=trending&menu=drawer",
+      "target": "/search?tab=news",
+      "targetNodeId": "/search?tab=news",
+      "id": "search.tab.toNews",
+      "label": "切换搜索到新闻",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "news"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "trending",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "search_tab_news",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=news&menu=drawer",
+      "sourceNodeId": "/search?tab=news&menu=drawer",
+      "target": "/search?tab=news",
+      "targetNodeId": "/search?tab=news",
+      "id": "search.tab.toNews",
+      "label": "切换搜索到新闻",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "news"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "news",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "search_tab_news",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=sports&menu=drawer",
+      "sourceNodeId": "/search?tab=sports&menu=drawer",
+      "target": "/search?tab=news",
+      "targetNodeId": "/search?tab=news",
+      "id": "search.tab.toNews",
+      "label": "切换搜索到新闻",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "news"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "sports",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "search_tab_news",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=entertainment&menu=drawer",
+      "sourceNodeId": "/search?tab=entertainment&menu=drawer",
+      "target": "/search?tab=news",
+      "targetNodeId": "/search?tab=news",
+      "id": "search.tab.toNews",
+      "label": "切换搜索到新闻",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "news"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "entertainment",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "search_tab_news",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=foryou",
+      "sourceNodeId": "/search?tab=foryou",
+      "target": "/search?tab=sports",
+      "targetNodeId": "/search?tab=sports",
+      "id": "search.tab.toSports",
+      "label": "切换搜索到体育",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "sports"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "foryou"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "search_tab_sports",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=trending",
+      "sourceNodeId": "/search?tab=trending",
+      "target": "/search?tab=sports",
+      "targetNodeId": "/search?tab=sports",
+      "id": "search.tab.toSports",
+      "label": "切换搜索到体育",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "sports"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "trending"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "search_tab_sports",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=news",
+      "sourceNodeId": "/search?tab=news",
+      "target": "/search?tab=sports",
+      "targetNodeId": "/search?tab=sports",
+      "id": "search.tab.toSports",
+      "label": "切换搜索到体育",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "sports"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "news"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "search_tab_sports",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=entertainment",
+      "sourceNodeId": "/search?tab=entertainment",
+      "target": "/search?tab=sports",
+      "targetNodeId": "/search?tab=sports",
+      "id": "search.tab.toSports",
+      "label": "切换搜索到体育",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "sports"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "entertainment"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "search_tab_sports",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=foryou&menu=drawer",
+      "sourceNodeId": "/search?tab=foryou&menu=drawer",
+      "target": "/search?tab=sports",
+      "targetNodeId": "/search?tab=sports",
+      "id": "search.tab.toSports",
+      "label": "切换搜索到体育",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "sports"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "foryou",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "search_tab_sports",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=trending&menu=drawer",
+      "sourceNodeId": "/search?tab=trending&menu=drawer",
+      "target": "/search?tab=sports",
+      "targetNodeId": "/search?tab=sports",
+      "id": "search.tab.toSports",
+      "label": "切换搜索到体育",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "sports"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "trending",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "search_tab_sports",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=news&menu=drawer",
+      "sourceNodeId": "/search?tab=news&menu=drawer",
+      "target": "/search?tab=sports",
+      "targetNodeId": "/search?tab=sports",
+      "id": "search.tab.toSports",
+      "label": "切换搜索到体育",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "sports"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "news",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "search_tab_sports",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=sports&menu=drawer",
+      "sourceNodeId": "/search?tab=sports&menu=drawer",
+      "target": "/search?tab=sports",
+      "targetNodeId": "/search?tab=sports",
+      "id": "search.tab.toSports",
+      "label": "切换搜索到体育",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "sports"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "sports",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "search_tab_sports",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=entertainment&menu=drawer",
+      "sourceNodeId": "/search?tab=entertainment&menu=drawer",
+      "target": "/search?tab=sports",
+      "targetNodeId": "/search?tab=sports",
+      "id": "search.tab.toSports",
+      "label": "切换搜索到体育",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "sports"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "entertainment",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "search_tab_sports",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=foryou",
+      "sourceNodeId": "/search?tab=foryou",
+      "target": "/search?tab=entertainment",
+      "targetNodeId": "/search?tab=entertainment",
+      "id": "search.tab.toEntertainment",
+      "label": "切换搜索到娱乐",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "entertainment"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "foryou"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "search_tab_entertainment",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=trending",
+      "sourceNodeId": "/search?tab=trending",
+      "target": "/search?tab=entertainment",
+      "targetNodeId": "/search?tab=entertainment",
+      "id": "search.tab.toEntertainment",
+      "label": "切换搜索到娱乐",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "entertainment"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "trending"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "search_tab_entertainment",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=news",
+      "sourceNodeId": "/search?tab=news",
+      "target": "/search?tab=entertainment",
+      "targetNodeId": "/search?tab=entertainment",
+      "id": "search.tab.toEntertainment",
+      "label": "切换搜索到娱乐",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "entertainment"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "news"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "search_tab_entertainment",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=sports",
+      "sourceNodeId": "/search?tab=sports",
+      "target": "/search?tab=entertainment",
+      "targetNodeId": "/search?tab=entertainment",
+      "id": "search.tab.toEntertainment",
+      "label": "切换搜索到娱乐",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "entertainment"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "sports"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "search_tab_entertainment",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=foryou&menu=drawer",
+      "sourceNodeId": "/search?tab=foryou&menu=drawer",
+      "target": "/search?tab=entertainment",
+      "targetNodeId": "/search?tab=entertainment",
+      "id": "search.tab.toEntertainment",
+      "label": "切换搜索到娱乐",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "entertainment"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "foryou",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "search_tab_entertainment",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=trending&menu=drawer",
+      "sourceNodeId": "/search?tab=trending&menu=drawer",
+      "target": "/search?tab=entertainment",
+      "targetNodeId": "/search?tab=entertainment",
+      "id": "search.tab.toEntertainment",
+      "label": "切换搜索到娱乐",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "entertainment"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "trending",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "search_tab_entertainment",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=news&menu=drawer",
+      "sourceNodeId": "/search?tab=news&menu=drawer",
+      "target": "/search?tab=entertainment",
+      "targetNodeId": "/search?tab=entertainment",
+      "id": "search.tab.toEntertainment",
+      "label": "切换搜索到娱乐",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "entertainment"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "news",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "search_tab_entertainment",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=sports&menu=drawer",
+      "sourceNodeId": "/search?tab=sports&menu=drawer",
+      "target": "/search?tab=entertainment",
+      "targetNodeId": "/search?tab=entertainment",
+      "id": "search.tab.toEntertainment",
+      "label": "切换搜索到娱乐",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "entertainment"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "sports",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "search_tab_entertainment",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=entertainment&menu=drawer",
+      "sourceNodeId": "/search?tab=entertainment&menu=drawer",
+      "target": "/search?tab=entertainment",
+      "targetNodeId": "/search?tab=entertainment",
+      "id": "search.tab.toEntertainment",
+      "label": "切换搜索到娱乐",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "entertainment"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "entertainment",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "search_tab_entertainment",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=foryou",
+      "sourceNodeId": "/search?tab=foryou",
+      "target": "/search/input",
+      "targetNodeId": "/search/input",
+      "id": "search.input.open",
+      "label": "打开搜索输入页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "foryou"
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "search_bar",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=trending",
+      "sourceNodeId": "/search?tab=trending",
+      "target": "/search/input",
+      "targetNodeId": "/search/input",
+      "id": "search.input.open",
+      "label": "打开搜索输入页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "trending"
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "search_bar",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=news",
+      "sourceNodeId": "/search?tab=news",
+      "target": "/search/input",
+      "targetNodeId": "/search/input",
+      "id": "search.input.open",
+      "label": "打开搜索输入页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "news"
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "search_bar",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=sports",
+      "sourceNodeId": "/search?tab=sports",
+      "target": "/search/input",
+      "targetNodeId": "/search/input",
+      "id": "search.input.open",
+      "label": "打开搜索输入页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "sports"
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "search_bar",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=entertainment",
+      "sourceNodeId": "/search?tab=entertainment",
+      "target": "/search/input",
+      "targetNodeId": "/search/input",
+      "id": "search.input.open",
+      "label": "打开搜索输入页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "entertainment"
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "search_bar",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=foryou&menu=drawer",
+      "sourceNodeId": "/search?tab=foryou&menu=drawer",
+      "target": "/search/input",
+      "targetNodeId": "/search/input",
+      "id": "search.input.open",
+      "label": "打开搜索输入页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "foryou",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "search_bar",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=trending&menu=drawer",
+      "sourceNodeId": "/search?tab=trending&menu=drawer",
+      "target": "/search/input",
+      "targetNodeId": "/search/input",
+      "id": "search.input.open",
+      "label": "打开搜索输入页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "trending",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "search_bar",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=news&menu=drawer",
+      "sourceNodeId": "/search?tab=news&menu=drawer",
+      "target": "/search/input",
+      "targetNodeId": "/search/input",
+      "id": "search.input.open",
+      "label": "打开搜索输入页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "news",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "search_bar",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=sports&menu=drawer",
+      "sourceNodeId": "/search?tab=sports&menu=drawer",
+      "target": "/search/input",
+      "targetNodeId": "/search/input",
+      "id": "search.input.open",
+      "label": "打开搜索输入页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "sports",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "search_bar",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=entertainment&menu=drawer",
+      "sourceNodeId": "/search?tab=entertainment&menu=drawer",
+      "target": "/search/input",
+      "targetNodeId": "/search/input",
+      "id": "search.input.open",
+      "label": "打开搜索输入页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "entertainment",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "search_bar",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/?tab=foryou",
+      "sourceNodeId": "/?tab=foryou",
+      "target": "/?tab=foryou&menu=drawer",
+      "targetNodeId": "/?tab=foryou&menu=drawer",
+      "id": "home.drawer.open",
+      "label": "打开侧边栏",
+      "type": "state",
+      "mode": "push",
+      "search": {
+        "menu": "drawer"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [
+        "tab"
+      ],
+      "fromConstraint": {
+        "path": "/",
+        "search": {
+          "tab": "foryou"
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "drawer",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/?tab=following",
+      "sourceNodeId": "/?tab=following",
+      "target": "/?tab=following&menu=drawer",
+      "targetNodeId": "/?tab=following&menu=drawer",
+      "id": "home.drawer.open",
+      "label": "打开侧边栏",
+      "type": "state",
+      "mode": "push",
+      "search": {
+        "menu": "drawer"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [
+        "tab"
+      ],
+      "fromConstraint": {
+        "path": "/",
+        "search": {
+          "tab": "following"
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "drawer",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=foryou",
+      "sourceNodeId": "/search?tab=foryou",
+      "target": "/search?tab=foryou&menu=drawer",
+      "targetNodeId": "/search?tab=foryou&menu=drawer",
+      "id": "search.drawer.open",
+      "label": "打开侧边栏",
+      "type": "state",
+      "mode": "push",
+      "search": {
+        "menu": "drawer"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [
+        "tab"
+      ],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "foryou"
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "drawer",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=trending",
+      "sourceNodeId": "/search?tab=trending",
+      "target": "/search?tab=trending&menu=drawer",
+      "targetNodeId": "/search?tab=trending&menu=drawer",
+      "id": "search.drawer.open",
+      "label": "打开侧边栏",
+      "type": "state",
+      "mode": "push",
+      "search": {
+        "menu": "drawer"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [
+        "tab"
+      ],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "trending"
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "drawer",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=news",
+      "sourceNodeId": "/search?tab=news",
+      "target": "/search?tab=news&menu=drawer",
+      "targetNodeId": "/search?tab=news&menu=drawer",
+      "id": "search.drawer.open",
+      "label": "打开侧边栏",
+      "type": "state",
+      "mode": "push",
+      "search": {
+        "menu": "drawer"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [
+        "tab"
+      ],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "news"
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "drawer",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=sports",
+      "sourceNodeId": "/search?tab=sports",
+      "target": "/search?tab=sports&menu=drawer",
+      "targetNodeId": "/search?tab=sports&menu=drawer",
+      "id": "search.drawer.open",
+      "label": "打开侧边栏",
+      "type": "state",
+      "mode": "push",
+      "search": {
+        "menu": "drawer"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [
+        "tab"
+      ],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "sports"
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "drawer",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=entertainment",
+      "sourceNodeId": "/search?tab=entertainment",
+      "target": "/search?tab=entertainment&menu=drawer",
+      "targetNodeId": "/search?tab=entertainment&menu=drawer",
+      "id": "search.drawer.open",
+      "label": "打开侧边栏",
+      "type": "state",
+      "mode": "push",
+      "search": {
+        "menu": "drawer"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [
+        "tab"
+      ],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "entertainment"
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "drawer",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/grok",
+      "sourceNodeId": "/grok",
+      "target": "/grok?menu=drawer",
+      "targetNodeId": "/grok?menu=drawer",
+      "id": "grok.drawer.open",
+      "label": "打开侧边栏",
+      "type": "state",
+      "mode": "push",
+      "search": {
+        "menu": "drawer"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "drawer",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/notifications?tab=all",
+      "sourceNodeId": "/notifications?tab=all",
+      "target": "/notifications?menu=drawer&tab=all",
+      "targetNodeId": "/notifications?menu=drawer&tab=all",
+      "id": "notifications.drawer.open",
+      "label": "打开侧边栏",
+      "type": "state",
+      "mode": "push",
+      "search": {
+        "menu": "drawer"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [
+        "tab"
+      ],
+      "fromConstraint": {
+        "path": "/notifications",
+        "search": {
+          "tab": "all"
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "drawer",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/notifications?tab=verified",
+      "sourceNodeId": "/notifications?tab=verified",
+      "target": "/notifications?menu=drawer&tab=verified",
+      "targetNodeId": "/notifications?menu=drawer&tab=verified",
+      "id": "notifications.drawer.open",
+      "label": "打开侧边栏",
+      "type": "state",
+      "mode": "push",
+      "search": {
+        "menu": "drawer"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [
+        "tab"
+      ],
+      "fromConstraint": {
+        "path": "/notifications",
+        "search": {
+          "tab": "verified"
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "drawer",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/notifications?tab=mentions",
+      "sourceNodeId": "/notifications?tab=mentions",
+      "target": "/notifications?menu=drawer&tab=mentions",
+      "targetNodeId": "/notifications?menu=drawer&tab=mentions",
+      "id": "notifications.drawer.open",
+      "label": "打开侧边栏",
+      "type": "state",
+      "mode": "push",
+      "search": {
+        "menu": "drawer"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [
+        "tab"
+      ],
+      "fromConstraint": {
+        "path": "/notifications",
+        "search": {
+          "tab": "mentions"
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "drawer",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/messages?tab=all",
+      "sourceNodeId": "/messages?tab=all",
+      "target": "/messages?menu=drawer&tab=all",
+      "targetNodeId": "/messages?menu=drawer&tab=all",
+      "id": "messages.drawer.open",
+      "label": "打开侧边栏",
+      "type": "state",
+      "mode": "push",
+      "search": {
+        "menu": "drawer"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [
+        "tab"
+      ],
+      "fromConstraint": {
+        "path": "/messages",
+        "search": {
+          "tab": "all"
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "drawer",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/messages?tab=unread",
+      "sourceNodeId": "/messages?tab=unread",
+      "target": "/messages?menu=drawer&tab=unread",
+      "targetNodeId": "/messages?menu=drawer&tab=unread",
+      "id": "messages.drawer.open",
+      "label": "打开侧边栏",
+      "type": "state",
+      "mode": "push",
+      "search": {
+        "menu": "drawer"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [
+        "tab"
+      ],
+      "fromConstraint": {
+        "path": "/messages",
+        "search": {
+          "tab": "unread"
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "drawer",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/messages?tab=groups",
+      "sourceNodeId": "/messages?tab=groups",
+      "target": "/messages?menu=drawer&tab=groups",
+      "targetNodeId": "/messages?menu=drawer&tab=groups",
+      "id": "messages.drawer.open",
+      "label": "打开侧边栏",
+      "type": "state",
+      "mode": "push",
+      "search": {
+        "menu": "drawer"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [
+        "tab"
+      ],
+      "fromConstraint": {
+        "path": "/messages",
+        "search": {
+          "tab": "groups"
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "drawer",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/messages?tab=requests",
+      "sourceNodeId": "/messages?tab=requests",
+      "target": "/messages?menu=drawer&tab=requests",
+      "targetNodeId": "/messages?menu=drawer&tab=requests",
+      "id": "messages.drawer.open",
+      "label": "打开侧边栏",
+      "type": "state",
+      "mode": "push",
+      "search": {
+        "menu": "drawer"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [
+        "tab"
+      ],
+      "fromConstraint": {
+        "path": "/messages",
+        "search": {
+          "tab": "requests"
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "drawer",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search/input",
+      "sourceNodeId": "/search/input",
+      "target": "/user/:id",
+      "targetNodeId": "/user/:id",
+      "id": "user.open.fromSearch",
+      "label": "打开用户主页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {
+        "id": "string"
+      },
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "user",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/?tab=foryou",
+      "sourceNodeId": "/?tab=foryou",
+      "target": "/user/:id",
+      "targetNodeId": "/user/:id",
+      "id": "user.open.fromPost",
+      "label": "打开用户主页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {
+        "id": "string"
+      },
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/",
+        "search": {
+          "tab": "foryou"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "user_avatar",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/?tab=following",
+      "sourceNodeId": "/?tab=following",
+      "target": "/user/:id",
+      "targetNodeId": "/user/:id",
+      "id": "user.open.fromPost",
+      "label": "打开用户主页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {
+        "id": "string"
+      },
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/",
+        "search": {
+          "tab": "following"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "user_avatar",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/?tab=foryou&menu=drawer",
+      "sourceNodeId": "/?tab=foryou&menu=drawer",
+      "target": "/user/:id",
+      "targetNodeId": "/user/:id",
+      "id": "user.open.fromPost",
+      "label": "打开用户主页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {
+        "id": "string"
+      },
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/",
+        "search": {
+          "tab": "foryou",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "user_avatar",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/?tab=following&menu=drawer",
+      "sourceNodeId": "/?tab=following&menu=drawer",
+      "target": "/user/:id",
+      "targetNodeId": "/user/:id",
+      "id": "user.open.fromPost",
+      "label": "打开用户主页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {
+        "id": "string"
+      },
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/",
+        "search": {
+          "tab": "following",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "user_avatar",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/reply/:id",
+      "sourceNodeId": "/reply/:id",
+      "target": "/user/:id",
+      "targetNodeId": "/user/:id",
+      "id": "user.open.fromPost",
+      "label": "打开用户主页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {
+        "id": "string"
+      },
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "user_avatar",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/status/:id",
+      "sourceNodeId": "/status/:id",
+      "target": "/user/:id",
+      "targetNodeId": "/user/:id",
+      "id": "user.open.fromPost",
+      "label": "打开用户主页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {
+        "id": "string"
+      },
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "user_avatar",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/status/:id/activity?tab=quotes",
+      "sourceNodeId": "/status/:id/activity?tab=quotes",
+      "target": "/user/:id",
+      "targetNodeId": "/user/:id",
+      "id": "user.open.fromPost",
+      "label": "打开用户主页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {
+        "id": "string"
+      },
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/status/:id/activity",
+        "search": {
+          "tab": "quotes"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "user_avatar",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/status/:id/activity?tab=retweets",
+      "sourceNodeId": "/status/:id/activity?tab=retweets",
+      "target": "/user/:id",
+      "targetNodeId": "/user/:id",
+      "id": "user.open.fromPost",
+      "label": "打开用户主页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {
+        "id": "string"
+      },
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/status/:id/activity",
+        "search": {
+          "tab": "retweets"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "user_avatar",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/profile",
+      "sourceNodeId": "/profile",
+      "target": "/user/:id",
+      "targetNodeId": "/user/:id",
+      "id": "user.open.fromPost",
+      "label": "打开用户主页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {
+        "id": "string"
+      },
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "user_avatar",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/user/:id",
+      "sourceNodeId": "/user/:id",
+      "target": "/user/:id",
+      "targetNodeId": "/user/:id",
+      "id": "user.open.fromPost",
+      "label": "打开用户主页",
+      "type": "state",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {
+        "id": "string"
+      },
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "user_avatar",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/connections/:id?type=following",
+      "sourceNodeId": "/connections/:id?type=following",
+      "target": "/user/:id",
+      "targetNodeId": "/user/:id",
+      "id": "user.open.fromPost",
+      "label": "打开用户主页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {
+        "id": "string"
+      },
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/connections/:id",
+        "search": {
+          "type": "following"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "user_avatar",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/connections/:id?type=followers",
+      "sourceNodeId": "/connections/:id?type=followers",
+      "target": "/user/:id",
+      "targetNodeId": "/user/:id",
+      "id": "user.open.fromPost",
+      "label": "打开用户主页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {
+        "id": "string"
+      },
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/connections/:id",
+        "search": {
+          "type": "followers"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "user_avatar",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search/input",
+      "sourceNodeId": "/search/input",
+      "target": "/user/:id",
+      "targetNodeId": "/user/:id",
+      "id": "user.open.fromPost",
+      "label": "打开用户主页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {
+        "id": "string"
+      },
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "user_avatar",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/?tab=foryou",
+      "sourceNodeId": "/?tab=foryou",
+      "target": "/user/:id",
+      "targetNodeId": "/user/:id",
+      "id": "user.follow",
+      "label": "关注/取消关注用户",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {
+        "id": "string"
+      },
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/",
+        "search": {
+          "tab": "foryou"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "follow",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/?tab=following",
+      "sourceNodeId": "/?tab=following",
+      "target": "/user/:id",
+      "targetNodeId": "/user/:id",
+      "id": "user.follow",
+      "label": "关注/取消关注用户",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {
+        "id": "string"
+      },
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/",
+        "search": {
+          "tab": "following"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "follow",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/?tab=foryou&menu=drawer",
+      "sourceNodeId": "/?tab=foryou&menu=drawer",
+      "target": "/user/:id",
+      "targetNodeId": "/user/:id",
+      "id": "user.follow",
+      "label": "关注/取消关注用户",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {
+        "id": "string"
+      },
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/",
+        "search": {
+          "tab": "foryou",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "follow",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/?tab=following&menu=drawer",
+      "sourceNodeId": "/?tab=following&menu=drawer",
+      "target": "/user/:id",
+      "targetNodeId": "/user/:id",
+      "id": "user.follow",
+      "label": "关注/取消关注用户",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {
+        "id": "string"
+      },
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/",
+        "search": {
+          "tab": "following",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "follow",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/user/:id",
+      "sourceNodeId": "/user/:id",
+      "target": "/connections/:id?type=following",
+      "targetNodeId": "/connections/:id?type=following",
+      "id": "connections.open",
+      "label": "查看关注/关注者列表 → 正在关注列表",
+      "type": "navigation",
+      "mode": "push",
+      "search": {
+        "type": "following"
+      },
+      "searchParams": {},
+      "params": {
+        "id": "string"
+      },
+      "preserveParams": [],
+      "expandedFrom": "searchParams",
+      "uiMeta": {
+        "placement": "content",
+        "icon": "connections",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/user/:id",
+      "sourceNodeId": "/user/:id",
+      "target": "/connections/:id?type=followers",
+      "targetNodeId": "/connections/:id?type=followers",
+      "id": "connections.open",
+      "label": "查看关注/关注者列表 → 关注者列表",
+      "type": "navigation",
+      "mode": "push",
+      "search": {
+        "type": "followers"
+      },
+      "searchParams": {},
+      "params": {
+        "id": "string"
+      },
+      "preserveParams": [],
+      "expandedFrom": "searchParams",
+      "uiMeta": {
+        "placement": "content",
+        "icon": "connections",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/profile",
+      "sourceNodeId": "/profile",
+      "target": "/connections/:id?type=following",
+      "targetNodeId": "/connections/:id?type=following",
+      "id": "connections.open",
+      "label": "查看关注/关注者列表 → 正在关注列表",
+      "type": "navigation",
+      "mode": "push",
+      "search": {
+        "type": "following"
+      },
+      "searchParams": {},
+      "params": {
+        "id": "string"
+      },
+      "preserveParams": [],
+      "expandedFrom": "searchParams",
+      "uiMeta": {
+        "placement": "content",
+        "icon": "connections",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/profile",
+      "sourceNodeId": "/profile",
+      "target": "/connections/:id?type=followers",
+      "targetNodeId": "/connections/:id?type=followers",
+      "id": "connections.open",
+      "label": "查看关注/关注者列表 → 关注者列表",
+      "type": "navigation",
+      "mode": "push",
+      "search": {
+        "type": "followers"
+      },
+      "searchParams": {},
+      "params": {
+        "id": "string"
+      },
+      "preserveParams": [],
+      "expandedFrom": "searchParams",
+      "uiMeta": {
+        "placement": "content",
+        "icon": "connections",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/connections/:id?type=followers",
+      "sourceNodeId": "/connections/:id?type=followers",
+      "target": "/connections/:id?type=following",
+      "targetNodeId": "/connections/:id?type=following",
+      "id": "connections.tab.toFollowing",
+      "label": "切换到正在关注",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "type": "following"
+      },
+      "searchParams": {},
+      "params": {
+        "id": "string"
+      },
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/connections/:id",
+        "search": {
+          "type": "followers"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "connections_following",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/connections/:id?type=following",
+      "sourceNodeId": "/connections/:id?type=following",
+      "target": "/connections/:id?type=followers",
+      "targetNodeId": "/connections/:id?type=followers",
+      "id": "connections.tab.toFollowers",
+      "label": "切换到关注者",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "type": "followers"
+      },
+      "searchParams": {},
+      "params": {
+        "id": "string"
+      },
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/connections/:id",
+        "search": {
+          "type": "following"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "connections_followers",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/?tab=foryou",
+      "sourceNodeId": "/?tab=foryou",
+      "target": "/reply/:id",
+      "targetNodeId": "/reply/:id",
+      "id": "reply.open",
+      "label": "打开回复编辑页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {
+        "id": "string"
+      },
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/",
+        "search": {
+          "tab": "foryou"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "reply",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/?tab=following",
+      "sourceNodeId": "/?tab=following",
+      "target": "/reply/:id",
+      "targetNodeId": "/reply/:id",
+      "id": "reply.open",
+      "label": "打开回复编辑页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {
+        "id": "string"
+      },
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/",
+        "search": {
+          "tab": "following"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "reply",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/?tab=foryou&menu=drawer",
+      "sourceNodeId": "/?tab=foryou&menu=drawer",
+      "target": "/reply/:id",
+      "targetNodeId": "/reply/:id",
+      "id": "reply.open",
+      "label": "打开回复编辑页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {
+        "id": "string"
+      },
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/",
+        "search": {
+          "tab": "foryou",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "reply",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/?tab=following&menu=drawer",
+      "sourceNodeId": "/?tab=following&menu=drawer",
+      "target": "/reply/:id",
+      "targetNodeId": "/reply/:id",
+      "id": "reply.open",
+      "label": "打开回复编辑页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {
+        "id": "string"
+      },
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/",
+        "search": {
+          "tab": "following",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "reply",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/status/:id",
+      "sourceNodeId": "/status/:id",
+      "target": "/reply/:id",
+      "targetNodeId": "/reply/:id",
+      "id": "reply.open",
+      "label": "打开回复编辑页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {
+        "id": "string"
+      },
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "reply",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search/input",
+      "sourceNodeId": "/search/input",
+      "target": "/reply/:id",
+      "targetNodeId": "/reply/:id",
+      "id": "reply.open",
+      "label": "打开回复编辑页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {
+        "id": "string"
+      },
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "reply",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/?tab=foryou",
+      "sourceNodeId": "/?tab=foryou",
+      "target": "/status/:id",
+      "targetNodeId": "/status/:id",
+      "id": "post.open",
+      "label": "查看推文详情",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {
+        "id": "string"
+      },
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/",
+        "search": {
+          "tab": "foryou"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "post",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/?tab=following",
+      "sourceNodeId": "/?tab=following",
+      "target": "/status/:id",
+      "targetNodeId": "/status/:id",
+      "id": "post.open",
+      "label": "查看推文详情",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {
+        "id": "string"
+      },
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/",
+        "search": {
+          "tab": "following"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "post",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/?tab=foryou&menu=drawer",
+      "sourceNodeId": "/?tab=foryou&menu=drawer",
+      "target": "/status/:id",
+      "targetNodeId": "/status/:id",
+      "id": "post.open",
+      "label": "查看推文详情",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {
+        "id": "string"
+      },
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/",
+        "search": {
+          "tab": "foryou",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "post",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/?tab=following&menu=drawer",
+      "sourceNodeId": "/?tab=following&menu=drawer",
+      "target": "/status/:id",
+      "targetNodeId": "/status/:id",
+      "id": "post.open",
+      "label": "查看推文详情",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {
+        "id": "string"
+      },
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/",
+        "search": {
+          "tab": "following",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "post",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/user/:id",
+      "sourceNodeId": "/user/:id",
+      "target": "/status/:id",
+      "targetNodeId": "/status/:id",
+      "id": "post.open",
+      "label": "查看推文详情",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {
+        "id": "string"
+      },
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "post",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/profile",
+      "sourceNodeId": "/profile",
+      "target": "/status/:id",
+      "targetNodeId": "/status/:id",
+      "id": "post.open",
+      "label": "查看推文详情",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {
+        "id": "string"
+      },
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "post",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search/input",
+      "sourceNodeId": "/search/input",
+      "target": "/status/:id",
+      "targetNodeId": "/status/:id",
+      "id": "post.open",
+      "label": "查看推文详情",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {
+        "id": "string"
+      },
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "post",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=foryou",
+      "sourceNodeId": "/search?tab=foryou",
+      "target": "/search/input",
+      "targetNodeId": "/search/input",
+      "id": "trend.open",
+      "label": "查看趋势详情",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "foryou"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "trend",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=trending",
+      "sourceNodeId": "/search?tab=trending",
+      "target": "/search/input",
+      "targetNodeId": "/search/input",
+      "id": "trend.open",
+      "label": "查看趋势详情",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "trending"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "trend",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=news",
+      "sourceNodeId": "/search?tab=news",
+      "target": "/search/input",
+      "targetNodeId": "/search/input",
+      "id": "trend.open",
+      "label": "查看趋势详情",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "news"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "trend",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=sports",
+      "sourceNodeId": "/search?tab=sports",
+      "target": "/search/input",
+      "targetNodeId": "/search/input",
+      "id": "trend.open",
+      "label": "查看趋势详情",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "sports"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "trend",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=entertainment",
+      "sourceNodeId": "/search?tab=entertainment",
+      "target": "/search/input",
+      "targetNodeId": "/search/input",
+      "id": "trend.open",
+      "label": "查看趋势详情",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "entertainment"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "trend",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=foryou&menu=drawer",
+      "sourceNodeId": "/search?tab=foryou&menu=drawer",
+      "target": "/search/input",
+      "targetNodeId": "/search/input",
+      "id": "trend.open",
+      "label": "查看趋势详情",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "foryou",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "trend",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=trending&menu=drawer",
+      "sourceNodeId": "/search?tab=trending&menu=drawer",
+      "target": "/search/input",
+      "targetNodeId": "/search/input",
+      "id": "trend.open",
+      "label": "查看趋势详情",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "trending",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "trend",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=news&menu=drawer",
+      "sourceNodeId": "/search?tab=news&menu=drawer",
+      "target": "/search/input",
+      "targetNodeId": "/search/input",
+      "id": "trend.open",
+      "label": "查看趋势详情",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "news",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "trend",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=sports&menu=drawer",
+      "sourceNodeId": "/search?tab=sports&menu=drawer",
+      "target": "/search/input",
+      "targetNodeId": "/search/input",
+      "id": "trend.open",
+      "label": "查看趋势详情",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "sports",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "trend",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=entertainment&menu=drawer",
+      "sourceNodeId": "/search?tab=entertainment&menu=drawer",
+      "target": "/search/input",
+      "targetNodeId": "/search/input",
+      "id": "trend.open",
+      "label": "查看趋势详情",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "entertainment",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "trend",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/notifications?tab=verified",
+      "sourceNodeId": "/notifications?tab=verified",
+      "target": "/notifications?tab=all",
+      "targetNodeId": "/notifications?tab=all",
+      "id": "notifications.tab.toAll",
+      "label": "切换通知到全部",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "all"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/notifications",
+        "search": {
+          "tab": "verified"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "notifications_tab_all",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/notifications?tab=mentions",
+      "sourceNodeId": "/notifications?tab=mentions",
+      "target": "/notifications?tab=all",
+      "targetNodeId": "/notifications?tab=all",
+      "id": "notifications.tab.toAll",
+      "label": "切换通知到全部",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "all"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/notifications",
+        "search": {
+          "tab": "mentions"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "notifications_tab_all",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/notifications?tab=all",
+      "sourceNodeId": "/notifications?tab=all",
+      "target": "/notifications?tab=verified",
+      "targetNodeId": "/notifications?tab=verified",
+      "id": "notifications.tab.toVerified",
+      "label": "切换通知到已认证",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "verified"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/notifications",
+        "search": {
+          "tab": "all"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "notifications_tab_verified",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/notifications?tab=mentions",
+      "sourceNodeId": "/notifications?tab=mentions",
+      "target": "/notifications?tab=verified",
+      "targetNodeId": "/notifications?tab=verified",
+      "id": "notifications.tab.toVerified",
+      "label": "切换通知到已认证",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "verified"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/notifications",
+        "search": {
+          "tab": "mentions"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "notifications_tab_verified",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/notifications?tab=all",
+      "sourceNodeId": "/notifications?tab=all",
+      "target": "/notifications?tab=mentions",
+      "targetNodeId": "/notifications?tab=mentions",
+      "id": "notifications.tab.toMentions",
+      "label": "切换通知到提及",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "mentions"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/notifications",
+        "search": {
+          "tab": "all"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "notifications_tab_mentions",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/notifications?tab=verified",
+      "sourceNodeId": "/notifications?tab=verified",
+      "target": "/notifications?tab=mentions",
+      "targetNodeId": "/notifications?tab=mentions",
+      "id": "notifications.tab.toMentions",
+      "label": "切换通知到提及",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "mentions"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/notifications",
+        "search": {
+          "tab": "verified"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "notifications_tab_mentions",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/messages?tab=unread",
+      "sourceNodeId": "/messages?tab=unread",
+      "target": "/messages?tab=all",
+      "targetNodeId": "/messages?tab=all",
+      "id": "messages.tab.toAll",
+      "label": "切换消息到全部",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "all"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/messages",
+        "search": {
+          "tab": "unread"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "messages_tab_all",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/messages?tab=groups",
+      "sourceNodeId": "/messages?tab=groups",
+      "target": "/messages?tab=all",
+      "targetNodeId": "/messages?tab=all",
+      "id": "messages.tab.toAll",
+      "label": "切换消息到全部",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "all"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/messages",
+        "search": {
+          "tab": "groups"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "messages_tab_all",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/messages?tab=requests",
+      "sourceNodeId": "/messages?tab=requests",
+      "target": "/messages?tab=all",
+      "targetNodeId": "/messages?tab=all",
+      "id": "messages.tab.toAll",
+      "label": "切换消息到全部",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "all"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/messages",
+        "search": {
+          "tab": "requests"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "messages_tab_all",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/messages?tab=all",
+      "sourceNodeId": "/messages?tab=all",
+      "target": "/messages?tab=unread",
+      "targetNodeId": "/messages?tab=unread",
+      "id": "messages.tab.toUnread",
+      "label": "切换消息到未读",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "unread"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/messages",
+        "search": {
+          "tab": "all"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "messages_tab_unread",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/messages?tab=groups",
+      "sourceNodeId": "/messages?tab=groups",
+      "target": "/messages?tab=unread",
+      "targetNodeId": "/messages?tab=unread",
+      "id": "messages.tab.toUnread",
+      "label": "切换消息到未读",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "unread"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/messages",
+        "search": {
+          "tab": "groups"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "messages_tab_unread",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/messages?tab=requests",
+      "sourceNodeId": "/messages?tab=requests",
+      "target": "/messages?tab=unread",
+      "targetNodeId": "/messages?tab=unread",
+      "id": "messages.tab.toUnread",
+      "label": "切换消息到未读",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "unread"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/messages",
+        "search": {
+          "tab": "requests"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "messages_tab_unread",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/messages?tab=all",
+      "sourceNodeId": "/messages?tab=all",
+      "target": "/messages?tab=groups",
+      "targetNodeId": "/messages?tab=groups",
+      "id": "messages.tab.toGroups",
+      "label": "切换消息到群组",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "groups"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/messages",
+        "search": {
+          "tab": "all"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "messages_tab_groups",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/messages?tab=unread",
+      "sourceNodeId": "/messages?tab=unread",
+      "target": "/messages?tab=groups",
+      "targetNodeId": "/messages?tab=groups",
+      "id": "messages.tab.toGroups",
+      "label": "切换消息到群组",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "groups"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/messages",
+        "search": {
+          "tab": "unread"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "messages_tab_groups",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/messages?tab=requests",
+      "sourceNodeId": "/messages?tab=requests",
+      "target": "/messages?tab=groups",
+      "targetNodeId": "/messages?tab=groups",
+      "id": "messages.tab.toGroups",
+      "label": "切换消息到群组",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "groups"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/messages",
+        "search": {
+          "tab": "requests"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "messages_tab_groups",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/messages?tab=all",
+      "sourceNodeId": "/messages?tab=all",
+      "target": "/messages?tab=requests",
+      "targetNodeId": "/messages?tab=requests",
+      "id": "messages.tab.toRequests",
+      "label": "切换消息到请求",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "requests"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/messages",
+        "search": {
+          "tab": "all"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "messages_tab_requests",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/messages?tab=unread",
+      "sourceNodeId": "/messages?tab=unread",
+      "target": "/messages?tab=requests",
+      "targetNodeId": "/messages?tab=requests",
+      "id": "messages.tab.toRequests",
+      "label": "切换消息到请求",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "requests"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/messages",
+        "search": {
+          "tab": "unread"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "messages_tab_requests",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/messages?tab=groups",
+      "sourceNodeId": "/messages?tab=groups",
+      "target": "/messages?tab=requests",
+      "targetNodeId": "/messages?tab=requests",
+      "id": "messages.tab.toRequests",
+      "label": "切换消息到请求",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "requests"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/messages",
+        "search": {
+          "tab": "groups"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "messages_tab_requests",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/?tab=foryou",
+      "sourceNodeId": "/?tab=foryou",
+      "target": "/profile",
+      "targetNodeId": "/profile",
+      "id": "profile.open",
+      "label": "打开个人主页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/",
+        "search": {
+          "tab": "foryou"
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "avatar",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/?tab=following",
+      "sourceNodeId": "/?tab=following",
+      "target": "/profile",
+      "targetNodeId": "/profile",
+      "id": "profile.open",
+      "label": "打开个人主页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/",
+        "search": {
+          "tab": "following"
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "avatar",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/?tab=foryou&menu=drawer",
+      "sourceNodeId": "/?tab=foryou&menu=drawer",
+      "target": "/profile",
+      "targetNodeId": "/profile",
+      "id": "profile.open",
+      "label": "打开个人主页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/",
+        "search": {
+          "tab": "foryou",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "avatar",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/?tab=following&menu=drawer",
+      "sourceNodeId": "/?tab=following&menu=drawer",
+      "target": "/profile",
+      "targetNodeId": "/profile",
+      "id": "profile.open",
+      "label": "打开个人主页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/",
+        "search": {
+          "tab": "following",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "avatar",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=foryou",
+      "sourceNodeId": "/search?tab=foryou",
+      "target": "/profile",
+      "targetNodeId": "/profile",
+      "id": "profile.open",
+      "label": "打开个人主页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "foryou"
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "avatar",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=trending",
+      "sourceNodeId": "/search?tab=trending",
+      "target": "/profile",
+      "targetNodeId": "/profile",
+      "id": "profile.open",
+      "label": "打开个人主页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "trending"
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "avatar",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=news",
+      "sourceNodeId": "/search?tab=news",
+      "target": "/profile",
+      "targetNodeId": "/profile",
+      "id": "profile.open",
+      "label": "打开个人主页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "news"
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "avatar",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=sports",
+      "sourceNodeId": "/search?tab=sports",
+      "target": "/profile",
+      "targetNodeId": "/profile",
+      "id": "profile.open",
+      "label": "打开个人主页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "sports"
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "avatar",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=entertainment",
+      "sourceNodeId": "/search?tab=entertainment",
+      "target": "/profile",
+      "targetNodeId": "/profile",
+      "id": "profile.open",
+      "label": "打开个人主页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "entertainment"
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "avatar",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=foryou&menu=drawer",
+      "sourceNodeId": "/search?tab=foryou&menu=drawer",
+      "target": "/profile",
+      "targetNodeId": "/profile",
+      "id": "profile.open",
+      "label": "打开个人主页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "foryou",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "avatar",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=trending&menu=drawer",
+      "sourceNodeId": "/search?tab=trending&menu=drawer",
+      "target": "/profile",
+      "targetNodeId": "/profile",
+      "id": "profile.open",
+      "label": "打开个人主页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "trending",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "avatar",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=news&menu=drawer",
+      "sourceNodeId": "/search?tab=news&menu=drawer",
+      "target": "/profile",
+      "targetNodeId": "/profile",
+      "id": "profile.open",
+      "label": "打开个人主页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "news",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "avatar",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=sports&menu=drawer",
+      "sourceNodeId": "/search?tab=sports&menu=drawer",
+      "target": "/profile",
+      "targetNodeId": "/profile",
+      "id": "profile.open",
+      "label": "打开个人主页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "sports",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "avatar",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=entertainment&menu=drawer",
+      "sourceNodeId": "/search?tab=entertainment&menu=drawer",
+      "target": "/profile",
+      "targetNodeId": "/profile",
+      "id": "profile.open",
+      "label": "打开个人主页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "entertainment",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "avatar",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/grok",
+      "sourceNodeId": "/grok",
+      "target": "/profile",
+      "targetNodeId": "/profile",
+      "id": "profile.open",
+      "label": "打开个人主页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "avatar",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/notifications?tab=all",
+      "sourceNodeId": "/notifications?tab=all",
+      "target": "/profile",
+      "targetNodeId": "/profile",
+      "id": "profile.open",
+      "label": "打开个人主页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/notifications",
+        "search": {
+          "tab": "all"
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "avatar",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/notifications?tab=verified",
+      "sourceNodeId": "/notifications?tab=verified",
+      "target": "/profile",
+      "targetNodeId": "/profile",
+      "id": "profile.open",
+      "label": "打开个人主页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/notifications",
+        "search": {
+          "tab": "verified"
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "avatar",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/notifications?tab=mentions",
+      "sourceNodeId": "/notifications?tab=mentions",
+      "target": "/profile",
+      "targetNodeId": "/profile",
+      "id": "profile.open",
+      "label": "打开个人主页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/notifications",
+        "search": {
+          "tab": "mentions"
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "avatar",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/messages?tab=all",
+      "sourceNodeId": "/messages?tab=all",
+      "target": "/profile",
+      "targetNodeId": "/profile",
+      "id": "profile.open",
+      "label": "打开个人主页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/messages",
+        "search": {
+          "tab": "all"
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "avatar",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/messages?tab=unread",
+      "sourceNodeId": "/messages?tab=unread",
+      "target": "/profile",
+      "targetNodeId": "/profile",
+      "id": "profile.open",
+      "label": "打开个人主页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/messages",
+        "search": {
+          "tab": "unread"
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "avatar",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/messages?tab=groups",
+      "sourceNodeId": "/messages?tab=groups",
+      "target": "/profile",
+      "targetNodeId": "/profile",
+      "id": "profile.open",
+      "label": "打开个人主页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/messages",
+        "search": {
+          "tab": "groups"
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "avatar",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/messages?tab=requests",
+      "sourceNodeId": "/messages?tab=requests",
+      "target": "/profile",
+      "targetNodeId": "/profile",
+      "id": "profile.open",
+      "label": "打开个人主页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/messages",
+        "search": {
+          "tab": "requests"
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "avatar",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/?tab=foryou",
+      "sourceNodeId": "/?tab=foryou",
+      "target": "/compose",
+      "targetNodeId": "/compose",
+      "id": "compose.open",
+      "label": "打开发布页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/",
+        "search": {
+          "tab": "foryou"
+        }
+      },
+      "uiMeta": {
+        "placement": "fab",
+        "icon": "compose",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/?tab=following",
+      "sourceNodeId": "/?tab=following",
+      "target": "/compose",
+      "targetNodeId": "/compose",
+      "id": "compose.open",
+      "label": "打开发布页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/",
+        "search": {
+          "tab": "following"
+        }
+      },
+      "uiMeta": {
+        "placement": "fab",
+        "icon": "compose",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/?tab=foryou&menu=drawer",
+      "sourceNodeId": "/?tab=foryou&menu=drawer",
+      "target": "/compose",
+      "targetNodeId": "/compose",
+      "id": "compose.open",
+      "label": "打开发布页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/",
+        "search": {
+          "tab": "foryou",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "fab",
+        "icon": "compose",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/?tab=following&menu=drawer",
+      "sourceNodeId": "/?tab=following&menu=drawer",
+      "target": "/compose",
+      "targetNodeId": "/compose",
+      "id": "compose.open",
+      "label": "打开发布页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/",
+        "search": {
+          "tab": "following",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "fab",
+        "icon": "compose",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=foryou",
+      "sourceNodeId": "/search?tab=foryou",
+      "target": "/compose",
+      "targetNodeId": "/compose",
+      "id": "compose.open",
+      "label": "打开发布页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "foryou"
+        }
+      },
+      "uiMeta": {
+        "placement": "fab",
+        "icon": "compose",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=trending",
+      "sourceNodeId": "/search?tab=trending",
+      "target": "/compose",
+      "targetNodeId": "/compose",
+      "id": "compose.open",
+      "label": "打开发布页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "trending"
+        }
+      },
+      "uiMeta": {
+        "placement": "fab",
+        "icon": "compose",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=news",
+      "sourceNodeId": "/search?tab=news",
+      "target": "/compose",
+      "targetNodeId": "/compose",
+      "id": "compose.open",
+      "label": "打开发布页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "news"
+        }
+      },
+      "uiMeta": {
+        "placement": "fab",
+        "icon": "compose",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=sports",
+      "sourceNodeId": "/search?tab=sports",
+      "target": "/compose",
+      "targetNodeId": "/compose",
+      "id": "compose.open",
+      "label": "打开发布页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "sports"
+        }
+      },
+      "uiMeta": {
+        "placement": "fab",
+        "icon": "compose",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=entertainment",
+      "sourceNodeId": "/search?tab=entertainment",
+      "target": "/compose",
+      "targetNodeId": "/compose",
+      "id": "compose.open",
+      "label": "打开发布页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "entertainment"
+        }
+      },
+      "uiMeta": {
+        "placement": "fab",
+        "icon": "compose",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=foryou&menu=drawer",
+      "sourceNodeId": "/search?tab=foryou&menu=drawer",
+      "target": "/compose",
+      "targetNodeId": "/compose",
+      "id": "compose.open",
+      "label": "打开发布页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "foryou",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "fab",
+        "icon": "compose",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=trending&menu=drawer",
+      "sourceNodeId": "/search?tab=trending&menu=drawer",
+      "target": "/compose",
+      "targetNodeId": "/compose",
+      "id": "compose.open",
+      "label": "打开发布页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "trending",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "fab",
+        "icon": "compose",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=news&menu=drawer",
+      "sourceNodeId": "/search?tab=news&menu=drawer",
+      "target": "/compose",
+      "targetNodeId": "/compose",
+      "id": "compose.open",
+      "label": "打开发布页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "news",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "fab",
+        "icon": "compose",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=sports&menu=drawer",
+      "sourceNodeId": "/search?tab=sports&menu=drawer",
+      "target": "/compose",
+      "targetNodeId": "/compose",
+      "id": "compose.open",
+      "label": "打开发布页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "sports",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "fab",
+        "icon": "compose",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search?tab=entertainment&menu=drawer",
+      "sourceNodeId": "/search?tab=entertainment&menu=drawer",
+      "target": "/compose",
+      "targetNodeId": "/compose",
+      "id": "compose.open",
+      "label": "打开发布页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/search",
+        "search": {
+          "tab": "entertainment",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "fab",
+        "icon": "compose",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search/input",
+      "sourceNodeId": "/search/input",
+      "target": "/compose",
+      "targetNodeId": "/compose",
+      "id": "compose.open",
+      "label": "打开发布页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "fab",
+        "icon": "compose",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/status/:id",
+      "sourceNodeId": "/status/:id",
+      "target": "/compose",
+      "targetNodeId": "/compose",
+      "id": "compose.open",
+      "label": "打开发布页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "fab",
+        "icon": "compose",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/profile",
+      "sourceNodeId": "/profile",
+      "target": "/compose",
+      "targetNodeId": "/compose",
+      "id": "compose.open",
+      "label": "打开发布页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "fab",
+        "icon": "compose",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/user/:id",
+      "sourceNodeId": "/user/:id",
+      "target": "/compose",
+      "targetNodeId": "/compose",
+      "id": "compose.open",
+      "label": "打开发布页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "fab",
+        "icon": "compose",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/messages?tab=all",
+      "sourceNodeId": "/messages?tab=all",
+      "target": "/messages/:id",
+      "targetNodeId": "/messages/:id",
+      "id": "messages.conversation.open",
+      "label": "打开对话详情",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {
+        "id": "string"
+      },
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/messages",
+        "search": {
+          "tab": "all"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "conversation_item",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/messages?tab=unread",
+      "sourceNodeId": "/messages?tab=unread",
+      "target": "/messages/:id",
+      "targetNodeId": "/messages/:id",
+      "id": "messages.conversation.open",
+      "label": "打开对话详情",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {
+        "id": "string"
+      },
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/messages",
+        "search": {
+          "tab": "unread"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "conversation_item",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/messages?tab=groups",
+      "sourceNodeId": "/messages?tab=groups",
+      "target": "/messages/:id",
+      "targetNodeId": "/messages/:id",
+      "id": "messages.conversation.open",
+      "label": "打开对话详情",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {
+        "id": "string"
+      },
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/messages",
+        "search": {
+          "tab": "groups"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "conversation_item",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/messages?tab=requests",
+      "sourceNodeId": "/messages?tab=requests",
+      "target": "/messages/:id",
+      "targetNodeId": "/messages/:id",
+      "id": "messages.conversation.open",
+      "label": "打开对话详情",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {
+        "id": "string"
+      },
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/messages",
+        "search": {
+          "tab": "requests"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "conversation_item",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/status/:id",
+      "sourceNodeId": "/status/:id",
+      "target": "/status/:id",
+      "targetNodeId": "/status/:id",
+      "id": "status.open",
+      "label": "查看帖子详情",
+      "type": "state",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {
+        "id": "string"
+      },
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "post",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/status/:id/activity?tab=quotes",
+      "sourceNodeId": "/status/:id/activity?tab=quotes",
+      "target": "/status/:id",
+      "targetNodeId": "/status/:id",
+      "id": "status.open",
+      "label": "查看帖子详情",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {
+        "id": "string"
+      },
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/status/:id/activity",
+        "search": {
+          "tab": "quotes"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "post",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/status/:id/activity?tab=retweets",
+      "sourceNodeId": "/status/:id/activity?tab=retweets",
+      "target": "/status/:id",
+      "targetNodeId": "/status/:id",
+      "id": "status.open",
+      "label": "查看帖子详情",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {
+        "id": "string"
+      },
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/status/:id/activity",
+        "search": {
+          "tab": "retweets"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "post",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/status/:id",
+      "sourceNodeId": "/status/:id",
+      "target": "/status/:id/activity?tab=quotes",
+      "targetNodeId": "/status/:id/activity?tab=quotes",
+      "id": "status.activity.open",
+      "label": "查看帖子活动",
+      "type": "navigation",
+      "mode": "push",
+      "search": {
+        "tab": "quotes"
+      },
+      "searchParams": {},
+      "params": {
+        "id": "string"
+      },
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "chart",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/?tab=foryou",
+      "sourceNodeId": "/?tab=foryou",
+      "target": "/status/:id/activity?tab=quotes",
+      "targetNodeId": "/status/:id/activity?tab=quotes",
+      "id": "status.activity.open",
+      "label": "查看帖子活动",
+      "type": "navigation",
+      "mode": "push",
+      "search": {
+        "tab": "quotes"
+      },
+      "searchParams": {},
+      "params": {
+        "id": "string"
+      },
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/",
+        "search": {
+          "tab": "foryou"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "chart",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/?tab=following",
+      "sourceNodeId": "/?tab=following",
+      "target": "/status/:id/activity?tab=quotes",
+      "targetNodeId": "/status/:id/activity?tab=quotes",
+      "id": "status.activity.open",
+      "label": "查看帖子活动",
+      "type": "navigation",
+      "mode": "push",
+      "search": {
+        "tab": "quotes"
+      },
+      "searchParams": {},
+      "params": {
+        "id": "string"
+      },
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/",
+        "search": {
+          "tab": "following"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "chart",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/?tab=foryou&menu=drawer",
+      "sourceNodeId": "/?tab=foryou&menu=drawer",
+      "target": "/status/:id/activity?tab=quotes",
+      "targetNodeId": "/status/:id/activity?tab=quotes",
+      "id": "status.activity.open",
+      "label": "查看帖子活动",
+      "type": "navigation",
+      "mode": "push",
+      "search": {
+        "tab": "quotes"
+      },
+      "searchParams": {},
+      "params": {
+        "id": "string"
+      },
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/",
+        "search": {
+          "tab": "foryou",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "chart",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/?tab=following&menu=drawer",
+      "sourceNodeId": "/?tab=following&menu=drawer",
+      "target": "/status/:id/activity?tab=quotes",
+      "targetNodeId": "/status/:id/activity?tab=quotes",
+      "id": "status.activity.open",
+      "label": "查看帖子活动",
+      "type": "navigation",
+      "mode": "push",
+      "search": {
+        "tab": "quotes"
+      },
+      "searchParams": {},
+      "params": {
+        "id": "string"
+      },
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/",
+        "search": {
+          "tab": "following",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "chart",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search/input",
+      "sourceNodeId": "/search/input",
+      "target": "/status/:id/activity?tab=quotes",
+      "targetNodeId": "/status/:id/activity?tab=quotes",
+      "id": "status.activity.open",
+      "label": "查看帖子活动",
+      "type": "navigation",
+      "mode": "push",
+      "search": {
+        "tab": "quotes"
+      },
+      "searchParams": {},
+      "params": {
+        "id": "string"
+      },
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "chart",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/profile",
+      "sourceNodeId": "/profile",
+      "target": "/status/:id/activity?tab=quotes",
+      "targetNodeId": "/status/:id/activity?tab=quotes",
+      "id": "status.activity.open",
+      "label": "查看帖子活动",
+      "type": "navigation",
+      "mode": "push",
+      "search": {
+        "tab": "quotes"
+      },
+      "searchParams": {},
+      "params": {
+        "id": "string"
+      },
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "chart",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/user/:id",
+      "sourceNodeId": "/user/:id",
+      "target": "/status/:id/activity?tab=quotes",
+      "targetNodeId": "/status/:id/activity?tab=quotes",
+      "id": "status.activity.open",
+      "label": "查看帖子活动",
+      "type": "navigation",
+      "mode": "push",
+      "search": {
+        "tab": "quotes"
+      },
+      "searchParams": {},
+      "params": {
+        "id": "string"
+      },
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "chart",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "*",
+      "target": "/settings",
+      "targetNodeId": "/settings",
+      "id": "settings.open",
+      "label": "打开设置",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "drawer",
+        "icon": "settings",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/settings",
+      "sourceNodeId": "/settings",
+      "target": "/settings/account",
+      "targetNodeId": "/settings/account",
+      "id": "settings.account.open",
+      "label": "打开账号设置",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "settings_account",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/settings/account",
+      "sourceNodeId": "/settings/account",
+      "target": "/settings/account/info",
+      "targetNodeId": "/settings/account/info",
+      "id": "settings.account.info.open",
+      "label": "打开账号信息",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "settings_account_info",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/settings",
+      "sourceNodeId": "/settings",
+      "target": "/settings/privacy",
+      "targetNodeId": "/settings/privacy",
+      "id": "settings.privacy.open",
+      "label": "打开隐私和安全",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "settings_privacy",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/settings/privacy",
+      "sourceNodeId": "/settings/privacy",
+      "target": "/settings/privacy/audience",
+      "targetNodeId": "/settings/privacy/audience",
+      "id": "settings.privacy.audience.open",
+      "label": "打开受众和圈人设置",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "settings_privacy_audience",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/settings/privacy",
+      "sourceNodeId": "/settings/privacy",
+      "target": "/settings/privacy/your-posts",
+      "targetNodeId": "/settings/privacy/your-posts",
+      "id": "settings.privacy.yourPosts.open",
+      "label": "打开你的帖子设置",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "settings_privacy_yourPosts",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/settings/privacy",
+      "sourceNodeId": "/settings/privacy",
+      "target": "/settings/privacy/chat",
+      "targetNodeId": "/settings/privacy/chat",
+      "id": "settings.privacy.chat.open",
+      "label": "打开聊天隐私设置",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "settings_privacy_chat",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/settings/privacy",
+      "sourceNodeId": "/settings/privacy",
+      "target": "/settings/privacy/space",
+      "targetNodeId": "/settings/privacy/space",
+      "id": "settings.privacy.space.open",
+      "label": "打开空间隐私设置",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "settings_privacy_space",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/settings/privacy",
+      "sourceNodeId": "/settings/privacy",
+      "target": "/settings/privacy/find-contacts",
+      "targetNodeId": "/settings/privacy/find-contacts",
+      "id": "settings.privacy.findContacts.open",
+      "label": "打开联系人隐私设置",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "settings_privacy_findContacts",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/settings/privacy",
+      "sourceNodeId": "/settings/privacy",
+      "target": "/settings/privacy/about-account",
+      "targetNodeId": "/settings/privacy/about-account",
+      "id": "settings.privacy.aboutAccount.open",
+      "label": "打开关于你的账号",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "settings_privacy_aboutAccount",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/settings/privacy",
+      "sourceNodeId": "/settings/privacy",
+      "target": "/settings/privacy/seen",
+      "targetNodeId": "/settings/privacy/seen",
+      "id": "settings.seen.open",
+      "label": "打开你看到的内容设置",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "settings_seen",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/settings/privacy/seen",
+      "sourceNodeId": "/settings/privacy/seen",
+      "target": "/settings/privacy/seen/explore",
+      "targetNodeId": "/settings/privacy/seen/explore",
+      "id": "settings.seen.explore.open",
+      "label": "打开探索设置",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "settings_seen_explore",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/settings",
+      "sourceNodeId": "/settings",
+      "target": "/settings/notifications",
+      "targetNodeId": "/settings/notifications",
+      "id": "settings.notifications.open",
+      "label": "打开通知设置",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "settings_notifications",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/settings/notifications",
+      "sourceNodeId": "/settings/notifications",
+      "target": "/settings/notifications/preferences",
+      "targetNodeId": "/settings/notifications/preferences",
+      "id": "settings.notifications.preferences.open",
+      "label": "打开通知偏好设置",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "settings_notifications_preferences",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/settings/notifications/preferences",
+      "sourceNodeId": "/settings/notifications/preferences",
+      "target": "/settings/notifications/preferences/push",
+      "targetNodeId": "/settings/notifications/preferences/push",
+      "id": "settings.notifications.preferences.push.open",
+      "label": "打开推送通知设置",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "settings_notifications_push",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/settings/notifications",
+      "sourceNodeId": "/settings/notifications",
+      "target": "/settings/notifications/filter",
+      "targetNodeId": "/settings/notifications/filter",
+      "id": "settings.notifications.filter.open",
+      "label": "打开通知过滤器",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "settings_notifications_filter",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/settings",
+      "sourceNodeId": "/settings",
+      "target": "/settings/timeline",
+      "targetNodeId": "/settings/timeline",
+      "id": "settings.timeline.open",
+      "label": "打开时间线设置",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "settings_timeline",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/settings/timeline",
+      "sourceNodeId": "/settings/timeline",
+      "target": "/settings/timeline/interactions",
+      "targetNodeId": "/settings/timeline/interactions",
+      "id": "settings.timeline.interactions.open",
+      "label": "打开帖子互动设置",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "settings_timeline_interactions",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/settings/timeline",
+      "sourceNodeId": "/settings/timeline",
+      "target": "/settings/timeline/home-tags",
+      "targetNodeId": "/settings/timeline/home-tags",
+      "id": "settings.timeline.homeTags.open",
+      "label": "打开\"主页\"标签设置",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "settings_timeline_homeTags",
+        "gesture": "tap"
+      }
+    }
+  ]
+}

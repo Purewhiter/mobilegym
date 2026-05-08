@@ -1,0 +1,13 @@
+# 忽略采集的数据文件（避免提交到仓库）
+redditConfig_generated.ts
+
+# Python 缓存
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# 环境配置（如果使用虚拟环境）
+venv/
+env/
+.venv/

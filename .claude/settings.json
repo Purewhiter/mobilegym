@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(*)",
+      "Read(*)",
+      "Edit(*)",
+      "Write(*)",
+      "mcp__mobile-gym__*",
+      "mcp__adb-controller__*",
+      "mcp__zotero-mcp__*",
+      "WebFetch(domain:zustand.docs.pmnd.rs)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)"
+    ]
+  }
+}

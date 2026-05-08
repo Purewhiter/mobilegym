@@ -1,0 +1,51 @@
+{
+  "savedCities": [
+    {
+      "id": "beijing",
+      "name": "\u5317\u4eac\u5e02",
+      "lon": 116.4074,
+      "lat": 39.9042
+    },
+    {
+      "id": "guangzhou",
+      "name": "\u5e7f\u5dde\u5e02",
+      "lon": 113.2644,
+      "lat": 23.1291
+    },
+    {
+      "id": "shenzhen",
+      "name": "\u6df1\u5733\u5e02",
+      "lon": 114.0579,
+      "lat": 22.5431
+    },
+    {
+      "id": "hangzhou",
+      "name": "\u676d\u5dde\u5e02",
+      "lon": 120.1551,
+      "lat": 30.2741
+    },
+    {
+      "id": "chengdu",
+      "name": "\u6210\u90fd\u5e02",
+      "lon": 104.0665,
+      "lat": 30.5728
+    },
+    {
+      "id": "shanghai",
+      "name": "\u4e0a\u6d77\u5e02",
+      "lon": 121.4737,
+      "lat": 31.2304
+    }
+  ],
+  "settings": {
+    "morningEveningAlert": true,
+    "warningAlert": true,
+    "abnormalWeatherAlert": true,
+    "nightDnd": false,
+    "tempUnit": "celsius",
+    "windUnit": "beaufort",
+    "pressureUnit": "hpa",
+    "nightAutoUpdate": true,
+    "revokeConsent": false
+  }
+}

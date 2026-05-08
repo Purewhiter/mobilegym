@@ -1,0 +1,396 @@
+{
+  "app": "compass",
+  "appDir": "apps/Compass",
+  "mode": "data",
+  "dataFile": "data/index.ts",
+  "reachability": {
+    "entryNodes": [
+      "/"
+    ],
+    "reachableNodeCount": 6,
+    "reachableEdgeCount": 10,
+    "unreachableNodeCount": 0,
+    "unreachableEdgeCount": 0,
+    "unreachableNodeIds": []
+  },
+  "routeCount": 6,
+  "transitionCount": 6,
+  "nodes": [
+    {
+      "id": "/",
+      "routePath": "/",
+      "uiStateId": "compass.base",
+      "component": "CompassPage",
+      "entryPoint": true,
+      "entry": {
+        "kind": "home",
+        "home": true,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [],
+      "description": "指南针-主界面",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/?menu=true",
+      "routePath": "/",
+      "uiStateId": "compass.menu",
+      "component": "CompassPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "home",
+        "home": true,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [],
+      "description": "指南针-更多菜单",
+      "search": {
+        "menu": "true"
+      },
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/level",
+      "routePath": "/level",
+      "uiStateId": "level.base",
+      "component": "LevelPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [],
+      "description": "水平仪-主界面",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/level?menu=true",
+      "routePath": "/level",
+      "uiStateId": "level.menu",
+      "component": "LevelPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [],
+      "description": "水平仪-更多菜单",
+      "search": {
+        "menu": "true"
+      },
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/permissions",
+      "routePath": "/permissions",
+      "uiStateId": "permissions.base",
+      "component": "PermissionsPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [],
+      "description": "权限说明页",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/privacy",
+      "routePath": "/privacy",
+      "uiStateId": "privacy.base",
+      "component": "PrivacyPolicyPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [],
+      "description": "隐私政策（内置页/占位）",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    }
+  ],
+  "edges": [
+    {
+      "source": "/level",
+      "sourceNodeId": "/level",
+      "target": "/",
+      "targetNodeId": "/",
+      "id": "tab.compass",
+      "label": "切换到指南针",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {
+        "menu": null
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/level",
+        "search": {
+          "menu": null
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "tab_compass",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/level?menu=true",
+      "sourceNodeId": "/level?menu=true",
+      "target": "/",
+      "targetNodeId": "/",
+      "id": "tab.compass",
+      "label": "切换到指南针",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {
+        "menu": null
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/level",
+        "search": {
+          "menu": "true"
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "tab_compass",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/",
+      "sourceNodeId": "/",
+      "target": "/level",
+      "targetNodeId": "/level",
+      "id": "tab.level",
+      "label": "切换到水平仪",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {
+        "menu": null
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/",
+        "search": {
+          "menu": null
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "tab_level",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/?menu=true",
+      "sourceNodeId": "/?menu=true",
+      "target": "/level",
+      "targetNodeId": "/level",
+      "id": "tab.level",
+      "label": "切换到水平仪",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {
+        "menu": null
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/",
+        "search": {
+          "menu": "true"
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "tab_level",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/",
+      "sourceNodeId": "/",
+      "target": "/?menu=true",
+      "targetNodeId": "/?menu=true",
+      "id": "menu.open.compass",
+      "label": "打开更多菜单",
+      "type": "state",
+      "mode": "push",
+      "search": {
+        "menu": "true"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/",
+        "search": {
+          "menu": null
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "more",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/level",
+      "sourceNodeId": "/level",
+      "target": "/level?menu=true",
+      "targetNodeId": "/level?menu=true",
+      "id": "menu.open.level",
+      "label": "打开更多菜单",
+      "type": "state",
+      "mode": "push",
+      "search": {
+        "menu": "true"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/level",
+        "search": {
+          "menu": null
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "more",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/?menu=true",
+      "sourceNodeId": "/?menu=true",
+      "target": "/privacy",
+      "targetNodeId": "/privacy",
+      "id": "privacy.open",
+      "label": "查看隐私政策",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/",
+        "search": {
+          "menu": "true"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "privacy",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/level?menu=true",
+      "sourceNodeId": "/level?menu=true",
+      "target": "/privacy",
+      "targetNodeId": "/privacy",
+      "id": "privacy.open",
+      "label": "查看隐私政策",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/level",
+        "search": {
+          "menu": "true"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "privacy",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/?menu=true",
+      "sourceNodeId": "/?menu=true",
+      "target": "/permissions",
+      "targetNodeId": "/permissions",
+      "id": "permissions.open",
+      "label": "打开权限说明",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/",
+        "search": {
+          "menu": "true"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "permissions",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/level?menu=true",
+      "sourceNodeId": "/level?menu=true",
+      "target": "/permissions",
+      "targetNodeId": "/permissions",
+      "id": "permissions.open",
+      "label": "打开权限说明",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/level",
+        "search": {
+          "menu": "true"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "permissions",
+        "gesture": "tap"
+      }
+    }
+  ]
+}

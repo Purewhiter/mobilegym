@@ -1,0 +1,76 @@
+{
+  "sampleNotes": [
+    {
+      "id": "xn_1",
+      "title": "购物清单",
+      "content": "牛奶\n鸡蛋\n洗衣液",
+      "updatedAt": "2026-02-04T18:25:00",
+      "folderId": "unfiled"
+    },
+    {
+      "id": "xn_2",
+      "title": "客户来电记录",
+      "content": "合同寄出\n下周回电",
+      "updatedAt": "2026-02-04T18:06:00",
+      "folderId": "call"
+    },
+    {
+      "id": "xn_3",
+      "title": "杭州旅行计划",
+      "content": "西湖\n灵隐寺\n带充电器",
+      "updatedAt": "2025-08-18T12:00:00",
+      "folderId": "unfiled"
+    },
+    {
+      "id": "xn_4",
+      "title": "租房待办",
+      "content": "联系中介\n比较租金",
+      "updatedAt": "2025-05-11T12:00:00",
+      "folderId": "unfiled"
+    },
+    {
+      "id": "xn_5",
+      "title": "阅读摘抄",
+      "content": "活着\n喜欢的句子",
+      "updatedAt": "2025-03-17T12:00:00",
+      "folderId": "unfiled"
+    }
+  ],
+  "sampleTodos": [
+    {
+      "id": "xt_1",
+      "text": "明天去车站",
+      "completed": false,
+      "updatedAt": "2026-02-08T13:50:00"
+    },
+    {
+      "id": "xt_2",
+      "text": "给妈妈打电话",
+      "completed": false,
+      "updatedAt": "2026-02-08T09:15:00"
+    },
+    {
+      "id": "xt_3",
+      "text": "提交周报",
+      "completed": true,
+      "updatedAt": "2026-02-07T18:20:00"
+    },
+    {
+      "id": "xt_4",
+      "text": "预约牙医",
+      "completed": false,
+      "updatedAt": "2026-02-07T11:00:00"
+    },
+    {
+      "id": "xt_5",
+      "text": "整理会议纪要",
+      "completed": true,
+      "updatedAt": "2026-02-06T16:40:00"
+    }
+  ],
+  "settings": {
+    "notesViewMode": "grid",
+    "showWordCount": true
+  }
+}
+

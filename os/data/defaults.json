@@ -1,0 +1,149 @@
+{
+  "build": {
+    "brand": "Xiaomi",
+    "marketName": "小米 15 Ultra",
+    "model": "Xiaomi 15 Ultra",
+    "manufacturer": "Xiaomi Communications Co., Ltd.",
+
+    "processor": "Snapdragon 8 Elite",
+    "cpuCores": 8,
+    "cpuMaxFreq": "4.32 GHz",
+    "gpu": "Adreno 830",
+
+    "ramTotal": "16 GB",
+    "storageTotal": "512 GB",
+
+    "screenSize": "6.73 英寸",
+    "screenResolution": "3200 × 1440",
+    "screenDensity": 522,
+    "refreshRate": 120,
+    "hdrSupport": true,
+
+    "rearCamera": "50MP + 50MP + 200MP",
+    "frontCamera": "32MP",
+
+    "batteryCapacity": "5000 mAh",
+    "chargingSpeed": "90W 有线 / 50W 无线",
+
+    "androidVersion": "15",
+    "hyperOSVersion": "2.1.0",
+    "securityPatch": "2026-01-05",
+    "buildNumber": "V816.0.9.0.VNACNXM",
+    "kernelVersion": "6.1.75-android15",
+    "basebandVersion": "MPSS.AB.1.0-00123",
+
+    "imei1": "86*************1",
+    "imei2": "86*************2",
+    "serialNumber": "HX2***********B",
+    "macAddress": "A4:CF:12:**:**:**",
+    "bluetoothMac": "A4:CF:12:**:**:**"
+  },
+
+  "telephony": {
+    "sims": [
+      {
+        "slot": 1,
+        "carrier": "中国移动",
+        "phoneNumber": "138****8888",
+        "iccid": "8986***************",
+        "networkType": "5G SA",
+        "dataRoaming": false,
+        "voLTE": true
+      },
+      {
+        "slot": 2,
+        "carrier": "中国联通",
+        "phoneNumber": "156****6666",
+        "iccid": "8986***************",
+        "networkType": "4G",
+        "dataRoaming": false,
+        "voLTE": true
+      }
+    ],
+    "defaultDataSim": 1
+  },
+
+  "settings": {
+    "system": {
+      "brightness": 100,
+      "mediaVolume": 30,
+      "fontSizePct": 50,
+      "displaySizePct": 50,
+      "eyeComfortLevel": 60
+    },
+    "global": {
+      "wifiEnabled": true,
+      "mobileDataEnabled": true,
+      "bluetoothEnabled": true,
+      "airplaneModeEnabled": false,
+      "doNotDisturbEnabled": false,
+      "silentMode": false,
+      "flashlightEnabled": false,
+      "batterySaverEnabled": false,
+      "rotationLocked": true,
+      "locationEnabled": true,
+      "nfcEnabled": true,
+      "screenCastEnabled": false,
+      "autoBrightnessEnabled": true,
+      "eyeComfortEnabled": false,
+      "darkModeEnabled": false,
+      "language": "zh-Hans"
+    }
+  },
+
+  "hardware": {
+    "battery": {
+      "percent": 78,
+      "charging": false,
+      "fastCharging": false,
+      "chargingType": "usb",
+      "temperature": 31.2,
+      "voltage": 4.12,
+      "health": "good",
+      "technology": "Li-poly",
+      "cycleCount": 285,
+      "estimatedRemaining": "约 12 小时 30 分"
+    },
+    "cellular": {
+      "signalLevel": 4,
+      "mobileDataType": "4g",
+      "noSim": false
+    },
+    "wifi": {
+      "level": 4,
+      "connectedSsid": "Xiaomi_AX3",
+      "ipAddress": "192.168.31.105",
+      "macAddress": "A4:CF:12:**:**:**",
+      "linkSpeed": 866,
+      "frequency": 5180
+    },
+    "bluetooth": {
+      "name": "Xiaomi 15 Ultra"
+    },
+    "storage": {
+      "used": "317 GB"
+    },
+    "hotspot": {
+      "enabled": false,
+      "ssid": "Xiaomi 15 Ultra",
+      "password": "12345678"
+    },
+    "vpnEnabled": false,
+    "headsetConnected": false,
+    "alarmSet": false,
+    "nearbyWifi": [
+      { "ssid": "Xiaomi_AX3", "bssid": "A4:CF:12:11:22:33", "security": "WPA3", "signalLevel": 4, "frequency": 5180 },
+      { "ssid": "ChinaNet-5G-8F2A", "bssid": "D8:0D:17:44:55:66", "security": "WPA2", "signalLevel": 3, "frequency": 5220 },
+      { "ssid": "Starbucks_Free_WiFi", "bssid": "F4:1D:6B:77:88:99", "security": "OPEN", "signalLevel": 2, "frequency": 2437 },
+      { "ssid": "MiHome_2.4G", "bssid": "10:9A:DD:AA:BB:CC", "security": "WPA2", "signalLevel": 2, "frequency": 2437 },
+      { "ssid": "Neighbor-5G", "bssid": "58:EF:68:01:23:45", "security": "WPA2", "signalLevel": 1, "frequency": 5745 }
+    ],
+    "nearbyBluetooth": [
+      { "name": "Xiaomi Buds 4 Pro", "mac": "C8:7F:54:12:34:56", "type": "audio", "paired": true, "connected": true, "batteryLevel": 78 },
+      { "name": "小米手表", "mac": "E0:2B:67:AB:CD:EF", "type": "watch", "paired": true, "connected": false, "batteryLevel": 56 },
+      { "name": "JBL Flip 6", "mac": "7C:9A:1D:98:76:54", "type": "audio", "paired": false, "connected": false },
+      { "name": "蓝牙键盘", "mac": "18:65:90:01:02:03", "type": "peripheral", "paired": false, "connected": false, "pairable": false },
+      { "name": "Car Audio", "mac": "54:7B:9D:10:20:30", "type": "audio", "paired": false, "connected": false, "pairable": false }
+    ]
+  }
+}

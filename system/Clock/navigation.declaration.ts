@@ -1,0 +1,112 @@
+import type { NavigationDeclaration } from './navigation.types';
+
+const MAIN_SCROLL = [
+  { name: 'main', direction: 'vertical', description: '页面主内容区' },
+] as const;
+
+export const NAVIGATION_DECLARATION = {
+  app: 'clock',
+  routes: [
+    {
+      path: '/',
+      component: 'ClockRootRedirect',
+      params: {},
+      entryPoint: 'home',
+      scrollContainers: MAIN_SCROLL,
+      uiStates: [{ id: 'clock.root.base', search: {}, description: '时钟根路由' }],
+      queryParams: {},
+      description: '时钟根路由',
+    },
+    {
+      path: '/alarm',
+      component: 'AlarmPage',
+      params: {},
+      entryPoint: 'none',
+      scrollContainers: MAIN_SCROLL,
+      uiStates: [{ id: 'clock.alarm.base', search: {}, description: '闹钟页' }],
+      queryParams: {},
+      description: '闹钟页',
+    },
+    {
+      path: '/world',
+      component: 'WorldClockPage',
+      params: {},
+      entryPoint: 'none',
+      scrollContainers: MAIN_SCROLL,
+      uiStates: [{ id: 'clock.world.base', search: {}, description: '世界时钟页' }],
+      queryParams: {},
+      description: '世界时钟页',
+    },
+    {
+      path: '/stopwatch',
+      component: 'StopwatchPage',
+      params: {},
+      entryPoint: 'none',
+      scrollContainers: MAIN_SCROLL,
+      uiStates: [{ id: 'clock.stopwatch.base', search: {}, description: '秒表页' }],
+      queryParams: {},
+      description: '秒表页',
+    },
+    {
+      path: '/timer',
+      component: 'TimerPage',
+      params: {},
+      entryPoint: 'none',
+      scrollContainers: MAIN_SCROLL,
+      uiStates: [{ id: 'clock.timer.base', search: {}, description: '计时器页' }],
+      queryParams: {},
+      description: '计时器页',
+    },
+  ],
+  transitions: [
+    {
+      id: 'tab.world',
+      from: ['/', '/alarm', '/world', '/stopwatch', '/timer'],
+      to: '/world',
+      search: {},
+      searchParams: {},
+      mode: 'replace',
+      params: {},
+      label: '切换到世界时钟页',
+      ui: { placement: 'tabbar', icon: 'world', gesture: 'tap' },
+    },
+    {
+      id: 'tab.stopwatch',
+      from: ['/alarm', '/world', '/stopwatch', '/timer'],
+      to: '/stopwatch',
+      search: {},
+      searchParams: {},
+      mode: 'replace',
+      params: {},
+      label: '切换到秒表页',
+      ui: { placement: 'tabbar', icon: 'stopwatch', gesture: 'tap' },
+    },
+    {
+      id: 'tab.timer',
+      from: ['/alarm', '/world', '/stopwatch', '/timer'],
+      to: '/timer',
+      search: {},
+      searchParams: {},
+      mode: 'replace',
+      params: {},
+      label: '切换到计时器页',
+      ui: { placement: 'tabbar', icon: 'timer', gesture: 'tap' },
+    },
+    {
+      id: 'tab.alarm',
+      from: ['/alarm', '/world', '/stopwatch', '/timer'],
+      to: '/alarm',
+      search: {},
+      searchParams: {},
+      mode: 'replace',
+      params: {},
+      label: '切换到闹钟页',
+      ui: { placement: 'tabbar', icon: 'alarm', gesture: 'tap' },
+    },
+  ],
+  capabilities: {
+    historyBack: true,
+  },
+} as const satisfies NavigationDeclaration;
+
+export type TransitionId = typeof NAVIGATION_DECLARATION.transitions[number]['id'];

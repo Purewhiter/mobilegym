@@ -1,0 +1,74 @@
+{
+  "alarms": [
+    {
+      "id": "a1",
+      "hour": 4,
+      "minute": 30,
+      "enabled": true,
+      "repeat": "daily",
+      "note": "拿东西",
+      "vibrate": true,
+      "autoDelete": false
+    },
+    {
+      "id": "a2",
+      "hour": 5,
+      "minute": 0,
+      "enabled": false,
+      "repeat": "once",
+      "note": "出门",
+      "vibrate": true,
+      "autoDelete": false
+    },
+    {
+      "id": "a3",
+      "hour": 6,
+      "minute": 0,
+      "enabled": true,
+      "repeat": "workday",
+      "vibrate": true,
+      "autoDelete": false
+    },
+    {
+      "id": "a4",
+      "hour": 6,
+      "minute": 10,
+      "enabled": false,
+      "repeat": "holiday",
+      "note": "跑步",
+      "vibrate": false,
+      "autoDelete": true
+    },
+    {
+      "id": "a5",
+      "hour": 6,
+      "minute": 20,
+      "enabled": false,
+      "repeat": "weekday",
+      "vibrate": true,
+      "autoDelete": false
+    },
+    {
+      "id": "a6",
+      "hour": 7,
+      "minute": 0,
+      "enabled": true,
+      "repeat": "once",
+      "note": "开会",
+      "vibrate": true,
+      "autoDelete": false
+    },
+    {
+      "id": "a7",
+      "hour": 22,
+      "minute": 30,
+      "enabled": false,
+      "repeat": "daily",
+      "note": "睡觉",
+      "vibrate": false,
+      "autoDelete": false
+    }
+  ],
+  "selectedCityIds": ["london", "newyork", "accra", "paris"]
+}
+

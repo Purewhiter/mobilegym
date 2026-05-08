@@ -1,0 +1,169 @@
+{
+  "app": "settings",
+  "appDir": "apps/Settings",
+  "mode": "schema",
+  "dataFile": null,
+  "reachability": null,
+  "routeCount": 3,
+  "transitionCount": 2,
+  "nodes": [
+    {
+      "id": "/",
+      "routePath": "/",
+      "uiStateId": "settings.main.base",
+      "component": "SettingsMainPage",
+      "entryPoint": true,
+      "entry": {
+        "kind": "home",
+        "home": true,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "页面主内容区"
+        }
+      ],
+      "description": "设置首页",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/search",
+      "routePath": "/search",
+      "uiStateId": "settings.search.base",
+      "component": "SettingsSearchPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "页面主内容区"
+        }
+      ],
+      "description": "设置搜索页",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/page/:pageId",
+      "routePath": "/page/:pageId",
+      "uiStateId": "settings.page.base",
+      "component": "PreferenceScreenPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "deepLink",
+        "home": false,
+        "deepLink": true
+      },
+      "params": {
+        "pageId": "string"
+      },
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "页面主内容区"
+        }
+      ],
+      "description": "设置详情页",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    }
+  ],
+  "edges": [
+    {
+      "source": "/",
+      "sourceNodeId": "/",
+      "target": "/search",
+      "targetNodeId": "/search",
+      "id": "search.open",
+      "label": "打开设置搜索",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "search",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/",
+      "sourceNodeId": "/",
+      "target": "/page/:pageId",
+      "targetNodeId": "/page/:pageId",
+      "id": "page.open",
+      "label": "打开设置项详情",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {
+        "pageId": "string"
+      },
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "page",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search",
+      "sourceNodeId": "/search",
+      "target": "/page/:pageId",
+      "targetNodeId": "/page/:pageId",
+      "id": "page.open",
+      "label": "打开设置项详情",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {
+        "pageId": "string"
+      },
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "page",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/page/:pageId",
+      "sourceNodeId": "/page/:pageId",
+      "target": "/page/:pageId",
+      "targetNodeId": "/page/:pageId",
+      "id": "page.open",
+      "label": "打开设置项详情",
+      "type": "state",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {
+        "pageId": "string"
+      },
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "page",
+        "gesture": "tap"
+      }
+    }
+  ]
+}
