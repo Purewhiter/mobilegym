@@ -1,0 +1,782 @@
+{
+  "app": "ebay",
+  "appDir": "apps/Ebay",
+  "mode": "schema",
+  "dataFile": null,
+  "reachability": null,
+  "routeCount": 8,
+  "transitionCount": 10,
+  "nodes": [
+    {
+      "id": "/",
+      "routePath": "/",
+      "uiStateId": "home.base",
+      "component": "HomePage",
+      "entryPoint": true,
+      "entry": {
+        "kind": "home",
+        "home": true,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "Main Content Area"
+        }
+      ],
+      "description": "eBay 首页",
+      "search": {},
+      "queryParams": {},
+      "actions": [
+        {
+          "id": "home.auth.login",
+          "label": "登录",
+          "behavior": "other",
+          "description": "点击登录按钮"
+        },
+        {
+          "id": "home.auth.register",
+          "label": "注册",
+          "behavior": "other",
+          "description": "点击注册按钮"
+        },
+        {
+          "id": "home.promo.getCoupon",
+          "label": "获取优惠券",
+          "behavior": "other",
+          "description": "点击获取优惠券"
+        }
+      ]
+    },
+    {
+      "id": "/me",
+      "routePath": "/me",
+      "uiStateId": "me.base",
+      "component": "MePage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "Main Content Area"
+        }
+      ],
+      "description": "我的 eBay 页面",
+      "search": {},
+      "queryParams": {},
+      "actions": [
+        {
+          "id": "me.auth.login",
+          "label": "登录",
+          "behavior": "other",
+          "description": "点击登录按钮"
+        },
+        {
+          "id": "me.card.watchlist",
+          "label": "追踪列表",
+          "behavior": "other",
+          "description": "点击追踪列表卡片"
+        },
+        {
+          "id": "me.card.bids",
+          "label": "出价和议价",
+          "behavior": "other",
+          "description": "点击出价和议价卡片"
+        }
+      ]
+    },
+    {
+      "id": "/search",
+      "routePath": "/search",
+      "uiStateId": "search.base",
+      "component": "SearchPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "Main Content Area"
+        }
+      ],
+      "description": "搜索页面",
+      "search": {},
+      "queryParams": {},
+      "actions": [
+        {
+          "id": "search.history.clear",
+          "label": "清除记录",
+          "behavior": "other",
+          "description": "清除最近搜索记录"
+        }
+      ]
+    },
+    {
+      "id": "/sell",
+      "routePath": "/sell",
+      "uiStateId": "sell.base",
+      "component": "SellPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "Main Content Area"
+        }
+      ],
+      "description": "出售页面",
+      "search": {},
+      "queryParams": {},
+      "actions": [
+        {
+          "id": "sell.auth.login",
+          "label": "登录",
+          "behavior": "other",
+          "description": "点击登录按钮"
+        },
+        {
+          "id": "sell.auth.register",
+          "label": "注册",
+          "behavior": "other",
+          "description": "点击注册按钮"
+        },
+        {
+          "id": "sell.info.learnMore",
+          "label": "了解详情",
+          "behavior": "other",
+          "description": "点击了解详情"
+        }
+      ]
+    },
+    {
+      "id": "/inbox",
+      "routePath": "/inbox",
+      "uiStateId": "inbox.base",
+      "component": "InboxPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "Main Content Area"
+        }
+      ],
+      "description": "收件箱页面",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/cart",
+      "routePath": "/cart",
+      "uiStateId": "cart.base",
+      "component": "CartPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "Main Content Area"
+        }
+      ],
+      "description": "购物车页面",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/categories",
+      "routePath": "/categories",
+      "uiStateId": "categories.base",
+      "component": "CategoriesPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "Main Content Area"
+        }
+      ],
+      "description": "类别页面",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/settings",
+      "routePath": "/settings",
+      "uiStateId": "settings.base",
+      "component": "SettingsPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "Main Content Area"
+        }
+      ],
+      "description": "设置页面",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    }
+  ],
+  "edges": [
+    {
+      "source": "/",
+      "sourceNodeId": "/",
+      "target": "/cart",
+      "targetNodeId": "/cart",
+      "id": "cart.open",
+      "label": "打开购物车",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "shopping-cart",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/me",
+      "sourceNodeId": "/me",
+      "target": "/cart",
+      "targetNodeId": "/cart",
+      "id": "cart.open",
+      "label": "打开购物车",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "shopping-cart",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/sell",
+      "sourceNodeId": "/sell",
+      "target": "/cart",
+      "targetNodeId": "/cart",
+      "id": "cart.open",
+      "label": "打开购物车",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "shopping-cart",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/me",
+      "sourceNodeId": "/me",
+      "target": "/",
+      "targetNodeId": "/",
+      "id": "tab.home",
+      "label": "切换到首页",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "home",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search",
+      "sourceNodeId": "/search",
+      "target": "/",
+      "targetNodeId": "/",
+      "id": "tab.home",
+      "label": "切换到首页",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "home",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/sell",
+      "sourceNodeId": "/sell",
+      "target": "/",
+      "targetNodeId": "/",
+      "id": "tab.home",
+      "label": "切换到首页",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "home",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/inbox",
+      "sourceNodeId": "/inbox",
+      "target": "/",
+      "targetNodeId": "/",
+      "id": "tab.home",
+      "label": "切换到首页",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "home",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/",
+      "sourceNodeId": "/",
+      "target": "/me",
+      "targetNodeId": "/me",
+      "id": "tab.me",
+      "label": "切换到我的页面",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "user",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search",
+      "sourceNodeId": "/search",
+      "target": "/me",
+      "targetNodeId": "/me",
+      "id": "tab.me",
+      "label": "切换到我的页面",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "user",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/sell",
+      "sourceNodeId": "/sell",
+      "target": "/me",
+      "targetNodeId": "/me",
+      "id": "tab.me",
+      "label": "切换到我的页面",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "user",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/inbox",
+      "sourceNodeId": "/inbox",
+      "target": "/me",
+      "targetNodeId": "/me",
+      "id": "tab.me",
+      "label": "切换到我的页面",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "user",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/",
+      "sourceNodeId": "/",
+      "target": "/search",
+      "targetNodeId": "/search",
+      "id": "tab.search",
+      "label": "切换到搜索页面",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "search",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/me",
+      "sourceNodeId": "/me",
+      "target": "/search",
+      "targetNodeId": "/search",
+      "id": "tab.search",
+      "label": "切换到搜索页面",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "search",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/sell",
+      "sourceNodeId": "/sell",
+      "target": "/search",
+      "targetNodeId": "/search",
+      "id": "tab.search",
+      "label": "切换到搜索页面",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "search",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/inbox",
+      "sourceNodeId": "/inbox",
+      "target": "/search",
+      "targetNodeId": "/search",
+      "id": "tab.search",
+      "label": "切换到搜索页面",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "search",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/",
+      "sourceNodeId": "/",
+      "target": "/inbox",
+      "targetNodeId": "/inbox",
+      "id": "tab.inbox",
+      "label": "切换到收件箱页面",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "bell",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/me",
+      "sourceNodeId": "/me",
+      "target": "/inbox",
+      "targetNodeId": "/inbox",
+      "id": "tab.inbox",
+      "label": "切换到收件箱页面",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "bell",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search",
+      "sourceNodeId": "/search",
+      "target": "/inbox",
+      "targetNodeId": "/inbox",
+      "id": "tab.inbox",
+      "label": "切换到收件箱页面",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "bell",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/sell",
+      "sourceNodeId": "/sell",
+      "target": "/inbox",
+      "targetNodeId": "/inbox",
+      "id": "tab.inbox",
+      "label": "切换到收件箱页面",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "bell",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/",
+      "sourceNodeId": "/",
+      "target": "/sell",
+      "targetNodeId": "/sell",
+      "id": "tab.sell",
+      "label": "切换到出售页面",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "tag",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/me",
+      "sourceNodeId": "/me",
+      "target": "/sell",
+      "targetNodeId": "/sell",
+      "id": "tab.sell",
+      "label": "切换到出售页面",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "tag",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/search",
+      "sourceNodeId": "/search",
+      "target": "/sell",
+      "targetNodeId": "/sell",
+      "id": "tab.sell",
+      "label": "切换到出售页面",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "tag",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/inbox",
+      "sourceNodeId": "/inbox",
+      "target": "/sell",
+      "targetNodeId": "/sell",
+      "id": "tab.sell",
+      "label": "切换到出售页面",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "tag",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/",
+      "sourceNodeId": "/",
+      "target": "/search",
+      "targetNodeId": "/search",
+      "id": "home.search.open",
+      "label": "点击搜索栏",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "search",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/",
+      "sourceNodeId": "/",
+      "target": "/sell",
+      "targetNodeId": "/sell",
+      "id": "home.quick_filter.sell",
+      "label": "点击出售快捷筛选",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "tag",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/",
+      "sourceNodeId": "/",
+      "target": "/categories",
+      "targetNodeId": "/categories",
+      "id": "home.quick_filter.categories",
+      "label": "打开类别页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "grid",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/me",
+      "sourceNodeId": "/me",
+      "target": "/settings",
+      "targetNodeId": "/settings",
+      "id": "me.settings.open",
+      "label": "打开设置",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "settings",
+        "gesture": "tap"
+      }
+    }
+  ]
+}

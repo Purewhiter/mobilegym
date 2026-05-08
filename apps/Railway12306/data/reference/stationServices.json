@@ -1,0 +1,8418 @@
+[
+  {
+    "stationName": "哈尔滨",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "王兆屯",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "哈尔滨东",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "滨江",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "香坊",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "哈尔滨西",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "齐齐哈尔",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "齐齐哈尔南",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "牡丹江",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "佳木斯",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "满洲里",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "七台河",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "勃利",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "三间房",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "昂昂溪",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "绥芬河",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "绥阳",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "黑河",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "宝清",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "双城堡",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "阿城",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "玉泉",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "平山",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "尚志",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "孙家",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "平房",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "五常",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "成高子",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "小岭",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "帽儿山",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "周家",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "牛家",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "拉林",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "背荫河",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "安家",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "王岗",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "五家",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "兰棱",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "一面坡",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "苇河",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "亚布力",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "亚布力南",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "横道河子",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "海林",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "东京城",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "宁安",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "温春",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "穆棱",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "八面通",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "梨树镇",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "山市",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "拉古",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "桦林",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "兰岗",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "石头",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "磨刀石",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "伊林",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "下城子",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "长汀镇",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "鹤岗",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "南岔",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "双鸭山",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "峻德",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "伊春",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "福利屯",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "桦南",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "香兰",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "浩良河",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "西林",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "美溪",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "五营",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "富锦",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "汤原",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "红兴隆",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "新友谊",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "抚远",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "大庆",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "大庆东",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "大庆西",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "卧里屯",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "安达",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "肇东",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "林源",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "银浪",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "泰康",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "新华屯",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "烟筒屯",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "万乐",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "对青山",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "里木店",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "姜家",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "尚家",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "宋",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "羊草",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "哈尔滨北",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "绥化",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "呼兰",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "北安",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "兴隆镇",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "庆安",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "双丰",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "铁力",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "桃山",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "神树",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "朗乡",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "带岭",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "海伦",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "绥棱",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "克山",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "龙镇",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "新松浦",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "徐家",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "沈家",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "康金井",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "石人城",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "白奎堡",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "万发屯",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "秦家",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "四方台",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "张维屯",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "东边井",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "海北",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "通北",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "赵光",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "克东",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "二龙山屯",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "五大连池",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "加格达奇",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "大杨树",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "甘河",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "阿里河",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "塔河",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "漠河",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "富拉尔基",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "嫩江",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "扎兰屯",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "泰来",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "榆树屯",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "富裕",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "依安",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "拉哈",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "讷河",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "九三",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "龙江",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "碾子山",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "平洋",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "江桥",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "大兴",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "汤池",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "冯屯",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "塔哈",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "富海",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "二道湾",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "团结",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "六合镇",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "老莱",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "伊拉哈",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "成吉思汗",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "哈拉苏",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "南木",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "巴林",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "鸡西",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "柴河",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "林口",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "鸡东",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "密山",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "虎林",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "迎春",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "东方红",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "滴道",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "朱家沟",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "宝林",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "楚山",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "向阳",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "古城镇",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "青山",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "奎山",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "西麻山",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "麻山",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "东海",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "永安乡",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "黑台",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "裴德",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "兴凯",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "杨岗",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "卫星",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "海拉尔",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "伊图里河",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "乌尔旗汗",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "图里河",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "根河",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "免渡河",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "牙克石",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "博克图",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "乌奴耳",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "嵯岗",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "鞍山西",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "海城西",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "辽阳",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "鞍山",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "海城",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "大石桥",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "营口",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "白城",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "松原",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "乌兰浩特",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "大安北",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "本溪",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "凤凰城",
+    "services": [
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "赤峰",
+    "services": [
+      "担架",
+      "轮椅",
+      "输液架",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "四合永",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "奈曼",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "蛟河西",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "口前",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "龙嘉",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "蛟河",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "吉林",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "九台南",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "威虎岭北",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "舒兰",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "九台",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "扎鲁特",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "白音胡硕",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "吐列毛杜",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "西哲里木",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "霍林郭勒",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "辽源",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "梅河口",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "沟帮子",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "盘锦北",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "葫芦岛北",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "锦州南",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "东戴河",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "大虎山",
+    "services": [
+      "担架"
+    ]
+  },
+  {
+    "stationName": "新民",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "绥中北",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "葫芦岛",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "兴城",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "绥中",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "辽中",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "台安",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "盘锦",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "西柳",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "营口东",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "盖州西",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "鲅鱼圈",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "瓦房店西",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "普湾",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "普兰店",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "瓦房店",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "熊岳城",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "通化",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "白山市",
+    "services": [
+      "担架",
+      "轮椅",
+      "输液架"
+    ]
+  },
+  {
+    "stationName": "铁岭西",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "开原西",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "昌图西",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "铁岭",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "开原",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "昌图",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "抚顺北",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "清原",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "丹东",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "大连",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "大连北",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "沈阳南",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖",
+      "输液架"
+    ]
+  },
+  {
+    "stationName": "沈阳",
+    "services": [
+      "担架",
+      "轮椅",
+      "输液架"
+    ]
+  },
+  {
+    "stationName": "四平",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "四平东",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "通辽",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "苏家屯",
+    "services": [
+      "担架",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "沈阳北",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖",
+      "输液架"
+    ]
+  },
+  {
+    "stationName": "山海关",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "锦州",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐仗",
+      "输液架",
+      "血压剂"
+    ]
+  },
+  {
+    "stationName": "金州",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "长春",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖",
+      "输液架",
+      "医务用床"
+    ]
+  },
+  {
+    "stationName": "长春西",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖",
+      "输液架"
+    ]
+  },
+  {
+    "stationName": "双辽",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "珲春",
+    "services": [
+      "担架",
+      "轮椅",
+      "输液架",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "图们",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "图们北",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "延吉",
+    "services": [
+      "担架",
+      "轮椅",
+      "输液架",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "延吉西",
+    "services": [
+      "担架",
+      "轮椅",
+      "输液架",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "安图",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "安图西",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "大石头南",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "敦化",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "白河",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "汪清",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "和龙",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "龙井",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "叶柏寿",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "新立屯",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "朝阳",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "凌源",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "阜新",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "公主岭",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖",
+      "输液架"
+    ]
+  },
+  {
+    "stationName": "范家屯",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "长春南",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "沃皮",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "德惠",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "达家沟",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "陶赖昭",
+    "services": [
+      "担架"
+    ]
+  },
+  {
+    "stationName": "扶余",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "榆树",
+    "services": [
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "农安",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "扶余北",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "德惠西",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "公主岭南",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "北京西",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "北京北",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "北京",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "北京南",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "塘沽",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "邯郸",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "芦台",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "邢台",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "承德",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "秦皇岛",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "北戴河",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "唐山",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "滨海",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "滨海北",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "滦河",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "燕郊",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "三河县",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "玉田县",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "唐山北",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "滦县",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "天津西",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "廊坊",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "天津南",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "沧州西",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "德州东",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "阳泉",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "阳泉北",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "蓟县",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "杨柳青",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "衡水",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "天津",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "武清",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "军粮城北",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "天津北",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "石家庄",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "石家庄北",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "涿州东",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "高碑店东",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "保定东",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "定州东",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "正点机场",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "高邑西",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "邢台东",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "邯郸东",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "张家口南",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "宣化",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "沙城",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "沧州",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "德州",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "静海",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "青县",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "保定",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "定州",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "廊坊北",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "高碑店",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "阳高",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "天镇",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "柴沟堡",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "大同",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "平旺",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "原平",
+    "services": [
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "忻州",
+    "services": [
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "五台山",
+    "services": [
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "轩岗",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "阳曲",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "代县",
+    "services": [
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "繁峙",
+    "services": [
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "灵丘",
+    "services": [
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "太原北",
+    "services": [
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "太原",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "太原南",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "榆次",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "太谷",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "祁县",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "平遥",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "介休",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "灵石",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "孝西",
+    "services": [
+      "担架"
+    ]
+  },
+  {
+    "stationName": "太谷西",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "祁县东",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "平遥古城",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "介休东",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "灵石东",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "霍州",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "赵城",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "洪洞",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "临汾",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "襄汾",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "侯马",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "东镇",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "闻喜",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "运城",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "永济",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "风陵渡",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "新绛",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "稷山",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "河津",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "霍州东",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "洪洞西",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "临汾西",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "襄汾西",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "侯马西",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "闻喜西",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "运城北",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "永济北",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "晋中",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "太原东",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "古交",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "镇城底",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "寿阳",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "榆社",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "武乡",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "沁县",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "清徐",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "交城",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "文水",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "汾阳",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "吕梁",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "柳林南",
+    "services": [
+      "担架"
+    ]
+  },
+  {
+    "stationName": "怀仁",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "岱岳",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "朔州",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "宁武",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "神池",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "五寨",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "岢岚",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "怀仁东",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "应县",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "山阴",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "呼和浩特",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "呼和和东",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "包头",
+    "services": [
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "包头东",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "东胜西",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "集宁南",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "乌拉特前旗",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "察素齐",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "萨拉齐",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "白云鄂博",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "乌海",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖",
+      "运送行李小推车"
+    ]
+  },
+  {
+    "stationName": "乌海西",
+    "services": [
+      "担架",
+      "轮椅",
+      "运送行李小推车"
+    ]
+  },
+  {
+    "stationName": "巴彦高勒",
+    "services": [
+      "担架",
+      "轮椅",
+      "运送行李小推车"
+    ]
+  },
+  {
+    "stationName": "五原",
+    "services": [
+      "担架",
+      "轮椅",
+      "运送行李小推车"
+    ]
+  },
+  {
+    "stationName": "丰镇",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "土贵乌拉",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "兴和西",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "卓资东",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "卓资山",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "旗下营",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "白音察干",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "土牧尔台",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "朱日和",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "临河",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "额济纳",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "二连",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "赛汗塔拉",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "锡林浩特",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "商都",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "化德",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "正镶白旗",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "桑根达来",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "经棚",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "林西",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "大板",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "林东",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "查布嘎",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "开鲁",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "哲里木",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "郑州",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "许昌",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "许昌东",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "郑州东",
+    "services": [
+      "担架",
+      "轮椅",
+      "运送行李小推车"
+    ]
+  },
+  {
+    "stationName": "贾鲁河",
+    "services": [
+      "轮椅",
+      "运送行李小推车"
+    ]
+  },
+  {
+    "stationName": "绿博园",
+    "services": [
+      "轮椅",
+      "运送行李小推车"
+    ]
+  },
+  {
+    "stationName": "运粮河",
+    "services": [
+      "轮椅",
+      "运送行李小推车"
+    ]
+  },
+  {
+    "stationName": "宋城路",
+    "services": [
+      "轮椅",
+      "运送行李小推车"
+    ]
+  },
+  {
+    "stationName": "洛阳",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "洛阳东",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "洛阳龙门",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "关林",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "巩义",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "偃师",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "新安县",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "义马",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "渑池",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "三门峡",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "三门峡西",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "巩义南",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "渑池南",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "三门峡南",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "灵宝西",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "月山",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "焦作",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "修武",
+    "services": [
+      "担架"
+    ]
+  },
+  {
+    "stationName": "获嘉",
+    "services": [
+      "担架"
+    ]
+  },
+  {
+    "stationName": "修武西",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "武陟",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "黄河景区",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "南阳",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "平顶山西",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "邓州",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "安阳",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "安阳东",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "商丘",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "商丘南",
+    "services": [
+      "担架"
+    ]
+  },
+  {
+    "stationName": "开封",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "兰考",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "民权",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "宁陵县",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "新乡",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "鹤壁",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "卫辉",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "长垣",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "东明县",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "新乡东",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "鹤壁东",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "长治",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "晋城",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "汝州",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "济源",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "武昌",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "武汉",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "汉口车",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "汉川车",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "天门南车",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "仙桃西车",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "潜江车",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "荆州车",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "枝江北车",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "十堰",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "谷城",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "武当山",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "平顶山",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "宜昌东",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "恩施",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "利川",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "建始",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "巴东",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "荆门",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "商城",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "固始",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "淮滨",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "潢川",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "新县",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "麻城",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "麻城北",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "红安西",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "黄州",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "浠水",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "蕲春",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "武穴",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "广水车",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "孝感北车",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "花园车",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "安陆车",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "孝感车",
+    "services": [
+      "担架",
+      "轮椅",
+      "运送行李小推车"
+    ]
+  },
+  {
+    "stationName": "云梦车",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "襄阳",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "襄阳东",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "随州",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "枣阳",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "信阳",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "信阳东",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "漯河",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "漯河西",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "驻马店",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "驻马店西",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "明港东",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "咸宁北",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "赤壁北",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "鄂州",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "黄石",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "咸宁南",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "咸宁东",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "横沟桥东",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "贺胜桥东",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "山坡东",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "土地堂东",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "乌龙泉南",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "纸坊东",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "普安",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "庙山",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "汤逊湖",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "南湖东",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "花山南",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "左岭",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "葛店南",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "华容南",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "鄂州东",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "花湖",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "黄石北",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "大冶北",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "华容东",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "黄冈西",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "黄冈",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "黄冈东",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "咸宁北",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "赤壁北",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "西安",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "西安北",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "渭南北",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "华山北",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "渭南",
+    "services": [
+      "担架",
+      "轮椅",
+      "运送行李小推车"
+    ]
+  },
+  {
+    "stationName": "华山",
+    "services": [
+      "担架",
+      "轮椅",
+      "运送行李小推车"
+    ]
+  },
+  {
+    "stationName": "宝鸡",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "咸阳",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "杨陵",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "汉中",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "略阳",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "西乡",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "韩城",
+    "services": [
+      "担架",
+      "轮椅",
+      "运送行李小推车"
+    ]
+  },
+  {
+    "stationName": "安康",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "延安",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "榆林",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "绥德",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "日照",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "坪上",
+    "services": [
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "青岛",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "青岛北",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "济南",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "济南东",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "济南西",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "泰安",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "曲阜东",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "滕州东",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "枣庄",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "临沂",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "临沂北",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "烟台",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "海阳",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "莱西",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "荣成",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "文登东",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "威海",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "威海北",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "牟平",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "烟台南",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "桃村北",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "海阳北",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "莱阳",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "莱西北",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "即墨北",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "淄博",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "章丘",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "聊城",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "菏泽",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "兖州",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "枣庄西",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "滕州",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "邹城",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "磁窑",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "济宁",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "泰山",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "晏城",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "禹城",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "平原",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "青州市",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "昌乐",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "潍坊",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "高密",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "胶州",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "蓝村",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "胶州北",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "诸城",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "文登",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "乳山",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "砀山",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "邳州",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "连云港东",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "淮北",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "宿州",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "巢湖",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "六安",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "安庆",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "扬州",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "泰州",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "南通",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "如东",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "栟茶",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "盐城",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "淮安",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "沭阳",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "洋河",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "泗阳",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "泗洪",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "芜湖",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "宣城",
+    "services": [
+      "担架"
+    ]
+  },
+  {
+    "stationName": "铜陵",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "黄山",
+    "services": [
+      "担架"
+    ]
+  },
+  {
+    "stationName": "宁国",
+    "services": [
+      "担架"
+    ]
+  },
+  {
+    "stationName": "绩溪县",
+    "services": [
+      "担架"
+    ]
+  },
+  {
+    "stationName": "歙县",
+    "services": [
+      "担架"
+    ]
+  },
+  {
+    "stationName": "黄山北",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "歙县北",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "绩溪北",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "旌德",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "泾县",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "南陵",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "铜陵北",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "诸暨",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "义乌",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "金华",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "龙游",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "衢州",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "江山",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "绍兴",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "上虞",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "余姚",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "宁波",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "奉化",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "宁海",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "三门县",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "临海",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "台州",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "温岭",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "雁荡山",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "绅坊",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "乐清",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "永嘉",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "温州南",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "瑞安",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "鳌江",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "苍南",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "庄桥",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "绍兴北",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "上虞北",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "余姚北",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "嘉兴",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "海宁",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "长兴南",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "德清西",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "松江南",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "金山北",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "嘉善南",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "嘉兴南",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "桐乡",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "海宁西",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "余杭",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "德清",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "湖州",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "长兴",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "徐州",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "徐州东",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "蚌埠客运车间",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "蚌埠南",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "滁州",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "定远",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "宿州东",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "阜阳",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "亳州",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "合肥",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "合肥南",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "长临河",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "巢湖东",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "无为",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "金寨",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "淮南",
+    "services": [
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "淮南东",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "南京",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "南京南",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "宜兴",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "溧阳",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "瓦屋山",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "溧水",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "句容西",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "江宁",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "仙林",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "马鞍山",
+    "services": [
+      "担架",
+      "轮椅",
+      "运送行李小推车",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "镇江",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "丹阳",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "镇江南",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "丹阳北",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "丹徒",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "宝华山",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "常州",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "常州北",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "戚墅堰",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "无锡既有",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "无锡城际",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "惠山",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "无锡东",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "无锡新区",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "苏州",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "苏州北",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "苏州新区",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "苏州园区",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "昆山",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "昆山南",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "阳澄湖",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "花桥",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "上海",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "上海虹桥",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "上海南",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "上海西",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "安亭北",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "南翔北",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "金山卫",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "松江",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "嘉善",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "杭州",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "杭州东",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "温州",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "青田",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "丽水",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "缙云",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "永康",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "武义",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "南昌",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "南昌西",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "九江",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "鹰潭",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "鹰潭北",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "抚州",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "上饶",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "萍乡北",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "宜春",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "新余北",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "赣州",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "吉安",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "福州",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "福州南",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "厦门",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "厦门北",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "漳州",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "泉州",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "龙岩",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "宁德",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "莆田",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "三明北",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "广州",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "广州东",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "深圳",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "深圳东",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "深圳西",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "株洲",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "湘潭",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "长沙",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "怀化",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "铜仁",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "南雄",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "丹霞山",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "韶关东",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "广州北",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "东莞",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "常平",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "樟木头",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "衡阳",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "郴州",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "耒阳",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "永州",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "祁东",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "祁阳",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "东莞东",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "惠州",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "惠州西",
+    "services": [
+      "担架"
+    ]
+  },
+  {
+    "stationName": "龙川",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "兴宁",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "梅州",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "大埔",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "丰顺",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "揭阳",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "潮州",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "汕头",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "华城",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "娄底",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "邵阳",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "湘乡",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "海口",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "海口东",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "美兰",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "文昌",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "琼海",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "博鳌",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "万宁",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "神州",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "陵水",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "亚龙湾",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "三亚",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "吉首",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "张家界",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "石门县北",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "佛山",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "肇庆",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "茂名东",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "岳阳",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "常德",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "益阳",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "岳阳东",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "汨罗东",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "长沙南",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "株洲西",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "衡山西",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "衡阳东",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "耒阳西",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "株洲西",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "醴陵东",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "湘潭北",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "韶山南",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "娄底南",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "邵阳北",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "新化南",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "溆浦南",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "怀化南",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "芷江",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "新晃西",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "广州南",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "肇庆东",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "三水南",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "云浮东",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "南江口",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "郁南",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "广宁",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "怀集",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "韶关",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "英德西",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "清远",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "碧江",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "北滘",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "顺德",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "顺德学院",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "容桂",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "南头",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "小榄",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "东升",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "中山北",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "中山",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "珠海北",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "唐家湾",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "明珠",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "前山",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "珠海",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "古镇",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "江门",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "新会",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "深圳北",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "潮阳",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "普宁",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "葵潭",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "饶平",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "潮汕",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "虎门",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "庆盛",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "光明城",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "鲘门",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "陆丰",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "惠东",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "深圳坪山",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "汕尾",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "惠州南",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "南宁",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "南宁东",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "柳州",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "桂林",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "桂林北",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "三江南",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "恭城",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "湛江",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "来宾北",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "来宾",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "宾阳",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "黎塘",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "崇左",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "凭祥",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "南丹",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "金城江",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "宜州",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "融水",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "融安",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "零陵",
+    "services": [
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "双牌",
+    "services": [
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "道州",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "江永",
+    "services": [
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "江华",
+    "services": [
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "富川",
+    "services": [
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "贺州",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "钟山西",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "梧州",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "梧州南",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "藤县",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "岑溪",
+    "services": [
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "容县",
+    "services": [
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "北流",
+    "services": [
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "玉林",
+    "services": [
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "贵港",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "茂名",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "桂平",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "平南南",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "兴业",
+    "services": [
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "陆川",
+    "services": [
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "文地",
+    "services": [
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "河唇",
+    "services": [
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "廉江",
+    "services": [
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "遂溪",
+    "services": [
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "化州",
+    "services": [
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "北海",
+    "services": [
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "钦州东",
+    "services": [
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "合浦",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "防城港北",
+    "services": [
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "百色",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "兴义",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "成都",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "成都东",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "乐山",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "都江堰",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "青城山",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "重庆北南场",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "重庆北北场",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "重庆",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "贵定北",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "三穗",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "贵定县",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "凯里南",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "贵阳北",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖",
+      "运送行李小推车"
+    ]
+  },
+  {
+    "stationName": "贵阳",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖",
+      "运送行李小推车"
+    ]
+  },
+  {
+    "stationName": "铜仁南",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "都匀东",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "榕江",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "达州",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "万州",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "梁平",
+    "services": [
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "开江",
+    "services": [
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "青莲",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "江油",
+    "services": [
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "绵阳",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "罗江东",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "德阳",
+    "services": [
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "广汉北",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "清白江东",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "新都东",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "眉山",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "资阳",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "资中",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "简阳",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "燕岗",
+    "services": [
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "普雄",
+    "services": [
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "峨眉",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "汉源",
+    "services": [
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "越西",
+    "services": [
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "长寿北",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "涪陵北",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "丰都",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "石柱县",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "涪陵",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "彭水",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "黔江",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "酉阳",
+    "services": [
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "秀山",
+    "services": [
+      "担架"
+    ]
+  },
+  {
+    "stationName": "广元",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "安顺",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "玉屏",
+    "services": [
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "镇远",
+    "services": [
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "施秉",
+    "services": [
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "凯里",
+    "services": [
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "福泉",
+    "services": [
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "贵定",
+    "services": [
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "贵定南",
+    "services": [
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "都匀",
+    "services": [
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "独山",
+    "services": [
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "麻尾",
+    "services": [
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "六盘水",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "草海",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "六枝",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "内江",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "自贡",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "宜宾",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "昭通",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "遂宁",
+    "services": [
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "南充",
+    "services": [
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "蓬安",
+    "services": [
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "营山",
+    "services": [
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "土溪",
+    "services": [
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "大英东",
+    "services": [
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "西昌",
+    "services": [
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "永郎",
+    "services": [
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "米易",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "攀枝花",
+    "services": [
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "桐子林",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "冕宁",
+    "services": [
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "喜德",
+    "services": [
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "西昌南",
+    "services": [
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "德昌",
+    "services": [
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "潼南",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "合川",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "北碚",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "广安南",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "岳池",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "隆昌",
+    "services": [
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "永川",
+    "services": [
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "江津",
+    "services": [
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "綦江",
+    "services": [
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "赶水",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "荣昌",
+    "services": [
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "遵义",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "桐梓",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "息烽",
+    "services": [
+      "担架"
+    ]
+  },
+  {
+    "stationName": "昆明",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "曲靖",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "红果",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "宣威",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "丽江",
+    "services": [
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "鹤庆",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "大理",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "楚雄",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "广通北",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "禄丰南",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "罗平",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "威舍",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "通海",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "建水",
+    "services": [
+      "担架",
+      "轮椅",
+      "拐杖"
+    ]
+  },
+  {
+    "stationName": "蒙自北",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "蒙自",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "屏边",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "河口北",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "天水",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "兰州",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "兰州西",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "银川",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "天祝",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "永登",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "河口南",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "皋兰",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "白银西",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "景泰",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "白银市",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "靖远",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "长征",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "陈官营",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "中卫",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "中宁",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "青铜峡",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "石嘴山",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "惠农",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "定边",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "盐池",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "灵武",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "红寺堡",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "太阳山",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "中宁东",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "定西",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "陇西",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "甘谷",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "武山",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "武威",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "张掖",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "金昌",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "张掖西",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "民乐",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "同心",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "固原",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "平凉",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "酒泉南",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "嘉峪关南",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "清水北",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "临泽南",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "高台南",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "玉门",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "嘉峪关",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "敦煌",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "乌鲁木齐南",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "乌西",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "阿拉山口",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "霍尔果斯",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "吐鲁番",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "吐鲁番北",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "鄯善",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "鄯善北",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "吐哈",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "哈密",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "柳园",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "柳园南",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "库尔勒",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "焉耆",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "和硕",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "马兰",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "北屯市",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "博乐",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "福海",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "和什托洛盖",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "精河南",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "奎屯",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "尼勒克",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "沙湾县",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "石河子",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "伊宁东",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "伊宁",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "精河",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "克拉玛依",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "巴楚",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "阿图什",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "喀什",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "疏勒",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "阿克陶",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "英吉沙",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "莎车",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "泽普",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "叶城",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "皮山",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "墨玉",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "和田",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "库车",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "新和",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "阿克苏",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "德令哈",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "格尔木",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "海东西",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "海石湾",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "湟源",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "乐都南",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "乐都",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "拉萨",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "民和南",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "那曲",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "平安驿",
+    "services": [
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "日喀则",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  },
+  {
+    "stationName": "西宁",
+    "services": [
+      "担架",
+      "轮椅"
+    ]
+  }
+]

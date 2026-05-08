@@ -1,0 +1,113 @@
+{
+  "callLogs": [
+    {
+      "id": "cl_1",
+      "displayName": "反电信网络诈骗专用…",
+      "number": "反电信网络诈骗专用…",
+      "dateText": "2月7日",
+      "isOfficial": true,
+      "type": "incoming"
+    },
+    {
+      "id": "cl_2",
+      "displayName": "199 4358 4333",
+      "number": "19943584333",
+      "dateText": "2月6日",
+      "locationText": "四川乐山 电信",
+      "type": "incoming",
+      "sim": 1
+    },
+    {
+      "id": "cl_3",
+      "displayName": "952518",
+      "number": "952518",
+      "dateText": "2月5日",
+      "type": "missed",
+      "sim": 1
+    },
+    {
+      "id": "cl_4",
+      "displayName": "95126",
+      "number": "95126",
+      "dateText": "2月5日",
+      "type": "outgoing",
+      "sim": 1
+    },
+    {
+      "id": "cl_5",
+      "displayName": "185 3333 3333",
+      "number": "18533333333",
+      "dateText": "2月5日",
+      "locationText": "四川成都 中国联通",
+      "type": "incoming",
+      "sim": 2
+    },
+    {
+      "id": "cl_6",
+      "displayName": "131 8080 8080",
+      "number": "13180808080",
+      "dateText": "2月4日",
+      "locationText": "四川成都 中国联通",
+      "type": "outgoing",
+      "sim": 2
+    }
+  ],
+  "sims": [
+    { "slot": 1, "label": "中国移动", "numberMasked": "138****8888" },
+    { "slot": 2, "label": "中国联通", "numberMasked": "156****6666" }
+  ],
+  "businessHall": {
+    "dataRemainingMb": 211.7,
+    "dataUpdatedText": "1天前更新",
+    "balanceYuan": 50.97,
+    "voiceUsedMinutes": 4,
+    "greeting": "你好，中国移动用户"
+  },
+  "settings": {
+    "device_group": "pref_key_pro_bt",
+    "pref_key_dial_pad_touch_tone": true,
+    "pref_key_tone": "-1",
+    "pref_key_smart_group_company": true,
+    "pref_key_smart_group_location": true,
+    "pref_key_smart_group_frequency": true,
+    "pref_key_simple_mode": false,
+    "pref_key_word_photo": false,
+    "only_phones_v2": true,
+    "pref_key_display_sim_contacts": true,
+    "pref_key_show_firewall_calllog": true,
+    "pref_key_show_business_hall": true,
+    "button_turnover_mute": false,
+    "button_handon_ringer": false,
+    "button_crescendo_ringer": true,
+    "button_flash_when_ring": false,
+    "button_enable_proximity": true,
+    "button_auto_answer": false,
+    "button_auto_answer_delay": "3",
+    "button_autoip": false,
+    "button_autoip_support_local_numbers": false,
+    "button_autoip_add_zero_prefix": false,
+    "button_auto_redial": false,
+    "button_missed_call_notify_times": "0",
+    "button_connect_disconnect_vibrate": "100",
+    "button_call_waiting_tone": "0",
+    "pref_fold_answer_call": false,
+    "pref_unfold_turn_on_speaker": false,
+    "pref_unfold_close_camera": false,
+    "pref_unfold_show_incall_bubble": false,
+    "button_call_recording_notification": true,
+    "button_auto_record_call": false,
+    "button_auto_record_unknown": false,
+    "button_auto_record_yellowpage": false,
+    "button_enable_telocation": true,
+    "button_auto_country_code": true,
+    "perf_sensor_answer": false,
+    "button_incoming_call_report": "2",
+    "button_smart_call_forward": false,
+    "default_sms_key": "0",
+    "button_call_respond_via_sms": true,
+    "canned_response_pref_1": "现在无法接听。有什么事吗？",
+    "canned_response_pref_2": "我马上会打给你。",
+    "canned_response_pref_3": "我稍后会再打给你。",
+    "canned_response_pref_4": "现在无法接听。能稍后再打给我吗？"
+  }
+}

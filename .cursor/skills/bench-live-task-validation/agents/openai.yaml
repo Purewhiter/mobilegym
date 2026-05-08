@@ -1,0 +1,4 @@
+interface:
+  display_name: "Bench Live Task Validation"
+  short_description: "在线验证 bench_env 任务、审查轨迹截图并归因问题"
+  default_prompt: "Use $bench-live-task-validation to run representative bench_env tasks online, inspect trajectories and screenshots, classify failures, and decide whether to fix or report them."

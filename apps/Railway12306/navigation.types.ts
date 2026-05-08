@@ -1,0 +1,20 @@
+// Re-export from Wechat's navigation types (shared across apps)
+export type {
+  NavigationDeclaration,
+  RouteDeclaration,
+  TransitionDeclaration,
+  CaseDeclaration,
+  Condition,
+  ValueRef,
+  FromConstraint,
+  Primitive,
+  GestureType,
+  EntryPointDeclaration,
+  ScrollContainerDeclaration,
+  ActionDeclaration,
+  LocalStateDeclaration,
+  ActionEffect,
+  EdgeAvailability,
+  DataSourceDeclaration,
+  StateCondition,
+} from '../Wechat/navigation.types';

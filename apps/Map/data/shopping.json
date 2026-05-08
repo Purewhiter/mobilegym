@@ -1,0 +1,60 @@
+[
+  {
+    "id": "s1",
+    "name": "物美便利店",
+    "ratingCount": 0,
+    "category": "便利店",
+    "distance": 230,
+    "address": "CN 北京市 海淀区 知春路 63 甲63号...",
+    "status": "Open",
+    "lat": 39.976,
+    "lng": 116.335
+  },
+  {
+    "id": "s2",
+    "name": "华丽便利店",
+    "ratingCount": 0,
+    "category": "杂货店",
+    "distance": 450,
+    "address": "知春路知春紫金数码园",
+    "status": "Open",
+    "lat": 39.975,
+    "lng": 116.338
+  },
+  {
+    "id": "s3",
+    "name": "燕港加油站 - 便利店",
+    "ratingCount": 0,
+    "category": "便利店",
+    "distance": 350,
+    "address": "知春路53号",
+    "status": "Open",
+    "lat": 39.977,
+    "lng": 116.332
+  },
+  {
+    "id": "s4",
+    "name": "全家 FamilyMart",
+    "rating": 4.5,
+    "ratingCount": 128,
+    "category": "便利店",
+    "distance": 520,
+    "address": "中关村东路1号",
+    "status": "Open",
+    "lat": 39.98,
+    "lng": 116.33
+  },
+  {
+    "id": "s5",
+    "name": "7-Eleven",
+    "rating": 4.2,
+    "ratingCount": 85,
+    "category": "便利店",
+    "distance": 600,
+    "address": "海淀南路32号",
+    "status": "Open",
+    "lat": 39.97,
+    "lng": 116.335
+  }
+]
+

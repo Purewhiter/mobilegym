@@ -1,0 +1,189 @@
+{
+  "settings": {
+    "language": "zh",
+    "timer": "off",
+    "sleepReminder": false,
+    "recommend": {
+      "playMode": "auto",
+      "autoPlay": "wifi",
+      "bigCardSound": "off",
+      "refresh": "on"
+    },
+    "avatarEntry": {
+      "watchVideo": true,
+      "listenVideo": true
+    },
+    "offline": {
+      "autoDownload": true
+    },
+    "chase": {
+      "xianXiuMode": false
+    },
+    "push": {
+      "like": true,
+      "comment": true,
+      "at": true,
+      "chat": true,
+      "followUp": true,
+      "recommend": true,
+      "hot": true,
+      "activity": true,
+      "chase": true,
+      "live": true,
+      "collection": true,
+      "search": true,
+      "otherSub": true,
+      "upload": true,
+      "logistics": true,
+      "value": true,
+      "security": true,
+      "other": true,
+      "banner": true
+    },
+    "message": {
+      "notify": true,
+      "smartBlock": true,
+      "replyAt": "all",
+      "like": "all",
+      "fan": "on",
+      "support": "on",
+      "supportCollapse": true,
+      "unfollowCollapse": false
+    },
+    "harass": {
+      "oneKey": false,
+      "comment": "all",
+      "danmaku": "all",
+      "pm": "all"
+    },
+    "other": {
+      "wifiPkg": true,
+      "clipboard": true,
+      "screenshotShare": true,
+      "watermark": "off",
+      "imageQuality": "clear"
+    },
+    "playback": {
+      "dataAuto": true,
+      "detailAuto": true,
+      "detailFullscreen": false,
+      "feedAuto": "on",
+      "homeAuto": "all",
+      "portraitFullscreen": true,
+      "pipOut": false,
+      "pipIn": false,
+      "backgroundListen": true,
+      "backgroundSeries": true,
+      "danmakuMemory": false,
+      "danmakuQuick": true,
+      "subtitleFeedback": false,
+      "subtitleDrag": false,
+      "hdr": false,
+      "fullscreenCount": true,
+      "gravity": true,
+      "volumeBalance": "standard",
+      "eyeCare": false,
+      "colorAid": false,
+      "https": false
+    }
+  },
+  "user": {
+    "name": "xiaoming-ai",
+    "level": 0,
+    "avatar": "./images/avatars/self.jpg",
+    "bCoins": 0,
+    "coins": 1240,
+    "following": 2,
+    "followers": 1,
+    "dynamic": 0,
+    "isVip": false,
+    "sex": "保密",
+    "birthday": "",
+    "sign": "这是我的签名",
+    "school": "中国科学院大学",
+    "ipLocation": "北京",
+    "uid": "800000000000",
+    "followingList": [
+      {
+        "mid": "800000025938",
+        "name": "铁壁观察",
+        "face": "./images/avatars/mid_800000025938.jpg",
+        "sign": "关注社会动态与历史人文，偶尔分享生活随想。"
+      },
+      {
+        "mid": "800000019727",
+        "name": "小白工坊志",
+        "face": "./images/avatars/mid_800000019727.jpg",
+        "sign": "记录生活中的创意瞬间，分享科技与人文的碰撞"
+      }
+    ],
+    "followersList": [
+      {
+        "mid": "800000000001",
+        "name": "星流笔记",
+        "face": "./images/avatars/mid_800000000001.jpg",
+        "sign": "专注探索宇宙深处的未解之谜，分享硬核天文知识与浪漫星空摄影",
+        "isVip": false
+      }
+    ],
+    "likedVideoIds": [
+      "BVmg00006148"
+    ],
+    "dislikedVideoIds": [],
+    "coinedVideoCoins": {},
+    "favoritesFolders": [
+      {
+        "id": "fav_default",
+        "title": "默认收藏夹",
+        "isPublic": false,
+        "videoIds": [
+          "BVmg00006148",
+          "BVmg00002349",
+          "BVmg00006063",
+          "BVmg00008944",
+          "BVmg00000413",
+          "BVmg00001831"
+        ]
+      },
+      {
+        "id": "fav_test3",
+        "title": "科技数码",
+        "isPublic": true,
+        "videoIds": [
+          "BVmg00009359",
+          "BVmg00007073"
+        ]
+      },
+      {
+        "id": "fav_test",
+        "title": "学习",
+        "isPublic": true,
+        "videoIds": []
+      },
+      {
+        "id": "fav_safe",
+        "title": "人工智能",
+        "isPublic": false,
+        "videoIds": [
+          "BVmg00001257",
+          "BVmg00003386"
+        ]
+      }
+    ],
+    "subscribedAnime": [
+      {
+        "id": "BVmg00000086",
+        "title": "凡人修仙传"
+      },
+      {
+        "id": "BVmg00000218",
+        "title": "熊出没"
+      }
+    ],
+    "subscribedDramas": [],
+    "searchHistory": [
+      "凡人修仙传",
+      "熊出没"
+    ]
+  }
+}

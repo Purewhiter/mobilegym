@@ -1,0 +1,1462 @@
+{
+  "app": "tencent_meeting",
+  "appDir": "apps/TencentMeeting",
+  "mode": "data",
+  "dataFile": "data/index.ts",
+  "reachability": {
+    "entryNodes": [
+      "/"
+    ],
+    "reachableNodeCount": 20,
+    "reachableEdgeCount": 38,
+    "unreachableNodeCount": 0,
+    "unreachableEdgeCount": 0,
+    "unreachableNodeIds": []
+  },
+  "routeCount": 20,
+  "transitionCount": 35,
+  "nodes": [
+    {
+      "id": "/",
+      "routePath": "/",
+      "uiStateId": "home.base",
+      "component": "HomePage",
+      "entryPoint": true,
+      "entry": {
+        "kind": "home",
+        "home": true,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "页面内容"
+        }
+      ],
+      "description": "默认首页",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/history",
+      "routePath": "/history",
+      "uiStateId": "history.base",
+      "component": "HistoryMeetingsPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "history",
+          "direction": "vertical",
+          "description": "历史会议列表"
+        }
+      ],
+      "description": "历史会议默认",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/contacts",
+      "routePath": "/contacts",
+      "uiStateId": "contacts.base",
+      "component": "ContactsPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "页面内容"
+        }
+      ],
+      "description": "通讯录默认",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/me",
+      "routePath": "/me",
+      "uiStateId": "me.base",
+      "component": "MePage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "页面内容"
+        }
+      ],
+      "description": "我的-默认",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/join",
+      "routePath": "/join",
+      "uiStateId": "join.base",
+      "component": "JoinMeetingPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "页面内容"
+        }
+      ],
+      "description": "加入会议默认",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/quick",
+      "routePath": "/quick",
+      "uiStateId": "quick.base",
+      "component": "QuickMeetingPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "页面内容"
+        }
+      ],
+      "description": "快速会议默认",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/schedule",
+      "routePath": "/schedule",
+      "uiStateId": "schedule.base",
+      "component": "ScheduleMeetingPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "页面内容"
+        }
+      ],
+      "description": "预定会议默认",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/schedule/regular",
+      "routePath": "/schedule/regular",
+      "uiStateId": "scheduleRegular.base",
+      "component": "ScheduleRegularMeetingPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "页面内容"
+        }
+      ],
+      "description": "常规会议预定默认",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/meeting",
+      "routePath": "/meeting",
+      "uiStateId": "meeting.base",
+      "component": "MeetingPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "页面内容"
+        }
+      ],
+      "description": "会议进行中",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/meeting?dialog=exit",
+      "routePath": "/meeting",
+      "uiStateId": "meeting.dialog.exit",
+      "component": "MeetingPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "页面内容"
+        }
+      ],
+      "description": "退出会议弹窗",
+      "search": {
+        "dialog": "exit"
+      },
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/share",
+      "routePath": "/share",
+      "uiStateId": "share.base",
+      "component": "ShareScreenPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "页面内容"
+        }
+      ],
+      "description": "共享屏幕默认",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/settings",
+      "routePath": "/settings",
+      "uiStateId": "settings.base",
+      "component": "SettingsPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "页面内容"
+        }
+      ],
+      "description": "设置默认",
+      "search": {},
+      "queryParams": {},
+      "actions": [
+        {
+          "id": "settings.notifications.toggle",
+          "label": "接收消息通知：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "settings.audio.micOnJoin.toggle",
+          "label": "入会开启麦克风：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "settings.audio.speakerOnJoin.toggle",
+          "label": "入会开启扬声器：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "settings.audio.micFloating.toggle",
+          "label": "开启麦克风浮窗：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "settings.audio.micSound.toggle",
+          "label": "开麦时播放提示音：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "settings.video.cameraOnJoin.toggle",
+          "label": "入会开启摄像头：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "settings.video.videoMirror.toggle",
+          "label": "视频镜像：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "settings.video.hideNonVideo.toggle",
+          "label": "隐藏非视频参会者：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "settings.video.hideSelf.toggle",
+          "label": "隐藏自己：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "settings.video.showPreview.toggle",
+          "label": "显示视频预览：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "settings.chat.danmu.toggle",
+          "label": "显示弹幕：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "settings.general.showDuration.toggle",
+          "label": "显示参会时长：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "settings.general.nearbyDiscovery.toggle",
+          "label": "近场发现：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "settings.general.voiceExcitation.toggle",
+          "label": "语音激励：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "settings.general.shortcutFloat.toggle",
+          "label": "快捷浮窗：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "settings.general.safeDrive.toggle",
+          "label": "安全驾驶模式：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "settings.general.darkModeFollow.toggle",
+          "label": "深色模式跟随系统：开关",
+          "behavior": "toggle"
+        }
+      ]
+    },
+    {
+      "id": "/account-security",
+      "routePath": "/account-security",
+      "uiStateId": "accountSecurity.base",
+      "component": "AccountSecurityPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "页面内容"
+        }
+      ],
+      "description": "账号与安全-默认",
+      "search": {},
+      "queryParams": {},
+      "actions": [
+        {
+          "id": "accountSecurity.showIdentity.toggle",
+          "label": "对外展示认证身份：开关",
+          "behavior": "toggle"
+        }
+      ]
+    },
+    {
+      "id": "/account-security?dialog=delete-account",
+      "routePath": "/account-security",
+      "uiStateId": "accountSecurity.dialog.delete",
+      "component": "AccountSecurityPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "页面内容"
+        }
+      ],
+      "description": "注销账号弹窗",
+      "search": {
+        "dialog": "delete-account"
+      },
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/personal-room",
+      "routePath": "/personal-room",
+      "uiStateId": "personalRoom.base",
+      "component": "PersonalRoomPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "页面内容"
+        }
+      ],
+      "description": "个人会议室默认",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/messages?tab=todo",
+      "routePath": "/messages",
+      "uiStateId": "messages.todo",
+      "component": "MessagesPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "页面内容"
+        }
+      ],
+      "description": "待办消息",
+      "search": {
+        "tab": "todo"
+      },
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/messages?tab=all",
+      "routePath": "/messages",
+      "uiStateId": "messages.all",
+      "component": "MessagesPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "页面内容"
+        }
+      ],
+      "description": "全部消息-全部",
+      "search": {
+        "tab": "all"
+      },
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/messages?tab=all&sub=system",
+      "routePath": "/messages",
+      "uiStateId": "messages.all.system",
+      "component": "MessagesPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "页面内容"
+        }
+      ],
+      "description": "全部消息-系统通知",
+      "search": {
+        "tab": "all",
+        "sub": "system"
+      },
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/messages?tab=all&sub=welfare",
+      "routePath": "/messages",
+      "uiStateId": "messages.all.welfare",
+      "component": "MessagesPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "页面内容"
+        }
+      ],
+      "description": "全部消息-福利通知",
+      "search": {
+        "tab": "all",
+        "sub": "welfare"
+      },
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/profile",
+      "routePath": "/profile",
+      "uiStateId": "profile.base",
+      "component": "ProfilePage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "页面内容"
+        }
+      ],
+      "description": "个人资料页-默认",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    }
+  ],
+  "edges": [
+    {
+      "source": "/",
+      "sourceNodeId": "/",
+      "target": "/history",
+      "targetNodeId": "/history",
+      "id": "home.history.open",
+      "label": "打开历史会议",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "history",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/",
+      "sourceNodeId": "/",
+      "target": "/meeting",
+      "targetNodeId": "/meeting",
+      "id": "home.ongoing.join",
+      "label": "加入进行中的会议",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "meeting_join",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/contacts",
+      "sourceNodeId": "/contacts",
+      "target": "/",
+      "targetNodeId": "/",
+      "id": "tab.home",
+      "label": "切换至会议主页",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {
+        "dialog": null
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "tab_home",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/me",
+      "sourceNodeId": "/me",
+      "target": "/",
+      "targetNodeId": "/",
+      "id": "tab.home",
+      "label": "切换至会议主页",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {
+        "dialog": null
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "tab_home",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/",
+      "sourceNodeId": "/",
+      "target": "/contacts",
+      "targetNodeId": "/contacts",
+      "id": "tab.contacts",
+      "label": "切换至通讯录",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "tab_contacts",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/me",
+      "sourceNodeId": "/me",
+      "target": "/contacts",
+      "targetNodeId": "/contacts",
+      "id": "tab.contacts",
+      "label": "切换至通讯录",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "tab_contacts",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/",
+      "sourceNodeId": "/",
+      "target": "/me",
+      "targetNodeId": "/me",
+      "id": "tab.me",
+      "label": "切换至我的",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "tab_me",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/contacts",
+      "sourceNodeId": "/contacts",
+      "target": "/me",
+      "targetNodeId": "/me",
+      "id": "tab.me",
+      "label": "切换至我的",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "tab_me",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/",
+      "sourceNodeId": "/",
+      "target": "/profile",
+      "targetNodeId": "/profile",
+      "id": "home.profile.open",
+      "label": "打开个人资料页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "profile",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/profile",
+      "sourceNodeId": "/profile",
+      "target": "/personal-room",
+      "targetNodeId": "/personal-room",
+      "id": "profile.personal_room.open",
+      "label": "从个人资料页打开个人会议室",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "personal_room",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/profile",
+      "sourceNodeId": "/profile",
+      "target": "/account-security",
+      "targetNodeId": "/account-security",
+      "id": "profile.account_security.open",
+      "label": "从个人资料页打开账号与安全",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "account_security",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/profile",
+      "sourceNodeId": "/profile",
+      "target": "/settings",
+      "targetNodeId": "/settings",
+      "id": "profile.settings.open",
+      "label": "从个人资料页进入设置",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "settings",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/",
+      "sourceNodeId": "/",
+      "target": "/join",
+      "targetNodeId": "/join",
+      "id": "home.join.open",
+      "label": "进入加入会议页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "join",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/",
+      "sourceNodeId": "/",
+      "target": "/quick",
+      "targetNodeId": "/quick",
+      "id": "home.quick.open",
+      "label": "进入快速会议",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "quick",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/",
+      "sourceNodeId": "/",
+      "target": "/schedule",
+      "targetNodeId": "/schedule",
+      "id": "home.schedule.open",
+      "label": "进入预定会议",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "schedule",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/schedule",
+      "sourceNodeId": "/schedule",
+      "target": "/schedule/regular",
+      "targetNodeId": "/schedule/regular",
+      "id": "schedule.regular.open",
+      "label": "进入常规会议预定",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "schedule_regular",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/quick",
+      "sourceNodeId": "/quick",
+      "target": "/meeting",
+      "targetNodeId": "/meeting",
+      "id": "quick.meeting.open",
+      "label": "进入会议",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "meeting_join",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/join",
+      "sourceNodeId": "/join",
+      "target": "/meeting",
+      "targetNodeId": "/meeting",
+      "id": "join.meeting.open",
+      "label": "进入会议",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "meeting_join",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/meeting",
+      "sourceNodeId": "/meeting",
+      "target": "/meeting?dialog=exit",
+      "targetNodeId": "/meeting?dialog=exit",
+      "id": "meeting.exit.open",
+      "label": "打开退出会议弹窗",
+      "type": "state",
+      "mode": "push",
+      "search": {
+        "dialog": "exit"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "meeting_exit",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/meeting?dialog=exit",
+      "sourceNodeId": "/meeting?dialog=exit",
+      "target": "/",
+      "targetNodeId": "/",
+      "id": "meeting.leave",
+      "label": "离开会议",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {
+        "dialog": null
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/meeting",
+        "search": {
+          "dialog": "exit"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "leave_meeting",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/meeting?dialog=exit",
+      "sourceNodeId": "/meeting?dialog=exit",
+      "target": "/",
+      "targetNodeId": "/",
+      "id": "meeting.end",
+      "label": "结束会议",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {
+        "dialog": null
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/meeting",
+        "search": {
+          "dialog": "exit"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "end_meeting",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/",
+      "sourceNodeId": "/",
+      "target": "/share",
+      "targetNodeId": "/share",
+      "id": "home.share.open",
+      "label": "进入共享屏幕",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "share",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/",
+      "sourceNodeId": "/",
+      "target": "/messages?tab=all",
+      "targetNodeId": "/messages?tab=all",
+      "id": "home.messages.open",
+      "label": "打开消息中心",
+      "type": "navigation",
+      "mode": "push",
+      "search": {
+        "tab": "all"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "messages",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/me",
+      "sourceNodeId": "/me",
+      "target": "/personal-room",
+      "targetNodeId": "/personal-room",
+      "id": "me.personal_room.open",
+      "label": "打开个人会议室",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "personal_room",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/me",
+      "sourceNodeId": "/me",
+      "target": "/account-security",
+      "targetNodeId": "/account-security",
+      "id": "me.account_security.open",
+      "label": "打开账号与安全",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "account_security",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/me",
+      "sourceNodeId": "/me",
+      "target": "/settings",
+      "targetNodeId": "/settings",
+      "id": "me.settings.open",
+      "label": "进入设置",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "settings",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/settings",
+      "sourceNodeId": "/settings",
+      "target": "/account-security",
+      "targetNodeId": "/account-security",
+      "id": "settings.account_security.open",
+      "label": "设置页跳转账号安全",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "settings_account_security",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/account-security",
+      "sourceNodeId": "/account-security",
+      "target": "/account-security?dialog=delete-account",
+      "targetNodeId": "/account-security?dialog=delete-account",
+      "id": "accountSecurity.dialog.delete.open",
+      "label": "打开注销账号弹窗",
+      "type": "state",
+      "mode": "push",
+      "search": {
+        "dialog": "delete-account"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/account-security",
+        "search": {
+          "dialog": null
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "delete_account",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/messages?tab=todo",
+      "sourceNodeId": "/messages?tab=todo",
+      "target": "/messages?tab=all",
+      "targetNodeId": "/messages?tab=all",
+      "id": "messages.tab.switch",
+      "label": "切换消息 Tab → 全部消息-全部",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "all"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/messages",
+        "search": {
+          "tab": "todo"
+        }
+      },
+      "expandedFrom": "searchParams",
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "messages_tab",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/messages?tab=all",
+      "sourceNodeId": "/messages?tab=all",
+      "target": "/messages?tab=todo",
+      "targetNodeId": "/messages?tab=todo",
+      "id": "messages.tab.switch",
+      "label": "切换消息 Tab → 待办消息",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "todo"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/messages",
+        "search": {
+          "tab": "all"
+        }
+      },
+      "expandedFrom": "searchParams",
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "messages_tab",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/messages?tab=all&sub=system",
+      "sourceNodeId": "/messages?tab=all&sub=system",
+      "target": "/messages?tab=todo",
+      "targetNodeId": "/messages?tab=todo",
+      "id": "messages.tab.switch",
+      "label": "切换消息 Tab → 待办消息",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "todo"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/messages",
+        "search": {
+          "tab": "all",
+          "sub": "system"
+        }
+      },
+      "expandedFrom": "searchParams",
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "messages_tab",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/messages?tab=all&sub=system",
+      "sourceNodeId": "/messages?tab=all&sub=system",
+      "target": "/messages?tab=all",
+      "targetNodeId": "/messages?tab=all",
+      "id": "messages.tab.switch",
+      "label": "切换消息 Tab → 全部消息-全部",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "all"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/messages",
+        "search": {
+          "tab": "all",
+          "sub": "system"
+        }
+      },
+      "expandedFrom": "searchParams",
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "messages_tab",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/messages?tab=all&sub=welfare",
+      "sourceNodeId": "/messages?tab=all&sub=welfare",
+      "target": "/messages?tab=todo",
+      "targetNodeId": "/messages?tab=todo",
+      "id": "messages.tab.switch",
+      "label": "切换消息 Tab → 待办消息",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "todo"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/messages",
+        "search": {
+          "tab": "all",
+          "sub": "welfare"
+        }
+      },
+      "expandedFrom": "searchParams",
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "messages_tab",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/messages?tab=all&sub=welfare",
+      "sourceNodeId": "/messages?tab=all&sub=welfare",
+      "target": "/messages?tab=all",
+      "targetNodeId": "/messages?tab=all",
+      "id": "messages.tab.switch",
+      "label": "切换消息 Tab → 全部消息-全部",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "all"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/messages",
+        "search": {
+          "tab": "all",
+          "sub": "welfare"
+        }
+      },
+      "expandedFrom": "searchParams",
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "messages_tab",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/messages?tab=all",
+      "sourceNodeId": "/messages?tab=all",
+      "target": "/messages?tab=all&sub=system",
+      "targetNodeId": "/messages?tab=all&sub=system",
+      "id": "messages.sub.switch",
+      "label": "切换消息子 Tab → 全部消息-系统通知",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "all",
+        "sub": "system"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/messages",
+        "search": {
+          "tab": "all"
+        }
+      },
+      "expandedFrom": "searchParams",
+      "uiMeta": {
+        "placement": "content",
+        "icon": "messages_sub",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/messages?tab=all",
+      "sourceNodeId": "/messages?tab=all",
+      "target": "/messages?tab=all&sub=welfare",
+      "targetNodeId": "/messages?tab=all&sub=welfare",
+      "id": "messages.sub.switch",
+      "label": "切换消息子 Tab → 全部消息-福利通知",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "all",
+        "sub": "welfare"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/messages",
+        "search": {
+          "tab": "all"
+        }
+      },
+      "expandedFrom": "searchParams",
+      "uiMeta": {
+        "placement": "content",
+        "icon": "messages_sub",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/messages?tab=all&sub=system",
+      "sourceNodeId": "/messages?tab=all&sub=system",
+      "target": "/messages?tab=all&sub=welfare",
+      "targetNodeId": "/messages?tab=all&sub=welfare",
+      "id": "messages.sub.switch",
+      "label": "切换消息子 Tab → 全部消息-福利通知",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "all",
+        "sub": "welfare"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/messages",
+        "search": {
+          "tab": "all",
+          "sub": "system"
+        }
+      },
+      "expandedFrom": "searchParams",
+      "uiMeta": {
+        "placement": "content",
+        "icon": "messages_sub",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/messages?tab=all&sub=welfare",
+      "sourceNodeId": "/messages?tab=all&sub=welfare",
+      "target": "/messages?tab=all&sub=system",
+      "targetNodeId": "/messages?tab=all&sub=system",
+      "id": "messages.sub.switch",
+      "label": "切换消息子 Tab → 全部消息-系统通知",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "all",
+        "sub": "system"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/messages",
+        "search": {
+          "tab": "all",
+          "sub": "welfare"
+        }
+      },
+      "expandedFrom": "searchParams",
+      "uiMeta": {
+        "placement": "content",
+        "icon": "messages_sub",
+        "gesture": "tap"
+      }
+    }
+  ]
+}

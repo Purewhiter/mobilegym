@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OSM 矢量地图 Demo — 搜索 · 详情 · 导航</title>
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" />
+  <style>
+    :root {
+      --panel-bg: #1e293bee;
+      --panel-border: #334155;
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --surface: #334155;
+      --accent: #3b82f6;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #0f172a; color: #e2e8f0;
+      height: 100vh; display: flex; flex-direction: column;
+    }
+
+    /* ── Header ── */
+    header {
+      padding: 8px 16px; background: #1e293b; border-bottom: 1px solid var(--panel-border);
+      display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+    }
+    header h1 { font-size: 16px; font-weight: 600; color: var(--text-primary); }
+    .badge { font-size: 10px; padding: 2px 7px; border-radius: 999px; font-weight: 600; }
+    .badge-loc { background: #22c55e; color: #052e16; }
+    .badge-vec { background: #8b5cf6; color: #fff; }
+
+    /* ── Toolbar ── */
+    .toolbar {
+      padding: 5px 16px; background: #1e293b; border-bottom: 1px solid var(--panel-border);
+      display: flex; align-items: center; gap: 6px; flex-shrink: 0; flex-wrap: wrap;
+    }
+    .toolbar button, .toolbar select {
+      padding: 4px 10px; border: 1px solid #475569; border-radius: 5px;
+      background: var(--surface); color: #e2e8f0; font-size: 12px;
+      cursor: pointer; transition: all 0.15s; white-space: nowrap;
+    }
+    .toolbar button:hover { background: #475569; }
+    .toolbar button.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .toolbar .lbl { font-size: 10px; color: var(--text-muted); }
+    .toolbar .sep { width: 1px; height: 18px; background: #475569; flex-shrink: 0; }
+    .toolbar .spacer { margin-left: auto; }
+    .toolbar .coord-display {
+      font-size: 11px; color: var(--text-secondary);
+      font-family: "SF Mono","Fira Code",monospace; white-space: nowrap;
+    }
+
+    #map { flex: 1; min-height: 0; position: relative; }
+
+    /* ── Search Box ── */
+    .search-box {
+      position: fixed; top: 76px; left: 50%; transform: translateX(-50%);
+      z-index: 20; width: 420px; max-width: calc(100vw - 40px);
+    }
+    .search-input-wrap {
+      display: flex; background: var(--panel-bg); backdrop-filter: blur(12px);
+      border: 1px solid var(--panel-border); border-radius: 10px; overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    }
+    .search-input-wrap input {
+      flex: 1; padding: 10px 14px; background: transparent; border: none; outline: none;
+      color: var(--text-primary); font-size: 14px;
+    }
+    .search-input-wrap input::placeholder { color: var(--text-muted); }
+    .search-input-wrap button {
+      padding: 8px 14px; background: var(--accent); border: none; color: #fff;
+      font-size: 13px; cursor: pointer;
+    }
+    .search-results {
+      margin-top: 4px; background: var(--panel-bg); backdrop-filter: blur(12px);
+      border: 1px solid var(--panel-border); border-radius: 10px;
+      max-height: 320px; overflow-y: auto; display: none;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    }
+    .search-results.visible { display: block; }
+    .search-result-item {
+      padding: 10px 14px; cursor: pointer; transition: background 0.15s;
+      border-bottom: 1px solid #334155;
+    }
+    .search-result-item:last-child { border-bottom: none; }
+    .search-result-item:hover { background: var(--surface); }
+    .search-result-item .sr-name { font-size: 13px; color: var(--text-primary); font-weight: 500; }
+    .search-result-item .sr-addr { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+    .search-result-item .sr-actions { margin-top: 4px; display: flex; gap: 8px; }
+    .search-result-item .sr-btn {
+      font-size: 11px; color: var(--accent); cursor: pointer; background: none; border: none; padding: 0;
+    }
+    .search-result-item .sr-btn:hover { text-decoration: underline; }
+
+    /* ── Detail Panel ── */
+    .detail-panel {
+      position: fixed; top: 76px; right: 12px; bottom: 12px;
+      width: 340px; background: var(--panel-bg); backdrop-filter: blur(12px);
+      border: 1px solid var(--panel-border); border-radius: 12px;
+      z-index: 15; display: none; flex-direction: column;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4); overflow: hidden;
+    }
+    .detail-panel.visible { display: flex; }
+    .detail-header {
+      padding: 12px 14px; border-bottom: 1px solid var(--panel-border);
+      display: flex; align-items: flex-start; gap: 10px;
+    }
+    .detail-header .dh-name { font-size: 15px; font-weight: 600; color: var(--text-primary); flex: 1; }
+    .detail-header .dh-close {
+      width: 24px; height: 24px; border-radius: 6px; background: var(--surface);
+      border: none; color: var(--text-secondary); cursor: pointer; font-size: 14px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .detail-body { flex: 1; overflow-y: auto; padding: 12px 14px; }
+
+    .detail-section { margin-bottom: 14px; }
+    .detail-section h4 {
+      font-size: 11px; color: var(--text-muted); font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;
+      padding-bottom: 4px; border-bottom: 1px solid #334155;
+    }
+    .detail-row {
+      display: flex; gap: 8px; padding: 3px 0; font-size: 12px;
+    }
+    .detail-row .dk { color: var(--text-muted); min-width: 90px; flex-shrink: 0; }
+    .detail-row .dv { color: var(--text-primary); word-break: break-all; }
+    .detail-row .dv a { color: var(--accent); text-decoration: none; }
+    .detail-row .dv a:hover { text-decoration: underline; }
+
+    .route-summary {
+      display: flex; gap: 12px; padding: 8px 0;
+    }
+    .route-card {
+      flex: 1; padding: 8px; background: var(--surface); border-radius: 8px;
+      text-align: center; cursor: pointer; border: 2px solid transparent;
+      transition: border-color 0.15s;
+    }
+    .route-card.active { border-color: var(--accent); }
+    .route-card .rc-icon { font-size: 18px; }
+    .route-card .rc-time { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+    .route-card .rc-dist { font-size: 11px; color: var(--text-muted); }
+
+    .route-steps { margin-top: 8px; }
+    .route-step {
+      padding: 4px 0; font-size: 12px; color: var(--text-secondary);
+      display: flex; gap: 6px; align-items: flex-start;
+    }
+    .route-step .rs-icon { flex-shrink: 0; width: 18px; text-align: center; }
+
+    /* ── Info Panel ── */
+    .info-panel {
+      position: fixed; bottom: 12px; left: 12px;
+      background: var(--panel-bg); backdrop-filter: blur(12px);
+      border: 1px solid var(--panel-border); border-radius: 10px;
+      padding: 10px 14px; min-width: 220px; z-index: 10;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    }
+    .info-panel h3 { font-size: 12px; color: var(--text-muted); margin-bottom: 4px; font-weight: 500; }
+    .info-panel .loc-name { font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 2px; }
+    .info-panel .coords { font-size: 11px; color: var(--text-muted); font-family: "SF Mono","Fira Code",monospace; }
+    .info-panel .meta { margin-top: 6px; display: flex; gap: 12px; font-size: 11px; color: var(--text-secondary); }
+
+    /* ── POI List ── */
+    .poi-panel {
+      position: fixed; top: 76px; left: 12px; bottom: 12px;
+      width: 260px; background: var(--panel-bg); backdrop-filter: blur(12px);
+      border: 1px solid var(--panel-border); border-radius: 12px;
+      z-index: 10; display: flex; flex-direction: column;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3); overflow: hidden;
+    }
+    .poi-panel.hidden { display: none; }
+    .poi-panel-header {
+      padding: 10px 12px; border-bottom: 1px solid var(--panel-border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .poi-panel-header h3 { font-size: 13px; color: var(--text-secondary); }
+    .poi-panel-header .poi-count { font-size: 11px; color: var(--text-muted); }
+    .poi-list-body { flex: 1; overflow-y: auto; padding: 6px; }
+    .poi-group-hdr {
+      font-size: 11px; color: var(--text-secondary); font-weight: 600;
+      margin: 6px 0 3px; padding: 3px 6px; border-top: 1px solid #334155;
+    }
+    .poi-item {
+      padding: 5px 6px; border-radius: 5px;
+      cursor: pointer; transition: background 0.15s; margin-bottom: 1px;
+    }
+    .poi-item:hover { background: var(--surface); }
+    .poi-item .name { font-size: 12px; color: var(--text-primary); font-weight: 500; }
+    .poi-item .type { font-size: 10px; color: var(--text-muted); }
+
+    .loading-toast {
+      position: fixed; top: 76px; left: 50%; transform: translateX(-50%);
+      background: var(--panel-bg); backdrop-filter: blur(12px);
+      border: 1px solid var(--panel-border); border-radius: 8px;
+      padding: 8px 16px; z-index: 25; font-size: 13px; color: var(--text-secondary);
+      display: none;
+    }
+    .loading-toast.visible { display: block; }
+
+    .maplibregl-popup-content {
+      border-radius: 8px !important; padding: 10px 14px !important;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.15) !important;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      max-width: 280px !important;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>🗺️ OSM 地图</h1>
+  <span class="badge badge-loc">模拟器定位</span>
+  <span class="badge badge-vec" id="render-badge">Vector</span>
+</header>
+
+<div class="toolbar">
+  <span class="lbl">矢量:</span>
+  <button id="btn-voyager" class="active" onclick="setStyle('voyager')">Voyager</button>
+  <button id="btn-positron" onclick="setStyle('positron')">Positron</button>
+  <button id="btn-dark" onclick="setStyle('dark')">Dark</button>
+  <div class="sep"></div>
+  <span class="lbl">栅格:</span>
+  <button id="btn-osm" onclick="setStyle('osm')">OSM</button>
+  <div class="sep"></div>
+  <button id="btn-3d" onclick="toggle3D()">3D</button>
+  <button id="btn-poi" class="active" onclick="togglePOIPanel()">POI</button>
+  <button onclick="centerOnSim()">定位</button>
+  <span class="spacer"></span>
+  <span class="coord-display" id="cursor-coords">—</span>
+</div>
+
+<!-- Search -->
+<div class="search-box">
+  <div class="search-input-wrap">
+    <input type="text" id="search-input" placeholder="搜索地点（支持中英文）…" autocomplete="off" />
+    <button onclick="doSearch()">搜索</button>
+  </div>
+  <div class="search-results" id="search-results"></div>
+</div>
+
+<div id="map"></div>
+<div class="loading-toast" id="loading-toast">加载中…</div>
+
+<!-- Info -->
+<div class="info-panel" id="info-panel">
+  <h3>📍 模拟器位置</h3>
+  <div class="loc-name" id="sim-address">北京 · 海淀区</div>
+  <div class="coords">39.979469°N, 116.332398°E</div>
+  <div class="meta">
+    <span>缩放: <strong id="zoom-level">15.0</strong></span>
+    <span>方位: <strong id="bearing-val">0</strong>°</span>
+  </div>
+</div>
+
+<!-- POI List -->
+<div class="poi-panel" id="poi-panel">
+  <div class="poi-panel-header">
+    <h3>📌 附近要素</h3>
+    <span class="poi-count" id="poi-count">—</span>
+  </div>
+  <div class="poi-list-body" id="poi-results">加载中…</div>
+</div>
+
+<!-- Detail -->
+<div class="detail-panel" id="detail-panel">
+  <div class="detail-header">
+    <div class="dh-name" id="detail-name">—</div>
+    <button class="dh-close" onclick="closeDetail()">✕</button>
+  </div>
+  <div class="detail-body" id="detail-body"></div>
+</div>
+
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script>
+const SIM_LAT = 39.9794688;
+const SIM_LNG = 116.3323982;
+
+/* ══════════════ Map Init ══════════════ */
+const vectorStyles = {
+  voyager:  'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json',
+  positron: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
+  dark:     'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
+};
+function rasterStyle(id, url, attr, mz) {
+  return { version:8, sources:{[id]:{type:'raster',tiles:[url],tileSize:256,maxzoom:mz,attribution:attr}}, layers:[{id:id+'-tiles',type:'raster',source:id}] };
+}
+const rasterStyles = {
+  osm: rasterStyle('osm','https://tile.openstreetmap.org/{z}/{x}/{y}.png','&copy; OpenStreetMap',19),
+};
+const allKeys = [...Object.keys(vectorStyles),...Object.keys(rasterStyles)];
+let currentStyle = 'voyager', isVector = true;
+
+const map = new maplibregl.Map({
+  container:'map', style:vectorStyles.voyager,
+  center:[SIM_LNG,SIM_LAT], zoom:15, pitch:0, bearing:0, antialias:true,
+});
+map.addControl(new maplibregl.NavigationControl(),'top-right');
+map.addControl(new maplibregl.ScaleControl({unit:'metric'}),'bottom-right');
+
+/* ── Sim Marker ── */
+const pulseCSS=document.createElement('style');
+pulseCSS.textContent='@keyframes pulse{0%{transform:scale(1);opacity:1}100%{transform:scale(2.5);opacity:0}}';
+document.head.appendChild(pulseCSS);
+const markerEl=document.createElement('div');
+markerEl.innerHTML='<div style="position:relative;width:24px;height:24px;"><div style="position:absolute;inset:0;background:rgba(59,130,246,0.25);border-radius:50%;animation:pulse 2s infinite;"></div><div style="position:absolute;top:4px;left:4px;width:16px;height:16px;background:#3b82f6;border:3px solid #fff;border-radius:50%;box-shadow:0 1px 6px rgba(0,0,0,0.3);"></div></div>';
+new maplibregl.Marker({element:markerEl,anchor:'center'}).setLngLat([SIM_LNG,SIM_LAT]).addTo(map);
+
+/* ── Accuracy circle ── */
+function addAccuracyCircle(){
+  if(map.getSource('acc'))return;
+  const N=64,R=100,coords=[];
+  for(let i=0;i<=N;i++){const a=(i/N)*2*Math.PI;coords.push([SIM_LNG+(R*Math.cos(a))/(111320*Math.cos(SIM_LAT*Math.PI/180)),SIM_LAT+(R*Math.sin(a))/111320]);}
+  map.addSource('acc',{type:'geojson',data:{type:'Feature',geometry:{type:'Polygon',coordinates:[coords]},properties:{}}});
+  map.addLayer({id:'acc-fill',type:'fill',source:'acc',paint:{'fill-color':'#3b82f6','fill-opacity':0.08}});
+  map.addLayer({id:'acc-line',type:'line',source:'acc',paint:{'line-color':'#3b82f6','line-width':1.5,'line-dasharray':[3,3],'line-opacity':0.4}});
+}
+
+/* ── POI GeoJSON Layer ── */
+function addPOILayer(){
+  if(map.getSource('pois'))return;
+  map.addSource('pois',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
+  map.addLayer({id:'poi-circles',type:'circle',source:'pois',paint:{
+    'circle-radius':['interpolate',['linear'],['zoom'],12,3,16,5,18,7],
+    'circle-color':['match',['get','cat'],'food','#ef4444','shop','#f59e0b','tourism','#8b5cf6','education','#3b82f6','health','#10b981','finance','#06b6d4','transport','#6366f1','building','#f97316','residential','#a3a3a3','road','#78716c','#94a3b8'],
+    'circle-stroke-color':'#fff','circle-stroke-width':1.5,
+  }});
+  map.addLayer({id:'poi-labels',type:'symbol',source:'pois',layout:{
+    'text-field':['get','name'],'text-size':11,'text-offset':[0,1.2],'text-anchor':'top','text-max-width':8,'text-allow-overlap':false,
+  },paint:{
+    'text-color':currentStyle==='dark'?'#e2e8f0':'#1e293b',
+    'text-halo-color':currentStyle==='dark'?'#1e293b':'#fff','text-halo-width':1.5,
+  }});
+  map.on('click','poi-circles',e=>{
+    const f=e.features[0];
+    const props=f.properties;
+    const osmType=props.osmType, osmId=props.osmId;
+    const coords=f.geometry.coordinates;
+    openDetail(props.name,osmType,osmId,coords[1],coords[0],JSON.parse(props.allTags||'{}'));
+  });
+  map.on('mouseenter','poi-circles',()=>{map.getCanvas().style.cursor='pointer';});
+  map.on('mouseleave','poi-circles',()=>{map.getCanvas().style.cursor='';});
+}
+
+/* ── Route Layer ── */
+function addRouteLayer(){
+  if(map.getSource('route'))return;
+  map.addSource('route',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
+  map.addLayer({id:'route-line',type:'line',source:'route',layout:{'line-join':'round','line-cap':'round'},paint:{
+    'line-color':'#3b82f6','line-width':4,'line-opacity':0.8,
+  }},'poi-circles');
+  map.addSource('route-end',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
+  map.addLayer({id:'route-end-marker',type:'circle',source:'route-end',paint:{
+    'circle-radius':8,'circle-color':'#ef4444','circle-stroke-color':'#fff','circle-stroke-width':2,
+  }});
+}
+
+/* ── HUD ── */
+map.on('mousemove',e=>{document.getElementById('cursor-coords').textContent=`${e.lngLat.lat.toFixed(6)}, ${e.lngLat.lng.toFixed(6)}`;});
+function updateHUD(){
+  document.getElementById('zoom-level').textContent=map.getZoom().toFixed(1);
+  document.getElementById('bearing-val').textContent=Math.round(map.getBearing());
+}
+map.on('moveend',updateHUD);map.on('zoomend',updateHUD);
+
+/* ── Init ── */
+map.on('load',()=>{addAccuracyCircle();addPOILayer();addRouteLayer();loadPOIs();reverseGeoSim();});
+
+/* ══════════════ Style Switch ══════════════ */
+function setStyle(name){
+  currentStyle=name;isVector=name in vectorStyles;
+  const c=map.getCenter(),z=map.getZoom(),p=map.getPitch(),b=map.getBearing();
+  map.setStyle(isVector?vectorStyles[name]:rasterStyles[name]);
+  document.getElementById('render-badge').textContent=isVector?'Vector':'Raster';
+  map.once('style.load',()=>{
+    map.jumpTo({center:c,zoom:z,pitch:p,bearing:b});
+    addAccuracyCircle();addPOILayer();addRouteLayer();
+    if(poiGeoJSON)map.getSource('pois')?.setData(poiGeoJSON);
+    if(routeGeoJSON)map.getSource('route')?.setData(routeGeoJSON);
+    if(routeEndGeoJSON)map.getSource('route-end')?.setData(routeEndGeoJSON);
+    if(show3D&&isVector)add3DBuildings();
+  });
+  allKeys.forEach(k=>document.getElementById('btn-'+k)?.classList.toggle('active',k===name));
+}
+
+/* ══════════════ 3D ══════════════ */
+let show3D=false;
+function toggle3D(){
+  show3D=!show3D;document.getElementById('btn-3d').classList.toggle('active',show3D);
+  if(show3D){map.easeTo({pitch:55,duration:800});if(isVector)add3DBuildings();}
+  else{map.easeTo({pitch:0,duration:800});if(map.getLayer('3d-buildings'))map.removeLayer('3d-buildings');}
+}
+function add3DBuildings(){
+  if(map.getLayer('3d-buildings')||!isVector)return;
+  const ls=map.getStyle().layers||[];let before;
+  for(const l of ls){if(l.type==='symbol'&&(l.layout||{})['text-field']){before=l.id;break;}}
+  const srcs=map.getStyle().sources||{};const vs=Object.keys(srcs).find(k=>srcs[k].type==='vector');
+  if(!vs)return;
+  try{map.addLayer({id:'3d-buildings',source:vs,'source-layer':'building',filter:['==','$type','Polygon'],type:'fill-extrusion',minzoom:13,paint:{
+    'fill-extrusion-color':currentStyle==='dark'?'#2a2a3a':'#ddd',
+    'fill-extrusion-height':['interpolate',['linear'],['zoom'],13,0,15.5,['get','render_height']],
+    'fill-extrusion-base':['interpolate',['linear'],['zoom'],13,0,15.5,['get','render_min_height']],
+    'fill-extrusion-opacity':0.7,
+  }},before);}catch(e){}
+}
+function centerOnSim(){map.flyTo({center:[SIM_LNG,SIM_LAT],zoom:15,pitch:show3D?55:0,bearing:0,duration:1200});}
+
+/* ══════════════ POI Panel ══════════════ */
+let poiPanelVisible=true;
+function togglePOIPanel(){
+  poiPanelVisible=!poiPanelVisible;
+  document.getElementById('poi-panel').classList.toggle('hidden',!poiPanelVisible);
+  document.getElementById('btn-poi').classList.toggle('active',poiPanelVisible);
+}
+
+/* ══════════════ Classify ══════════════ */
+const TAG_CAT={restaurant:'food',cafe:'food',fast_food:'food',bar:'food',food_court:'food',bank:'finance',atm:'finance',pharmacy:'health',hospital:'health',clinic:'health',doctors:'health',dentist:'health',school:'education',university:'education',kindergarten:'education',college:'education',library:'education',supermarket:'shop',convenience:'shop',mall:'shop',bakery:'shop',clothes:'shop',electronics:'shop',hairdresser:'shop',butcher:'shop',greengrocer:'shop',hotel:'tourism',museum:'tourism',attraction:'tourism',viewpoint:'tourism',guest_house:'tourism',bus_station:'transport',bus_stop:'transport',fuel:'transport',parking:'transport',subway_entrance:'transport',station:'transport'};
+const CAT_EMOJI={food:'🍽️',finance:'🏦',health:'💊',education:'🏫',shop:'🛒',tourism:'⭐',transport:'🚌',building:'🏢',residential:'🏠',road:'🛣️',other:'📍'};
+const CAT_NAMES={food:'餐饮',shop:'商店',education:'教育',health:'医疗',finance:'金融',tourism:'旅游/休闲',transport:'交通',building:'建筑/办公',residential:'住宅',road:'道路',other:'其他'};
+const CAT_ORDER=['food','shop','education','health','finance','tourism','transport','building','residential','road','other'];
+
+function classify(tags){
+  const key=tags.amenity||tags.shop||tags.tourism;
+  if(key&&TAG_CAT[key])return{type:key,cat:TAG_CAT[key]};
+  if(tags.building){const bt=tags.building;return{type:tags.office||bt,cat:(bt==='residential'||bt==='apartments'||bt==='dormitory')?'residential':'building'};}
+  if(tags.highway==='bus_stop')return{type:'bus_stop',cat:'transport'};
+  if(tags.railway)return{type:tags.railway,cat:'transport'};
+  if(tags.highway)return{type:tags.highway,cat:'road'};
+  if(tags.leisure)return{type:tags.leisure,cat:'tourism'};
+  if(tags.office)return{type:tags.office,cat:'building'};
+  return{type:'place',cat:'other'};
+}
+
+/* ══════════════ Load POIs ══════════════ */
+let poiGeoJSON=null;
+
+async function overpassQuery(query, retries=2) {
+  const endpoints = [
+    'https://overpass-api.de/api/interpreter',
+    'https://overpass.kumi.systems/api/interpreter',
+  ];
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    const url = endpoints[attempt % endpoints.length];
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        body: 'data=' + encodeURIComponent(query),
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      });
+      const text = await res.text();
+      if (text.trim().startsWith('<')) {
+        console.warn(`Overpass returned HTML (attempt ${attempt+1}), retrying...`);
+        if (attempt < retries) { await new Promise(r => setTimeout(r, 2000 * (attempt + 1))); continue; }
+        throw new Error('Overpass API 返回错误（可能被限流），请稍后刷新重试');
+      }
+      return JSON.parse(text);
+    } catch (e) {
+      if (e.message.includes('Overpass API')) throw e;
+      if (attempt < retries) { await new Promise(r => setTimeout(r, 2000 * (attempt + 1))); continue; }
+      throw e;
+    }
+  }
+}
+
+async function loadPOIs(){
+  showToast('加载附近要素…');
+  const query=`[out:json][timeout:20];nwr["name"](around:800,${SIM_LAT},${SIM_LNG});out center 500;`;
+  try{
+    const data = await overpassQuery(query);
+    const features=[];
+    for(const el of data.elements||[]){
+      const tags=el.tags||{};const name=tags.name||tags['name:zh']||tags['name:en'];
+      if(!name)continue;
+      let lon,lat;
+      if(el.type==='node'){lon=el.lon;lat=el.lat;}else if(el.center){lon=el.center.lon;lat=el.center.lat;}else continue;
+      const info=classify(tags);
+      features.push({type:'Feature',geometry:{type:'Point',coordinates:[lon,lat]},properties:{name,type:info.type,cat:info.cat,osmType:el.type,osmId:el.id,allTags:JSON.stringify(tags)}});
+    }
+    poiGeoJSON={type:'FeatureCollection',features};
+    map.getSource('pois')?.setData(poiGeoJSON);
+    document.getElementById('poi-count').textContent=`${features.length} 个`;
+    renderPOIList(features);
+  }catch(err){document.getElementById('poi-results').innerHTML=`<div style="color:#f87171;padding:8px;">加载失败: ${err.message}</div>`;}
+  hideToast();
+}
+
+function renderPOIList(features){
+  const results=document.getElementById('poi-results');results.innerHTML='';
+  if(features.length===0){results.innerHTML='<div style="color:#94a3b8;padding:8px;">无结果</div>';return;}
+  const groups={};features.forEach(f=>{(groups[f.properties.cat]=groups[f.properties.cat]||[]).push(f);});
+  for(const cat of CAT_ORDER){
+    const items=groups[cat];if(!items)continue;
+    const hdr=document.createElement('div');hdr.className='poi-group-hdr';
+    hdr.textContent=`${CAT_EMOJI[cat]||'📍'} ${CAT_NAMES[cat]||cat} (${items.length})`;
+    results.appendChild(hdr);
+    for(const f of items){
+      const item=document.createElement('div');item.className='poi-item';
+      item.innerHTML=`<div class="name">${f.properties.name}</div><div class="type">${f.properties.type}</div>`;
+      item.onclick=()=>{
+        map.flyTo({center:f.geometry.coordinates,zoom:17,duration:800});
+        openDetail(f.properties.name,f.properties.osmType,f.properties.osmId,f.geometry.coordinates[1],f.geometry.coordinates[0],JSON.parse(f.properties.allTags));
+      };
+      results.appendChild(item);
+    }
+  }
+}
+
+/* ══════════════ Search ══════════════ */
+let searchTimeout;
+const searchInput=document.getElementById('search-input');
+searchInput.addEventListener('input',()=>{clearTimeout(searchTimeout);searchTimeout=setTimeout(doSearch,400);});
+searchInput.addEventListener('keydown',e=>{if(e.key==='Enter')doSearch();if(e.key==='Escape'){document.getElementById('search-results').classList.remove('visible');searchInput.blur();}});
+
+let searchMarkers=[];
+async function doSearch(){
+  const q=searchInput.value.trim();
+  const panel=document.getElementById('search-results');
+  if(!q){panel.classList.remove('visible');return;}
+  panel.innerHTML='<div style="padding:10px;color:#94a3b8;">搜索中…</div>';
+  panel.classList.add('visible');
+  try{
+    const url=`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=8&addressdetails=1&extratags=1&namedetails=1&accept-language=zh&viewbox=${SIM_LNG-0.05},${SIM_LAT+0.05},${SIM_LNG+0.05},${SIM_LAT-0.05}&bounded=0`;
+    const res=await fetch(url,{headers:{'User-Agent':'mobile-gym-demo'}});
+    const results=await res.json();
+    searchMarkers.forEach(m=>m.remove());searchMarkers=[];
+    panel.innerHTML='';
+    if(results.length===0){panel.innerHTML='<div style="padding:10px;color:#94a3b8;">未找到结果</div>';return;}
+    for(const r of results){
+      const lat=parseFloat(r.lat),lon=parseFloat(r.lon);
+      const name=r.namedetails?.['name:zh']||r.namedetails?.name||r.display_name.split(',')[0];
+      const addr=r.display_name;
+      const div=document.createElement('div');div.className='search-result-item';
+      div.innerHTML=`<div class="sr-name">${name}</div><div class="sr-addr">${addr}</div>
+        <div class="sr-actions">
+          <button class="sr-btn" data-action="goto">📍 定位</button>
+          <button class="sr-btn" data-action="route">🧭 导航到此</button>
+          <button class="sr-btn" data-action="detail">📋 详情</button>
+        </div>`;
+      div.querySelector('[data-action="goto"]').onclick=e=>{e.stopPropagation();map.flyTo({center:[lon,lat],zoom:17,duration:1000});panel.classList.remove('visible');};
+      div.querySelector('[data-action="route"]').onclick=e=>{e.stopPropagation();routeTo(lat,lon,name);panel.classList.remove('visible');};
+      div.querySelector('[data-action="detail"]').onclick=e=>{e.stopPropagation();
+        fetchOSMDetail(r.osm_type,r.osm_id,lat,lon,name);panel.classList.remove('visible');};
+      panel.appendChild(div);
+      const dot=document.createElement('div');
+      dot.style.cssText='width:12px;height:12px;background:#f59e0b;border-radius:50%;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,0.3);cursor:pointer;';
+      const m=new maplibregl.Marker({element:dot,anchor:'center'}).setLngLat([lon,lat]).addTo(map);
+      searchMarkers.push(m);
+    }
+  }catch(err){panel.innerHTML=`<div style="padding:10px;color:#f87171;">搜索失败: ${err.message}</div>`;}
+}
+
+/* ══════════════ Detail Panel ══════════════ */
+async function openDetail(name,osmType,osmId,lat,lon,tags){
+  const panel=document.getElementById('detail-panel');
+  document.getElementById('detail-name').textContent=name;
+  const body=document.getElementById('detail-body');
+  body.innerHTML='<div style="color:#94a3b8;">加载详情…</div>';
+  panel.classList.add('visible');
+
+  const t = tags;
+  const has = k => t[k] !== undefined && t[k] !== '';
+  let html='';
+
+  // ── 基本信息 ──
+  html+=`<div class="detail-section"><h4>ℹ️ 基本信息</h4>`;
+  html+=row('名称', t.name || name);
+  if(has('name:zh'))   html+=row('中文', t['name:zh']);
+  if(has('name:en'))   html+=row('英文', t['name:en']);
+  if(has('name:zh-Latn-pinyin')) html+=row('拼音', t['name:zh-Latn-pinyin']);
+  if(has('alt_name'))  html+=row('别名', t.alt_name);
+  if(has('old_name'))  html+=row('旧名', t.old_name);
+  const typeStr = t.amenity || t.shop || t.tourism || t.leisure || t.office || t.building || t.highway || t.railway || '—';
+  html+=row('类型', typeStr);
+  if(has('cuisine'))   html+=row('🍴 菜系', t.cuisine.replace(/;/g, '、'));
+  if(has('description')) html+=row('描述', t.description);
+  html+=`</div>`;
+
+  // ── 联系方式 ──
+  const phone = t.phone || t['contact:phone'];
+  const website = t.website || t['contact:website'];
+  const email = t.email || t['contact:email'];
+  const fax = t.fax || t['contact:fax'];
+  const wechat = t['contact:wechat'];
+  if(phone || website || email || fax || wechat) {
+    html+=`<div class="detail-section"><h4>📞 联系方式</h4>`;
+    if(phone)   html+=row('电话', `<a href="tel:${phone}">${phone}</a>`);
+    if(fax)     html+=row('传真', fax);
+    if(email)   html+=row('邮箱', `<a href="mailto:${email}">${email}</a>`);
+    if(website) html+=row('网站', `<a href="${website}" target="_blank">${website.length>40?website.slice(0,40)+'…':website}</a>`);
+    if(wechat)  html+=row('微信', wechat);
+    html+=`</div>`;
+  }
+
+  // ── 地址 ──
+  const addrParts = ['addr:street','addr:housenumber','addr:city','addr:district','addr:province','addr:postcode','addr:country'];
+  const hasAddr = addrParts.some(k => has(k));
+  if(hasAddr) {
+    html+=`<div class="detail-section"><h4>🏠 地址 (OSM)</h4>`;
+    const full = [t['addr:province'],t['addr:city'],t['addr:district'],t['addr:street'],t['addr:housenumber']].filter(Boolean).join('');
+    if(full) html+=row('地址', full);
+    if(has('addr:postcode')) html+=row('邮编', t['addr:postcode']);
+    html+=`</div>`;
+  }
+
+  // ── 营业信息 ──
+  if(has('opening_hours') || has('start_date') || has('check_date')) {
+    html+=`<div class="detail-section"><h4>🕐 营业信息</h4>`;
+    if(has('opening_hours')) html+=row('营业时间', t.opening_hours);
+    if(has('start_date'))   html+=row('开业日期', t.start_date);
+    if(has('check_date'))   html+=row('最后核实', t.check_date);
+    html+=`</div>`;
+  }
+
+  // ── 品牌信息 ──
+  if(has('brand') || has('operator') || has('network')) {
+    html+=`<div class="detail-section"><h4>🏪 品牌 / 运营</h4>`;
+    if(has('brand'))    html+=row('品牌', t.brand);
+    if(has('brand:en')) html+=row('品牌(英)', t['brand:en']);
+    if(has('branch'))   html+=row('分店', t.branch);
+    if(has('operator')) html+=row('运营方', t.operator);
+    if(has('network'))  html+=row('网络', t.network);
+    if(has('brand:wikidata')) html+=row('Wikidata', `<a href="https://www.wikidata.org/wiki/${t['brand:wikidata']}" target="_blank">${t['brand:wikidata']}</a>`);
+    if(has('brand:wikipedia')) html+=row('Wikipedia', `<a href="https://zh.wikipedia.org/wiki/${t['brand:wikipedia'].replace(/^.*:/,'')}" target="_blank">${t['brand:wikipedia']}</a>`);
+    html+=`</div>`;
+  }
+
+  // ── 设施与服务 ──
+  const facilityKeys = ['wheelchair','smoking','air_conditioning','internet_access','internet_access:fee','outdoor_seating','indoor_seating','delivery','takeaway','drive_through','toilets','toilets:wheelchair','capacity','diet:halal','diet:vegetarian','diet:vegan','payment:cash','payment:cards','payment:wechat','payment:alipay'];
+  const facilityLabels = {wheelchair:'♿ 轮椅通行',smoking:'🚬 吸烟',air_conditioning:'❄️ 空调',internet_access:'📶 网络','internet_access:fee':'📶 网络收费',outdoor_seating:'🪑 户外座位',indoor_seating:'🪑 室内座位',delivery:'🚚 配送',takeaway:'📦 外卖',drive_through:'🚗 免下车',toilets:'🚻 卫生间','toilets:wheelchair':'🚻 无障碍卫生间',capacity:'👥 容量','diet:halal':'☪️ 清真','diet:vegetarian':'🥬 素食','diet:vegan':'🌱 纯素','payment:cash':'💵 现金','payment:cards':'💳 刷卡','payment:wechat':'💚 微信支付','payment:alipay':'💙 支付宝'};
+  const activeFacilities = facilityKeys.filter(k => has(k));
+  if(activeFacilities.length > 0) {
+    html+=`<div class="detail-section"><h4>🛎️ 设施与服务</h4>`;
+    for(const k of activeFacilities) {
+      const val = t[k];
+      const label = facilityLabels[k] || k;
+      const display = val === 'yes' ? '✅' : val === 'no' ? '❌' : val;
+      html+=row(label, display);
+    }
+    html+=`</div>`;
+  }
+
+  // ── 建筑信息 ──
+  if(has('building') || has('building:levels') || has('building:material') || has('height') || has('layer') || has('roof:shape')) {
+    html+=`<div class="detail-section"><h4>🏗️ 建筑</h4>`;
+    if(has('building'))          html+=row('类型', t.building);
+    if(has('building:levels'))   html+=row('楼层', t['building:levels'] + ' 层');
+    if(has('building:levels:underground')) html+=row('地下层', t['building:levels:underground'] + ' 层');
+    if(has('building:material')) html+=row('材料', t['building:material']);
+    if(has('height'))            html+=row('高度', t.height + 'm');
+    if(has('roof:shape'))        html+=row('屋顶', t['roof:shape']);
+    if(has('layer'))             html+=row('层级', t.layer);
+    html+=`</div>`;
+  }
+
+  // ── 位置 ──
+  html+=`<div class="detail-section"><h4>📍 位置</h4>`;
+  html+=row('坐标', `${lat.toFixed(6)}, ${lon.toFixed(6)}`);
+  html+=row('OSM', `<a href="https://www.openstreetmap.org/${osmType}/${osmId}" target="_blank">${osmType}/${osmId}</a>`);
+  const dist=haversine(SIM_LAT,SIM_LNG,lat,lon);
+  html+=row('距模拟器', `${dist<1000?Math.round(dist)+'m':(dist/1000).toFixed(1)+'km'}`);
+  html+=`</div>`;
+
+  // ── 其他 OSM 标签（未归类的） ──
+  const shownKeys = new Set([
+    'name','name:zh','name:en','name:zh-Hans','name:zh-Hant','name:zh-Latn-pinyin','name:de',
+    'alt_name','old_name','amenity','shop','tourism','leisure','office','building','highway','railway',
+    'cuisine','description','phone','contact:phone','website','contact:website','email','contact:email',
+    'fax','contact:fax','contact:wechat','opening_hours','start_date','check_date',
+    'brand','brand:en','brand:zh','brand:zh-Hans','brand:wikidata','brand:wikipedia','branch','operator','network',
+    'building:levels','building:levels:underground','building:material','height','roof:shape','layer',
+    'type', ...facilityKeys, ...addrParts,
+  ]);
+  const otherTags = Object.entries(tags).filter(([k]) => !shownKeys.has(k)).sort();
+  if(otherTags.length > 0) {
+    html+=`<div class="detail-section"><h4>🏷️ 其他标签 (${otherTags.length})</h4>`;
+    for(const [k,v] of otherTags) html+=row(k, linkify(v));
+    html+=`</div>`;
+  }
+
+  // ── 逆地理编码地址 ──
+  html+=`<div class="detail-section" id="detail-address"><h4>📫 逆地理编码</h4><div style="color:#94a3b8;font-size:12px;">查询中…</div></div>`;
+
+  // ── 路线 ──
+  html+=`<div class="detail-section" id="detail-route"><h4>🧭 路线（从模拟器位置）</h4><div style="color:#94a3b8;font-size:12px;">计算中…</div></div>`;
+
+  body.innerHTML=html;
+
+  // Async: reverse geocode
+  reverseGeo(lat,lon).then(addr=>{
+    const el=document.getElementById('detail-address');
+    if(!el)return;
+    let h='<h4>📫 逆地理编码</h4>';
+    if(addr && addr.display_name){
+      h+=row('完整地址', addr.display_name);
+      const a=addr.address||{};
+      const addrLabels={country:'国家',city:'城市',suburb:'街道/镇',road:'道路',quarter:'社区',neighbourhood:'小区',house_number:'门牌号',postcode:'邮编','ISO3166-2-lvl4':'行政区划'};
+      for(const [k,v] of Object.entries(a)){h+=row(addrLabels[k]||k, v);}
+    }else{h+='<div style="color:#94a3b8;font-size:12px;">无法获取</div>';}
+    el.innerHTML=h;
+  });
+
+  // Async: routes
+  loadRoutes(lat,lon).then(routes=>{
+    const el=document.getElementById('detail-route');
+    if(!el)return;
+    let h='<h4>🧭 路线（从模拟器位置）</h4>';
+    if(!routes){h+='<div style="color:#f87171;font-size:12px;">路线计算失败</div>';el.innerHTML=h;return;}
+    h+='<div class="route-summary">';
+    const modes=[{key:'driving',icon:'🚗',label:'驾车'},{key:'foot',icon:'🚶',label:'步行'},{key:'bicycle',icon:'🚴',label:'骑行'}];
+    for(const m of modes){
+      const r=routes[m.key];
+      if(!r){h+=`<div class="route-card"><div class="rc-icon">${m.icon}</div><div class="rc-time">—</div></div>`;continue;}
+      h+=`<div class="route-card" onclick="showRoute('${m.key}')" id="rc-${m.key}"><div class="rc-icon">${m.icon}</div><div class="rc-time">${formatDuration(r.duration)}</div><div class="rc-dist">${formatDist(r.distance)}</div></div>`;
+    }
+    h+='</div>';
+    h+='<div id="route-steps-container"></div>';
+    el.innerHTML=h;
+    if(routes.driving)showRoute('driving');
+  });
+}
+
+function closeDetail(){
+  document.getElementById('detail-panel').classList.remove('visible');
+  clearRoute();
+}
+
+async function fetchOSMDetail(osmType,osmId,lat,lon,name){
+  showToast('获取详情…');
+  try{
+    const query=`[out:json][timeout:10];${osmType}(${osmId});out body;`;
+    const data = await overpassQuery(query, 1);
+    const el=data.elements?.[0];
+    const tags=el?.tags||{};
+    openDetail(name,osmType,osmId,lat,lon,tags);
+  }catch(e){openDetail(name,osmType,osmId,lat,lon,{});}
+  hideToast();
+}
+
+/* ══════════════ Routing ══════════════ */
+let routeGeoJSON=null,routeEndGeoJSON=null,allRoutes={};
+
+async function loadRoutes(lat,lon){
+  const modes=['driving','foot','bicycle'];
+  const results={};
+  await Promise.all(modes.map(async mode=>{
+    try{
+      const profile=mode==='driving'?'car':mode;
+      const url=`https://router.project-osrm.org/route/v1/${profile}/${SIM_LNG},${SIM_LAT};${lon},${lat}?overview=full&geometries=geojson&steps=true`;
+      const res=await fetch(url);const data=await res.json();
+      if(data.code==='Ok'&&data.routes?.[0]){
+        const r=data.routes[0];
+        results[mode]={distance:r.distance,duration:r.duration,geometry:r.geometry,steps:r.legs?.[0]?.steps||[]};
+      }
+    }catch(e){}
+  }));
+  allRoutes=results;
+  return Object.keys(results).length>0?results:null;
+}
+
+function showRoute(mode){
+  const r=allRoutes[mode];if(!r)return;
+  document.querySelectorAll('.route-card').forEach(c=>c.classList.remove('active'));
+  document.getElementById('rc-'+mode)?.classList.add('active');
+
+  routeGeoJSON={type:'FeatureCollection',features:[{type:'Feature',geometry:r.geometry,properties:{}}]};
+  map.getSource('route')?.setData(routeGeoJSON);
+  const lastCoord=r.geometry.coordinates[r.geometry.coordinates.length-1];
+  routeEndGeoJSON={type:'FeatureCollection',features:[{type:'Feature',geometry:{type:'Point',coordinates:lastCoord},properties:{}}]};
+  map.getSource('route-end')?.setData(routeEndGeoJSON);
+
+  // fit bounds
+  const coords=r.geometry.coordinates;
+  const bounds=coords.reduce((b,c)=>b.extend(c),new maplibregl.LngLatBounds(coords[0],coords[0]));
+  map.fitBounds(bounds,{padding:{top:120,bottom:60,left:280,right:360},duration:800});
+
+  // steps
+  const container=document.getElementById('route-steps-container');
+  if(!container)return;
+  const maneuverIcons={depart:'🏁',arrive:'🏁',turn:'↩️','end of road':'⬆️','new name':'➡️',merge:'🔀',fork:'🔀',roundabout:'🔄','on ramp':'⬆️','off ramp':'⬇️',continue:'⬆️'};
+  let html='<div class="route-steps">';
+  for(const s of r.steps){
+    const icon=maneuverIcons[s.maneuver?.type]||'➡️';
+    const mod=s.maneuver?.modifier?` (${s.maneuver.modifier})`:'';
+    const name=s.name||'—';
+    html+=`<div class="route-step"><span class="rs-icon">${icon}</span><span>${name}${mod} — ${formatDist(s.distance)}</span></div>`;
+  }
+  html+='</div>';
+  container.innerHTML=html;
+}
+
+async function routeTo(lat,lon,name){
+  showToast('计算路线…');
+  const routes=await loadRoutes(lat,lon);
+  hideToast();
+  if(routes){
+    openDetail(name||'目标位置','node','—',lat,lon,{});
+  }
+}
+
+function clearRoute(){
+  routeGeoJSON={type:'FeatureCollection',features:[]};
+  routeEndGeoJSON={type:'FeatureCollection',features:[]};
+  map.getSource('route')?.setData(routeGeoJSON);
+  map.getSource('route-end')?.setData(routeEndGeoJSON);
+  allRoutes={};
+}
+
+/* ══════════════ Reverse Geocode ══════════════ */
+async function reverseGeo(lat,lon){
+  try{
+    const res=await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&addressdetails=1&accept-language=zh`,{headers:{'User-Agent':'mobile-gym-demo'}});
+    return await res.json();
+  }catch(e){return null;}
+}
+
+async function reverseGeoSim(){
+  const data=await reverseGeo(SIM_LAT,SIM_LNG);
+  if(data?.address){
+    const a=data.address;
+    document.getElementById('sim-address').textContent=`${a.city||a.county||''} · ${a.suburb||a.road||''}`;
+  }
+}
+
+/* ══════════════ Helpers ══════════════ */
+function row(k,v){return `<div class="detail-row"><span class="dk">${k}</span><span class="dv">${v}</span></div>`;}
+function linkify(v){
+  if(typeof v==='string'&&(v.startsWith('http://')||v.startsWith('https://')))return `<a href="${v}" target="_blank">${v}</a>`;
+  return v;
+}
+function haversine(lat1,lon1,lat2,lon2){
+  const R=6371000,toRad=d=>d*Math.PI/180;
+  const dLat=toRad(lat2-lat1),dLon=toRad(lon2-lon1);
+  const a=Math.sin(dLat/2)**2+Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+function formatDuration(s){
+  if(s<60)return `${Math.round(s)}秒`;
+  if(s<3600)return `${Math.round(s/60)}分钟`;
+  const h=Math.floor(s/3600),m=Math.round((s%3600)/60);return `${h}时${m}分`;
+}
+function formatDist(m){return m<1000?`${Math.round(m)}m`:`${(m/1000).toFixed(1)}km`;}
+function showToast(msg){const t=document.getElementById('loading-toast');t.textContent=msg;t.classList.add('visible');}
+function hideToast(){document.getElementById('loading-toast').classList.remove('visible');}
+</script>
+</body>
+</html>

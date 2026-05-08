@@ -1,0 +1,69 @@
+/* Wechat-specific styles (Tailwind is provided globally by /index.css) */
+
+:root {
+  --wechat-green: #07c160;
+  --wechat-bg: #ededed;
+  --wechat-text-main: #191919;
+  --wechat-text-desc: #7f7f7f;
+  --wechat-link: #576b95;
+}
+
+/* 微信气泡尾巴 */
+.bubble-tail-me::after {
+  content: '';
+  position: absolute;
+  top: 12px;
+  right: -5px;
+  width: 10px;
+  height: 10px;
+  background-color: #95ec69;
+  transform: rotate(45deg);
+  border-radius: 1px;
+}
+
+.bubble-tail-other::after {
+  content: '';
+  position: absolute;
+  top: 12px;
+  left: -5px;
+  width: 10px;
+  height: 10px;
+  background-color: #fff;
+  transform: rotate(45deg);
+  border-radius: 1px;
+}
+
+/* 隐藏滚动条但保留功能 */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* 微信列表点击态 */
+.active-state:active {
+  background-color: #e5e5e5 !important;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-out forwards;
+}
+
+@keyframes wechatSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.wechat-spin {
+  animation: wechatSpin 1s linear infinite !important;
+  transform-origin: 50% 50%;
+  will-change: transform;
+}
+

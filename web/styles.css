@@ -1,0 +1,1361 @@
+body { font-family: 'Charter', 'Georgia', serif; -webkit-font-smoothing: antialiased; }
+
+/* ============================================================ */
+/* Hero Demo — first-screen live simulator                      */
+/* Pre-boot: black stage. Post-boot: paper-light reveal.        */
+/* ============================================================ */
+.hero-demo {
+  position: relative;
+  min-height: 100svh;
+  padding: 32px 24px 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  /* Underlying paper-light surface, revealed once is-booted fades the overlay */
+  background: linear-gradient(180deg, #fafaf9 0%, #ffffff 60%);
+  color: #1c1917;
+}
+/* Black hero overlay covers the whole stage pre-boot, fades on boot */
+.hero-demo::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 78% 60% at 50% 48%, #15151a 0%, #08080b 58%, #000 100%);
+  z-index: 0;
+  pointer-events: none;
+  transition: opacity 720ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.hero-demo::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 50%, transparent 60%, rgba(0,0,0,0.55) 100%);
+  z-index: 0;
+  pointer-events: none;
+  transition: opacity 720ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.hero-demo.is-booted::before,
+.hero-demo.is-booted::after {
+  opacity: 0;
+}
+.hero-demo > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Phone shell — pre-boot we hide every trace of the device (bezel, side
+   buttons, drop shadow, AND the screen + boot-button background) so the
+   power glyph floats in a pure black void. After boot the shell fades in
+   to give the iframe a real-device feel on the light bg. */
+.hero-demo #demo-frame {
+  box-shadow: none;
+  transition: box-shadow 540ms cubic-bezier(0.4, 0, 0.2, 1) 200ms,
+              background-color 540ms cubic-bezier(0.4, 0, 0.2, 1) 200ms;
+}
+.hero-demo:not(.is-booted) #demo-frame,
+.hero-demo:not(.is-booted) #demo-boot-btn {
+  background: transparent !important;
+}
+.hero-demo.is-booted #demo-frame {
+  box-shadow:
+    0 0 0 2px #16181c,
+    0 0 0 3px rgba(255,255,255,0.04),
+    0 30px 60px -15px rgba(0,0,0,0.5),
+    0 12px 24px -10px rgba(0,0,0,0.3);
+}
+/* Phone visual scale based on viewport HEIGHT — phone is 800px tall and
+   nearly fills 13"/14" laptop viewports, clipping the bottom + crashing
+   into the SCROLL hint. Scale down visually so it always fits.
+     • Layout box stays 800px (iframe needs that as its design viewport)
+     • transform: scale doesn't break iframe coords — browsers remap mouse
+       events through the transform automatically
+     • Anchored at "center top" so the bottom shifts up, NOT the top — the
+       SCROLL hint at the viewport bottom gains room.
+     • clamp(0.7, …, 1) — scale never above 1 (no upscaling on tall
+       monitors) and never below 0.7 (phone stays readable)
+   Formula: (100vh - 200px) / 800px, where 200px is the buffer for brand
+   above and SCROLL hint below. */
+.hero-demo .demo-phone-wrap {
+  --phone-scale: clamp(0.7, calc((100vh - 100px) / 800px), 1);
+  transform-origin: center top;
+  transform: scale(var(--phone-scale));
+  /* Negative margin-bottom compensates for the phantom layout space below
+     the phone: scale visually shrinks the phone but the layout box stays
+     800px tall, so without this the hero (and any surrounding flex/grid
+     centering) reserves 215px of empty space below the visually-smaller
+     phone. Pulling the bottom edge up by (1 - scale) * 800px makes the
+     layout match what the user sees. */
+  margin-bottom: calc((var(--phone-scale) - 1) * 800px);
+  transition:
+    transform 360ms cubic-bezier(0.4, 0, 0.2, 1),
+    margin-bottom 360ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hero-demo .demo-phone-wrap > div > span {
+  opacity: 0;
+  transition: opacity 540ms cubic-bezier(0.4, 0, 0.2, 1) 200ms;
+}
+.hero-demo.is-booted .demo-phone-wrap > div > span {
+  opacity: 1;
+}
+
+/* Boot button label — uppercase spaced caption echoing the SCROLL hint
+   typography. Avoids the "loud sentence" feel of the original 16px text. */
+.hero-boot-label {
+  margin-top: 14px;
+  font: 500 10.5px/1 'Inter', system-ui, sans-serif;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.42);
+  transition: color 240ms ease;
+}
+.hero-demo #demo-boot-btn:hover .hero-boot-label {
+  color: rgba(255, 255, 255, 0.78);
+}
+
+/* Boot button — breathing aura + pulsing ring, anchored to the inner circle
+   (NOT the button itself: flex centering offsets the button's 50% so a
+   button-anchored aura would land above the circle). */
+.hero-demo #demo-boot-btn > span:first-child {
+  position: relative;
+  isolation: isolate;
+}
+.hero-demo #demo-boot-btn > span:first-child::before {
+  content: '';
+  position: absolute;
+  inset: -22px;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.03) 45%, transparent 72%);
+  filter: blur(2px);
+  animation: hero-aura 3.4s ease-in-out infinite;
+  pointer-events: none;
+  z-index: -1;
+}
+.hero-demo #demo-boot-btn > span:first-child::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  opacity: 0;
+  animation: hero-ring 2.8s ease-out infinite;
+  pointer-events: none;
+}
+.hero-demo #demo-boot-btn:hover > span:first-child::before {
+  animation-duration: 2.4s;
+}
+
+@keyframes hero-aura {
+  0%, 100% { transform: scale(0.9);  opacity: 0.45; }
+  50%      { transform: scale(1.2);  opacity: 0.95; }
+}
+@keyframes hero-ring {
+  0%   { transform: scale(0.94); opacity: 0; }
+  20%  { opacity: 0.55; }
+  100% { transform: scale(1.6);  opacity: 0; }
+}
+
+/* State Builder is no longer a hero card — its pre-boot fade is now
+   handled by .state-dock (vertical pill on phone right edge) and
+   .state-drawer (fixed right slide-in). See bottom of file. */
+
+/* Hero overlay top bar — brand on the left, resource pills + power-off on
+   the right. Both groups stay hidden pre-boot (preserving the pure black
+   void) and fade in once the simulator is started. */
+.hero-demo-brand,
+.hero-demo-actions {
+  position: absolute;
+  top: 22px;
+  z-index: 3;
+  opacity: 0;
+  transform: translateY(-4px);
+  pointer-events: none;
+  transition:
+    opacity 540ms cubic-bezier(0.4, 0, 0.2, 1) 380ms,
+    transform 540ms cubic-bezier(0.4, 0, 0.2, 1) 380ms;
+}
+.hero-demo.is-booted .hero-demo-brand,
+.hero-demo.is-booted .hero-demo-actions {
+  opacity: 1;
+  transform: translateY(0);
+}
+.hero-demo.is-booted .hero-demo-actions { pointer-events: auto; }
+
+.hero-demo-brand {
+  left: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.hero-demo-brand-name {
+  font: 700 16px/1 'Inter', system-ui, sans-serif;
+  letter-spacing: -0.01em;
+  color: #1c1917;
+}
+.hero-demo-brand-meta {
+  font: 500 9.5px/1 'Inter', system-ui, sans-serif;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: #a8a29e;
+}
+
+.hero-demo-actions {
+  right: 24px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+/* Top-right utility buttons — arXiv wordmark, GitHub mark, Power off.
+   All borderless to match the same low-key visual weight; brand identity
+   carries the meaning (arXiv red wordmark, GitHub octocat). Hover reveals
+   a subtle background tint, matching .hero-demo-poweroff. */
+.hero-demo-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px;
+  color: #57534e;
+  background: transparent;
+  border: 0;
+  border-radius: 6px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 200ms ease, background 200ms ease;
+}
+.hero-demo-action:hover {
+  color: #1c1917;
+  background: rgba(28, 25, 23, 0.04);
+}
+.hero-demo-arxiv-mark {
+  font: 800 14px/1 'Inter', system-ui, sans-serif;
+  letter-spacing: -0.02em;
+  color: #B31B1B;
+  transition: color 200ms ease;
+}
+.hero-demo-action-arxiv:hover .hero-demo-arxiv-mark {
+  color: #8a1414;
+}
+.hero-demo-action-arxiv:hover {
+  background: rgba(179, 27, 27, 0.06);
+}
+
+/* Power off — same row as Paper/Code, but lighter (no pill outline),
+   to keep it as a tertiary action. state-builder.js toggles .hidden /
+   .inline-flex on click. */
+.hero-demo-poweroff {
+  display: none;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 10px;
+  font: 500 12px/1 'Inter', system-ui, sans-serif;
+  letter-spacing: 0;
+  color: #78716c;
+  background: transparent;
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: color 200ms ease, background 200ms ease;
+}
+.hero-demo-poweroff.inline-flex { display: inline-flex; }
+.hero-demo-poweroff:hover {
+  color: #1c1917;
+  background: rgba(28, 25, 23, 0.04);
+}
+.hero-demo-poweroff svg { opacity: 0.75; transition: opacity 200ms ease; }
+.hero-demo-poweroff:hover svg { opacity: 1; }
+
+/* Hero footer — fixed at viewport bottom. Contains the first-load note
+   and the SCROLL hint, stacked. Only fades in after power-on. */
+.hero-demo-foot {
+  position: fixed;
+  /* On short viewports the phone (scaled to fit) ends up close to the
+     viewport bottom — keeping the hint at a fixed 20px gap from the edge
+     would crash it into the phone. So the hint slides down (closer to the
+     edge) as the viewport shrinks, maintaining a constant 8px gap above
+     the phone. Math: phone visual bottom + 8 + hint_height + bottom = vp,
+     so bottom = vp/2 - 442 in the scaled regime, clamped to [8, 20]. */
+  bottom: max(env(safe-area-inset-bottom), clamp(8px, calc(50vh - 442px), 20px));
+  left: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  z-index: 60;
+  opacity: 0;
+  transform: translate(-50%, 14px);
+  pointer-events: none;
+  transition:
+    opacity 540ms cubic-bezier(0.4, 0, 0.2, 1) 600ms,
+    transform 540ms cubic-bezier(0.4, 0, 0.2, 1) 600ms;
+}
+.hero-demo.is-booted .hero-demo-foot {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+
+/* Scroll hint is now laid out inside .hero-demo-foot (the footer is
+   the fixed-positioned container; hint just stacks below the firstload
+   note in flex order). */
+.hero-demo-scroll-hint {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  font: 500 10px/1 'Inter', system-ui, sans-serif;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: rgba(28, 25, 23, 0.4);
+  pointer-events: none;
+  margin-top: 2px;
+}
+.hero-demo-scroll-hint svg {
+  /* Arrow shrunk so the whole hint takes less vertical room — gives more
+     breathing space above the hint without moving the phone. */
+  width: 9px;
+  height: 11px;
+  animation: hero-arrow 2.4s ease-in-out infinite;
+}
+@keyframes hero-arrow {
+  0%, 100% { transform: translateY(0);   opacity: 0.55; }
+  50%      { transform: translateY(5px); opacity: 1;    }
+}
+/* Once the user starts scrolling, hide the entire footer so it doesn't
+   float over the paper content below. */
+body.hero-scrolled .hero-demo-foot {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transform: translate(-50%, 14px) !important;
+  transition-delay: 0ms !important;
+}
+
+@media (max-width: 1040px) {
+  .hero-demo {
+    padding: 28px 16px 24px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-demo::before,
+  .hero-demo::after,
+  .hero-demo #demo-boot-btn > span:first-child::before,
+  .hero-demo #demo-boot-btn > span:first-child::after,
+  .hero-demo .state-dock,
+  .state-dock-tab[data-state-dock-tab="session"]::before,
+  .state-dock-hint,
+  .state-drawer,
+  .hero-demo-foot,
+  .hero-demo-scroll-hint,
+  .hero-demo-scroll-hint svg {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* Paper header resources row — ghost pill style: subtle stone-100 fill +
+   barely-there 1px border + full rounded. Gives the buttons enough visual
+   weight to anchor next to the h1 without competing with it. Hover lifts
+   1px and snaps to white + darker border for clear feedback. */
+.paper-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.paper-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  font: 500 14px/1 'Inter', system-ui, sans-serif;
+  letter-spacing: 0;
+  color: #44403c;             /* stone-700 */
+  background: rgba(245, 245, 244, 0.6);  /* stone-100 @ 60% */
+  border: 1px solid rgba(28, 25, 23, 0.08);
+  border-radius: 999px;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    color 200ms ease,
+    background 200ms ease,
+    border-color 200ms ease,
+    transform 200ms ease;
+}
+.paper-action:hover {
+  color: #1c1917;
+  background: #ffffff;
+  border-color: rgba(28, 25, 23, 0.22);
+  transform: translateY(-1px);
+}
+.paper-action-arxiv-mark {
+  font: 800 15px/1 'Inter', system-ui, sans-serif;
+  letter-spacing: -0.02em;
+  color: #B31B1B;
+  transition: color 200ms ease;
+}
+.paper-action-arxiv:hover .paper-action-arxiv-mark {
+  color: #8a1414;
+}
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 1000;
+  padding: 0.75rem 1.25rem;
+  background: #1c1917;
+  color: #fff;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 0 0 0.5rem 0;
+  text-decoration: none;
+}
+.skip-link:focus { left: 0; outline: 2px solid #3b82f6; outline-offset: 2px; }
+h1, h2, h3, .ui { font-family: 'Inter', system-ui, sans-serif; }
+code, pre, .mono { font-family: 'JetBrains Mono', 'SF Mono', monospace; }
+.container-narrow { max-width: 880px; }
+.container-demo { max-width: 1120px; }
+.gradient-bg {
+  background: linear-gradient(180deg, #fafaf9 0%, #ffffff 60%);
+}
+.stat-num { font-variant-numeric: tabular-nums; }
+details > summary { cursor: pointer; list-style: none; }
+details > summary::-webkit-details-marker { display: none; }
+details[open] summary .marker { transform: rotate(90deg); }
+.marker { transition: transform 0.15s ease; display: inline-block; }
+/* ------------------------------------------------------------ */
+/* Phone is the only visual anchor in hero. State Builder lives  */
+/* in a fixed right-side drawer triggered by the dock attached   */
+/* to the phone's right edge.                                    */
+/* ------------------------------------------------------------ */
+.demo-layout {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+/* The phone wrap's inner relative box is the dock anchor — the
+   dock is positioned outside the phone but inside this element
+   so transform: scale on .demo-phone-wrap scales them together. */
+.phone-rig { overflow: visible; }
+
+/* ============================================================ */
+/* State Dock — vertical icon dock attached to phone right edge */
+/* Glass-morphism pill, fades in post-boot, hides when drawer    */
+/* is open (drawer overlaps it on common laptop widths).         */
+/* ============================================================ */
+.state-dock {
+  position: absolute;
+  /* Sit 14px to the right of the phone, vertically centered. */
+  left: calc(100% + 14px);
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 7px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.74);
+  border: 1px solid rgba(28, 25, 23, 0.08);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.7) inset,
+    0 12px 32px -10px rgba(15, 23, 42, 0.18),
+    0 4px 12px -6px rgba(15, 23, 42, 0.08);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  z-index: 4;
+  /* Pre-boot: hidden alongside the rest of the chrome. */
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 540ms cubic-bezier(0.4, 0, 0.2, 1) 320ms,
+    transform 540ms cubic-bezier(0.4, 0, 0.2, 1) 320ms;
+}
+.hero-demo.is-booted .state-dock {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(-50%);
+}
+/* When drawer is open, drawer covers the dock's screen real estate
+   on common 1280–1600 viewports. Fade dock out so it doesn't poke
+   through behind the drawer's left shadow. */
+body[data-state-drawer-open="true"] .state-dock {
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(8px, -50%);
+  transition-delay: 0ms;
+}
+
+.state-dock-eyebrow {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  /* writing-mode: vertical-rl reads top-to-bottom on the right side
+     of its container, which is what we want — small caps stacking
+     downward like an Apple sidebar caption. */
+  font: 700 8.5px/1 'Inter', system-ui, sans-serif;
+  letter-spacing: 0.36em;
+  text-transform: uppercase;
+  color: rgba(28, 25, 23, 0.45);
+  padding: 4px 0 2px;
+  user-select: none;
+}
+.state-dock-divider {
+  width: 16px;
+  height: 1px;
+  background: rgba(28, 25, 23, 0.12);
+  margin: 2px 0 4px;
+}
+
+.state-dock-tab {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: #57534e;
+  cursor: pointer;
+  transition:
+    background-color 180ms ease,
+    color 180ms ease,
+    transform 180ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.state-dock-tab:hover {
+  background: rgba(28, 25, 23, 0.05);
+  color: #1c1917;
+  transform: scale(1.05);
+}
+.state-dock-tab[aria-selected="true"] {
+  background: #1c1917;
+  color: #ffffff;
+}
+.state-dock-tab[aria-selected="true"] .state-dock-tab-icon-img {
+  /* Image-based icons don't respond to currentColor — keep them
+     bright on the dark active pill via a touch of contrast lift. */
+  filter: brightness(1.05);
+}
+.state-dock-tab:focus-visible {
+  outline: 2px solid rgba(37, 99, 235, 0.55);
+  outline-offset: 2px;
+}
+.state-dock-tab-icon {
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.state-dock-tab-icon svg { width: 18px; height: 18px; }
+.state-dock-tab-icon-img {
+  border-radius: 6px;
+  overflow: hidden;
+}
+.state-dock-tab-icon-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Language tab badge — small pill at the corner of the icon showing
+   the current phone locale ("中" / "EN") so visitors can read the
+   active language without opening the drawer. */
+.state-dock-tab-badge {
+  position: absolute;
+  bottom: -3px;
+  right: -3px;
+  min-width: 18px;
+  height: 14px;
+  padding: 0 4px;
+  border-radius: 7px;
+  background: #2563eb;
+  color: #ffffff;
+  font: 700 9px/14px 'Inter', system-ui, sans-serif;
+  letter-spacing: 0.04em;
+  text-align: center;
+  border: 1.5px solid #fafaf9;
+  pointer-events: none;
+  user-select: none;
+}
+.state-dock-tab[aria-selected="true"] .state-dock-tab-badge {
+  border-color: #1c1917;
+}
+
+.studio-language-choices {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.studio-language-choice {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(28, 25, 23, 0.12);
+  background: #fafaf9;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 160ms ease, background-color 160ms ease, color 160ms ease;
+}
+.studio-language-choice:hover {
+  border-color: rgba(28, 25, 23, 0.25);
+  background: #ffffff;
+}
+.studio-language-choice[aria-checked="true"] {
+  border-color: #2563eb;
+  background: rgba(37, 99, 235, 0.06);
+  color: #1e40af;
+}
+.studio-language-choice:focus-visible {
+  outline: 2px solid rgba(37, 99, 235, 0.55);
+  outline-offset: 2px;
+}
+.studio-language-choice-name {
+  font: 600 13px/1.2 'Inter', system-ui, sans-serif;
+}
+.studio-language-choice-meta {
+  font-size: 11px;
+  color: rgba(28, 25, 23, 0.55);
+}
+.studio-language-choice[aria-checked="true"] .studio-language-choice-meta {
+  color: rgba(30, 64, 175, 0.7);
+}
+
+/* First-time pulse: the topmost (Session) tab gently pings to draw
+   the eye. Fades permanently after first interaction (sessionStorage
+   sets body[data-state-dock-touched="true"]). */
+.state-dock-tab[data-state-dock-tab="session"]::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 14px;
+  border: 1.5px solid rgba(37, 99, 235, 0.7);
+  opacity: 0;
+  pointer-events: none;
+  animation: state-dock-ping 2.4s ease-out 0.6s infinite;
+}
+.hero-demo:not(.is-booted) .state-dock-tab[data-state-dock-tab="session"]::before,
+body[data-state-dock-touched="true"] .state-dock-tab[data-state-dock-tab="session"]::before {
+  animation: none;
+  opacity: 0;
+}
+@keyframes state-dock-ping {
+  0%   { transform: scale(0.92); opacity: 0; }
+  20%  { opacity: 0.85; }
+  80%  { transform: scale(1.45); opacity: 0; }
+  100% { transform: scale(1.45); opacity: 0; }
+}
+
+/* Callout below the dock pointing UP at it — only visible until
+   first interaction. Reinforces "this is clickable" without
+   relying solely on the pulse. */
+.state-dock-hint {
+  position: absolute;
+  /* Anchor under the phone right edge, slightly indented so it
+     reads as belonging to the dock column. */
+  left: calc(100% + 6px);
+  top: calc(100% + 6px);
+  width: 80px;
+  text-align: left;
+  font: 600 10.5px/1.3 'Inter', system-ui, sans-serif;
+  letter-spacing: 0.04em;
+  color: rgba(37, 99, 235, 0.82);
+  white-space: normal;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 540ms ease 700ms;
+  animation: state-dock-hint-bob 2.4s ease-in-out 1.6s infinite;
+}
+.state-dock-hint::before {
+  content: '↑';
+  display: inline-block;
+  margin-right: 4px;
+  font-size: 12px;
+  vertical-align: -1px;
+}
+.hero-demo.is-booted .state-dock-hint {
+  opacity: 1;
+}
+body[data-state-dock-touched="true"] .state-dock-hint,
+body[data-state-drawer-open="true"] .state-dock-hint {
+  opacity: 0;
+  animation: none;
+}
+@keyframes state-dock-hint-bob {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-3px); }
+}
+
+/* ============================================================ */
+/* State Popover — anchored card to the right of the dock. No   */
+/* full-screen drawer, no backdrop scrim. Slides in 10px from   */
+/* the dock with a fade. Closes on outside click or ESC.        */
+/*                                                              */
+/* Position math (relative to .demo-layout, which is centered): */
+/*   left = 50% + (phone half 180) + (phone↔dock gap 14)        */
+/*               + (dock width ≈50) + (dock↔popover gap 14)     */
+/*        = 50% + 258px                                         */
+/* ============================================================ */
+.state-drawer {
+  position: absolute;
+  left: calc(50% + 258px);
+  top: 0;
+  width: 380px;
+  height: 800px;            /* matches phone box height for visual alignment */
+  max-height: calc(100svh - 80px);
+  background: #fbfbfd;
+  border: 1px solid rgba(28, 25, 23, 0.06);
+  border-radius: 28px;
+  box-shadow:
+    0 28px 60px -22px rgba(15, 23, 42, 0.22),
+    0 10px 18px -8px rgba(15, 23, 42, 0.10);
+  opacity: 0;
+  transform: translateX(-10px);
+  pointer-events: none;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition:
+    opacity 280ms cubic-bezier(0.22, 0.61, 0.36, 1),
+    transform 320ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.state-drawer[data-open="true"] {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+}
+
+/* Below 1280px the side-anchored popover would overflow the right
+   edge AND the vertical dock would visually disconnect from where
+   the popover lands. Drop the entire group into a column flow:
+   phone → horizontal dock (below phone) → popover (below dock).
+   This keeps the click target and the panel that opens on a single
+   visual axis. */
+@media (max-width: 1279px) {
+  .hero-demo.is-booted {
+    padding-top: 76px;
+  }
+  .hero-demo .demo-phone-wrap {
+    --phone-scale: clamp(0.62, calc((100svh - 160px) / 876px), 1);
+    margin-bottom: calc((var(--phone-scale) - 1) * 876px);
+  }
+  .demo-layout {
+    flex-direction: column;
+    gap: 24px;
+  }
+  /* Reserve space below the visual phone for the now-horizontal
+     dock (which is still position: absolute on .phone-rig at
+     top: 100% + 14px). Without this padding the next column-flow
+     item (popover) would render on top of the dock. */
+  .demo-phone-wrap {
+    padding-bottom: 76px;
+  }
+  .state-drawer {
+    position: relative;
+    left: auto;
+    top: auto;
+    width: min(420px, calc(100vw - 32px));
+    height: auto;
+    max-height: 70svh;
+    transform: translateY(-8px);
+  }
+  .state-drawer[data-open="true"] {
+    transform: translateY(0);
+  }
+  .state-drawer[data-open="false"] {
+    display: none;
+  }
+}
+
+.state-drawer-head {
+  position: relative;
+  padding: 20px 22px 14px;
+  border-bottom: 1px solid rgba(28, 25, 23, 0.06);
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+.state-drawer-head .state-builder-board-kicker {
+  margin-bottom: 5px;
+}
+.state-drawer-head .state-builder-board-title {
+  font-size: 17px;
+  line-height: 1.3;
+  margin-bottom: 4px;
+}
+.state-drawer-head .state-builder-board-lede {
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+.state-drawer-close {
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  background: rgba(28, 25, 23, 0.04);
+  color: #44403c;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background-color 180ms ease, color 180ms ease, transform 180ms ease;
+}
+.state-drawer-close:hover {
+  background: rgba(28, 25, 23, 0.1);
+  color: #1c1917;
+  transform: rotate(90deg);
+}
+.state-drawer-close:focus-visible {
+  outline: 2px solid rgba(37, 99, 235, 0.55);
+  outline-offset: 2px;
+}
+
+.state-drawer-body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 14px 22px 22px;
+  -webkit-overflow-scrolling: touch;
+}
+.state-drawer-body .state-builder-board {
+  padding-top: 0;
+}
+.state-drawer-body .state-builder-board > .state-builder-board-head {
+  /* Kicker/title/lede already render in the drawer head, hide the
+     duplicate inside the embedded board (legacy markup keeps it
+     for the standalone fallback). */
+  display: none;
+}
+
+/* Narrow viewports (matches popover breakpoint): dock collapses to
+   a horizontal pill below the phone, so dock and popover always
+   travel together along the same vertical axis. */
+@media (max-width: 1279px) {
+  .state-dock {
+    left: 50%;
+    top: calc(100% + 14px);
+    transform: translate(-50%, 0);
+    flex-direction: row;
+    padding: 7px 14px;
+    gap: 6px;
+  }
+  .hero-demo.is-booted .state-dock {
+    transform: translate(-50%, 0);
+  }
+  body[data-state-drawer-open="true"] .state-dock {
+    /* Keep dock visible under the popover when open — popover
+       stacks below it in the column flow, not over it. */
+    opacity: 1;
+    pointer-events: auto;
+    transform: translate(-50%, 0);
+  }
+  .state-dock-eyebrow {
+    writing-mode: horizontal-tb;
+    padding: 0 6px 0 2px;
+    letter-spacing: 0.28em;
+  }
+  .state-dock-divider {
+    width: 1px;
+    height: 18px;
+    margin: 0 4px;
+  }
+  .state-dock-tab {
+    width: 34px;
+    height: 34px;
+  }
+  .state-dock-tab-icon { width: 20px; height: 20px; }
+  .state-dock-tab-icon svg { width: 16px; height: 16px; }
+  .state-dock-hint {
+    /* Sits to the right of the horizontal dock, slightly below to
+       avoid optical collision with the eyebrow text. */
+    left: 50%;
+    top: calc(100% + 76px);
+    transform: translate(-50%, 0);
+    width: auto;
+    text-align: center;
+  }
+  .state-dock-hint::before {
+    /* Arrow now points up at the dock above */
+    content: '↑';
+  }
+}
+
+/* ----- Capability board (collapsed state) ----- */
+.state-builder-board {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 6px 4px 0;
+}
+
+.state-builder-board-head {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.state-builder-board-kicker {
+  color: #2563eb;
+  font: 800 10px/1 Inter, system-ui, sans-serif;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+.state-builder-board-title {
+  margin: 0;
+  font: 700 18px/1.3 Inter, system-ui, sans-serif;
+  color: #1c1917;
+}
+.state-builder-board-lede {
+  margin: 0;
+  font: 400 13.5px/1.55 'Charter', 'Georgia', serif;
+  color: #57534e;
+}
+
+.state-builder-tabs {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 2px;
+  padding: 4px 0 0;
+}
+.state-builder-tab {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 2px 6px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  color: #78716c;
+  font: 600 10.5px/1.25 Inter, system-ui, sans-serif;
+  text-align: center;
+  transition: color 0.14s ease;
+}
+.state-builder-tab:hover { color: #1c1917; }
+.state-builder-tab[aria-selected="true"] {
+  color: #1c1917;
+  font-weight: 700;
+}
+.state-builder-tab[aria-selected="true"] .state-builder-tab-icon {
+  box-shadow: 0 0 0 1.5px #2563eb;
+}
+.state-builder-tab:focus-visible {
+  outline: 2px solid rgba(37, 99, 235, 0.45);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+.state-builder-tab-icon {
+  width: 30px;
+  height: 30px;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: #f5f5f4;
+  color: #57534e;
+  overflow: hidden;
+}
+.state-builder-tab-icon svg { width: 17px; height: 17px; }
+.state-builder-tab-icon-img { background: transparent; }
+.state-builder-tab-icon-img img { width: 100%; height: 100%; object-fit: cover; }
+.state-builder-tab-label { display: block; }
+
+.state-builder-panel-shell {
+  padding: 4px 0 0;
+}
+
+.state-builder-board-foot {
+  margin: 8px 4px 0;
+  font: 400 11.5px/1.5 'Charter', 'Georgia', serif;
+  color: #a8a29e;
+}
+.state-builder-board-foot code {
+  font: 500 11px/1.5 'JetBrains Mono', 'SF Mono', monospace;
+  color: #78716c;
+  background: transparent;
+  padding: 0;
+}
+
+.studio-action-rail {
+  display: flex;
+  gap: 8px;
+  margin: 9px 0 16px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.studio-action-rail::-webkit-scrollbar { display: none; }
+.studio-action-tab {
+  flex: 0 0 auto;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  padding: 4px 0;
+  margin-right: 16px;
+  color: #78716c;
+  font: 600 12px/1 Inter, system-ui, sans-serif;
+  cursor: pointer;
+  transition: color 0.14s ease, border-color 0.14s ease;
+}
+.studio-action-tab:hover {
+  color: #1c1917;
+}
+.studio-action-tab[aria-selected="true"] {
+  color: #1c1917;
+  border-bottom-color: #2563eb;
+}
+.studio-action-panel { display: none; }
+.studio-action-panel[data-active="true"] { display: block; }
+#studio-device-location-custom[hidden] { display: none !important; }
+.studio-panel { display: none; }
+.studio-panel[data-active="true"] {
+  display: block;
+  animation: studio-panel-in 0.18s ease-out;
+}
+.state-builder-panel-shell .studio-action-rail {
+  margin: 0 0 14px;
+}
+@keyframes studio-panel-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.studio-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.studio-field label {
+  font-size: 11px;
+  line-height: 1.2;
+  font-weight: 600;
+  color: #78716c;
+}
+.studio-input {
+  width: 100%;
+  border: 1px solid rgba(28,25,23,0.06);
+  border-radius: 9px;
+  background: transparent;
+  padding: 10px 12px;
+  font: 600 13px/1.35 Inter, system-ui, sans-serif;
+  color: #1c1917;
+  outline: none;
+  box-shadow: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+select.studio-input {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='18' height='18' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M7 10L12 15L17 10' stroke='%2378716c' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-position: right 11px center;
+  background-repeat: no-repeat;
+  background-size: 18px 18px;
+  padding-right: 34px;
+}
+input[type="date"].studio-input,
+input[type="datetime-local"].studio-input {
+  color-scheme: light;
+}
+textarea.studio-input {
+  line-height: 1.5;
+}
+.studio-input:focus {
+  border-color: rgba(37,99,235,0.34);
+  background: transparent;
+  box-shadow:
+    0 0 0 2px rgba(37,99,235,0.05);
+}
+.studio-input:hover:not(:focus) {
+  border-color: rgba(28,25,23,0.12);
+  box-shadow: none;
+}
+.studio-action {
+  border-radius: 8px;
+  background: #44403c;
+  color: #f5f5f4;
+  border: 0;
+  padding: 9px 14px;
+  font: 600 12.5px/1 Inter, system-ui, sans-serif;
+  box-shadow: none;
+  transition: background 0.14s ease;
+}
+.studio-action:hover {
+  background: #57534e;
+  box-shadow: none;
+  transform: none;
+}
+.studio-action:disabled { background: #a8a29e; transform: none; cursor: not-allowed; }
+.studio-action.secondary {
+  background: rgba(255,255,255,0.72);
+  color: #1c1917;
+  border: 1px solid rgba(214,211,209,0.88);
+  box-shadow: none;
+}
+.studio-action.secondary:hover {
+  background: #fff;
+  border-color: #a8a29e;
+}
+.studio-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font: 600 12px/1.2 Inter, system-ui, sans-serif;
+  color: #44403c;
+}
+.avatar-picker {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+}
+.avatar-choice {
+  aspect-ratio: 1;
+  border-radius: 11px;
+  border: 2px solid transparent;
+  padding: 2px;
+  background: rgba(245,245,244,0.72);
+  transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+.avatar-choice:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px -14px rgba(28,25,23,0.7);
+}
+.avatar-choice[aria-pressed="true"] {
+  border-color: #2563eb;
+  background: #eff6ff;
+}
+.avatar-choice img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 9px;
+  object-fit: cover;
+}
+.studio-status {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 0 4px;
+  margin-top: 4px;
+  font: 400 12px/1.5 'Charter', 'Georgia', serif;
+}
+.studio-status::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: currentColor;
+  margin-top: 6px;
+}
+.studio-status[data-kind="ok"] { color: #047857; }
+.studio-status[data-kind="warn"] { color: #a16207; }
+.studio-status[data-kind="error"] { color: #b91c1c; }
+.studio-snapshot-meta {
+  border-radius: 10px;
+  background: rgba(245,245,244,0.7);
+  padding: 9px 11px;
+  color: #78716c;
+  font: 700 10px/1.45 Inter, system-ui, sans-serif;
+}
+
+/* ============================================================ */
+/* Reddit case-study trajectory viewer                          */
+/* ============================================================ */
+.trace-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; max-width: 640px; margin: 0 auto; }
+@media (max-width: 600px) { .trace-grid { grid-template-columns: 1fr; gap: 1rem; } }
+.trace-side { display: flex; flex-direction: column; gap: 0.5rem; }
+.trace-header {
+  display: flex; align-items: center; justify-content: flex-start;
+  padding: 0 2px 6px;
+}
+.trace-badge {
+  padding: 3px 8px; border-radius: 4px;
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 9px; font-weight: 800; letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.trace-badge-base    { background: #1c1917; color: #f5f5f4; }
+.trace-badge-trained { background: #047857; color: #fff; }
+.trace-image-wrap {
+  position: relative; border-radius: 10px; overflow: hidden;
+  background: #f5f5f4; aspect-ratio: 540 / 1150;
+}
+.trace-image-wrap img { width: 100%; height: 100%; display: block; object-fit: cover; }
+.trace-image-wrap.is-base { border: 1px solid #e7e5e4; }
+.trace-image-wrap.is-trained { border: 1px solid #a7f3d0; background: #ecfdf5; }
+.trace-controls { display: flex; flex-direction: column; gap: 0.5rem; padding: 0 2px; }
+.trace-slider {
+  -webkit-appearance: none; appearance: none;
+  width: 100%; height: 4px; border-radius: 2px;
+  background: #e7e5e4; outline: none; cursor: pointer;
+  margin: 0;
+}
+.trace-slider::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 16px; height: 16px; border-radius: 50%;
+  background: #fff; border: 2px solid #44403c;
+  cursor: pointer; transition: transform .15s ease;
+}
+.trace-slider::-moz-range-thumb {
+  width: 16px; height: 16px; border-radius: 50%;
+  background: #fff; border: 2px solid #44403c;
+  cursor: pointer; transition: transform .15s ease;
+}
+.trace-slider.is-trained::-webkit-slider-thumb { border-color: #047857; }
+.trace-slider.is-trained::-moz-range-thumb     { border-color: #047857; }
+.trace-slider:hover::-webkit-slider-thumb { transform: scale(1.15); }
+.trace-slider:hover::-moz-range-thumb     { transform: scale(1.15); }
+.trace-ticks {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 0 7px;
+  font-family: 'JetBrains Mono', 'SF Mono', monospace;
+  font-size: 9px; color: #a8a29e;
+  font-variant-numeric: tabular-nums;
+}
+.trace-tick { display: flex; flex-direction: column; align-items: center; flex: 0 0 auto; }
+.trace-tick::before {
+  content: ''; width: 1px; height: 5px; background: #d6d3d1; margin-bottom: 2px;
+}
+.trace-action {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 11px; line-height: 1.35; color: #44403c;
+  min-height: 2.7em; padding: 2px 2px 0;
+}
+.trace-action .step-label {
+  font-family: 'JetBrains Mono', 'SF Mono', monospace;
+  font-weight: 700; font-size: 10px;
+  margin-right: 6px;
+  color: #1c1917;
+}
+.trace-action.is-trained .step-label { color: #047857; }
+
+.app-tile { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; user-select: none; }
+.app-tile .app-icon {
+  width: 60px; height: 60px;
+  display: flex; align-items: center; justify-content: center;
+  transition: transform .18s ease, filter .18s ease;
+  position: relative;
+}
+.app-tile .app-icon img {
+  width: 100%; height: 100%;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,.08)) drop-shadow(0 2px 4px rgba(0,0,0,.05));
+}
+.app-tile .app-icon.fallback {
+  border-radius: 14px;
+  box-shadow: 0 1px 2px rgba(0,0,0,.08), 0 2px 6px -2px rgba(0,0,0,.08);
+  font-family: 'Inter', system-ui, sans-serif;
+  font-weight: 600;
+  overflow: visible;
+}
+.app-tile .app-icon.fallback.is-light {
+  box-shadow: 0 0 0 1px rgba(0,0,0,.05), 0 1px 2px rgba(0,0,0,.06), 0 2px 6px -2px rgba(0,0,0,.06);
+}
+.app-tile:hover .app-icon { transform: translateY(-2px) scale(1.06); }
+.app-tile:hover .app-icon img {
+  filter: drop-shadow(0 4px 10px rgba(0,0,0,.18)) drop-shadow(0 2px 4px rgba(0,0,0,.08));
+}
+.app-tile .app-name {
+  font-size: 11px; line-height: 1.15; text-align: center;
+  color: #57534e; transition: color .15s ease;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+.app-tile:hover .app-name { color: #1c1917; }
+.app-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  column-gap: 0.5rem;
+  row-gap: 1.5rem;
+}
+@media (min-width: 640px) { .app-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
+@media (min-width: 768px) { .app-grid { grid-template-columns: repeat(7, minmax(0, 1fr)); } }
+.app-section-label {
+  display: flex; align-items: baseline; gap: 0.625rem; margin-bottom: 1.25rem;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+.app-section-label .bar { width: 3px; height: 14px; border-radius: 2px; align-self: center; }
+.app-section-label h3 {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.22em;
+  text-transform: uppercase; color: #44403c;
+}
+.app-section-label .count { font-size: 11px; color: #a8a29e; font-weight: 500; }
+
+/* ============================================================ */
+/* Apps Wall — auto-scrolling marquee                           */
+/* ============================================================ */
+.apps-marquee-row { margin-bottom: 28px; }
+.apps-marquee-row:last-of-type { margin-bottom: 0; }
+.apps-marquee-meta {
+  display: flex; align-items: center; gap: 10px;
+  margin: 0 0 14px;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+.apps-marquee-meta .bar {
+  width: 3px; height: 14px; border-radius: 2px;
+  flex: 0 0 auto;
+}
+.apps-marquee-meta-label {
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 0.22em; text-transform: uppercase;
+  color: #44403c;
+}
+.apps-marquee-meta-count {
+  font-size: 11px; font-weight: 500; color: #a8a29e;
+}
+
+.apps-marquee {
+  position: relative;
+  overflow: hidden;
+  padding: 4px 0 6px;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 6%, #000 94%, transparent 100%);
+          mask-image: linear-gradient(90deg, transparent 0%, #000 6%, #000 94%, transparent 100%);
+}
+.apps-marquee-track {
+  display: flex;
+  gap: 28px;
+  width: max-content;
+  animation: apps-scroll-left 30s linear infinite;
+  will-change: transform;
+}
+.apps-marquee-track.is-reverse {
+  animation-name: apps-scroll-right;
+  animation-duration: 30s;
+}
+.apps-marquee:hover .apps-marquee-track,
+.apps-marquee:focus-within .apps-marquee-track {
+  animation-play-state: paused;
+}
+@keyframes apps-scroll-left {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(-50%, 0, 0); }
+}
+@keyframes apps-scroll-right {
+  from { transform: translate3d(-50%, 0, 0); }
+  to   { transform: translate3d(0, 0, 0); }
+}
+.apps-marquee .app-tile {
+  flex: 0 0 auto;
+  width: 84px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .apps-marquee {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    -webkit-mask-image: none;
+            mask-image: none;
+  }
+  .apps-marquee-track {
+    animation: none !important;
+    transform: none !important;
+  }
+}

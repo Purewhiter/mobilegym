@@ -1,0 +1,411 @@
+{
+  "app": "calendar",
+  "appDir": "apps/Calendar",
+  "mode": "schema",
+  "routeCount": 10,
+  "edgeCount": 21,
+  "nodes": [
+    {
+      "id": "/",
+      "routePath": "/",
+      "component": "CalendarHomePage",
+      "entryPoint": true,
+      "entry": {
+        "kind": "home",
+        "home": true,
+        "deepLink": false
+      },
+      "description": "日历首页",
+      "stateCount": 1,
+      "states": [
+        "/"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/settings",
+      "routePath": "/settings",
+      "component": "CalendarSettingsPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "日历设置页",
+      "stateCount": 1,
+      "states": [
+        "/settings"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/new-event",
+      "routePath": "/new-event",
+      "component": "CalendarNewEventPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "新建日程页",
+      "stateCount": 1,
+      "states": [
+        "/new-event"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/event/:eventId",
+      "routePath": "/event/:eventId",
+      "component": "CalendarEventDetailPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "deepLink",
+        "home": false,
+        "deepLink": true
+      },
+      "description": "日程详情页",
+      "stateCount": 1,
+      "states": [
+        "/event/:eventId"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/event/:eventId/edit",
+      "routePath": "/event/:eventId/edit",
+      "component": "CalendarNewEventPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "deepLink",
+        "home": false,
+        "deepLink": true
+      },
+      "description": "编辑日程页",
+      "stateCount": 1,
+      "states": [
+        "/event/:eventId/edit"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/search",
+      "routePath": "/search",
+      "component": "CalendarSearchPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "搜索页",
+      "stateCount": 1,
+      "states": [
+        "/search"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/date-jump",
+      "routePath": "/date-jump",
+      "component": "CalendarDateJumpPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "日期跳转页",
+      "stateCount": 1,
+      "states": [
+        "/date-jump"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/date-calculate",
+      "routePath": "/date-calculate",
+      "component": "CalendarDateCalculatePage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "日期计算页",
+      "stateCount": 1,
+      "states": [
+        "/date-calculate"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/subscription",
+      "routePath": "/subscription",
+      "component": "CalendarSubscriptionPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "订阅管理页",
+      "stateCount": 1,
+      "states": [
+        "/subscription"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/desk-theme",
+      "routePath": "/desk-theme",
+      "component": "CalendarDeskThemePage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "桌面组件主题页",
+      "stateCount": 1,
+      "states": [
+        "/desk-theme"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    }
+  ],
+  "edges": [
+    {
+      "source": "/",
+      "target": "/settings",
+      "transitions": [
+        "settings.open"
+      ],
+      "type": "navigation",
+      "label": "settings.open",
+      "id": "settings.open"
+    },
+    {
+      "source": "/",
+      "target": "/new-event",
+      "transitions": [
+        "new-event.open"
+      ],
+      "type": "navigation",
+      "label": "new-event.open",
+      "id": "new-event.open"
+    },
+    {
+      "source": "/",
+      "target": "/event/:eventId",
+      "transitions": [
+        "event.open"
+      ],
+      "type": "navigation",
+      "label": "event.open",
+      "id": "event.open"
+    },
+    {
+      "source": "/search",
+      "target": "/event/:eventId",
+      "transitions": [
+        "event.open"
+      ],
+      "type": "navigation",
+      "label": "event.open",
+      "id": "event.open"
+    },
+    {
+      "source": "/new-event",
+      "target": "/event/:eventId",
+      "transitions": [
+        "event.open"
+      ],
+      "type": "navigation",
+      "label": "event.open",
+      "id": "event.open"
+    },
+    {
+      "source": "/event/:eventId/edit",
+      "target": "/event/:eventId",
+      "transitions": [
+        "event.open"
+      ],
+      "type": "navigation",
+      "label": "event.open",
+      "id": "event.open"
+    },
+    {
+      "source": "/event/:eventId",
+      "target": "/event/:eventId/edit",
+      "transitions": [
+        "event.edit"
+      ],
+      "type": "navigation",
+      "label": "event.edit",
+      "id": "event.edit"
+    },
+    {
+      "source": "/",
+      "target": "/search",
+      "transitions": [
+        "search.open"
+      ],
+      "type": "navigation",
+      "label": "search.open",
+      "id": "search.open"
+    },
+    {
+      "source": "/",
+      "target": "/date-jump",
+      "transitions": [
+        "date-jump.open"
+      ],
+      "type": "navigation",
+      "label": "date-jump.open",
+      "id": "date-jump.open"
+    },
+    {
+      "source": "/",
+      "target": "/date-calculate",
+      "transitions": [
+        "date-calculate.open"
+      ],
+      "type": "navigation",
+      "label": "date-calculate.open",
+      "id": "date-calculate.open"
+    },
+    {
+      "source": "/",
+      "target": "/subscription",
+      "transitions": [
+        "subscription.open"
+      ],
+      "type": "navigation",
+      "label": "subscription.open",
+      "id": "subscription.open"
+    },
+    {
+      "source": "/",
+      "target": "/desk-theme",
+      "transitions": [
+        "desk-theme.open"
+      ],
+      "type": "navigation",
+      "label": "desk-theme.open",
+      "id": "desk-theme.open"
+    },
+    {
+      "source": "/settings",
+      "target": "/",
+      "transitions": [
+        "home.open"
+      ],
+      "type": "navigation",
+      "label": "home.open",
+      "id": "home.open"
+    },
+    {
+      "source": "/new-event",
+      "target": "/",
+      "transitions": [
+        "home.open"
+      ],
+      "type": "navigation",
+      "label": "home.open",
+      "id": "home.open"
+    },
+    {
+      "source": "/event/:eventId",
+      "target": "/",
+      "transitions": [
+        "home.open"
+      ],
+      "type": "navigation",
+      "label": "home.open",
+      "id": "home.open"
+    },
+    {
+      "source": "/event/:eventId/edit",
+      "target": "/",
+      "transitions": [
+        "home.open"
+      ],
+      "type": "navigation",
+      "label": "home.open",
+      "id": "home.open"
+    },
+    {
+      "source": "/search",
+      "target": "/",
+      "transitions": [
+        "home.open"
+      ],
+      "type": "navigation",
+      "label": "home.open",
+      "id": "home.open"
+    },
+    {
+      "source": "/date-jump",
+      "target": "/",
+      "transitions": [
+        "home.open"
+      ],
+      "type": "navigation",
+      "label": "home.open",
+      "id": "home.open"
+    },
+    {
+      "source": "/date-calculate",
+      "target": "/",
+      "transitions": [
+        "home.open"
+      ],
+      "type": "navigation",
+      "label": "home.open",
+      "id": "home.open"
+    },
+    {
+      "source": "/subscription",
+      "target": "/",
+      "transitions": [
+        "home.open"
+      ],
+      "type": "navigation",
+      "label": "home.open",
+      "id": "home.open"
+    },
+    {
+      "source": "/desk-theme",
+      "target": "/",
+      "transitions": [
+        "home.open"
+      ],
+      "type": "navigation",
+      "label": "home.open",
+      "id": "home.open"
+    }
+  ]
+}

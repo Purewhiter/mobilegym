@@ -1,0 +1,816 @@
+{
+  "mi_account_settings": {
+    "id": "mi_account_settings",
+    "title": "小米账号",
+    "categories": [
+      {
+        "items": [
+          {
+            "type": "preference",
+            "key": "account_info",
+            "title": "个人信息",
+            "summary": "头像、昵称、小米ID"
+          },
+          {
+            "type": "preference",
+            "key": "account_security",
+            "title": "账号安全",
+            "summary": "密码、验证方式、登录设备管理"
+          }
+        ]
+      },
+      {
+        "title": "云服务",
+        "items": [
+          {
+            "type": "preference",
+            "key": "cloud_sync",
+            "title": "云同步",
+            "summary": "联系人、短信、通话记录、WLAN"
+          },
+          {
+            "type": "preference",
+            "key": "cloud_backup",
+            "title": "云备份",
+            "summary": "备份手机中的数据到云端"
+          },
+          {
+            "type": "preference",
+            "key": "find_device",
+            "title": "查找设备",
+            "summary": "远程定位、锁定、擦除设备"
+          }
+        ]
+      },
+      {
+        "title": "会员权益",
+        "items": [
+          {
+            "type": "preference",
+            "key": "vip_privileges",
+            "title": "会员中心",
+            "summary": "查看和管理会员权益"
+          },
+          {
+            "type": "preference",
+            "key": "cloud_storage",
+            "title": "云空间",
+            "summary": "查看和管理云存储空间"
+          }
+        ]
+      }
+    ]
+  },
+  "personalize_title": {
+    "id": "personalize_title",
+    "title": "系统个性化",
+    "categories": [
+      {
+        "items": [
+          {
+            "type": "preference",
+            "key": "theme_center",
+            "title": "主题",
+            "summary": "更换系统主题和图标"
+          },
+          {
+            "type": "preference",
+            "key": "wallpaper_center",
+            "title": "壁纸",
+            "summary": "更换锁屏和桌面壁纸"
+          },
+          {
+            "type": "preference",
+            "key": "font_center",
+            "title": "字体",
+            "summary": "更换系统字体"
+          },
+          {
+            "type": "preference",
+            "key": "ringtone_center",
+            "title": "铃声",
+            "summary": "更换来电和通知铃声"
+          }
+        ]
+      },
+      {
+        "title": "高级个性化",
+        "items": [
+          {
+            "type": "switch",
+            "key": "dynamic_clock",
+            "title": "动态时钟",
+            "summary": "锁屏显示动态时钟样式"
+          },
+          {
+            "type": "preference",
+            "key": "aod_style",
+            "title": "息屏样式",
+            "summary": "自定义息屏显示内容"
+          },
+          {
+            "type": "preference",
+            "key": "charge_animation",
+            "title": "充电动画",
+            "summary": "自定义充电时的动画效果"
+          }
+        ]
+      }
+    ]
+  },
+  "launcher_settings": {
+    "id": "launcher_settings",
+    "title": "桌面",
+    "categories": [
+      {
+        "title": "布局",
+        "items": [
+          {
+            "type": "preference",
+            "key": "home_screen_layout",
+            "title": "桌面布局",
+            "summary": "4×6 / 5×6 / 4×7 / 5×7"
+          },
+          {
+            "type": "switch",
+            "key": "align_to_top",
+            "title": "图标居上",
+            "summary": "图标自动向上对齐"
+          },
+          {
+            "type": "preference",
+            "key": "icon_size",
+            "title": "图标大小",
+            "summary": "调整桌面图标大小"
+          }
+        ]
+      },
+      {
+        "title": "操作",
+        "items": [
+          {
+            "type": "switch",
+            "key": "minus_screen",
+            "title": "负一屏",
+            "summary": "在最左侧桌面显示智能助理"
+          },
+          {
+            "type": "preference",
+            "key": "default_screen",
+            "title": "默认桌面页",
+            "summary": "设置默认显示的桌面页面"
+          },
+          {
+            "type": "switch",
+            "key": "icon_animation",
+            "title": "图标打开动画",
+            "summary": "打开应用时显示过渡动画",
+            "defaultValue": "true"
+          }
+        ]
+      },
+      {
+        "title": "最近任务",
+        "items": [
+          {
+            "type": "switch",
+            "key": "blur_in_recent",
+            "title": "模糊显示",
+            "summary": "最近任务中模糊显示预览"
+          },
+          {
+            "type": "preference",
+            "key": "recent_layout",
+            "title": "最近任务布局",
+            "summary": "横向 / 纵向"
+          }
+        ]
+      },
+      {
+        "title": "其他",
+        "items": [
+          {
+            "type": "list",
+            "key": "system_navigation_mode",
+            "title": "系统导航方式",
+            "defaultValue": "gesture",
+            "entries": ["全面屏手势", "经典导航键"],
+            "entryValues": ["gesture", "buttons"]
+          },
+          {
+            "type": "list",
+            "key": "recent_tasks_layout",
+            "title": "最近任务样式",
+            "defaultValue": "vertical",
+            "entries": ["纵向排布", "横向排布"],
+            "entryValues": ["vertical", "horizontal"]
+          }
+        ]
+      }
+    ]
+  },
+  "wallpaper_settings": {
+    "id": "wallpaper_settings",
+    "title": "壁纸",
+    "categories": [
+      {
+        "items": [
+          {
+            "type": "preference",
+            "key": "lock_wallpaper",
+            "title": "锁屏壁纸",
+            "summary": "设置锁屏壁纸"
+          },
+          {
+            "type": "preference",
+            "key": "home_wallpaper",
+            "title": "桌面壁纸",
+            "summary": "设置桌面壁纸"
+          }
+        ]
+      },
+      {
+        "title": "更多壁纸",
+        "items": [
+          {
+            "type": "preference",
+            "key": "super_wallpaper",
+            "title": "超级壁纸",
+            "summary": "地球、火星、几何等动态壁纸"
+          },
+          {
+            "type": "preference",
+            "key": "live_wallpaper",
+            "title": "动态壁纸",
+            "summary": "选择动态壁纸"
+          },
+          {
+            "type": "preference",
+            "key": "wallpaper_carousel",
+            "title": "壁纸轮播",
+            "summary": "自动更换锁屏壁纸"
+          }
+        ]
+      }
+    ]
+  },
+  "theme_settings": {
+    "id": "theme_settings",
+    "title": "个性主题",
+    "categories": [
+      {
+        "items": [
+          {
+            "type": "preference",
+            "key": "theme_store",
+            "title": "主题商店",
+            "summary": "浏览和下载新主题"
+          },
+          {
+            "type": "preference",
+            "key": "my_themes",
+            "title": "我的主题",
+            "summary": "管理已下载的主题"
+          }
+        ]
+      },
+      {
+        "title": "自定义",
+        "items": [
+          {
+            "type": "preference",
+            "key": "icon_pack",
+            "title": "图标",
+            "summary": "更换应用图标样式"
+          },
+          {
+            "type": "preference",
+            "key": "font_style",
+            "title": "字体",
+            "summary": "更换系统字体"
+          },
+          {
+            "type": "preference",
+            "key": "system_sounds",
+            "title": "铃声",
+            "summary": "更换系统铃声"
+          },
+          {
+            "type": "preference",
+            "key": "notification_shade",
+            "title": "通知栏样式",
+            "summary": "自定义通知栏外观"
+          }
+        ]
+      }
+    ]
+  },
+  "voice_assist": {
+    "id": "voice_assist",
+    "title": "小爱同学",
+    "categories": [
+      {
+        "items": [
+          {
+            "type": "switch",
+            "key": "voice_wakeup",
+            "title": "语音唤醒",
+            "summary": "说\"小爱同学\"唤醒",
+            "defaultValue": "true"
+          },
+          {
+            "type": "preference",
+            "key": "wakeup_word",
+            "title": "唤醒词",
+            "summary": "小爱同学"
+          },
+          {
+            "type": "switch",
+            "key": "lock_screen_wakeup",
+            "title": "锁屏唤醒",
+            "summary": "锁屏状态下可语音唤醒"
+          }
+        ]
+      },
+      {
+        "title": "功能",
+        "items": [
+          {
+            "type": "preference",
+            "key": "xiaoai_skills",
+            "title": "技能中心",
+            "summary": "查看和管理小爱技能"
+          },
+          {
+            "type": "preference",
+            "key": "xiaoai_training",
+            "title": "训练计划",
+            "summary": "个性化小爱回复"
+          },
+          {
+            "type": "preference",
+            "key": "xiaoai_alarm",
+            "title": "闹钟与提醒",
+            "summary": "通过语音设置闹钟"
+          },
+          {
+            "type": "preference",
+            "key": "smart_home",
+            "title": "智能家居",
+            "summary": "控制米家智能设备"
+          }
+        ]
+      },
+      {
+        "title": "关于",
+        "items": [
+          {
+            "type": "preference",
+            "key": "xiaoai_about",
+            "title": "关于小爱同学",
+            "summary": "版本 5.12.8"
+          }
+        ]
+      }
+    ]
+  },
+  "micloud_settings": {
+    "id": "micloud_settings",
+    "title": "小米账号",
+    "categories": [
+      {
+        "title": "云服务",
+        "items": [
+          {
+            "type": "switch",
+            "key": "contacts_sync",
+            "title": "联系人",
+            "summary": "同步联系人到云端",
+            "defaultValue": "true"
+          },
+          {
+            "type": "switch",
+            "key": "sms_sync",
+            "title": "短信",
+            "summary": "同步短信到云端"
+          },
+          {
+            "type": "switch",
+            "key": "call_log_sync",
+            "title": "通话记录",
+            "summary": "同步通话记录到云端",
+            "defaultValue": "true"
+          },
+          {
+            "type": "switch",
+            "key": "wifi_sync",
+            "title": "WLAN",
+            "summary": "同步已保存的WLAN网络",
+            "defaultValue": "true"
+          },
+          {
+            "type": "switch",
+            "key": "gallery_sync",
+            "title": "相册",
+            "summary": "同步照片到云端"
+          },
+          {
+            "type": "switch",
+            "key": "notes_sync",
+            "title": "便签",
+            "summary": "同步便签到云端",
+            "defaultValue": "true"
+          },
+          {
+            "type": "switch",
+            "key": "recorder_sync",
+            "title": "录音",
+            "summary": "同步录音到云端"
+          }
+        ]
+      },
+      {
+        "title": "备份",
+        "items": [
+          {
+            "type": "preference",
+            "key": "cloud_backup_settings",
+            "title": "桌面云备份",
+            "summary": "备份桌面布局和设置"
+          },
+          {
+            "type": "preference",
+            "key": "app_data_backup",
+            "title": "应用数据",
+            "summary": "备份应用数据到云端"
+          }
+        ]
+      },
+      {
+        "title": "安全",
+        "items": [
+          {
+            "type": "preference",
+            "key": "find_my_device",
+            "title": "查找手机",
+            "summary": "远程定位、响铃、锁定、擦除"
+          },
+          {
+            "type": "preference",
+            "key": "cloud_storage_manage",
+            "title": "云空间管理",
+            "summary": "已用 3.2 GB / 5 GB"
+          }
+        ]
+      }
+    ]
+  },
+  "feedback_services_settings": {
+    "id": "feedback_services_settings",
+    "title": "问题反馈",
+    "categories": [
+      {
+        "items": [
+          {
+            "type": "preference",
+            "key": "new_feedback",
+            "title": "提交新反馈",
+            "summary": "报告问题或提出建议"
+          },
+          {
+            "type": "preference",
+            "key": "my_feedback",
+            "title": "我的反馈",
+            "summary": "查看已提交的反馈"
+          }
+        ]
+      },
+      {
+        "title": "其他",
+        "items": [
+          {
+            "type": "preference",
+            "key": "faq",
+            "title": "常见问题",
+            "summary": "查看热门问题和解答"
+          },
+          {
+            "type": "preference",
+            "key": "feedback_about",
+            "title": "关于",
+            "summary": "问题反馈 v2024.1"
+          }
+        ]
+      }
+    ]
+  },
+  "app_timer": {
+    "id": "app_timer",
+    "title": "屏幕时间管理",
+    "categories": [
+      {
+        "items": [
+          {
+            "type": "preference",
+            "key": "today_usage",
+            "title": "今日使用",
+            "summary": "查看今天的手机使用情况"
+          },
+          {
+            "type": "preference",
+            "key": "weekly_report",
+            "title": "每周使用报告",
+            "summary": "查看每周使用数据和趋势"
+          }
+        ]
+      },
+      {
+        "title": "限制",
+        "items": [
+          {
+            "type": "preference",
+            "key": "app_timers",
+            "title": "应用限时",
+            "summary": "为应用设置每日使用时间上限"
+          },
+          {
+            "type": "preference",
+            "key": "bedtime_mode",
+            "title": "就寝时间",
+            "summary": "设置就寝提醒和屏幕变暗"
+          },
+          {
+            "type": "switch",
+            "key": "focus_mode",
+            "title": "专注模式",
+            "summary": "暂停使部分应用不可用"
+          }
+        ]
+      }
+    ]
+  },
+  "minors_control": {
+    "id": "minors_control",
+    "title": "儿童模式",
+    "categories": [
+      {
+        "items": [
+          {
+            "type": "switch",
+            "key": "child_mode_enable",
+            "title": "开启儿童模式",
+            "summary": "限制儿童使用手机的内容和时间"
+          }
+        ]
+      },
+      {
+        "title": "控制",
+        "items": [
+          {
+            "type": "preference",
+            "key": "allowed_apps",
+            "title": "允许使用的应用",
+            "summary": "选择儿童可以使用的应用"
+          },
+          {
+            "type": "preference",
+            "key": "time_limit",
+            "title": "每日使用时间",
+            "summary": "设置每天最多使用时长"
+          },
+          {
+            "type": "preference",
+            "key": "content_filter",
+            "title": "内容过滤",
+            "summary": "过滤不适宜的内容"
+          },
+          {
+            "type": "preference",
+            "key": "app_install_control",
+            "title": "应用安装限制",
+            "summary": "需要家长密码才能安装应用"
+          }
+        ]
+      }
+    ]
+  },
+  "PageLayoutFragment": {
+    "id": "PageLayoutFragment",
+    "title": "字体样式和大小",
+    "categories": [
+      {
+        "title": "文字",
+        "items": [
+          {
+            "type": "seekbar",
+            "key": "font_size",
+            "title": "字体大小",
+            "summary": "放大或缩小文字"
+          },
+          {
+            "type": "seekbar",
+            "key": "font_weight",
+            "title": "字体粗细",
+            "summary": "调整文字粗细"
+          },
+          {
+            "type": "switch",
+            "key": "toggle_force_bold_text",
+            "title": "粗体文字"
+          },
+          {
+            "type": "switch",
+            "key": "toggle_high_text_contrast_preference",
+            "title": "为文字添加轮廓"
+          }
+        ]
+      },
+      {
+        "title": "显示",
+        "items": [
+          {
+            "type": "seekbar",
+            "key": "display_size",
+            "title": "显示大小",
+            "summary": "放大或缩小所有内容"
+          }
+        ]
+      }
+    ]
+  },
+  "font_size_settings": {
+    "id": "font_size_settings",
+    "title": "字体大小",
+    "categories": [
+      {
+        "items": [
+          {
+            "type": "seekbar",
+            "key": "font_size",
+            "title": "字体大小",
+            "summary": "放大或缩小文字"
+          }
+        ]
+      },
+      {
+        "items": [
+          {
+            "type": "footer",
+            "key": "font_size_summary",
+            "title": "",
+            "summary": "调整电话、短信、联系人等应用的字体大小和布局，让阅读和操作更方便。"
+          }
+        ]
+      }
+    ]
+  },
+  "accessibility_settings_hearing": {
+    "id": "accessibility_settings_hearing",
+    "title": "无障碍功能",
+    "categories": [
+      {
+        "title": "听力辅助工具",
+        "items": [
+          {
+            "type": "preference",
+            "key": "miui_accessibility_asr_preference",
+            "title": "小米闻声",
+            "summary": "实时将语音转录为文字"
+          },
+          {
+            "type": "value",
+            "key": "environment_sound_recognition",
+            "title": "环境音识别",
+            "targetPage": "environment_sound_recognition_settings"
+          },
+          {
+            "type": "preference",
+            "key": "live_caption",
+            "title": "实时字幕",
+            "summary": "自动生成媒体字幕"
+          },
+          {
+            "type": "switch",
+            "key": "toggle_primary_mono",
+            "title": "单声道音频",
+            "summary": "播放音频时合并声道"
+          },
+          {
+            "type": "preference",
+            "key": "seekbar_primary_balance",
+            "title": "音频均衡"
+          },
+          {
+            "type": "preference",
+            "key": "hearing_aid_preference",
+            "title": "助听装置",
+            "summary": "未连接任何助听装置"
+          },
+          {
+            "type": "preference",
+            "key": "rtt_setting",
+            "title": "rtt_settings_title"
+          },
+          {
+            "type": "preference",
+            "key": "headphone_assisted",
+            "title": "耳机辅助收听",
+            "summary": "手机麦克风采集声音，并传给已连接的蓝牙耳机实时播放"
+          },
+          {
+            "type": "value",
+            "key": "captioning_preference_screen",
+            "title": "字幕偏好设置",
+            "targetPage": "captioning_settings"
+          },
+          {
+            "type": "switch",
+            "key": "toggle_rtt_preference",
+            "title": "RTT通话",
+            "summary": "开启后，您可以在通话期间借助“实时信息（RTT）”功能，使用文字进行沟通"
+          }
+        ]
+      }
+    ]
+  },
+  "environment_sound_recognition_settings": {
+    "id": "environment_sound_recognition_settings",
+    "title": "环境音识别",
+    "categories": [
+      {
+        "items": [
+          {
+            "type": "switch",
+            "key": "env_sound_recognition_enabled",
+            "title": "环境音识别",
+            "summary": "识别周围环境声音并通知"
+          },
+          {
+            "type": "value",
+            "key": "env_sound_categories_entry",
+            "title": "声音类别",
+            "summary": "选择需要识别的声音类别",
+            "targetPage": "environment_sound_categories"
+          }
+        ]
+      }
+    ]
+  },
+  "environment_sound_categories": {
+    "id": "environment_sound_categories",
+    "title": "声音类别",
+    "categories": [
+      {
+        "items": [
+          {
+            "type": "value",
+            "key": "env_sound_category_residential_entry",
+            "title": "住宅",
+            "summary": "家庭常见声音",
+            "targetPage": "environment_sound_category_residential"
+          }
+        ]
+      }
+    ]
+  },
+  "environment_sound_category_residential": {
+    "id": "environment_sound_category_residential",
+    "title": "住宅",
+    "categories": [
+      {
+        "items": [
+          { "type": "switch", "key": "env_sound_residential_doorbell", "title": "门铃" },
+          { "type": "switch", "key": "env_sound_residential_smoke_alarm", "title": "烟雾报警器" },
+          { "type": "switch", "key": "env_sound_residential_baby_cry", "title": "婴儿哭声" },
+          { "type": "switch", "key": "env_sound_residential_dog_bark", "title": "狗叫声" },
+          { "type": "switch", "key": "env_sound_residential_glass_break", "title": "玻璃破碎" },
+          { "type": "switch", "key": "env_sound_residential_appliance_beep", "title": "电器提示音" },
+          { "type": "switch", "key": "env_sound_residential_water_running", "title": "流水声" },
+          { "type": "switch", "key": "env_sound_residential_knock", "title": "敲门声" },
+          { "type": "switch", "key": "env_sound_residential_alarm_clock", "title": "闹钟" }
+        ]
+      }
+    ]
+  },
+  "time_zone_prefs": {
+    "id": "time_zone_prefs",
+    "title": "选择时区",
+    "categories": [
+      {
+        "items": [
+          {
+            "type": "list",
+            "key": "timezone",
+            "title": "时区",
+            "options": [
+              { "label": "中国标准时间（上海）", "value": "Asia/Shanghai" },
+              { "label": "美国东部时间（纽约）", "value": "America/New_York" },
+              { "label": "格林尼治时间（伦敦）", "value": "Europe/London" },
+              { "label": "日本标准时间（东京）", "value": "Asia/Tokyo" }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

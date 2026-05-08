@@ -1,0 +1,18 @@
+{
+  "settings": {
+    "free_sms_sim1": true,
+    "free_sms_sim2": true,
+    "5g_message": true,
+    "show_avatar": true,
+    "text_avatar": true,
+    "auto_convert_sms": true,
+    "auto_convert_mms": false,
+    "block_strangers": true,
+    "5g_auto_sms": true,
+    "5g_auto_mms": false,
+    "5g_read_report": false,
+    "wap_push": false,
+    "show_preview": true,
+    "delivery_report": false
+  }
+}

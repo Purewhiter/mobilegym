@@ -1,0 +1,4503 @@
+{
+  "app": "wechat",
+  "appDir": "apps/Wechat",
+  "mode": "schema",
+  "routeCount": 100,
+  "edgeCount": 146,
+  "nodes": [
+    {
+      "id": "/",
+      "routePath": "/",
+      "component": "ChatList",
+      "entryPoint": true,
+      "entry": {
+        "kind": "home",
+        "home": true,
+        "deepLink": false
+      },
+      "description": "微信-聊天列表",
+      "stateCount": 2,
+      "states": [
+        "/",
+        "/?menu=plus"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/contacts",
+      "routePath": "/contacts",
+      "component": "Contacts",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "通讯录",
+      "stateCount": 2,
+      "states": [
+        "/contacts",
+        "/contacts?menu=plus"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/discover",
+      "routePath": "/discover",
+      "component": "Discover",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "发现",
+      "stateCount": 2,
+      "states": [
+        "/discover",
+        "/discover?menu=plus"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/me",
+      "routePath": "/me",
+      "component": "Me",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "我",
+      "stateCount": 1,
+      "states": [
+        "/me"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/me/moments-album",
+      "routePath": "/me/moments-album",
+      "component": "MomentsAlbum",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "相册（朋友圈相册/状态）",
+      "stateCount": 1,
+      "states": [
+        "/me/moments-album"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/chat/:id",
+      "routePath": "/chat/:id",
+      "component": "ChatDetail",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "聊天详情",
+      "stateCount": 2,
+      "states": [
+        "/chat/:id?preview=:preview",
+        "/chat/:id?view=preview&preview=:preview"
+      ],
+      "actionCount": 1,
+      "actionIds": [
+        "chat.pat.send"
+      ],
+      "actions": [
+        {
+          "id": "chat.pat.send",
+          "label": "拍一拍：发送",
+          "behavior": "other",
+          "paramsSchema": {
+            "id": "string"
+          }
+        }
+      ]
+    },
+    {
+      "id": "/chat/:id/info",
+      "routePath": "/chat/:id/info",
+      "component": "ChatInfo",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "聊天信息",
+      "stateCount": 1,
+      "states": [
+        "/chat/:id/info"
+      ],
+      "actionCount": 3,
+      "actionIds": [
+        "chatInfo.item.muted.toggle",
+        "chatInfo.item.sticky.toggle",
+        "chatInfo.item.alert.toggle"
+      ],
+      "actions": [
+        {
+          "id": "chatInfo.item.muted.toggle",
+          "label": "消息免打扰：开关",
+          "behavior": "toggle",
+          "scope": "item",
+          "paramsSchema": {
+            "id": "string"
+          }
+        },
+        {
+          "id": "chatInfo.item.sticky.toggle",
+          "label": "置顶聊天：开关",
+          "behavior": "toggle",
+          "scope": "item",
+          "paramsSchema": {
+            "id": "string"
+          }
+        },
+        {
+          "id": "chatInfo.item.alert.toggle",
+          "label": "提醒：开关",
+          "behavior": "toggle",
+          "scope": "item",
+          "paramsSchema": {
+            "id": "string"
+          }
+        }
+      ]
+    },
+    {
+      "id": "/chat/:id/chat-search",
+      "routePath": "/chat/:id/chat-search",
+      "component": "ChatSearch",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "查找聊天记录",
+      "stateCount": 1,
+      "states": [
+        "/chat/:id/chat-search"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/chat/:id/media-picker",
+      "routePath": "/chat/:id/media-picker",
+      "component": "MomentMediaPicker",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "聊天选择图片",
+      "stateCount": 3,
+      "states": [
+        "/chat/:id/media-picker?albumId=:albumId&index=:index&scope=:scope",
+        "/chat/:id/media-picker?menu=albums&albumId=:albumId&index=:index&scope=:scope",
+        "/chat/:id/media-picker?menu=preview&albumId=:albumId&index=:index&scope=:scope"
+      ],
+      "actionCount": 2,
+      "actionIds": [
+        "chat.mediaPicker.base.send",
+        "chat.mediaPicker.preview.send"
+      ],
+      "actions": [
+        {
+          "id": "chat.mediaPicker.base.send",
+          "label": "聊天发图：发送所选图片",
+          "behavior": "submit",
+          "paramsSchema": {
+            "id": "string"
+          }
+        },
+        {
+          "id": "chat.mediaPicker.preview.send",
+          "label": "聊天发图：发送所选图片",
+          "behavior": "submit",
+          "paramsSchema": {
+            "id": "string"
+          }
+        }
+      ]
+    },
+    {
+      "id": "/chat/:id/select-file",
+      "routePath": "/chat/:id/select-file",
+      "component": "SelectFile",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "选择文件-聊天 Tab（默认）",
+      "stateCount": 6,
+      "states": [
+        "/chat/:id/select-file?dir=:dir",
+        "/chat/:id/select-file?tab=favorites&dir=:dir",
+        "/chat/:id/select-file?tab=album&dir=:dir",
+        "/chat/:id/select-file?tab=file&dir=:dir",
+        "/chat/:id/select-file?tab=file&view=browser&dir=:dir",
+        "/chat/:id/select-file?selected=expanded&dir=:dir"
+      ],
+      "actionCount": 3,
+      "actionIds": [
+        "chat.selectFile.send",
+        "chat.selectFile.file.pick",
+        "chat.selectFile.selected.remove"
+      ],
+      "actions": [
+        {
+          "id": "chat.selectFile.send",
+          "label": "选择文件：发送所选",
+          "behavior": "submit",
+          "paramsSchema": {
+            "id": "string"
+          }
+        },
+        {
+          "id": "chat.selectFile.file.pick",
+          "label": "选择文件：打开内置文件浏览器（选取）",
+          "behavior": "open",
+          "paramsSchema": {
+            "id": "string"
+          }
+        },
+        {
+          "id": "chat.selectFile.selected.remove",
+          "label": "已选文件：移除某项",
+          "behavior": "other",
+          "scope": "item",
+          "paramsSchema": {
+            "id": "string"
+          }
+        }
+      ]
+    },
+    {
+      "id": "/user-profile/:id",
+      "routePath": "/user-profile/:id",
+      "component": "UserProfile",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "用户资料",
+      "stateCount": 1,
+      "states": [
+        "/user-profile/:id"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/friend-info/:id",
+      "routePath": "/friend-info/:id",
+      "component": "FriendInfo",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "朋友资料",
+      "stateCount": 1,
+      "states": [
+        "/friend-info/:id"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/friend-settings/:id",
+      "routePath": "/friend-settings/:id",
+      "component": "FriendSettings",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "朋友设置",
+      "stateCount": 2,
+      "states": [
+        "/friend-settings/:id",
+        "/friend-settings/:id?menu=blacklistConfirm"
+      ],
+      "actionCount": 3,
+      "actionIds": [
+        "friendSettings.item.star.toggle",
+        "friendSettings.item.blacklist.toggle",
+        "friendSettings.menu.blacklistConfirm.submit"
+      ],
+      "actions": [
+        {
+          "id": "friendSettings.item.star.toggle",
+          "label": "设为星标朋友：开关",
+          "behavior": "toggle",
+          "scope": "item",
+          "paramsSchema": {
+            "id": "string"
+          }
+        },
+        {
+          "id": "friendSettings.item.blacklist.toggle",
+          "label": "加入黑名单：开关",
+          "behavior": "toggle",
+          "scope": "item",
+          "paramsSchema": {
+            "id": "string"
+          }
+        },
+        {
+          "id": "friendSettings.menu.blacklistConfirm.submit",
+          "label": "确认加入黑名单并关闭弹窗",
+          "behavior": "submit",
+          "paramsSchema": {
+            "id": "string"
+          }
+        }
+      ]
+    },
+    {
+      "id": "/friend-permissions-detail/:id",
+      "routePath": "/friend-permissions-detail/:id",
+      "component": "FriendPermissionsDetail",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "朋友权限详情",
+      "stateCount": 1,
+      "states": [
+        "/friend-permissions-detail/:id"
+      ],
+      "actionCount": 4,
+      "actionIds": [
+        "friendPermissionsDetail.permissionMode.select.all",
+        "friendPermissionsDetail.permissionMode.select.chatOnly",
+        "friendPermissionsDetail.item.hideMyMoments.toggle",
+        "friendPermissionsDetail.item.hideTheirMoments.toggle"
+      ],
+      "actions": [
+        {
+          "id": "friendPermissionsDetail.permissionMode.select.all",
+          "label": "权限模式：选择（聊天、朋友圈、微信运动等）",
+          "behavior": "select",
+          "scope": "item",
+          "paramsSchema": {
+            "id": "string"
+          }
+        },
+        {
+          "id": "friendPermissionsDetail.permissionMode.select.chatOnly",
+          "label": "权限模式：选择（仅聊天）",
+          "behavior": "select",
+          "scope": "item",
+          "paramsSchema": {
+            "id": "string"
+          }
+        },
+        {
+          "id": "friendPermissionsDetail.item.hideMyMoments.toggle",
+          "label": "不让他看我：开关",
+          "behavior": "toggle",
+          "scope": "item",
+          "paramsSchema": {
+            "id": "string"
+          }
+        },
+        {
+          "id": "friendPermissionsDetail.item.hideTheirMoments.toggle",
+          "label": "不看他：开关",
+          "behavior": "toggle",
+          "scope": "item",
+          "paramsSchema": {
+            "id": "string"
+          }
+        }
+      ]
+    },
+    {
+      "id": "/new-friends",
+      "routePath": "/new-friends",
+      "component": "NewFriends",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "新的朋友",
+      "stateCount": 1,
+      "states": [
+        "/new-friends"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/start-group",
+      "routePath": "/start-group",
+      "component": "StartGroup",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "发起群聊",
+      "stateCount": 1,
+      "states": [
+        "/start-group"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/add-friend",
+      "routePath": "/add-friend",
+      "component": "AddFriend",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "添加朋友",
+      "stateCount": 1,
+      "states": [
+        "/add-friend"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/radar",
+      "routePath": "/radar",
+      "component": "RadarPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "雷达加朋友",
+      "stateCount": 1,
+      "states": [
+        "/radar"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/scan",
+      "routePath": "/scan",
+      "component": "ScanPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "扫一扫",
+      "stateCount": 1,
+      "states": [
+        "/scan"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/face-to-face-group",
+      "routePath": "/face-to-face-group",
+      "component": "FaceToFaceGroup",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "面对面建群-输入 PIN",
+      "stateCount": 1,
+      "states": [
+        "/face-to-face-group"
+      ],
+      "actionCount": 2,
+      "actionIds": [
+        "faceToFace.pin.input",
+        "faceToFace.pin.delete.submit"
+      ],
+      "actions": [
+        {
+          "id": "faceToFace.pin.input",
+          "label": "PIN：输入数字",
+          "behavior": "input",
+          "paramsSchema": {
+            "value": "string"
+          }
+        },
+        {
+          "id": "faceToFace.pin.delete.submit",
+          "label": "PIN：删除一位",
+          "behavior": "submit"
+        }
+      ]
+    },
+    {
+      "id": "/face-to-face-group/join",
+      "routePath": "/face-to-face-group/join",
+      "component": "FaceToFaceGroup",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "面对面建群-加入",
+      "stateCount": 1,
+      "states": [
+        "/face-to-face-group/join?pin=:pin"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/tags",
+      "routePath": "/tags",
+      "component": "Tags",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "标签",
+      "stateCount": 1,
+      "states": [
+        "/tags"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/groups",
+      "routePath": "/groups",
+      "component": "Groups",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "群聊",
+      "stateCount": 1,
+      "states": [
+        "/groups"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/discover/nearby",
+      "routePath": "/discover/nearby",
+      "component": "NearbyPeople",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "附近的人",
+      "stateCount": 1,
+      "states": [
+        "/discover/nearby"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/moments",
+      "routePath": "/moments",
+      "component": "MomentsFeed",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "朋友圈",
+      "stateCount": 2,
+      "states": [
+        "/moments",
+        "/moments?menu=camera"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/moments/:wxid",
+      "routePath": "/moments/:wxid",
+      "component": "UserMoments",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "个人朋友圈",
+      "stateCount": 2,
+      "states": [
+        "/moments/:wxid",
+        "/moments/:wxid?menu=camera"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/post-moment",
+      "routePath": "/post-moment",
+      "component": "PostMoment",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "发表朋友圈",
+      "stateCount": 1,
+      "states": [
+        "/post-moment"
+      ],
+      "actionCount": 1,
+      "actionIds": [
+        "moments.post.submit"
+      ],
+      "actions": [
+        {
+          "id": "moments.post.submit",
+          "label": "发表朋友圈：提交",
+          "behavior": "submit"
+        }
+      ]
+    },
+    {
+      "id": "/post-text-moment",
+      "routePath": "/post-text-moment",
+      "component": "PostTextMoment",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "发表文字",
+      "stateCount": 1,
+      "states": [
+        "/post-text-moment"
+      ],
+      "actionCount": 1,
+      "actionIds": [
+        "moments.postText.submit"
+      ],
+      "actions": [
+        {
+          "id": "moments.postText.submit",
+          "label": "发表文字：提交",
+          "behavior": "submit"
+        }
+      ]
+    },
+    {
+      "id": "/moments/media-picker",
+      "routePath": "/moments/media-picker",
+      "component": "MomentMediaPicker",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "从相册选择-图片和视频",
+      "stateCount": 3,
+      "states": [
+        "/moments/media-picker?albumId=:albumId&index=:index&scope=:scope",
+        "/moments/media-picker?menu=albums&albumId=:albumId&index=:index&scope=:scope",
+        "/moments/media-picker?menu=preview&albumId=:albumId&index=:index&scope=:scope"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/select-location",
+      "routePath": "/select-location",
+      "component": "SelectLocation",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "选择位置",
+      "stateCount": 1,
+      "states": [
+        "/select-location?target=:target"
+      ],
+      "actionCount": 11,
+      "actionIds": [
+        "postMoment.location.select.none",
+        "postMoment.location.select.beijing",
+        "postMoment.location.select.ucasYanqiCampus",
+        "postMoment.location.select.ucasYanqiEastCampus",
+        "postMoment.location.select.yanqiLake",
+        "postMoment.location.select.yanqiHotel",
+        "postMoment.location.select.ucasLibrary",
+        "postMoment.location.select.artBuilding",
+        "postMoment.location.select.sinoDanishCenter",
+        "postMoment.location.select.auditorium",
+        "postMoment.location.select.meetingCenter"
+      ],
+      "actions": [
+        {
+          "id": "postMoment.location.select.none",
+          "label": "位置：选择（不显示位置）",
+          "behavior": "select"
+        },
+        {
+          "id": "postMoment.location.select.beijing",
+          "label": "位置：选择（北京市）",
+          "behavior": "select"
+        },
+        {
+          "id": "postMoment.location.select.ucasYanqiCampus",
+          "label": "位置：选择（国科大雁栖湖校区）",
+          "behavior": "select"
+        },
+        {
+          "id": "postMoment.location.select.ucasYanqiEastCampus",
+          "label": "位置：选择（国科大雁栖湖东校区）",
+          "behavior": "select"
+        },
+        {
+          "id": "postMoment.location.select.yanqiLake",
+          "label": "位置：选择（雁栖湖）",
+          "behavior": "select"
+        },
+        {
+          "id": "postMoment.location.select.yanqiHotel",
+          "label": "位置：选择（雁栖湖景酒店）",
+          "behavior": "select"
+        },
+        {
+          "id": "postMoment.location.select.ucasLibrary",
+          "label": "位置：选择（国科大雁栖湖图书馆）",
+          "behavior": "select"
+        },
+        {
+          "id": "postMoment.location.select.artBuilding",
+          "label": "位置：选择（科学与艺术大楼）",
+          "behavior": "select"
+        },
+        {
+          "id": "postMoment.location.select.sinoDanishCenter",
+          "label": "位置：选择（中丹中心）",
+          "behavior": "select"
+        },
+        {
+          "id": "postMoment.location.select.auditorium",
+          "label": "位置：选择（学生礼堂）",
+          "behavior": "select"
+        },
+        {
+          "id": "postMoment.location.select.meetingCenter",
+          "label": "位置：选择（国际会议中心）",
+          "behavior": "select"
+        }
+      ]
+    },
+    {
+      "id": "/camera",
+      "routePath": "/camera",
+      "component": "CameraView",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "拍摄",
+      "stateCount": 1,
+      "states": [
+        "/camera"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/edit-image",
+      "routePath": "/edit-image",
+      "component": "EditImage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "编辑图片",
+      "stateCount": 1,
+      "states": [
+        "/edit-image"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/search",
+      "routePath": "/search",
+      "component": "Search",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "搜索",
+      "stateCount": 1,
+      "states": [
+        "/search"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/services",
+      "routePath": "/services",
+      "component": "Services",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "服务",
+      "stateCount": 1,
+      "states": [
+        "/services"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/my-profile-detail",
+      "routePath": "/my-profile-detail",
+      "component": "ProfileDetail",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "个人资料",
+      "stateCount": 1,
+      "states": [
+        "/my-profile-detail"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/me/name",
+      "routePath": "/me/name",
+      "component": "Name",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "更改名字",
+      "stateCount": 1,
+      "states": [
+        "/me/name"
+      ],
+      "actionCount": 1,
+      "actionIds": [
+        "profile.name.submit"
+      ],
+      "actions": [
+        {
+          "id": "profile.name.submit",
+          "label": "保存名字并返回",
+          "behavior": "submit"
+        }
+      ]
+    },
+    {
+      "id": "/me/gender",
+      "routePath": "/me/gender",
+      "component": "Gender",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "设置性别",
+      "stateCount": 1,
+      "states": [
+        "/me/gender"
+      ],
+      "actionCount": 3,
+      "actionIds": [
+        "profile.gender.select.male",
+        "profile.gender.select.female",
+        "profile.gender.submit"
+      ],
+      "actions": [
+        {
+          "id": "profile.gender.select.male",
+          "label": "性别：选择（男）",
+          "behavior": "select"
+        },
+        {
+          "id": "profile.gender.select.female",
+          "label": "性别：选择（女）",
+          "behavior": "select"
+        },
+        {
+          "id": "profile.gender.submit",
+          "label": "保存性别并返回",
+          "behavior": "submit"
+        }
+      ]
+    },
+    {
+      "id": "/me/region",
+      "routePath": "/me/region",
+      "component": "Region",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "选择地区",
+      "stateCount": 1,
+      "states": [
+        "/me/region"
+      ],
+      "actionCount": 12,
+      "actionIds": [
+        "profile.region.select.currentLocation",
+        "profile.region.select.mainland",
+        "profile.region.select.hongKong",
+        "profile.region.select.macao",
+        "profile.region.select.taiwan",
+        "profile.region.select.albania",
+        "profile.region.select.algeria",
+        "profile.region.select.afghanistan",
+        "profile.region.select.argentina",
+        "profile.region.select.uae",
+        "profile.region.select.aruba",
+        "profile.region.select.oman"
+      ],
+      "actions": [
+        {
+          "id": "profile.region.select.currentLocation",
+          "label": "地区：选择（当前位置）",
+          "behavior": "select"
+        },
+        {
+          "id": "profile.region.select.mainland",
+          "label": "地区：选择（中国大陆）",
+          "behavior": "select"
+        },
+        {
+          "id": "profile.region.select.hongKong",
+          "label": "地区：选择（中国香港）",
+          "behavior": "select"
+        },
+        {
+          "id": "profile.region.select.macao",
+          "label": "地区：选择（中国澳门）",
+          "behavior": "select"
+        },
+        {
+          "id": "profile.region.select.taiwan",
+          "label": "地区：选择（中国台湾）",
+          "behavior": "select"
+        },
+        {
+          "id": "profile.region.select.albania",
+          "label": "地区：选择（阿尔巴尼亚）",
+          "behavior": "select"
+        },
+        {
+          "id": "profile.region.select.algeria",
+          "label": "地区：选择（阿尔及利亚）",
+          "behavior": "select"
+        },
+        {
+          "id": "profile.region.select.afghanistan",
+          "label": "地区：选择（阿富汗）",
+          "behavior": "select"
+        },
+        {
+          "id": "profile.region.select.argentina",
+          "label": "地区：选择（阿根廷）",
+          "behavior": "select"
+        },
+        {
+          "id": "profile.region.select.uae",
+          "label": "地区：选择（阿联酋）",
+          "behavior": "select"
+        },
+        {
+          "id": "profile.region.select.aruba",
+          "label": "地区：选择（阿鲁巴）",
+          "behavior": "select"
+        },
+        {
+          "id": "profile.region.select.oman",
+          "label": "地区：选择（阿曼）",
+          "behavior": "select"
+        }
+      ]
+    },
+    {
+      "id": "/me/phone",
+      "routePath": "/me/phone",
+      "component": "Phone",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "手机号",
+      "stateCount": 1,
+      "states": [
+        "/me/phone"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/me/wxid",
+      "routePath": "/me/wxid",
+      "component": "Wxid",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "微信号",
+      "stateCount": 1,
+      "states": [
+        "/me/wxid"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/me/qrcode",
+      "routePath": "/me/qrcode",
+      "component": "QrCode",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "我的二维码",
+      "stateCount": 1,
+      "states": [
+        "/me/qrcode"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/me/pat",
+      "routePath": "/me/pat",
+      "component": "Pat",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "拍一拍",
+      "stateCount": 1,
+      "states": [
+        "/me/pat"
+      ],
+      "actionCount": 1,
+      "actionIds": [
+        "profile.pat.submit"
+      ],
+      "actions": [
+        {
+          "id": "profile.pat.submit",
+          "label": "保存拍一拍并返回",
+          "behavior": "submit"
+        }
+      ]
+    },
+    {
+      "id": "/me/signature",
+      "routePath": "/me/signature",
+      "component": "Signature",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "个性签名",
+      "stateCount": 1,
+      "states": [
+        "/me/signature"
+      ],
+      "actionCount": 1,
+      "actionIds": [
+        "profile.signature.submit"
+      ],
+      "actions": [
+        {
+          "id": "profile.signature.submit",
+          "label": "保存签名并返回",
+          "behavior": "submit"
+        }
+      ]
+    },
+    {
+      "id": "/me/address",
+      "routePath": "/me/address",
+      "component": "Address",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "我的地址",
+      "stateCount": 1,
+      "states": [
+        "/me/address"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/me/address/add",
+      "routePath": "/me/address/add",
+      "component": "Address",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "添加地址",
+      "stateCount": 1,
+      "states": [
+        "/me/address/add"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/me/invoice",
+      "routePath": "/me/invoice",
+      "component": "Invoice",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "我的发票抬头",
+      "stateCount": 1,
+      "states": [
+        "/me/invoice"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/me/invoice/add",
+      "routePath": "/me/invoice/add",
+      "component": "Invoice",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "添加发票抬头",
+      "stateCount": 1,
+      "states": [
+        "/me/invoice/add"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/me/beans",
+      "routePath": "/me/beans",
+      "component": "Beans",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "微信豆",
+      "stateCount": 1,
+      "states": [
+        "/me/beans"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/settings",
+      "routePath": "/settings",
+      "component": "Settings",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "设置",
+      "stateCount": 1,
+      "states": [
+        "/settings"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/settings/security",
+      "routePath": "/settings/security",
+      "component": "PrivacyFlow",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "账号安全",
+      "stateCount": 1,
+      "states": [
+        "/settings/security"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/settings/security/more",
+      "routePath": "/settings/security/more",
+      "component": "MoreSecurityPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "更多安全设置",
+      "stateCount": 1,
+      "states": [
+        "/settings/security/more"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/settings/minor-mode",
+      "routePath": "/settings/minor-mode",
+      "component": "Modes",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "未成年人模式",
+      "stateCount": 1,
+      "states": [
+        "/settings/minor-mode"
+      ],
+      "actionCount": 2,
+      "actionIds": [
+        "settings.minorMode.agreement.toggle",
+        "settings.minorMode.toggle"
+      ],
+      "actions": [
+        {
+          "id": "settings.minorMode.agreement.toggle",
+          "label": "同意条款：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "settings.minorMode.toggle",
+          "label": "未成年人模式：开关",
+          "behavior": "toggle"
+        }
+      ]
+    },
+    {
+      "id": "/settings/care-mode",
+      "routePath": "/settings/care-mode",
+      "component": "Modes",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "关怀模式",
+      "stateCount": 1,
+      "states": [
+        "/settings/care-mode"
+      ],
+      "actionCount": 1,
+      "actionIds": [
+        "settings.careMode.toggle"
+      ],
+      "actions": [
+        {
+          "id": "settings.careMode.toggle",
+          "label": "关怀模式：开关",
+          "behavior": "toggle"
+        }
+      ]
+    },
+    {
+      "id": "/settings/notifications",
+      "routePath": "/settings/notifications",
+      "component": "GeneralFlow",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "通知",
+      "stateCount": 1,
+      "states": [
+        "/settings/notifications"
+      ],
+      "actionCount": 2,
+      "actionIds": [
+        "settings.notifications.message.toggle",
+        "settings.notifications.voiceVideo.toggle"
+      ],
+      "actions": [
+        {
+          "id": "settings.notifications.message.toggle",
+          "label": "消息通知：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "settings.notifications.voiceVideo.toggle",
+          "label": "语音和视频通话通知：开关",
+          "behavior": "toggle"
+        }
+      ]
+    },
+    {
+      "id": "/settings/notifications/display",
+      "routePath": "/settings/notifications/display",
+      "component": "NotificationDisplay",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "横幅显示内容",
+      "stateCount": 1,
+      "states": [
+        "/settings/notifications/display"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/settings/notifications/sound",
+      "routePath": "/settings/notifications/sound",
+      "component": "NotificationSound",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "消息提示音",
+      "stateCount": 1,
+      "states": [
+        "/settings/notifications/sound"
+      ],
+      "actionCount": 9,
+      "actionIds": [
+        "settings.notifications.sound.select.followSystem",
+        "settings.notifications.sound.select.jimu",
+        "settings.notifications.sound.select.keai",
+        "settings.notifications.sound.select.kongling",
+        "settings.notifications.sound.select.qiaopi",
+        "settings.notifications.sound.select.qingcui",
+        "settings.notifications.sound.select.lingdong",
+        "settings.notifications.sound.select.youya",
+        "settings.notifications.sound.submit"
+      ],
+      "actions": [
+        {
+          "id": "settings.notifications.sound.select.followSystem",
+          "label": "消息提示音：选择（跟随系统）",
+          "behavior": "select"
+        },
+        {
+          "id": "settings.notifications.sound.select.jimu",
+          "label": "消息提示音：选择（积木）",
+          "behavior": "select"
+        },
+        {
+          "id": "settings.notifications.sound.select.keai",
+          "label": "消息提示音：选择（可爱）",
+          "behavior": "select"
+        },
+        {
+          "id": "settings.notifications.sound.select.kongling",
+          "label": "消息提示音：选择（空灵）",
+          "behavior": "select"
+        },
+        {
+          "id": "settings.notifications.sound.select.qiaopi",
+          "label": "消息提示音：选择（俏皮）",
+          "behavior": "select"
+        },
+        {
+          "id": "settings.notifications.sound.select.qingcui",
+          "label": "消息提示音：选择（清脆）",
+          "behavior": "select"
+        },
+        {
+          "id": "settings.notifications.sound.select.lingdong",
+          "label": "消息提示音：选择（灵动）",
+          "behavior": "select"
+        },
+        {
+          "id": "settings.notifications.sound.select.youya",
+          "label": "消息提示音：选择（优雅）",
+          "behavior": "select"
+        },
+        {
+          "id": "settings.notifications.sound.submit",
+          "label": "保存消息提示音设置并返回",
+          "behavior": "submit"
+        }
+      ]
+    },
+    {
+      "id": "/settings/notifications/ringtone",
+      "routePath": "/settings/notifications/ringtone",
+      "component": "IncomingRingtone",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "来电铃声",
+      "stateCount": 1,
+      "states": [
+        "/settings/notifications/ringtone"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/settings/chat",
+      "routePath": "/settings/chat",
+      "component": "GeneralFlow",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "聊天设置",
+      "stateCount": 1,
+      "states": [
+        "/settings/chat"
+      ],
+      "actionCount": 2,
+      "actionIds": [
+        "settings.chat.speakerMode.toggle",
+        "settings.chat.sendButton.toggle"
+      ],
+      "actions": [
+        {
+          "id": "settings.chat.speakerMode.toggle",
+          "label": "使用听筒播放语音消息：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "settings.chat.sendButton.toggle",
+          "label": "使用独立的发送按钮：开关",
+          "behavior": "toggle"
+        }
+      ]
+    },
+    {
+      "id": "/settings/general",
+      "routePath": "/settings/general",
+      "component": "GeneralFlow",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "通用",
+      "stateCount": 1,
+      "states": [
+        "/settings/general"
+      ],
+      "actionCount": 2,
+      "actionIds": [
+        "settings.general.landscape.toggle",
+        "settings.general.nfc.toggle"
+      ],
+      "actions": [
+        {
+          "id": "settings.general.landscape.toggle",
+          "label": "开启横屏模式：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "settings.general.nfc.toggle",
+          "label": "开启NFC功能：开关",
+          "behavior": "toggle"
+        }
+      ]
+    },
+    {
+      "id": "/settings/general/dark-mode",
+      "routePath": "/settings/general/dark-mode",
+      "component": "DarkMode",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "深色模式",
+      "stateCount": 1,
+      "states": [
+        "/settings/general/dark-mode"
+      ],
+      "actionCount": 4,
+      "actionIds": [
+        "settings.general.darkMode.followSystem.toggle",
+        "settings.general.darkMode.mode.select.light",
+        "settings.general.darkMode.mode.select.dark",
+        "settings.general.darkMode.submit"
+      ],
+      "actions": [
+        {
+          "id": "settings.general.darkMode.followSystem.toggle",
+          "label": "跟随系统：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "settings.general.darkMode.mode.select.light",
+          "label": "深色模式：手动选择（普通模式）",
+          "behavior": "select"
+        },
+        {
+          "id": "settings.general.darkMode.mode.select.dark",
+          "label": "深色模式：手动选择（深色模式）",
+          "behavior": "select"
+        },
+        {
+          "id": "settings.general.darkMode.submit",
+          "label": "保存深色模式设置并返回",
+          "behavior": "submit"
+        }
+      ]
+    },
+    {
+      "id": "/settings/general/translation",
+      "routePath": "/settings/general/translation",
+      "component": "Translation",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "翻译",
+      "stateCount": 1,
+      "states": [
+        "/settings/general/translation"
+      ],
+      "actionCount": 1,
+      "actionIds": [
+        "settings.general.translation.autoTranslate.toggle"
+      ],
+      "actions": [
+        {
+          "id": "settings.general.translation.autoTranslate.toggle",
+          "label": "自动翻译聊天中收到的消息：开关",
+          "behavior": "toggle"
+        }
+      ]
+    },
+    {
+      "id": "/settings/general/media",
+      "routePath": "/settings/general/media",
+      "component": "MediaAndFiles",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "照片、视频、文件和通话",
+      "stateCount": 1,
+      "states": [
+        "/settings/general/media"
+      ],
+      "actionCount": 7,
+      "actionIds": [
+        "settings.general.media.mediaAutoDownload.toggle",
+        "settings.general.media.savePhotos.toggle",
+        "settings.general.media.saveVideos.toggle",
+        "settings.general.media.imageSearch.toggle",
+        "settings.general.media.keepOriginal.toggle",
+        "settings.general.media.mobileAutoPlay.toggle",
+        "settings.general.media.mobileVoiceQuality.toggle"
+      ],
+      "actions": [
+        {
+          "id": "settings.general.media.mediaAutoDownload.toggle",
+          "label": "自动下载：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "settings.general.media.savePhotos.toggle",
+          "label": "照片保存到系统相册：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "settings.general.media.saveVideos.toggle",
+          "label": "视频保存到系统相册：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "settings.general.media.imageSearch.toggle",
+          "label": "聊天图片搜索：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "settings.general.media.keepOriginal.toggle",
+          "label": "保留查看过的原图原视频：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "settings.general.media.mobileAutoPlay.toggle",
+          "label": "移动网络下视频自动播放：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "settings.general.media.mobileVoiceQuality.toggle",
+          "label": "使用移动网络改善语音质量：开关",
+          "behavior": "toggle"
+        }
+      ]
+    },
+    {
+      "id": "/settings/general/audio",
+      "routePath": "/settings/general/audio",
+      "component": "AudioSettings",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "听一听",
+      "stateCount": 1,
+      "states": [
+        "/settings/general/audio"
+      ],
+      "actionCount": 3,
+      "actionIds": [
+        "settings.general.audio.personalizedAudio.toggle",
+        "settings.general.audio.losslessAudio.toggle",
+        "settings.general.audio.showAudioInRecent.toggle"
+      ],
+      "actions": [
+        {
+          "id": "settings.general.audio.personalizedAudio.toggle",
+          "label": "个性化推荐：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "settings.general.audio.losslessAudio.toggle",
+          "label": "优先使用无损音质播放：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "settings.general.audio.showAudioInRecent.toggle",
+          "label": "在「最近」中显示该功能：开关",
+          "behavior": "toggle"
+        }
+      ]
+    },
+    {
+      "id": "/settings/general/discover",
+      "routePath": "/settings/general/discover",
+      "component": "DiscoverManagement",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "发现页管理",
+      "stateCount": 1,
+      "states": [
+        "/settings/general/discover"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/settings/general/discover/:id",
+      "routePath": "/settings/general/discover/:id",
+      "component": "DiscoverItemDetail",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "发现页管理-详情",
+      "stateCount": 1,
+      "states": [
+        "/settings/general/discover/:id"
+      ],
+      "actionCount": 3,
+      "actionIds": [
+        "settings.discover.item.visible.toggle",
+        "settings.discover.item.notify.toggle",
+        "settings.discover.item.showNearbyPeople.toggle"
+      ],
+      "actions": [
+        {
+          "id": "settings.discover.item.visible.toggle",
+          "label": "在发现页中显示该功能：开关",
+          "behavior": "toggle",
+          "scope": "item",
+          "paramsSchema": {
+            "id": "string"
+          }
+        },
+        {
+          "id": "settings.discover.item.notify.toggle",
+          "label": "有新内容时提醒我：开关",
+          "behavior": "toggle",
+          "scope": "item",
+          "paramsSchema": {
+            "id": "string"
+          }
+        },
+        {
+          "id": "settings.discover.item.showNearbyPeople.toggle",
+          "label": "显示附近的人：开关",
+          "behavior": "toggle",
+          "scope": "item",
+          "paramsSchema": {
+            "id": "string"
+          }
+        }
+      ]
+    },
+    {
+      "id": "/settings/general/accessibility",
+      "routePath": "/settings/general/accessibility",
+      "component": "Accessibility",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "辅助功能",
+      "stateCount": 1,
+      "states": [
+        "/settings/general/accessibility"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/settings/general/accessibility/tencentNews",
+      "routePath": "/settings/general/accessibility/tencentNews",
+      "component": "AccessibilityDetail",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "辅助功能-详情（腾讯新闻）",
+      "stateCount": 1,
+      "states": [
+        "/settings/general/accessibility/tencentNews"
+      ],
+      "actionCount": 4,
+      "actionIds": [
+        "settings.accessibility.tencentNews.enable.submit",
+        "settings.accessibility.tencentNews.disable.submit",
+        "settings.accessibility.tencentNews.sticky.toggle",
+        "settings.accessibility.tencentNews.dnd.toggle"
+      ],
+      "actions": [
+        {
+          "id": "settings.accessibility.tencentNews.enable.submit",
+          "label": "启用该功能（腾讯新闻）",
+          "behavior": "submit",
+          "condition": {
+            "op": "eq",
+            "ref": "settings.accessibility.tencentNews.enabled",
+            "equals": false,
+            "text": "未启用时显示"
+          }
+        },
+        {
+          "id": "settings.accessibility.tencentNews.disable.submit",
+          "label": "停用（腾讯新闻）",
+          "behavior": "submit",
+          "condition": {
+            "op": "eq",
+            "ref": "settings.accessibility.tencentNews.enabled",
+            "equals": true,
+            "text": "已启用时显示"
+          }
+        },
+        {
+          "id": "settings.accessibility.tencentNews.sticky.toggle",
+          "label": "置顶此功能：开关（腾讯新闻）",
+          "behavior": "toggle"
+        },
+        {
+          "id": "settings.accessibility.tencentNews.dnd.toggle",
+          "label": "消息免打扰：开关（腾讯新闻）",
+          "behavior": "toggle"
+        }
+      ]
+    },
+    {
+      "id": "/settings/general/accessibility/broadcast",
+      "routePath": "/settings/general/accessibility/broadcast",
+      "component": "AccessibilityDetail",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "辅助功能-详情（群发助手）",
+      "stateCount": 1,
+      "states": [
+        "/settings/general/accessibility/broadcast"
+      ],
+      "actionCount": 4,
+      "actionIds": [
+        "settings.accessibility.broadcast.enable.submit",
+        "settings.accessibility.broadcast.disable.submit",
+        "settings.accessibility.broadcast.sticky.toggle",
+        "settings.accessibility.broadcast.dnd.toggle"
+      ],
+      "actions": [
+        {
+          "id": "settings.accessibility.broadcast.enable.submit",
+          "label": "启用该功能（群发助手）",
+          "behavior": "submit",
+          "condition": {
+            "op": "eq",
+            "ref": "settings.accessibility.broadcast.enabled",
+            "equals": false,
+            "text": "未启用时显示"
+          }
+        },
+        {
+          "id": "settings.accessibility.broadcast.disable.submit",
+          "label": "停用（群发助手）",
+          "behavior": "submit",
+          "condition": {
+            "op": "eq",
+            "ref": "settings.accessibility.broadcast.enabled",
+            "equals": true,
+            "text": "已启用时显示"
+          }
+        },
+        {
+          "id": "settings.accessibility.broadcast.sticky.toggle",
+          "label": "置顶此功能：开关（群发助手）",
+          "behavior": "toggle"
+        },
+        {
+          "id": "settings.accessibility.broadcast.dnd.toggle",
+          "label": "消息免打扰：开关（群发助手）",
+          "behavior": "toggle"
+        }
+      ]
+    },
+    {
+      "id": "/settings/general/accessibility/qqMail",
+      "routePath": "/settings/general/accessibility/qqMail",
+      "component": "AccessibilityDetail",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "辅助功能-详情（QQ邮箱提醒）",
+      "stateCount": 1,
+      "states": [
+        "/settings/general/accessibility/qqMail"
+      ],
+      "actionCount": 2,
+      "actionIds": [
+        "settings.accessibility.qqMail.enable.submit",
+        "settings.accessibility.qqMail.disable.submit"
+      ],
+      "actions": [
+        {
+          "id": "settings.accessibility.qqMail.enable.submit",
+          "label": "启用该功能（QQ邮箱提醒）",
+          "behavior": "submit",
+          "condition": {
+            "op": "eq",
+            "ref": "settings.accessibility.qqMail.enabled",
+            "equals": false,
+            "text": "未启用时显示"
+          }
+        },
+        {
+          "id": "settings.accessibility.qqMail.disable.submit",
+          "label": "停用（QQ邮箱提醒）",
+          "behavior": "submit",
+          "condition": {
+            "op": "eq",
+            "ref": "settings.accessibility.qqMail.enabled",
+            "equals": true,
+            "text": "已启用时显示"
+          }
+        }
+      ]
+    },
+    {
+      "id": "/settings/general/accessibility/wechatSports",
+      "routePath": "/settings/general/accessibility/wechatSports",
+      "component": "AccessibilityDetail",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "辅助功能-详情（微信运动）",
+      "stateCount": 1,
+      "states": [
+        "/settings/general/accessibility/wechatSports"
+      ],
+      "actionCount": 4,
+      "actionIds": [
+        "settings.accessibility.wechatSports.enable.submit",
+        "settings.accessibility.wechatSports.disable.submit",
+        "settings.accessibility.wechatSports.sticky.toggle",
+        "settings.accessibility.wechatSports.dnd.toggle"
+      ],
+      "actions": [
+        {
+          "id": "settings.accessibility.wechatSports.enable.submit",
+          "label": "启用该功能（微信运动）",
+          "behavior": "submit",
+          "condition": {
+            "op": "eq",
+            "ref": "settings.accessibility.wechatSports.enabled",
+            "equals": false,
+            "text": "未启用时显示"
+          }
+        },
+        {
+          "id": "settings.accessibility.wechatSports.disable.submit",
+          "label": "停用（微信运动）",
+          "behavior": "submit",
+          "condition": {
+            "op": "eq",
+            "ref": "settings.accessibility.wechatSports.enabled",
+            "equals": true,
+            "text": "已启用时显示"
+          }
+        },
+        {
+          "id": "settings.accessibility.wechatSports.sticky.toggle",
+          "label": "置顶此功能：开关（微信运动）",
+          "behavior": "toggle"
+        },
+        {
+          "id": "settings.accessibility.wechatSports.dnd.toggle",
+          "label": "消息免打扰：开关（微信运动）",
+          "behavior": "toggle"
+        }
+      ]
+    },
+    {
+      "id": "/settings/general/accessibility/wechatPay",
+      "routePath": "/settings/general/accessibility/wechatPay",
+      "component": "AccessibilityDetail",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "辅助功能-详情（微信支付）",
+      "stateCount": 1,
+      "states": [
+        "/settings/general/accessibility/wechatPay"
+      ],
+      "actionCount": 2,
+      "actionIds": [
+        "settings.accessibility.wechatPay.enable.submit",
+        "settings.accessibility.wechatPay.disable.submit"
+      ],
+      "actions": [
+        {
+          "id": "settings.accessibility.wechatPay.enable.submit",
+          "label": "启用该功能（微信支付）",
+          "behavior": "submit",
+          "condition": {
+            "op": "eq",
+            "ref": "settings.accessibility.wechatPay.enabled",
+            "equals": false,
+            "text": "未启用时显示"
+          }
+        },
+        {
+          "id": "settings.accessibility.wechatPay.disable.submit",
+          "label": "停用（微信支付）",
+          "behavior": "submit",
+          "condition": {
+            "op": "eq",
+            "ref": "settings.accessibility.wechatPay.enabled",
+            "equals": true,
+            "text": "已启用时显示"
+          }
+        }
+      ]
+    },
+    {
+      "id": "/settings/general/accessibility/wechatGames",
+      "routePath": "/settings/general/accessibility/wechatGames",
+      "component": "AccessibilityDetail",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "辅助功能-详情（微信游戏）",
+      "stateCount": 1,
+      "states": [
+        "/settings/general/accessibility/wechatGames"
+      ],
+      "actionCount": 2,
+      "actionIds": [
+        "settings.accessibility.wechatGames.enable.submit",
+        "settings.accessibility.wechatGames.disable.submit"
+      ],
+      "actions": [
+        {
+          "id": "settings.accessibility.wechatGames.enable.submit",
+          "label": "启用该功能（微信游戏）",
+          "behavior": "submit",
+          "condition": {
+            "op": "eq",
+            "ref": "settings.accessibility.wechatGames.enabled",
+            "equals": false,
+            "text": "未启用时显示"
+          }
+        },
+        {
+          "id": "settings.accessibility.wechatGames.disable.submit",
+          "label": "停用（微信游戏）",
+          "behavior": "submit",
+          "condition": {
+            "op": "eq",
+            "ref": "settings.accessibility.wechatGames.enabled",
+            "equals": true,
+            "text": "已启用时显示"
+          }
+        }
+      ]
+    },
+    {
+      "id": "/settings/privacy/friends",
+      "routePath": "/settings/privacy/friends",
+      "component": "PrivacyFlow",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "朋友权限",
+      "stateCount": 1,
+      "states": [
+        "/settings/privacy/friends"
+      ],
+      "actionCount": 2,
+      "actionIds": [
+        "settings.privacy.friendConfirmation.toggle",
+        "settings.privacy.recommendAddressBook.toggle"
+      ],
+      "actions": [
+        {
+          "id": "settings.privacy.friendConfirmation.toggle",
+          "label": "加我为朋友时需要验证：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "settings.privacy.recommendAddressBook.toggle",
+          "label": "向我推荐通讯录朋友：开关",
+          "behavior": "toggle"
+        }
+      ]
+    },
+    {
+      "id": "/settings/privacy/blacklist",
+      "routePath": "/settings/privacy/blacklist",
+      "component": "Blacklist",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "通讯录黑名单",
+      "stateCount": 1,
+      "states": [
+        "/settings/privacy/blacklist"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/settings/privacy/add-me",
+      "routePath": "/settings/privacy/add-me",
+      "component": "AddMeMethods",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "添加我的方式",
+      "stateCount": 1,
+      "states": [
+        "/settings/privacy/add-me"
+      ],
+      "actionCount": 6,
+      "actionIds": [
+        "settings.privacy.addMe.searchByWxid.toggle",
+        "settings.privacy.addMe.searchByPhone.toggle",
+        "settings.privacy.addMe.addByGroup.toggle",
+        "settings.privacy.addMe.addByQrCode.toggle",
+        "settings.privacy.addMe.addByCard.toggle",
+        "settings.privacy.addMe.addByOther.toggle"
+      ],
+      "actions": [
+        {
+          "id": "settings.privacy.addMe.searchByWxid.toggle",
+          "label": "可通过微信号搜索到我：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "settings.privacy.addMe.searchByPhone.toggle",
+          "label": "可通过手机号搜索到我：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "settings.privacy.addMe.addByGroup.toggle",
+          "label": "可通过群聊添加我：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "settings.privacy.addMe.addByQrCode.toggle",
+          "label": "可通过二维码添加我：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "settings.privacy.addMe.addByCard.toggle",
+          "label": "可通过名片添加我：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "settings.privacy.addMe.addByOther.toggle",
+          "label": "可通过其他方式添加我：开关",
+          "behavior": "toggle"
+        }
+      ]
+    },
+    {
+      "id": "/settings/privacy/moments",
+      "routePath": "/settings/privacy/moments",
+      "component": "MomentsPermissions",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "朋友圈权限",
+      "stateCount": 2,
+      "states": [
+        "/settings/privacy/moments",
+        "/settings/privacy/moments?menu=range"
+      ],
+      "actionCount": 5,
+      "actionIds": [
+        "settings.privacy.moments.strangerTen.toggle",
+        "settings.privacy.moments.range.select.recentHalfYear",
+        "settings.privacy.moments.range.select.recentMonth",
+        "settings.privacy.moments.range.select.recentThreeDays",
+        "settings.privacy.moments.range.select.all"
+      ],
+      "actions": [
+        {
+          "id": "settings.privacy.moments.strangerTen.toggle",
+          "label": "允许陌生人查看十条朋友圈：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "settings.privacy.moments.range.select.recentHalfYear",
+          "label": "朋友圈可见范围：选择（最近半年）",
+          "behavior": "select",
+          "paramsSchema": {
+            "range": "string"
+          }
+        },
+        {
+          "id": "settings.privacy.moments.range.select.recentMonth",
+          "label": "朋友圈可见范围：选择（最近一个月）",
+          "behavior": "select",
+          "paramsSchema": {
+            "range": "string"
+          }
+        },
+        {
+          "id": "settings.privacy.moments.range.select.recentThreeDays",
+          "label": "朋友圈可见范围：选择（最近三天）",
+          "behavior": "select",
+          "paramsSchema": {
+            "range": "string"
+          }
+        },
+        {
+          "id": "settings.privacy.moments.range.select.all",
+          "label": "朋友圈可见范围：选择（全部）",
+          "behavior": "select",
+          "paramsSchema": {
+            "range": "string"
+          }
+        }
+      ]
+    },
+    {
+      "id": "/settings/privacy/top-stories",
+      "routePath": "/settings/privacy/top-stories",
+      "component": "TopStoriesPermissions",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "看一看权限",
+      "stateCount": 1,
+      "states": [
+        "/settings/privacy/top-stories"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/settings/privacy/personal",
+      "routePath": "/settings/privacy/personal",
+      "component": "PrivacyFlow",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "个人信息与权限",
+      "stateCount": 1,
+      "states": [
+        "/settings/privacy/personal"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/settings/privacy/authorization",
+      "routePath": "/settings/privacy/authorization",
+      "component": "AuthorizationManagement",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "授权管理",
+      "stateCount": 1,
+      "states": [
+        "/settings/privacy/authorization"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/settings/privacy/authorization/:id",
+      "routePath": "/settings/privacy/authorization/:id",
+      "component": "AuthorizationDetail",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "授权详情",
+      "stateCount": 2,
+      "states": [
+        "/settings/privacy/authorization/:id",
+        "/settings/privacy/authorization/:id?menu=confirm"
+      ],
+      "actionCount": 1,
+      "actionIds": [
+        "settings.privacy.authorization.menu.confirm.submit"
+      ],
+      "actions": [
+        {
+          "id": "settings.privacy.authorization.menu.confirm.submit",
+          "label": "解除授权：确认",
+          "behavior": "submit",
+          "paramsSchema": {
+            "id": "string"
+          }
+        }
+      ]
+    },
+    {
+      "id": "/wechat-sports",
+      "routePath": "/wechat-sports",
+      "component": "WechatSports",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "微信运动",
+      "stateCount": 1,
+      "states": [
+        "/wechat-sports"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/wechat-sports/leaderboard",
+      "routePath": "/wechat-sports/leaderboard",
+      "component": "WechatSports",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "步数排行榜",
+      "stateCount": 1,
+      "states": [
+        "/wechat-sports/leaderboard"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/wechat-sports/profile",
+      "routePath": "/wechat-sports/profile",
+      "component": "WechatSports",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "我的运动主页",
+      "stateCount": 1,
+      "states": [
+        "/wechat-sports/profile"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/wechat-sports/profile/:id",
+      "routePath": "/wechat-sports/profile/:id",
+      "component": "WechatSports",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "好友运动主页",
+      "stateCount": 1,
+      "states": [
+        "/wechat-sports/profile/:id"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/wechat-sports/privacy",
+      "routePath": "/wechat-sports/privacy",
+      "component": "WechatSports",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "隐私及提醒设置",
+      "stateCount": 1,
+      "states": [
+        "/wechat-sports/privacy"
+      ],
+      "actionCount": 3,
+      "actionIds": [
+        "wechatSports.privacy.joinLeaderboard.toggle",
+        "wechatSports.privacy.recvLeaderboardMsg.toggle",
+        "wechatSports.privacy.recvLikeMsg.toggle"
+      ],
+      "actions": [
+        {
+          "id": "wechatSports.privacy.joinLeaderboard.toggle",
+          "label": "加入排行榜：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "wechatSports.privacy.recvLeaderboardMsg.toggle",
+          "label": "接收排行榜消息：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "wechatSports.privacy.recvLikeMsg.toggle",
+          "label": "接收朋友点赞消息：开关",
+          "behavior": "toggle"
+        }
+      ]
+    },
+    {
+      "id": "/pay/wallet",
+      "routePath": "/pay/wallet",
+      "component": "WalletPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "钱包首页",
+      "stateCount": 1,
+      "states": [
+        "/pay/wallet"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/pay/settings",
+      "routePath": "/pay/settings",
+      "component": "PaymentSettingsPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "支付设置",
+      "stateCount": 1,
+      "states": [
+        "/pay/settings"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/pay/confirmation",
+      "routePath": "/pay/confirmation",
+      "component": "PaymentConfirmationPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "支付确认页",
+      "stateCount": 1,
+      "states": [
+        "/pay/confirmation?period=:period&price=:price&source=:source&type=:type&userName=:userName"
+      ],
+      "actionCount": 13,
+      "actionIds": [
+        "wechat.pay.confirm",
+        "wechat.pay.cancel",
+        "wechat.pay.num.0",
+        "wechat.pay.num.1",
+        "wechat.pay.num.2",
+        "wechat.pay.num.3",
+        "wechat.pay.num.4",
+        "wechat.pay.num.5",
+        "wechat.pay.num.6",
+        "wechat.pay.num.7",
+        "wechat.pay.num.8",
+        "wechat.pay.num.9",
+        "wechat.pay.delete"
+      ],
+      "actions": [
+        {
+          "id": "wechat.pay.confirm",
+          "label": "支付并开通（弹出密码键盘）",
+          "behavior": "open"
+        },
+        {
+          "id": "wechat.pay.cancel",
+          "label": "关闭密码键盘",
+          "behavior": "close"
+        },
+        {
+          "id": "wechat.pay.num.0",
+          "label": "输入密码数字0",
+          "behavior": "modify"
+        },
+        {
+          "id": "wechat.pay.num.1",
+          "label": "输入密码数字1",
+          "behavior": "modify"
+        },
+        {
+          "id": "wechat.pay.num.2",
+          "label": "输入密码数字2",
+          "behavior": "modify"
+        },
+        {
+          "id": "wechat.pay.num.3",
+          "label": "输入密码数字3",
+          "behavior": "modify"
+        },
+        {
+          "id": "wechat.pay.num.4",
+          "label": "输入密码数字4",
+          "behavior": "modify"
+        },
+        {
+          "id": "wechat.pay.num.5",
+          "label": "输入密码数字5",
+          "behavior": "modify"
+        },
+        {
+          "id": "wechat.pay.num.6",
+          "label": "输入密码数字6",
+          "behavior": "modify"
+        },
+        {
+          "id": "wechat.pay.num.7",
+          "label": "输入密码数字7",
+          "behavior": "modify"
+        },
+        {
+          "id": "wechat.pay.num.8",
+          "label": "输入密码数字8",
+          "behavior": "modify"
+        },
+        {
+          "id": "wechat.pay.num.9",
+          "label": "输入密码数字9",
+          "behavior": "modify"
+        },
+        {
+          "id": "wechat.pay.delete",
+          "label": "删除密码数字",
+          "behavior": "modify"
+        }
+      ]
+    },
+    {
+      "id": "/share/forward",
+      "routePath": "/share/forward",
+      "component": "ShareForwardPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "deepLink",
+        "home": false,
+        "deepLink": true
+      },
+      "description": "接收外部分享 — 选择聊天 / 创建聊天 / 确认发送",
+      "stateCount": 1,
+      "states": [
+        "/share/forward"
+      ],
+      "actionCount": 11,
+      "actionIds": [
+        "share.forward.close",
+        "share.forward.search.input",
+        "share.forward.recentForward.select",
+        "share.forward.target.select",
+        "share.forward.createChat",
+        "share.create.back",
+        "share.create.search.input",
+        "share.create.contact.toggle",
+        "share.confirm.caption.input",
+        "share.confirm.cancel",
+        "share.confirm.send"
+      ],
+      "actions": [
+        {
+          "id": "share.forward.close",
+          "label": "关闭分享页（取消转发）",
+          "behavior": "close"
+        },
+        {
+          "id": "share.forward.search.input",
+          "label": "搜索最近聊天",
+          "behavior": "modify"
+        },
+        {
+          "id": "share.forward.recentForward.select",
+          "label": "点选最近转发头像",
+          "behavior": "open"
+        },
+        {
+          "id": "share.forward.target.select",
+          "label": "点选最近聊天行",
+          "behavior": "open"
+        },
+        {
+          "id": "share.forward.createChat",
+          "label": "进入「创建聊天」页",
+          "behavior": "open"
+        },
+        {
+          "id": "share.create.back",
+          "label": "返回选择聊天页",
+          "behavior": "close"
+        },
+        {
+          "id": "share.create.search.input",
+          "label": "搜索联系人",
+          "behavior": "modify"
+        },
+        {
+          "id": "share.create.contact.toggle",
+          "label": "勾选/取消联系人（不可提交）",
+          "behavior": "modify"
+        },
+        {
+          "id": "share.confirm.caption.input",
+          "label": "输入附言",
+          "behavior": "modify"
+        },
+        {
+          "id": "share.confirm.cancel",
+          "label": "取消（关闭确认浮层）",
+          "behavior": "close"
+        },
+        {
+          "id": "share.confirm.send",
+          "label": "发送（提交转发并关闭分享页）",
+          "behavior": "modify"
+        }
+      ]
+    },
+    {
+      "id": "/settings/subscriptions",
+      "routePath": "/settings/subscriptions",
+      "component": "SubscriptionsPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "自动续费服务列表",
+      "stateCount": 1,
+      "states": [
+        "/settings/subscriptions"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/settings/subscriptions/:id",
+      "routePath": "/settings/subscriptions/:id",
+      "component": "SubscriptionDetailPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "订阅详情",
+      "stateCount": 2,
+      "states": [
+        "/settings/subscriptions/:id",
+        "/settings/subscriptions/:id?modal=cancel_confirm"
+      ],
+      "actionCount": 1,
+      "actionIds": [
+        "subscription.cancel.confirm"
+      ],
+      "actions": [
+        {
+          "id": "subscription.cancel.confirm",
+          "label": "确认关闭扣费",
+          "behavior": "submit"
+        }
+      ]
+    },
+    {
+      "id": "/settings/security-center",
+      "routePath": "/settings/security-center",
+      "component": "SecurityCenterPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "微信安全中心",
+      "stateCount": 1,
+      "states": [
+        "/settings/security-center"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/settings/security-center/delete-account",
+      "routePath": "/settings/security-center/delete-account",
+      "component": "AccountDeletionPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "注销账号申请",
+      "stateCount": 1,
+      "states": [
+        "/settings/security-center/delete-account"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/settings/security-center/delete-account/data-warning",
+      "routePath": "/settings/security-center/delete-account/data-warning",
+      "component": "DataWarningPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "数据删除警告",
+      "stateCount": 1,
+      "states": [
+        "/settings/security-center/delete-account/data-warning"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/settings/security-center/delete-account/confirm",
+      "routePath": "/settings/security-center/delete-account/confirm",
+      "component": "ImportantReminderPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "重要提醒确认",
+      "stateCount": 1,
+      "states": [
+        "/settings/security-center/delete-account/confirm"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/auth/login",
+      "routePath": "/auth/login",
+      "component": "WechatLoginPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "登录页",
+      "stateCount": 1,
+      "states": [
+        "/auth/login"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/auth/register",
+      "routePath": "/auth/register",
+      "component": "WechatRegisterPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "注册页",
+      "stateCount": 1,
+      "states": [
+        "/auth/register"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/auth/forgot-password",
+      "routePath": "/auth/forgot-password",
+      "component": "WechatForgotPasswordPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "找回密码",
+      "stateCount": 1,
+      "states": [
+        "/auth/forgot-password"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/auth/trust-device",
+      "routePath": "/auth/trust-device",
+      "component": "WechatTrustDevicePage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "信任设备确认",
+      "stateCount": 1,
+      "states": [
+        "/auth/trust-device?phone=:phone"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/auth/devices",
+      "routePath": "/auth/devices",
+      "component": "WechatDeviceManagementPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "设备管理列表",
+      "stateCount": 1,
+      "states": [
+        "/auth/devices"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    }
+  ],
+  "edges": [
+    {
+      "source": "/me",
+      "target": "/pay/wallet",
+      "transitions": [
+        "wallet.open"
+      ],
+      "type": "navigation",
+      "label": "wallet.open",
+      "id": "wallet.open"
+    },
+    {
+      "source": "/services",
+      "target": "/pay/wallet",
+      "transitions": [
+        "wallet.open"
+      ],
+      "type": "navigation",
+      "label": "wallet.open",
+      "id": "wallet.open"
+    },
+    {
+      "source": "/pay/wallet",
+      "target": "/pay/settings",
+      "transitions": [
+        "paymentSettings.open"
+      ],
+      "type": "navigation",
+      "label": "paymentSettings.open",
+      "id": "paymentSettings.open"
+    },
+    {
+      "source": "/pay/settings",
+      "target": "/settings/subscriptions",
+      "transitions": [
+        "paymentSettings.subscriptions.open"
+      ],
+      "type": "navigation",
+      "label": "paymentSettings.subscriptions.open",
+      "id": "paymentSettings.subscriptions.open"
+    },
+    {
+      "source": "/settings/subscriptions",
+      "target": "/settings/subscriptions/:id",
+      "transitions": [
+        "subscription.detail.open"
+      ],
+      "type": "navigation",
+      "label": "subscription.detail.open",
+      "id": "subscription.detail.open"
+    },
+    {
+      "source": "/settings/security",
+      "target": "/settings/security/more",
+      "transitions": [
+        "security.more.open"
+      ],
+      "type": "navigation",
+      "label": "security.more.open",
+      "id": "security.more.open"
+    },
+    {
+      "source": "/settings/security",
+      "target": "/settings/security-center",
+      "transitions": [
+        "securityCenter.open"
+      ],
+      "type": "navigation",
+      "label": "securityCenter.open",
+      "id": "securityCenter.open"
+    },
+    {
+      "source": "/settings/security-center",
+      "target": "/settings/security-center/delete-account",
+      "transitions": [
+        "account.delete.open"
+      ],
+      "type": "navigation",
+      "label": "account.delete.open",
+      "id": "account.delete.open"
+    },
+    {
+      "source": "/settings/security-center/delete-account",
+      "target": "/settings/security-center/delete-account/data-warning",
+      "transitions": [
+        "account.delete.apply"
+      ],
+      "type": "navigation",
+      "label": "account.delete.apply",
+      "id": "account.delete.apply"
+    },
+    {
+      "source": "/settings/security-center/delete-account/data-warning",
+      "target": "/settings/security-center/delete-account/confirm",
+      "transitions": [
+        "account.delete.next"
+      ],
+      "type": "navigation",
+      "label": "account.delete.next",
+      "id": "account.delete.next"
+    },
+    {
+      "source": "/settings/security-center/delete-account/confirm",
+      "target": "/auth/login",
+      "transitions": [
+        "account.delete.confirm"
+      ],
+      "type": "navigation",
+      "label": "account.delete.confirm",
+      "id": "account.delete.confirm"
+    },
+    {
+      "source": "/contacts",
+      "target": "/",
+      "transitions": [
+        "tab.wechat"
+      ],
+      "type": "navigation",
+      "label": "tab.wechat",
+      "id": "tab.wechat"
+    },
+    {
+      "source": "/discover",
+      "target": "/",
+      "transitions": [
+        "tab.wechat"
+      ],
+      "type": "navigation",
+      "label": "tab.wechat",
+      "id": "tab.wechat"
+    },
+    {
+      "source": "/me",
+      "target": "/",
+      "transitions": [
+        "tab.wechat"
+      ],
+      "type": "navigation",
+      "label": "tab.wechat",
+      "id": "tab.wechat"
+    },
+    {
+      "source": "/",
+      "target": "/contacts",
+      "transitions": [
+        "tab.contacts"
+      ],
+      "type": "navigation",
+      "label": "tab.contacts",
+      "id": "tab.contacts"
+    },
+    {
+      "source": "/discover",
+      "target": "/contacts",
+      "transitions": [
+        "tab.contacts"
+      ],
+      "type": "navigation",
+      "label": "tab.contacts",
+      "id": "tab.contacts"
+    },
+    {
+      "source": "/me",
+      "target": "/contacts",
+      "transitions": [
+        "tab.contacts"
+      ],
+      "type": "navigation",
+      "label": "tab.contacts",
+      "id": "tab.contacts"
+    },
+    {
+      "source": "/",
+      "target": "/discover",
+      "transitions": [
+        "tab.discover"
+      ],
+      "type": "navigation",
+      "label": "tab.discover",
+      "id": "tab.discover"
+    },
+    {
+      "source": "/contacts",
+      "target": "/discover",
+      "transitions": [
+        "tab.discover"
+      ],
+      "type": "navigation",
+      "label": "tab.discover",
+      "id": "tab.discover"
+    },
+    {
+      "source": "/me",
+      "target": "/discover",
+      "transitions": [
+        "tab.discover"
+      ],
+      "type": "navigation",
+      "label": "tab.discover",
+      "id": "tab.discover"
+    },
+    {
+      "source": "/",
+      "target": "/me",
+      "transitions": [
+        "tab.me"
+      ],
+      "type": "navigation",
+      "label": "tab.me",
+      "id": "tab.me"
+    },
+    {
+      "source": "/contacts",
+      "target": "/me",
+      "transitions": [
+        "tab.me"
+      ],
+      "type": "navigation",
+      "label": "tab.me",
+      "id": "tab.me"
+    },
+    {
+      "source": "/discover",
+      "target": "/me",
+      "transitions": [
+        "tab.me"
+      ],
+      "type": "navigation",
+      "label": "tab.me",
+      "id": "tab.me"
+    },
+    {
+      "source": "/",
+      "target": "/search",
+      "transitions": [
+        "search.open"
+      ],
+      "type": "navigation",
+      "label": "search.open",
+      "id": "search.open"
+    },
+    {
+      "source": "/contacts",
+      "target": "/search",
+      "transitions": [
+        "search.open"
+      ],
+      "type": "navigation",
+      "label": "search.open",
+      "id": "search.open"
+    },
+    {
+      "source": "/discover",
+      "target": "/search",
+      "transitions": [
+        "search.open"
+      ],
+      "type": "navigation",
+      "label": "search.open",
+      "id": "search.open"
+    },
+    {
+      "source": "/start-group",
+      "target": "/face-to-face-group",
+      "transitions": [
+        "startGroup.faceToFace.open"
+      ],
+      "type": "navigation",
+      "label": "startGroup.faceToFace.open",
+      "id": "startGroup.faceToFace.open"
+    },
+    {
+      "source": "/",
+      "target": "/start-group",
+      "transitions": [
+        "plusMenu.startGroup.open"
+      ],
+      "type": "navigation",
+      "label": "plusMenu.startGroup.open",
+      "id": "plusMenu.startGroup.open"
+    },
+    {
+      "source": "/contacts",
+      "target": "/start-group",
+      "transitions": [
+        "plusMenu.startGroup.open"
+      ],
+      "type": "navigation",
+      "label": "plusMenu.startGroup.open",
+      "id": "plusMenu.startGroup.open"
+    },
+    {
+      "source": "/discover",
+      "target": "/start-group",
+      "transitions": [
+        "plusMenu.startGroup.open"
+      ],
+      "type": "navigation",
+      "label": "plusMenu.startGroup.open",
+      "id": "plusMenu.startGroup.open"
+    },
+    {
+      "source": "/",
+      "target": "/add-friend",
+      "transitions": [
+        "plusMenu.addFriend.open"
+      ],
+      "type": "navigation",
+      "label": "plusMenu.addFriend.open",
+      "id": "plusMenu.addFriend.open"
+    },
+    {
+      "source": "/contacts",
+      "target": "/add-friend",
+      "transitions": [
+        "plusMenu.addFriend.open"
+      ],
+      "type": "navigation",
+      "label": "plusMenu.addFriend.open",
+      "id": "plusMenu.addFriend.open"
+    },
+    {
+      "source": "/discover",
+      "target": "/add-friend",
+      "transitions": [
+        "plusMenu.addFriend.open"
+      ],
+      "type": "navigation",
+      "label": "plusMenu.addFriend.open",
+      "id": "plusMenu.addFriend.open"
+    },
+    {
+      "source": "/",
+      "target": "/scan",
+      "transitions": [
+        "plusMenu.scan.open",
+        "scan.open"
+      ],
+      "type": "navigation",
+      "label": "plusMenu.scan.open, scan.open",
+      "id": "plusMenu.scan.open"
+    },
+    {
+      "source": "/contacts",
+      "target": "/scan",
+      "transitions": [
+        "plusMenu.scan.open",
+        "scan.open"
+      ],
+      "type": "navigation",
+      "label": "plusMenu.scan.open, scan.open",
+      "id": "plusMenu.scan.open"
+    },
+    {
+      "source": "/discover",
+      "target": "/scan",
+      "transitions": [
+        "plusMenu.scan.open",
+        "scan.open"
+      ],
+      "type": "navigation",
+      "label": "plusMenu.scan.open, scan.open",
+      "id": "plusMenu.scan.open"
+    },
+    {
+      "source": "/",
+      "target": "/chat/:id",
+      "transitions": [
+        "chat.open"
+      ],
+      "type": "navigation",
+      "label": "chat.open",
+      "id": "chat.open"
+    },
+    {
+      "source": "/user-profile/:id",
+      "target": "/chat/:id",
+      "transitions": [
+        "chat.open"
+      ],
+      "type": "navigation",
+      "label": "chat.open",
+      "id": "chat.open"
+    },
+    {
+      "source": "/search",
+      "target": "/chat/:id",
+      "transitions": [
+        "chat.open"
+      ],
+      "type": "navigation",
+      "label": "chat.open",
+      "id": "chat.open"
+    },
+    {
+      "source": "/chat/:id",
+      "target": "/chat/:id/info",
+      "transitions": [
+        "chatInfo.open"
+      ],
+      "type": "navigation",
+      "label": "chatInfo.open",
+      "id": "chatInfo.open"
+    },
+    {
+      "source": "/chat/:id/info",
+      "target": "/chat/:id/chat-search",
+      "transitions": [
+        "chatInfo.chatSearch.open"
+      ],
+      "type": "navigation",
+      "label": "chatInfo.chatSearch.open",
+      "id": "chatInfo.chatSearch.open"
+    },
+    {
+      "source": "/chat/:id/chat-search",
+      "target": "/chat/:id",
+      "transitions": [
+        "chatSearch.openChat"
+      ],
+      "type": "navigation",
+      "label": "chatSearch.openChat",
+      "id": "chatSearch.openChat"
+    },
+    {
+      "source": "/chat/:id",
+      "target": "/chat/:id/media-picker",
+      "transitions": [
+        "chat.mediaPicker.open"
+      ],
+      "type": "navigation",
+      "label": "chat.mediaPicker.open",
+      "id": "chat.mediaPicker.open"
+    },
+    {
+      "source": "/chat/:id",
+      "target": "/chat/:id/select-file",
+      "transitions": [
+        "chat.selectFile.open"
+      ],
+      "type": "navigation",
+      "label": "chat.selectFile.open",
+      "id": "chat.selectFile.open"
+    },
+    {
+      "source": "/contacts",
+      "target": "/user-profile/:id",
+      "transitions": [
+        "userProfile.open"
+      ],
+      "type": "navigation",
+      "label": "userProfile.open",
+      "id": "userProfile.open"
+    },
+    {
+      "source": "/moments",
+      "target": "/user-profile/:id",
+      "transitions": [
+        "userProfile.open"
+      ],
+      "type": "navigation",
+      "label": "userProfile.open",
+      "id": "userProfile.open"
+    },
+    {
+      "source": "/moments/:wxid",
+      "target": "/user-profile/:id",
+      "transitions": [
+        "userProfile.open"
+      ],
+      "type": "navigation",
+      "label": "userProfile.open",
+      "id": "userProfile.open"
+    },
+    {
+      "source": "/chat/:id",
+      "target": "/user-profile/:id",
+      "transitions": [
+        "userProfile.open"
+      ],
+      "type": "navigation",
+      "label": "userProfile.open",
+      "id": "userProfile.open"
+    },
+    {
+      "source": "/chat/:id/info",
+      "target": "/user-profile/:id",
+      "transitions": [
+        "userProfile.open"
+      ],
+      "type": "navigation",
+      "label": "userProfile.open",
+      "id": "userProfile.open"
+    },
+    {
+      "source": "/settings/privacy/blacklist",
+      "target": "/user-profile/:id",
+      "transitions": [
+        "userProfile.open"
+      ],
+      "type": "navigation",
+      "label": "userProfile.open",
+      "id": "userProfile.open"
+    },
+    {
+      "source": "/user-profile/:id",
+      "target": "/friend-settings/:id",
+      "transitions": [
+        "friendSettings.open"
+      ],
+      "type": "navigation",
+      "label": "friendSettings.open",
+      "id": "friendSettings.open"
+    },
+    {
+      "source": "/user-profile/:id",
+      "target": "/friend-info/:id",
+      "transitions": [
+        "friendInfo.open"
+      ],
+      "type": "navigation",
+      "label": "friendInfo.open",
+      "id": "friendInfo.open"
+    },
+    {
+      "source": "/friend-settings/:id",
+      "target": "/friend-info/:id",
+      "transitions": [
+        "friendInfo.open"
+      ],
+      "type": "navigation",
+      "label": "friendInfo.open",
+      "id": "friendInfo.open"
+    },
+    {
+      "source": "/friend-info/:id",
+      "target": "/friend-permissions-detail/:id",
+      "transitions": [
+        "friendPermissionsDetail.open"
+      ],
+      "type": "navigation",
+      "label": "friendPermissionsDetail.open",
+      "id": "friendPermissionsDetail.open"
+    },
+    {
+      "source": "/friend-settings/:id",
+      "target": "/friend-permissions-detail/:id",
+      "transitions": [
+        "friendPermissionsDetail.open"
+      ],
+      "type": "navigation",
+      "label": "friendPermissionsDetail.open",
+      "id": "friendPermissionsDetail.open"
+    },
+    {
+      "source": "/contacts",
+      "target": "/new-friends",
+      "transitions": [
+        "contacts.newFriends.open"
+      ],
+      "type": "navigation",
+      "label": "contacts.newFriends.open",
+      "id": "contacts.newFriends.open"
+    },
+    {
+      "source": "/contacts",
+      "target": "/groups",
+      "transitions": [
+        "contacts.groups.open"
+      ],
+      "type": "navigation",
+      "label": "contacts.groups.open",
+      "id": "contacts.groups.open"
+    },
+    {
+      "source": "/contacts",
+      "target": "/tags",
+      "transitions": [
+        "contacts.tags.open"
+      ],
+      "type": "navigation",
+      "label": "contacts.tags.open",
+      "id": "contacts.tags.open"
+    },
+    {
+      "source": "/add-friend",
+      "target": "/radar",
+      "transitions": [
+        "addFriend.radar.open"
+      ],
+      "type": "navigation",
+      "label": "addFriend.radar.open",
+      "id": "addFriend.radar.open"
+    },
+    {
+      "source": "/add-friend",
+      "target": "/face-to-face-group",
+      "transitions": [
+        "addFriend.faceToFace.open"
+      ],
+      "type": "navigation",
+      "label": "addFriend.faceToFace.open",
+      "id": "addFriend.faceToFace.open"
+    },
+    {
+      "source": "/face-to-face-group",
+      "target": "/face-to-face-group/join",
+      "transitions": [
+        "faceToFace.join.open"
+      ],
+      "type": "navigation",
+      "label": "faceToFace.join.open",
+      "id": "faceToFace.join.open"
+    },
+    {
+      "source": "/me",
+      "target": "/my-profile-detail",
+      "transitions": [
+        "profile.detail.open"
+      ],
+      "type": "navigation",
+      "label": "profile.detail.open",
+      "id": "profile.detail.open"
+    },
+    {
+      "source": "/settings",
+      "target": "/my-profile-detail",
+      "transitions": [
+        "profile.detail.open"
+      ],
+      "type": "navigation",
+      "label": "profile.detail.open",
+      "id": "profile.detail.open"
+    },
+    {
+      "source": "/me",
+      "target": "/me/qrcode",
+      "transitions": [
+        "me.qrcode.open"
+      ],
+      "type": "navigation",
+      "label": "me.qrcode.open",
+      "id": "me.qrcode.open"
+    },
+    {
+      "source": "/add-friend",
+      "target": "/me/qrcode",
+      "transitions": [
+        "me.qrcode.open"
+      ],
+      "type": "navigation",
+      "label": "me.qrcode.open",
+      "id": "me.qrcode.open"
+    },
+    {
+      "source": "/my-profile-detail",
+      "target": "/me/qrcode",
+      "transitions": [
+        "me.qrcode.open"
+      ],
+      "type": "navigation",
+      "label": "me.qrcode.open",
+      "id": "me.qrcode.open"
+    },
+    {
+      "source": "/me",
+      "target": "/services",
+      "transitions": [
+        "me.services.open"
+      ],
+      "type": "navigation",
+      "label": "me.services.open",
+      "id": "me.services.open"
+    },
+    {
+      "source": "/me",
+      "target": "/settings",
+      "transitions": [
+        "me.settings.open"
+      ],
+      "type": "navigation",
+      "label": "me.settings.open",
+      "id": "me.settings.open"
+    },
+    {
+      "source": "/me",
+      "target": "/me/moments-album",
+      "transitions": [
+        "me.moments.open"
+      ],
+      "type": "navigation",
+      "label": "me.moments.open",
+      "id": "me.moments.open"
+    },
+    {
+      "source": "/me/moments-album",
+      "target": "/moments/:wxid",
+      "transitions": [
+        "momentsAlbum.myTimeline.open"
+      ],
+      "type": "navigation",
+      "label": "momentsAlbum.myTimeline.open",
+      "id": "momentsAlbum.myTimeline.open"
+    },
+    {
+      "source": "/my-profile-detail",
+      "target": "/me/name",
+      "transitions": [
+        "profile.name.open"
+      ],
+      "type": "navigation",
+      "label": "profile.name.open",
+      "id": "profile.name.open"
+    },
+    {
+      "source": "/my-profile-detail",
+      "target": "/me/gender",
+      "transitions": [
+        "profile.gender.open"
+      ],
+      "type": "navigation",
+      "label": "profile.gender.open",
+      "id": "profile.gender.open"
+    },
+    {
+      "source": "/my-profile-detail",
+      "target": "/me/region",
+      "transitions": [
+        "profile.region.open"
+      ],
+      "type": "navigation",
+      "label": "profile.region.open",
+      "id": "profile.region.open"
+    },
+    {
+      "source": "/my-profile-detail",
+      "target": "/me/phone",
+      "transitions": [
+        "profile.phone.open"
+      ],
+      "type": "navigation",
+      "label": "profile.phone.open",
+      "id": "profile.phone.open"
+    },
+    {
+      "source": "/my-profile-detail",
+      "target": "/me/wxid",
+      "transitions": [
+        "profile.wxid.open"
+      ],
+      "type": "navigation",
+      "label": "profile.wxid.open",
+      "id": "profile.wxid.open"
+    },
+    {
+      "source": "/my-profile-detail",
+      "target": "/me/pat",
+      "transitions": [
+        "profile.pat.open"
+      ],
+      "type": "navigation",
+      "label": "profile.pat.open",
+      "id": "profile.pat.open"
+    },
+    {
+      "source": "/my-profile-detail",
+      "target": "/me/signature",
+      "transitions": [
+        "profile.signature.open"
+      ],
+      "type": "navigation",
+      "label": "profile.signature.open",
+      "id": "profile.signature.open"
+    },
+    {
+      "source": "/my-profile-detail",
+      "target": "/me/address",
+      "transitions": [
+        "profile.address.open"
+      ],
+      "type": "navigation",
+      "label": "profile.address.open",
+      "id": "profile.address.open"
+    },
+    {
+      "source": "/my-profile-detail",
+      "target": "/me/invoice",
+      "transitions": [
+        "profile.invoice.open"
+      ],
+      "type": "navigation",
+      "label": "profile.invoice.open",
+      "id": "profile.invoice.open"
+    },
+    {
+      "source": "/my-profile-detail",
+      "target": "/me/beans",
+      "transitions": [
+        "profile.beans.open"
+      ],
+      "type": "navigation",
+      "label": "profile.beans.open",
+      "id": "profile.beans.open"
+    },
+    {
+      "source": "/settings",
+      "target": "/settings/security",
+      "transitions": [
+        "settings.security.open"
+      ],
+      "type": "navigation",
+      "label": "settings.security.open",
+      "id": "settings.security.open"
+    },
+    {
+      "source": "/settings",
+      "target": "/settings/minor-mode",
+      "transitions": [
+        "settings.minorMode.open"
+      ],
+      "type": "navigation",
+      "label": "settings.minorMode.open",
+      "id": "settings.minorMode.open"
+    },
+    {
+      "source": "/settings",
+      "target": "/settings/care-mode",
+      "transitions": [
+        "settings.careMode.open"
+      ],
+      "type": "navigation",
+      "label": "settings.careMode.open",
+      "id": "settings.careMode.open"
+    },
+    {
+      "source": "/settings",
+      "target": "/settings/notifications",
+      "transitions": [
+        "settings.notifications.open"
+      ],
+      "type": "navigation",
+      "label": "settings.notifications.open",
+      "id": "settings.notifications.open"
+    },
+    {
+      "source": "/settings",
+      "target": "/settings/chat",
+      "transitions": [
+        "settings.chat.open"
+      ],
+      "type": "navigation",
+      "label": "settings.chat.open",
+      "id": "settings.chat.open"
+    },
+    {
+      "source": "/settings",
+      "target": "/settings/general",
+      "transitions": [
+        "settings.general.open"
+      ],
+      "type": "navigation",
+      "label": "settings.general.open",
+      "id": "settings.general.open"
+    },
+    {
+      "source": "/settings",
+      "target": "/settings/privacy/friends",
+      "transitions": [
+        "settings.privacy.friends.open"
+      ],
+      "type": "navigation",
+      "label": "settings.privacy.friends.open",
+      "id": "settings.privacy.friends.open"
+    },
+    {
+      "source": "/settings",
+      "target": "/settings/privacy/personal",
+      "transitions": [
+        "settings.privacy.personal.open"
+      ],
+      "type": "navigation",
+      "label": "settings.privacy.personal.open",
+      "id": "settings.privacy.personal.open"
+    },
+    {
+      "source": "/settings",
+      "target": "/settings/subscriptions",
+      "transitions": [
+        "settings.subscriptions.open"
+      ],
+      "type": "navigation",
+      "label": "settings.subscriptions.open",
+      "id": "settings.subscriptions.open"
+    },
+    {
+      "source": "/settings",
+      "target": "/settings/privacy/authorization",
+      "transitions": [
+        "settings.privacy.thirdParty.open"
+      ],
+      "type": "navigation",
+      "label": "settings.privacy.thirdParty.open",
+      "id": "settings.privacy.thirdParty.open"
+    },
+    {
+      "source": "/settings",
+      "target": "/auth/login",
+      "transitions": [
+        "settings.switchAccount"
+      ],
+      "type": "navigation",
+      "label": "settings.switchAccount",
+      "id": "settings.switchAccount"
+    },
+    {
+      "source": "/scan",
+      "target": "/me/qrcode",
+      "transitions": [
+        "scan.qrcode.open"
+      ],
+      "type": "navigation",
+      "label": "scan.qrcode.open",
+      "id": "scan.qrcode.open"
+    },
+    {
+      "source": "*",
+      "target": "/auth/login",
+      "transitions": [
+        "auth.login.open"
+      ],
+      "type": "navigation",
+      "label": "auth.login.open",
+      "id": "auth.login.open"
+    },
+    {
+      "source": "/auth/register",
+      "target": "/",
+      "transitions": [
+        "auth.register.success"
+      ],
+      "type": "navigation",
+      "label": "auth.register.success",
+      "id": "auth.register.success"
+    },
+    {
+      "source": "/auth/login",
+      "target": "/auth/forgot-password",
+      "transitions": [
+        "auth.forgotPassword.open"
+      ],
+      "type": "navigation",
+      "label": "auth.forgotPassword.open",
+      "id": "auth.forgotPassword.open"
+    },
+    {
+      "source": "/auth/login",
+      "target": "/auth/trust-device",
+      "transitions": [
+        "auth.trustDevice.open"
+      ],
+      "type": "navigation",
+      "label": "auth.trustDevice.open",
+      "id": "auth.trustDevice.open"
+    },
+    {
+      "source": "/auth/login",
+      "target": "/auth/devices",
+      "transitions": [
+        "auth.devices.open"
+      ],
+      "type": "navigation",
+      "label": "auth.devices.open",
+      "id": "auth.devices.open"
+    },
+    {
+      "source": "/auth/login",
+      "target": "/",
+      "transitions": [
+        "auth.login.success"
+      ],
+      "type": "navigation",
+      "label": "auth.login.success",
+      "id": "auth.login.success"
+    },
+    {
+      "source": "/settings/general",
+      "target": "/settings/general/dark-mode",
+      "transitions": [
+        "settings.general.darkMode.open"
+      ],
+      "type": "navigation",
+      "label": "settings.general.darkMode.open",
+      "id": "settings.general.darkMode.open"
+    },
+    {
+      "source": "/settings/general",
+      "target": "/settings/general/translation",
+      "transitions": [
+        "settings.general.translation.open"
+      ],
+      "type": "navigation",
+      "label": "settings.general.translation.open",
+      "id": "settings.general.translation.open"
+    },
+    {
+      "source": "/settings/general",
+      "target": "/settings/general/media",
+      "transitions": [
+        "settings.general.media.open"
+      ],
+      "type": "navigation",
+      "label": "settings.general.media.open",
+      "id": "settings.general.media.open"
+    },
+    {
+      "source": "/settings/general",
+      "target": "/settings/general/audio",
+      "transitions": [
+        "settings.general.audio.open"
+      ],
+      "type": "navigation",
+      "label": "settings.general.audio.open",
+      "id": "settings.general.audio.open"
+    },
+    {
+      "source": "/settings/general",
+      "target": "/settings/general/discover",
+      "transitions": [
+        "settings.general.discover.open"
+      ],
+      "type": "navigation",
+      "label": "settings.general.discover.open",
+      "id": "settings.general.discover.open"
+    },
+    {
+      "source": "/settings/general",
+      "target": "/settings/general/accessibility",
+      "transitions": [
+        "settings.general.accessibility.open"
+      ],
+      "type": "navigation",
+      "label": "settings.general.accessibility.open",
+      "id": "settings.general.accessibility.open"
+    },
+    {
+      "source": "/settings/general/discover",
+      "target": "/settings/general/discover/:id",
+      "transitions": [
+        "settings.discover.item.open"
+      ],
+      "type": "navigation",
+      "label": "settings.discover.item.open",
+      "id": "settings.discover.item.open"
+    },
+    {
+      "source": "/settings/general/accessibility",
+      "target": "/settings/general/accessibility/tencentNews",
+      "transitions": [
+        "settings.accessibility.tencentNews.open"
+      ],
+      "type": "navigation",
+      "label": "settings.accessibility.tencentNews.open",
+      "id": "settings.accessibility.tencentNews.open"
+    },
+    {
+      "source": "/settings/general/accessibility",
+      "target": "/settings/general/accessibility/broadcast",
+      "transitions": [
+        "settings.accessibility.broadcast.open"
+      ],
+      "type": "navigation",
+      "label": "settings.accessibility.broadcast.open",
+      "id": "settings.accessibility.broadcast.open"
+    },
+    {
+      "source": "/settings/general/accessibility",
+      "target": "/settings/general/accessibility/qqMail",
+      "transitions": [
+        "settings.accessibility.qqMail.open"
+      ],
+      "type": "navigation",
+      "label": "settings.accessibility.qqMail.open",
+      "id": "settings.accessibility.qqMail.open"
+    },
+    {
+      "source": "/settings/general/accessibility",
+      "target": "/settings/general/accessibility/wechatSports",
+      "transitions": [
+        "settings.accessibility.wechatSports.open"
+      ],
+      "type": "navigation",
+      "label": "settings.accessibility.wechatSports.open",
+      "id": "settings.accessibility.wechatSports.open"
+    },
+    {
+      "source": "/settings/general/accessibility",
+      "target": "/settings/general/accessibility/wechatPay",
+      "transitions": [
+        "settings.accessibility.wechatPay.open"
+      ],
+      "type": "navigation",
+      "label": "settings.accessibility.wechatPay.open",
+      "id": "settings.accessibility.wechatPay.open"
+    },
+    {
+      "source": "/settings/general/accessibility",
+      "target": "/settings/general/accessibility/wechatGames",
+      "transitions": [
+        "settings.accessibility.wechatGames.open"
+      ],
+      "type": "navigation",
+      "label": "settings.accessibility.wechatGames.open",
+      "id": "settings.accessibility.wechatGames.open"
+    },
+    {
+      "source": "/settings/notifications",
+      "target": "/settings/notifications/display",
+      "transitions": [
+        "settings.notifications.display.open"
+      ],
+      "type": "navigation",
+      "label": "settings.notifications.display.open",
+      "id": "settings.notifications.display.open"
+    },
+    {
+      "source": "/settings/notifications",
+      "target": "/settings/notifications/sound",
+      "transitions": [
+        "settings.notifications.sound.open"
+      ],
+      "type": "navigation",
+      "label": "settings.notifications.sound.open",
+      "id": "settings.notifications.sound.open"
+    },
+    {
+      "source": "/settings/notifications",
+      "target": "/settings/notifications/ringtone",
+      "transitions": [
+        "settings.notifications.ringtone.open"
+      ],
+      "type": "navigation",
+      "label": "settings.notifications.ringtone.open",
+      "id": "settings.notifications.ringtone.open"
+    },
+    {
+      "source": "/settings/privacy/friends",
+      "target": "/settings/privacy/add-me",
+      "transitions": [
+        "settings.privacy.addMe.open"
+      ],
+      "type": "navigation",
+      "label": "settings.privacy.addMe.open",
+      "id": "settings.privacy.addMe.open"
+    },
+    {
+      "source": "/settings/privacy/friends",
+      "target": "/settings/privacy/moments",
+      "transitions": [
+        "settings.privacy.moments.open"
+      ],
+      "type": "navigation",
+      "label": "settings.privacy.moments.open",
+      "id": "settings.privacy.moments.open"
+    },
+    {
+      "source": "/settings/privacy/friends",
+      "target": "/settings/privacy/top-stories",
+      "transitions": [
+        "settings.privacy.topStories.open"
+      ],
+      "type": "navigation",
+      "label": "settings.privacy.topStories.open",
+      "id": "settings.privacy.topStories.open"
+    },
+    {
+      "source": "/settings/privacy/friends",
+      "target": "/settings/privacy/blacklist",
+      "transitions": [
+        "settings.privacy.blacklist.open"
+      ],
+      "type": "navigation",
+      "label": "settings.privacy.blacklist.open",
+      "id": "settings.privacy.blacklist.open"
+    },
+    {
+      "source": "/settings/privacy/personal",
+      "target": "/settings/privacy/authorization",
+      "transitions": [
+        "settings.privacy.authorization.open"
+      ],
+      "type": "navigation",
+      "label": "settings.privacy.authorization.open",
+      "id": "settings.privacy.authorization.open"
+    },
+    {
+      "source": "/settings/privacy/authorization",
+      "target": "/settings/privacy/authorization/:id",
+      "transitions": [
+        "settings.privacy.authorization.detail.open"
+      ],
+      "type": "navigation",
+      "label": "settings.privacy.authorization.detail.open",
+      "id": "settings.privacy.authorization.detail.open"
+    },
+    {
+      "source": "/settings/privacy/authorization/:id",
+      "target": "/settings/privacy/authorization",
+      "transitions": [
+        "settings.privacy.authorization.list.open"
+      ],
+      "type": "navigation",
+      "label": "settings.privacy.authorization.list.open",
+      "id": "settings.privacy.authorization.list.open"
+    },
+    {
+      "source": "/settings/general/accessibility/wechatSports",
+      "target": "/wechat-sports",
+      "transitions": [
+        "wechatSports.open"
+      ],
+      "type": "navigation",
+      "label": "wechatSports.open",
+      "id": "wechatSports.open"
+    },
+    {
+      "source": "/settings/general/accessibility/wechatSports",
+      "target": "/wechat-sports/profile",
+      "transitions": [
+        "wechatSports.profile.me.open"
+      ],
+      "type": "navigation",
+      "label": "wechatSports.profile.me.open",
+      "id": "wechatSports.profile.me.open"
+    },
+    {
+      "source": "/wechat-sports/leaderboard",
+      "target": "/wechat-sports/profile",
+      "transitions": [
+        "wechatSports.profile.me.open"
+      ],
+      "type": "navigation",
+      "label": "wechatSports.profile.me.open",
+      "id": "wechatSports.profile.me.open"
+    },
+    {
+      "source": "/settings/general/accessibility/wechatSports",
+      "target": "/wechat-sports/privacy",
+      "transitions": [
+        "wechatSports.privacy.open"
+      ],
+      "type": "navigation",
+      "label": "wechatSports.privacy.open",
+      "id": "wechatSports.privacy.open"
+    },
+    {
+      "source": "/search",
+      "target": "/wechat-sports",
+      "transitions": [
+        "discover.search.feature.wechatSports.open"
+      ],
+      "type": "navigation",
+      "label": "discover.search.feature.wechatSports.open",
+      "id": "discover.search.feature.wechatSports.open"
+    },
+    {
+      "source": "/search",
+      "target": "/settings/general/accessibility/wechatSports",
+      "transitions": [
+        "discover.search.feature.wechatSports.enable.open"
+      ],
+      "type": "navigation",
+      "label": "discover.search.feature.wechatSports.enable.open",
+      "id": "discover.search.feature.wechatSports.enable.open"
+    },
+    {
+      "source": "/discover",
+      "target": "/discover/nearby",
+      "transitions": [
+        "discover.nearby.open"
+      ],
+      "type": "navigation",
+      "label": "discover.nearby.open",
+      "id": "discover.nearby.open"
+    },
+    {
+      "source": "/discover/nearby",
+      "target": "/user-profile/:id",
+      "transitions": [
+        "nearbyPeople.user.profile"
+      ],
+      "type": "navigation",
+      "label": "nearbyPeople.user.profile",
+      "id": "nearbyPeople.user.profile"
+    },
+    {
+      "source": "/discover",
+      "target": "/moments",
+      "transitions": [
+        "discover.moments.open"
+      ],
+      "type": "navigation",
+      "label": "discover.moments.open",
+      "id": "discover.moments.open"
+    },
+    {
+      "source": "/user-profile/:id",
+      "target": "/moments/:wxid",
+      "transitions": [
+        "moments.user.open"
+      ],
+      "type": "navigation",
+      "label": "moments.user.open",
+      "id": "moments.user.open"
+    },
+    {
+      "source": "/moments",
+      "target": "/post-text-moment",
+      "transitions": [
+        "moments.post.open.longPress"
+      ],
+      "type": "navigation",
+      "label": "moments.post.open.longPress",
+      "id": "moments.post.open.longPress"
+    },
+    {
+      "source": "/moments",
+      "target": "/post-moment",
+      "transitions": [
+        "moments.post.open.fromDraft"
+      ],
+      "type": "navigation",
+      "label": "moments.post.open.fromDraft",
+      "id": "moments.post.open.fromDraft"
+    },
+    {
+      "source": "/moments/:wxid",
+      "target": "/post-moment",
+      "transitions": [
+        "userMoments.post.open.fromDraft"
+      ],
+      "type": "navigation",
+      "label": "userMoments.post.open.fromDraft",
+      "id": "userMoments.post.open.fromDraft"
+    },
+    {
+      "source": "/moments",
+      "target": "/camera",
+      "transitions": [
+        "moments.camera.open"
+      ],
+      "type": "navigation",
+      "label": "moments.camera.open",
+      "id": "moments.camera.open"
+    },
+    {
+      "source": "/moments/:wxid",
+      "target": "/camera",
+      "transitions": [
+        "moments.camera.open"
+      ],
+      "type": "navigation",
+      "label": "moments.camera.open",
+      "id": "moments.camera.open"
+    },
+    {
+      "source": "/moments",
+      "target": "/moments/media-picker",
+      "transitions": [
+        "moments.post.open.fromAlbum"
+      ],
+      "type": "navigation",
+      "label": "moments.post.open.fromAlbum",
+      "id": "moments.post.open.fromAlbum"
+    },
+    {
+      "source": "/moments/:wxid",
+      "target": "/moments/media-picker",
+      "transitions": [
+        "moments.post.open.fromAlbum"
+      ],
+      "type": "navigation",
+      "label": "moments.post.open.fromAlbum",
+      "id": "moments.post.open.fromAlbum"
+    },
+    {
+      "source": "/post-moment",
+      "target": "/moments/media-picker",
+      "transitions": [
+        "postMoment.mediaPicker.open"
+      ],
+      "type": "navigation",
+      "label": "postMoment.mediaPicker.open",
+      "id": "postMoment.mediaPicker.open"
+    },
+    {
+      "source": "/moments/media-picker",
+      "target": "/post-moment",
+      "transitions": [
+        "moments.post.open.fromMediaPicker"
+      ],
+      "type": "navigation",
+      "label": "moments.post.open.fromMediaPicker",
+      "id": "moments.post.open.fromMediaPicker"
+    },
+    {
+      "source": "/camera",
+      "target": "/edit-image",
+      "transitions": [
+        "camera.editImage.open"
+      ],
+      "type": "navigation",
+      "label": "camera.editImage.open",
+      "id": "camera.editImage.open"
+    },
+    {
+      "source": "/edit-image",
+      "target": "/post-moment",
+      "transitions": [
+        "editImage.postMoment.open"
+      ],
+      "type": "navigation",
+      "label": "editImage.postMoment.open",
+      "id": "editImage.postMoment.open"
+    },
+    {
+      "source": "/post-moment",
+      "target": "/select-location",
+      "transitions": [
+        "selectLocation.open"
+      ],
+      "type": "navigation",
+      "label": "selectLocation.open",
+      "id": "selectLocation.open"
+    },
+    {
+      "source": "/post-text-moment",
+      "target": "/select-location",
+      "transitions": [
+        "selectLocation.open"
+      ],
+      "type": "navigation",
+      "label": "selectLocation.open",
+      "id": "selectLocation.open"
+    },
+    {
+      "source": "/wechat-sports",
+      "target": "/wechat-sports/leaderboard",
+      "transitions": [
+        "wechatSports.leaderboard.open"
+      ],
+      "type": "navigation",
+      "label": "wechatSports.leaderboard.open",
+      "id": "wechatSports.leaderboard.open"
+    },
+    {
+      "source": "/wechat-sports/leaderboard",
+      "target": "/wechat-sports/profile/:id",
+      "transitions": [
+        "wechatSports.profile.friend.open"
+      ],
+      "type": "navigation",
+      "label": "wechatSports.profile.friend.open",
+      "id": "wechatSports.profile.friend.open"
+    }
+  ]
+}

@@ -1,0 +1,312 @@
+{
+  "user": {
+    "id": "u_xiaoming_dev",
+    "name": "小明",
+    "handle": "@xiaoming_dev",
+    "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=xiaoming",
+    "banner": "",
+    "verified": false,
+    "bio": "独立开发者 | 记录生活与代码 | 偶尔摸鱼",
+    "location": "北京",
+    "website": "",
+    "joinDate": "Mon Mar 15 08:00:00 +0000 2021",
+    "following": 3,
+    "followers": 12,
+    "screenName": "xiaoming_dev"
+  },
+  "followedUserIds": [
+    "u_OpenAI",
+    "u_elonmusk",
+    "u_nateleex"
+  ],
+  "followerUserIds": [
+    "u_yihong0618",
+    "u_MaimaiLee123",
+    "u_xiongchun007",
+    "u_yihui_indie",
+    "u_plusyip",
+    "u_s1ntone",
+    "u__KleinHe_",
+    "u_cellinlab",
+    "u_vikingmute",
+    "u_fkysly",
+    "u_goocarlos",
+    "u_LeeMmai"
+  ],
+  "quotedPosts": {
+    "p_william_quote": {
+      "id": "p_william_quote",
+      "authorId": "u_williameijer",
+      "content": "Open borders would mean the end of the West because the vast majority of non-Westerners aren’t psychologically Western\nThe Multivariate Rarity of Western Psycho...",
+      "time": "1d",
+      "stats": {
+        "comments": 0,
+        "retweets": 0,
+        "likes": 0,
+        "views": 0
+      }
+    }
+  },
+  "trends": [
+    {
+      "id": "t_promo_1",
+      "title": "Fashion Weeks (Menswear FW26 & Haute Couture SS26)",
+      "category": "LIVE",
+      "image": "https://pbs.twimg.com/media/GhV3RrObsAAEetk.jpg",
+      "type": "promoted"
+    },
+    {
+      "id": "t1",
+      "title": "Road to Super Bowl LX",
+      "subtitle": "With NFL+, watch every playoff game LIVE on mobile!",
+      "category": "Promoted by NFL",
+      "type": "promoted"
+    },
+    {
+      "id": "t2",
+      "title": "Dodgers",
+      "category": "1 · 美国 的趋势",
+      "postsCount": "Trending",
+      "subtitle": "趋势 Kyle Tucker、World Series、Ohtani、Betts",
+      "type": "standard"
+    },
+    {
+      "id": "t3",
+      "title": "Good Friday",
+      "category": "2 · 美国 的趋势",
+      "postsCount": "",
+      "type": "standard"
+    },
+    {
+      "id": "t4",
+      "title": "#FanCashDropPromotion",
+      "category": "3 · 美国 的趋势",
+      "postsCount": "",
+      "type": "standard"
+    },
+    {
+      "id": "t5",
+      "title": "#FridayFeeling",
+      "category": "4 · 美国 的趋势",
+      "postsCount": "",
+      "type": "standard"
+    },
+    {
+      "id": "s_nfl_1",
+      "title": "Bills vs Broncos",
+      "type": "sports_match",
+      "category": "NFL",
+      "meta": {
+        "team1": {
+          "name": "Bills",
+          "logo": "🦬"
+        },
+        "team2": {
+          "name": "Broncos",
+          "logo": "🐎"
+        },
+        "time": "2026年1月18日 05:30"
+      }
+    },
+    {
+      "id": "s_nfl_2",
+      "title": "49ers vs Seahawks",
+      "type": "sports_match",
+      "category": "NFL",
+      "meta": {
+        "team1": {
+          "name": "49ers",
+          "logo": "⛏️"
+        },
+        "team2": {
+          "name": "Seahawks",
+          "logo": ""
+        },
+        "time": "2026年1月18日 09:00"
+      }
+    },
+    {
+      "id": "s_nfl_3",
+      "title": "Texans vs Patriots",
+      "type": "sports_match",
+      "category": "NFL",
+      "meta": {
+        "team1": {
+          "name": "Texans",
+          "logo": "🐂"
+        },
+        "team2": {
+          "name": "Patriots",
+          "logo": "🇺🇸"
+        },
+        "time": "2026年1月19日 04:00"
+      }
+    },
+    {
+      "id": "e1",
+      "title": "Leafs",
+      "category": "美国 的趋势",
+      "type": "standard"
+    },
+    {
+      "id": "e2",
+      "title": "RED Friday",
+      "category": "美国 的趋势",
+      "type": "standard"
+    },
+    {
+      "id": "e3",
+      "title": "Aaliyah",
+      "category": "美国 的趋势",
+      "type": "standard"
+    },
+    {
+      "id": "e4",
+      "title": "Hannity",
+      "category": "美国 的趋势",
+      "type": "standard"
+    }
+  ],
+  "notifications": [
+    {
+      "id": "n1",
+      "type": "like",
+      "actorId": "u_elonmusk",
+      "time": "6小时",
+      "read": false,
+      "postId": "p_1879267274185756896",
+      "content": "Recent post from Elon Musk\nYes!"
+    },
+    {
+      "id": "n2",
+      "type": "like",
+      "actorId": "u_stillgray",
+      "time": "1天",
+      "read": true,
+      "content": "BREAKING — HAPPENING NOW:\nThe United States is rapidly redeploying the entire USS Abraham..."
+    },
+    {
+      "id": "n3",
+      "type": "like",
+      "actorId": "u_lidangzzz",
+      "time": "1天",
+      "read": true,
+      "content": "（全网劝人卖房、劝人学CS、劝人买SP500和NASDAQ100第一人）"
+    },
+    {
+      "id": "n4",
+      "type": "mention",
+      "actorId": "u_slatt",
+      "time": "1天",
+      "read": true,
+      "content": "Kai Cenat really cooking behind the scenes with his new clothing brand \"Vivet 😮‍💨🔥\""
+    },
+    {
+      "id": "n5",
+      "type": "like",
+      "actorId": "u_pleb",
+      "time": "1天",
+      "read": true
+    },
+    {
+      "id": "n_mention_1",
+      "type": "mention",
+      "actorId": "u_vikingmute",
+      "time": "2h",
+      "read": false,
+      "content": "@yihong0618 这个项目看起来很棒，Star了！"
+    },
+    {
+      "id": "n_mention_2",
+      "type": "mention",
+      "actorId": "u_waylybaye",
+      "time": "5h",
+      "read": true,
+      "content": "回复 @yihong0618: 确实，独立开发不容易。"
+    }
+  ],
+  "conversations": [
+    {
+      "id": "c1",
+      "participantId": "u_waylybaye",
+      "unreadCount": 1,
+      "lastMessageId": "m2",
+      "messages": [
+        {
+          "id": "m1",
+          "senderId": "u_xiaoming_dev",
+          "receiverId": "u_waylybaye",
+          "content": "Yo how is ServerCat doing?",
+          "time": "15m",
+          "read": true
+        },
+        {
+          "id": "m2",
+          "senderId": "u_waylybaye",
+          "receiverId": "u_xiaoming_dev",
+          "content": "Indie dev life is hard bro",
+          "time": "10m",
+          "read": false
+        }
+      ]
+    }
+  ],
+  "searchHistory": [
+    {
+      "id": "rs1",
+      "type": "user",
+      "userId": "u_xiaoming_dev"
+    }
+  ],
+  "settings": {
+    "showInteractionCounts": true,
+    "enablePostSwipeGesture": false,
+    "showLocalContent": true,
+    "yourTrends": true,
+    "markSensitive": false,
+    "showListening": false,
+    "allowEmail": true,
+    "allowPhone": true,
+    "syncContacts": false,
+    "pushOnlyDm": false,
+    "dmRequestFrom": "everyone",
+    "enableAvCalls": true,
+    "allowCallFromFollowing": true,
+    "allowCallFromLogs": false,
+    "allowCallFromVerified": false,
+    "alwaysProxyCalls": false,
+    "filterLowQualityDMs": true,
+    "enableDebugLog": false,
+    "privatePosts": false,
+    "protectVideos": false,
+    "photoTagging": true,
+    "useRegion": true,
+    "prefRecommend": true,
+    "prefFollow": true,
+    "prefLiveSpace": true,
+    "prefNewsSports": true,
+    "fromXFollow": true,
+    "fromXNewsSports": true,
+    "fromXRecommend": true,
+    "fromXMoments": true,
+    "fromXLiveSpace": true,
+    "fromXOtherLive": true,
+    "fromXAlert": true,
+    "fromXNewFeatures": true,
+    "proNotify": true,
+    "onlyImportant": false,
+    "hideSuggestions": false
+  },
+  "suggestedFollowingIds": [
+    "u_DennisThink",
+    "u_Linmiv",
+    "u_MaimaiLee123",
+    "u__KleinHe_",
+    "u_alanblogsooo",
+    "u_appinn",
+    "u_cellinlab",
+    "u_chuckchen_zh",
+    "u_daiming_cn",
+    "u_dotey"
+  ]
+}

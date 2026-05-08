@@ -1,0 +1,3694 @@
+{
+  "user": {
+    "id": "user_me",
+    "name": "小明",
+    "avatar": "",
+    "gender": "",
+    "introduction": "",
+    "signature": "",
+    "readingTimeMinutes": 120,
+    "coinBalance": 50,
+    "membership": false,
+    "registrationDate": "2024-01-01",
+    "following": [
+      "user_508"
+    ],
+    "isWechatFriend": false,
+    "likesCount": 0,
+    "followerCount": 0,
+    "followingCount": 1,
+    "badges": [
+      {
+        "id": "b1",
+        "name": "神作爱好者",
+        "type": "神作爱好者",
+        "value": "1"
+      },
+      {
+        "id": "b3",
+        "name": "阅读天数",
+        "type": "阅读天数",
+        "value": "25"
+      }
+    ],
+    "recentBooks": [
+      "20",
+      "60",
+      "4",
+      "30"
+    ]
+  },
+  "users": [
+    {
+      "id": "user_508",
+      "name": "508",
+      "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=508",
+      "gender": "男",
+      "introduction": "这个人很懒，什么都没有留下",
+      "signature": "",
+      "readingTimeMinutes": 62882,
+      "coinBalance": 0,
+      "membership": false,
+      "isWechatFriend": true,
+      "likesCount": 0,
+      "followerCount": 3,
+      "followingCount": 10,
+      "badges": [
+        {
+          "id": "b1",
+          "name": "神作爱好者",
+          "type": "神作爱好者",
+          "value": "10"
+        },
+        {
+          "id": "b2",
+          "name": "神作研习生",
+          "type": "神作研习生",
+          "value": "5"
+        },
+        {
+          "id": "b3",
+          "name": "阅读天数",
+          "type": "阅读天数",
+          "value": "1000"
+        },
+        {
+          "id": "b4",
+          "name": "阅读时长",
+          "type": "阅读时长",
+          "value": "1000"
+        }
+      ],
+      "recentBooks": [
+        "61",
+        "62",
+        "63",
+        "34",
+        "64",
+        "31"
+      ]
+    },
+    {
+      "id": "user_blank",
+      "name": "blank.",
+      "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=blank",
+      "gender": "男",
+      "introduction": "学习使人快乐",
+      "signature": "学习使人快乐",
+      "readingTimeMinutes": 4520,
+      "coinBalance": 0,
+      "membership": false,
+      "isWechatFriend": true,
+      "likesCount": 12,
+      "followerCount": 8,
+      "followingCount": 15,
+      "badges": [
+        { "id": "b3", "name": "阅读天数", "type": "阅读天数", "value": "200" }
+      ],
+      "recentBooks": ["1", "4", "20"]
+    },
+    {
+      "id": "user_xiaohong",
+      "name": "小红",
+      "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=xiaohong",
+      "gender": "女",
+      "introduction": "爱美食爱生活",
+      "signature": "",
+      "readingTimeMinutes": 31,
+      "coinBalance": 0,
+      "membership": false,
+      "isWechatFriend": true,
+      "likesCount": 3,
+      "followerCount": 2,
+      "followingCount": 5,
+      "badges": [],
+      "recentBooks": ["5"]
+    },
+    {
+      "id": "user_zhangwei",
+      "name": "张伟",
+      "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=zhangwei",
+      "gender": "男",
+      "introduction": "海内存知己",
+      "signature": "海内存知己",
+      "readingTimeMinutes": 617,
+      "coinBalance": 20,
+      "membership": false,
+      "isWechatFriend": true,
+      "likesCount": 5,
+      "followerCount": 12,
+      "followingCount": 8,
+      "badges": [
+        { "id": "b3", "name": "阅读天数", "type": "阅读天数", "value": "50" }
+      ],
+      "recentBooks": ["3", "7"]
+    },
+    {
+      "id": "user_wangfang",
+      "name": "王芳",
+      "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=wangfang",
+      "gender": "女",
+      "introduction": "平凡的世界",
+      "signature": "平凡的世界",
+      "readingTimeMinutes": 1979,
+      "coinBalance": 0,
+      "membership": true,
+      "isWechatFriend": true,
+      "likesCount": 28,
+      "followerCount": 35,
+      "followingCount": 20,
+      "badges": [
+        { "id": "b1", "name": "神作爱好者", "type": "神作爱好者", "value": "3" },
+        { "id": "b3", "name": "阅读天数", "type": "阅读天数", "value": "300" }
+      ],
+      "recentBooks": ["4", "5", "20", "60"]
+    },
+    {
+      "id": "user_lina",
+      "name": "李娜",
+      "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=lina",
+      "gender": "女",
+      "introduction": "花开富贵",
+      "signature": "花开富贵",
+      "readingTimeMinutes": 140,
+      "coinBalance": 0,
+      "membership": false,
+      "isWechatFriend": true,
+      "likesCount": 1,
+      "followerCount": 4,
+      "followingCount": 6,
+      "badges": [],
+      "recentBooks": ["2"]
+    },
+    {
+      "id": "user_liuyang",
+      "name": "刘浪",
+      "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=liuyang",
+      "gender": "男",
+      "introduction": "仰望星空",
+      "signature": "仰望星空",
+      "readingTimeMinutes": 55,
+      "coinBalance": 10,
+      "membership": false,
+      "isWechatFriend": true,
+      "likesCount": 0,
+      "followerCount": 1,
+      "followingCount": 3,
+      "badges": [],
+      "recentBooks": ["1"]
+    },
+    {
+      "id": "user_chenjing",
+      "name": "陈静",
+      "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=chenjing",
+      "gender": "女",
+      "introduction": "静以修身",
+      "signature": "静以修身",
+      "readingTimeMinutes": 8460,
+      "coinBalance": 0,
+      "membership": true,
+      "isWechatFriend": true,
+      "likesCount": 45,
+      "followerCount": 60,
+      "followingCount": 12,
+      "badges": [
+        { "id": "b1", "name": "神作爱好者", "type": "神作爱好者", "value": "8" },
+        { "id": "b3", "name": "阅读天数", "type": "阅读天数", "value": "500" },
+        { "id": "b4", "name": "阅读时长", "type": "阅读时长", "value": "500" }
+      ],
+      "recentBooks": ["3", "4", "7", "20", "60"]
+    },
+    {
+      "id": "user_yangjie",
+      "name": "杨杰",
+      "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=yangjie",
+      "gender": "男",
+      "introduction": "志存高远",
+      "signature": "志存高远",
+      "readingTimeMinutes": 1,
+      "coinBalance": 0,
+      "membership": false,
+      "isWechatFriend": true,
+      "likesCount": 0,
+      "followerCount": 0,
+      "followingCount": 0,
+      "badges": [],
+      "recentBooks": []
+    }
+  ],
+  "store": [
+    {
+      "id": "1",
+      "title": "纳瓦尔宝典",
+      "author": "埃里克·乔根森",
+      "cover": "",
+      "coverColor": "bg-[#F2EFE9]",
+      "category": "商业",
+      "totalWords": 150000,
+      "rating": 9.2,
+      "recommendedValue": 92.5
+    },
+    {
+      "id": "2",
+      "title": "控糖革命",
+      "author": "杰西·安佐斯佩",
+      "cover": "",
+      "coverColor": "bg-orange-100",
+      "category": "健康",
+      "totalWords": 120000,
+      "rating": 8.8,
+      "recommendedValue": 88.1
+    },
+    {
+      "id": "3",
+      "title": "解读林彪",
+      "author": "司马清扬",
+      "cover": "",
+      "coverColor": "bg-slate-700",
+      "category": "历史",
+      "totalWords": 350000,
+      "rating": 9,
+      "recommendedValue": 90
+    },
+    {
+      "id": "4",
+      "title": "苏菲的世界",
+      "author": "乔斯坦·贾德",
+      "cover": "",
+      "coverColor": "bg-[#D5E6D8]",
+      "category": "哲学",
+      "totalWords": 450000,
+      "rating": 9.1,
+      "recommendedValue": 91.2,
+      "contentSource": "苏菲的世界.txt"
+    },
+    {
+      "id": "5",
+      "title": "小巷人家",
+      "author": "大米",
+      "cover": "",
+      "coverColor": "bg-[#E3CBA8]",
+      "category": "小说",
+      "totalWords": 280000,
+      "rating": 9.5,
+      "recommendedValue": 95
+    },
+    {
+      "id": "6",
+      "title": "中国通史",
+      "author": "吕思勉",
+      "cover": "",
+      "coverColor": "bg-[#A8B6D6]",
+      "category": "历史",
+      "totalWords": 600000,
+      "rating": 9.3,
+      "recommendedValue": 93.5
+    },
+    {
+      "id": "57",
+      "title": "一句顶一万句",
+      "author": "刘震云",
+      "cover": "",
+      "coverColor": "bg-[#4D332D]",
+      "category": "小说",
+      "totalWords": 220000,
+      "rating": 8.9,
+      "recommendedValue": 89
+    },
+    {
+      "id": "58",
+      "title": "明朝那些事儿",
+      "author": "当年明月",
+      "cover": "",
+      "coverColor": "bg-[#E6CBA8]",
+      "category": "历史",
+      "totalWords": 1200000,
+      "rating": 9.6,
+      "recommendedValue": 96
+    },
+    {
+      "id": "59",
+      "title": "也许你该找个人聊聊",
+      "author": "洛莉·戈特利布",
+      "cover": "",
+      "coverColor": "bg-sky-200",
+      "category": "心理",
+      "totalWords": 240000,
+      "rating": 9.1,
+      "recommendedValue": 91
+    },
+    {
+      "id": "60",
+      "title": "红楼梦",
+      "author": "曹雪芹",
+      "cover": "",
+      "coverColor": "bg-red-800",
+      "category": "文学",
+      "totalWords": 800000,
+      "rating": 9.8,
+      "recommendedValue": 98,
+      "contentSource": "红楼梦.txt"
+    },
+    {
+      "id": "7",
+      "title": "十八岁出门远行",
+      "author": "余华",
+      "coverColor": "bg-emerald-100",
+      "category": "文学",
+      "totalWords": 20000,
+      "rating": 9.4,
+      "recommendedValue": 94
+    },
+    {
+      "id": "8",
+      "title": "沙丘六部曲",
+      "author": "弗兰克·赫伯特",
+      "coverColor": "bg-orange-200",
+      "category": "科幻",
+      "totalWords": 1500000,
+      "rating": 9.6,
+      "recommendedValue": 96
+    },
+    {
+      "id": "9",
+      "title": "我想成为不错的人",
+      "author": "洪和廷",
+      "coverColor": "bg-pink-100",
+      "category": "治愈",
+      "totalWords": 120000,
+      "rating": 8.9,
+      "recommendedValue": 89
+    },
+    {
+      "id": "10",
+      "title": "长夜难明：双星",
+      "author": "紫金陈",
+      "coverColor": "bg-slate-800",
+      "category": "悬疑",
+      "totalWords": 180000,
+      "rating": 9,
+      "recommendedValue": 90
+    },
+    {
+      "id": "11",
+      "title": "岁月静好是片刻",
+      "author": "史铁生",
+      "coverColor": "bg-stone-100",
+      "category": "文学",
+      "totalWords": 150000,
+      "rating": 9.5,
+      "recommendedValue": 95
+    },
+    {
+      "id": "12",
+      "title": "余生皆欢喜",
+      "author": "汪二峤",
+      "coverColor": "bg-yellow-50",
+      "category": "治愈",
+      "totalWords": 100000,
+      "rating": 8.7,
+      "recommendedValue": 87
+    },
+    {
+      "id": "13",
+      "title": "食南之徒",
+      "author": "马伯庸",
+      "coverColor": "bg-amber-100",
+      "category": "历史",
+      "totalWords": 220000,
+      "rating": 9.2,
+      "recommendedValue": 92
+    },
+    {
+      "id": "14",
+      "title": "草民",
+      "author": "蔡崇达",
+      "coverColor": "bg-lime-50",
+      "category": "文学",
+      "totalWords": 160000,
+      "rating": 9.1,
+      "recommendedValue": 91
+    },
+    {
+      "id": "15",
+      "title": "在峡江的转弯处",
+      "author": "陈行甲",
+      "coverColor": "bg-teal-50",
+      "category": "传记",
+      "totalWords": 250000,
+      "rating": 9.8,
+      "recommendedValue": 98
+    },
+    {
+      "id": "16",
+      "title": "后浪",
+      "author": "邱彬彬",
+      "coverColor": "bg-indigo-50",
+      "category": "励志",
+      "totalWords": 180000,
+      "rating": 8.5,
+      "recommendedValue": 85
+    },
+    {
+      "id": "17",
+      "title": "屁事也疯狂",
+      "author": "糗事小菊花",
+      "coverColor": "bg-rose-50",
+      "category": "科普",
+      "totalWords": 120000,
+      "rating": 8.8,
+      "recommendedValue": 88
+    },
+    {
+      "id": "18",
+      "title": "从总账到总监",
+      "author": "钱自严",
+      "coverColor": "bg-blue-50",
+      "category": "经管",
+      "totalWords": 200000,
+      "rating": 9,
+      "recommendedValue": 90
+    },
+    {
+      "id": "19",
+      "title": "三体",
+      "author": "刘慈欣",
+      "coverColor": "bg-gray-100",
+      "category": "科幻",
+      "totalWords": 800000,
+      "rating": 9.7,
+      "recommendedValue": 97
+    },
+    {
+      "id": "20",
+      "title": "活着",
+      "author": "余华",
+      "cover": "",
+      "coverColor": "bg-orange-50",
+      "category": "文学",
+      "totalWords": 92000,
+      "rating": 9.6,
+      "recommendedValue": 92,
+      "masterpiece": true,
+      "recommendationTag": "神作",
+      "totalReviews": 205000,
+      "reviewBreakdown": {
+        "recommended": 191000,
+        "average": 13000,
+        "notRecommended": 1289
+      },
+      "totalReads": 2378000,
+      "isMembership": true,
+      "content": "本书通过讲述一个普通农民福贵的一生，展现了中国大半个世纪的社会变迁和个人的命运波折。\n\n福贵经历了从富裕到贫穷的巨大转折，失去了所有的家产和亲人，但他始终保持着对生活的乐观和坚韧。\n\n在艰难的岁月中，福贵与妻子家珍、女儿凤霞以及儿子有庆共同经历了生活的艰辛与温暖，展现了家庭的力量和生命的顽强。\n\n即使在接连失去亲人的痛苦中，福贵依然坚强地活着，独自面对生活的孤独与艰难。\n\n本书不仅是对生命的深刻反思，也是对人性坚韧不拔精神的赞颂，让读者在感受到生活的苦涩的同时，也能体会到活着的意义和价值。\n\n（以下为模拟正文内容）\n\n我比现在年轻十岁的时候，获得了一个游手好闲的职业，去乡间收集民间歌谣。那一年的整个夏天，我如同一只乱飞的麻雀，游荡在知了和阳光充斥的农村。\n\n我喜欢喝农民那样苦涩的茶水，坐在他们铺着草席的炕上，听他们讲这讲那。我的工作就是让这些如同泥土一样朴实的人们，对着我打开话匣子..."
+    },
+    {
+      "id": "21",
+      "title": "平凡的世界",
+      "author": "路遥",
+      "coverColor": "bg-yellow-100",
+      "category": "文学",
+      "totalWords": 1100000,
+      "rating": 9.5,
+      "recommendedValue": 95
+    },
+    {
+      "id": "22",
+      "title": "长安的荔枝",
+      "author": "马伯庸",
+      "coverColor": "bg-orange-100",
+      "category": "历史",
+      "totalWords": 90000,
+      "rating": 9.4,
+      "recommendedValue": 94
+    },
+    {
+      "id": "23",
+      "title": "平面国",
+      "author": "艾勃特",
+      "coverColor": "bg-violet-100",
+      "category": "科普",
+      "totalWords": 80000,
+      "rating": 9.1,
+      "recommendedValue": 91
+    },
+    {
+      "id": "24",
+      "title": "置身事内",
+      "author": "兰小欢",
+      "coverColor": "bg-cyan-100",
+      "category": "经济",
+      "totalWords": 280000,
+      "rating": 9.7,
+      "recommendedValue": 97
+    },
+    {
+      "id": "25",
+      "title": "大医",
+      "author": "马伯庸",
+      "coverColor": "bg-red-50",
+      "category": "小说",
+      "totalWords": 450000,
+      "rating": 9.3,
+      "recommendedValue": 93
+    },
+    {
+      "id": "26",
+      "title": "太白金星有点烦",
+      "author": "马伯庸",
+      "coverColor": "bg-amber-50",
+      "category": "小说",
+      "totalWords": 120000,
+      "rating": 9.2,
+      "recommendedValue": 92
+    },
+    {
+      "id": "27",
+      "title": "白夜行",
+      "author": "东野圭吾",
+      "coverColor": "bg-slate-200",
+      "category": "悬疑",
+      "totalWords": 350000,
+      "rating": 9.4,
+      "recommendedValue": 94
+    },
+    {
+      "id": "28",
+      "title": "解忧杂货店",
+      "author": "东野圭吾",
+      "coverColor": "bg-yellow-50",
+      "category": "小说",
+      "totalWords": 220000,
+      "rating": 9.3,
+      "recommendedValue": 93
+    },
+    {
+      "id": "29",
+      "title": "嫌疑人X的献身",
+      "author": "东野圭吾",
+      "coverColor": "bg-zinc-100",
+      "category": "悬疑",
+      "totalWords": 180000,
+      "rating": 9.4,
+      "recommendedValue": 94
+    },
+    {
+      "id": "30",
+      "title": "人类简史",
+      "author": "赫拉利",
+      "coverColor": "bg-stone-200",
+      "category": "科普",
+      "totalWords": 320000,
+      "rating": 9.5,
+      "recommendedValue": 95,
+      "contentSource": "人类简史.txt"
+    },
+    {
+      "id": "31",
+      "title": "未来简史",
+      "author": "赫拉利",
+      "coverColor": "bg-slate-300",
+      "category": "科普",
+      "totalWords": 300000,
+      "rating": 9.3,
+      "recommendedValue": 93
+    },
+    {
+      "id": "32",
+      "title": "今日简史",
+      "author": "赫拉利",
+      "coverColor": "bg-gray-200",
+      "category": "科普",
+      "totalWords": 280000,
+      "rating": 9.2,
+      "recommendedValue": 92
+    },
+    {
+      "id": "33",
+      "title": "自私的基因",
+      "author": "道金斯",
+      "coverColor": "bg-blue-100",
+      "category": "科普",
+      "totalWords": 250000,
+      "rating": 9.4,
+      "recommendedValue": 94
+    },
+    {
+      "id": "34",
+      "title": "枪炮与钢铁",
+      "author": "戴蒙德",
+      "coverColor": "bg-emerald-50",
+      "category": "科普",
+      "totalWords": 400000,
+      "rating": 9.3,
+      "recommendedValue": 93
+    },
+    {
+      "id": "35",
+      "title": "失控",
+      "author": "凯文·凯利",
+      "coverColor": "bg-gray-800",
+      "category": "科技",
+      "totalWords": 600000,
+      "rating": 9.1,
+      "recommendedValue": 91
+    },
+    {
+      "id": "36",
+      "title": "非暴力沟通",
+      "author": "卢森堡",
+      "coverColor": "bg-green-50",
+      "category": "心理",
+      "totalWords": 150000,
+      "rating": 9.2,
+      "recommendedValue": 92
+    },
+    {
+      "id": "37",
+      "title": "被讨厌的勇气",
+      "author": "岸见一郎",
+      "coverColor": "bg-blue-200",
+      "category": "心理",
+      "totalWords": 180000,
+      "rating": 9.3,
+      "recommendedValue": 93
+    },
+    {
+      "id": "38",
+      "title": "刻意练习",
+      "author": "艾利克森",
+      "coverColor": "bg-orange-50",
+      "category": "成长",
+      "totalWords": 160000,
+      "rating": 9,
+      "recommendedValue": 90
+    },
+    {
+      "id": "39",
+      "title": "原则",
+      "author": "瑞·达利欧",
+      "coverColor": "bg-slate-100",
+      "category": "商业",
+      "totalWords": 450000,
+      "rating": 9.1,
+      "recommendedValue": 91
+    },
+    {
+      "id": "40",
+      "title": "穷爸爸富爸爸",
+      "author": "罗伯特",
+      "coverColor": "bg-yellow-100",
+      "category": "理财",
+      "totalWords": 150000,
+      "rating": 8.8,
+      "recommendedValue": 88
+    },
+    {
+      "id": "41",
+      "title": "蛤蟆先生去看心理医生",
+      "author": "戴博德",
+      "coverColor": "bg-green-100",
+      "category": "心理",
+      "totalWords": 120000,
+      "rating": 9.4,
+      "recommendedValue": 94
+    },
+    {
+      "id": "42",
+      "title": "恶意",
+      "author": "东野圭吾",
+      "coverColor": "bg-gray-300",
+      "category": "悬疑",
+      "totalWords": 200000,
+      "rating": 9.2,
+      "recommendedValue": 92
+    },
+    {
+      "id": "43",
+      "title": "放学后",
+      "author": "东野圭吾",
+      "coverColor": "bg-indigo-100",
+      "category": "悬疑",
+      "totalWords": 180000,
+      "rating": 9,
+      "recommendedValue": 90
+    },
+    {
+      "id": "44",
+      "title": "月亮与六便士",
+      "author": "毛姆",
+      "coverColor": "bg-sky-50",
+      "category": "文学",
+      "totalWords": 160000,
+      "rating": 9.3,
+      "recommendedValue": 93
+    },
+    {
+      "id": "45",
+      "title": "面纱",
+      "author": "毛姆",
+      "coverColor": "bg-rose-100",
+      "category": "文学",
+      "totalWords": 140000,
+      "rating": 9.1,
+      "recommendedValue": 91
+    },
+    {
+      "id": "46",
+      "title": "人间失格",
+      "author": "太宰治",
+      "coverColor": "bg-neutral-200",
+      "category": "文学",
+      "totalWords": 100000,
+      "rating": 8.7,
+      "recommendedValue": 87
+    },
+    {
+      "id": "47",
+      "title": "百年孤独",
+      "author": "马尔克斯",
+      "coverColor": "bg-amber-200",
+      "category": "文学",
+      "totalWords": 350000,
+      "rating": 9.6,
+      "recommendedValue": 96
+    },
+    {
+      "id": "48",
+      "title": "霍乱时期的爱情",
+      "author": "马尔克斯",
+      "coverColor": "bg-pink-200",
+      "category": "文学",
+      "totalWords": 340000,
+      "rating": 9.5,
+      "recommendedValue": 95
+    },
+    {
+      "id": "49",
+      "title": "追风筝的人",
+      "author": "胡赛尼",
+      "coverColor": "bg-yellow-50",
+      "category": "文学",
+      "totalWords": 280000,
+      "rating": 9.4,
+      "recommendedValue": 94
+    },
+    {
+      "id": "50",
+      "title": "灿烂千阳",
+      "author": "胡赛尼",
+      "coverColor": "bg-orange-50",
+      "category": "文学",
+      "totalWords": 260000,
+      "rating": 9.3,
+      "recommendedValue": 93
+    },
+    {
+      "id": "51",
+      "title": "山茶文具店",
+      "author": "小川糸",
+      "coverColor": "bg-emerald-50",
+      "category": "治愈",
+      "totalWords": 120000,
+      "rating": 9.1,
+      "recommendedValue": 91
+    },
+    {
+      "id": "52",
+      "title": "闪闪发光的人生",
+      "author": "小川糸",
+      "coverColor": "bg-yellow-50",
+      "category": "治愈",
+      "totalWords": 110000,
+      "rating": 9,
+      "recommendedValue": 90
+    },
+    {
+      "id": "53",
+      "title": "不如去漫步",
+      "author": "季羡林",
+      "coverColor": "bg-lime-50",
+      "category": "散文",
+      "totalWords": 150000,
+      "rating": 9.2,
+      "recommendedValue": 92
+    },
+    {
+      "id": "54",
+      "title": "人生果实",
+      "author": "津端修一",
+      "coverColor": "bg-orange-100",
+      "category": "生活",
+      "totalWords": 100000,
+      "rating": 9.4,
+      "recommendedValue": 94
+    },
+    {
+      "id": "55",
+      "title": "瓦尔登湖",
+      "author": "梭罗",
+      "coverColor": "bg-green-50",
+      "category": "文学",
+      "totalWords": 250000,
+      "rating": 9.2,
+      "recommendedValue": 92
+    },
+    {
+      "id": "56",
+      "title": "小王子",
+      "author": "圣埃克苏佩里",
+      "coverColor": "bg-blue-100",
+      "category": "童话",
+      "totalWords": 30000,
+      "rating": 9.8,
+      "recommendedValue": 98
+    },
+    {
+      "id": "61",
+      "title": "从一到无穷大",
+      "author": "乔治·伽莫夫",
+      "coverColor": "bg-white",
+      "category": "科普",
+      "totalWords": 250000,
+      "rating": 9.4,
+      "recommendedValue": 94
+    },
+    {
+      "id": "62",
+      "title": "战争论",
+      "author": "克劳塞维茨",
+      "coverColor": "bg-yellow-500",
+      "category": "军事",
+      "totalWords": 450000,
+      "rating": 9.2,
+      "recommendedValue": 92
+    },
+    {
+      "id": "63",
+      "title": "文明的冲突",
+      "author": "塞缪尔·亨廷顿",
+      "coverColor": "bg-orange-800",
+      "category": "政治",
+      "totalWords": 320000,
+      "rating": 9.1,
+      "recommendedValue": 91
+    },
+    {
+      "id": "64",
+      "title": "数学的意义",
+      "author": "斯图尔特",
+      "coverColor": "bg-white",
+      "category": "数学",
+      "totalWords": 180000,
+      "rating": 9,
+      "recommendedValue": 90
+    },
+    {
+      "id": "65",
+      "title": "国富论",
+      "author": "亚当·斯密",
+      "coverColor": "bg-amber-100",
+      "category": "经济",
+      "totalWords": 550000,
+      "rating": 9.4,
+      "recommendedValue": 94,
+      "contentSource": "国富论.txt"
+    },
+    {
+      "id": "66",
+      "title": "忏悔录",
+      "author": "卢梭",
+      "coverColor": "bg-slate-100",
+      "category": "文学",
+      "totalWords": 400000,
+      "rating": 9.3,
+      "recommendedValue": 93,
+      "contentSource": "忏悔录.txt"
+    },
+    {
+      "id": "67",
+      "title": "理想国",
+      "author": "柏拉图",
+      "coverColor": "bg-sky-100",
+      "category": "哲学",
+      "totalWords": 200000,
+      "rating": 9.5,
+      "recommendedValue": 95,
+      "contentSource": "理想国.txt"
+    }
+  ],
+    "audiobooks": [
+    {
+      "id": "audio_1",
+      "title": "沧浪之水（经典版）",
+      "author": "阎真",
+      "coverColor": "#E32D2D",
+      "plays": "10万",
+      "rating": "96.2%"
+    },
+    {
+      "id": "audio_2",
+      "title": "平凡的世界",
+      "author": "路遥",
+      "coverColor": "#F2EFE9",
+      "plays": "5.8万",
+      "rating": "98.5%"
+    },
+    {
+      "id": "audio_3",
+      "title": "一听就上瘾的历史冷知识",
+      "author": "听伴",
+      "coverColor": "#D19B82",
+      "plays": "12.4万",
+      "rating": "94.2%"
+    },
+    {
+      "id": "audio_4",
+      "title": "孤独的力量：内心才是一切的答案",
+      "author": "周国平",
+      "coverColor": "#4A5568",
+      "plays": "8.2万",
+      "rating": "95.8%"
+    },
+    {
+      "id": "audio_5",
+      "title": "朗读者（全3册）",
+      "author": "董卿",
+      "coverColor": "#CBD5E0",
+      "plays": "15万",
+      "rating": "99.1%"
+    },
+    {
+      "id": "audio_6",
+      "title": "苏东坡传",
+      "author": "林语堂",
+      "coverColor": "#EDF2F7",
+      "plays": "20.5万",
+      "rating": "97.4%"
+    },
+    {
+      "id": "audio_7",
+      "title": "华杉讲透《孙子兵法》",
+      "author": "华杉",
+      "coverColor": "#F6E05E",
+      "plays": "2.7万",
+      "rating": "96.9%"
+    },
+    {
+      "id": "audio_8",
+      "title": "女生会学习，世界都让路",
+      "author": "刘媛媛",
+      "coverColor": "#FFFFFF",
+      "plays": "1.5万",
+      "rating": "94.5%"
+    },
+    {
+      "id": "audio_9",
+      "title": "老梁通史",
+      "author": "梁宏达",
+      "coverColor": "#44403C",
+      "plays": "50.2万",
+      "rating": "92.1%"
+    },
+    {
+      "id": "audio_10",
+      "title": "于公案（单田芳评书）",
+      "author": "单田芳",
+      "coverColor": "#744210",
+      "plays": "2.2万",
+      "rating": "100%"
+    },
+    {
+      "id": "audio_11",
+      "title": "一听就上瘾的资治通鉴",
+      "author": "听伴",
+      "coverColor": "#9B2C2C",
+      "plays": "35.4万",
+      "rating": "96.5%"
+    },
+    {
+      "id": "audio_12",
+      "title": "消失的孩子",
+      "author": "贝客观",
+      "coverColor": "#2D3748",
+      "plays": "10万",
+      "rating": "99%"
+    },
+    {
+      "id": "audio_13",
+      "title": "明朝那些事儿",
+      "author": "当年明月",
+      "coverColor": "#D69E2E",
+      "plays": "120.5万",
+      "rating": "98.2%"
+    },
+    {
+      "id": "audio_14",
+      "title": "三体（广播剧）",
+      "author": "刘慈欣",
+      "coverColor": "#111827",
+      "plays": "88万",
+      "rating": "99.5%"
+    },
+    {
+      "id": "audio_15",
+      "title": "鬼吹灯",
+      "author": "天下霸唱",
+      "coverColor": "#27272A",
+      "plays": "200万",
+      "rating": "97.8%"
+    },
+    {
+      "id": "audio_16",
+      "title": "盗墓笔记",
+      "author": "南派三叔",
+      "coverColor": "#1A202C",
+      "plays": "150万",
+      "rating": "96.5%"
+    },
+    {
+      "id": "audio_17",
+      "title": "西游记",
+      "author": "吴承恩",
+      "coverColor": "#C53030",
+      "plays": "30万",
+      "rating": "99%"
+    },
+    {
+      "id": "audio_18",
+      "title": "红楼梦",
+      "author": "曹雪芹",
+      "coverColor": "#9B2C2C",
+      "plays": "25万",
+      "rating": "99.5%"
+    },
+    {
+      "id": "audio_19",
+      "title": "活着",
+      "author": "余华",
+      "coverColor": "#E53E3E",
+      "plays": "40万",
+      "rating": "98.8%"
+    },
+    {
+      "id": "audio_20",
+      "title": "长安的荔枝",
+      "author": "马伯庸",
+      "coverColor": "#ED8936",
+      "plays": "15万",
+      "rating": "97.2%"
+    }
+  ],
+  "recommendations": [
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6"
+  ],
+  "shelf": [
+    {
+      "bookId": "60",
+      "isPrivate": true,
+      "addedAt": "2025-12-05T10:00:00"
+    },
+    {
+      "bookId": "4",
+      "isPrivate": false,
+      "addedAt": "2025-12-12T10:00:00"
+    },
+    {
+      "bookId": "30",
+      "isPrivate": false,
+      "addedAt": "2025-12-13T11:00:00"
+    },
+    {
+      "bookId": "65",
+      "isPrivate": false,
+      "addedAt": "2025-12-14T12:00:00"
+    },
+    {
+      "bookId": "66",
+      "isPrivate": false,
+      "addedAt": "2025-12-15T12:00:00"
+    },
+    {
+      "bookId": "67",
+      "isPrivate": false,
+      "addedAt": "2025-12-16T12:00:00"
+    }
+  ],
+  "bookProgress": {
+    "1": {
+      "bookId": "1",
+      "charOffset": 150000,
+      "lastReadAt": "2025-12-28T21:00:00"
+    },
+    "4": {
+      "bookId": "4",
+      "charOffset": 120000,
+      "lastReadAt": "2025-12-26T20:00:00"
+    },
+    "30": {
+      "bookId": "30",
+      "charOffset": 80000,
+      "lastReadAt": "2025-12-24T19:30:00"
+    },
+    "58": {
+      "bookId": "58",
+      "charOffset": 1200000,
+      "lastReadAt": "2025-12-25T21:00:00"
+    },
+    "60": {
+      "bookId": "60",
+      "charOffset": 50000,
+      "lastReadAt": "2025-12-20T21:00:00"
+    },
+    "65": {
+      "bookId": "65",
+      "charOffset": 200000,
+      "lastReadAt": "2025-12-23T18:00:00"
+    },
+    "66": {
+      "bookId": "66",
+      "charOffset": 50000,
+      "lastReadAt": "2025-12-22T10:15:00"
+    },
+    "67": {
+      "bookId": "67",
+      "charOffset": 30000,
+      "lastReadAt": "2025-12-21T14:20:00"
+    }
+  },
+  "readingRecords": [
+    {
+      "id": "week_2",
+      "key": "week_2",
+      "recordId": "week_2",
+      "bookId": "3",
+      "date": "-3h",
+      "duration": 30,
+      "timestamp": "-3h"
+    },
+    {
+      "id": "week_1",
+      "key": "week_1",
+      "recordId": "week_1",
+      "bookId": "2",
+      "date": "-1d3h",
+      "duration": 172,
+      "timestamp": "-1d3h"
+    },
+    {
+      "id": "week_0",
+      "key": "week_0",
+      "recordId": "week_0",
+      "bookId": "1",
+      "date": "-2d3h",
+      "duration": 45,
+      "timestamp": "-2d3h"
+    },
+    {
+      "id": "6643af13-62fc-4425-8320-75848ed9d6bc",
+      "key": "6643af13-62fc-4425-8320-75848ed9d6bc",
+      "recordId": "6643af13-62fc-4425-8320-75848ed9d6bc",
+      "bookId": "60",
+      "date": "-3d16h28m",
+      "duration": 48,
+      "timestamp": "-3d16h28m"
+    },
+    {
+      "id": "508ac531-f044-4239-8764-9a14f8e1741c",
+      "key": "508ac531-f044-4239-8764-9a14f8e1741c",
+      "recordId": "508ac531-f044-4239-8764-9a14f8e1741c",
+      "bookId": "10",
+      "date": "-3d5h39m",
+      "duration": 18,
+      "timestamp": "-3d5h39m"
+    },
+    {
+      "id": "0146a45a-3805-47fa-87f6-a321307dfe07",
+      "key": "0146a45a-3805-47fa-87f6-a321307dfe07",
+      "recordId": "0146a45a-3805-47fa-87f6-a321307dfe07",
+      "bookId": "14",
+      "date": "-5d5h38m",
+      "duration": 226,
+      "timestamp": "-5d5h38m"
+    },
+    {
+      "id": "d48577f0-8b55-4d8f-84f9-8f1ba7271484",
+      "key": "d48577f0-8b55-4d8f-84f9-8f1ba7271484",
+      "recordId": "d48577f0-8b55-4d8f-84f9-8f1ba7271484",
+      "bookId": "7",
+      "date": "-10d5h44m",
+      "duration": 39,
+      "timestamp": "-10d5h44m"
+    },
+    {
+      "id": "f77eeb4d-3dbb-4397-aa2f-f7a532ec4a5a",
+      "key": "f77eeb4d-3dbb-4397-aa2f-f7a532ec4a5a",
+      "recordId": "f77eeb4d-3dbb-4397-aa2f-f7a532ec4a5a",
+      "bookId": "20",
+      "date": "2026-01-24",
+      "duration": 63,
+      "timestamp": "2026-01-24T21:08:00"
+    },
+    {
+      "id": "245040b1-ce6d-46d5-a737-e1438425c5d5",
+      "key": "245040b1-ce6d-46d5-a737-e1438425c5d5",
+      "recordId": "245040b1-ce6d-46d5-a737-e1438425c5d5",
+      "bookId": "21",
+      "date": "2026-01-23",
+      "duration": 23,
+      "timestamp": "2026-01-23T21:58:00"
+    },
+    {
+      "id": "2bf3644f-860d-4a73-9fef-7926d5c47abc",
+      "key": "2bf3644f-860d-4a73-9fef-7926d5c47abc",
+      "recordId": "2bf3644f-860d-4a73-9fef-7926d5c47abc",
+      "bookId": "4",
+      "date": "2026-01-20",
+      "duration": 71,
+      "timestamp": "2026-01-20T21:51:00"
+    },
+    {
+      "id": "a52907f9-25e8-448b-9012-09d928896a04",
+      "key": "a52907f9-25e8-448b-9012-09d928896a04",
+      "recordId": "a52907f9-25e8-448b-9012-09d928896a04",
+      "bookId": "6",
+      "date": "2026-01-19",
+      "duration": 88,
+      "timestamp": "2026-01-19T21:23:00"
+    },
+    {
+      "id": "64bd794e-a950-47a5-aa49-ae74a977e3d4",
+      "key": "64bd794e-a950-47a5-aa49-ae74a977e3d4",
+      "recordId": "64bd794e-a950-47a5-aa49-ae74a977e3d4",
+      "bookId": "2",
+      "date": "2026-01-18",
+      "duration": 90,
+      "timestamp": "2026-01-18T21:33:00"
+    },
+    {
+      "id": "b32748ef-463b-4be9-a364-fa3c6b1a4fc3",
+      "key": "b32748ef-463b-4be9-a364-fa3c6b1a4fc3",
+      "recordId": "b32748ef-463b-4be9-a364-fa3c6b1a4fc3",
+      "bookId": "9",
+      "date": "2026-01-17",
+      "duration": 40,
+      "timestamp": "2026-01-17T10:28:00"
+    },
+    {
+      "id": "e28337fe-a689-48c2-9032-af761760d18f",
+      "key": "e28337fe-a689-48c2-9032-af761760d18f",
+      "recordId": "e28337fe-a689-48c2-9032-af761760d18f",
+      "bookId": "58",
+      "date": "2026-01-17",
+      "duration": 13,
+      "timestamp": "2026-01-17T21:29:00"
+    },
+    {
+      "id": "3f72ea0d-9b8e-4c97-b88f-b25ec3776bf7",
+      "key": "3f72ea0d-9b8e-4c97-b88f-b25ec3776bf7",
+      "recordId": "3f72ea0d-9b8e-4c97-b88f-b25ec3776bf7",
+      "bookId": "12",
+      "date": "2026-01-16",
+      "duration": 37,
+      "timestamp": "2026-01-16T21:44:00"
+    },
+    {
+      "id": "beb169d2-5779-4e04-818e-9a0e6888152d",
+      "key": "beb169d2-5779-4e04-818e-9a0e6888152d",
+      "recordId": "beb169d2-5779-4e04-818e-9a0e6888152d",
+      "bookId": "3",
+      "date": "2026-01-15",
+      "duration": 40,
+      "timestamp": "2026-01-15T21:00:00"
+    },
+    {
+      "id": "5edd8ad9-2169-4cb3-8d6e-4d63b8d5bd05",
+      "key": "5edd8ad9-2169-4cb3-8d6e-4d63b8d5bd05",
+      "recordId": "5edd8ad9-2169-4cb3-8d6e-4d63b8d5bd05",
+      "bookId": "4",
+      "date": "2026-01-14",
+      "duration": 51,
+      "timestamp": "2026-01-14T21:45:00"
+    },
+    {
+      "id": "8f053c12-b6d6-4900-8167-1039a7190b94",
+      "key": "8f053c12-b6d6-4900-8167-1039a7190b94",
+      "recordId": "8f053c12-b6d6-4900-8167-1039a7190b94",
+      "bookId": "4",
+      "date": "2026-01-12",
+      "duration": 87,
+      "timestamp": "2026-01-12T10:37:00"
+    },
+    {
+      "id": "5165681f-ad97-4321-aba8-3d2178ededf5",
+      "key": "5165681f-ad97-4321-aba8-3d2178ededf5",
+      "recordId": "5165681f-ad97-4321-aba8-3d2178ededf5",
+      "bookId": "30",
+      "date": "2026-01-12",
+      "duration": 72,
+      "timestamp": "2026-01-12T21:13:00"
+    },
+    {
+      "id": "908d65e5-4b24-4b0b-9d9d-f80cb54a9f89",
+      "key": "908d65e5-4b24-4b0b-9d9d-f80cb54a9f89",
+      "recordId": "908d65e5-4b24-4b0b-9d9d-f80cb54a9f89",
+      "bookId": "8",
+      "date": "2026-01-10",
+      "duration": 54,
+      "timestamp": "2026-01-10T21:31:00"
+    },
+    {
+      "id": "dddcd9a1-bfe7-4546-9370-5bb61bbe83dc",
+      "key": "dddcd9a1-bfe7-4546-9370-5bb61bbe83dc",
+      "recordId": "dddcd9a1-bfe7-4546-9370-5bb61bbe83dc",
+      "bookId": "60",
+      "date": "2026-01-09",
+      "duration": 185,
+      "timestamp": "2026-01-09T21:44:00"
+    },
+    {
+      "id": "86091b25-9358-4ff3-bcf7-c9b1108edabe",
+      "key": "86091b25-9358-4ff3-bcf7-c9b1108edabe",
+      "recordId": "86091b25-9358-4ff3-bcf7-c9b1108edabe",
+      "bookId": "12",
+      "date": "2026-01-07",
+      "duration": 49,
+      "timestamp": "2026-01-07T21:09:00"
+    },
+    {
+      "id": "965593e3-3c41-49e3-832c-5a652902938f",
+      "key": "965593e3-3c41-49e3-832c-5a652902938f",
+      "recordId": "965593e3-3c41-49e3-832c-5a652902938f",
+      "bookId": "8",
+      "date": "2026-01-06",
+      "duration": 133,
+      "timestamp": "2026-01-06T21:25:00"
+    },
+    {
+      "id": "268164de-75ae-45af-9b5a-4b95c45ae2fc",
+      "key": "268164de-75ae-45af-9b5a-4b95c45ae2fc",
+      "recordId": "268164de-75ae-45af-9b5a-4b95c45ae2fc",
+      "bookId": "11",
+      "date": "2026-01-05",
+      "duration": 31,
+      "timestamp": "2026-01-05T21:05:00"
+    },
+    {
+      "id": "8231aca9-0fff-4614-a7de-276d8e512291",
+      "key": "8231aca9-0fff-4614-a7de-276d8e512291",
+      "recordId": "8231aca9-0fff-4614-a7de-276d8e512291",
+      "bookId": "1",
+      "date": "2026-01-04",
+      "duration": 93,
+      "timestamp": "2026-01-04T21:50:00"
+    },
+    {
+      "id": "de9b4c13-6e3a-4803-8de0-4f5d7776b3d9",
+      "key": "de9b4c13-6e3a-4803-8de0-4f5d7776b3d9",
+      "recordId": "de9b4c13-6e3a-4803-8de0-4f5d7776b3d9",
+      "bookId": "6",
+      "date": "2026-01-03",
+      "duration": 50,
+      "timestamp": "2026-01-03T10:05:00"
+    },
+    {
+      "id": "83207813-d27a-45b0-8fce-9bcf1baf775f",
+      "key": "83207813-d27a-45b0-8fce-9bcf1baf775f",
+      "recordId": "83207813-d27a-45b0-8fce-9bcf1baf775f",
+      "bookId": "20",
+      "date": "2026-01-03",
+      "duration": 177,
+      "timestamp": "2026-01-03T21:59:00"
+    },
+    {
+      "id": "92adf782-92c7-4df9-b107-e8e60c0e3051",
+      "key": "92adf782-92c7-4df9-b107-e8e60c0e3051",
+      "recordId": "92adf782-92c7-4df9-b107-e8e60c0e3051",
+      "bookId": "3",
+      "date": "2026-01-01",
+      "duration": 55,
+      "timestamp": "2026-01-01T21:33:00"
+    },
+    {
+      "id": "727391e8-62dc-4545-a397-ead432bd7ac3",
+      "key": "727391e8-62dc-4545-a397-ead432bd7ac3",
+      "recordId": "727391e8-62dc-4545-a397-ead432bd7ac3",
+      "bookId": "2",
+      "date": "2025-12-31",
+      "duration": 5,
+      "timestamp": "2025-12-31T21:41:00"
+    },
+    {
+      "id": "1cace8c3-1dd3-4ba8-8152-f8e2e183b71b",
+      "key": "1cace8c3-1dd3-4ba8-8152-f8e2e183b71b",
+      "recordId": "1cace8c3-1dd3-4ba8-8152-f8e2e183b71b",
+      "bookId": "3",
+      "date": "2025-12-30",
+      "duration": 71,
+      "timestamp": "2025-12-30T21:39:00"
+    },
+    {
+      "id": "47ecbdba-6d01-4ac6-af86-88b0c718ec13",
+      "key": "47ecbdba-6d01-4ac6-af86-88b0c718ec13",
+      "recordId": "47ecbdba-6d01-4ac6-af86-88b0c718ec13",
+      "bookId": "60",
+      "date": "2025-12-26",
+      "duration": 187,
+      "timestamp": "2025-12-26T21:08:00"
+    },
+    {
+      "id": "2241052b-dcd3-4e85-97ab-dc807a4050f8",
+      "key": "2241052b-dcd3-4e85-97ab-dc807a4050f8",
+      "recordId": "2241052b-dcd3-4e85-97ab-dc807a4050f8",
+      "bookId": "15",
+      "date": "2025-12-25",
+      "duration": 11,
+      "timestamp": "2025-12-25T21:10:00"
+    },
+    {
+      "id": "ce650c9b-a98e-4779-816a-c071af9e4280",
+      "key": "ce650c9b-a98e-4779-816a-c071af9e4280",
+      "recordId": "ce650c9b-a98e-4779-816a-c071af9e4280",
+      "bookId": "2",
+      "date": "2025-12-23",
+      "duration": 114,
+      "timestamp": "2025-12-23T21:27:00"
+    },
+    {
+      "id": "f3488cf7-186f-4880-a4f1-74a00dcad024",
+      "key": "f3488cf7-186f-4880-a4f1-74a00dcad024",
+      "recordId": "f3488cf7-186f-4880-a4f1-74a00dcad024",
+      "bookId": "1",
+      "date": "2025-12-22",
+      "duration": 166,
+      "timestamp": "2025-12-22T21:23:00"
+    },
+    {
+      "id": "b4715786-8074-4e74-8f4c-dff2b6bf9598",
+      "key": "b4715786-8074-4e74-8f4c-dff2b6bf9598",
+      "recordId": "b4715786-8074-4e74-8f4c-dff2b6bf9598",
+      "bookId": "30",
+      "date": "2025-12-21",
+      "duration": 83,
+      "timestamp": "2025-12-21T21:10:00"
+    },
+    {
+      "id": "2751ceb8-0cb0-43e2-9a69-976b8b3f6234",
+      "key": "2751ceb8-0cb0-43e2-9a69-976b8b3f6234",
+      "recordId": "2751ceb8-0cb0-43e2-9a69-976b8b3f6234",
+      "bookId": "58",
+      "date": "2025-12-18",
+      "duration": 58,
+      "timestamp": "2025-12-18T21:10:00"
+    },
+    {
+      "id": "3b255429-297f-4436-9dc4-753c5b51891b",
+      "key": "3b255429-297f-4436-9dc4-753c5b51891b",
+      "recordId": "3b255429-297f-4436-9dc4-753c5b51891b",
+      "bookId": "13",
+      "date": "2025-12-17",
+      "duration": 96,
+      "timestamp": "2025-12-17T10:21:00"
+    },
+    {
+      "id": "511cec94-cae1-48a5-b872-868818f6711d",
+      "key": "511cec94-cae1-48a5-b872-868818f6711d",
+      "recordId": "511cec94-cae1-48a5-b872-868818f6711d",
+      "bookId": "20",
+      "date": "2025-12-17",
+      "duration": 78,
+      "timestamp": "2025-12-17T21:51:00"
+    },
+    {
+      "id": "d8c87305-5ab9-4b93-ad02-9a00d672ef68",
+      "key": "d8c87305-5ab9-4b93-ad02-9a00d672ef68",
+      "recordId": "d8c87305-5ab9-4b93-ad02-9a00d672ef68",
+      "bookId": "6",
+      "date": "2025-12-15",
+      "duration": 16,
+      "timestamp": "2025-12-15T21:58:00"
+    },
+    {
+      "id": "1db03105-6753-4183-95a2-5f7554f52f9d",
+      "key": "1db03105-6753-4183-95a2-5f7554f52f9d",
+      "recordId": "1db03105-6753-4183-95a2-5f7554f52f9d",
+      "bookId": "1",
+      "date": "2025-12-13",
+      "duration": 56,
+      "timestamp": "2025-12-13T21:00:00"
+    },
+    {
+      "id": "6e69c225-ba3b-42ca-8c07-9180190f40de",
+      "key": "6e69c225-ba3b-42ca-8c07-9180190f40de",
+      "recordId": "6e69c225-ba3b-42ca-8c07-9180190f40de",
+      "bookId": "21",
+      "date": "2025-12-12",
+      "duration": 83,
+      "timestamp": "2025-12-12T21:33:00"
+    },
+    {
+      "id": "d7f264ba-3fec-46bb-b64c-0cb3abdf9e21",
+      "key": "d7f264ba-3fec-46bb-b64c-0cb3abdf9e21",
+      "recordId": "d7f264ba-3fec-46bb-b64c-0cb3abdf9e21",
+      "bookId": "10",
+      "date": "2025-12-11",
+      "duration": 48,
+      "timestamp": "2025-12-11T21:06:00"
+    },
+    {
+      "id": "7c06de82-a1d6-48d1-9cba-c6b7ae95cbda",
+      "key": "7c06de82-a1d6-48d1-9cba-c6b7ae95cbda",
+      "recordId": "7c06de82-a1d6-48d1-9cba-c6b7ae95cbda",
+      "bookId": "30",
+      "date": "2025-12-10",
+      "duration": 19,
+      "timestamp": "2025-12-10T21:33:00"
+    },
+    {
+      "id": "8c239afb-2e7d-4ba9-b3df-352b2adb0a34",
+      "key": "8c239afb-2e7d-4ba9-b3df-352b2adb0a34",
+      "recordId": "8c239afb-2e7d-4ba9-b3df-352b2adb0a34",
+      "bookId": "2",
+      "date": "2025-12-08",
+      "duration": 44,
+      "timestamp": "2025-12-08T21:15:00"
+    },
+    {
+      "id": "7603594a-a5e6-4d0f-b45b-95b603472545",
+      "key": "7603594a-a5e6-4d0f-b45b-95b603472545",
+      "recordId": "7603594a-a5e6-4d0f-b45b-95b603472545",
+      "bookId": "13",
+      "date": "2025-12-06",
+      "duration": 51,
+      "timestamp": "2025-12-06T21:56:00"
+    },
+    {
+      "id": "c6f26504-8452-4b1f-8828-74e60df2f8c8",
+      "key": "c6f26504-8452-4b1f-8828-74e60df2f8c8",
+      "recordId": "c6f26504-8452-4b1f-8828-74e60df2f8c8",
+      "bookId": "6",
+      "date": "2025-12-05",
+      "duration": 39,
+      "timestamp": "2025-12-05T21:55:00"
+    },
+    {
+      "id": "2e07e6e0-52eb-4ea7-a2f0-d8cc97244282",
+      "key": "2e07e6e0-52eb-4ea7-a2f0-d8cc97244282",
+      "recordId": "2e07e6e0-52eb-4ea7-a2f0-d8cc97244282",
+      "bookId": "3",
+      "date": "2025-12-04",
+      "duration": 70,
+      "timestamp": "2025-12-04T21:15:00"
+    },
+    {
+      "id": "459c9f46-a221-405a-8399-51f37b91f517",
+      "key": "459c9f46-a221-405a-8399-51f37b91f517",
+      "recordId": "459c9f46-a221-405a-8399-51f37b91f517",
+      "bookId": "6",
+      "date": "2025-12-03",
+      "duration": 26,
+      "timestamp": "2025-12-03T21:59:00"
+    },
+    {
+      "id": "82039ffb-eeae-46e9-8f26-3d27840fc41f",
+      "key": "82039ffb-eeae-46e9-8f26-3d27840fc41f",
+      "recordId": "82039ffb-eeae-46e9-8f26-3d27840fc41f",
+      "bookId": "13",
+      "date": "2025-12-01",
+      "duration": 54,
+      "timestamp": "2025-12-01T10:52:00"
+    },
+    {
+      "id": "c102d361-0776-4438-af10-40c1b9865177",
+      "key": "c102d361-0776-4438-af10-40c1b9865177",
+      "recordId": "c102d361-0776-4438-af10-40c1b9865177",
+      "bookId": "11",
+      "date": "2025-12-01",
+      "duration": 162,
+      "timestamp": "2025-12-01T21:27:00"
+    },
+    {
+      "id": "5fbe204a-7553-44cd-8d3f-656415361533",
+      "key": "5fbe204a-7553-44cd-8d3f-656415361533",
+      "recordId": "5fbe204a-7553-44cd-8d3f-656415361533",
+      "bookId": "11",
+      "date": "2025-11-30",
+      "duration": 192,
+      "timestamp": "2025-11-30T21:33:00"
+    },
+    {
+      "id": "d669419e-5aec-4dff-b8b5-cd67716b3495",
+      "key": "d669419e-5aec-4dff-b8b5-cd67716b3495",
+      "recordId": "d669419e-5aec-4dff-b8b5-cd67716b3495",
+      "bookId": "8",
+      "date": "2025-11-29",
+      "duration": 38,
+      "timestamp": "2025-11-29T21:57:00"
+    },
+    {
+      "id": "20a94d97-a86e-443a-a5f1-a8d6138ce19a",
+      "key": "20a94d97-a86e-443a-a5f1-a8d6138ce19a",
+      "recordId": "20a94d97-a86e-443a-a5f1-a8d6138ce19a",
+      "bookId": "13",
+      "date": "2025-11-28",
+      "duration": 84,
+      "timestamp": "2025-11-28T21:51:00"
+    },
+    {
+      "id": "d6074c03-a01b-4695-984b-dd104ac45b31",
+      "key": "d6074c03-a01b-4695-984b-dd104ac45b31",
+      "recordId": "d6074c03-a01b-4695-984b-dd104ac45b31",
+      "bookId": "8",
+      "date": "2025-11-26",
+      "duration": 90,
+      "timestamp": "2025-11-26T21:12:00"
+    },
+    {
+      "id": "1567bc45-5e32-4f62-b73b-4c04a3a1cff5",
+      "key": "1567bc45-5e32-4f62-b73b-4c04a3a1cff5",
+      "recordId": "1567bc45-5e32-4f62-b73b-4c04a3a1cff5",
+      "bookId": "20",
+      "date": "2025-11-25",
+      "duration": 25,
+      "timestamp": "2025-11-25T21:53:00"
+    },
+    {
+      "id": "70f5de88-c6aa-497a-bb48-971ed3f174f7",
+      "key": "70f5de88-c6aa-497a-bb48-971ed3f174f7",
+      "recordId": "70f5de88-c6aa-497a-bb48-971ed3f174f7",
+      "bookId": "1",
+      "date": "2025-11-24",
+      "duration": 193,
+      "timestamp": "2025-11-24T21:01:00"
+    },
+    {
+      "id": "761c2139-f502-48b1-af84-da270d8412e0",
+      "key": "761c2139-f502-48b1-af84-da270d8412e0",
+      "recordId": "761c2139-f502-48b1-af84-da270d8412e0",
+      "bookId": "20",
+      "date": "2025-11-23",
+      "duration": 41,
+      "timestamp": "2025-11-23T10:41:00"
+    },
+    {
+      "id": "db3997be-0819-4927-adce-13feb92b8158",
+      "key": "db3997be-0819-4927-adce-13feb92b8158",
+      "recordId": "db3997be-0819-4927-adce-13feb92b8158",
+      "bookId": "11",
+      "date": "2025-11-23",
+      "duration": 69,
+      "timestamp": "2025-11-23T21:58:00"
+    },
+    {
+      "id": "d27618e8-cd7d-4106-b29c-e6de5ce2ca0b",
+      "key": "d27618e8-cd7d-4106-b29c-e6de5ce2ca0b",
+      "recordId": "d27618e8-cd7d-4106-b29c-e6de5ce2ca0b",
+      "bookId": "9",
+      "date": "2025-11-22",
+      "duration": 88,
+      "timestamp": "2025-11-22T21:35:00"
+    },
+    {
+      "id": "baeed17d-3886-4ad7-996d-46bc616031ee",
+      "key": "baeed17d-3886-4ad7-996d-46bc616031ee",
+      "recordId": "baeed17d-3886-4ad7-996d-46bc616031ee",
+      "bookId": "11",
+      "date": "2025-11-21",
+      "duration": 29,
+      "timestamp": "2025-11-21T21:29:00"
+    },
+    {
+      "id": "d4df9a03-fde3-42ce-bd5b-ba03628a2b92",
+      "key": "d4df9a03-fde3-42ce-bd5b-ba03628a2b92",
+      "recordId": "d4df9a03-fde3-42ce-bd5b-ba03628a2b92",
+      "bookId": "30",
+      "date": "2025-11-20",
+      "duration": 239,
+      "timestamp": "2025-11-20T21:30:00"
+    },
+    {
+      "id": "6e7165c0-0ccc-43c8-aabc-f7319076efdc",
+      "key": "6e7165c0-0ccc-43c8-aabc-f7319076efdc",
+      "recordId": "6e7165c0-0ccc-43c8-aabc-f7319076efdc",
+      "bookId": "21",
+      "date": "2025-11-17",
+      "duration": 82,
+      "timestamp": "2025-11-17T21:42:00"
+    },
+    {
+      "id": "d569e75c-bec1-4f0d-b53e-066e6de758e1",
+      "key": "d569e75c-bec1-4f0d-b53e-066e6de758e1",
+      "recordId": "d569e75c-bec1-4f0d-b53e-066e6de758e1",
+      "bookId": "3",
+      "date": "2025-11-16",
+      "duration": 25,
+      "timestamp": "2025-11-16T21:07:00"
+    },
+    {
+      "id": "0443affc-4c0e-4aea-9d72-62868d7c0c7a",
+      "key": "0443affc-4c0e-4aea-9d72-62868d7c0c7a",
+      "recordId": "0443affc-4c0e-4aea-9d72-62868d7c0c7a",
+      "bookId": "20",
+      "date": "2025-11-15",
+      "duration": 49,
+      "timestamp": "2025-11-15T21:03:00"
+    },
+    {
+      "id": "17d6ba6a-0df1-428a-824f-06ab03131583",
+      "key": "17d6ba6a-0df1-428a-824f-06ab03131583",
+      "recordId": "17d6ba6a-0df1-428a-824f-06ab03131583",
+      "bookId": "14",
+      "date": "2025-11-12",
+      "duration": 83,
+      "timestamp": "2025-11-12T21:58:00"
+    },
+    {
+      "id": "0f4df1b1-fa24-45c2-8eef-5ebbc20b3170",
+      "key": "0f4df1b1-fa24-45c2-8eef-5ebbc20b3170",
+      "recordId": "0f4df1b1-fa24-45c2-8eef-5ebbc20b3170",
+      "bookId": "2",
+      "date": "2025-11-11",
+      "duration": 16,
+      "timestamp": "2025-11-11T21:52:00"
+    },
+    {
+      "id": "c16b70ef-3a14-4369-ae10-d58eb3b2ec40",
+      "key": "c16b70ef-3a14-4369-ae10-d58eb3b2ec40",
+      "recordId": "c16b70ef-3a14-4369-ae10-d58eb3b2ec40",
+      "bookId": "58",
+      "date": "2025-11-09",
+      "duration": 107,
+      "timestamp": "2025-11-09T21:32:00"
+    },
+    {
+      "id": "327d0668-7a5a-4a87-b51a-0a005a56bd87",
+      "key": "327d0668-7a5a-4a87-b51a-0a005a56bd87",
+      "recordId": "327d0668-7a5a-4a87-b51a-0a005a56bd87",
+      "bookId": "20",
+      "date": "2025-11-07",
+      "duration": 165,
+      "timestamp": "2025-11-07T21:20:00"
+    },
+    {
+      "id": "99dc1835-8030-45b7-b308-3d4e6e3f8110",
+      "key": "99dc1835-8030-45b7-b308-3d4e6e3f8110",
+      "recordId": "99dc1835-8030-45b7-b308-3d4e6e3f8110",
+      "bookId": "3",
+      "date": "2025-11-06",
+      "duration": 27,
+      "timestamp": "2025-11-06T21:53:00"
+    },
+    {
+      "id": "1dd7a59f-1e8d-4584-bc61-e53f3baeded4",
+      "key": "1dd7a59f-1e8d-4584-bc61-e53f3baeded4",
+      "recordId": "1dd7a59f-1e8d-4584-bc61-e53f3baeded4",
+      "bookId": "2",
+      "date": "2025-11-04",
+      "duration": 74,
+      "timestamp": "2025-11-04T21:09:00"
+    },
+    {
+      "id": "6dc41f43-5841-41e4-9e89-ef789268370a",
+      "key": "6dc41f43-5841-41e4-9e89-ef789268370a",
+      "recordId": "6dc41f43-5841-41e4-9e89-ef789268370a",
+      "bookId": "9",
+      "date": "2025-11-03",
+      "duration": 54,
+      "timestamp": "2025-11-03T21:33:00"
+    },
+    {
+      "id": "d4438235-a97d-4ff7-8d08-325d67bae67e",
+      "key": "d4438235-a97d-4ff7-8d08-325d67bae67e",
+      "recordId": "d4438235-a97d-4ff7-8d08-325d67bae67e",
+      "bookId": "11",
+      "date": "2025-11-01",
+      "duration": 56,
+      "timestamp": "2025-11-01T21:39:00"
+    },
+    {
+      "id": "10a6d9fa-38ed-4544-8c66-512db631e0a1",
+      "key": "10a6d9fa-38ed-4544-8c66-512db631e0a1",
+      "recordId": "10a6d9fa-38ed-4544-8c66-512db631e0a1",
+      "bookId": "4",
+      "date": "2025-10-31",
+      "duration": 72,
+      "timestamp": "2025-10-31T21:31:00"
+    },
+    {
+      "id": "05810cce-227f-4cf1-93ae-928763462a66",
+      "key": "05810cce-227f-4cf1-93ae-928763462a66",
+      "recordId": "05810cce-227f-4cf1-93ae-928763462a66",
+      "bookId": "1",
+      "date": "2025-10-30",
+      "duration": 45,
+      "timestamp": "2025-10-30T21:20:00"
+    },
+    {
+      "id": "b0337288-2352-4a9e-9fb2-f52d8feeffa6",
+      "key": "b0337288-2352-4a9e-9fb2-f52d8feeffa6",
+      "recordId": "b0337288-2352-4a9e-9fb2-f52d8feeffa6",
+      "bookId": "21",
+      "date": "2025-10-29",
+      "duration": 5,
+      "timestamp": "2025-10-29T21:58:00"
+    },
+    {
+      "id": "97ce35f6-2d9a-46ae-85ad-9e18faf984cd",
+      "key": "97ce35f6-2d9a-46ae-85ad-9e18faf984cd",
+      "recordId": "97ce35f6-2d9a-46ae-85ad-9e18faf984cd",
+      "bookId": "8",
+      "date": "2025-10-28",
+      "duration": 171,
+      "timestamp": "2025-10-28T21:58:00"
+    },
+    {
+      "id": "3c83e8d0-7579-4add-ac8d-07e3637adf3c",
+      "key": "3c83e8d0-7579-4add-ac8d-07e3637adf3c",
+      "recordId": "3c83e8d0-7579-4add-ac8d-07e3637adf3c",
+      "bookId": "14",
+      "date": "2025-10-27",
+      "duration": 23,
+      "timestamp": "2025-10-27T21:50:00"
+    },
+    {
+      "id": "a2319e4a-1478-46b0-99a9-3fa16c6eab81",
+      "key": "a2319e4a-1478-46b0-99a9-3fa16c6eab81",
+      "recordId": "a2319e4a-1478-46b0-99a9-3fa16c6eab81",
+      "bookId": "20",
+      "date": "2025-10-26",
+      "duration": 178,
+      "timestamp": "2025-10-26T21:29:00"
+    },
+    {
+      "id": "e813e8e0-e42a-44d1-a179-2691357829ed",
+      "key": "e813e8e0-e42a-44d1-a179-2691357829ed",
+      "recordId": "e813e8e0-e42a-44d1-a179-2691357829ed",
+      "bookId": "13",
+      "date": "2025-10-25",
+      "duration": 19,
+      "timestamp": "2025-10-25T21:55:00"
+    },
+    {
+      "id": "82bc43b6-2fec-456d-a813-a085ad02b0b3",
+      "key": "82bc43b6-2fec-456d-a813-a085ad02b0b3",
+      "recordId": "82bc43b6-2fec-456d-a813-a085ad02b0b3",
+      "bookId": "7",
+      "date": "2025-10-24",
+      "duration": 83,
+      "timestamp": "2025-10-24T21:35:00"
+    },
+    {
+      "id": "df19e365-c169-4431-bd95-ccd5392c6c07",
+      "key": "df19e365-c169-4431-bd95-ccd5392c6c07",
+      "recordId": "df19e365-c169-4431-bd95-ccd5392c6c07",
+      "bookId": "30",
+      "date": "2025-10-22",
+      "duration": 86,
+      "timestamp": "2025-10-22T10:17:00"
+    },
+    {
+      "id": "fc6fcb8e-8191-494b-a627-042dca909206",
+      "key": "fc6fcb8e-8191-494b-a627-042dca909206",
+      "recordId": "fc6fcb8e-8191-494b-a627-042dca909206",
+      "bookId": "9",
+      "date": "2025-10-22",
+      "duration": 222,
+      "timestamp": "2025-10-22T21:01:00"
+    },
+    {
+      "id": "1056878c-2b30-4116-b578-d2cb3132642e",
+      "key": "1056878c-2b30-4116-b578-d2cb3132642e",
+      "recordId": "1056878c-2b30-4116-b578-d2cb3132642e",
+      "bookId": "4",
+      "date": "2025-10-20",
+      "duration": 207,
+      "timestamp": "2025-10-20T21:46:00"
+    },
+    {
+      "id": "ff1f4d0f-2237-4318-814d-8f54744be316",
+      "key": "ff1f4d0f-2237-4318-814d-8f54744be316",
+      "recordId": "ff1f4d0f-2237-4318-814d-8f54744be316",
+      "bookId": "5",
+      "date": "2025-10-19",
+      "duration": 7,
+      "timestamp": "2025-10-19T21:57:00"
+    },
+    {
+      "id": "d99733d3-c472-405d-bc72-21bc335a687f",
+      "key": "d99733d3-c472-405d-bc72-21bc335a687f",
+      "recordId": "d99733d3-c472-405d-bc72-21bc335a687f",
+      "bookId": "9",
+      "date": "2025-10-18",
+      "duration": 98,
+      "timestamp": "2025-10-18T21:37:00"
+    },
+    {
+      "id": "17953be5-d751-498f-9cc0-c2c36eefb1cd",
+      "key": "17953be5-d751-498f-9cc0-c2c36eefb1cd",
+      "recordId": "17953be5-d751-498f-9cc0-c2c36eefb1cd",
+      "bookId": "58",
+      "date": "2025-10-17",
+      "duration": 23,
+      "timestamp": "2025-10-17T21:57:00"
+    },
+    {
+      "id": "6d5250b5-998f-4b53-8187-fce2a03a06f2",
+      "key": "6d5250b5-998f-4b53-8187-fce2a03a06f2",
+      "recordId": "6d5250b5-998f-4b53-8187-fce2a03a06f2",
+      "bookId": "9",
+      "date": "2025-10-16",
+      "duration": 70,
+      "timestamp": "2025-10-16T21:56:00"
+    },
+    {
+      "id": "26da587d-f49a-4d95-a36a-548d39224bad",
+      "key": "26da587d-f49a-4d95-a36a-548d39224bad",
+      "recordId": "26da587d-f49a-4d95-a36a-548d39224bad",
+      "bookId": "15",
+      "date": "2025-10-15",
+      "duration": 8,
+      "timestamp": "2025-10-15T21:54:00"
+    },
+    {
+      "id": "8840ce8d-72e0-4799-a2fd-95c70ca8ba7b",
+      "key": "8840ce8d-72e0-4799-a2fd-95c70ca8ba7b",
+      "recordId": "8840ce8d-72e0-4799-a2fd-95c70ca8ba7b",
+      "bookId": "9",
+      "date": "2025-10-14",
+      "duration": 38,
+      "timestamp": "2025-10-14T21:43:00"
+    },
+    {
+      "id": "3ce1b583-e7f0-41d5-b971-ab8c89c0b35e",
+      "key": "3ce1b583-e7f0-41d5-b971-ab8c89c0b35e",
+      "recordId": "3ce1b583-e7f0-41d5-b971-ab8c89c0b35e",
+      "bookId": "7",
+      "date": "2025-10-09",
+      "duration": 80,
+      "timestamp": "2025-10-09T21:31:00"
+    },
+    {
+      "id": "ffd4a459-5c76-47c2-a5e9-0ab957671c55",
+      "key": "ffd4a459-5c76-47c2-a5e9-0ab957671c55",
+      "recordId": "ffd4a459-5c76-47c2-a5e9-0ab957671c55",
+      "bookId": "8",
+      "date": "2025-10-08",
+      "duration": 37,
+      "timestamp": "2025-10-08T21:50:00"
+    },
+    {
+      "id": "096462f9-a4de-4570-950b-a43e05edf35c",
+      "key": "096462f9-a4de-4570-950b-a43e05edf35c",
+      "recordId": "096462f9-a4de-4570-950b-a43e05edf35c",
+      "bookId": "7",
+      "date": "2025-10-06",
+      "duration": 52,
+      "timestamp": "2025-10-06T10:13:00"
+    },
+    {
+      "id": "3a9aae00-d957-48ec-acc9-4bd9a0ccc246",
+      "key": "3a9aae00-d957-48ec-acc9-4bd9a0ccc246",
+      "recordId": "3a9aae00-d957-48ec-acc9-4bd9a0ccc246",
+      "bookId": "5",
+      "date": "2025-10-06",
+      "duration": 13,
+      "timestamp": "2025-10-06T21:35:00"
+    },
+    {
+      "id": "2b6627a2-fef9-4077-8f84-d99a05610f6f",
+      "key": "2b6627a2-fef9-4077-8f84-d99a05610f6f",
+      "recordId": "2b6627a2-fef9-4077-8f84-d99a05610f6f",
+      "bookId": "21",
+      "date": "2025-10-05",
+      "duration": 52,
+      "timestamp": "2025-10-05T21:22:00"
+    },
+    {
+      "id": "ae221775-20ed-4d7c-8d58-e10bbb1ba659",
+      "key": "ae221775-20ed-4d7c-8d58-e10bbb1ba659",
+      "recordId": "ae221775-20ed-4d7c-8d58-e10bbb1ba659",
+      "bookId": "5",
+      "date": "2025-10-03",
+      "duration": 192,
+      "timestamp": "2025-10-03T21:42:00"
+    },
+    {
+      "id": "63d2b088-c85c-42ef-94b3-7826843f4694",
+      "key": "63d2b088-c85c-42ef-94b3-7826843f4694",
+      "recordId": "63d2b088-c85c-42ef-94b3-7826843f4694",
+      "bookId": "9",
+      "date": "2025-10-02",
+      "duration": 32,
+      "timestamp": "2025-10-02T21:03:00"
+    },
+    {
+      "id": "b5199c27-221a-42f7-b0c0-36b6af5e3910",
+      "key": "b5199c27-221a-42f7-b0c0-36b6af5e3910",
+      "recordId": "b5199c27-221a-42f7-b0c0-36b6af5e3910",
+      "bookId": "13",
+      "date": "2025-10-01",
+      "duration": 29,
+      "timestamp": "2025-10-01T21:07:00"
+    },
+    {
+      "id": "b625b3ed-2a74-46c5-8524-044283d8a9bc",
+      "key": "b625b3ed-2a74-46c5-8524-044283d8a9bc",
+      "recordId": "b625b3ed-2a74-46c5-8524-044283d8a9bc",
+      "bookId": "7",
+      "date": "2025-09-29",
+      "duration": 15,
+      "timestamp": "2025-09-29T21:30:00"
+    },
+    {
+      "id": "374eb300-2f83-4a0c-8064-18433817e0c0",
+      "key": "374eb300-2f83-4a0c-8064-18433817e0c0",
+      "recordId": "374eb300-2f83-4a0c-8064-18433817e0c0",
+      "bookId": "14",
+      "date": "2025-09-26",
+      "duration": 50,
+      "timestamp": "2025-09-26T10:24:00"
+    },
+    {
+      "id": "48dfb417-6883-4834-b8a9-f8d7b198ff43",
+      "key": "48dfb417-6883-4834-b8a9-f8d7b198ff43",
+      "recordId": "48dfb417-6883-4834-b8a9-f8d7b198ff43",
+      "bookId": "13",
+      "date": "2025-09-26",
+      "duration": 75,
+      "timestamp": "2025-09-26T21:58:00"
+    },
+    {
+      "id": "b61d47f0-d3a1-4f32-9d0e-48d577e98cf0",
+      "key": "b61d47f0-d3a1-4f32-9d0e-48d577e98cf0",
+      "recordId": "b61d47f0-d3a1-4f32-9d0e-48d577e98cf0",
+      "bookId": "7",
+      "date": "2025-09-25",
+      "duration": 17,
+      "timestamp": "2025-09-25T10:20:00"
+    },
+    {
+      "id": "1bb42013-4a98-42ab-ae1c-0b8fa39a353e",
+      "key": "1bb42013-4a98-42ab-ae1c-0b8fa39a353e",
+      "recordId": "1bb42013-4a98-42ab-ae1c-0b8fa39a353e",
+      "bookId": "5",
+      "date": "2025-09-25",
+      "duration": 31,
+      "timestamp": "2025-09-25T21:25:00"
+    },
+    {
+      "id": "b1cd158b-c2f9-49dc-82a7-8cfaebfd6416",
+      "key": "b1cd158b-c2f9-49dc-82a7-8cfaebfd6416",
+      "recordId": "b1cd158b-c2f9-49dc-82a7-8cfaebfd6416",
+      "bookId": "60",
+      "date": "2025-09-24",
+      "duration": 18,
+      "timestamp": "2025-09-24T21:59:00"
+    },
+    {
+      "id": "0e146acf-41c5-4999-b495-18a0613464b0",
+      "key": "0e146acf-41c5-4999-b495-18a0613464b0",
+      "recordId": "0e146acf-41c5-4999-b495-18a0613464b0",
+      "bookId": "58",
+      "date": "2025-09-23",
+      "duration": 10,
+      "timestamp": "2025-09-23T21:01:00"
+    },
+    {
+      "id": "6ea9b7b9-fe8a-43f1-bde6-9d72f128499d",
+      "key": "6ea9b7b9-fe8a-43f1-bde6-9d72f128499d",
+      "recordId": "6ea9b7b9-fe8a-43f1-bde6-9d72f128499d",
+      "bookId": "9",
+      "date": "2025-09-20",
+      "duration": 11,
+      "timestamp": "2025-09-20T21:40:00"
+    },
+    {
+      "id": "a16e3fe8-a8db-4239-b474-fa69782fdbcb",
+      "key": "a16e3fe8-a8db-4239-b474-fa69782fdbcb",
+      "recordId": "a16e3fe8-a8db-4239-b474-fa69782fdbcb",
+      "bookId": "2",
+      "date": "2025-09-19",
+      "duration": 90,
+      "timestamp": "2025-09-19T10:36:00"
+    },
+    {
+      "id": "8aab9c3c-725e-45e9-8abc-33df6d9efbaa",
+      "key": "8aab9c3c-725e-45e9-8abc-33df6d9efbaa",
+      "recordId": "8aab9c3c-725e-45e9-8abc-33df6d9efbaa",
+      "bookId": "6",
+      "date": "2025-09-19",
+      "duration": 32,
+      "timestamp": "2025-09-19T21:10:00"
+    },
+    {
+      "id": "9985dffb-21a1-4e9b-8beb-5b61c64a44cc",
+      "key": "9985dffb-21a1-4e9b-8beb-5b61c64a44cc",
+      "recordId": "9985dffb-21a1-4e9b-8beb-5b61c64a44cc",
+      "bookId": "7",
+      "date": "2025-09-18",
+      "duration": 83,
+      "timestamp": "2025-09-18T21:49:00"
+    },
+    {
+      "id": "05bb785f-5ede-41d7-a9a0-fb313e6ad76d",
+      "key": "05bb785f-5ede-41d7-a9a0-fb313e6ad76d",
+      "recordId": "05bb785f-5ede-41d7-a9a0-fb313e6ad76d",
+      "bookId": "11",
+      "date": "2025-09-15",
+      "duration": 74,
+      "timestamp": "2025-09-15T21:39:00"
+    },
+    {
+      "id": "cfd43d1f-1288-47be-bf29-90373d681103",
+      "key": "cfd43d1f-1288-47be-bf29-90373d681103",
+      "recordId": "cfd43d1f-1288-47be-bf29-90373d681103",
+      "bookId": "10",
+      "date": "2025-09-14",
+      "duration": 16,
+      "timestamp": "2025-09-14T21:30:00"
+    },
+    {
+      "id": "4b78c268-0f18-4339-a984-1763f96e7f9a",
+      "key": "4b78c268-0f18-4339-a984-1763f96e7f9a",
+      "recordId": "4b78c268-0f18-4339-a984-1763f96e7f9a",
+      "bookId": "3",
+      "date": "2025-09-10",
+      "duration": 33,
+      "timestamp": "2025-09-10T21:24:00"
+    },
+    {
+      "id": "bfdcb77d-5d6d-402c-b624-594b51476eef",
+      "key": "bfdcb77d-5d6d-402c-b624-594b51476eef",
+      "recordId": "bfdcb77d-5d6d-402c-b624-594b51476eef",
+      "bookId": "8",
+      "date": "2025-09-09",
+      "duration": 41,
+      "timestamp": "2025-09-09T21:19:00"
+    },
+    {
+      "id": "4fd6197c-3a67-41a7-a5e1-d02b9b6d2ef9",
+      "key": "4fd6197c-3a67-41a7-a5e1-d02b9b6d2ef9",
+      "recordId": "4fd6197c-3a67-41a7-a5e1-d02b9b6d2ef9",
+      "bookId": "13",
+      "date": "2025-09-07",
+      "duration": 9,
+      "timestamp": "2025-09-07T21:31:00"
+    },
+    {
+      "id": "6e4d2ae4-af34-4e27-a9e4-1b8fc66bf8b4",
+      "key": "6e4d2ae4-af34-4e27-a9e4-1b8fc66bf8b4",
+      "recordId": "6e4d2ae4-af34-4e27-a9e4-1b8fc66bf8b4",
+      "bookId": "2",
+      "date": "2025-09-05",
+      "duration": 16,
+      "timestamp": "2025-09-05T21:24:00"
+    },
+    {
+      "id": "0fc2fab9-f238-46c4-8468-58cf9713a803",
+      "key": "0fc2fab9-f238-46c4-8468-58cf9713a803",
+      "recordId": "0fc2fab9-f238-46c4-8468-58cf9713a803",
+      "bookId": "4",
+      "date": "2025-09-01",
+      "duration": 115,
+      "timestamp": "2025-09-01T21:46:00"
+    },
+    {
+      "id": "eca73aa2-b2d7-4c51-bb0d-60cb81d84566",
+      "key": "eca73aa2-b2d7-4c51-bb0d-60cb81d84566",
+      "recordId": "eca73aa2-b2d7-4c51-bb0d-60cb81d84566",
+      "bookId": "14",
+      "date": "2025-08-31",
+      "duration": 16,
+      "timestamp": "2025-08-31T21:12:00"
+    },
+    {
+      "id": "8eecf334-b418-4f49-b6d0-eaae9a9f0bf1",
+      "key": "8eecf334-b418-4f49-b6d0-eaae9a9f0bf1",
+      "recordId": "8eecf334-b418-4f49-b6d0-eaae9a9f0bf1",
+      "bookId": "58",
+      "date": "2025-08-29",
+      "duration": 220,
+      "timestamp": "2025-08-29T21:14:00"
+    },
+    {
+      "id": "e16c2b0c-89ff-4408-9d95-0ea19a4a9299",
+      "key": "e16c2b0c-89ff-4408-9d95-0ea19a4a9299",
+      "recordId": "e16c2b0c-89ff-4408-9d95-0ea19a4a9299",
+      "bookId": "21",
+      "date": "2025-08-28",
+      "duration": 75,
+      "timestamp": "2025-08-28T10:40:00"
+    },
+    {
+      "id": "7d422625-ea53-4a98-a4b8-fe78b742f551",
+      "key": "7d422625-ea53-4a98-a4b8-fe78b742f551",
+      "recordId": "7d422625-ea53-4a98-a4b8-fe78b742f551",
+      "bookId": "7",
+      "date": "2025-08-28",
+      "duration": 35,
+      "timestamp": "2025-08-28T21:11:00"
+    },
+    {
+      "id": "e0875e3d-8f62-47b6-bbff-4a0c4d9608f4",
+      "key": "e0875e3d-8f62-47b6-bbff-4a0c4d9608f4",
+      "recordId": "e0875e3d-8f62-47b6-bbff-4a0c4d9608f4",
+      "bookId": "11",
+      "date": "2025-08-25",
+      "duration": 48,
+      "timestamp": "2025-08-25T21:39:00"
+    },
+    {
+      "id": "abe1b529-5e3a-4a4f-9bf6-c7cfe9cfa051",
+      "key": "abe1b529-5e3a-4a4f-9bf6-c7cfe9cfa051",
+      "recordId": "abe1b529-5e3a-4a4f-9bf6-c7cfe9cfa051",
+      "bookId": "5",
+      "date": "2025-08-24",
+      "duration": 56,
+      "timestamp": "2025-08-24T21:54:00"
+    },
+    {
+      "id": "d6e1688c-ef23-46ac-ab3e-d95b8faa7ff4",
+      "key": "d6e1688c-ef23-46ac-ab3e-d95b8faa7ff4",
+      "recordId": "d6e1688c-ef23-46ac-ab3e-d95b8faa7ff4",
+      "bookId": "14",
+      "date": "2025-08-23",
+      "duration": 90,
+      "timestamp": "2025-08-23T21:38:00"
+    },
+    {
+      "id": "8c12a790-88bc-4b12-8d86-58aaf0d7a56d",
+      "key": "8c12a790-88bc-4b12-8d86-58aaf0d7a56d",
+      "recordId": "8c12a790-88bc-4b12-8d86-58aaf0d7a56d",
+      "bookId": "8",
+      "date": "2025-08-22",
+      "duration": 63,
+      "timestamp": "2025-08-22T21:34:00"
+    },
+    {
+      "id": "53722015-8cd2-48e6-9e64-fe73290a6303",
+      "key": "53722015-8cd2-48e6-9e64-fe73290a6303",
+      "recordId": "53722015-8cd2-48e6-9e64-fe73290a6303",
+      "bookId": "5",
+      "date": "2025-08-20",
+      "duration": 39,
+      "timestamp": "2025-08-20T21:39:00"
+    },
+    {
+      "id": "8d187db3-aaed-49c2-bead-07949c74d105",
+      "key": "8d187db3-aaed-49c2-bead-07949c74d105",
+      "recordId": "8d187db3-aaed-49c2-bead-07949c74d105",
+      "bookId": "2",
+      "date": "2025-08-19",
+      "duration": 73,
+      "timestamp": "2025-08-19T21:13:00"
+    },
+    {
+      "id": "28cafa8d-7934-42dd-af28-3c5279eb10b3",
+      "key": "28cafa8d-7934-42dd-af28-3c5279eb10b3",
+      "recordId": "28cafa8d-7934-42dd-af28-3c5279eb10b3",
+      "bookId": "2",
+      "date": "2025-08-18",
+      "duration": 86,
+      "timestamp": "2025-08-18T21:49:00"
+    },
+    {
+      "id": "7be2bf00-a59d-4b49-92a5-29b0c89de3f4",
+      "key": "7be2bf00-a59d-4b49-92a5-29b0c89de3f4",
+      "recordId": "7be2bf00-a59d-4b49-92a5-29b0c89de3f4",
+      "bookId": "7",
+      "date": "2025-08-16",
+      "duration": 51,
+      "timestamp": "2025-08-16T21:17:00"
+    },
+    {
+      "id": "ffa5067c-979d-4f14-a0cb-00727da642bc",
+      "key": "ffa5067c-979d-4f14-a0cb-00727da642bc",
+      "recordId": "ffa5067c-979d-4f14-a0cb-00727da642bc",
+      "bookId": "7",
+      "date": "2025-08-15",
+      "duration": 18,
+      "timestamp": "2025-08-15T21:10:00"
+    },
+    {
+      "id": "51ebdba7-97a9-495b-aa55-05eb32184df6",
+      "key": "51ebdba7-97a9-495b-aa55-05eb32184df6",
+      "recordId": "51ebdba7-97a9-495b-aa55-05eb32184df6",
+      "bookId": "4",
+      "date": "2025-08-13",
+      "duration": 48,
+      "timestamp": "2025-08-13T21:02:00"
+    },
+    {
+      "id": "8a6238f1-1af1-4082-af15-522542f0883d",
+      "key": "8a6238f1-1af1-4082-af15-522542f0883d",
+      "recordId": "8a6238f1-1af1-4082-af15-522542f0883d",
+      "bookId": "60",
+      "date": "2025-08-11",
+      "duration": 61,
+      "timestamp": "2025-08-11T21:44:00"
+    },
+    {
+      "id": "37dc15e5-0eb7-44c9-88e2-0dcca2a35a27",
+      "key": "37dc15e5-0eb7-44c9-88e2-0dcca2a35a27",
+      "recordId": "37dc15e5-0eb7-44c9-88e2-0dcca2a35a27",
+      "bookId": "4",
+      "date": "2025-08-09",
+      "duration": 134,
+      "timestamp": "2025-08-09T21:10:00"
+    },
+    {
+      "id": "fe89de5d-319f-40be-ae99-ae79451a7669",
+      "key": "fe89de5d-319f-40be-ae99-ae79451a7669",
+      "recordId": "fe89de5d-319f-40be-ae99-ae79451a7669",
+      "bookId": "6",
+      "date": "2025-08-08",
+      "duration": 109,
+      "timestamp": "2025-08-08T21:59:00"
+    },
+    {
+      "id": "0baa15c8-9ff5-46c4-b13a-1b541710d758",
+      "key": "0baa15c8-9ff5-46c4-b13a-1b541710d758",
+      "recordId": "0baa15c8-9ff5-46c4-b13a-1b541710d758",
+      "bookId": "5",
+      "date": "2025-08-07",
+      "duration": 29,
+      "timestamp": "2025-08-07T21:17:00"
+    },
+    {
+      "id": "b1777ac8-fcdd-4243-85a5-ae558f6c7090",
+      "key": "b1777ac8-fcdd-4243-85a5-ae558f6c7090",
+      "recordId": "b1777ac8-fcdd-4243-85a5-ae558f6c7090",
+      "bookId": "13",
+      "date": "2025-08-06",
+      "duration": 85,
+      "timestamp": "2025-08-06T21:40:00"
+    },
+    {
+      "id": "0ab462dc-2792-4861-99e1-1de3344d5456",
+      "key": "0ab462dc-2792-4861-99e1-1de3344d5456",
+      "recordId": "0ab462dc-2792-4861-99e1-1de3344d5456",
+      "bookId": "12",
+      "date": "2025-08-05",
+      "duration": 195,
+      "timestamp": "2025-08-05T21:03:00"
+    },
+    {
+      "id": "1af0e3f5-8b3c-41b6-ac5e-b44004de6022",
+      "key": "1af0e3f5-8b3c-41b6-ac5e-b44004de6022",
+      "recordId": "1af0e3f5-8b3c-41b6-ac5e-b44004de6022",
+      "bookId": "3",
+      "date": "2025-08-03",
+      "duration": 60,
+      "timestamp": "2025-08-03T21:02:00"
+    },
+    {
+      "id": "bda1d286-3300-46f9-a65e-60a7bfe824ba",
+      "key": "bda1d286-3300-46f9-a65e-60a7bfe824ba",
+      "recordId": "bda1d286-3300-46f9-a65e-60a7bfe824ba",
+      "bookId": "15",
+      "date": "2025-08-02",
+      "duration": 201,
+      "timestamp": "2025-08-02T21:29:00"
+    },
+    {
+      "id": "3ccd1c81-b493-4e0a-9215-4b9d9506c52b",
+      "key": "3ccd1c81-b493-4e0a-9215-4b9d9506c52b",
+      "recordId": "3ccd1c81-b493-4e0a-9215-4b9d9506c52b",
+      "bookId": "7",
+      "date": "2025-08-01",
+      "duration": 84,
+      "timestamp": "2025-08-01T21:55:00"
+    },
+    {
+      "id": "5fb2bfb8-279e-41d8-9938-c8bbcc508e3c",
+      "key": "5fb2bfb8-279e-41d8-9938-c8bbcc508e3c",
+      "recordId": "5fb2bfb8-279e-41d8-9938-c8bbcc508e3c",
+      "bookId": "4",
+      "date": "2025-07-27",
+      "duration": 35,
+      "timestamp": "2025-07-27T21:34:00"
+    },
+    {
+      "id": "41cf3ffe-9842-4339-b6eb-3ebf6ae1ca58",
+      "key": "41cf3ffe-9842-4339-b6eb-3ebf6ae1ca58",
+      "recordId": "41cf3ffe-9842-4339-b6eb-3ebf6ae1ca58",
+      "bookId": "14",
+      "date": "2025-07-26",
+      "duration": 11,
+      "timestamp": "2025-07-26T21:42:00"
+    },
+    {
+      "id": "71eeace8-c988-444e-b73e-f81713965112",
+      "key": "71eeace8-c988-444e-b73e-f81713965112",
+      "recordId": "71eeace8-c988-444e-b73e-f81713965112",
+      "bookId": "15",
+      "date": "2025-07-25",
+      "duration": 29,
+      "timestamp": "2025-07-25T21:32:00"
+    },
+    {
+      "id": "19c0f631-f4e6-4657-8bd9-7b142c5cd8b8",
+      "key": "19c0f631-f4e6-4657-8bd9-7b142c5cd8b8",
+      "recordId": "19c0f631-f4e6-4657-8bd9-7b142c5cd8b8",
+      "bookId": "60",
+      "date": "2025-07-24",
+      "duration": 31,
+      "timestamp": "2025-07-24T21:31:00"
+    },
+    {
+      "id": "d1f63bfa-8ce9-4c45-9239-ad4111635d7c",
+      "key": "d1f63bfa-8ce9-4c45-9239-ad4111635d7c",
+      "recordId": "d1f63bfa-8ce9-4c45-9239-ad4111635d7c",
+      "bookId": "5",
+      "date": "2025-07-22",
+      "duration": 11,
+      "timestamp": "2025-07-22T21:22:00"
+    },
+    {
+      "id": "03bffa38-4eb8-4689-b53e-7d7920c40088",
+      "key": "03bffa38-4eb8-4689-b53e-7d7920c40088",
+      "recordId": "03bffa38-4eb8-4689-b53e-7d7920c40088",
+      "bookId": "5",
+      "date": "2025-07-21",
+      "duration": 13,
+      "timestamp": "2025-07-21T21:47:00"
+    },
+    {
+      "id": "59d3704c-df4e-4591-b4fd-3ad582a27fa6",
+      "key": "59d3704c-df4e-4591-b4fd-3ad582a27fa6",
+      "recordId": "59d3704c-df4e-4591-b4fd-3ad582a27fa6",
+      "bookId": "1",
+      "date": "2025-07-20",
+      "duration": 53,
+      "timestamp": "2025-07-20T21:26:00"
+    },
+    {
+      "id": "11998d76-fb0f-402a-ba70-27ad88987e17",
+      "key": "11998d76-fb0f-402a-ba70-27ad88987e17",
+      "recordId": "11998d76-fb0f-402a-ba70-27ad88987e17",
+      "bookId": "11",
+      "date": "2025-07-17",
+      "duration": 56,
+      "timestamp": "2025-07-17T21:31:00"
+    },
+    {
+      "id": "6f070ce5-6efa-4a2a-9abf-67cfb29b9f63",
+      "key": "6f070ce5-6efa-4a2a-9abf-67cfb29b9f63",
+      "recordId": "6f070ce5-6efa-4a2a-9abf-67cfb29b9f63",
+      "bookId": "7",
+      "date": "2025-07-16",
+      "duration": 19,
+      "timestamp": "2025-07-16T21:57:00"
+    },
+    {
+      "id": "9418e26a-71d1-489c-97ee-b0bb727538e8",
+      "key": "9418e26a-71d1-489c-97ee-b0bb727538e8",
+      "recordId": "9418e26a-71d1-489c-97ee-b0bb727538e8",
+      "bookId": "10",
+      "date": "2025-07-15",
+      "duration": 138,
+      "timestamp": "2025-07-15T21:13:00"
+    },
+    {
+      "id": "93fa5252-4fc4-43c0-9d4d-2e73908d6131",
+      "key": "93fa5252-4fc4-43c0-9d4d-2e73908d6131",
+      "recordId": "93fa5252-4fc4-43c0-9d4d-2e73908d6131",
+      "bookId": "7",
+      "date": "2025-07-13",
+      "duration": 20,
+      "timestamp": "2025-07-13T21:06:00"
+    },
+    {
+      "id": "e7be36db-74de-4636-81c8-b840f16b2591",
+      "key": "e7be36db-74de-4636-81c8-b840f16b2591",
+      "recordId": "e7be36db-74de-4636-81c8-b840f16b2591",
+      "bookId": "2",
+      "date": "2025-07-12",
+      "duration": 61,
+      "timestamp": "2025-07-12T21:56:00"
+    },
+    {
+      "id": "68ee4f87-f603-474d-87f0-07a431d72a57",
+      "key": "68ee4f87-f603-474d-87f0-07a431d72a57",
+      "recordId": "68ee4f87-f603-474d-87f0-07a431d72a57",
+      "bookId": "21",
+      "date": "2025-07-04",
+      "duration": 62,
+      "timestamp": "2025-07-04T10:32:00"
+    },
+    {
+      "id": "3ca36adb-1094-4198-99d8-229b1802d60b",
+      "key": "3ca36adb-1094-4198-99d8-229b1802d60b",
+      "recordId": "3ca36adb-1094-4198-99d8-229b1802d60b",
+      "bookId": "5",
+      "date": "2025-07-04",
+      "duration": 52,
+      "timestamp": "2025-07-04T21:06:00"
+    },
+    {
+      "id": "f5eb900d-5865-4c62-a2b5-e6ce07a53b96",
+      "key": "f5eb900d-5865-4c62-a2b5-e6ce07a53b96",
+      "recordId": "f5eb900d-5865-4c62-a2b5-e6ce07a53b96",
+      "bookId": "3",
+      "date": "2025-07-02",
+      "duration": 16,
+      "timestamp": "2025-07-02T21:18:00"
+    },
+    {
+      "id": "6d685ca1-79f8-411a-8f60-05424a7b39a5",
+      "key": "6d685ca1-79f8-411a-8f60-05424a7b39a5",
+      "recordId": "6d685ca1-79f8-411a-8f60-05424a7b39a5",
+      "bookId": "58",
+      "date": "2025-07-01",
+      "duration": 82,
+      "timestamp": "2025-07-01T21:16:00"
+    },
+    {
+      "id": "716d44c6-36f6-40f9-ac27-7c3d62008df7",
+      "key": "716d44c6-36f6-40f9-ac27-7c3d62008df7",
+      "recordId": "716d44c6-36f6-40f9-ac27-7c3d62008df7",
+      "bookId": "14",
+      "date": "2025-06-30",
+      "duration": 55,
+      "timestamp": "2025-06-30T10:27:00"
+    },
+    {
+      "id": "0efb259c-4e3a-443b-8fbd-840ece0fee9a",
+      "key": "0efb259c-4e3a-443b-8fbd-840ece0fee9a",
+      "recordId": "0efb259c-4e3a-443b-8fbd-840ece0fee9a",
+      "bookId": "7",
+      "date": "2025-06-30",
+      "duration": 47,
+      "timestamp": "2025-06-30T21:57:00"
+    },
+    {
+      "id": "e20de561-282b-4a8b-90cd-1295ab709ae4",
+      "key": "e20de561-282b-4a8b-90cd-1295ab709ae4",
+      "recordId": "e20de561-282b-4a8b-90cd-1295ab709ae4",
+      "bookId": "10",
+      "date": "2025-06-28",
+      "duration": 60,
+      "timestamp": "2025-06-28T21:09:00"
+    },
+    {
+      "id": "1ff6b6f0-2491-4ace-9ef2-05bc56d25d81",
+      "key": "1ff6b6f0-2491-4ace-9ef2-05bc56d25d81",
+      "recordId": "1ff6b6f0-2491-4ace-9ef2-05bc56d25d81",
+      "bookId": "1",
+      "date": "2025-06-27",
+      "duration": 20,
+      "timestamp": "2025-06-27T21:16:00"
+    },
+    {
+      "id": "aa1a65ef-d283-48a8-b612-b6a8c1088558",
+      "key": "aa1a65ef-d283-48a8-b612-b6a8c1088558",
+      "recordId": "aa1a65ef-d283-48a8-b612-b6a8c1088558",
+      "bookId": "30",
+      "date": "2025-06-26",
+      "duration": 107,
+      "timestamp": "2025-06-26T10:42:00"
+    },
+    {
+      "id": "f68d6b28-82e9-4e0d-9189-be285755da3c",
+      "key": "f68d6b28-82e9-4e0d-9189-be285755da3c",
+      "recordId": "f68d6b28-82e9-4e0d-9189-be285755da3c",
+      "bookId": "4",
+      "date": "2025-06-26",
+      "duration": 103,
+      "timestamp": "2025-06-26T21:03:00"
+    },
+    {
+      "id": "2de4bec4-8e3a-4c7e-a170-093d1164138a",
+      "key": "2de4bec4-8e3a-4c7e-a170-093d1164138a",
+      "recordId": "2de4bec4-8e3a-4c7e-a170-093d1164138a",
+      "bookId": "12",
+      "date": "2025-06-25",
+      "duration": 14,
+      "timestamp": "2025-06-25T21:15:00"
+    },
+    {
+      "id": "a4c5c3d8-aabc-47a8-975b-779c1262eba6",
+      "key": "a4c5c3d8-aabc-47a8-975b-779c1262eba6",
+      "recordId": "a4c5c3d8-aabc-47a8-975b-779c1262eba6",
+      "bookId": "6",
+      "date": "2025-06-24",
+      "duration": 209,
+      "timestamp": "2025-06-24T21:51:00"
+    },
+    {
+      "id": "a9648182-0c8a-4480-8a3a-72e7406e499b",
+      "key": "a9648182-0c8a-4480-8a3a-72e7406e499b",
+      "recordId": "a9648182-0c8a-4480-8a3a-72e7406e499b",
+      "bookId": "3",
+      "date": "2025-06-23",
+      "duration": 31,
+      "timestamp": "2025-06-23T10:45:00"
+    },
+    {
+      "id": "1499011a-4803-435c-b3ff-042c3baae994",
+      "key": "1499011a-4803-435c-b3ff-042c3baae994",
+      "recordId": "1499011a-4803-435c-b3ff-042c3baae994",
+      "bookId": "11",
+      "date": "2025-06-23",
+      "duration": 164,
+      "timestamp": "2025-06-23T21:26:00"
+    },
+    {
+      "id": "8976798f-f9ed-4973-8468-f8b45f038c01",
+      "key": "8976798f-f9ed-4973-8468-f8b45f038c01",
+      "recordId": "8976798f-f9ed-4973-8468-f8b45f038c01",
+      "bookId": "5",
+      "date": "2025-06-19",
+      "duration": 22,
+      "timestamp": "2025-06-19T21:58:00"
+    },
+    {
+      "id": "4cf87281-e7c0-44f9-8151-c84d833678cd",
+      "key": "4cf87281-e7c0-44f9-8151-c84d833678cd",
+      "recordId": "4cf87281-e7c0-44f9-8151-c84d833678cd",
+      "bookId": "3",
+      "date": "2025-06-16",
+      "duration": 82,
+      "timestamp": "2025-06-16T21:34:00"
+    },
+    {
+      "id": "05bb9737-36f2-4842-9d3c-c05fb139c71f",
+      "key": "05bb9737-36f2-4842-9d3c-c05fb139c71f",
+      "recordId": "05bb9737-36f2-4842-9d3c-c05fb139c71f",
+      "bookId": "21",
+      "date": "2025-06-15",
+      "duration": 104,
+      "timestamp": "2025-06-15T21:35:00"
+    },
+    {
+      "id": "6c82f0ff-ce93-4485-97cf-818454bdba86",
+      "key": "6c82f0ff-ce93-4485-97cf-818454bdba86",
+      "recordId": "6c82f0ff-ce93-4485-97cf-818454bdba86",
+      "bookId": "11",
+      "date": "2025-06-12",
+      "duration": 48,
+      "timestamp": "2025-06-12T21:22:00"
+    },
+    {
+      "id": "383e9742-bc4d-4ee1-88da-893ab0a050ca",
+      "key": "383e9742-bc4d-4ee1-88da-893ab0a050ca",
+      "recordId": "383e9742-bc4d-4ee1-88da-893ab0a050ca",
+      "bookId": "3",
+      "date": "2025-06-11",
+      "duration": 67,
+      "timestamp": "2025-06-11T21:20:00"
+    },
+    {
+      "id": "44958edd-9253-4e26-8a3a-60e0586516ac",
+      "key": "44958edd-9253-4e26-8a3a-60e0586516ac",
+      "recordId": "44958edd-9253-4e26-8a3a-60e0586516ac",
+      "bookId": "1",
+      "date": "2025-06-10",
+      "duration": 58,
+      "timestamp": "2025-06-10T21:10:00"
+    },
+    {
+      "id": "94d3bcb0-5b62-4da9-8440-29a054df51ae",
+      "key": "94d3bcb0-5b62-4da9-8440-29a054df51ae",
+      "recordId": "94d3bcb0-5b62-4da9-8440-29a054df51ae",
+      "bookId": "60",
+      "date": "2025-06-09",
+      "duration": 226,
+      "timestamp": "2025-06-09T21:21:00"
+    },
+    {
+      "id": "4b528fc0-5b64-4139-a631-d814be9b3ccb",
+      "key": "4b528fc0-5b64-4139-a631-d814be9b3ccb",
+      "recordId": "4b528fc0-5b64-4139-a631-d814be9b3ccb",
+      "bookId": "5",
+      "date": "2025-06-08",
+      "duration": 23,
+      "timestamp": "2025-06-08T21:48:00"
+    },
+    {
+      "id": "8f8f9c10-2c66-465c-b531-e16f0b43deef",
+      "key": "8f8f9c10-2c66-465c-b531-e16f0b43deef",
+      "recordId": "8f8f9c10-2c66-465c-b531-e16f0b43deef",
+      "bookId": "13",
+      "date": "2025-06-07",
+      "duration": 20,
+      "timestamp": "2025-06-07T21:48:00"
+    },
+    {
+      "id": "d1765bdf-be05-400d-b61f-344272f636a2",
+      "key": "d1765bdf-be05-400d-b61f-344272f636a2",
+      "recordId": "d1765bdf-be05-400d-b61f-344272f636a2",
+      "bookId": "8",
+      "date": "2025-06-06",
+      "duration": 227,
+      "timestamp": "2025-06-06T21:00:00"
+    },
+    {
+      "id": "9f3ff280-d7e6-4f15-97f2-245e916fad63",
+      "key": "9f3ff280-d7e6-4f15-97f2-245e916fad63",
+      "recordId": "9f3ff280-d7e6-4f15-97f2-245e916fad63",
+      "bookId": "30",
+      "date": "2025-06-05",
+      "duration": 178,
+      "timestamp": "2025-06-05T21:23:00"
+    },
+    {
+      "id": "930b0f4c-92b5-4461-8483-bfdad2ebde78",
+      "key": "930b0f4c-92b5-4461-8483-bfdad2ebde78",
+      "recordId": "930b0f4c-92b5-4461-8483-bfdad2ebde78",
+      "bookId": "60",
+      "date": "2025-06-04",
+      "duration": 22,
+      "timestamp": "2025-06-04T21:52:00"
+    },
+    {
+      "id": "328ff874-61f9-41f9-b562-aa6d84a3c04f",
+      "key": "328ff874-61f9-41f9-b562-aa6d84a3c04f",
+      "recordId": "328ff874-61f9-41f9-b562-aa6d84a3c04f",
+      "bookId": "30",
+      "date": "2025-06-02",
+      "duration": 117,
+      "timestamp": "2025-06-02T21:35:00"
+    },
+    {
+      "id": "e4bfd90a-d8f6-4053-90e6-6be182fa8938",
+      "key": "e4bfd90a-d8f6-4053-90e6-6be182fa8938",
+      "recordId": "e4bfd90a-d8f6-4053-90e6-6be182fa8938",
+      "bookId": "30",
+      "date": "2025-06-01",
+      "duration": 7,
+      "timestamp": "2025-06-01T21:45:00"
+    },
+    {
+      "id": "d0d5ae52-cc26-4397-8bc7-1956e5521809",
+      "key": "d0d5ae52-cc26-4397-8bc7-1956e5521809",
+      "recordId": "d0d5ae52-cc26-4397-8bc7-1956e5521809",
+      "bookId": "8",
+      "date": "2025-05-31",
+      "duration": 143,
+      "timestamp": "2025-05-31T21:50:00"
+    },
+    {
+      "id": "f95e60ab-bc73-4aa6-8480-28b268841cb5",
+      "key": "f95e60ab-bc73-4aa6-8480-28b268841cb5",
+      "recordId": "f95e60ab-bc73-4aa6-8480-28b268841cb5",
+      "bookId": "10",
+      "date": "2025-05-30",
+      "duration": 177,
+      "timestamp": "2025-05-30T21:37:00"
+    },
+    {
+      "id": "8c103f8e-965e-48a4-aca4-e24772b5fa84",
+      "key": "8c103f8e-965e-48a4-aca4-e24772b5fa84",
+      "recordId": "8c103f8e-965e-48a4-aca4-e24772b5fa84",
+      "bookId": "2",
+      "date": "2025-05-29",
+      "duration": 207,
+      "timestamp": "2025-05-29T21:32:00"
+    },
+    {
+      "id": "b76879df-c061-4d29-8a2c-4db42740aed1",
+      "key": "b76879df-c061-4d29-8a2c-4db42740aed1",
+      "recordId": "b76879df-c061-4d29-8a2c-4db42740aed1",
+      "bookId": "10",
+      "date": "2025-05-27",
+      "duration": 42,
+      "timestamp": "2025-05-27T21:51:00"
+    },
+    {
+      "id": "5817bfd5-c60d-4a05-8f26-93e49bbaf853",
+      "key": "5817bfd5-c60d-4a05-8f26-93e49bbaf853",
+      "recordId": "5817bfd5-c60d-4a05-8f26-93e49bbaf853",
+      "bookId": "14",
+      "date": "2025-05-25",
+      "duration": 24,
+      "timestamp": "2025-05-25T21:12:00"
+    },
+    {
+      "id": "f0d41ca4-d47f-4c9b-9f15-091bbcdfc74b",
+      "key": "f0d41ca4-d47f-4c9b-9f15-091bbcdfc74b",
+      "recordId": "f0d41ca4-d47f-4c9b-9f15-091bbcdfc74b",
+      "bookId": "4",
+      "date": "2025-05-23",
+      "duration": 14,
+      "timestamp": "2025-05-23T21:22:00"
+    },
+    {
+      "id": "c18b18da-a777-4565-80e2-74f6f1f97e22",
+      "key": "c18b18da-a777-4565-80e2-74f6f1f97e22",
+      "recordId": "c18b18da-a777-4565-80e2-74f6f1f97e22",
+      "bookId": "20",
+      "date": "2025-05-22",
+      "duration": 18,
+      "timestamp": "2025-05-22T21:30:00"
+    },
+    {
+      "id": "78e6f0ea-afc9-49c0-9caf-1741663b3645",
+      "key": "78e6f0ea-afc9-49c0-9caf-1741663b3645",
+      "recordId": "78e6f0ea-afc9-49c0-9caf-1741663b3645",
+      "bookId": "15",
+      "date": "2025-05-21",
+      "duration": 19,
+      "timestamp": "2025-05-21T21:22:00"
+    },
+    {
+      "id": "3a5121a1-a902-45e9-b296-53edc7e98e74",
+      "key": "3a5121a1-a902-45e9-b296-53edc7e98e74",
+      "recordId": "3a5121a1-a902-45e9-b296-53edc7e98e74",
+      "bookId": "6",
+      "date": "2025-05-20",
+      "duration": 214,
+      "timestamp": "2025-05-20T21:25:00"
+    },
+    {
+      "id": "da4d94a5-e7d8-402b-8824-f21433ff9703",
+      "key": "da4d94a5-e7d8-402b-8824-f21433ff9703",
+      "recordId": "da4d94a5-e7d8-402b-8824-f21433ff9703",
+      "bookId": "11",
+      "date": "2025-05-18",
+      "duration": 81,
+      "timestamp": "2025-05-18T21:54:00"
+    },
+    {
+      "id": "3ae9080f-a968-4670-897a-59ee822bbe0e",
+      "key": "3ae9080f-a968-4670-897a-59ee822bbe0e",
+      "recordId": "3ae9080f-a968-4670-897a-59ee822bbe0e",
+      "bookId": "9",
+      "date": "2025-05-16",
+      "duration": 5,
+      "timestamp": "2025-05-16T21:55:00"
+    },
+    {
+      "id": "d5317b18-24ca-42d6-92d5-650b880fba7b",
+      "key": "d5317b18-24ca-42d6-92d5-650b880fba7b",
+      "recordId": "d5317b18-24ca-42d6-92d5-650b880fba7b",
+      "bookId": "11",
+      "date": "2025-05-15",
+      "duration": 74,
+      "timestamp": "2025-05-15T21:13:00"
+    },
+    {
+      "id": "b69e9eb3-da9d-4870-983d-8cfb3b737253",
+      "key": "b69e9eb3-da9d-4870-983d-8cfb3b737253",
+      "recordId": "b69e9eb3-da9d-4870-983d-8cfb3b737253",
+      "bookId": "11",
+      "date": "2025-05-14",
+      "duration": 11,
+      "timestamp": "2025-05-14T21:22:00"
+    },
+    {
+      "id": "3c65e797-a7f5-4a30-ba34-b7dd6ea2cbb3",
+      "key": "3c65e797-a7f5-4a30-ba34-b7dd6ea2cbb3",
+      "recordId": "3c65e797-a7f5-4a30-ba34-b7dd6ea2cbb3",
+      "bookId": "5",
+      "date": "2025-05-13",
+      "duration": 110,
+      "timestamp": "2025-05-13T21:51:00"
+    },
+    {
+      "id": "cbd4099e-6860-4e7d-b056-9c9d0dcef25e",
+      "key": "cbd4099e-6860-4e7d-b056-9c9d0dcef25e",
+      "recordId": "cbd4099e-6860-4e7d-b056-9c9d0dcef25e",
+      "bookId": "11",
+      "date": "2025-05-12",
+      "duration": 32,
+      "timestamp": "2025-05-12T21:06:00"
+    },
+    {
+      "id": "50a71c3a-20eb-4982-a18c-990f9b738015",
+      "key": "50a71c3a-20eb-4982-a18c-990f9b738015",
+      "recordId": "50a71c3a-20eb-4982-a18c-990f9b738015",
+      "bookId": "58",
+      "date": "2025-05-11",
+      "duration": 43,
+      "timestamp": "2025-05-11T21:22:00"
+    },
+    {
+      "id": "9bc1c600-d4f2-4fff-93d5-6cbd80f72d5c",
+      "key": "9bc1c600-d4f2-4fff-93d5-6cbd80f72d5c",
+      "recordId": "9bc1c600-d4f2-4fff-93d5-6cbd80f72d5c",
+      "bookId": "5",
+      "date": "2025-05-09",
+      "duration": 20,
+      "timestamp": "2025-05-09T10:42:00"
+    },
+    {
+      "id": "7da7df51-70b7-4e48-9a12-b53412f3e62a",
+      "key": "7da7df51-70b7-4e48-9a12-b53412f3e62a",
+      "recordId": "7da7df51-70b7-4e48-9a12-b53412f3e62a",
+      "bookId": "4",
+      "date": "2025-05-09",
+      "duration": 69,
+      "timestamp": "2025-05-09T21:47:00"
+    },
+    {
+      "id": "adc25d00-7da6-4f70-a078-a9cebdf14301",
+      "key": "adc25d00-7da6-4f70-a078-a9cebdf14301",
+      "recordId": "adc25d00-7da6-4f70-a078-a9cebdf14301",
+      "bookId": "15",
+      "date": "2025-05-08",
+      "duration": 46,
+      "timestamp": "2025-05-08T21:33:00"
+    },
+    {
+      "id": "e3b797f2-b587-404a-ac49-c5370911a0f6",
+      "key": "e3b797f2-b587-404a-ac49-c5370911a0f6",
+      "recordId": "e3b797f2-b587-404a-ac49-c5370911a0f6",
+      "bookId": "13",
+      "date": "2025-05-07",
+      "duration": 39,
+      "timestamp": "2025-05-07T21:00:00"
+    },
+    {
+      "id": "fac01c4f-0f89-4a29-9f3b-c11b8818906c",
+      "key": "fac01c4f-0f89-4a29-9f3b-c11b8818906c",
+      "recordId": "fac01c4f-0f89-4a29-9f3b-c11b8818906c",
+      "bookId": "11",
+      "date": "2025-05-05",
+      "duration": 175,
+      "timestamp": "2025-05-05T21:13:00"
+    },
+    {
+      "id": "9e006d07-b66d-494f-a809-4e915dd8d64d",
+      "key": "9e006d07-b66d-494f-a809-4e915dd8d64d",
+      "recordId": "9e006d07-b66d-494f-a809-4e915dd8d64d",
+      "bookId": "7",
+      "date": "2025-05-04",
+      "duration": 215,
+      "timestamp": "2025-05-04T21:35:00"
+    },
+    {
+      "id": "64fcd89e-cda2-4b7e-b858-c002d6aa3d62",
+      "key": "64fcd89e-cda2-4b7e-b858-c002d6aa3d62",
+      "recordId": "64fcd89e-cda2-4b7e-b858-c002d6aa3d62",
+      "bookId": "20",
+      "date": "2025-05-03",
+      "duration": 46,
+      "timestamp": "2025-05-03T21:58:00"
+    },
+    {
+      "id": "160acd1a-220d-499d-b31d-1c24ee52bfa2",
+      "key": "160acd1a-220d-499d-b31d-1c24ee52bfa2",
+      "recordId": "160acd1a-220d-499d-b31d-1c24ee52bfa2",
+      "bookId": "58",
+      "date": "2025-05-02",
+      "duration": 90,
+      "timestamp": "2025-05-02T21:18:00"
+    },
+    {
+      "id": "d6dd0835-da2f-4f6e-820e-ff12683adf23",
+      "key": "d6dd0835-da2f-4f6e-820e-ff12683adf23",
+      "recordId": "d6dd0835-da2f-4f6e-820e-ff12683adf23",
+      "bookId": "58",
+      "date": "2025-05-01",
+      "duration": 47,
+      "timestamp": "2025-05-01T21:59:00"
+    },
+    {
+      "id": "5c0e0cfa-af41-43e3-9af1-e37a1f33842d",
+      "key": "5c0e0cfa-af41-43e3-9af1-e37a1f33842d",
+      "recordId": "5c0e0cfa-af41-43e3-9af1-e37a1f33842d",
+      "bookId": "60",
+      "date": "2025-04-29",
+      "duration": 24,
+      "timestamp": "2025-04-29T21:46:00"
+    },
+    {
+      "id": "95d91620-4b36-4eef-aad7-123dd4c43421",
+      "key": "95d91620-4b36-4eef-aad7-123dd4c43421",
+      "recordId": "95d91620-4b36-4eef-aad7-123dd4c43421",
+      "bookId": "3",
+      "date": "2025-04-24",
+      "duration": 12,
+      "timestamp": "2025-04-24T21:11:00"
+    },
+    {
+      "id": "2f10e0b9-4e0d-4ef3-a071-1ccc932cbad8",
+      "key": "2f10e0b9-4e0d-4ef3-a071-1ccc932cbad8",
+      "recordId": "2f10e0b9-4e0d-4ef3-a071-1ccc932cbad8",
+      "bookId": "5",
+      "date": "2025-04-23",
+      "duration": 64,
+      "timestamp": "2025-04-23T10:06:00"
+    },
+    {
+      "id": "0b1f3c7e-d9a4-461f-b994-99f90cc2ce64",
+      "key": "0b1f3c7e-d9a4-461f-b994-99f90cc2ce64",
+      "recordId": "0b1f3c7e-d9a4-461f-b994-99f90cc2ce64",
+      "bookId": "15",
+      "date": "2025-04-23",
+      "duration": 26,
+      "timestamp": "2025-04-23T21:48:00"
+    },
+    {
+      "id": "741177e5-c7fe-4a5d-82be-54325166c461",
+      "key": "741177e5-c7fe-4a5d-82be-54325166c461",
+      "recordId": "741177e5-c7fe-4a5d-82be-54325166c461",
+      "bookId": "12",
+      "date": "2025-04-22",
+      "duration": 225,
+      "timestamp": "2025-04-22T21:29:00"
+    },
+    {
+      "id": "3054b674-b348-4af1-9897-ac0b42cb1ac9",
+      "key": "3054b674-b348-4af1-9897-ac0b42cb1ac9",
+      "recordId": "3054b674-b348-4af1-9897-ac0b42cb1ac9",
+      "bookId": "13",
+      "date": "2025-04-20",
+      "duration": 12,
+      "timestamp": "2025-04-20T21:40:00"
+    },
+    {
+      "id": "d097867e-f574-4dec-a40d-f953e63a21d2",
+      "key": "d097867e-f574-4dec-a40d-f953e63a21d2",
+      "recordId": "d097867e-f574-4dec-a40d-f953e63a21d2",
+      "bookId": "60",
+      "date": "2025-04-19",
+      "duration": 51,
+      "timestamp": "2025-04-19T21:37:00"
+    },
+    {
+      "id": "198cff82-55a5-408e-a5f9-83a0877102d6",
+      "key": "198cff82-55a5-408e-a5f9-83a0877102d6",
+      "recordId": "198cff82-55a5-408e-a5f9-83a0877102d6",
+      "bookId": "30",
+      "date": "2025-04-18",
+      "duration": 9,
+      "timestamp": "2025-04-18T21:02:00"
+    },
+    {
+      "id": "de7a80a4-2cdb-4be8-84d8-fce289c5d4eb",
+      "key": "de7a80a4-2cdb-4be8-84d8-fce289c5d4eb",
+      "recordId": "de7a80a4-2cdb-4be8-84d8-fce289c5d4eb",
+      "bookId": "1",
+      "date": "2025-04-17",
+      "duration": 167,
+      "timestamp": "2025-04-17T10:11:00"
+    },
+    {
+      "id": "9160994c-3eb8-4a8b-8479-c376ade162c7",
+      "key": "9160994c-3eb8-4a8b-8479-c376ade162c7",
+      "recordId": "9160994c-3eb8-4a8b-8479-c376ade162c7",
+      "bookId": "15",
+      "date": "2025-04-17",
+      "duration": 111,
+      "timestamp": "2025-04-17T21:47:00"
+    },
+    {
+      "id": "2458fa19-9d4a-43dc-ad42-d3872a2a94df",
+      "key": "2458fa19-9d4a-43dc-ad42-d3872a2a94df",
+      "recordId": "2458fa19-9d4a-43dc-ad42-d3872a2a94df",
+      "bookId": "3",
+      "date": "2025-04-15",
+      "duration": 178,
+      "timestamp": "2025-04-15T21:51:00"
+    },
+    {
+      "id": "830f5aa0-1216-4d38-b54b-9aeb0c0a9ef7",
+      "key": "830f5aa0-1216-4d38-b54b-9aeb0c0a9ef7",
+      "recordId": "830f5aa0-1216-4d38-b54b-9aeb0c0a9ef7",
+      "bookId": "8",
+      "date": "2025-04-14",
+      "duration": 40,
+      "timestamp": "2025-04-14T21:11:00"
+    },
+    {
+      "id": "dcde5eae-fea0-4a38-802a-757c8565f8f5",
+      "key": "dcde5eae-fea0-4a38-802a-757c8565f8f5",
+      "recordId": "dcde5eae-fea0-4a38-802a-757c8565f8f5",
+      "bookId": "13",
+      "date": "2025-04-13",
+      "duration": 189,
+      "timestamp": "2025-04-13T21:46:00"
+    },
+    {
+      "id": "31e8f5ec-7889-4fab-a009-09f6b3d29690",
+      "key": "31e8f5ec-7889-4fab-a009-09f6b3d29690",
+      "recordId": "31e8f5ec-7889-4fab-a009-09f6b3d29690",
+      "bookId": "58",
+      "date": "2025-04-12",
+      "duration": 13,
+      "timestamp": "2025-04-12T21:00:00"
+    },
+    {
+      "id": "a0450520-d2fc-4918-805b-6f4e607984a4",
+      "key": "a0450520-d2fc-4918-805b-6f4e607984a4",
+      "recordId": "a0450520-d2fc-4918-805b-6f4e607984a4",
+      "bookId": "5",
+      "date": "2025-04-11",
+      "duration": 82,
+      "timestamp": "2025-04-11T21:40:00"
+    },
+    {
+      "id": "af2db308-1271-4eee-b768-3c362f87eb3a",
+      "key": "af2db308-1271-4eee-b768-3c362f87eb3a",
+      "recordId": "af2db308-1271-4eee-b768-3c362f87eb3a",
+      "bookId": "14",
+      "date": "2025-04-10",
+      "duration": 60,
+      "timestamp": "2025-04-10T21:21:00"
+    },
+    {
+      "id": "e2e1462b-3d8f-479f-bc06-0f296da8d06b",
+      "key": "e2e1462b-3d8f-479f-bc06-0f296da8d06b",
+      "recordId": "e2e1462b-3d8f-479f-bc06-0f296da8d06b",
+      "bookId": "1",
+      "date": "2025-04-08",
+      "duration": 6,
+      "timestamp": "2025-04-08T10:18:00"
+    },
+    {
+      "id": "c612b57d-da98-443c-97ec-5e7196c66200",
+      "key": "c612b57d-da98-443c-97ec-5e7196c66200",
+      "recordId": "c612b57d-da98-443c-97ec-5e7196c66200",
+      "bookId": "5",
+      "date": "2025-04-08",
+      "duration": 81,
+      "timestamp": "2025-04-08T21:41:00"
+    },
+    {
+      "id": "2ba6e941-8b0f-41cb-b2d8-54887a758911",
+      "key": "2ba6e941-8b0f-41cb-b2d8-54887a758911",
+      "recordId": "2ba6e941-8b0f-41cb-b2d8-54887a758911",
+      "bookId": "6",
+      "date": "2025-04-05",
+      "duration": 216,
+      "timestamp": "2025-04-05T21:28:00"
+    },
+    {
+      "id": "883b1532-30ad-43b9-9444-36447ef9edcb",
+      "key": "883b1532-30ad-43b9-9444-36447ef9edcb",
+      "recordId": "883b1532-30ad-43b9-9444-36447ef9edcb",
+      "bookId": "58",
+      "date": "2025-04-03",
+      "duration": 49,
+      "timestamp": "2025-04-03T21:24:00"
+    },
+    {
+      "id": "29f87423-ac1a-42ad-b53c-d5071f947bb9",
+      "key": "29f87423-ac1a-42ad-b53c-d5071f947bb9",
+      "recordId": "29f87423-ac1a-42ad-b53c-d5071f947bb9",
+      "bookId": "8",
+      "date": "2025-04-02",
+      "duration": 29,
+      "timestamp": "2025-04-02T10:08:00"
+    },
+    {
+      "id": "3ba49b0a-4ae1-420c-a222-f4f89260f1ae",
+      "key": "3ba49b0a-4ae1-420c-a222-f4f89260f1ae",
+      "recordId": "3ba49b0a-4ae1-420c-a222-f4f89260f1ae",
+      "bookId": "15",
+      "date": "2025-04-02",
+      "duration": 44,
+      "timestamp": "2025-04-02T21:50:00"
+    },
+    {
+      "id": "f9c41a77-701e-4b2c-9236-f0b0ed99a7a8",
+      "key": "f9c41a77-701e-4b2c-9236-f0b0ed99a7a8",
+      "recordId": "f9c41a77-701e-4b2c-9236-f0b0ed99a7a8",
+      "bookId": "5",
+      "date": "2025-04-01",
+      "duration": 64,
+      "timestamp": "2025-04-01T10:31:00"
+    },
+    {
+      "id": "fa0f5ec0-ce88-4a1d-ba85-4783a1ebea9a",
+      "key": "fa0f5ec0-ce88-4a1d-ba85-4783a1ebea9a",
+      "recordId": "fa0f5ec0-ce88-4a1d-ba85-4783a1ebea9a",
+      "bookId": "30",
+      "date": "2025-04-01",
+      "duration": 40,
+      "timestamp": "2025-04-01T21:56:00"
+    },
+    {
+      "id": "b2574789-884f-4478-a7b3-3cb07a504cea",
+      "key": "b2574789-884f-4478-a7b3-3cb07a504cea",
+      "recordId": "b2574789-884f-4478-a7b3-3cb07a504cea",
+      "bookId": "12",
+      "date": "2025-03-31",
+      "duration": 195,
+      "timestamp": "2025-03-31T21:21:00"
+    },
+    {
+      "id": "05d91e13-d44d-49b8-9bf1-78a3b7524dc9",
+      "key": "05d91e13-d44d-49b8-9bf1-78a3b7524dc9",
+      "recordId": "05d91e13-d44d-49b8-9bf1-78a3b7524dc9",
+      "bookId": "21",
+      "date": "2025-03-30",
+      "duration": 55,
+      "timestamp": "2025-03-30T21:10:00"
+    },
+    {
+      "id": "9f1c1ae0-8259-404a-9e81-01dd1deaf2ea",
+      "key": "9f1c1ae0-8259-404a-9e81-01dd1deaf2ea",
+      "recordId": "9f1c1ae0-8259-404a-9e81-01dd1deaf2ea",
+      "bookId": "9",
+      "date": "2025-03-29",
+      "duration": 98,
+      "timestamp": "2025-03-29T21:11:00"
+    },
+    {
+      "id": "78882a6b-7ce5-4eba-aee5-427e218e2cc7",
+      "key": "78882a6b-7ce5-4eba-aee5-427e218e2cc7",
+      "recordId": "78882a6b-7ce5-4eba-aee5-427e218e2cc7",
+      "bookId": "7",
+      "date": "2025-03-27",
+      "duration": 23,
+      "timestamp": "2025-03-27T21:51:00"
+    },
+    {
+      "id": "29b4cc53-c477-45e9-a051-4091d9fa001b",
+      "key": "29b4cc53-c477-45e9-a051-4091d9fa001b",
+      "recordId": "29b4cc53-c477-45e9-a051-4091d9fa001b",
+      "bookId": "3",
+      "date": "2025-03-25",
+      "duration": 9,
+      "timestamp": "2025-03-25T21:51:00"
+    },
+    {
+      "id": "d78883d9-33fb-4020-b5b7-157408af7f4b",
+      "key": "d78883d9-33fb-4020-b5b7-157408af7f4b",
+      "recordId": "d78883d9-33fb-4020-b5b7-157408af7f4b",
+      "bookId": "60",
+      "date": "2025-03-23",
+      "duration": 24,
+      "timestamp": "2025-03-23T10:30:00"
+    },
+    {
+      "id": "b2c935b0-ac1d-466e-a7d5-bae7068d71fc",
+      "key": "b2c935b0-ac1d-466e-a7d5-bae7068d71fc",
+      "recordId": "b2c935b0-ac1d-466e-a7d5-bae7068d71fc",
+      "bookId": "14",
+      "date": "2025-03-23",
+      "duration": 49,
+      "timestamp": "2025-03-23T21:14:00"
+    },
+    {
+      "id": "4ef22496-5441-40c5-94d3-3fb341245730",
+      "key": "4ef22496-5441-40c5-94d3-3fb341245730",
+      "recordId": "4ef22496-5441-40c5-94d3-3fb341245730",
+      "bookId": "12",
+      "date": "2025-03-22",
+      "duration": 240,
+      "timestamp": "2025-03-22T21:17:00"
+    },
+    {
+      "id": "456e9611-2352-4505-bcc3-eefa264afdc9",
+      "key": "456e9611-2352-4505-bcc3-eefa264afdc9",
+      "recordId": "456e9611-2352-4505-bcc3-eefa264afdc9",
+      "bookId": "1",
+      "date": "2025-03-21",
+      "duration": 116,
+      "timestamp": "2025-03-21T21:44:00"
+    },
+    {
+      "id": "388b1eae-2aec-4317-a551-932b63dc784a",
+      "key": "388b1eae-2aec-4317-a551-932b63dc784a",
+      "recordId": "388b1eae-2aec-4317-a551-932b63dc784a",
+      "bookId": "60",
+      "date": "2025-03-19",
+      "duration": 173,
+      "timestamp": "2025-03-19T21:33:00"
+    },
+    {
+      "id": "2c6c1df0-f030-4ceb-8a75-48c976dd7b0d",
+      "key": "2c6c1df0-f030-4ceb-8a75-48c976dd7b0d",
+      "recordId": "2c6c1df0-f030-4ceb-8a75-48c976dd7b0d",
+      "bookId": "6",
+      "date": "2025-03-18",
+      "duration": 46,
+      "timestamp": "2025-03-18T21:09:00"
+    },
+    {
+      "id": "c7977d34-c6c1-40ee-9fe6-c9009b2749c2",
+      "key": "c7977d34-c6c1-40ee-9fe6-c9009b2749c2",
+      "recordId": "c7977d34-c6c1-40ee-9fe6-c9009b2749c2",
+      "bookId": "15",
+      "date": "2025-03-17",
+      "duration": 216,
+      "timestamp": "2025-03-17T21:14:00"
+    },
+    {
+      "id": "006ca351-167e-4e06-b9f1-24645de7e7d7",
+      "key": "006ca351-167e-4e06-b9f1-24645de7e7d7",
+      "recordId": "006ca351-167e-4e06-b9f1-24645de7e7d7",
+      "bookId": "58",
+      "date": "2025-03-15",
+      "duration": 81,
+      "timestamp": "2025-03-15T21:47:00"
+    },
+    {
+      "id": "72922f98-76e8-4f2e-b8c0-1d306dd5b3bc",
+      "key": "72922f98-76e8-4f2e-b8c0-1d306dd5b3bc",
+      "recordId": "72922f98-76e8-4f2e-b8c0-1d306dd5b3bc",
+      "bookId": "10",
+      "date": "2025-03-14",
+      "duration": 31,
+      "timestamp": "2025-03-14T21:22:00"
+    },
+    {
+      "id": "f3db3e96-9297-4ea8-9716-0e01993ccc93",
+      "key": "f3db3e96-9297-4ea8-9716-0e01993ccc93",
+      "recordId": "f3db3e96-9297-4ea8-9716-0e01993ccc93",
+      "bookId": "21",
+      "date": "2025-03-12",
+      "duration": 219,
+      "timestamp": "2025-03-12T21:57:00"
+    },
+    {
+      "id": "de52ab16-69c6-4e56-ba4f-b887faca60e8",
+      "key": "de52ab16-69c6-4e56-ba4f-b887faca60e8",
+      "recordId": "de52ab16-69c6-4e56-ba4f-b887faca60e8",
+      "bookId": "14",
+      "date": "2025-03-11",
+      "duration": 25,
+      "timestamp": "2025-03-11T21:49:00"
+    },
+    {
+      "id": "97a1d18c-a878-4206-a7de-b1d593c33b81",
+      "key": "97a1d18c-a878-4206-a7de-b1d593c33b81",
+      "recordId": "97a1d18c-a878-4206-a7de-b1d593c33b81",
+      "bookId": "9",
+      "date": "2025-03-10",
+      "duration": 66,
+      "timestamp": "2025-03-10T21:38:00"
+    },
+    {
+      "id": "4bb48554-6e04-4457-8660-3ebf62743af5",
+      "key": "4bb48554-6e04-4457-8660-3ebf62743af5",
+      "recordId": "4bb48554-6e04-4457-8660-3ebf62743af5",
+      "bookId": "60",
+      "date": "2025-03-09",
+      "duration": 134,
+      "timestamp": "2025-03-09T21:16:00"
+    },
+    {
+      "id": "c7d83e9b-cabf-420d-a7fe-93668543522b",
+      "key": "c7d83e9b-cabf-420d-a7fe-93668543522b",
+      "recordId": "c7d83e9b-cabf-420d-a7fe-93668543522b",
+      "bookId": "6",
+      "date": "2025-03-08",
+      "duration": 87,
+      "timestamp": "2025-03-08T21:16:00"
+    },
+    {
+      "id": "be3aaeac-b656-409f-935a-8be83a0b30ea",
+      "key": "be3aaeac-b656-409f-935a-8be83a0b30ea",
+      "recordId": "be3aaeac-b656-409f-935a-8be83a0b30ea",
+      "bookId": "11",
+      "date": "2025-03-07",
+      "duration": 17,
+      "timestamp": "2025-03-07T21:01:00"
+    },
+    {
+      "id": "5512d5a4-1e6a-4ec4-9cd5-7bcbac139dc4",
+      "key": "5512d5a4-1e6a-4ec4-9cd5-7bcbac139dc4",
+      "recordId": "5512d5a4-1e6a-4ec4-9cd5-7bcbac139dc4",
+      "bookId": "11",
+      "date": "2025-03-06",
+      "duration": 64,
+      "timestamp": "2025-03-06T10:58:00"
+    },
+    {
+      "id": "f061dbad-c2ef-4149-af90-eee7841255b4",
+      "key": "f061dbad-c2ef-4149-af90-eee7841255b4",
+      "recordId": "f061dbad-c2ef-4149-af90-eee7841255b4",
+      "bookId": "8",
+      "date": "2025-03-06",
+      "duration": 220,
+      "timestamp": "2025-03-06T21:10:00"
+    },
+    {
+      "id": "42423b8d-37da-4346-afcc-e4d892bd65cd",
+      "key": "42423b8d-37da-4346-afcc-e4d892bd65cd",
+      "recordId": "42423b8d-37da-4346-afcc-e4d892bd65cd",
+      "bookId": "9",
+      "date": "2025-03-05",
+      "duration": 14,
+      "timestamp": "2025-03-05T21:02:00"
+    },
+    {
+      "id": "df7126da-7d6a-4218-9cdc-658618757d5a",
+      "key": "df7126da-7d6a-4218-9cdc-658618757d5a",
+      "recordId": "df7126da-7d6a-4218-9cdc-658618757d5a",
+      "bookId": "30",
+      "date": "2025-03-01",
+      "duration": 67,
+      "timestamp": "2025-03-01T21:28:00"
+    },
+    {
+      "id": "7bb6f98f-b067-448b-9c3c-886ecdb82c3b",
+      "key": "7bb6f98f-b067-448b-9c3c-886ecdb82c3b",
+      "recordId": "7bb6f98f-b067-448b-9c3c-886ecdb82c3b",
+      "bookId": "5",
+      "date": "2025-02-26",
+      "duration": 73,
+      "timestamp": "2025-02-26T21:34:00"
+    },
+    {
+      "id": "d9a58a89-bf86-45af-bf7d-d4d03d34c704",
+      "key": "d9a58a89-bf86-45af-bf7d-d4d03d34c704",
+      "recordId": "d9a58a89-bf86-45af-bf7d-d4d03d34c704",
+      "bookId": "30",
+      "date": "2025-02-21",
+      "duration": 51,
+      "timestamp": "2025-02-21T21:25:00"
+    },
+    {
+      "id": "bd2c1662-ecd2-4895-add6-11144a6dc5d7",
+      "key": "bd2c1662-ecd2-4895-add6-11144a6dc5d7",
+      "recordId": "bd2c1662-ecd2-4895-add6-11144a6dc5d7",
+      "bookId": "5",
+      "date": "2025-02-20",
+      "duration": 15,
+      "timestamp": "2025-02-20T21:25:00"
+    },
+    {
+      "id": "7c98a5ca-95d1-4200-984a-6378c52c52ee",
+      "key": "7c98a5ca-95d1-4200-984a-6378c52c52ee",
+      "recordId": "7c98a5ca-95d1-4200-984a-6378c52c52ee",
+      "bookId": "8",
+      "date": "2025-02-18",
+      "duration": 31,
+      "timestamp": "2025-02-18T21:06:00"
+    },
+    {
+      "id": "735c1a49-18dd-4907-9dc5-0e9e78706146",
+      "key": "735c1a49-18dd-4907-9dc5-0e9e78706146",
+      "recordId": "735c1a49-18dd-4907-9dc5-0e9e78706146",
+      "bookId": "7",
+      "date": "2025-02-16",
+      "duration": 28,
+      "timestamp": "2025-02-16T21:03:00"
+    },
+    {
+      "id": "1743a541-6e49-4d65-a5bc-e4d25bd4cc52",
+      "key": "1743a541-6e49-4d65-a5bc-e4d25bd4cc52",
+      "recordId": "1743a541-6e49-4d65-a5bc-e4d25bd4cc52",
+      "bookId": "14",
+      "date": "2025-02-13",
+      "duration": 14,
+      "timestamp": "2025-02-13T21:29:00"
+    },
+    {
+      "id": "7b9bb79f-2944-47a1-8a6f-f2d68032403a",
+      "key": "7b9bb79f-2944-47a1-8a6f-f2d68032403a",
+      "recordId": "7b9bb79f-2944-47a1-8a6f-f2d68032403a",
+      "bookId": "7",
+      "date": "2025-02-12",
+      "duration": 114,
+      "timestamp": "2025-02-12T21:32:00"
+    },
+    {
+      "id": "fed5917d-13ca-402c-b2c6-23d4cd016566",
+      "key": "fed5917d-13ca-402c-b2c6-23d4cd016566",
+      "recordId": "fed5917d-13ca-402c-b2c6-23d4cd016566",
+      "bookId": "7",
+      "date": "2025-02-11",
+      "duration": 111,
+      "timestamp": "2025-02-11T21:50:00"
+    },
+    {
+      "id": "a093b6aa-acb3-4cfb-8c67-4b16b6fa2c62",
+      "key": "a093b6aa-acb3-4cfb-8c67-4b16b6fa2c62",
+      "recordId": "a093b6aa-acb3-4cfb-8c67-4b16b6fa2c62",
+      "bookId": "14",
+      "date": "2025-02-10",
+      "duration": 204,
+      "timestamp": "2025-02-10T10:33:00"
+    },
+    {
+      "id": "ffb573e1-44f9-4528-9ad8-4d19ac106d93",
+      "key": "ffb573e1-44f9-4528-9ad8-4d19ac106d93",
+      "recordId": "ffb573e1-44f9-4528-9ad8-4d19ac106d93",
+      "bookId": "3",
+      "date": "2025-02-10",
+      "duration": 32,
+      "timestamp": "2025-02-10T21:16:00"
+    },
+    {
+      "id": "b4440a68-0ac4-4bf0-aa69-432943459cd7",
+      "key": "b4440a68-0ac4-4bf0-aa69-432943459cd7",
+      "recordId": "b4440a68-0ac4-4bf0-aa69-432943459cd7",
+      "bookId": "11",
+      "date": "2025-02-09",
+      "duration": 137,
+      "timestamp": "2025-02-09T21:44:00"
+    },
+    {
+      "id": "007926b7-582e-46bd-addf-823ba3b3eb02",
+      "key": "007926b7-582e-46bd-addf-823ba3b3eb02",
+      "recordId": "007926b7-582e-46bd-addf-823ba3b3eb02",
+      "bookId": "6",
+      "date": "2025-02-08",
+      "duration": 8,
+      "timestamp": "2025-02-08T21:13:00"
+    }
+  ],
+  "recommendedAudiobooks": [
+    "audio_1",
+    "audio_2",
+    "audio_3",
+    "audio_4",
+    "audio_5",
+    "audio_6"
+  ],
+  "hotListeningChart": [
+    "audio_7",
+    "audio_8",
+    "audio_9",
+    "audio_10",
+    "audio_11",
+    "audio_12",
+    "audio_13",
+    "audio_14",
+    "audio_15"
+  ],
+  "bookFriends": [
+    {
+      "id": "post_1",
+      "author": "HE",
+      "time": "12/17",
+      "content": "我已经使用微信读书好几年了，我感觉还行...",
+      "likes": 322,
+      "comments": 105
+    },
+    {
+      "id": "post_2",
+      "author": "青竹",
+      "time": "12/15",
+      "content": "我48周岁，女性，曾是高中语文教师一枚...",
+      "likes": 20,
+      "comments": 5
+    }
+  ],
+  "hotSearch": [
+    {
+      "id": "h1",
+      "rank": 1,
+      "title": "亏成首富从游戏开始",
+      "subtitle": "#电视剧《年少有为》原著",
+      "metric": "推荐值 87.7%",
+      "badge": "好评如潮",
+      "coverColor": "bg-blue-200"
+    },
+    {
+      "id": "h2",
+      "rank": 2,
+      "title": "重返狼群背后的故事",
+      "people": "1.4万人在搜",
+      "metric": "推荐值 81.3%",
+      "badge": "脍炙人口",
+      "coverColor": "bg-amber-100"
+    },
+    {
+      "id": "h3",
+      "rank": 3,
+      "title": "长恨歌",
+      "people": "1.3万人在搜",
+      "metric": "推荐值 79.4%",
+      "badge": "值得一读",
+      "coverColor": "bg-red-100"
+    },
+    {
+      "id": "h4",
+      "rank": 4,
+      "title": "五代十国全史（全八册）",
+      "subtitle": "#电视剧《太平年》的历史背景",
+      "metric": "推荐值 87.9%",
+      "badge": "好评如潮",
+      "coverColor": "bg-green-100"
+    },
+    {
+      "id": "h5",
+      "rank": 5,
+      "title": "sales夫妇",
+      "subtitle": "#电视剧《夜色正浓》原著",
+      "metric": "推荐值 82.3%",
+      "coverColor": "bg-purple-200"
+    },
+    {
+      "id": "h6",
+      "rank": 6,
+      "title": "骆驼祥子",
+      "people": "6107 人在搜",
+      "metric": "推荐值 95.9%",
+      "coverColor": "bg-yellow-100"
+    },
+    {
+      "id": "h7",
+      "rank": 7,
+      "title": "超级沟通者",
+      "people": "5919 人在搜",
+      "metric": "推荐值 78.4%",
+      "badge": "值得一读",
+      "coverColor": "bg-indigo-100"
+    }
+  ],
+  "settings": {
+    "autoLock": false,
+    "allowLandscape": true,
+    "hideThought": false,
+    "showTimeBattery": false,
+    "volumeKeyTurn": false,
+    "firstLineIndent": false,
+    "clickLeftNext": false,
+    "blockWebNovels": false,
+    "mixAudio": false,
+    "pageTurnStyle": "左右滑动",
+    "darkMode": "跟随系统",
+    "privacy": {
+      "requireFollowRequest": false,
+      "hideVipGlobal": false,
+      "autoPrivateReading": false,
+      "shelfReplacement": false,
+      "rejectStrangerMsg": false,
+      "closePersonalizedRec": false,
+      "closeReadingRank": false,
+      "profile": {
+        "showShelf": true,
+        "showLiked": false,
+        "showLists": true,
+        "showBadge": true,
+        "showThought": true,
+        "visibility": "关注我的人可见"
+      }
+    },
+    "notifications": {
+      "newFollower": true,
+      "newWechatFriend": true,
+      "activityWelfare": true
+    }
+  },
+  "readerPrefs": {
+    "fontSize": 22,
+    "themeColor": "white",
+    "themeBg": "matchTheme",
+    "margin": 3,
+    "lineHeight": 4
+  }
+}

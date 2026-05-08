@@ -1,0 +1,228 @@
+{
+  "app": "gallery",
+  "appDir": "apps/Gallery",
+  "mode": "schema",
+  "dataFile": null,
+  "reachability": null,
+  "routeCount": 4,
+  "transitionCount": 3,
+  "nodes": [
+    {
+      "id": "/",
+      "routePath": "/",
+      "uiStateId": "gallery.home.base",
+      "component": "HomePage",
+      "entryPoint": true,
+      "entry": {
+        "kind": "home",
+        "home": true,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "页面主内容区"
+        }
+      ],
+      "description": "相册首页",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/favorites",
+      "routePath": "/favorites",
+      "uiStateId": "gallery.favorites.base",
+      "component": "FavoritesPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "页面主内容区"
+        }
+      ],
+      "description": "收藏页",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/album/:albumId",
+      "routePath": "/album/:albumId",
+      "uiStateId": "gallery.album.base",
+      "component": "AlbumDetailPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "deepLink",
+        "home": false,
+        "deepLink": true
+      },
+      "params": {
+        "albumId": "string"
+      },
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "页面主内容区"
+        }
+      ],
+      "description": "相册详情页",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/photo/:path?album=:album&from=:from",
+      "routePath": "/photo/:path",
+      "uiStateId": "gallery.photo.base",
+      "component": "PhotoViewerPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "deepLink",
+        "home": false,
+        "deepLink": true
+      },
+      "params": {
+        "path": "string"
+      },
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "页面主内容区"
+        }
+      ],
+      "description": "图片预览页",
+      "search": {},
+      "queryParams": {
+        "album": "string",
+        "from": "string"
+      },
+      "actions": []
+    }
+  ],
+  "edges": [
+    {
+      "source": "/",
+      "sourceNodeId": "/",
+      "target": "/favorites",
+      "targetNodeId": "/favorites",
+      "id": "favorites.open",
+      "label": "打开收藏页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "favorites",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/",
+      "sourceNodeId": "/",
+      "target": "/album/:albumId",
+      "targetNodeId": "/album/:albumId",
+      "id": "album.open",
+      "label": "打开相册详情页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {
+        "albumId": "string"
+      },
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "album",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/",
+      "sourceNodeId": "/",
+      "target": "/photo/:path?album=:album&from=:from",
+      "targetNodeId": "/photo/:path?album=:album&from=:from",
+      "id": "photo.open",
+      "label": "打开图片预览页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {
+        "album": "string",
+        "from": "string"
+      },
+      "params": {
+        "path": "string"
+      },
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "photo",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/favorites",
+      "sourceNodeId": "/favorites",
+      "target": "/photo/:path?album=:album&from=:from",
+      "targetNodeId": "/photo/:path?album=:album&from=:from",
+      "id": "photo.open",
+      "label": "打开图片预览页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {
+        "album": "string",
+        "from": "string"
+      },
+      "params": {
+        "path": "string"
+      },
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "photo",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/album/:albumId",
+      "sourceNodeId": "/album/:albumId",
+      "target": "/photo/:path?album=:album&from=:from",
+      "targetNodeId": "/photo/:path?album=:album&from=:from",
+      "id": "photo.open",
+      "label": "打开图片预览页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {
+        "album": "string",
+        "from": "string"
+      },
+      "params": {
+        "path": "string"
+      },
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "photo",
+        "gesture": "tap"
+      }
+    }
+  ]
+}

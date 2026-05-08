@@ -1,0 +1,98 @@
+{
+  "app": "settings",
+  "appDir": "apps/Settings",
+  "mode": "schema",
+  "routeCount": 3,
+  "edgeCount": 3,
+  "nodes": [
+    {
+      "id": "/",
+      "routePath": "/",
+      "component": "SettingsMainPage",
+      "entryPoint": true,
+      "entry": {
+        "kind": "home",
+        "home": true,
+        "deepLink": false
+      },
+      "description": "设置首页",
+      "stateCount": 1,
+      "states": [
+        "/"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/search",
+      "routePath": "/search",
+      "component": "SettingsSearchPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "设置搜索页",
+      "stateCount": 1,
+      "states": [
+        "/search"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/page/:pageId",
+      "routePath": "/page/:pageId",
+      "component": "PreferenceScreenPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "deepLink",
+        "home": false,
+        "deepLink": true
+      },
+      "description": "设置详情页",
+      "stateCount": 1,
+      "states": [
+        "/page/:pageId"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    }
+  ],
+  "edges": [
+    {
+      "source": "/",
+      "target": "/search",
+      "transitions": [
+        "search.open"
+      ],
+      "type": "navigation",
+      "label": "search.open",
+      "id": "search.open"
+    },
+    {
+      "source": "/",
+      "target": "/page/:pageId",
+      "transitions": [
+        "page.open"
+      ],
+      "type": "navigation",
+      "label": "page.open",
+      "id": "page.open"
+    },
+    {
+      "source": "/search",
+      "target": "/page/:pageId",
+      "transitions": [
+        "page.open"
+      ],
+      "type": "navigation",
+      "label": "page.open",
+      "id": "page.open"
+    }
+  ]
+}

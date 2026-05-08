@@ -1,0 +1,3066 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nav Graph Console</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="/vendor/cytoscape.min.js"></script>
+    <script src="/vendor/dagre.min.js"></script>
+    <script src="/vendor/cytoscape-dagre.min.js"></script>
+    <script>
+        (function ensureDagreRegistered() {
+            const register = () => {
+                const cy = window.cytoscape;
+                const plugin = window.cytoscapeDagre || window.cytoscape_dagre || window.dagreCytoscape;
+                if (cy && plugin && !register.done) {
+                    cy.use(plugin);
+                    register.done = true;
+                    console.info('[Nav Graph] cytoscape-dagre registered');
+                    return true;
+                }
+                return false;
+            };
+
+            if (!register()) {
+                const interval = setInterval(() => {
+                    if (register()) {
+                        clearInterval(interval);
+                    }
+                }, 50);
+                setTimeout(() => clearInterval(interval), 5000);
+            }
+        })();
+    </script>
+    <style>
+        :root {
+            color-scheme: dark;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: 'Inter', 'PingFang SC', 'SF Pro Text', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            background: radial-gradient(circle at top, rgba(14, 165, 233, 0.15), transparent 45%),
+                radial-gradient(circle at 10% 35%, rgba(99, 102, 241, 0.18), transparent 40%),
+                rgb(2, 6, 23);
+            color: #e2e8f0;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(148, 163, 184, 0.07) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(148, 163, 184, 0.05) 1px, transparent 1px);
+            background-size: 80px 80px;
+            pointer-events: none;
+        }
+
+        body.mode-action-tasks::after {
+            display: none;
+        }
+
+        #cy {
+            position: absolute;
+            inset: 0;
+        }
+
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.78);
+            border: 1px solid rgba(148, 163, 184, 0.15);
+            border-radius: 28px;
+            box-shadow: 0 20px 60px rgba(2, 6, 23, 0.65);
+            backdrop-filter: blur(22px);
+        }
+
+        .inspector {
+            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            will-change: transform;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border-radius: 999px;
+            font-size: 11px;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            padding: 0.15rem 0.9rem;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .toast {
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .toast.hidden {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-10px);
+        }
+
+        .legend-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            line-height: 1.2;
+            color: rgba(226, 232, 240, 0.92);
+        }
+
+        .legend-swatch {
+            width: 26px;
+            height: 0;
+            border-top: 3px solid rgba(148, 163, 184, 0.6);
+            border-radius: 999px;
+        }
+
+        .legend-swatch.dashed {
+            border-top-style: dashed;
+        }
+
+        .legend-node-swatch {
+            width: 14px;
+            height: 14px;
+            border-radius: 4px;
+            background: rgba(15, 23, 42, 0.9);
+            border: 2px solid rgba(56, 189, 248, 0.5);
+        }
+
+        .legend-node-swatch.dashed {
+            border-style: dashed;
+        }
+    </style>
+</head>
+
+<body class="h-screen overflow-hidden">
+    <!-- Global mode switcher (always visible) -->
+    <div id="modeSwitcher" class="fixed top-6 left-6 z-50">
+        <div class="flex items-center gap-1 rounded-full bg-slate-900/80 border border-white/10 p-1 backdrop-blur-md shadow-2xl">
+            <button id="btnModeNav"
+                class="px-4 py-2 text-xs font-semibold rounded-full border border-transparent transition-colors">
+                Nav Graph
+            </button>
+            <button id="btnModeTasks"
+                class="px-4 py-2 text-xs font-semibold rounded-full border border-transparent transition-colors">
+                Action Tasks
+            </button>
+        </div>
+    </div>
+
+    <!-- Action Tasks view (reuses existing viewer via iframe to avoid code duplication) -->
+    <div id="actionTasksView" class="hidden fixed inset-0 z-0">
+        <iframe id="actionTasksFrame" title="Action Tasks Viewer"
+            class="w-full h-full border-0"></iframe>
+        <template id="actionTasksSrcdoc">
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Action Task Trajectory Console</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/vendor/cytoscape.min.js"></script>
+  <script src="/vendor/dagre.min.js"></script>
+  <script src="/vendor/cytoscape-dagre.min.js"></script>
+  <script>
+    (function ensureDagreRegistered() {
+      const register = () => {
+        const cy = window.cytoscape;
+        const plugin = window.cytoscapeDagre || window.cytoscape_dagre || window.dagreCytoscape;
+        if (cy && plugin && !register.done) {
+          cy.use(plugin);
+          register.done = true;
+          console.info('[Trajectory] cytoscape-dagre registered');
+          return true;
+        }
+        return false;
+      };
+
+      if (!register()) {
+        const interval = setInterval(() => {
+          if (register()) clearInterval(interval);
+        }, 50);
+        setTimeout(() => clearInterval(interval), 5000);
+      }
+    })();
+  </script>
+  <style>
+    :root {
+      color-scheme: dark;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: 'Inter', 'PingFang SC', 'SF Pro Text', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: radial-gradient(circle at top, rgba(34, 197, 94, 0.12), transparent 45%),
+        radial-gradient(circle at 10% 35%, rgba(168, 85, 247, 0.14), transparent 40%),
+        rgb(2, 6, 23);
+      color: #e2e8f0;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(148, 163, 184, 0.07) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(148, 163, 184, 0.05) 1px, transparent 1px);
+      background-size: 80px 80px;
+      pointer-events: none;
+    }
+
+    #cy {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .glass-panel {
+      background: rgba(15, 23, 42, 0.78);
+      border: 1px solid rgba(148, 163, 184, 0.15);
+      border-radius: 28px;
+      box-shadow: 0 20px 60px rgba(2, 6, 23, 0.65);
+      backdrop-filter: blur(22px);
+    }
+
+    .inspector {
+      transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      will-change: transform;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 999px;
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 0.15rem 0.9rem;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .toast {
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .toast.hidden {
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(-10px);
+    }
+
+    .scrollbar-thin::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
+
+    .scrollbar-thin::-webkit-scrollbar-thumb {
+      background: rgba(148, 163, 184, 0.18);
+      border-radius: 999px;
+      border: 2px solid rgba(2, 6, 23, 0.4);
+    }
+
+    .scrollbar-thin::-webkit-scrollbar-track {
+      background: transparent;
+    }
+  </style>
+</head>
+
+<body class="h-screen overflow-hidden">
+  <main class="relative z-10 h-screen flex flex-col">
+    <header class="px-8 pt-8 pb-4 flex flex-wrap gap-4 items-center justify-between">
+      <div>
+        <p class="text-xs uppercase tracking-[0.4em] text-slate-400/80">Action Task Trajectory Explorer</p>
+        <h1 class="mt-2 text-3xl font-semibold text-white tracking-tight">Trajectory Console</h1>
+        <p id="datasetStatus" class="mt-3 text-sm text-slate-300 max-w-2xl">
+          请选择或导入 <code class="px-2 py-0.5 bg-white/10 rounded-md text-xs">*_action_tasks*.json</code> 或 <code class="px-2 py-0.5 bg-white/10 rounded-md text-xs">.jsonl</code> 进行可视化。
+        </p>
+      </div>
+      <div class="flex flex-wrap items-center gap-3">
+        <div class="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-full border border-white/10">
+          <span class="text-[11px] uppercase tracking-widest text-slate-400/90">当前数据集</span>
+          <span id="datasetChip" class="text-sm font-semibold text-white">未选择</span>
+        </div>
+        <select id="datasetSelect"
+          class="bg-slate-900/70 border border-white/15 rounded-full px-4 py-2 text-sm text-white/90 focus:ring-2 focus:ring-emerald-400/40 focus:outline-none">
+        </select>
+        <button id="uploadTrigger"
+          class="rounded-full px-4 py-2 text-sm font-medium border border-white/10 text-white/90 bg-white/5 hover:bg-white/10 transition-colors">
+          导入文件
+        </button>
+        <button id="directionToggle"
+          class="rounded-full px-4 py-2 text-sm font-medium border border-white/10 text-fuchsia-200 bg-fuchsia-500/10 hover:bg-fuchsia-500/20 transition-colors">
+          横向排布
+        </button>
+        <button id="relayoutBtn"
+          class="rounded-full px-4 py-2 text-sm font-medium border border-white/10 text-emerald-200 bg-emerald-500/10 hover:bg-emerald-500/20 transition-colors">
+          重新布局
+        </button>
+        <button id="fitBtn"
+          class="rounded-full px-4 py-2 text-sm font-medium border border-white/10 text-cyan-200 bg-cyan-500/10 hover:bg-cyan-500/20 transition-colors">
+          全图视角
+        </button>
+      </div>
+    </header>
+
+    <div class="flex-1 min-h-0 px-8 pb-8 relative">
+      <div class="h-full flex gap-6 min-h-0">
+        <aside class="glass-panel w-[360px] shrink-0 p-5 flex flex-col gap-6 h-full min-h-0 overflow-y-auto scrollbar-thin">
+          <div>
+            <p class="text-xs uppercase tracking-[0.3em] text-slate-400/80">数据源</p>
+            <p id="datasetMeta" class="mt-2 text-sm text-slate-100 font-medium leading-relaxed">
+              尚未加载数据
+            </p>
+          </div>
+
+          <div>
+            <p class="text-xs uppercase tracking-[0.3em] text-slate-400/80 mb-3">统计</p>
+            <div class="grid grid-cols-2 gap-3">
+              <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+                <p class="text-[10px] uppercase tracking-widest text-slate-400/80">任务数</p>
+                <p id="statTasks" class="mt-2 text-2xl font-semibold text-white">0</p>
+              </div>
+              <div class="rounded-2xl border border-amber-500/20 bg-amber-500/5 px-4 py-3">
+                <p class="text-[10px] uppercase tracking-widest text-amber-300/80">总轨迹数</p>
+                <p id="statTotalTrajectories" class="mt-2 text-2xl font-semibold text-amber-200">0</p>
+              </div>
+              <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+                <p class="text-[10px] uppercase tracking-widest text-slate-400/80">平均步骤</p>
+                <p id="statAvgSteps" class="mt-2 text-2xl font-semibold text-white">0</p>
+              </div>
+              <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+                <p class="text-[10px] uppercase tracking-widest text-slate-400/80">唯一节点</p>
+                <p id="statNodes" class="mt-2 text-2xl font-semibold text-white">0</p>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <p class="text-xs uppercase tracking-[0.3em] text-slate-400/80">任务搜索</p>
+            <div class="mt-3 flex gap-2">
+              <div class="flex-1 relative">
+                <input id="taskSearch" type="text" placeholder="输入 actionId / label / taskId"
+                  class="w-full bg-slate-900/70 border border-white/10 rounded-2xl px-4 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-400/30" />
+                <span
+                  class="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] uppercase tracking-widest text-slate-500">⌘K</span>
+              </div>
+              <button id="clearSearch"
+                class="rounded-2xl px-3 py-2 text-xs font-semibold border border-white/10 text-slate-200 bg-white/5 hover:bg-white/10">
+                清空
+              </button>
+            </div>
+          </div>
+
+          <div class="flex flex-col">
+            <div class="flex items-center justify-between mb-3">
+              <p class="text-xs uppercase tracking-[0.3em] text-slate-400/80">任务列表</p>
+              <span id="taskCountChip" class="text-xs text-slate-400 font-mono">0</span>
+            </div>
+            <div id="taskList" class="space-y-2">
+              <p class="text-sm text-slate-500">加载数据后将显示任务列表</p>
+            </div>
+          </div>
+
+          <div class="text-xs text-slate-400/90 leading-relaxed">
+            提示：点击任务加载轨迹；滚轮缩放、拖拽平移；点击节点/边查看详情；支持导入本地 JSONL。
+          </div>
+        </aside>
+
+        <section class="flex-1 relative rounded-[36px] border border-white/10 bg-slate-900/40 overflow-hidden min-w-0">
+          <div id="cy"></div>
+          <div id="graphLoading"
+            class="absolute inset-0 bg-slate-900/80 backdrop-blur text-white flex flex-col items-center justify-center gap-3 text-sm tracking-wide" style="display: none;">
+            <div class="w-10 h-10 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+            正在加载轨迹数据...
+          </div>
+          <div id="graphEmpty"
+            class="absolute inset-0 flex flex-col items-center justify-center text-center px-16 text-slate-400 space-y-4" style="display: none;">
+            <div class="text-4xl">🧭</div>
+            <div>
+              <p data-empty-title class="text-lg font-semibold text-white mb-1">暂无数据</p>
+              <p data-empty-detail class="text-sm text-slate-400">请加载 action_tasks JSONL 后再尝试</p>
+            </div>
+          </div>
+          <div
+            class="absolute bottom-4 left-4 text-[11px] uppercase tracking-[0.3em] text-slate-400/80 bg-black/40 backdrop-blur-md px-4 py-2 rounded-full border border-white/10">
+            Scroll 缩放 · Drag 平移 · Double Tap 清空选中
+          </div>
+        </section>
+
+        <aside id="inspector"
+          class="inspector glass-panel absolute top-0 bottom-0 right-0 w-[440px] p-5 flex flex-col translate-x-full">
+          <div class="flex items-center justify-between border-b border-white/10 pb-3 mb-4">
+            <div>
+              <p id="inspectorTitle" class="text-sm uppercase tracking-[0.4em] text-slate-400/80">详情</p>
+              <p id="inspectorLabel" class="text-lg font-semibold text-white mt-1 truncate">-</p>
+            </div>
+            <button id="inspectorClose"
+              class="text-slate-400 hover:text-white transition-colors rounded-full border border-white/10 p-2">✕</button>
+          </div>
+          <div id="inspectorContent" class="flex-1 overflow-y-auto pr-1 text-sm text-slate-200 space-y-4 scrollbar-thin">
+            <p class="text-slate-500 leading-relaxed">点击任意任务、节点或边即可在此查看轨迹步骤、触发方式与代码引用。</p>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <div id="toast"
+      class="toast hidden fixed top-6 right-6 z-50 bg-slate-900/90 border border-white/10 rounded-full px-4 py-2 text-sm shadow-2xl">
+      -
+    </div>
+    <input type="file" id="fileInput" accept=".json,.jsonl,.txt,text/plain,application/json,application/jsonl" class="hidden" />
+  </main>
+
+  <script>
+    // DATASETS will be populated dynamically from /api/list-public-files
+    let DATASETS = [];
+
+    const PIXEL_RATIO = Math.min(window.devicePixelRatio || 1, 2);
+    const FALLBACK_LAYOUT = 'breadthfirst';
+
+    let cyInstance = null;
+    let currentDatasetLabel = '';
+    let activeLayoutName = 'dagre';
+    let layoutDirection = 'horizontal';
+    let toastTimer = null;
+
+    const runtimeState = {
+      tasks: [],
+      filteredTasks: [],
+      selectedTaskId: null,
+      selectedTrajectoryIndex: 0,
+      nodes: new Map(),
+      edges: new Map(),
+    };
+
+    const dom = {};
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      cacheDom();
+      updateDirectionToggleLabel();
+      attachEventHandlers();
+      await fetchAndHydrateDatasets();
+    });
+
+    async function fetchAndHydrateDatasets() {
+      try {
+        const response = await fetch('/api/list-public-files');
+        if (!response.ok) throw new Error('无法获取文件列表');
+        const data = await response.json();
+        DATASETS = (data.action_tasks || []).map(item => ({
+          ...item,
+          app: item.label.split(' ')[0] || 'Unknown',
+          description: item.file,
+        }));
+        hydrateDatasetOptions();
+        preloadDefaultDataset();
+      } catch (error) {
+        console.error('[Action Tasks] 获取数据集列表失败:', error);
+        setDatasetStatus('无法自动发现数据集，请手动导入 JSON/JSONL 文件');
+        showToast('自动发现数据集失败，请手动导入', 'error');
+      }
+    }
+
+    function cacheDom() {
+      dom.datasetSelect = document.getElementById('datasetSelect');
+      dom.datasetChip = document.getElementById('datasetChip');
+      dom.datasetMeta = document.getElementById('datasetMeta');
+      dom.datasetStatus = document.getElementById('datasetStatus');
+      dom.uploadTrigger = document.getElementById('uploadTrigger');
+      dom.fileInput = document.getElementById('fileInput');
+      dom.directionToggle = document.getElementById('directionToggle');
+      dom.relayoutBtn = document.getElementById('relayoutBtn');
+      dom.fitBtn = document.getElementById('fitBtn');
+      dom.graphLoading = document.getElementById('graphLoading');
+      dom.graphEmpty = document.getElementById('graphEmpty');
+      dom.taskSearch = document.getElementById('taskSearch');
+      dom.clearSearch = document.getElementById('clearSearch');
+      dom.taskList = document.getElementById('taskList');
+      dom.taskCountChip = document.getElementById('taskCountChip');
+      dom.statTasks = document.getElementById('statTasks');
+      dom.statTotalTrajectories = document.getElementById('statTotalTrajectories');
+      dom.statAvgSteps = document.getElementById('statAvgSteps');
+      dom.statNodes = document.getElementById('statNodes');
+      dom.inspector = document.getElementById('inspector');
+      dom.inspectorTitle = document.getElementById('inspectorTitle');
+      dom.inspectorLabel = document.getElementById('inspectorLabel');
+      dom.inspectorContent = document.getElementById('inspectorContent');
+      dom.inspectorClose = document.getElementById('inspectorClose');
+      dom.toast = document.getElementById('toast');
+    }
+
+    function hydrateDatasetOptions() {
+      dom.datasetSelect.innerHTML = '';
+      DATASETS.forEach((dataset, index) => {
+        const option = document.createElement('option');
+        option.value = dataset.id;
+        option.textContent = dataset.label;
+        dom.datasetSelect.appendChild(option);
+        if (index === 0) dom.datasetSelect.value = dataset.id;
+      });
+    }
+
+    function attachEventHandlers() {
+      dom.datasetSelect.addEventListener('change', (event) => {
+        const dataset = DATASETS.find(item => item.id === event.target.value);
+        if (dataset) loadTasksFromFile(dataset);
+      });
+
+      dom.uploadTrigger.addEventListener('click', () => dom.fileInput.click());
+      dom.fileInput.addEventListener('change', handleLocalFile);
+
+      dom.directionToggle?.addEventListener('click', () => {
+        layoutDirection = layoutDirection === 'horizontal' ? 'vertical' : 'horizontal';
+        updateDirectionToggleLabel();
+        runLayout();
+        showToast(`已切换为${layoutDirection === 'horizontal' ? '横向' : '纵向'}排布`);
+      });
+
+      dom.relayoutBtn.addEventListener('click', () => runLayout(true));
+      dom.fitBtn.addEventListener('click', () => {
+        if (cyInstance) {
+          cyInstance.fit(undefined, 70);
+          showToast('已将视图适配至全图');
+        }
+      });
+
+      const debouncedSearch = debounce((value) => applyTaskSearch(value), 160);
+      dom.taskSearch.addEventListener('input', (event) => debouncedSearch(event.target.value));
+      dom.clearSearch.addEventListener('click', () => {
+        dom.taskSearch.value = '';
+        applyTaskSearch('');
+      });
+
+      dom.inspectorClose.addEventListener('click', () => {
+        hideInspector();
+        clearHighlights();
+      });
+
+      window.addEventListener('resize', () => cyInstance?.resize());
+      window.addEventListener('keydown', (event) => {
+        if (event.key?.toLowerCase() === 'k' && (event.metaKey || event.ctrlKey)) {
+          dom.taskSearch.focus();
+          event.preventDefault();
+        }
+        if (event.key === 'Escape') {
+          hideInspector();
+          clearHighlights();
+        }
+      });
+    }
+
+    function preloadDefaultDataset() {
+      if (DATASETS.length > 0) loadTasksFromFile(DATASETS[0]);
+    }
+
+    async function loadTasksFromFile(dataset) {
+      if (!dataset?.file) return;
+      currentDatasetLabel = dataset.label;
+      updateDatasetChip(dataset.label);
+      setDatasetStatus(`正在加载 ${dataset.label} ...`);
+      toggleLoading(true);
+      hideInspector();
+      clearHighlights();
+
+      try {
+        const response = await fetch(dataset.file, { cache: 'no-store' });
+        if (!response.ok) throw new Error(`无法加载数据 (HTTP ${response.status})`);
+        const text = await response.text();
+        const tasks = parseJsonl(text);
+        loadTasksFromData(tasks, dataset.label, dataset);
+        showToast(`已加载 ${dataset.label}`);
+      } catch (error) {
+        console.error(error);
+        setDatasetStatus('加载失败，请检查 JSONL 文件路径。');
+        showToast(error.message || '加载失败', 'error');
+        setGraphEmptyState(true, '加载失败', error.message || '无法读取轨迹数据');
+      } finally {
+        toggleLoading(false);
+      }
+    }
+
+    function loadTasksFromData(tasks, label = '自定义数据', datasetMeta = null) {
+      if (!Array.isArray(tasks) || tasks.length === 0) {
+        runtimeState.tasks = [];
+        runtimeState.filteredTasks = [];
+        runtimeState.selectedTaskId = null;
+        updateDatasetMeta(datasetMeta?.app, datasetMeta?.description, { tasks: 0, graphFile: '-' });
+        updateStats([]);
+        renderTaskList([]);
+        setGraphEmptyState(true);
+        setDatasetStatus(`${label} · 无任务`);
+        if (cyInstance) cyInstance.destroy();
+        cyInstance = null;
+        return;
+      }
+
+      const normalized = tasks.map((t, idx) => normalizeTask(t, idx)).filter(Boolean);
+      runtimeState.tasks = normalized;
+      runtimeState.filteredTasks = normalized;
+      runtimeState.selectedTaskId = normalized[0]?.taskId || null;
+
+      const graphFile = normalized.find(x => x.graphFile)?.graphFile || '-';
+      updateDatasetMeta(datasetMeta?.app, datasetMeta?.description, { tasks: normalized.length, graphFile });
+      updateStats(normalized);
+      setGraphEmptyState(false);
+      setDatasetStatus(`${label} · ${normalized.length} tasks`);
+      renderTaskList(normalized);
+
+      if (runtimeState.selectedTaskId) {
+        selectTask(runtimeState.selectedTaskId, { autoFocus: true });
+      }
+    }
+
+    function normalizeTask(task, index) {
+      if (!task || typeof task !== 'object') return null;
+      const taskId = task.taskId || `task-${index}`;
+      const action = task.action || {};
+      const actionId = action.id || guessActionIdFromTaskId(taskId) || '';
+      const actionLabel = action.label || '';
+      // Support both old format (single trajectory) and new format (multiple trajectories)
+      const trajectories = task.trajectoriesDetailed || (task.trajectoryDetailed ? [{ ...task.trajectory, steps: task.trajectoryDetailed.steps }] : []);
+      const trajectoryCount = task.trajectoryCount ?? trajectories.length;
+      const shortestLength = task.shortestLength ?? (task.trajectory?.transitions?.length ?? 0);
+      const steps = trajectories[0]?.steps || task.trajectoryDetailed?.steps || [];
+      const stepCount = Array.isArray(steps) ? steps.length : 0;
+      const nodes = task.trajectory?.nodes || trajectories[0]?.nodes || [];
+      const transitions = task.trajectory?.transitions || trajectories[0]?.transitions || [];
+      const graphFile = task.graphFile || '';
+      return {
+        _index: index,
+        ...task,
+        taskId,
+        action: { ...action, id: actionId, label: actionLabel },
+        _derived: {
+          actionId,
+          actionLabel,
+          stepCount,
+          nodes,
+          transitions,
+          graphFile,
+          trajectoryCount,
+          shortestLength,
+          trajectories,
+          searchable: `${taskId} ${actionId} ${actionLabel}`.toLowerCase(),
+        },
+      };
+    }
+
+    function guessActionIdFromTaskId(taskId) {
+      const parts = String(taskId || '').split(':');
+      return parts.length >= 2 ? parts.slice(1).join(':') : '';
+    }
+
+    function updateDatasetMeta(appName, description, info) {
+      dom.datasetMeta.textContent =
+        `${appName || '未知应用'} · ${description || '未知文件'} · tasks:${info?.tasks ?? '-'} · graph:${info?.graphFile ?? '-'}`;
+    }
+
+    function updateStats(tasks) {
+      const taskCount = tasks.length;
+      const stepCounts = tasks.map(t => t._derived?.stepCount || 0);
+      const avgSteps = taskCount ? (stepCounts.reduce((a, b) => a + b, 0) / taskCount).toFixed(2) : '0.00';
+      const totalTrajectories = tasks.reduce((sum, t) => sum + (t._derived?.trajectoryCount || 1), 0);
+      const uniqueNodes = new Set();
+      tasks.forEach(t => {
+        (t._derived?.trajectories || []).forEach(traj => {
+          (traj.nodes || []).forEach(n => uniqueNodes.add(n));
+        });
+        // Fallback to single trajectory nodes
+        if (!t._derived?.trajectories?.length) {
+          (t._derived?.nodes || []).forEach(n => uniqueNodes.add(n));
+        }
+      });
+
+      dom.statTasks.textContent = String(taskCount);
+      dom.statTotalTrajectories.textContent = String(totalTrajectories);
+      dom.statAvgSteps.textContent = `${avgSteps}`;
+      dom.statNodes.textContent = String(uniqueNodes.size);
+      dom.taskCountChip.textContent = String(taskCount);
+    }
+
+    function applyTaskSearch(query) {
+      const keyword = query.trim().toLowerCase();
+      if (!keyword) {
+        runtimeState.filteredTasks = runtimeState.tasks;
+      } else {
+        runtimeState.filteredTasks = runtimeState.tasks.filter(t => (t._derived?.searchable || '').includes(keyword));
+      }
+      renderTaskList(runtimeState.filteredTasks);
+      dom.taskCountChip.textContent = `${runtimeState.filteredTasks.length}/${runtimeState.tasks.length}`;
+    }
+
+    function renderTaskList(tasks) {
+      if (!tasks || tasks.length === 0) {
+        dom.taskList.innerHTML = `<p class="text-sm text-slate-500">未找到匹配任务</p>`;
+        return;
+      }
+
+      dom.taskList.innerHTML = tasks.map(t => {
+        const selected = runtimeState.selectedTaskId === t.taskId;
+        const label = t.action?.label || t._derived?.actionId || t.taskId;
+        const trajCount = t._derived?.trajectoryCount ?? 1;
+        const chips = [
+          t.action?.behavior ? `<span class="badge text-emerald-200 border-emerald-500/30">${t.action.behavior}</span>` : '',
+          t.action?.scope ? `<span class="badge text-indigo-200 border-indigo-500/30">${t.action.scope}</span>` : '',
+          trajCount > 1 ? `<span class="badge text-amber-200 border-amber-500/30">${trajCount} 条轨迹</span>` : '',
+        ].filter(Boolean).join('');
+        return `
+          <button
+            class="w-full text-left rounded-2xl border border-white/10 px-4 py-3 transition-colors ${selected ? 'bg-emerald-500/15' : 'bg-slate-900/45 hover:bg-slate-800/70'}"
+            data-task-id="${escapeHtml(t.taskId)}"
+            title="${escapeHtml(t.taskId)}"
+          >
+            <div class="flex items-start justify-between gap-3">
+              <div class="min-w-0">
+                <p class="text-sm font-semibold text-white truncate">${escapeHtml(label)}</p>
+                <p class="mt-1 text-xs text-slate-400 font-mono truncate">${escapeHtml(t._derived?.actionId || '')}</p>
+              </div>
+              <div class="text-right shrink-0">
+                <p class="text-xs text-slate-400 uppercase tracking-widest">steps</p>
+                <p class="text-lg font-semibold text-white">${t._derived?.stepCount ?? 0}</p>
+              </div>
+            </div>
+            ${chips ? `<div class="mt-2 flex flex-wrap gap-2">${chips}</div>` : ''}
+          </button>
+        `;
+      }).join('');
+
+      dom.taskList.querySelectorAll('[data-task-id]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const taskId = btn.getAttribute('data-task-id');
+          if (taskId) selectTask(unescapeHtml(taskId), { autoFocus: false, trajectoryIndex: 0 });
+        });
+      });
+    }
+
+    function selectTask(taskId, options = { autoFocus: false, trajectoryIndex: 0 }) {
+      const task = runtimeState.tasks.find(t => t.taskId === taskId);
+      if (!task) {
+        showToast(`未找到 taskId=${taskId}`, 'error');
+        return;
+      }
+      const trajIndex = options.trajectoryIndex ?? 0;
+      const trajCount = task._derived?.trajectoryCount ?? 1;
+      const validTrajIndex = Math.max(0, Math.min(trajIndex, trajCount - 1));
+
+      runtimeState.selectedTaskId = taskId;
+      runtimeState.selectedTrajectoryIndex = validTrajIndex;
+      renderTaskList(runtimeState.filteredTasks);
+      setGraphEmptyState(false);
+      try {
+        buildGraphForTask(task, validTrajIndex);
+      } catch (e) {
+        console.error(e);
+        setGraphEmptyState(true, '渲染失败', String(e?.message || e || '未知错误'));
+        showToast('渲染失败（详见控制台）', 'error');
+        return;
+      }
+      showTaskDetails(task, validTrajIndex);
+      if (options.autoFocus && cyInstance) {
+        cyInstance.fit(undefined, 80);
+      }
+    }
+
+    function encodeCyId(value) {
+      return encodeURIComponent(String(value ?? ''));
+    }
+
+    function cyIdForUiNode(nodeId) {
+      return `ui:${encodeCyId(nodeId)}`;
+    }
+
+    function cyIdForActionNode(taskId, stepIndex) {
+      return `action:${encodeCyId(taskId)}:${stepIndex}`;
+    }
+
+    function cyIdForEdge(kind, stepIndex) {
+      return `edge:${kind}:${stepIndex}`;
+    }
+
+    function buildGraphForTask(task, trajectoryIndex = 0) {
+      // Support multiple trajectories
+      const trajectories = task._derived?.trajectories || [];
+      const selectedTraj = trajectories[trajectoryIndex] || {};
+      const steps = selectedTraj.steps || task?.trajectoryDetailed?.steps || [];
+      runtimeState.nodes = new Map();
+      runtimeState.edges = new Map();
+
+      const nodeMap = new Map(); // cyNodeId -> nodeEntry
+      const edges = [];
+
+      const addUiNode = (nodeLike) => {
+        const nodeId = nodeLike?.nodeId;
+        if (!nodeId) return null;
+        const cyId = cyIdForUiNode(nodeId);
+        if (!nodeMap.has(cyId)) {
+          nodeMap.set(cyId, {
+            id: cyId,
+            originalId: nodeId,
+            kind: 'uiNode',
+            raw: nodeLike,
+          });
+        }
+        return cyId;
+      };
+
+      steps.forEach((step) => {
+        if (!step) return;
+        if (step.kind === 'transition') {
+          const fromCyId = addUiNode(step.from);
+          const toCyId = addUiNode(step.to);
+          const edgeId = cyIdForEdge('transition', step.index);
+          edges.push({
+            id: edgeId,
+            kind: 'transitionEdge',
+            stepIndex: step.index,
+            raw: step,
+            source: fromCyId,
+            target: toCyId,
+          });
+        } else if (step.kind === 'action') {
+          const atCyId = addUiNode(step.at);
+          const actionNodeId = cyIdForActionNode(task.taskId, step.index);
+          nodeMap.set(actionNodeId, {
+            id: actionNodeId,
+            originalId: `${task.taskId}:${step.index}`,
+            kind: 'actionNode',
+            raw: step,
+          });
+          const edgeId = cyIdForEdge('action', step.index);
+          edges.push({
+            id: edgeId,
+            kind: 'actionEdge',
+            stepIndex: step.index,
+            raw: step,
+            source: atCyId,
+            target: actionNodeId,
+          });
+        }
+      });
+
+      // Ensure we always have something to render
+      if (nodeMap.size === 0) {
+        setGraphEmptyState(true, '任务无轨迹', '该任务没有可用 steps');
+        if (cyInstance) cyInstance.destroy();
+        cyInstance = null;
+        return;
+      }
+
+      const cyNodes = Array.from(nodeMap.values()).map((entry, idx) => {
+        const raw = entry.raw || {};
+        const isAction = entry.kind === 'actionNode';
+        const label = isAction
+          ? `ACTION\n${raw.action?.id || raw.action?.label || 'unknown'}`
+          : `${entry.originalId || raw.nodeId || entry.id}\n${raw.component || raw.uiStateId || ''}`;
+        const dataObj = {
+          id: entry.id,
+          label,
+          kind: entry.kind,
+          originalId: entry.originalId || '',
+          rawIndex: idx,
+        };
+        runtimeState.nodes.set(entry.id, { ...entry, data: dataObj });
+        return {
+          data: dataObj,
+          classes: isAction ? 'node-action' : 'node-ui',
+        };
+      });
+
+      const cyEdges = edges
+        .filter(e => e.source && e.target)
+        .map((e, index) => {
+          const raw = e.raw || {};
+          const label = e.kind === 'transitionEdge'
+            ? (raw.edge?.transitionId || raw.edge?.id || raw.edge?.label || 'transition')
+            : (raw.action?.id || raw.action?.label || 'action');
+          const type = e.kind === 'transitionEdge'
+            ? ((raw.edge?.type || 'navigation').toLowerCase())
+            : 'action';
+          const dataObj = {
+            id: e.id || `edge-${index}`,
+            source: e.source,
+            target: e.target,
+            label,
+            kind: e.kind,
+            type,
+            stepIndex: e.stepIndex,
+          };
+          runtimeState.edges.set(dataObj.id, { ...e, data: dataObj });
+          return {
+            data: dataObj,
+            classes: `edge-${type}`,
+          };
+        });
+
+      setGraphEmptyState(false);
+      renderGraph([...cyNodes, ...cyEdges]);
+    }
+
+    function renderGraph(elements) {
+      if (cyInstance) cyInstance.destroy();
+
+      const createInstance = (layoutName) => cytoscape({
+        container: document.getElementById('cy'),
+        elements,
+        wheelSensitivity: 0.2,
+        minZoom: 0.2,
+        maxZoom: 3.8,
+        pixelRatio: PIXEL_RATIO,
+        boxSelectionEnabled: false,
+        autoungrabify: false,
+        style: [
+          {
+            selector: 'node',
+            style: {
+              'shape': 'round-rectangle',
+              'width': 240,
+              'height': 120,
+              'border-width': 2.5,
+              'shadow-blur': 26,
+              'shadow-opacity': 0.22,
+              'label': 'data(label)',
+              'font-size': 12,
+              'font-weight': 650,
+              'text-wrap': 'wrap',
+              'text-max-width': 200,
+              'color': '#f8fafc',
+              'text-background-opacity': 0,
+            }
+          },
+          {
+            selector: 'node.node-ui',
+            style: {
+              'background-color': '#0f172a',
+              'background-fill': 'linear-gradient',
+              'background-gradient-stop-colors': '#1e293b #0f172a',
+              'background-gradient-stop-positions': '0 80',
+              'border-color': '#34d399',
+              'border-opacity': 0.35,
+              'shadow-color': '#10b981',
+            }
+          },
+          {
+            selector: 'node.node-action',
+            style: {
+              'background-color': '#1f0a2f',
+              'background-fill': 'linear-gradient',
+              'background-gradient-stop-colors': '#3b0764 #1f0a2f',
+              'background-gradient-stop-positions': '0 80',
+              'border-color': '#f472b6',
+              'border-opacity': 0.6,
+              'shadow-color': '#f472b6',
+              'shadow-opacity': 0.45,
+            }
+          },
+          {
+            selector: 'node.dimmed',
+            style: { 'opacity': 0.15 }
+          },
+          {
+            selector: 'node.active-node',
+            style: {
+              'border-color': '#22d3ee',
+              'border-width': 6,
+              'shadow-color': '#22d3ee',
+              'shadow-opacity': 0.9,
+            }
+          },
+          {
+            selector: 'edge',
+            style: {
+              'width': 2.8,
+              'line-color': '#475569',
+              'target-arrow-color': '#475569',
+              'target-arrow-shape': 'triangle',
+              'curve-style': 'bezier',
+              'label': 'data(label)',
+              'font-size': 10,
+              'color': '#cbd5f5',
+              'text-rotation': 'autorotate',
+              'text-background-opacity': 0.6,
+              'text-background-color': '#020617dd',
+              'text-background-padding': 2.5,
+              'text-background-shape': 'roundrectangle',
+            }
+          },
+          {
+            selector: 'edge.edge-navigation',
+            style: {
+              'line-color': '#22c55e',
+              'target-arrow-color': '#22c55e',
+            }
+          },
+          {
+            selector: 'edge.edge-state',
+            style: {
+              'line-color': '#fbbf24',
+              'target-arrow-color': '#fbbf24',
+            }
+          },
+          {
+            selector: 'edge.edge-action',
+            style: {
+              'line-style': 'dashed',
+              'line-color': '#f472b6',
+              'target-arrow-color': '#f472b6',
+            }
+          },
+          {
+            selector: 'edge.active-edge',
+            style: {
+              'width': 4.2,
+              'line-color': '#22d3ee',
+              'target-arrow-color': '#22d3ee',
+              'color': '#f0f9ff',
+            }
+          },
+          {
+            selector: '.dimmed',
+            style: { 'opacity': 0.15 }
+          },
+        ],
+        layout: getLayoutOptions(layoutName)
+      });
+
+      try {
+        activeLayoutName = 'dagre';
+        cyInstance = createInstance(activeLayoutName);
+      } catch (error) {
+        const message = String(error?.message || error || '');
+        if (message.includes('No such layout `dagre`')) {
+          console.warn('[Trajectory] Dagre layout unavailable, switching to fallback layout.');
+          activeLayoutName = FALLBACK_LAYOUT;
+          showToast('未检测到 dagre 布局，已切换为 Breadthfirst。', 'error');
+          setDatasetStatus(`${currentDatasetLabel} (dagre 不可用，已使用 Breadthfirst)`);
+          cyInstance = createInstance(activeLayoutName);
+        } else {
+          setGraphEmptyState(true, '渲染失败', message || '未知错误');
+          throw error;
+        }
+      }
+
+      cyInstance.ready(() => {
+        // Force a resize + fit after DOM has settled
+        requestAnimationFrame(() => {
+          cyInstance.resize();
+          cyInstance.fit(undefined, 80);
+        });
+      });
+
+      cyInstance.on('tap', 'node', (event) => selectNode(event.target));
+      cyInstance.on('tap', 'edge', (event) => selectEdge(event.target));
+      cyInstance.on('tap', (event) => {
+        if (event.target === cyInstance) {
+          clearHighlights();
+          hideInspector();
+        }
+      });
+    }
+
+    function getLayoutOptions(layoutName = activeLayoutName) {
+      const isHorizontal = layoutDirection === 'horizontal';
+      if (layoutName === 'dagre') {
+        return {
+          name: 'dagre',
+          rankDir: isHorizontal ? 'LR' : 'TB',
+          nodeSep: isHorizontal ? 180 : 140,
+          rankSep: isHorizontal ? 240 : 180,
+          edgeSep: 20,
+          padding: 60,
+          animate: true,
+          animationDuration: 450,
+        };
+      }
+
+      if (layoutName === 'breadthfirst') {
+        return {
+          name: 'breadthfirst',
+          directed: true,
+          spacingFactor: isHorizontal ? 1.1 : 1.25,
+          circle: false,
+          padding: 70,
+          animate: true,
+          animationDuration: 450,
+        };
+      }
+
+      return {
+        name: 'cose',
+        fit: true,
+        padding: 60,
+        animate: true,
+        animationDuration: 450,
+      };
+    }
+
+    function runLayout(withToast = false) {
+      if (!cyInstance) return;
+      const layout = cyInstance.layout(getLayoutOptions(activeLayoutName));
+      layout.run();
+      if (withToast) showToast('已重新计算布局');
+    }
+
+    function selectNode(node) {
+      if (!node) return;
+      clearHighlights();
+      node.addClass('active-node');
+      node.connectedEdges().addClass('active-edge');
+      showNodeDetails(node);
+      cyInstance?.animate({ center: { eles: node }, duration: 260, easing: 'ease' });
+    }
+
+    function selectEdge(edge) {
+      if (!edge) return;
+      clearHighlights();
+      edge.addClass('active-edge');
+      edge.source().addClass('active-node');
+      edge.target().addClass('active-node');
+      showEdgeDetails(edge);
+      cyInstance?.animate({ center: { eles: edge }, duration: 260, easing: 'ease' });
+    }
+
+    function clearHighlights() {
+      if (!cyInstance) return;
+      cyInstance.nodes().removeClass('active-node dimmed');
+      cyInstance.edges().removeClass('active-edge dimmed');
+    }
+
+    function showTaskDetails(task, trajectoryIndex = 0) {
+      const title = task?.action?.label || task?._derived?.actionId || task?.taskId || '任务';
+      dom.inspectorTitle.textContent = '任务详情';
+      dom.inspectorLabel.textContent = title;
+
+      const trajectories = task._derived?.trajectories || [];
+      const trajCount = trajectories.length;
+      const currentTraj = trajectories[trajectoryIndex] || {};
+      const steps = currentTraj.steps || task?.trajectoryDetailed?.steps || [];
+      const nodes = currentTraj.nodes || task?._derived?.nodes || [];
+      const transitions = currentTraj.transitions || task?._derived?.transitions || [];
+
+      // Trajectory selector HTML
+      const trajSelectorHtml = trajCount > 1 ? `
+        <div class="rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 space-y-2">
+          <div class="flex items-center justify-between">
+            <p class="text-xs uppercase tracking-[0.4em] text-amber-200">轨迹选择</p>
+            <span class="text-sm font-semibold text-amber-200">${trajectoryIndex + 1} / ${trajCount}</span>
+          </div>
+          <div class="flex gap-2 mt-2">
+            <button id="trajPrev"
+              class="flex-1 rounded-xl px-3 py-2 text-sm font-medium border border-amber-500/30 text-amber-200 bg-amber-500/10 hover:bg-amber-500/20 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              ${trajectoryIndex === 0 ? 'disabled' : ''}>
+              ← 上一条
+            </button>
+            <button id="trajNext"
+              class="flex-1 rounded-xl px-3 py-2 text-sm font-medium border border-amber-500/30 text-amber-200 bg-amber-500/10 hover:bg-amber-500/20 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              ${trajectoryIndex >= trajCount - 1 ? 'disabled' : ''}>
+              下一条 →
+            </button>
+          </div>
+          <select id="trajSelect"
+            class="w-full mt-2 bg-slate-900/70 border border-amber-500/30 rounded-xl px-3 py-2 text-sm text-amber-200 focus:ring-2 focus:ring-amber-400/40 focus:outline-none">
+            ${trajectories.map((t, i) => `<option value="${i}" ${i === trajectoryIndex ? 'selected' : ''}>轨迹 ${i + 1}: ${(t.steps || []).length} 步 (${(t.nodes || []).slice(0, 3).join(' → ')}${(t.nodes || []).length > 3 ? '...' : ''})</option>`).join('')}
+          </select>
+        </div>
+      ` : '';
+
+      dom.inspectorContent.innerHTML = `
+        <div class="space-y-5">
+          <div class="rounded-2xl border border-white/10 bg-slate-900/60 px-4 py-3 space-y-2">
+            <p class="text-xs uppercase tracking-[0.4em] text-slate-400/90">标识</p>
+            <p class="text-sm text-white font-mono break-all">${escapeHtml(task.taskId)}</p>
+            <div class="mt-2 flex flex-wrap gap-2">
+              ${task.action?.behavior ? `<span class="badge text-emerald-200 border-emerald-500/30">${escapeHtml(task.action.behavior)}</span>` : ''}
+              ${task.action?.scope ? `<span class="badge text-indigo-200 border-indigo-500/30">${escapeHtml(task.action.scope)}</span>` : ''}
+              <span class="badge text-slate-300 border-white/15">STEPS ${steps.length}</span>
+              ${trajCount > 1 ? `<span class="badge text-amber-200 border-amber-500/30">${trajCount} 条轨迹</span>` : ''}
+            </div>
+          </div>
+
+          ${trajSelectorHtml}
+
+          <div class="rounded-2xl border border-white/10 bg-slate-900/50 px-4 py-3 space-y-2">
+            <p class="text-xs uppercase tracking-[0.4em] text-slate-400/90">Action</p>
+            <p class="text-sm text-white font-mono break-all">${escapeHtml(task.action?.id || '-')}</p>
+            ${task.action?.label ? `<p class="text-sm text-slate-300">${escapeHtml(task.action.label)}</p>` : ''}
+          </div>
+
+          <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+            <p class="text-xs uppercase tracking-[0.4em] text-slate-400/90 mb-2">当前轨迹概览</p>
+            <div class="space-y-2 text-sm">
+              <div class="flex justify-between gap-4">
+                <span class="text-slate-400">nodes</span>
+                <span class="text-white font-mono text-xs break-all">${escapeHtml(JSON.stringify(nodes))}</span>
+              </div>
+              <div class="flex justify-between gap-4">
+                <span class="text-slate-400">transitions</span>
+                <span class="text-white font-mono text-xs break-all">${escapeHtml(JSON.stringify(transitions))}</span>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <p class="text-xs uppercase tracking-[0.4em] text-slate-400/90 mb-2">Steps</p>
+            <div class="space-y-2">
+              ${steps.map(step => renderStepCard(step)).join('')}
+            </div>
+          </div>
+
+          <div class="flex gap-2">
+            <button id="copyTaskJson"
+              class="flex-1 rounded-2xl px-4 py-2 text-sm font-medium border border-white/10 text-cyan-200 bg-cyan-500/10 hover:bg-cyan-500/20 transition-colors">
+              复制 Task JSON
+            </button>
+            <button id="copyStepsJson"
+              class="flex-1 rounded-2xl px-4 py-2 text-sm font-medium border border-white/10 text-emerald-200 bg-emerald-500/10 hover:bg-emerald-500/20 transition-colors">
+              复制 Steps JSON
+            </button>
+          </div>
+        </div>
+      `;
+
+      // Trajectory navigation handlers
+      dom.inspectorContent.querySelector('#trajPrev')?.addEventListener('click', () => {
+        if (trajectoryIndex > 0) {
+          selectTask(task.taskId, { autoFocus: false, trajectoryIndex: trajectoryIndex - 1 });
+        }
+      });
+      dom.inspectorContent.querySelector('#trajNext')?.addEventListener('click', () => {
+        if (trajectoryIndex < trajCount - 1) {
+          selectTask(task.taskId, { autoFocus: false, trajectoryIndex: trajectoryIndex + 1 });
+        }
+      });
+      dom.inspectorContent.querySelector('#trajSelect')?.addEventListener('change', (e) => {
+        const newIdx = Number(e.target.value);
+        if (!Number.isNaN(newIdx)) {
+          selectTask(task.taskId, { autoFocus: false, trajectoryIndex: newIdx });
+        }
+      });
+
+      dom.inspectorContent.querySelector('#copyTaskJson')?.addEventListener('click', async () => {
+        await copyToClipboard(JSON.stringify(task, null, 2));
+        showToast('已复制 Task JSON');
+      });
+      dom.inspectorContent.querySelector('#copyStepsJson')?.addEventListener('click', async () => {
+        await copyToClipboard(JSON.stringify(steps, null, 2));
+        showToast('已复制 Steps JSON');
+      });
+
+      dom.inspectorContent.querySelectorAll('[data-step-index]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const stepIndex = Number(btn.getAttribute('data-step-index'));
+          highlightStep(stepIndex);
+        });
+      });
+
+      showInspector();
+    }
+
+    function renderStepCard(step) {
+      const index = step?.index ?? '-';
+      const kind = step?.kind || 'unknown';
+      const title = kind === 'transition'
+        ? (step.edge?.transitionId || step.edge?.id || step.edge?.label || 'transition')
+        : (step.action?.id || step.action?.label || 'action');
+
+      const subtitle = kind === 'transition'
+        ? `${step.edge?.type || 'navigation'} · ${step.edge?.mode || '-'}`.toUpperCase()
+        : `${step.action?.behavior || 'action'}${step.action?.scope ? ` · ${step.action.scope}` : ''}`.toUpperCase();
+
+      return `
+        <button
+          class="w-full text-left bg-slate-900/50 hover:bg-slate-800/70 border border-white/10 rounded-2xl px-4 py-3 transition-colors"
+          data-step-index="${escapeHtml(String(index))}"
+        >
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <p class="text-xs uppercase tracking-[0.4em] text-slate-400">#${escapeHtml(String(index))} · ${escapeHtml(kind)}</p>
+              <p class="mt-1 text-sm font-semibold text-white break-all">${escapeHtml(title)}</p>
+              <p class="mt-1 text-xs text-slate-400">${escapeHtml(subtitle)}</p>
+            </div>
+            ${kind === 'action' ? `<span class="badge text-pink-200 border-pink-500/30">ACTION</span>` : `<span class="badge text-emerald-200 border-emerald-500/30">MOVE</span>`}
+          </div>
+        </button>
+      `;
+    }
+
+    function highlightStep(stepIndex) {
+      if (!cyInstance || Number.isNaN(stepIndex)) return;
+      clearHighlights();
+      const edgeIds = Array.from(runtimeState.edges.keys()).filter(id => runtimeState.edges.get(id)?.data?.stepIndex === stepIndex);
+      const targetEdgeId = edgeIds[0];
+      if (targetEdgeId) {
+        const edge = cyInstance.getElementById(targetEdgeId);
+        if (edge && edge.isEdge && edge.isEdge()) selectEdge(edge);
+      } else {
+        showToast(`未找到 step=${stepIndex} 对应的边`, 'error');
+      }
+    }
+
+    function showNodeDetails(node) {
+      const dataEntry = runtimeState.nodes.get(node.id());
+      if (!dataEntry) return;
+
+      if (dataEntry.kind === 'actionNode') {
+        const step = dataEntry.raw || {};
+        const action = step.action || {};
+        dom.inspectorTitle.textContent = 'Action 节点';
+        dom.inspectorLabel.textContent = action.label || action.id || node.id();
+        dom.inspectorContent.innerHTML = `
+          <div class="space-y-4">
+            <div class="rounded-2xl border border-pink-500/30 bg-pink-500/10 px-4 py-3 space-y-2">
+              <p class="text-xs uppercase tracking-[0.4em] text-pink-200">action</p>
+              <p class="text-sm text-white font-mono break-all">${escapeHtml(action.id || '-')}</p>
+              ${action.label ? `<p class="text-sm text-slate-200">${escapeHtml(action.label)}</p>` : ''}
+              <div class="mt-2 flex flex-wrap gap-2">
+                ${action.behavior ? `<span class="badge text-emerald-200 border-emerald-500/30">${escapeHtml(action.behavior)}</span>` : ''}
+                ${action.scope ? `<span class="badge text-indigo-200 border-indigo-500/30">${escapeHtml(action.scope)}</span>` : ''}
+              </div>
+            </div>
+            ${renderCodeUsages(step.codeUsages)}
+            ${renderKeyValueSection('UI Trigger', step.ui?.trigger)}
+          </div>
+        `;
+        showInspector();
+        return;
+      }
+
+      const raw = dataEntry.raw || {};
+      dom.inspectorTitle.textContent = 'UI 节点';
+      dom.inspectorLabel.textContent = raw.nodeId || dataEntry.originalId || node.id();
+
+      dom.inspectorContent.innerHTML = `
+        <div class="space-y-5">
+          <div class="rounded-2xl border border-white/10 bg-slate-900/60 px-4 py-3 space-y-2">
+            <p class="text-xs uppercase tracking-[0.4em] text-slate-400/90">页面</p>
+            <p class="text-base font-semibold text-white">${escapeHtml(raw.component || '未知组件')}</p>
+            <p class="text-sm text-slate-400 leading-relaxed">${escapeHtml(raw.description || '暂无描述')}</p>
+            <div class="mt-2 flex flex-wrap gap-2">
+              ${raw.entryPoint ? '<span class="badge text-cyan-200 border-cyan-500/40">ENTRY</span>' : ''}
+              ${raw.uiStateId ? `<span class="badge text-slate-200 border-white/15">${escapeHtml(raw.uiStateId)}</span>` : ''}
+              ${typeof raw.actionsCount === 'number' ? `<span class="badge text-emerald-200 border-emerald-500/30">ACTIONS ${raw.actionsCount}</span>` : ''}
+            </div>
+          </div>
+          ${renderKeyValueSection('Search', raw.search)}
+          ${renderKeyValueSection('Params', raw.params)}
+          ${renderScrollContainers(raw.scrollContainers)}
+        </div>
+      `;
+      showInspector();
+    }
+
+    function showEdgeDetails(edge) {
+      const entry = runtimeState.edges.get(edge.id());
+      const raw = entry?.raw || {};
+      const isTransition = entry?.kind === 'transitionEdge';
+
+      dom.inspectorTitle.textContent = isTransition ? 'Transition 步骤' : 'Action 步骤';
+      dom.inspectorLabel.textContent = isTransition
+        ? `${raw.from?.nodeId || '-'} → ${raw.to?.nodeId || '-'}`
+        : (raw.action?.label || raw.action?.id || edge.id());
+
+      if (isTransition) {
+        dom.inspectorContent.innerHTML = `
+          <div class="space-y-4">
+            <div class="grid grid-cols-2 gap-3">
+              <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+                <p class="text-[10px] uppercase tracking-widest text-slate-400/80">类型</p>
+                <p class="mt-2 text-lg font-semibold text-white">${escapeHtml(String(raw.edge?.type || 'navigation').toUpperCase())}</p>
+              </div>
+              <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+                <p class="text-[10px] uppercase tracking-widest text-slate-400/80">模式</p>
+                <p class="mt-2 text-lg font-semibold text-white">${escapeHtml(raw.edge?.mode || '-')}</p>
+              </div>
+            </div>
+            <div class="rounded-2xl border border-white/10 bg-slate-900/60 px-4 py-3 text-sm space-y-2">
+              <div class="flex justify-between gap-4">
+                <span class="text-slate-400">transitionId</span>
+                <span class="text-white font-mono break-all">${escapeHtml(raw.edge?.transitionId || raw.edge?.id || '-')}</span>
+              </div>
+              ${raw.edge?.label ? `
+                <div class="flex justify-between gap-4">
+                  <span class="text-slate-400">label</span>
+                  <span class="text-white">${escapeHtml(raw.edge.label)}</span>
+                </div>
+              ` : ''}
+            </div>
+            ${renderKeyValueSection('UI Trigger', raw.ui?.trigger)}
+            ${renderKeyValueSection('UI Meta', raw.edge?.uiMeta)}
+            ${renderKeyValueSection('fromConstraint', raw.edge?.fromConstraint)}
+            ${renderKeyValueSection('uiCondition', raw.edge?.uiCondition)}
+            ${renderKeyValueSection('search', raw.edge?.search)}
+            ${renderKeyValueSection('params', raw.edge?.params)}
+          </div>
+        `;
+      } else {
+        dom.inspectorContent.innerHTML = `
+          <div class="space-y-4">
+            <div class="rounded-2xl border border-pink-500/30 bg-pink-500/10 px-4 py-3 space-y-2">
+              <p class="text-xs uppercase tracking-[0.4em] text-pink-200">action</p>
+              <p class="text-sm text-white font-mono break-all">${escapeHtml(raw.action?.id || '-')}</p>
+              ${raw.action?.label ? `<p class="text-sm text-slate-200">${escapeHtml(raw.action.label)}</p>` : ''}
+              <div class="mt-2 flex flex-wrap gap-2">
+                ${raw.action?.behavior ? `<span class="badge text-emerald-200 border-emerald-500/30">${escapeHtml(raw.action.behavior)}</span>` : ''}
+                ${raw.action?.scope ? `<span class="badge text-indigo-200 border-indigo-500/30">${escapeHtml(raw.action.scope)}</span>` : ''}
+              </div>
+            </div>
+            ${renderKeyValueSection('UI Trigger', raw.ui?.trigger)}
+            ${renderCodeUsages(raw.codeUsages)}
+          </div>
+        `;
+      }
+
+      showInspector();
+    }
+
+    function renderScrollContainers(containers = []) {
+      if (!Array.isArray(containers) || containers.length === 0) return '';
+      return `
+        <div class="rounded-2xl border border-white/10 bg-slate-900/50 px-4 py-3">
+          <p class="text-xs uppercase tracking-[0.4em] text-slate-400/90 mb-2">滚动容器</p>
+          <div class="space-y-2 text-sm">
+            ${containers.map(item => `
+              <div class="border border-white/10 rounded-2xl px-3 py-2">
+                <p class="text-white font-semibold">${escapeHtml(item?.name || '-')}</p>
+                <p class="text-slate-400 text-xs uppercase tracking-[0.3em]">${escapeHtml(item?.direction || '-')}</p>
+                ${item?.description ? `<p class="text-slate-400 mt-1">${escapeHtml(item.description)}</p>` : ''}
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderCodeUsages(usages) {
+      if (!Array.isArray(usages) || usages.length === 0) {
+        return `<div class="text-xs text-slate-500">无 codeUsages</div>`;
+      }
+      return `
+        <div class="rounded-2xl border border-white/10 bg-slate-900/50 px-4 py-3">
+          <div class="flex items-center justify-between mb-2">
+            <p class="text-xs uppercase tracking-[0.4em] text-slate-400/90">Code Usages</p>
+            <span class="text-xs text-slate-400 font-mono">${usages.length}</span>
+          </div>
+          <div class="space-y-2 text-sm">
+            ${usages.map(u => `
+              <div class="border border-white/10 rounded-2xl px-3 py-2">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                  <p class="text-white font-mono break-all">${escapeHtml(u?.file || '-')}</p>
+                  <span class="badge text-slate-200 border-white/15">${escapeHtml(`${u?.line ?? '-'}:${u?.col ?? '-'}`)}</span>
+                </div>
+                <div class="mt-1 flex flex-wrap gap-2 text-[11px] uppercase tracking-[0.3em] text-slate-400/90">
+                  ${u?.kind ? `<span class="badge text-emerald-200 border-emerald-500/30">${escapeHtml(u.kind)}</span>` : ''}
+                  ${u?.gestureType ? `<span class="badge text-indigo-200 border-indigo-500/30">${escapeHtml(u.gestureType)}</span>` : ''}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderKeyValueSection(title, data) {
+      const entries = Object.entries(data || {}).filter(([, v]) => v !== undefined);
+      if (!entries.length) return '';
+      return `
+        <div class="rounded-2xl border border-white/10 bg-slate-900/50 px-4 py-3">
+          <p class="text-xs uppercase tracking-[0.4em] text-slate-400/90 mb-2">${escapeHtml(title)}</p>
+          <div class="space-y-2 text-sm">
+            ${entries.map(([key, value]) => `
+              <div class="flex justify-between gap-3">
+                <span class="text-slate-400">${escapeHtml(key)}</span>
+                <span class="text-white font-mono break-all">${escapeHtml(formatValue(value))}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function formatValue(value) {
+      if (value === null) return 'null';
+      if (typeof value === 'object') return JSON.stringify(value);
+      return String(value);
+    }
+
+    function parseJsonl(text) {
+      const content = String(text || '').trim();
+      
+      // 1. 先尝试解析为 JSON 数组（pretty-printed JSON 格式）
+      if (content.startsWith('[')) {
+        try {
+          const parsed = JSON.parse(content);
+          if (Array.isArray(parsed)) {
+            return parsed;
+          }
+        } catch (e) {
+          console.warn('[Trajectory] JSON array parse failed, falling back to JSONL:', e.message);
+        }
+      }
+      
+      // 2. 回退到 JSONL 格式（每行一个 JSON 对象）
+      const lines = content.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+      const out = [];
+      const errors = [];
+      lines.forEach((line, idx) => {
+        try {
+          out.push(JSON.parse(line));
+        } catch (e) {
+          errors.push({ line: idx + 1, message: String(e?.message || e) });
+        }
+      });
+      if (errors.length) {
+        console.warn('[Trajectory] JSONL parse errors:', errors.slice(0, 3));
+        showToast(`JSONL 解析失败 ${errors.length} 行（已跳过）`, 'error');
+      }
+      return out;
+    }
+
+    function handleLocalFile(event) {
+      const file = event.target.files?.[0];
+      if (!file) return;
+
+      setDatasetStatus(`正在解析 ${file.name} ...`);
+      toggleLoading(true);
+      hideInspector();
+      clearHighlights();
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const tasks = parseJsonl(reader.result);
+          loadTasksFromData(tasks, `${file.name} (本地)`, { app: 'Local', description: file.name });
+          showToast(`已导入 ${file.name}`);
+        } catch (error) {
+          console.error(error);
+          setDatasetStatus('解析 JSONL 失败，请检查文件内容。');
+          showToast('解析 JSONL 失败', 'error');
+        } finally {
+          toggleLoading(false);
+          dom.fileInput.value = '';
+        }
+      };
+      reader.onerror = () => {
+        showToast('读取文件失败', 'error');
+        toggleLoading(false);
+      };
+      reader.readAsText(file, 'utf-8');
+    }
+
+    function setDatasetStatus(message) {
+      dom.datasetStatus.textContent = message;
+    }
+
+    function updateDatasetChip(label) {
+      dom.datasetChip.textContent = label || '未选择';
+    }
+
+    function toggleLoading(isLoading) {
+      dom.graphLoading.style.display = isLoading ? 'flex' : 'none';
+    }
+
+    function setGraphEmptyState(isEmpty, title = '暂无数据', detail = '加载 action_tasks JSONL 后即可开始探索') {
+      if (isEmpty) {
+        dom.graphEmpty.querySelector('[data-empty-title]').textContent = title;
+        dom.graphEmpty.querySelector('[data-empty-detail]').textContent = detail;
+        dom.graphEmpty.style.display = 'flex';
+      } else {
+        dom.graphEmpty.style.display = 'none';
+      }
+    }
+
+    function hideInspector() {
+      dom.inspector.classList.add('translate-x-full');
+    }
+
+    function showInspector() {
+      dom.inspector.classList.remove('translate-x-full');
+    }
+
+    function debounce(fn, delay = 200) {
+      let timer = null;
+      return (...args) => {
+        clearTimeout(timer);
+        timer = setTimeout(() => fn(...args), delay);
+      };
+    }
+
+    function updateDirectionToggleLabel() {
+      if (!dom.directionToggle) return;
+      const isHorizontal = layoutDirection === 'horizontal';
+      dom.directionToggle.textContent = isHorizontal ? '横向排布' : '纵向排布';
+      dom.directionToggle.title = '点击切换布局方向';
+      dom.directionToggle.setAttribute('aria-pressed', String(isHorizontal));
+    }
+
+    function showToast(message, variant = 'info') {
+      if (!dom.toast) return;
+      dom.toast.textContent = message;
+      dom.toast.classList.remove('hidden');
+      dom.toast.classList.toggle('bg-red-600/80', variant === 'error');
+      dom.toast.classList.toggle('bg-slate-900/90', variant !== 'error');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => dom.toast.classList.add('hidden'), 2600);
+    }
+
+    async function copyToClipboard(text) {
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch (e) {
+        // Fallback
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+      }
+    }
+
+    function escapeHtml(str) {
+      return String(str ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+    }
+
+    // Note: this is only used for taskId round-trip in dataset attributes.
+    function unescapeHtml(str) {
+      return String(str ?? '')
+        .replaceAll('&lt;', '<')
+        .replaceAll('&gt;', '>')
+        .replaceAll('&quot;', '"')
+        .replaceAll('&#39;', "'")
+        .replaceAll('&amp;', '&');
+    }
+  </script>
+</body>
+
+</html>
+
+        </template>
+    </div>
+
+    <main id="navGraphView" class="relative z-10 h-screen flex flex-col">
+        <header class="px-8 pt-8 pb-4 flex flex-wrap gap-4 items-center justify-between">
+            <div>
+                <p class="text-xs uppercase tracking-[0.4em] text-slate-400/80">Navigation Graph Explorer</p>
+                <h1 class="mt-2 text-3xl font-semibold text-white tracking-tight">Nav Graph Console</h1>
+                <p id="datasetStatus" class="mt-3 text-sm text-slate-300 max-w-2xl">
+                    请选择或导入 <code class="px-2 py-0.5 bg-white/10 rounded-md text-xs">*_nav_graph.json</code> 进行可视化。
+                </p>
+            </div>
+            <div class="flex flex-wrap items-center gap-3">
+                <div class="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-full border border-white/10">
+                    <span class="text-[11px] uppercase tracking-widest text-slate-400/90">当前数据集</span>
+                    <span id="datasetChip" class="text-sm font-semibold text-white">未选择</span>
+                </div>
+                <select id="datasetSelect"
+                    class="bg-slate-900/70 border border-white/15 rounded-full px-4 py-2 text-sm text-white/90 focus:ring-2 focus:ring-sky-400/50 focus:outline-none">
+                </select>
+                <button id="uploadTrigger"
+                    class="rounded-full px-4 py-2 text-sm font-medium border border-white/10 text-white/90 bg-white/5 hover:bg-white/10 transition-colors">
+                    导入 JSON
+                </button>
+                <button id="directionToggle"
+                    class="rounded-full px-4 py-2 text-sm font-medium border border-white/10 text-indigo-200 bg-indigo-500/10 hover:bg-indigo-500/20 transition-colors">
+                    横向排布
+                </button>
+                <button id="relayoutBtn"
+                    class="rounded-full px-4 py-2 text-sm font-medium border border-white/10 text-cyan-200 bg-cyan-500/10 hover:bg-cyan-500/20 transition-colors">
+                    重新布局
+                </button>
+                <button id="fitBtn"
+                    class="rounded-full px-4 py-2 text-sm font-medium border border-white/10 text-emerald-200 bg-emerald-500/10 hover:bg-emerald-500/20 transition-colors">
+                    全图视角
+                </button>
+            </div>
+        </header>
+
+        <div class="flex-1 px-8 pb-8 relative">
+            <div class="h-full flex gap-6">
+                <aside class="glass-panel w-80 shrink-0 p-5 flex flex-col gap-6 overflow-y-auto">
+                    <div>
+                        <p class="text-xs uppercase tracking-[0.3em] text-slate-400/80">数据源</p>
+                        <p id="datasetMeta" class="mt-2 text-sm text-slate-100 font-medium leading-relaxed">
+                            尚未加载数据
+                        </p>
+                    </div>
+                    <div>
+                        <p class="text-xs uppercase tracking-[0.3em] text-slate-400/80 mb-3">图谱概览</p>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+                                <p class="text-[10px] uppercase tracking-widest text-slate-400/80">路由节点</p>
+                                <p id="statNodes" class="mt-2 text-2xl font-semibold text-white">0</p>
+                            </div>
+                            <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+                                <p class="text-[10px] uppercase tracking-widest text-slate-400/80">连线</p>
+                                <p id="statEdges" class="mt-2 text-2xl font-semibold text-white">0</p>
+                            </div>
+                            <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+                                <p class="text-[10px] uppercase tracking-widest text-slate-400/80">入口</p>
+                                <p id="statEntries" class="mt-2 text-2xl font-semibold text-white">0</p>
+                            </div>
+                            <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+                                <p class="text-[10px] uppercase tracking-widest text-slate-400/80">平均出度</p>
+                                <p id="statBranching" class="mt-2 text-2xl font-semibold text-white">0</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="text-xs uppercase tracking-[0.3em] text-slate-400/80">节点搜索</p>
+                        <div class="mt-3 flex gap-2">
+                            <div class="flex-1 relative">
+                                <input id="nodeSearch" type="text" placeholder="输入路由 ID，例如 /settings"
+                                    class="w-full bg-slate-900/70 border border-white/10 rounded-2xl px-4 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-400/40" />
+                                <span
+                                    class="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] uppercase tracking-widest text-slate-500">⌘K</span>
+                            </div>
+                            <button id="clearSearch"
+                                class="rounded-2xl px-3 py-2 text-xs font-semibold border border-white/10 text-slate-200 bg-white/5 hover:bg-white/10">
+                                清空
+                            </button>
+                        </div>
+                    </div>
+                    <div class="text-xs text-slate-400/90 leading-relaxed">
+                        提示：滚轮缩放、拖拽平移、点击节点/边查看详情；导入 nav_graph JSON 可以快速比对多套路由配置。
+                    </div>
+                </aside>
+
+                <section
+                    class="flex-1 relative rounded-[36px] border border-white/10 bg-slate-900/40 overflow-hidden min-w-0">
+                    <div id="cy"></div>
+                    <div id="graphLoading"
+                        class="absolute inset-0 hidden bg-slate-900/80 backdrop-blur text-white flex flex-col items-center justify-center gap-3 text-sm tracking-wide">
+                        <div class="w-10 h-10 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+                        正在加载图数据...
+                    </div>
+                    <div id="graphEmpty"
+                        class="absolute inset-0 hidden flex flex-col items-center justify-center text-center px-16 text-slate-400 space-y-4">
+                        <div class="text-4xl">🛰️</div>
+                        <div>
+                            <p data-empty-title class="text-lg font-semibold text-white mb-1">暂无数据</p>
+                            <p data-empty-detail class="text-sm text-slate-400">请加载 nav_graph JSON 后再尝试</p>
+                        </div>
+                    </div>
+                    <div
+                        class="absolute bottom-4 left-4 text-[11px] uppercase tracking-[0.3em] text-slate-400/80 bg-black/40 backdrop-blur-md px-4 py-2 rounded-full border border-white/10">
+                        Scroll 缩放 · Drag 平移 · Double Tap 清空选中
+                    </div>
+
+                    <div
+                        class="absolute top-4 left-4 glass-panel px-4 py-3 text-sm border border-white/10 rounded-2xl max-w-[360px]">
+                        <p class="text-[11px] uppercase tracking-[0.3em] text-slate-400/90 mb-3">图例</p>
+                        <div class="grid grid-cols-2 gap-x-6 gap-y-2">
+                            <div class="legend-chip">
+                                <span class="legend-swatch" style="border-top-color:#38bdf8"></span>
+                                <span>Navigation（跳转）</span>
+                            </div>
+                            <div class="legend-chip">
+                                <span class="legend-swatch" style="border-top-color:#fbbf24"></span>
+                                <span>State（同页状态）</span>
+                            </div>
+                            <div class="legend-chip">
+                                <span class="legend-swatch dashed" style="border-top-color:#22c55e"></span>
+                                <span>Condition（条件边）</span>
+                            </div>
+                            <div class="legend-chip">
+                                <span class="legend-swatch dashed" style="border-top-color:#94a3b8;opacity:.95"></span>
+                                <span>Condition（无法计算/数据不足）</span>
+                            </div>
+                            <div class="legend-chip">
+                                <span class="legend-swatch dashed" style="border-top-color:#a855f7"></span>
+                                <span>需访问记忆</span>
+                            </div>
+                        </div>
+
+                        <div class="mt-3 pt-3 border-t border-white/10 grid grid-cols-2 gap-x-6 gap-y-2">
+                            <div class="legend-chip">
+                                <span class="legend-node-swatch" style="border-color:#f87171;background:rgba(248,113,113,.14)"></span>
+                                <span>Entry（入口）</span>
+                            </div>
+                            <div class="legend-chip">
+                                <span class="legend-node-swatch dashed" style="border-color:#475569"></span>
+                                <span>AUTO（补全节点）</span>
+                            </div>
+                            <div class="legend-chip">
+                                <span class="legend-node-swatch dashed" style="border-color:#22c55e;background:rgba(34,197,94,.12)"></span>
+                                <span>stateCondition 节点</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <aside id="inspector"
+                    class="inspector glass-panel absolute top-0 bottom-0 right-0 w-[420px] p-5 flex flex-col translate-x-full">
+                    <div class="flex items-center justify-between border-b border-white/10 pb-3 mb-4">
+                        <div>
+                            <p id="inspectorTitle" class="text-sm uppercase tracking-[0.4em] text-slate-400/80">详情</p>
+                            <p id="inspectorLabel" class="text-lg font-semibold text-white mt-1 truncate">-</p>
+                        </div>
+                        <button id="inspectorClose"
+                            class="text-slate-400 hover:text-white transition-colors rounded-full border border-white/10 p-2">✕</button>
+                    </div>
+                    <div id="inspectorContent" class="flex-1 overflow-y-auto pr-1 text-sm text-slate-200 space-y-4">
+                        <p class="text-slate-500 leading-relaxed">点击任意节点或边即可在此查看路由定义、参数、约束与导航方式。</p>
+                    </div>
+                </aside>
+            </div>
+        </div>
+
+        <div id="toast"
+            class="toast hidden fixed top-6 right-6 z-50 bg-slate-900/90 border border-white/10 rounded-full px-4 py-2 text-sm shadow-2xl">
+            -
+        </div>
+        <input type="file" id="fileInput" accept=".json,application/json" class="hidden" />
+    </main>
+
+    <script>
+        // DATASETS will be populated dynamically from /api/list-public-files
+        let DATASETS = [];
+
+        const PIXEL_RATIO = Math.min(window.devicePixelRatio || 1, 2);
+        const FALLBACK_LAYOUT = 'breadthfirst';
+
+        let cyInstance = null;
+        let currentGraph = null;
+        let currentDatasetLabel = '';
+        let activeLayoutName = 'dagre';
+        let layoutDirection = 'horizontal';
+        let toastTimer = null;
+
+        const runtimeState = {
+            nodes: new Map(),
+            edges: new Map(),
+        };
+
+        const dom = {};
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            cacheDom();
+            updateDirectionToggleLabel();
+            attachEventHandlers();
+            await fetchAndHydrateDatasets();
+        });
+
+        async function fetchAndHydrateDatasets() {
+            try {
+                const response = await fetch('/api/list-public-files');
+                if (!response.ok) throw new Error('无法获取文件列表');
+                const data = await response.json();
+                DATASETS = (data.nav_graphs || []).map(item => ({
+                    ...item,
+                    app: item.label.split(' ')[0] || 'Unknown',
+                    description: item.file,
+                }));
+                hydrateDatasetOptions();
+                preloadDefaultDataset();
+            } catch (error) {
+                console.error('[Nav Graph] 获取数据集列表失败:', error);
+                setDatasetStatus('无法自动发现数据集，请手动导入 JSON 文件');
+                showToast('自动发现数据集失败，请手动导入', 'error');
+            }
+        }
+
+        function cacheDom() {
+            dom.datasetSelect = document.getElementById('datasetSelect');
+            dom.datasetChip = document.getElementById('datasetChip');
+            dom.datasetMeta = document.getElementById('datasetMeta');
+            dom.datasetStatus = document.getElementById('datasetStatus');
+            dom.nodeSearch = document.getElementById('nodeSearch');
+            dom.clearSearch = document.getElementById('clearSearch');
+            dom.relayoutBtn = document.getElementById('relayoutBtn');
+            dom.fitBtn = document.getElementById('fitBtn');
+            dom.uploadTrigger = document.getElementById('uploadTrigger');
+            dom.fileInput = document.getElementById('fileInput');
+            dom.graphLoading = document.getElementById('graphLoading');
+            dom.graphEmpty = document.getElementById('graphEmpty');
+            dom.statNodes = document.getElementById('statNodes');
+            dom.statEdges = document.getElementById('statEdges');
+            dom.statEntries = document.getElementById('statEntries');
+            dom.statBranching = document.getElementById('statBranching');
+            dom.inspector = document.getElementById('inspector');
+            dom.inspectorTitle = document.getElementById('inspectorTitle');
+            dom.inspectorLabel = document.getElementById('inspectorLabel');
+            dom.inspectorContent = document.getElementById('inspectorContent');
+            dom.inspectorClose = document.getElementById('inspectorClose');
+            dom.toast = document.getElementById('toast');
+            dom.directionToggle = document.getElementById('directionToggle');
+        }
+
+        function hydrateDatasetOptions() {
+            dom.datasetSelect.innerHTML = '';
+            DATASETS.forEach((dataset, index) => {
+                const option = document.createElement('option');
+                option.value = dataset.id;
+                option.textContent = dataset.label;
+                dom.datasetSelect.appendChild(option);
+                if (index === 0) {
+                    dom.datasetSelect.value = dataset.id;
+                }
+            });
+        }
+
+        function attachEventHandlers() {
+            dom.datasetSelect.addEventListener('change', (event) => {
+                const dataset = DATASETS.find(item => item.id === event.target.value);
+                if (dataset) {
+                    loadGraphFromFile(dataset);
+                }
+            });
+
+            dom.relayoutBtn.addEventListener('click', () => runLayout(true));
+            dom.fitBtn.addEventListener('click', () => {
+                if (cyInstance) {
+                    cyInstance.fit(undefined, 60);
+                    showToast('已将视图适配至全图');
+                }
+            });
+            dom.directionToggle?.addEventListener('click', () => {
+                layoutDirection = layoutDirection === 'horizontal' ? 'vertical' : 'horizontal';
+                updateDirectionToggleLabel();
+                runLayout();
+                showToast(`已切换为${layoutDirection === 'horizontal' ? '横向' : '纵向'}排布`);
+            });
+
+            const debouncedSearch = debounce((value) => applySearchFilter(value), 160);
+            dom.nodeSearch.addEventListener('input', (event) => debouncedSearch(event.target.value));
+            dom.clearSearch.addEventListener('click', () => {
+                dom.nodeSearch.value = '';
+                applySearchFilter('');
+            });
+
+            dom.uploadTrigger.addEventListener('click', () => dom.fileInput.click());
+            dom.fileInput.addEventListener('change', handleLocalFile);
+
+            dom.inspectorClose.addEventListener('click', () => {
+                hideInspector();
+                clearHighlights();
+            });
+
+            window.addEventListener('resize', () => cyInstance?.resize());
+            window.addEventListener('keydown', (event) => {
+                if (event.key?.toLowerCase() === 'k' && (event.metaKey || event.ctrlKey)) {
+                    dom.nodeSearch.focus();
+                    event.preventDefault();
+                }
+                if (event.key === 'Escape') {
+                    hideInspector();
+                    clearHighlights();
+                }
+            });
+        }
+
+        function preloadDefaultDataset() {
+            if (DATASETS.length > 0) {
+                loadGraphFromFile(DATASETS[0]);
+            }
+        }
+
+        async function loadGraphFromFile(dataset) {
+            if (!dataset?.file) return;
+            currentDatasetLabel = dataset.label;
+            updateDatasetChip(dataset.label);
+            setDatasetStatus(`正在加载 ${dataset.label} ...`);
+            toggleLoading(true);
+            hideInspector();
+            clearHighlights();
+
+            try {
+                const response = await fetch(dataset.file, { cache: 'no-store' });
+                if (!response.ok) {
+                    throw new Error(`无法加载数据 (HTTP ${response.status})`);
+                }
+                const data = await response.json();
+                loadGraphFromData(data, dataset.label, dataset);
+                showToast(`已加载 ${dataset.label}`);
+            } catch (error) {
+                console.error(error);
+                setDatasetStatus('加载失败，请检查 JSON 文件路径。');
+                showToast(error.message || '加载失败', 'error');
+                setGraphEmptyState(true, '加载失败', error.message || '无法读取图数据');
+            } finally {
+                toggleLoading(false);
+            }
+        }
+
+        function loadGraphFromData(data, label = '自定义数据', datasetMeta = null) {
+            if (!data || !Array.isArray(data.nodes) || !Array.isArray(data.edges)) {
+                setGraphEmptyState(true, '数据格式错误', '缺少 nodes 或 edges 数组');
+                return;
+            }
+            currentGraph = data;
+            currentDatasetLabel = label;
+            updateDatasetChip(label);
+            updateDatasetMeta(data.app, datasetMeta?.description ?? data.appDir, data);
+            updateStats(data);
+            setGraphEmptyState(!data.nodes.length);
+            setDatasetStatus(`${label} · ${data.app || '未知应用'}`);
+            buildGraph(data);
+        }
+
+        function updateDatasetMeta(appName, appDir, data) {
+            const nodeCount = Array.isArray(data?.nodes) ? data.nodes.length : (data?.routeCount ?? '-');
+            const edgeCount = Array.isArray(data?.edges) ? data.edges.length : (data?.edgeCount ?? '-');
+            const transitionCount = data?.transitionCount ?? '-';
+            dom.datasetMeta.textContent =
+                `${appName || '未知应用'} · ${appDir || '未知目录'} · nodes:${nodeCount} / edges:${edgeCount} · transitions:${transitionCount}`;
+        }
+
+        function updateStats(data) {
+            const nodesCount = Array.isArray(data?.nodes) ? data.nodes.length : (data?.routeCount ?? 0);
+            const edgesCount = Array.isArray(data?.edges) ? data.edges.length : (data?.edgeCount ?? 0);
+            const entryCount = data.nodes.filter(node => node.entryPoint).length;
+            const branching = nodesCount ? (edgesCount / nodesCount).toFixed(2) : '0.00';
+
+            dom.statNodes.textContent = nodesCount;
+            dom.statEdges.textContent = edgesCount;
+            dom.statEntries.textContent = entryCount;
+            dom.statBranching.textContent = `${branching}x`;
+        }
+
+        function buildGraph(data) {
+            runtimeState.nodes = new Map();
+            runtimeState.edges = new Map();
+
+            const nodeMap = new Map();
+            const nodes = data.nodes || [];
+            const edges = data.edges || [];
+
+            nodes.forEach((node, index) => {
+                if (!node?.id) return;
+                nodeMap.set(node.id, {
+                    id: node.id,
+                    raw: node,
+                    placeholder: false,
+                    order: index,
+                });
+            });
+
+            let virtualIndex = nodes.length;
+            edges.forEach(edge => {
+                if (!edge?.source || !edge?.target) return;
+                ensureNode(nodeMap, edge.source, virtualIndex++);
+                ensureNode(nodeMap, edge.target, virtualIndex++);
+            });
+
+            const cyNodes = Array.from(nodeMap.values()).map((entry, idx) => {
+                const raw = entry.raw || {};
+                const isStateConditional = Boolean(raw.stateCondition);
+                const conditionStatus = raw.conditionStatus?.status || '';
+                const dataObj = {
+                    id: entry.id,
+                    label: entry.id,
+                    component: raw.component || '未知组件',
+                    description: raw.description || '',
+                    entryPoint: Boolean(raw.entryPoint),
+                    placeholder: entry.placeholder,
+                    isStateConditional,
+                    conditionStatus,
+                    badge: raw.entryPoint ? 'ENTRY' : (entry.placeholder ? 'AUTO' : ''),
+                    rawIndex: entry.order ?? idx,
+                };
+                runtimeState.nodes.set(entry.id, { ...entry, data: dataObj });
+                return {
+                    data: dataObj,
+                    classes: [
+                        entry.placeholder ? 'node-placeholder' : '',
+                        raw.entryPoint ? 'node-entry' : '',
+                        isStateConditional ? 'node-conditional' : '',
+                        conditionStatus === 'unevaluable' ? 'node-condition-unevaluable' : '',
+                    ].join(' ').trim()
+                };
+            });
+
+            const cyEdges = edges.map((edge, index) => {
+                const edgeId = `${edge.id || edge.label || 'edge'}-${index}`;
+                const type = (edge.type || 'navigation').toLowerCase();
+                const availability = (edge.availability || 'always').toLowerCase();
+                const isUiConditional = Boolean(edge.uiCondition);
+                const conditionStatus = edge.conditionStatus?.status || '';
+                const dataObj = {
+                    id: edgeId,
+                    source: edge.source,
+                    target: edge.target,
+                    label: edge.label || edge.type || '',
+                    type,
+                    mode: edge.mode || '',
+                    availability,
+                    availabilityNote: edge.availabilityNote || '',
+                    isUiConditional,
+                    conditionStatus,
+                    rawIndex: index,
+                };
+                runtimeState.edges.set(edgeId, { raw: edge, data: dataObj });
+                return {
+                    data: dataObj,
+                    classes: [
+                        `edge-${type}`,
+                        `edge-availability-${availability}`,
+                        isUiConditional ? 'edge-conditional' : '',
+                        conditionStatus === 'unevaluable' ? 'edge-condition-unevaluable' : '',
+                    ].join(' ').trim(),
+                };
+            });
+
+            renderGraph([...cyNodes, ...cyEdges]);
+        }
+
+        function ensureNode(nodeMap, id, order = 0) {
+            if (!id || nodeMap.has(id)) return;
+            nodeMap.set(id, {
+                id,
+                placeholder: true,
+                order,
+                raw: {
+                    id,
+                    component: id.startsWith('__HISTORY_BACK__') ? 'HistoryBack' : 'UnknownRoute',
+                    description: '自动创建节点，用于补全连线端点',
+                    entryPoint: false,
+                }
+            });
+        }
+
+        function renderGraph(elements) {
+            if (cyInstance) {
+                cyInstance.destroy();
+            }
+
+            const createInstance = (layoutName) => cytoscape({
+                container: document.getElementById('cy'),
+                elements,
+                wheelSensitivity: 0.2,
+                minZoom: 0.2,
+                maxZoom: 3.5,
+                pixelRatio: PIXEL_RATIO,
+                boxSelectionEnabled: false,
+                autoungrabify: false,
+                style: [
+                    {
+                        selector: 'node',
+                        style: {
+                            'shape': 'round-rectangle',
+                            'background-color': '#0f172a',
+                            'background-fill': 'linear-gradient',
+                            'background-gradient-stop-colors': '#1e293b #0f172a',
+                            'background-gradient-stop-positions': '0 80',
+                            'width': 220,
+                            'height': 120,
+                            'border-width': 2.5,
+                            'border-color': '#38bdf8',
+                            'border-opacity': 0.4,
+                            'shadow-blur': 24,
+                            'shadow-color': '#0ea5e9',
+                            'shadow-opacity': 0.22,
+                            'label': 'data(label)',
+                            'font-size': 12,
+                            'font-weight': 600,
+                            'text-wrap': 'wrap',
+                            'text-max-width': 180,
+                            'color': '#f8fafc',
+                            'text-background-opacity': 0,
+                        }
+                    },
+                    {
+                        selector: 'node.node-entry',
+                        style: {
+                            'border-color': '#f87171',
+                            'border-width': 4,
+                            // Full highlight (not just border)
+                            'background-color': '#7f1d1d',
+                            'background-gradient-stop-colors': '#991b1b #7f1d1d',
+                            'background-gradient-stop-positions': '0 80',
+                            'shadow-color': '#f87171',
+                        }
+                    },
+                    {
+                        selector: 'node.node-placeholder',
+                        style: {
+                            'border-style': 'dashed',
+                            'border-color': '#475569',
+                            'border-opacity': 0.8,
+                            'background-color': '#111827',
+                            'color': '#94a3b8',
+                        }
+                    },
+                    {
+                        // 条件节点（stateCondition）：绿色虚线边框
+                        selector: 'node.node-conditional',
+                        style: {
+                            'border-style': 'dashed',
+                            'border-color': '#22c55e',
+                            'border-opacity': 0.85,
+                            // Full highlight (not just border)
+                            'background-color': '#064e3b',
+                            'background-gradient-stop-colors': '#065f46 #064e3b',
+                            'background-gradient-stop-positions': '0 80',
+                            'shadow-color': '#22c55e',
+                            'shadow-opacity': 0.25,
+                        }
+                    },
+                    {
+                        // If a node is both entry + conditional, prioritize entry red theme (stronger signal)
+                        selector: 'node.node-entry.node-conditional',
+                        style: {
+                            'background-color': '#7f1d1d',
+                            'background-gradient-stop-colors': '#991b1b #7f1d1d',
+                            'background-gradient-stop-positions': '0 80',
+                            'border-color': '#f87171',
+                            'border-style': 'solid',
+                            'shadow-color': '#f87171',
+                        }
+                    },
+                    {
+                        // 条件不可评价：降低透明度表示“数据不足/参数未绑定”
+                        selector: 'node.node-conditional.node-condition-unevaluable',
+                        style: {
+                            // Make it visually distinct from evaluable conditional nodes
+                            'background-color': '#0b1220',
+                            'background-gradient-stop-colors': '#111827 #0b1220',
+                            'background-gradient-stop-positions': '0 80',
+                            'border-color': '#94a3b8',
+                            'border-opacity': 0.9,
+                            'shadow-color': '#94a3b8',
+                            'shadow-opacity': 0.22,
+                            'opacity': 0.88,
+                        }
+                    },
+                    {
+                        selector: 'node.dimmed',
+                        style: { 'opacity': 0.15 }
+                    },
+                    {
+                        selector: 'node.active-node',
+                        style: {
+                            'border-color': '#f472b6',
+                            'border-width': 6,
+                            'shadow-color': '#f472b6',
+                            'shadow-opacity': 0.9,
+                        }
+                    },
+                    {
+                        selector: 'edge',
+                        style: {
+                            'width': 2.5,
+                            'line-color': '#475569',
+                            'target-arrow-color': '#475569',
+                            'target-arrow-shape': 'triangle',
+                            'curve-style': 'bezier',
+                            'label': 'data(label)',
+                            'font-size': 10,
+                            'color': '#cbd5f5',
+                            'text-rotation': 'autorotate',
+                            'text-background-opacity': 0.6,
+                            'text-background-color': '#020617dd',
+                            'text-background-padding': 2.5,
+                            'text-background-shape': 'roundrectangle',
+                        }
+                    },
+                    {
+                        selector: 'edge.edge-navigation',
+                        style: {
+                            'line-color': '#38bdf8',
+                            'target-arrow-color': '#38bdf8',
+                        }
+                    },
+                    {
+                        // 条件边：用不同颜色标记（优先级高于 type 色）
+                        selector: 'edge.edge-conditional',
+                        style: {
+                            'line-color': '#22c55e',
+                            'target-arrow-color': '#22c55e',
+                            'line-style': 'dashed',
+                        }
+                    },
+                    {
+                        // 条件不可评价：用虚线表达“数据不足/参数未绑定”
+                        selector: 'edge.edge-conditional.edge-condition-unevaluable',
+                        style: {
+                            // Use a neutral color to distinguish from evaluable condition edges
+                            'line-color': '#94a3b8',
+                            'target-arrow-color': '#94a3b8',
+                            'line-style': 'dotted',
+                            'opacity': 0.9,
+                        }
+                    },
+                    {
+                        // 同时是 state + 条件边 + 不可评价：仍使用“不可评价”的中性色
+                        selector: 'edge.edge-state.edge-conditional.edge-condition-unevaluable',
+                        style: {
+                            'line-color': '#94a3b8',
+                            'target-arrow-color': '#94a3b8',
+                            'line-style': 'dotted',
+                            'opacity': 0.9,
+                        }
+                    },
+                    {
+                        selector: 'edge.edge-state',
+                        style: {
+                            'line-color': '#fbbf24',
+                            'target-arrow-color': '#fbbf24',
+                        }
+                    },
+                    {
+                        // 同时是 state + 条件边：以条件边为准（绿色虚线）
+                        selector: 'edge.edge-state.edge-conditional',
+                        style: {
+                            'line-color': '#22c55e',
+                            'target-arrow-color': '#22c55e',
+                            'line-style': 'dashed',
+                        }
+                    },
+                    {
+                        selector: 'edge.edge-back',
+                        style: {
+                            'line-style': 'dashed',
+                            'line-color': '#f87171',
+                            'target-arrow-color': '#f87171',
+                        }
+                    },
+                    {
+                        selector: 'edge.edge-availability-requires_prior_visit',
+                        style: {
+                            'line-style': 'dashed',
+                            'line-color': '#a855f7',
+                            'target-arrow-color': '#a855f7',
+                        }
+                    },
+                    {
+                        selector: 'edge.active-edge',
+                        style: {
+                            'width': 4,
+                            'line-color': '#f472b6',
+                            'target-arrow-color': '#f472b6',
+                            'color': '#fdf4ff',
+                        }
+                    },
+                    {
+                        selector: '.dimmed',
+                        style: { 'opacity': 0.15 }
+                    },
+                ],
+                layout: getLayoutOptions(layoutName)
+            });
+
+            try {
+                activeLayoutName = 'dagre';
+                cyInstance = createInstance(activeLayoutName);
+            } catch (error) {
+                const message = String(error?.message || error || '');
+                if (message.includes('No such layout `dagre`')) {
+                    console.warn('[Nav Graph] Dagre layout unavailable, switching to fallback layout.');
+                    activeLayoutName = FALLBACK_LAYOUT;
+                    showToast('未检测到 dagre 布局，已切换为 Breadthfirst。', 'error');
+                    setDatasetStatus(`${currentDatasetLabel} (dagre 不可用，已使用 Breadthfirst)`);
+                    cyInstance = createInstance(activeLayoutName);
+                } else {
+                    setGraphEmptyState(true, '渲染失败', message || '未知错误');
+                    throw error;
+                }
+            }
+
+            cyInstance.ready(() => cyInstance.fit(undefined, 80));
+
+            cyInstance.on('tap', 'node', (event) => selectNode(event.target));
+            cyInstance.on('tap', 'edge', (event) => selectEdge(event.target));
+            cyInstance.on('tap', (event) => {
+                if (event.target === cyInstance) {
+                    clearHighlights();
+                    hideInspector();
+                }
+            });
+        }
+
+        function getLayoutOptions(layoutName = activeLayoutName) {
+            const isHorizontal = layoutDirection === 'horizontal';
+            if (layoutName === 'dagre') {
+                return {
+                    name: 'dagre',
+                    rankDir: isHorizontal ? 'LR' : 'TB',
+                    nodeSep: isHorizontal ? 180 : 140,
+                    rankSep: isHorizontal ? 220 : 180,
+                    edgeSep: 20,
+                    padding: 50,
+                    animate: true,
+                    animationDuration: 500,
+                };
+            }
+
+            if (layoutName === 'breadthfirst') {
+                return {
+                    name: 'breadthfirst',
+                    directed: true,
+                    spacingFactor: isHorizontal ? 1.1 : 1.3,
+                    circle: false,
+                    padding: 60,
+                    animate: true,
+                    animationDuration: 500,
+                };
+            }
+
+            return {
+                name: 'cose',
+                fit: true,
+                padding: 50,
+                animate: true,
+                animationDuration: 500,
+            };
+        }
+
+        function runLayout(withToast = false) {
+            if (!cyInstance) return;
+            const layout = cyInstance.layout(getLayoutOptions(activeLayoutName));
+            layout.run();
+            if (withToast) {
+                showToast('已重新计算布局');
+            }
+        }
+
+        function selectNode(node) {
+            if (!node) return;
+            clearHighlights();
+            node.addClass('active-node');
+            node.connectedEdges().addClass('active-edge');
+            showNodeDetails(node);
+            cyInstance.animate({ center: { eles: node }, duration: 300, easing: 'ease' });
+        }
+
+        function selectEdge(edge) {
+            if (!edge) return;
+            clearHighlights();
+            edge.addClass('active-edge');
+            edge.source().addClass('active-node');
+            edge.target().addClass('active-node');
+            showEdgeDetails(edge);
+            cyInstance.animate({ center: { eles: edge }, duration: 300, easing: 'ease' });
+        }
+
+        function clearHighlights() {
+            if (!cyInstance) return;
+            cyInstance.nodes().removeClass('active-node dimmed');
+            cyInstance.edges().removeClass('active-edge dimmed');
+        }
+
+        function showNodeDetails(node) {
+            if (!currentGraph) return;
+            const nodeData = runtimeState.nodes.get(node.id());
+            if (!nodeData) return;
+            const raw = nodeData.raw || {};
+            const outgoing = (currentGraph.edges || []).filter(t => t.source === node.id());
+            const incoming = (currentGraph.edges || []).filter(t => t.target === node.id());
+
+            dom.inspectorTitle.textContent = '路由详情';
+            dom.inspectorLabel.textContent = node.id();
+            dom.inspectorContent.innerHTML = `
+                <div class="space-y-5">
+                    <div class="rounded-2xl border border-white/10 bg-slate-900/60 px-4 py-3 space-y-2">
+                        <p class="text-xs uppercase tracking-[0.4em] text-slate-400/90">组件</p>
+                        <p class="text-base font-semibold text-white">${raw.component || '未知组件'}</p>
+                        <p class="text-sm text-slate-400 leading-relaxed">${raw.description || '暂无描述'}</p>
+                        ${raw.entryPoint ? '<span class="badge text-cyan-200 border-cyan-500/40">ENTRY</span>' : ''}
+                        ${nodeData.placeholder ? '<span class="badge text-slate-300 border-white/15">AUTO</span>' : ''}
+                    </div>
+                    ${renderParams(raw.params)}
+                    ${renderScrollContainers(raw.scrollContainers)}
+                    ${renderActions(raw.actions)}
+                    ${renderCondition('stateCondition', raw.stateCondition, raw.conditionStatus)}
+                    <div>
+                        <p class="text-xs uppercase tracking-[0.4em] text-slate-400/90 mb-2">出度 (${outgoing.length})</p>
+                        ${renderEdgeList(outgoing, 'target')}
+                    </div>
+                    <div>
+                        <p class="text-xs uppercase tracking-[0.4em] text-slate-400/90 mb-2">入度 (${incoming.length})</p>
+                        ${renderEdgeList(incoming, 'source')}
+                    </div>
+                </div>
+            `;
+
+            attachInlineEdgePreviewHandlers();
+            showInspector();
+        }
+
+        function renderParams(params = {}) {
+            const entries = Object.entries(params || {});
+            if (!entries.length) {
+                return '<div class="text-xs text-slate-500">无 URL Params</div>';
+            }
+            return `
+                <div class="rounded-2xl border border-white/10 bg-slate-900/50 px-4 py-3">
+                    <p class="text-xs uppercase tracking-[0.4em] text-slate-400/90 mb-2">URL 参数</p>
+                    <div class="space-y-2 text-sm">
+                        ${entries.map(([key, value]) => `
+                            <div class="flex justify-between gap-4">
+                                <span class="text-slate-400">${key}</span>
+                                <span class="text-white font-mono">${value}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderScrollContainers(containers = []) {
+            if (!containers.length) {
+                return '';
+            }
+            return `
+                <div class="rounded-2xl border border-white/10 bg-slate-900/50 px-4 py-3">
+                    <p class="text-xs uppercase tracking-[0.4em] text-slate-400/90 mb-2">滚动容器</p>
+                    <div class="space-y-2 text-sm">
+                        ${containers.map(item => `
+                            <div class="border border-white/10 rounded-2xl px-3 py-2">
+                                <p class="text-white font-semibold">${item.name || '-'}</p>
+                                <p class="text-slate-400 text-xs uppercase tracking-[0.3em]">${item.direction || '-'}</p>
+                                <p class="text-slate-400 mt-1">${item.description || ''}</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderActions(actions = []) {
+            if (!Array.isArray(actions) || actions.length === 0) {
+                return '';
+            }
+            return `
+                <div class="rounded-2xl border border-white/10 bg-slate-900/50 px-4 py-3">
+                    <div class="flex items-center justify-between mb-2">
+                        <p class="text-xs uppercase tracking-[0.4em] text-slate-400/90">Actions</p>
+                        <span class="text-xs text-slate-400 font-mono">${actions.length}</span>
+                    </div>
+                    <div class="space-y-2 text-sm">
+                        ${actions.map(a => {
+                            const id = a?.id ?? '-';
+                            const label = a?.label ?? '';
+                            const behavior = a?.behavior ?? '';
+                            const scope = a?.scope ?? '';
+                            return `
+                                <div class="border border-white/10 rounded-2xl px-3 py-2">
+                                    <p class="text-white font-mono break-all">${id}</p>
+                                    <div class="mt-1 flex flex-wrap gap-2 text-[11px] uppercase tracking-[0.3em] text-slate-400/90">
+                                        ${behavior ? `<span class="badge text-emerald-200 border-emerald-500/30">${behavior}</span>` : ''}
+                                        ${scope ? `<span class="badge text-indigo-200 border-indigo-500/30">${scope}</span>` : ''}
+                                    </div>
+                                    ${label ? `<p class="mt-2 text-slate-300">${label}</p>` : ''}
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderEdgeList(list, key) {
+            if (!list.length) {
+                return '<p class="text-slate-500 text-sm">无记录</p>';
+            }
+            return `
+                <div class="space-y-2">
+                    ${list.map((item, index) => {
+                        const edgeId = getEdgeIdFromRaw(item) || `${item.id || item.label || 'edge'}-${index}`;
+                        const nodeId = item[key];
+                        const type = String(item.type || 'navigation').toLowerCase();
+                        const availability = String(item.availability || 'always').toLowerCase();
+                        const isAvailabilityConditional = availability !== 'always';
+                        const isUiConditional = Boolean(item.uiCondition);
+
+                        const typeBadgeClass = type === 'navigation'
+                            ? 'text-sky-200 border-sky-500/30 bg-sky-500/10'
+                            : type === 'state'
+                                ? 'text-amber-200 border-amber-500/30 bg-amber-500/10'
+                                : type === 'back'
+                                    ? 'text-rose-200 border-rose-500/30 bg-rose-500/10'
+                                    : 'text-slate-200 border-white/15 bg-white/5';
+
+                        const availabilityBadgeClass = 'text-purple-200 border-purple-500/30 bg-purple-500/10';
+
+                        const accentClass = isUiConditional
+                            ? 'border-l-emerald-500/70'
+                            : isAvailabilityConditional
+                                ? 'border-l-purple-500/60'
+                            : type === 'navigation'
+                                ? 'border-l-sky-500/60'
+                                : type === 'state'
+                                    ? 'border-l-amber-500/60'
+                                    : type === 'back'
+                                        ? 'border-l-rose-500/60'
+                                        : 'border-l-white/20';
+
+                        const availabilityNote = item.availabilityNote || '';
+                        const availabilityTitle = availabilityNote
+                            ? `（${availability}）${availabilityNote}`
+                            : (availability !== 'always' ? `（${availability}）` : '');
+
+                        return `
+                            <button class="w-full text-left bg-slate-900/50 hover:bg-slate-800/70 border border-white/10 border-l-4 ${accentClass} rounded-2xl px-4 py-2 flex flex-col gap-1 transition-colors"
+                                data-edge-id="${edgeId}"
+                                data-node-id="${nodeId}">
+                                <span class="text-xs text-slate-400 uppercase tracking-[0.4em]">${key === 'target' ? 'TO' : 'FROM'}</span>
+                                <span class="text-sm text-white break-all">${item[key]}</span>
+                                <div class="flex flex-wrap items-center gap-2 pt-0.5">
+                                    <span class="badge ${typeBadgeClass}" title="type=${type}">${type}</span>
+                                    ${item.mode ? `<span class="badge text-slate-200 border-white/15 bg-white/5" title="mode=${item.mode}">${String(item.mode).toUpperCase()}</span>` : ''}
+                                    ${isUiConditional
+                                        ? `<span class="badge text-emerald-200 border-emerald-500/30 bg-emerald-500/10" title="该边带 uiCondition">条件边</span>`
+                                        : ''}
+                                    ${isAvailabilityConditional
+                                        ? `<span class="badge ${availabilityBadgeClass}" title="${availabilityTitle}">需访问记忆</span>`
+                                        : ''}
+                                    <span class="text-xs text-slate-400">${item.label || '未命名连线'}</span>
+                                </div>
+                            </button>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        }
+
+        function attachInlineEdgePreviewHandlers() {
+            dom.inspectorContent.querySelectorAll('[data-edge-id]').forEach(button => {
+                button.addEventListener('click', () => {
+                    // Prefer navigating to the corresponding endpoint node (more intuitive for out/in-degree lists).
+                    const nodeId = button.getAttribute('data-node-id');
+                    const node = nodeId ? cyInstance?.getElementById(nodeId) : null;
+                    if (node && node.isNode && node.isNode()) {
+                        selectNode(node);
+                        return;
+                    }
+
+                    const edgeId = button.getAttribute('data-edge-id');
+                    const edge = edgeId ? cyInstance?.getElementById(edgeId) : null;
+                    if (edge && edge.isEdge && edge.isEdge()) {
+                        selectEdge(edge);
+                    } else {
+                        showToast(`无法定位目标（nodeId=${nodeId || '-'} edgeId=${edgeId || '-'})`, 'error');
+                    }
+                });
+            });
+        }
+
+        function showEdgeDetails(edge) {
+            const data = runtimeState.edges.get(edge.id());
+            const raw = data?.raw || {};
+            dom.inspectorTitle.textContent = '连线详情';
+            dom.inspectorLabel.textContent = `${raw.source} → ${raw.target}`;
+            dom.inspectorContent.innerHTML = `
+                <div class="space-y-4">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+                            <p class="text-[10px] uppercase tracking-widest text-slate-400/80">类型</p>
+                            <p class="mt-2 text-lg font-semibold text-white">${(raw.type || 'navigation').toUpperCase()}</p>
+                        </div>
+                        <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+                            <p class="text-[10px] uppercase tracking-widest text-slate-400/80">模式</p>
+                            <p class="mt-2 text-lg font-semibold text-white">${raw.mode || '-'}</p>
+                        </div>
+                    </div>
+                    ${renderAvailability(raw.availability, raw.availabilityNote)}
+                    <div class="rounded-2xl border border-white/10 bg-slate-900/60 px-4 py-3 text-sm space-y-2">
+                        <div class="flex justify-between gap-4">
+                            <span class="text-slate-400">Label</span>
+                            <span class="text-white">${raw.label || '—'}</span>
+                        </div>
+                        ${raw.id ? `<div class="flex justify-between gap-4"><span class="text-slate-400">ID</span><span class="text-white font-mono">${raw.id}</span></div>` : ''}
+                    </div>
+                    ${renderUiMeta(raw.uiMeta)}
+                    ${renderKeyValueSection('路由参数', raw.params)}
+                    ${renderKeyValueSection('Search', raw.search)}
+                    ${renderConstraint(raw.fromConstraint)}
+                    ${renderCondition('uiCondition', raw.uiCondition, raw.conditionStatus)}
+                </div>
+            `;
+            showInspector();
+        }
+
+        function renderAvailability(availability, note) {
+            if (!availability && !note) return '';
+            const av = availability || 'always';
+            const isConditional = String(av).toLowerCase() !== 'always';
+            const border = isConditional ? 'border-fuchsia-400/40' : 'border-emerald-400/30';
+            const bg = isConditional ? 'bg-fuchsia-500/10' : 'bg-emerald-500/10';
+            const title = isConditional ? '可用性（条件边）' : '可用性';
+            return `
+                <div class="rounded-2xl border ${border} ${bg} px-4 py-3 text-sm space-y-2">
+                    <p class="text-xs uppercase tracking-[0.4em] ${isConditional ? 'text-fuchsia-200' : 'text-emerald-200'} mb-1">${title}</p>
+                    <div class="flex justify-between gap-4">
+                        <span class="text-slate-300">availability</span>
+                        <span class="text-white font-mono">${String(av)}</span>
+                    </div>
+                    ${note ? `<p class="text-slate-200 leading-relaxed">${note}</p>` : ''}
+                </div>
+            `;
+        }
+
+        function renderUiMeta(uiMeta) {
+            if (!uiMeta) return '';
+            const entries = Object.entries(uiMeta).filter(([, v]) => v !== null && v !== undefined && v !== '');
+            if (!entries.length) return '';
+            return `
+                <div class="rounded-2xl border border-white/10 bg-slate-900/50 px-4 py-3">
+                    <p class="text-xs uppercase tracking-[0.4em] text-slate-400/90 mb-2">UI</p>
+                    <div class="space-y-2 text-sm">
+                        ${entries.map(([key, value]) => `
+                            <div class="flex justify-between gap-3">
+                                <span class="text-slate-400">${key}</span>
+                                <span class="text-white font-mono">${formatValue(value)}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderKeyValueSection(title, data) {
+            const entries = Object.entries(data || {});
+            if (!entries.length) {
+                return '';
+            }
+            return `
+                <div class="rounded-2xl border border-white/10 bg-slate-900/50 px-4 py-3">
+                    <p class="text-xs uppercase tracking-[0.4em] text-slate-400/90 mb-2">${title}</p>
+                    <div class="space-y-2 text-sm">
+                        ${entries.map(([key, value]) => `
+                            <div class="flex justify-between gap-3">
+                                <span class="text-slate-400">${key}</span>
+                                <span class="text-white font-mono">${formatValue(value)}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function formatValue(value) {
+            if (value === null) return 'null';
+            if (typeof value === 'object') {
+                return JSON.stringify(value);
+            }
+            return String(value);
+        }
+
+        function renderConstraint(constraint) {
+            if (!constraint) return '';
+            return `
+                <div class="rounded-2xl border border-indigo-500/30 bg-indigo-500/10 px-4 py-3">
+                    <p class="text-xs uppercase tracking-[0.4em] text-indigo-200 mb-2">fromConstraint</p>
+                    <p class="text-sm text-white break-all">${formatValue(constraint)}</p>
+                </div>
+            `;
+        }
+
+        function renderCondition(title, condition, status) {
+            if (!condition && !status) return '';
+            const c = condition || {};
+            return `
+                <div class="rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-3">
+                    <p class="text-xs uppercase tracking-[0.4em] text-amber-200 mb-2">${title}</p>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between gap-3">
+                            <span class="text-amber-300/80">op</span>
+                            <span class="text-white font-mono">${c.op || '-'}</span>
+                        </div>
+                        <div class="flex justify-between gap-3">
+                            <span class="text-amber-300/80">ref</span>
+                            <span class="text-white font-mono">${c.ref || '-'}</span>
+                        </div>
+                        ${('param' in c) && c.param ? `
+                        <div class="flex justify-between gap-3">
+                            <span class="text-amber-300/80">param</span>
+                            <span class="text-white font-mono">${c.param}</span>
+                        </div>
+                        ` : ''}
+                        ${('field' in c) && c.field ? `
+                        <div class="flex justify-between gap-3">
+                            <span class="text-amber-300/80">field</span>
+                            <span class="text-white font-mono">${c.field}</span>
+                        </div>
+                        ` : ''}
+                        ${('equals' in c) && c.equals !== undefined ? `
+                        <div class="flex justify-between gap-3">
+                            <span class="text-amber-300/80">equals</span>
+                            <span class="text-white font-mono">${formatValue(c.equals)}</span>
+                        </div>
+                        ` : ''}
+                        ${('filterFn' in c) && c.filterFn ? `
+                        <div class="flex justify-between gap-3">
+                            <span class="text-amber-300/80">filterFn</span>
+                            <span class="text-white font-mono break-all">${formatValue(c.filterFn)}</span>
+                        </div>
+                        ` : ''}
+                        ${c.text ? `
+                        <div class="flex justify-between gap-3">
+                            <span class="text-amber-300/80">text</span>
+                            <span class="text-white">${c.text}</span>
+                        </div>
+                        ` : ''}
+                        ${status ? `
+                        <div class="rounded-xl border border-white/10 bg-slate-900/40 px-3 py-2">
+                            <div class="flex justify-between gap-3">
+                                <span class="text-amber-300/80">status</span>
+                                <span class="text-white font-mono">${status.status || '-'}</span>
+                            </div>
+                            ${status.reason ? `<div class="flex justify-between gap-3 mt-1"><span class="text-amber-300/80">reason</span><span class="text-white break-all">${status.reason}</span></div>` : ''}
+                        </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        function applySearchFilter(query) {
+            if (!cyInstance) return;
+            const keyword = query.trim().toLowerCase();
+            cyInstance.nodes().removeClass('dimmed');
+            cyInstance.edges().removeClass('dimmed');
+
+            if (!keyword) return;
+
+            cyInstance.nodes().forEach(node => {
+                const matches = node.id().toLowerCase().includes(keyword) ||
+                    (runtimeState.nodes.get(node.id())?.raw?.component || '').toLowerCase().includes(keyword);
+                if (!matches) {
+                    node.addClass('dimmed');
+                }
+            });
+
+            cyInstance.edges().forEach(edge => {
+                if (edge.source().hasClass('dimmed') && edge.target().hasClass('dimmed')) {
+                    edge.addClass('dimmed');
+                }
+            });
+        }
+
+        function handleLocalFile(event) {
+            const file = event.target.files?.[0];
+            if (!file) return;
+
+            setDatasetStatus(`正在解析 ${file.name} ...`);
+            toggleLoading(true);
+            hideInspector();
+            clearHighlights();
+
+            const reader = new FileReader();
+            reader.onload = () => {
+                try {
+                    const data = JSON.parse(reader.result);
+                    loadGraphFromData(data, `${file.name} (本地)`);
+                    showToast(`已导入 ${file.name}`);
+                } catch (error) {
+                    console.error(error);
+                    setDatasetStatus('解析 JSON 失败，请检查文件内容。');
+                    showToast('解析 JSON 失败', 'error');
+                } finally {
+                    toggleLoading(false);
+                    dom.fileInput.value = '';
+                }
+            };
+            reader.onerror = () => {
+                showToast('读取文件失败', 'error');
+                toggleLoading(false);
+            };
+            reader.readAsText(file, 'utf-8');
+        }
+
+        function setDatasetStatus(message) {
+            dom.datasetStatus.textContent = message;
+        }
+
+        function updateDatasetChip(label) {
+            dom.datasetChip.textContent = label || '未选择';
+        }
+
+        function toggleLoading(isLoading) {
+            dom.graphLoading.classList.toggle('hidden', !isLoading);
+        }
+
+        function setGraphEmptyState(isEmpty, title = '暂无数据', detail = '加载 nav_graph JSON 后即可开始探索') {
+            if (isEmpty) {
+                dom.graphEmpty.querySelector('[data-empty-title]').textContent = title;
+                dom.graphEmpty.querySelector('[data-empty-detail]').textContent = detail;
+                dom.graphEmpty.classList.remove('hidden');
+            } else {
+                dom.graphEmpty.classList.add('hidden');
+            }
+        }
+
+        function hideInspector() {
+            dom.inspector.classList.add('translate-x-full');
+        }
+
+        function showInspector() {
+            dom.inspector.classList.remove('translate-x-full');
+        }
+
+        function debounce(fn, delay = 200) {
+            let timer = null;
+            return (...args) => {
+                clearTimeout(timer);
+                timer = setTimeout(() => fn(...args), delay);
+            };
+        }
+
+        function updateDirectionToggleLabel() {
+            if (!dom.directionToggle) return;
+            const isHorizontal = layoutDirection === 'horizontal';
+            dom.directionToggle.textContent = isHorizontal ? '横向排布' : '纵向排布';
+            dom.directionToggle.title = '点击切换布局方向';
+            dom.directionToggle.setAttribute('aria-pressed', String(isHorizontal));
+        }
+
+        function showToast(message, variant = 'info') {
+            if (!dom.toast) return;
+            dom.toast.textContent = message;
+            dom.toast.classList.remove('hidden');
+            dom.toast.classList.toggle('bg-red-600/80', variant === 'error');
+            dom.toast.classList.toggle('bg-slate-900/90', variant !== 'error');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => dom.toast.classList.add('hidden'), 2600);
+        }
+
+        function getEdgeIdFromRaw(rawEdge) {
+            for (const [edgeId, entry] of runtimeState.edges.entries()) {
+                if (entry.raw === rawEdge) {
+                    return edgeId;
+                }
+            }
+            return null;
+        }
+    </script>
+
+    <script>
+        (function setupViewerModeSwitcher() {
+            const VIEW_KEY = 'nav_graph_viewer.view';
+            const NAV_VIEW = 'nav';
+            const TASKS_VIEW = 'tasks';
+
+            const dom = {
+                navView: document.getElementById('navGraphView'),
+                tasksView: document.getElementById('actionTasksView'),
+                tasksFrame: document.getElementById('actionTasksFrame'),
+                tasksTemplate: document.getElementById('actionTasksSrcdoc'),
+                btnNav: document.getElementById('btnModeNav'),
+                btnTasks: document.getElementById('btnModeTasks'),
+            };
+
+            const activeBtnClasses = {
+                [NAV_VIEW]: ['bg-sky-500/20', 'text-sky-200', 'border-sky-500/30'],
+                [TASKS_VIEW]: ['bg-fuchsia-500/20', 'text-fuchsia-200', 'border-fuchsia-500/30'],
+            };
+            const inactiveBtnClasses = ['text-slate-300', 'hover:bg-white/5'];
+
+            function getInitialView() {
+                const params = new URLSearchParams(window.location.search);
+                const fromQuery = params.get('view');
+                if (fromQuery === TASKS_VIEW) return TASKS_VIEW;
+                if (fromQuery === NAV_VIEW) return NAV_VIEW;
+
+                const fromStorage = safeGetLocalStorage(VIEW_KEY);
+                if (fromStorage === TASKS_VIEW) return TASKS_VIEW;
+                return NAV_VIEW;
+            }
+
+            function ensureTasksFrameLoaded() {
+                if (!dom.tasksFrame || dom.tasksFrame.dataset.loaded === "1") return;
+                const html = dom.tasksTemplate?.innerHTML;
+                if (!html) {
+                    console.error('[Action Tasks] Embedded srcdoc template missing/empty');
+                    return;
+                }
+                dom.tasksFrame.srcdoc = `<!DOCTYPE html>\n${html}`;
+                dom.tasksFrame.dataset.loaded = "1";
+            }
+
+            function applyView(view, opts = { persist: true, updateUrl: true }) {
+                const v = view === TASKS_VIEW ? TASKS_VIEW : NAV_VIEW;
+
+                dom.navView?.classList.toggle('hidden', v !== NAV_VIEW);
+                dom.tasksView?.classList.toggle('hidden', v !== TASKS_VIEW);
+                document.body.classList.toggle('mode-action-tasks', v === TASKS_VIEW);
+
+                // Lazy-render Action Tasks into iframe via embedded srcdoc template
+                if (v === TASKS_VIEW) {
+                    ensureTasksFrameLoaded();
+                }
+
+                // Button styles
+                updateButtonState(dom.btnNav, v === NAV_VIEW ? NAV_VIEW : null);
+                updateButtonState(dom.btnTasks, v === TASKS_VIEW ? TASKS_VIEW : null);
+
+                if (opts?.persist) {
+                    safeSetLocalStorage(VIEW_KEY, v);
+                }
+                if (opts?.updateUrl) {
+                    syncUrl(v);
+                }
+            }
+
+            function updateButtonState(button, activeTypeOrNull) {
+                if (!button) return;
+                // Reset
+                button.classList.remove(...inactiveBtnClasses);
+                button.classList.remove(...activeBtnClasses[NAV_VIEW], ...activeBtnClasses[TASKS_VIEW]);
+
+                if (activeTypeOrNull) {
+                    button.classList.add(...activeBtnClasses[activeTypeOrNull]);
+                    button.setAttribute('aria-pressed', 'true');
+                } else {
+                    button.classList.add(...inactiveBtnClasses);
+                    button.setAttribute('aria-pressed', 'false');
+                }
+            }
+
+            function syncUrl(view) {
+                try {
+                    const url = new URL(window.location.href);
+                    if (view === TASKS_VIEW) {
+                        url.searchParams.set('view', TASKS_VIEW);
+                    } else {
+                        url.searchParams.delete('view');
+                    }
+                    window.history.replaceState(null, '', url.toString());
+                } catch (e) {
+                    // ignore
+                }
+            }
+
+            function safeGetLocalStorage(key) {
+                try {
+                    return window.localStorage.getItem(key);
+                } catch {
+                    return null;
+                }
+            }
+
+            function safeSetLocalStorage(key, value) {
+                try {
+                    window.localStorage.setItem(key, value);
+                } catch {
+                    // ignore
+                }
+            }
+
+            dom.btnNav?.addEventListener('click', () => applyView(NAV_VIEW));
+            dom.btnTasks?.addEventListener('click', () => applyView(TASKS_VIEW));
+
+            const initial = getInitialView();
+            applyView(initial, { persist: false, updateUrl: false });
+        })();
+    </script>
+</body>
+
+</html>

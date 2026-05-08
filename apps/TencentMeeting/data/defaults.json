@@ -1,0 +1,416 @@
+{
+  "user": {
+    "id": "user_001",
+    "name": "小明",
+    "avatar": "",
+    "type": "free",
+    "meetingId": "123 456 7890",
+    "phone": "+86 17312341995",
+    "wechat": "小明"
+  },
+  "theme": {
+    "primary": "#006EFF",
+    "bg": "#F5F6F7"
+  },
+  "history": [
+    {
+      "id": "test_001",
+      "meetingId": "111 222 333",
+      "title": "小明的快速会议",
+      "startTime": "2026-02-04 10:00:00",
+      "duration": 60,
+      "timezone": "(GMT+08:00) 中国标准时间",
+      "endTime": "2026-02-04 10:45:00",
+      "hostId": "user_001",
+      "type": "quick",
+      "participants": [
+        { "id": "user_001", "name": "小明", "avatar": "" },
+        { "id": "user_test1", "name": "测试用户1" }
+      ],
+      "participations": [
+        { "joinTime": "2026-02-04 10:00:00", "duration": 2700000 }
+      ]
+    },
+    {
+      "id": "test_002",
+      "meetingId": "222 333 444",
+      "title": "周例会",
+      "startTime": "2026-02-04 09:00:00",
+      "duration": 90,
+      "timezone": "(GMT+08:00) 中国标准时间",
+      "endTime": "2026-02-04 10:30:00",
+      "hostId": "user_001",
+      "type": "scheduled",
+      "participants": [
+        { "id": "user_001", "name": "小明", "avatar": "" },
+        { "id": "user_test2", "name": "测试用户2" },
+        { "id": "user_test3", "name": "测试用户3" }
+      ],
+      "participations": [
+        { "joinTime": "2026-02-04 09:00:00", "duration": 5400000 }
+      ]
+    },
+    {
+      "id": "test_003",
+      "meetingId": "333 444 555",
+      "title": "王五的项目讨论",
+      "startTime": "2026-02-04 08:00:00",
+      "duration": 60,
+      "timezone": "(GMT+08:00) 中国标准时间",
+      "endTime": "2026-02-04 09:00:00",
+      "hostId": "user_wangwu",
+      "type": "quick",
+      "participants": [
+        { "id": "user_wangwu", "name": "王五" },
+        { "id": "user_001", "name": "小明", "avatar": "" }
+      ],
+      "participations": [
+        { "joinTime": "2026-02-04 08:05:00", "duration": 3000000 }
+      ]
+    },
+    {
+      "id": "test_004",
+      "meetingId": "276760582",
+      "title": "老王的快速会议",
+      "startTime": "-10m",
+      "duration": 60,
+      "timezone": "(GMT+08:00) 中国标准时间",
+      "hostId": "host_laowang",
+      "type": "quick",
+      "participants": [
+        { "id": "host_laowang", "name": "老王" },
+        { "id": "user_001", "name": "小明", "avatar": "" }
+      ],
+      "participations": [
+        { "joinTime": "-8m", "duration": 180000 }
+      ]
+    },
+    {
+      "id": "test_004b",
+      "meetingId": "385912746",
+      "title": "产品需求讨论",
+      "startTime": "-25m",
+      "duration": 60,
+      "timezone": "(GMT+08:00) 中国标准时间",
+      "hostId": "user_zhangsan",
+      "type": "scheduled",
+      "participants": [
+        { "id": "user_zhangsan", "name": "张三" },
+        { "id": "user_001", "name": "小明", "avatar": "" },
+        { "id": "user_wangwu", "name": "王五" }
+      ],
+      "participations": [
+        { "joinTime": "-20m", "duration": 300000 }
+      ]
+    },
+    {
+      "id": "test_004c",
+      "meetingId": "419827365",
+      "title": "技术方案评审",
+      "startTime": "-45m",
+      "duration": 90,
+      "timezone": "(GMT+08:00) 中国标准时间",
+      "hostId": "user_lisi",
+      "type": "scheduled",
+      "participants": [
+        { "id": "user_lisi", "name": "李四" },
+        { "id": "user_001", "name": "小明", "avatar": "" },
+        { "id": "user_zhangsan", "name": "张三" }
+      ],
+      "participations": [
+        { "joinTime": "-40m", "duration": 600000 }
+      ]
+    },
+    {
+      "id": "test_005",
+      "meetingId": "555 666 777",
+      "title": "长时间研讨会",
+      "startTime": "2026-02-03 14:00:00",
+      "duration": 180,
+      "timezone": "(GMT+08:00) 中国标准时间",
+      "endTime": "2026-02-03 17:00:00",
+      "hostId": "user_leader",
+      "type": "scheduled",
+      "participants": [
+        { "id": "user_leader", "name": "组长" },
+        { "id": "user_001", "name": "小明", "avatar": "" },
+        { "id": "user_test4", "name": "测试用户4" }
+      ],
+      "participations": [
+        { "joinTime": "2026-02-03 14:00:00", "duration": 1800000 },
+        { "joinTime": "2026-02-03 15:00:00", "duration": 2700000 },
+        { "joinTime": "2026-02-03 16:30:00", "duration": 1800000 }
+      ]
+    },
+    {
+      "id": "meeting_001",
+      "meetingId": "524 733 540",
+      "title": "张三的快速会议",
+      "startTime": "2026-02-03 20:35:00",
+      "duration": 60,
+      "timezone": "(GMT+08:00) 中国标准时间",
+      "endTime": "2026-02-03 20:50:00",
+      "hostId": "user_zhangsan",
+      "type": "quick",
+      "participants": [
+        { "id": "user_zhangsan", "name": "张三" },
+        { "id": "user_001", "name": "小明", "avatar": "" }
+      ],
+      "participations": [
+        { "joinTime": "2026-02-03 20:36:00", "duration": 840000 }
+      ]
+    },
+    {
+      "id": "meeting_002",
+      "meetingId": "963 493 686",
+      "title": "李四的快速会议",
+      "startTime": "2026-02-03 16:56:00",
+      "duration": 60,
+      "timezone": "(GMT+08:00) 中国标准时间",
+      "endTime": "2026-02-03 17:26:00",
+      "hostId": "user_lisi",
+      "type": "quick",
+      "participants": [
+        { "id": "user_lisi", "name": "李四" }
+      ],
+      "participations": [
+        { "joinTime": "2026-02-03 16:58:00", "duration": 1680000 }
+      ]
+    },
+    {
+      "id": "meeting_003",
+      "meetingId": "446 109 634",
+      "title": "王五的快速会议",
+      "startTime": "2026-02-03 14:42:00",
+      "duration": 60,
+      "timezone": "(GMT+08:00) 中国标准时间",
+      "endTime": "2026-02-03 15:27:00",
+      "hostId": "user_wangwu",
+      "type": "quick",
+      "participants": [
+        { "id": "user_wangwu", "name": "王五" },
+        { "id": "user_001", "name": "小明", "avatar": "" },
+        { "id": "user_zhangsan", "name": "张三" }
+      ],
+      "participations": [
+        { "joinTime": "2026-02-03 14:44:00", "duration": 2580000 }
+      ]
+    },
+    {
+      "id": "meeting_004",
+      "meetingId": "835 6410 3661",
+      "title": "项目周会",
+      "startTime": "2026-02-03 14:00:00",
+      "duration": 60,
+      "timezone": "(GMT+08:00) 中国标准时间",
+      "endTime": "2026-02-03 15:00:00",
+      "hostId": "user_zhaoliu",
+      "type": "recurring",
+      "isRecurring": true,
+      "participants": [
+        { "id": "user_zhaoliu", "name": "赵六" },
+        { "id": "user_001", "name": "小明", "avatar": "" },
+        { "id": "user_lisi", "name": "李四" },
+        { "id": "user_wangwu", "name": "王五" }
+      ],
+      "participations": [
+        { "joinTime": "2026-02-03 14:01:00", "duration": 3540000 }
+      ]
+    },
+    {
+      "id": "meeting_005",
+      "meetingId": "537 121 322",
+      "title": "孙七的快速会议",
+      "startTime": "2026-01-21 00:04:00",
+      "duration": 60,
+      "timezone": "(GMT+08:00) 中国标准时间",
+      "endTime": "2026-01-21 00:24:00",
+      "hostId": "user_sunqi",
+      "type": "quick",
+      "participants": [
+        { "id": "user_sunqi", "name": "孙七" },
+        { "id": "user_001", "name": "小明", "avatar": "" }
+      ],
+      "participations": [
+        { "joinTime": "2026-01-21 00:05:00", "duration": 1140000 }
+      ]
+    },
+    {
+      "id": "meeting_006",
+      "meetingId": "564 662 6920",
+      "title": "周八的个人会议室",
+      "startTime": "2026-01-20 19:02:00",
+      "duration": 90,
+      "timezone": "(GMT+08:00) 中国标准时间",
+      "endTime": "2026-01-20 20:32:00",
+      "hostId": "user_zhouba",
+      "type": "personal",
+      "participants": [
+        { "id": "user_zhouba", "name": "周八" },
+        { "id": "user_001", "name": "小明", "avatar": "" },
+        { "id": "user_zhaoliu", "name": "赵六" }
+      ],
+      "participations": [
+        { "joinTime": "2026-01-20 19:05:00", "duration": 4620000 }
+      ]
+    }
+  ],
+  "settings": {
+    "notifications": true,
+    "micOnJoin": true,
+    "speakerOnJoin": true,
+    "micFloating": true,
+    "micSound": false,
+    "cameraOnJoin": false,
+    "videoMirror": true,
+    "hideNonVideo": false,
+    "hideSelf": false,
+    "showPreview": false,
+    "danmu": true,
+    "showDuration": true,
+    "nearbyDiscovery": false,
+    "voiceExcitation": true,
+    "shortcutFloat": false,
+    "safeDrive": true,
+    "darkModeFollow": true,
+    "showIdentity": false
+  },
+  "personalRoom": {
+    "meetingId": "337 607 3736",
+    "link": "meeting.tencent.com/p/3376073736",
+    "password": "666348",
+    "waitingRoom": false,
+    "allowBeforeHost": false,
+    "watermark": false,
+    "multiDevice": false,
+    "muteOnJoin": "auto_after_6"
+  },
+  "messages": [
+    {
+      "id": "msg_1",
+      "type": "system",
+      "title": "系统消息",
+      "content": "专业版新权益：会中展示认证身份",
+      "detail": "开启展示后，可在身份名牌、参会成员列表、个人资料卡中外显认证身份，提升专业形象。",
+      "time": "2025年12月04日 18:44",
+      "read": false
+    },
+    {
+      "id": "msg_2",
+      "type": "system",
+      "title": "系统消息",
+      "content": "AI纪要功能上新",
+      "detail": "更专业、更便捷高效的AI纪要。支持发言人查看其会议观点；不同会议场景纪要功能升级；会后可用图片形式分享本场会议的会议纪要",
+      "time": "2025年12月04日 18:44",
+      "read": false
+    }
+  ],
+  "otherDevices": [
+    {
+      "id": "device_mac",
+      "deviceType": "mac",
+      "deviceName": "Mac",
+      "isLoggedIn": true,
+      "inMeeting": false
+    }
+  ],
+  "contacts": [
+    { "id": "user_zhangsan", "name": "张三" },
+    { "id": "user_lisi",     "name": "李四" },
+    { "id": "user_wangwu",  "name": "王五" },
+    { "id": "user_zhaoliu", "name": "赵六" },
+    { "id": "user_sunqi",   "name": "孙七" }
+  ],
+  "scheduledMeetings": [
+    {
+      "id": "sched_001",
+      "meetingId": "836 291 475",
+      "title": "项目例会",
+      "startTime": "+2h",
+      "duration": 60,
+      "timezone": "(GMT+08:00) 中国标准时间",
+      "repeatType": "weekly",
+      "hostId": "user_001",
+      "invitees": [
+        { "id": "user_zhangsan", "name": "张三" },
+        { "id": "user_lisi",     "name": "李四" }
+      ],
+      "settings": {
+        "calendar": true,
+        "waitingRoom": false,
+        "enableSignUp": false,
+        "allowBeforeHost": true,
+        "muteOnJoin": "auto_after_6",
+        "watermark": false,
+        "allowMultiDevice": true,
+        "forbidAddContact": false,
+        "autoCloudRecord": false,
+        "autoTranscribe": false,
+        "allowUploadDoc": true
+      },
+      "status": "pending",
+      "createdAt": "+0s"
+    },
+    {
+      "id": "sched_002",
+      "meetingId": "517 643 928",
+      "title": "月末总结",
+      "startTime": "+3h",
+      "duration": 90,
+      "timezone": "(GMT+08:00) 中国标准时间",
+      "repeatType": "monthly",
+      "hostId": "user_001",
+      "invitees": [
+        { "id": "user_zhangsan", "name": "张三" },
+        { "id": "user_lisi",     "name": "李四" },
+        { "id": "user_wangwu",  "name": "王五" },
+        { "id": "user_zhaoliu", "name": "赵六" }
+      ],
+      "settings": {
+        "calendar": true,
+        "waitingRoom": false,
+        "enableSignUp": false,
+        "allowBeforeHost": true,
+        "muteOnJoin": "auto_after_6",
+        "watermark": false,
+        "allowMultiDevice": true,
+        "forbidAddContact": false,
+        "autoCloudRecord": false,
+        "autoTranscribe": false,
+        "allowUploadDoc": true
+      },
+      "status": "pending",
+      "createdAt": "+0s"
+    }
+  ],
+  "ongoingMeetings": [
+    {
+      "meetingId": "276760582",
+      "title": "老王的快速会议",
+      "hostName": "老王",
+      "hostId": "host_laowang",
+      "startTime": "-10m",
+      "duration": 60,
+      "timezone": "(GMT+08:00) 中国标准时间"
+    },
+    {
+      "meetingId": "385912746",
+      "title": "产品需求讨论",
+      "hostName": "张三",
+      "hostId": "user_zhangsan",
+      "startTime": "-25m",
+      "duration": 60,
+      "timezone": "(GMT+08:00) 中国标准时间"
+    },
+    {
+      "meetingId": "419827365",
+      "title": "技术方案评审",
+      "hostName": "李四",
+      "hostId": "user_lisi",
+      "startTime": "-45m",
+      "duration": 90,
+      "timezone": "(GMT+08:00) 中国标准时间"
+    }
+  ]
+}
+

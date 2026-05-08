@@ -1,0 +1,182 @@
+{
+  "conversations": [
+    {
+      "id": "huawei-cloud",
+      "sender": "华为云",
+      "phoneNumber": "10690346",
+      "timestamp": "15:17",
+      "avatarUrl": "/logos/huawei.png",
+      "avatarColor": "#CF0A2C",
+      "avatarText": "H",
+      "isUnread": true,
+      "simSlot": 1
+    },
+    {
+      "id": "douyin-pay",
+      "sender": "抖音月付",
+      "phoneNumber": "10690368",
+      "timestamp": "12:12",
+      "avatarColor": "#808080",
+      "avatarText": "抖",
+      "isUnread": true,
+      "simSlot": 1
+    },
+    {
+      "id": "abc-bank",
+      "sender": "10690955998",
+      "phoneNumber": "10690955998",
+      "timestamp": "10:06",
+      "avatarColor": "#808080",
+      "avatarText": "1",
+      "isUnread": false,
+      "simSlot": 1
+    },
+    {
+      "id": "ccb-bank",
+      "sender": "建设银行",
+      "phoneNumber": "95533",
+      "timestamp": "9:40",
+      "avatarUrl": "/logos/ccb.png",
+      "avatarColor": "#0066CC",
+      "avatarText": "建",
+      "isUnread": true,
+      "simSlot": 1
+    },
+    {
+      "id": "china-telecom",
+      "sender": "中国电信",
+      "phoneNumber": "10001",
+      "timestamp": "昨天 19:35",
+      "avatarUrl": "/logos/china-telecom.png",
+      "avatarColor": "#12B7F5",
+      "avatarText": "电",
+      "isUnread": true,
+      "simSlot": 1
+    },
+    {
+      "id": "china-unicom",
+      "sender": "中国联通",
+      "phoneNumber": "10010",
+      "timestamp": "昨天 7:34",
+      "avatarUrl": "/logos/china-unicom.png",
+      "avatarColor": "#E60012",
+      "avatarText": "联",
+      "isUnread": true,
+      "simSlot": 2
+    }
+  ],
+  "messagesByConversationId": {
+    "huawei-cloud": [
+      {
+        "id": "huawei-1",
+        "content": "【华为云】您收到一条专属体验邀请！用 CodeArts 代码智能体，一句话实现 AI 应用开发！",
+        "timestamp": "15:17",
+        "isOutgoing": false
+      },
+      {
+        "id": "huawei-2",
+        "content": "了解一下，有活动详情吗？",
+        "timestamp": "15:18",
+        "isOutgoing": true,
+        "status": "sent"
+      },
+      {
+        "id": "huawei-3",
+        "content": "【华为云】回复“1”获取体验资格；回复“TD”退订。",
+        "timestamp": "15:18",
+        "isOutgoing": false
+      }
+    ],
+    "douyin-pay": [
+      {
+        "id": "douyin-1",
+        "content": "【抖音月付】从您中国银行（尾号2718）扣款 20.90 元，2 月账单已更新。",
+        "timestamp": "12:12",
+        "isOutgoing": false
+      },
+      {
+        "id": "douyin-2",
+        "content": "TD",
+        "timestamp": "12:13",
+        "isOutgoing": true,
+        "status": "sent"
+      },
+      {
+        "id": "douyin-3",
+        "content": "【抖音月付】已为您提交退订申请，如需恢复请前往 App 设置。",
+        "timestamp": "12:14",
+        "isOutgoing": false
+      }
+    ],
+    "abc-bank": [
+      {
+        "id": "abc-1",
+        "content": "【中国农业银行】提醒您查看工资到账情况。点击（链接）查询，回 TD 退订。",
+        "timestamp": "10:06",
+        "isOutgoing": false
+      }
+    ],
+    "ccb-bank": [
+      {
+        "id": "ccb-1",
+        "content": "【建设银行】闲置资金“不躺平”，不妨试试“龙钱宝 1 号”！1 分起购，随取随用。",
+        "timestamp": "9:40",
+        "isOutgoing": false
+      },
+      {
+        "id": "ccb-2",
+        "content": "TD",
+        "timestamp": "9:41",
+        "isOutgoing": true,
+        "status": "sent"
+      },
+      {
+        "id": "ccb-3",
+        "content": "【建设银行】已为您办理退订，之后将不再收到该类通知。",
+        "timestamp": "9:41",
+        "isOutgoing": false
+      }
+    ],
+    "china-telecom": [
+      {
+        "id": "ct-2",
+        "content": "截止到 2026-02-07 14:00，当前话费：1.17 元，可用余额：50.26 元。查询结果仅供参考，实际费用以账单为准。",
+        "timestamp": "昨天 14:48",
+        "isOutgoing": false
+      },
+      {
+        "id": "ct-3",
+        "content": "收到，谢谢。",
+        "timestamp": "昨天 14:49",
+        "isOutgoing": true,
+        "status": "sent"
+      },
+      {
+        "id": "ct-4",
+        "content": "【中国电信】温馨提示：如需查询更多信息，请前往官方渠道办理与查询。",
+        "timestamp": "昨天 14:50",
+        "isOutgoing": false
+      },
+      {
+        "id": "ct-1",
+        "content": "分将按相应套餐或标准资费收取。您可登录中国电信 App 查看套餐使用情况，获取更多便捷服务。为避免产生高额费用，建议及时办理流量包服务。",
+        "timestamp": "昨天 19:35",
+        "isOutgoing": false
+      }
+    ],
+    "china-unicom": [
+      {
+        "id": "cu-1",
+        "content": "【中国联通】尊敬的用户，您参加的充值补贴活动已生效。",
+        "timestamp": "昨天 7:34",
+        "isOutgoing": false
+      },
+      {
+        "id": "cu-2",
+        "content": "【中国联通】活动说明：补贴将按月发放，具体以页面展示为准。",
+        "timestamp": "昨天 7:35",
+        "isOutgoing": false
+      }
+    ]
+  }
+}

@@ -1,0 +1,15 @@
+---
+description: mobile-gym 的 bench_env 护栏：防止把环境问题误判为 agent 问题，并约束任务与判定设计
+globs: bench_env/**/*.py
+alwaysApply: false
+---
+
+# Bench Env 护栏
+
+- 先确认当前问题属于 `Agent 行为`、`环境/API 数据`、`初始状态`、`参数映射` 还是 `judge 逻辑`；不要把环境或数据问题直接判成 Agent 失败。
+- 不要通过放宽匹配、改采样、补 fallback、追加 `expected_changes` 或“多兜一层”来掩盖参数映射、状态路径或数据契约错误。
+- 任务语义必须闭合：`template/templates`、`parameters`、采样来源、answer/get_answer、criteria/check_goals/judge、`expected_changes`、文档说明必须一致。
+- 真无结果和 API 失败要分开建模；只有失败才 fallback，不能把“确实没有结果”伪装成离线默认值。
+- 优先把共享领域逻辑放进正确层级，避免在 `tasks.py` 里堆私有 helper、重复 normalize、重复 check 或跨任务 if/else。
+- 修改 bench 可见字段、state 路径或默认值后，检查 `__SIM__.getState()`、app state、任务文档和相关生成物是否同步。
+- 如果用户要求先分析、先重设计或先给报告，就先输出问题、风险、重构方向和验证计划，不要直接动代码。

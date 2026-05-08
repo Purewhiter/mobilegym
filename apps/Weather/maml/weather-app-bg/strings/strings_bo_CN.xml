@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="is_bo_cn">1</string>
+  <string name="RTL">0</string>
+  <string name="high_i18n">ཆེས་མཐོ།</string>
+  <string name="low_i18n">ཆེས་དམའ།</string>
+  <string name="aqi_good_i18n">མཁའ་དབུགས་རབ།</string>
+  <string name="aqi_moderate_i18n">མཁའ་དབུགས་བཟང་།</string>
+  <string name="aqi_pollution_i18n">སྦག་བཙོག་ཚད་ཆུང་།</string>
+  <string name="aqi_unhealthy_i18n">སྦག་བཙོག་ཚད་འབྲིང་།</string>
+  <string name="aqi_dangerous_i18n">སྦག་བཙོག་ཚད་མཐོ།</string>
+  <string name="aqi_hazardous_i18n">སྦག་བཙོག་ཚབས་ཆེན།</string>
+  <string name="humidness_i18n">རློན་ཚད།</string>
+  <string name="now_i18n">ད་ལྟ།</string>
+  <string name="location_i18n">གནས་ས།</string>
+  <string name="weather_i18n">གནམ་གཤིས།</string>
+  <string name="low_temp_i18n">དྲོད་ཚད་དམའ་ཤོས།</string>
+  <string name="aqi_i18n">མཁའ་དབུགས་སྤུས་ཚད།</string>
+  <string name="weather_auth_tip_i18n">རེག་ནས་གནམ་གཤིས་ཆ་འཕྲིན་ཐོབ་ལེན།</string>
+  <string name="weather_auth_tip_1_i18n">“གནམ་གཤིས”ཁ་ཕྱེས་ནས་དབང་སྤྲོད་བྱེད།</string>
+  <string name="tomorrow_i18n">སང་ཉིན།</string>
+  <string name="sunrise_i18n">ཉི་ཤར།</string>
+  <string name="sunset_i18n">ཉི་ནུབ།</string>
+  <string name="sunrising_i18n">ཉི་མ་འཆར་བཞིན་པ།</string>
+  <string name="sunseting_i18n">ཉི་མ་ནུབ་བཞིན་པ།</string>
+  <string name="sunrise_sunset_i18n">ཉི་ཤར་ཉི་ནུབ།</string>
+  <string name="hour_after_i18n">ཆུ་ཚོད་#sun_hour+\'ཡི་རྗེས\'</string>
+  <string name="minute_after_i18n">སྐར་མ་#sun_minute+\'ཡི་རྗེས\'</string>
+  <string name="morning_i18n">\'སྔ་དྲོ\'+#sun_morning</string>
+  <string name="afternoon_i18n">\'ཕྱི་དྲོ་\'+#sun_afternoon</string>
+  <string name="authorization_and_open_i18n">གནམ་གཤིས་ཁ་ཕྱེས།</string>
+  <string name="wind_level_i18n">རིམ་པ།</string>
+  <string name="aqi_null_i18n">AQI--</string>
+
+  <string name="talkback_temperature_range">ئەڭ يۇقىرى تېمپىراتۇرا变量1، ئەڭ تۆۋەن تېمپىراتۇرا 变量2</string>
+  <string name="talkback_humidity">تېمپىراتۇرا 变量3</string>
+  <string name="talkback_wind">شامال كۈچى 变量4 دەرىجە</string>
+</resources>

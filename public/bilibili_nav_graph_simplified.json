@@ -1,0 +1,2055 @@
+{
+  "app": "bilibili",
+  "appDir": "apps/Bilibili",
+  "mode": "schema",
+  "routeCount": 52,
+  "edgeCount": 79,
+  "nodes": [
+    {
+      "id": "/",
+      "routePath": "/",
+      "component": "HomePage",
+      "entryPoint": true,
+      "entry": {
+        "kind": "home",
+        "home": true,
+        "deepLink": false
+      },
+      "description": "推荐 Tab",
+      "stateCount": 7,
+      "states": [
+        "/?tab=recommend",
+        "/?tab=live",
+        "/?tab=hot",
+        "/?tab=anime",
+        "/?tab=anime&animeRank=bangumi",
+        "/?tab=anime&animeRank=guochuang",
+        "/?tab=movie"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/following",
+      "routePath": "/following",
+      "component": "FollowingPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "关注-全部",
+      "stateCount": 2,
+      "states": [
+        "/following?tab=all",
+        "/following?tab=video"
+      ],
+      "actionCount": 1,
+      "actionIds": [
+        "following.recommendUp.follow.toggle"
+      ],
+      "actions": [
+        {
+          "id": "following.recommendUp.follow.toggle",
+          "label": "关注-推荐UP：关注开关",
+          "behavior": "toggle",
+          "scope": "item",
+          "paramsSchema": {
+            "mid": "string"
+          }
+        }
+      ]
+    },
+    {
+      "id": "/shop",
+      "routePath": "/shop",
+      "component": "ShopPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "会员购",
+      "stateCount": 1,
+      "states": [
+        "/shop"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/me",
+      "routePath": "/me",
+      "component": "MePage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "我的页面",
+      "stateCount": 1,
+      "states": [
+        "/me"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/video/:bvid",
+      "routePath": "/video/:bvid",
+      "component": "VideoDetailPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "deepLink",
+        "home": false,
+        "deepLink": true
+      },
+      "description": "简介 Tab",
+      "stateCount": 4,
+      "states": [
+        "/video/:bvid?tab=intro",
+        "/video/:bvid?tab=comment",
+        "/video/:bvid?tab=intro&menu=true",
+        "/video/:bvid?tab=intro&coinDialog=open"
+      ],
+      "actionCount": 9,
+      "actionIds": [
+        "video.intro.like.toggle",
+        "video.intro.dislike.toggle",
+        "video.intro.coin.open",
+        "video.intro.fav.toggle",
+        "video.intro.fav.longPress",
+        "video.intro.follow.submit",
+        "video.intro.suggestions.close",
+        "video.comment.sort.toggle",
+        "video.intro.coinDialog.submit"
+      ],
+      "actions": [
+        {
+          "id": "video.intro.like.toggle",
+          "label": "视频-点赞：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "video.intro.dislike.toggle",
+          "label": "视频-不喜欢：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "video.intro.coin.open",
+          "label": "视频-投币弹窗：打开",
+          "behavior": "other"
+        },
+        {
+          "id": "video.intro.fav.toggle",
+          "label": "视频-收藏：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "video.intro.fav.longPress",
+          "label": "视频-收藏：长按打开收藏夹",
+          "behavior": "other"
+        },
+        {
+          "id": "video.intro.follow.submit",
+          "label": "视频-关注：提交",
+          "behavior": "submit",
+          "effects": [
+            {
+              "kind": "localState.open",
+              "id": "video.intro.suggestionsPanel"
+            }
+          ]
+        },
+        {
+          "id": "video.intro.suggestions.close",
+          "label": "视频-推荐面板：关闭",
+          "behavior": "other",
+          "effects": [
+            {
+              "kind": "localState.close",
+              "id": "video.intro.suggestionsPanel"
+            }
+          ]
+        },
+        {
+          "id": "video.comment.sort.toggle",
+          "label": "评论-排序：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "video.intro.coinDialog.submit",
+          "label": "视频-投币弹窗：投币",
+          "behavior": "submit"
+        }
+      ]
+    },
+    {
+      "id": "/user/:mid",
+      "routePath": "/user/:mid",
+      "component": "UserProfilePage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "deepLink",
+        "home": false,
+        "deepLink": true
+      },
+      "description": "用户空间-主页",
+      "stateCount": 5,
+      "states": [
+        "/user/:mid?tab=home",
+        "/user/:mid?tab=dynamic",
+        "/user/:mid?tab=works",
+        "/user/:mid?tab=shop",
+        "/user/:mid?menu=true"
+      ],
+      "actionCount": 9,
+      "actionIds": [
+        "user.home.follow.submit",
+        "user.home.suggestions.close",
+        "user.dynamic.follow.submit",
+        "user.dynamic.suggestions.close",
+        "user.dynamic.like.toggle",
+        "user.works.follow.submit",
+        "user.works.suggestions.close",
+        "user.shop.follow.submit",
+        "user.shop.suggestions.close"
+      ],
+      "actions": [
+        {
+          "id": "user.home.follow.submit",
+          "label": "用户空间-关注：提交",
+          "behavior": "submit",
+          "effects": [
+            {
+              "kind": "localState.open",
+              "id": "user.suggestionsPanel"
+            }
+          ]
+        },
+        {
+          "id": "user.home.suggestions.close",
+          "label": "用户空间-推荐面板：关闭",
+          "behavior": "other",
+          "effects": [
+            {
+              "kind": "localState.close",
+              "id": "user.suggestionsPanel"
+            }
+          ]
+        },
+        {
+          "id": "user.dynamic.follow.submit",
+          "label": "用户空间-关注：提交",
+          "behavior": "submit",
+          "effects": [
+            {
+              "kind": "localState.open",
+              "id": "user.suggestionsPanel"
+            }
+          ]
+        },
+        {
+          "id": "user.dynamic.suggestions.close",
+          "label": "用户空间-推荐面板：关闭",
+          "behavior": "other",
+          "effects": [
+            {
+              "kind": "localState.close",
+              "id": "user.suggestionsPanel"
+            }
+          ]
+        },
+        {
+          "id": "user.dynamic.like.toggle",
+          "label": "用户空间-动态点赞：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "user.works.follow.submit",
+          "label": "用户空间-关注：提交",
+          "behavior": "submit",
+          "effects": [
+            {
+              "kind": "localState.open",
+              "id": "user.suggestionsPanel"
+            }
+          ]
+        },
+        {
+          "id": "user.works.suggestions.close",
+          "label": "用户空间-推荐面板：关闭",
+          "behavior": "other",
+          "effects": [
+            {
+              "kind": "localState.close",
+              "id": "user.suggestionsPanel"
+            }
+          ]
+        },
+        {
+          "id": "user.shop.follow.submit",
+          "label": "用户空间-关注：提交",
+          "behavior": "submit",
+          "effects": [
+            {
+              "kind": "localState.open",
+              "id": "user.suggestionsPanel"
+            }
+          ]
+        },
+        {
+          "id": "user.shop.suggestions.close",
+          "label": "用户空间-推荐面板：关闭",
+          "behavior": "other",
+          "effects": [
+            {
+              "kind": "localState.close",
+              "id": "user.suggestionsPanel"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "/space",
+      "routePath": "/space",
+      "component": "SpacePage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "个人空间-主页",
+      "stateCount": 4,
+      "states": [
+        "/space?tab=home",
+        "/space?tab=videos",
+        "/space?tab=fav",
+        "/space?tab=anime"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/search",
+      "routePath": "/search",
+      "component": "SearchPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "搜索首页",
+      "stateCount": 1,
+      "states": [
+        "/search"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/search/results",
+      "routePath": "/search/results",
+      "component": "SearchPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "搜索结果-综合",
+      "stateCount": 6,
+      "states": [
+        "/search/results?tab=comprehensive&q=:q",
+        "/search/results?tab=anime&q=:q",
+        "/search/results?tab=live&q=:q",
+        "/search/results?tab=user&q=:q",
+        "/search/results?tab=movie&q=:q",
+        "/search/results?tab=article&q=:q"
+      ],
+      "actionCount": 4,
+      "actionIds": [
+        "search.media.subscribe.toggle",
+        "search.user.follow.toggle",
+        "search.user.menu.open",
+        "search.user.menu.close"
+      ],
+      "actions": [
+        {
+          "id": "search.media.subscribe.toggle",
+          "label": "搜索-追番/追剧：开关",
+          "behavior": "toggle",
+          "scope": "item",
+          "paramsSchema": {
+            "id": "string",
+            "type": "string"
+          }
+        },
+        {
+          "id": "search.user.follow.toggle",
+          "label": "搜索-用户关注：开关",
+          "behavior": "toggle",
+          "scope": "item",
+          "paramsSchema": {
+            "mid": "string"
+          }
+        },
+        {
+          "id": "search.user.menu.open",
+          "label": "搜索-已关注菜单：打开",
+          "behavior": "other"
+        },
+        {
+          "id": "search.user.menu.close",
+          "label": "搜索-已关注菜单：关闭",
+          "behavior": "other"
+        }
+      ]
+    },
+    {
+      "id": "/partitions",
+      "routePath": "/partitions",
+      "component": "PartitionsPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "全部分区",
+      "stateCount": 1,
+      "states": [
+        "/partitions"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/partitions/:label",
+      "routePath": "/partitions/:label",
+      "component": "PartitionDetailPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "分区详情",
+      "stateCount": 1,
+      "states": [
+        "/partitions/:label"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/ranking",
+      "routePath": "/ranking",
+      "component": "RankingPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "排行榜-全站",
+      "stateCount": 20,
+      "states": [
+        "/ranking?tab=全站",
+        "/ranking?tab=番剧",
+        "/ranking?tab=国创",
+        "/ranking?tab=纪录片",
+        "/ranking?tab=电影",
+        "/ranking?tab=电视剧",
+        "/ranking?tab=动画",
+        "/ranking?tab=游戏",
+        "/ranking?tab=鬼畜",
+        "/ranking?tab=音乐",
+        "/ranking?tab=舞蹈",
+        "/ranking?tab=影视",
+        "/ranking?tab=娱乐",
+        "/ranking?tab=知识",
+        "/ranking?tab=科技数码",
+        "/ranking?tab=美食",
+        "/ranking?tab=汽车",
+        "/ranking?tab=时尚美妆",
+        "/ranking?tab=体育运动",
+        "/ranking?tab=动物"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/profile/edit",
+      "routePath": "/profile/edit",
+      "component": "ProfileEditPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "编辑资料",
+      "stateCount": 1,
+      "states": [
+        "/profile/edit"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/profile/edit/name",
+      "routePath": "/profile/edit/name",
+      "component": "ProfileEditNamePage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "编辑昵称",
+      "stateCount": 1,
+      "states": [
+        "/profile/edit/name"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/profile/edit/sign",
+      "routePath": "/profile/edit/sign",
+      "component": "ProfileEditSignPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "编辑签名",
+      "stateCount": 1,
+      "states": [
+        "/profile/edit/sign"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/profile/school",
+      "routePath": "/profile/school",
+      "component": "SchoolInfoPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "学校信息",
+      "stateCount": 1,
+      "states": [
+        "/profile/school"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/profile/following",
+      "routePath": "/profile/following",
+      "component": "UserRelationPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "我的好友-关注",
+      "stateCount": 3,
+      "states": [
+        "/profile/following?tab=follow",
+        "/profile/following?tab=fans",
+        "/profile/following?menu=true"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/profile/likes",
+      "routePath": "/profile/likes",
+      "component": "RecentLikesPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "最近点赞",
+      "stateCount": 1,
+      "states": [
+        "/profile/likes"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/favorites",
+      "routePath": "/favorites",
+      "component": "FavoritesPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "收藏-收藏夹",
+      "stateCount": 4,
+      "states": [
+        "/favorites?tab=folders",
+        "/favorites?tab=all",
+        "/favorites?tab=video",
+        "/favorites?tab=article"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/favorites/folder/:folderId",
+      "routePath": "/favorites/folder/:folderId",
+      "component": "FavFolderDetailPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "收藏夹详情（收藏页入口）",
+      "stateCount": 1,
+      "states": [
+        "/favorites/folder/:folderId"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/profile/fav/:folderId",
+      "routePath": "/profile/fav/:folderId",
+      "component": "FavoritesDetailPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "收藏夹详情",
+      "stateCount": 1,
+      "states": [
+        "/profile/fav/:folderId"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/fav/create",
+      "routePath": "/fav/create",
+      "component": "CreateFavFolderPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "新建收藏夹",
+      "stateCount": 1,
+      "states": [
+        "/fav/create"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/vip",
+      "routePath": "/vip",
+      "component": "VipPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "会员中心",
+      "stateCount": 1,
+      "states": [
+        "/vip"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/settings",
+      "routePath": "/settings",
+      "component": "SettingsPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "设置",
+      "stateCount": 1,
+      "states": [
+        "/settings"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/settings/recommend",
+      "routePath": "/settings/recommend",
+      "component": "SettingsRecommendPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "首页推荐设置",
+      "stateCount": 1,
+      "states": [
+        "/settings/recommend"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/settings/language",
+      "routePath": "/settings/language",
+      "component": "SettingsLanguagePage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "语言",
+      "stateCount": 1,
+      "states": [
+        "/settings/language"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/settings/avatar-entry",
+      "routePath": "/settings/avatar-entry",
+      "component": "SettingsAvatarEntryPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "首页头像入口设置",
+      "stateCount": 1,
+      "states": [
+        "/settings/avatar-entry"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/settings/playback",
+      "routePath": "/settings/playback",
+      "component": "SettingsPlaybackPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "播放设置",
+      "stateCount": 1,
+      "states": [
+        "/settings/playback"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/settings/playback/autoplay",
+      "routePath": "/settings/playback/autoplay",
+      "component": "SettingsPlaybackAutoplayPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "自动播放设置",
+      "stateCount": 1,
+      "states": [
+        "/settings/playback/autoplay"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/settings/playback/autoplay-feed",
+      "routePath": "/settings/playback/autoplay-feed",
+      "component": "SettingsPlaybackAutoplayFeedPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "动态/活动页单列视频是否自动播放",
+      "stateCount": 1,
+      "states": [
+        "/settings/playback/autoplay-feed"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/settings/playback/autoplay-home",
+      "routePath": "/settings/playback/autoplay-home",
+      "component": "SettingsPlaybackAutoplayHomePage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "首页自动播放",
+      "stateCount": 1,
+      "states": [
+        "/settings/playback/autoplay-home"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/settings/playback/portrait",
+      "routePath": "/settings/playback/portrait",
+      "component": "SettingsPlaybackPortraitPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "竖屏模式设置",
+      "stateCount": 1,
+      "states": [
+        "/settings/playback/portrait"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/settings/playback/pip",
+      "routePath": "/settings/playback/pip",
+      "component": "SettingsPlaybackPipPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "小窗播放/后台听视频设置",
+      "stateCount": 1,
+      "states": [
+        "/settings/playback/pip"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/settings/playback/danmaku",
+      "routePath": "/settings/playback/danmaku",
+      "component": "SettingsPlaybackDanmakuPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "弹幕/字幕设置",
+      "stateCount": 1,
+      "states": [
+        "/settings/playback/danmaku"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/settings/playback/quality",
+      "routePath": "/settings/playback/quality",
+      "component": "SettingsPlaybackQualityPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "清晰度设置",
+      "stateCount": 1,
+      "states": [
+        "/settings/playback/quality"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/settings/playback/other",
+      "routePath": "/settings/playback/other",
+      "component": "SettingsPlaybackOtherPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "其他设置(播放下)",
+      "stateCount": 1,
+      "states": [
+        "/settings/playback/other"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/settings/offline",
+      "routePath": "/settings/offline",
+      "component": "SettingsOfflinePage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "离线设置",
+      "stateCount": 1,
+      "states": [
+        "/settings/offline"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/settings/chase",
+      "routePath": "/settings/chase",
+      "component": "SettingsChasePage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "追番/追剧设置",
+      "stateCount": 1,
+      "states": [
+        "/settings/chase"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/settings/push",
+      "routePath": "/settings/push",
+      "component": "SettingsPushPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "推送设置",
+      "stateCount": 1,
+      "states": [
+        "/settings/push"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/settings/message",
+      "routePath": "/settings/message",
+      "component": "SettingsMessagePage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "消息设置",
+      "stateCount": 1,
+      "states": [
+        "/settings/message"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/settings/message/reply-at",
+      "routePath": "/settings/message/reply-at",
+      "component": "SettingsMessageReplyAtPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "回复与@消息提醒",
+      "stateCount": 1,
+      "states": [
+        "/settings/message/reply-at"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/settings/message/like",
+      "routePath": "/settings/message/like",
+      "component": "SettingsMessageLikePage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "收到喜欢消息提醒",
+      "stateCount": 1,
+      "states": [
+        "/settings/message/like"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/settings/message/fan",
+      "routePath": "/settings/message/fan",
+      "component": "SettingsMessageFanPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "新增粉丝消息提醒",
+      "stateCount": 1,
+      "states": [
+        "/settings/message/fan"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/settings/message/support",
+      "routePath": "/settings/message/support",
+      "component": "SettingsSupportPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "应援团",
+      "stateCount": 1,
+      "states": [
+        "/settings/message/support"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/settings/message/unfollow",
+      "routePath": "/settings/message/unfollow",
+      "component": "SettingsUnfollowPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "未关注人消息",
+      "stateCount": 1,
+      "states": [
+        "/settings/message/unfollow"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/settings/harass",
+      "routePath": "/settings/harass",
+      "component": "SettingsHarassPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "防骚扰和互动人群设置",
+      "stateCount": 1,
+      "states": [
+        "/settings/harass"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/settings/storage",
+      "routePath": "/settings/storage",
+      "component": "SettingsStoragePage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "清理存储空间",
+      "stateCount": 1,
+      "states": [
+        "/settings/storage"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/settings/other",
+      "routePath": "/settings/other",
+      "component": "SettingsOtherPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "其他设置(主)",
+      "stateCount": 1,
+      "states": [
+        "/settings/other"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/settings/other/watermark",
+      "routePath": "/settings/other/watermark",
+      "component": "SettingsWatermarkPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "图片水印设置",
+      "stateCount": 1,
+      "states": [
+        "/settings/other/watermark"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/settings/other/image-quality",
+      "routePath": "/settings/other/image-quality",
+      "component": "SettingsImageQualityPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "默认图片质量",
+      "stateCount": 1,
+      "states": [
+        "/settings/other/image-quality"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/settings/timer",
+      "routePath": "/settings/timer",
+      "component": "SettingsTimerPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "定时关闭",
+      "stateCount": 1,
+      "states": [
+        "/settings/timer"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/settings/sleep",
+      "routePath": "/settings/sleep",
+      "component": "SettingsSleepPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "睡眠提醒",
+      "stateCount": 1,
+      "states": [
+        "/settings/sleep"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    }
+  ],
+  "edges": [
+    {
+      "source": "/me",
+      "target": "/vip",
+      "transitions": [
+        "vip.open"
+      ],
+      "type": "navigation",
+      "label": "vip.open",
+      "id": "vip.open"
+    },
+    {
+      "source": "/following",
+      "target": "/",
+      "transitions": [
+        "tab.home"
+      ],
+      "type": "navigation",
+      "label": "tab.home",
+      "id": "tab.home"
+    },
+    {
+      "source": "/shop",
+      "target": "/",
+      "transitions": [
+        "tab.home"
+      ],
+      "type": "navigation",
+      "label": "tab.home",
+      "id": "tab.home"
+    },
+    {
+      "source": "/me",
+      "target": "/",
+      "transitions": [
+        "tab.home"
+      ],
+      "type": "navigation",
+      "label": "tab.home",
+      "id": "tab.home"
+    },
+    {
+      "source": "/",
+      "target": "/following",
+      "transitions": [
+        "tab.following"
+      ],
+      "type": "navigation",
+      "label": "tab.following",
+      "id": "tab.following"
+    },
+    {
+      "source": "/shop",
+      "target": "/following",
+      "transitions": [
+        "tab.following"
+      ],
+      "type": "navigation",
+      "label": "tab.following",
+      "id": "tab.following"
+    },
+    {
+      "source": "/me",
+      "target": "/following",
+      "transitions": [
+        "tab.following"
+      ],
+      "type": "navigation",
+      "label": "tab.following",
+      "id": "tab.following"
+    },
+    {
+      "source": "/",
+      "target": "/shop",
+      "transitions": [
+        "tab.shop"
+      ],
+      "type": "navigation",
+      "label": "tab.shop",
+      "id": "tab.shop"
+    },
+    {
+      "source": "/following",
+      "target": "/shop",
+      "transitions": [
+        "tab.shop"
+      ],
+      "type": "navigation",
+      "label": "tab.shop",
+      "id": "tab.shop"
+    },
+    {
+      "source": "/me",
+      "target": "/shop",
+      "transitions": [
+        "tab.shop"
+      ],
+      "type": "navigation",
+      "label": "tab.shop",
+      "id": "tab.shop"
+    },
+    {
+      "source": "/",
+      "target": "/me",
+      "transitions": [
+        "tab.me"
+      ],
+      "type": "navigation",
+      "label": "tab.me",
+      "id": "tab.me"
+    },
+    {
+      "source": "/following",
+      "target": "/me",
+      "transitions": [
+        "tab.me"
+      ],
+      "type": "navigation",
+      "label": "tab.me",
+      "id": "tab.me"
+    },
+    {
+      "source": "/shop",
+      "target": "/me",
+      "transitions": [
+        "tab.me"
+      ],
+      "type": "navigation",
+      "label": "tab.me",
+      "id": "tab.me"
+    },
+    {
+      "source": "/",
+      "target": "/video/:bvid",
+      "transitions": [
+        "video.open"
+      ],
+      "type": "navigation",
+      "label": "video.open",
+      "id": "video.open"
+    },
+    {
+      "source": "/following",
+      "target": "/video/:bvid",
+      "transitions": [
+        "video.open"
+      ],
+      "type": "navigation",
+      "label": "video.open",
+      "id": "video.open"
+    },
+    {
+      "source": "/user/:mid",
+      "target": "/video/:bvid",
+      "transitions": [
+        "video.open"
+      ],
+      "type": "navigation",
+      "label": "video.open",
+      "id": "video.open"
+    },
+    {
+      "source": "/ranking",
+      "target": "/video/:bvid",
+      "transitions": [
+        "video.open"
+      ],
+      "type": "navigation",
+      "label": "video.open",
+      "id": "video.open"
+    },
+    {
+      "source": "/search/results",
+      "target": "/video/:bvid",
+      "transitions": [
+        "video.open"
+      ],
+      "type": "navigation",
+      "label": "video.open",
+      "id": "video.open"
+    },
+    {
+      "source": "/partitions/:label",
+      "target": "/video/:bvid",
+      "transitions": [
+        "video.open"
+      ],
+      "type": "navigation",
+      "label": "video.open",
+      "id": "video.open"
+    },
+    {
+      "source": "/profile/fav/:folderId",
+      "target": "/video/:bvid",
+      "transitions": [
+        "video.open"
+      ],
+      "type": "navigation",
+      "label": "video.open",
+      "id": "video.open"
+    },
+    {
+      "source": "/favorites/folder/:folderId",
+      "target": "/video/:bvid",
+      "transitions": [
+        "video.open"
+      ],
+      "type": "navigation",
+      "label": "video.open",
+      "id": "video.open"
+    },
+    {
+      "source": "/profile/likes",
+      "target": "/video/:bvid",
+      "transitions": [
+        "video.open"
+      ],
+      "type": "navigation",
+      "label": "video.open",
+      "id": "video.open"
+    },
+    {
+      "source": "/space",
+      "target": "/video/:bvid",
+      "transitions": [
+        "video.open"
+      ],
+      "type": "navigation",
+      "label": "video.open",
+      "id": "video.open"
+    },
+    {
+      "source": "/favorites",
+      "target": "/video/:bvid",
+      "transitions": [
+        "video.open"
+      ],
+      "type": "navigation",
+      "label": "video.open",
+      "id": "video.open"
+    },
+    {
+      "source": "/video/:bvid",
+      "target": "/user/:mid",
+      "transitions": [
+        "user.open"
+      ],
+      "type": "navigation",
+      "label": "user.open",
+      "id": "user.open"
+    },
+    {
+      "source": "/following",
+      "target": "/user/:mid",
+      "transitions": [
+        "user.open"
+      ],
+      "type": "navigation",
+      "label": "user.open",
+      "id": "user.open"
+    },
+    {
+      "source": "/search/results",
+      "target": "/user/:mid",
+      "transitions": [
+        "user.open"
+      ],
+      "type": "navigation",
+      "label": "user.open",
+      "id": "user.open"
+    },
+    {
+      "source": "/profile/following",
+      "target": "/user/:mid",
+      "transitions": [
+        "user.open"
+      ],
+      "type": "navigation",
+      "label": "user.open",
+      "id": "user.open"
+    },
+    {
+      "source": "/me",
+      "target": "/space",
+      "transitions": [
+        "space.open"
+      ],
+      "type": "navigation",
+      "label": "space.open",
+      "id": "space.open"
+    },
+    {
+      "source": "/",
+      "target": "/search",
+      "transitions": [
+        "search.open"
+      ],
+      "type": "navigation",
+      "label": "search.open",
+      "id": "search.open"
+    },
+    {
+      "source": "/search",
+      "target": "/search/results",
+      "transitions": [
+        "search.results.open"
+      ],
+      "type": "navigation",
+      "label": "search.results.open",
+      "id": "search.results.open"
+    },
+    {
+      "source": "/search/results",
+      "target": "/search",
+      "transitions": [
+        "search.results.close"
+      ],
+      "type": "navigation",
+      "label": "search.results.close",
+      "id": "search.results.close"
+    },
+    {
+      "source": "/",
+      "target": "/partitions",
+      "transitions": [
+        "partitions.open"
+      ],
+      "type": "navigation",
+      "label": "partitions.open",
+      "id": "partitions.open"
+    },
+    {
+      "source": "/partitions",
+      "target": "/partitions/:label",
+      "transitions": [
+        "partition.open"
+      ],
+      "type": "navigation",
+      "label": "partition.open",
+      "id": "partition.open"
+    },
+    {
+      "source": "/",
+      "target": "/partitions/:label",
+      "transitions": [
+        "home.movie.partition.open",
+        "home.anime.partition.open"
+      ],
+      "type": "navigation",
+      "label": "home.movie.partition.open, home.anime.partition.open",
+      "id": "home.movie.partition.open"
+    },
+    {
+      "source": "/",
+      "target": "/ranking",
+      "transitions": [
+        "ranking.open"
+      ],
+      "type": "navigation",
+      "label": "ranking.open",
+      "id": "ranking.open"
+    },
+    {
+      "source": "/partitions",
+      "target": "/ranking",
+      "transitions": [
+        "ranking.open"
+      ],
+      "type": "navigation",
+      "label": "ranking.open",
+      "id": "ranking.open"
+    },
+    {
+      "source": "/me",
+      "target": "/profile/edit",
+      "transitions": [
+        "profileEdit.open"
+      ],
+      "type": "navigation",
+      "label": "profileEdit.open",
+      "id": "profileEdit.open"
+    },
+    {
+      "source": "/space",
+      "target": "/profile/edit",
+      "transitions": [
+        "profileEdit.open"
+      ],
+      "type": "navigation",
+      "label": "profileEdit.open",
+      "id": "profileEdit.open"
+    },
+    {
+      "source": "/profile/edit",
+      "target": "/profile/edit/name",
+      "transitions": [
+        "profileEditName.open"
+      ],
+      "type": "navigation",
+      "label": "profileEditName.open",
+      "id": "profileEditName.open"
+    },
+    {
+      "source": "/profile/edit",
+      "target": "/profile/edit/sign",
+      "transitions": [
+        "profileEditSign.open"
+      ],
+      "type": "navigation",
+      "label": "profileEditSign.open",
+      "id": "profileEditSign.open"
+    },
+    {
+      "source": "/space",
+      "target": "/profile/school",
+      "transitions": [
+        "schoolInfo.open"
+      ],
+      "type": "navigation",
+      "label": "schoolInfo.open",
+      "id": "schoolInfo.open"
+    },
+    {
+      "source": "/me",
+      "target": "/profile/following",
+      "transitions": [
+        "userRelation.open"
+      ],
+      "type": "navigation",
+      "label": "userRelation.open",
+      "id": "userRelation.open"
+    },
+    {
+      "source": "/space",
+      "target": "/profile/following",
+      "transitions": [
+        "userRelation.open"
+      ],
+      "type": "navigation",
+      "label": "userRelation.open",
+      "id": "userRelation.open"
+    },
+    {
+      "source": "/space",
+      "target": "/profile/likes",
+      "transitions": [
+        "recentLikes.open"
+      ],
+      "type": "navigation",
+      "label": "recentLikes.open",
+      "id": "recentLikes.open"
+    },
+    {
+      "source": "/me",
+      "target": "/favorites",
+      "transitions": [
+        "favorites.open"
+      ],
+      "type": "navigation",
+      "label": "favorites.open",
+      "id": "favorites.open"
+    },
+    {
+      "source": "/favorites",
+      "target": "/favorites/folder/:folderId",
+      "transitions": [
+        "favFolderDetail.open"
+      ],
+      "type": "navigation",
+      "label": "favFolderDetail.open",
+      "id": "favFolderDetail.open"
+    },
+    {
+      "source": "/space",
+      "target": "/profile/fav/:folderId",
+      "transitions": [
+        "favoritesDetail.open"
+      ],
+      "type": "navigation",
+      "label": "favoritesDetail.open",
+      "id": "favoritesDetail.open"
+    },
+    {
+      "source": "/video/:bvid",
+      "target": "/fav/create",
+      "transitions": [
+        "favCreate.open"
+      ],
+      "type": "navigation",
+      "label": "favCreate.open",
+      "id": "favCreate.open"
+    },
+    {
+      "source": "/me",
+      "target": "/settings",
+      "transitions": [
+        "settings.open"
+      ],
+      "type": "navigation",
+      "label": "settings.open",
+      "id": "settings.open"
+    },
+    {
+      "source": "/settings",
+      "target": "/settings/recommend",
+      "transitions": [
+        "settings.recommend.open"
+      ],
+      "type": "navigation",
+      "label": "settings.recommend.open",
+      "id": "settings.recommend.open"
+    },
+    {
+      "source": "/settings",
+      "target": "/settings/language",
+      "transitions": [
+        "settings.language.open"
+      ],
+      "type": "navigation",
+      "label": "settings.language.open",
+      "id": "settings.language.open"
+    },
+    {
+      "source": "/settings",
+      "target": "/profile/edit",
+      "transitions": [
+        "settings.profileEdit.open"
+      ],
+      "type": "navigation",
+      "label": "settings.profileEdit.open",
+      "id": "settings.profileEdit.open"
+    },
+    {
+      "source": "/settings",
+      "target": "/settings/avatar-entry",
+      "transitions": [
+        "settings.avatarEntry.open"
+      ],
+      "type": "navigation",
+      "label": "settings.avatarEntry.open",
+      "id": "settings.avatarEntry.open"
+    },
+    {
+      "source": "/settings",
+      "target": "/settings/playback",
+      "transitions": [
+        "settings.playback.open"
+      ],
+      "type": "navigation",
+      "label": "settings.playback.open",
+      "id": "settings.playback.open"
+    },
+    {
+      "source": "/settings",
+      "target": "/settings/offline",
+      "transitions": [
+        "settings.offline.open"
+      ],
+      "type": "navigation",
+      "label": "settings.offline.open",
+      "id": "settings.offline.open"
+    },
+    {
+      "source": "/settings",
+      "target": "/settings/chase",
+      "transitions": [
+        "settings.chase.open"
+      ],
+      "type": "navigation",
+      "label": "settings.chase.open",
+      "id": "settings.chase.open"
+    },
+    {
+      "source": "/settings",
+      "target": "/settings/push",
+      "transitions": [
+        "settings.push.open"
+      ],
+      "type": "navigation",
+      "label": "settings.push.open",
+      "id": "settings.push.open"
+    },
+    {
+      "source": "/settings",
+      "target": "/settings/message",
+      "transitions": [
+        "settings.message.open"
+      ],
+      "type": "navigation",
+      "label": "settings.message.open",
+      "id": "settings.message.open"
+    },
+    {
+      "source": "/settings",
+      "target": "/settings/harass",
+      "transitions": [
+        "settings.harass.open"
+      ],
+      "type": "navigation",
+      "label": "settings.harass.open",
+      "id": "settings.harass.open"
+    },
+    {
+      "source": "/settings",
+      "target": "/settings/storage",
+      "transitions": [
+        "settings.storage.open"
+      ],
+      "type": "navigation",
+      "label": "settings.storage.open",
+      "id": "settings.storage.open"
+    },
+    {
+      "source": "/settings",
+      "target": "/settings/other",
+      "transitions": [
+        "settings.other.open"
+      ],
+      "type": "navigation",
+      "label": "settings.other.open",
+      "id": "settings.other.open"
+    },
+    {
+      "source": "/settings",
+      "target": "/settings/timer",
+      "transitions": [
+        "settings.timer.open"
+      ],
+      "type": "navigation",
+      "label": "settings.timer.open",
+      "id": "settings.timer.open"
+    },
+    {
+      "source": "/settings",
+      "target": "/settings/sleep",
+      "transitions": [
+        "settings.sleep.open"
+      ],
+      "type": "navigation",
+      "label": "settings.sleep.open",
+      "id": "settings.sleep.open"
+    },
+    {
+      "source": "/settings/playback",
+      "target": "/settings/playback/autoplay",
+      "transitions": [
+        "settings.playback.autoplay.open"
+      ],
+      "type": "navigation",
+      "label": "settings.playback.autoplay.open",
+      "id": "settings.playback.autoplay.open"
+    },
+    {
+      "source": "/settings/playback",
+      "target": "/settings/playback/portrait",
+      "transitions": [
+        "settings.playback.portrait.open"
+      ],
+      "type": "navigation",
+      "label": "settings.playback.portrait.open",
+      "id": "settings.playback.portrait.open"
+    },
+    {
+      "source": "/settings/playback",
+      "target": "/settings/playback/pip",
+      "transitions": [
+        "settings.playback.pip.open"
+      ],
+      "type": "navigation",
+      "label": "settings.playback.pip.open",
+      "id": "settings.playback.pip.open"
+    },
+    {
+      "source": "/settings/playback",
+      "target": "/settings/playback/danmaku",
+      "transitions": [
+        "settings.playback.danmaku.open"
+      ],
+      "type": "navigation",
+      "label": "settings.playback.danmaku.open",
+      "id": "settings.playback.danmaku.open"
+    },
+    {
+      "source": "/settings/playback",
+      "target": "/settings/playback/quality",
+      "transitions": [
+        "settings.playback.quality.open"
+      ],
+      "type": "navigation",
+      "label": "settings.playback.quality.open",
+      "id": "settings.playback.quality.open"
+    },
+    {
+      "source": "/settings/playback",
+      "target": "/settings/playback/other",
+      "transitions": [
+        "settings.playback.other.open"
+      ],
+      "type": "navigation",
+      "label": "settings.playback.other.open",
+      "id": "settings.playback.other.open"
+    },
+    {
+      "source": "/settings/playback/autoplay",
+      "target": "/settings/playback/autoplay-feed",
+      "transitions": [
+        "settings.playback.autoplay.feed.open"
+      ],
+      "type": "navigation",
+      "label": "settings.playback.autoplay.feed.open",
+      "id": "settings.playback.autoplay.feed.open"
+    },
+    {
+      "source": "/settings/playback/autoplay",
+      "target": "/settings/playback/autoplay-home",
+      "transitions": [
+        "settings.playback.autoplay.home.open"
+      ],
+      "type": "navigation",
+      "label": "settings.playback.autoplay.home.open",
+      "id": "settings.playback.autoplay.home.open"
+    },
+    {
+      "source": "/settings/message",
+      "target": "/settings/message/reply-at",
+      "transitions": [
+        "settings.message.replyAt.open"
+      ],
+      "type": "navigation",
+      "label": "settings.message.replyAt.open",
+      "id": "settings.message.replyAt.open"
+    },
+    {
+      "source": "/settings/message",
+      "target": "/settings/message/like",
+      "transitions": [
+        "settings.message.like.open"
+      ],
+      "type": "navigation",
+      "label": "settings.message.like.open",
+      "id": "settings.message.like.open"
+    },
+    {
+      "source": "/settings/message",
+      "target": "/settings/message/fan",
+      "transitions": [
+        "settings.message.fan.open"
+      ],
+      "type": "navigation",
+      "label": "settings.message.fan.open",
+      "id": "settings.message.fan.open"
+    },
+    {
+      "source": "/settings/message",
+      "target": "/settings/message/support",
+      "transitions": [
+        "settings.message.support.open"
+      ],
+      "type": "navigation",
+      "label": "settings.message.support.open",
+      "id": "settings.message.support.open"
+    },
+    {
+      "source": "/settings/message",
+      "target": "/settings/message/unfollow",
+      "transitions": [
+        "settings.message.unfollow.open"
+      ],
+      "type": "navigation",
+      "label": "settings.message.unfollow.open",
+      "id": "settings.message.unfollow.open"
+    },
+    {
+      "source": "/settings/other",
+      "target": "/settings/other/watermark",
+      "transitions": [
+        "settings.other.watermark.open"
+      ],
+      "type": "navigation",
+      "label": "settings.other.watermark.open",
+      "id": "settings.other.watermark.open"
+    },
+    {
+      "source": "/settings/other",
+      "target": "/settings/other/image-quality",
+      "transitions": [
+        "settings.other.imageQuality.open"
+      ],
+      "type": "navigation",
+      "label": "settings.other.imageQuality.open",
+      "id": "settings.other.imageQuality.open"
+    }
+  ]
+}

@@ -1,0 +1,148 @@
+@import "tailwindcss";
+@source "./index.html";
+@source "./index.tsx";
+@source "./os/**/*.{ts,tsx}";
+@source "./apps/**/*.{ts,tsx}";
+/* Exclude directories/files with zero Tailwind classes to speed up dev scan */
+@source not "./apps/**/res/**";
+@source "./apps/**/res/colors.ts";
+@source not "./apps/**/data/**";
+@source "./apps/**/data/defaults.json";
+@source not "./apps/**/hooks/**";
+@source not "./apps/**/*.declaration.ts";
+
+@theme inline {
+  --color-app-primary: var(--app-primary, #000000);
+  --color-app-primary-dark: var(--app-primary-dark, var(--app-primary, #000000));
+  --color-app-on-primary: var(--app-on-primary, #ffffff);
+  --color-app-secondary: var(--app-secondary, #666666);
+  --color-app-accent: var(--app-accent, var(--app-primary, #000000));
+  --color-app-bg: var(--app-bg, #ffffff);
+  --color-app-surface: var(--app-surface, #f5f5f5);
+  --color-app-on-surface: var(--app-on-surface, var(--app-text, #000000));
+  --color-app-text: var(--app-text, #000000);
+  --color-app-text-muted: var(--app-text-muted, #666666);
+  --color-app-border: var(--app-border, #e5e7eb);
+  --color-app-tab-bar-bg: var(--app-tab-bar-bg, var(--app-surface, #ffffff));
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  user-select: none;
+  /* 全局隐藏滚动条，模拟真实手机悬浮叠加型滚动条行为 */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+*::-webkit-scrollbar {
+  display: none;
+}
+
+input, textarea, [contenteditable="true"] {
+  user-select: text;
+}
+
+/* Explicit opt-in: allow system-style text selection in non-editable areas */
+[data-os-clipboard="true"] {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+html {
+  font-size: 16px;
+}
+
+body {
+  background-color: #000;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+               "PingFang SC", "Hiragino Sans GB",
+               "Microsoft YaHei", "WenQuanYi Micro Hei",
+               "Noto Sans SC", "Noto Sans CJK SC",
+               Helvetica, Arial, sans-serif;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+}
+
+/* 隐藏滚动条但保留功能 */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* 对整个子树隐藏滚动条（用于模拟 Android 原生无滚动条体验） */
+.hide-all-scrollbars *::-webkit-scrollbar {
+  display: none;
+}
+.hide-all-scrollbars * {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Allow touch panning inside declared scroll containers (important for DevTools touch emulation / Pointer Events). */
+[data-scroll-container][data-scroll-direction="vertical"] {
+  touch-action: pan-y;
+}
+[data-scroll-container][data-scroll-direction="horizontal"] {
+  touch-action: pan-x;
+}
+
+/* 固定手机模拟器尺寸 360×800，等比缩放适配视口 */
+#root {
+  width: 360px;
+  height: 800px;
+  margin: auto;
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  transform: translateZ(0) scale(var(--sim-scale, 1));
+  transition: filter 180ms ease;
+}
+
+/* 当 skin 激活时，对 App 子树内图片资产应用滤镜（不影响 OS UI） */
+[data-skin-filter] img:not([data-no-filter]),
+[data-skin-filter] svg.asset-icon:not([data-no-filter]) {
+  filter: var(--skin-image-filter, none);
+}
+
+/* Hide elements marked data-hide-on-keyboard when keyboard is active (adjustResize) */
+[data-keyboard-active] [data-hide-on-keyboard] {
+  display: none !important;
+}
+
+/* Slide-up animation (e.g. for modals/sheets) */
+@keyframes slide-up {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+.animate-slide-up {
+  animation: slide-up 0.25s ease-out forwards;
+}
+
+@keyframes slide-down {
+  from { transform: translateY(-100%); }
+  to { transform: translateY(0); }
+}
+.animate-slide-down {
+  animation: slide-down 0.2s ease-out forwards;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out forwards;
+}
+
+@keyframes slide-in-left {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+.animate-slide-in-left {
+  animation: slide-in-left 0.25s ease-out forwards;
+}

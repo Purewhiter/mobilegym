@@ -1,0 +1,86 @@
+{
+  "user": {
+    "id": "u1",
+    "name": "pure",
+    "level": 1,
+    "levelTitle": "本地向导",
+    "contributions": {
+      "photos": 0,
+      "reviews": 0,
+      "questions": 0
+    },
+    "lists": {
+      "favorites": { "count": 0, "public": false },
+      "wantToGo": { "count": 0, "public": false },
+      "starred": { "count": 0, "public": false }
+    }
+  },
+  "searchHistory": [
+    {
+      "id": "h1",
+      "kind": "place",
+      "text": "五道口购物中心",
+      "placeId": "ChIJd8tYDhBU8DURkwewhb8tMIM",
+      "subtitle": "北京市海淀区五道口成府路28号…"
+    },
+    { "id": "h2", "kind": "query", "text": "饭店" }
+  ],
+  "recentPlaces": [
+    { "id": "p1", "name": "昨天", "type": "collection" },
+    { "id": "p2", "name": "地点", "type": "collection" }
+  ],
+  "settings": {
+    "appDisplay": {
+      "wlanOnly": false,
+      "satelliteView": false,
+      "accessibility": false,
+      "shakeFeedback": false,
+      "language": null,
+      "theme": "始终采用浅色主题",
+      "distanceUnit": "自动",
+      "scaleBar": "缩放时",
+      "videoAutoplay": "始终开启自动播放功能"
+    },
+    "navigation": {
+      "muteState": "unmuted",
+      "voiceVolume": "medium",
+      "playVoiceOverBluetooth": true,
+      "playVoiceDuringCalls": true,
+      "playAudioCues": true,
+      "showMediaControls": false,
+      "trafficAlerts": true,
+      "avoidTolls": false,
+      "avoidHighways": false,
+      "avoidFerries": false,
+      "fuelEfficient": true,
+      "colorScheme": "auto",
+      "distanceUnits": "auto",
+      "keepMapNorthUp": false,
+      "showRoutePreview": true,
+      "speedometer": true,
+      "drivingNotifications": false,
+      "bluetoothTunnelBeacon": false
+    },
+    "locationPrivacy": {
+      "saveRecentSearches": true
+    },
+    "offlineMaps": {
+      "autoUpdate": true,
+      "autoDownloadRecommended": true,
+      "downloadPreference": "仅通过 WLAN 网络"
+    },
+    "notifications": {
+      "traffic": {
+        "offlineMaps": "开启",
+        "nearbyTraffic": "开启",
+        "publicTransport": "开启",
+        "parkingLocation": "开启",
+        "desktopDirections": "开启"
+      },
+      "recommendations": {
+        "nearbyPlaces": "开启",
+        "newPlaces": "开启"
+      }
+    }
+  }
+}

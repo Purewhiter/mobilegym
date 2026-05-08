@@ -1,0 +1,149 @@
+{
+  "app": "compass",
+  "appDir": "apps/Compass",
+  "mode": "schema",
+  "routeCount": 4,
+  "edgeCount": 6,
+  "nodes": [
+    {
+      "id": "/",
+      "routePath": "/",
+      "component": "CompassPage",
+      "entryPoint": true,
+      "entry": {
+        "kind": "home",
+        "home": true,
+        "deepLink": false
+      },
+      "description": "指南针-主界面",
+      "stateCount": 2,
+      "states": [
+        "/",
+        "/?menu=true"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/level",
+      "routePath": "/level",
+      "component": "LevelPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "水平仪-主界面",
+      "stateCount": 2,
+      "states": [
+        "/level",
+        "/level?menu=true"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/permissions",
+      "routePath": "/permissions",
+      "component": "PermissionsPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "权限说明页",
+      "stateCount": 1,
+      "states": [
+        "/permissions"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/privacy",
+      "routePath": "/privacy",
+      "component": "PrivacyPolicyPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "隐私政策（内置页/占位）",
+      "stateCount": 1,
+      "states": [
+        "/privacy"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    }
+  ],
+  "edges": [
+    {
+      "source": "/level",
+      "target": "/",
+      "transitions": [
+        "tab.compass"
+      ],
+      "type": "navigation",
+      "label": "tab.compass",
+      "id": "tab.compass"
+    },
+    {
+      "source": "/",
+      "target": "/level",
+      "transitions": [
+        "tab.level"
+      ],
+      "type": "navigation",
+      "label": "tab.level",
+      "id": "tab.level"
+    },
+    {
+      "source": "/",
+      "target": "/privacy",
+      "transitions": [
+        "privacy.open"
+      ],
+      "type": "navigation",
+      "label": "privacy.open",
+      "id": "privacy.open"
+    },
+    {
+      "source": "/level",
+      "target": "/privacy",
+      "transitions": [
+        "privacy.open"
+      ],
+      "type": "navigation",
+      "label": "privacy.open",
+      "id": "privacy.open"
+    },
+    {
+      "source": "/",
+      "target": "/permissions",
+      "transitions": [
+        "permissions.open"
+      ],
+      "type": "navigation",
+      "label": "permissions.open",
+      "id": "permissions.open"
+    },
+    {
+      "source": "/level",
+      "target": "/permissions",
+      "transitions": [
+        "permissions.open"
+      ],
+      "type": "navigation",
+      "label": "permissions.open",
+      "id": "permissions.open"
+    }
+  ]
+}

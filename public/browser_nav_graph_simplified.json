@@ -1,0 +1,69 @@
+{
+  "app": "browser",
+  "appDir": "apps/Browser",
+  "mode": "schema",
+  "routeCount": 2,
+  "edgeCount": 2,
+  "nodes": [
+    {
+      "id": "/",
+      "routePath": "/",
+      "component": "BrowserHome",
+      "entryPoint": true,
+      "entry": {
+        "kind": "home",
+        "home": true,
+        "deepLink": false
+      },
+      "description": "浏览器首页",
+      "stateCount": 1,
+      "states": [
+        "/"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/view",
+      "routePath": "/view",
+      "component": "BrowserView",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "网页浏览页",
+      "stateCount": 1,
+      "states": [
+        "/view"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    }
+  ],
+  "edges": [
+    {
+      "source": "/",
+      "target": "/view",
+      "transitions": [
+        "view.open"
+      ],
+      "type": "navigation",
+      "label": "view.open",
+      "id": "view.open"
+    },
+    {
+      "source": "/view",
+      "target": "/",
+      "transitions": [
+        "home.open"
+      ],
+      "type": "navigation",
+      "label": "home.open",
+      "id": "home.open"
+    }
+  ]
+}

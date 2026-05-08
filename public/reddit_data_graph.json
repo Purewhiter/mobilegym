@@ -1,0 +1,3698 @@
+{
+  "app": "reddit",
+  "appDir": "apps/Reddit",
+  "mode": "data",
+  "dataFile": "data/index.ts",
+  "reachability": {
+    "entryNodes": [
+      "/"
+    ],
+    "reachableNodeCount": 22,
+    "reachableEdgeCount": 118,
+    "unreachableNodeCount": 0,
+    "unreachableEdgeCount": 0,
+    "unreachableNodeIds": []
+  },
+  "routeCount": 22,
+  "transitionCount": 23,
+  "nodes": [
+    {
+      "id": "/",
+      "routePath": "/",
+      "uiStateId": "home.base",
+      "component": "HomePage",
+      "entryPoint": true,
+      "entry": {
+        "kind": "home",
+        "home": true,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容流"
+        }
+      ],
+      "description": "主页",
+      "search": {},
+      "queryParams": {},
+      "actions": [
+        {
+          "id": "homeFeed.item.vote.select.up",
+          "label": "信息流-帖子-点踩/点赞：赞",
+          "behavior": "select",
+          "scope": "item",
+          "paramsSchema": {
+            "postId": "string"
+          }
+        },
+        {
+          "id": "homeFeed.item.vote.select.down",
+          "label": "信息流-帖子-点踩/点赞：踩",
+          "behavior": "select",
+          "scope": "item",
+          "paramsSchema": {
+            "postId": "string"
+          }
+        },
+        {
+          "id": "homeFeed.item.join.toggle",
+          "label": "信息流-加入社区",
+          "behavior": "toggle",
+          "scope": "item",
+          "paramsSchema": {
+            "communityId": "string"
+          }
+        },
+        {
+          "id": "homeFeed.item.share",
+          "label": "信息流-分享帖子",
+          "behavior": "other",
+          "scope": "item",
+          "paramsSchema": {
+            "postId": "string"
+          }
+        }
+      ]
+    },
+    {
+      "id": "/?menu=home",
+      "routePath": "/",
+      "uiStateId": "home.menu.home",
+      "component": "HomePage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "home",
+        "home": true,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容流"
+        }
+      ],
+      "description": "主页-Home 菜单",
+      "search": {
+        "menu": "home"
+      },
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/?menu=drawer",
+      "routePath": "/",
+      "uiStateId": "home.menu.drawer",
+      "component": "HomePage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "home",
+        "home": true,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容流"
+        }
+      ],
+      "description": "主页-左侧抽屉菜单",
+      "search": {
+        "menu": "drawer"
+      },
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/communities",
+      "routePath": "/communities",
+      "uiStateId": "communities.base",
+      "component": "CommunitiesPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "社区列表"
+        }
+      ],
+      "description": "Reddit Answers",
+      "search": {},
+      "queryParams": {},
+      "actions": [
+        {
+          "id": "communities.item.join.toggle",
+          "label": "社区列表-加入社区",
+          "behavior": "toggle",
+          "scope": "item",
+          "paramsSchema": {
+            "communityId": "string"
+          }
+        }
+      ]
+    },
+    {
+      "id": "/communities?menu=drawer",
+      "routePath": "/communities",
+      "uiStateId": "communities.menu.drawer",
+      "component": "CommunitiesPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "社区列表"
+        }
+      ],
+      "description": "Answers页-左侧抽屉菜单",
+      "search": {
+        "menu": "drawer"
+      },
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/create",
+      "routePath": "/create",
+      "uiStateId": "create.base",
+      "component": "CreatePage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [],
+      "description": "发布页",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/chat?tab=messages",
+      "routePath": "/chat",
+      "uiStateId": "chat.messages",
+      "component": "ChatPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "聊天列表"
+        }
+      ],
+      "description": "Messages Tab",
+      "search": {
+        "tab": "messages"
+      },
+      "queryParams": {},
+      "actions": [
+        {
+          "id": "chat.fab.create",
+          "label": "聊天页-FAB-创建聊天",
+          "behavior": "other"
+        },
+        {
+          "id": "chat.welcome.explore",
+          "label": "聊天页-探索频道",
+          "behavior": "other"
+        }
+      ]
+    },
+    {
+      "id": "/chat?tab=unread",
+      "routePath": "/chat",
+      "uiStateId": "chat.unread",
+      "component": "ChatPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "聊天列表"
+        }
+      ],
+      "description": "Unread Tab",
+      "search": {
+        "tab": "unread"
+      },
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/chat?tab=requests",
+      "routePath": "/chat",
+      "uiStateId": "chat.requests",
+      "component": "ChatPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "聊天列表"
+        }
+      ],
+      "description": "Requests Tab",
+      "search": {
+        "tab": "requests"
+      },
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/chat?tab=threads",
+      "routePath": "/chat",
+      "uiStateId": "chat.threads",
+      "component": "ChatPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "聊天列表"
+        }
+      ],
+      "description": "Threads Tab",
+      "search": {
+        "tab": "threads"
+      },
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/chat?tab=messages&menu=drawer",
+      "routePath": "/chat",
+      "uiStateId": "chat.messages.menu.drawer",
+      "component": "ChatPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "聊天列表"
+        }
+      ],
+      "description": "Messages Tab-左侧抽屉菜单",
+      "search": {
+        "tab": "messages",
+        "menu": "drawer"
+      },
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/chat?tab=unread&menu=drawer",
+      "routePath": "/chat",
+      "uiStateId": "chat.unread.menu.drawer",
+      "component": "ChatPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "聊天列表"
+        }
+      ],
+      "description": "Unread Tab-左侧抽屉菜单",
+      "search": {
+        "tab": "unread",
+        "menu": "drawer"
+      },
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/chat?tab=requests&menu=drawer",
+      "routePath": "/chat",
+      "uiStateId": "chat.requests.menu.drawer",
+      "component": "ChatPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "聊天列表"
+        }
+      ],
+      "description": "Requests Tab-左侧抽屉菜单",
+      "search": {
+        "tab": "requests",
+        "menu": "drawer"
+      },
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/chat?tab=threads&menu=drawer",
+      "routePath": "/chat",
+      "uiStateId": "chat.threads.menu.drawer",
+      "component": "ChatPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "聊天列表"
+        }
+      ],
+      "description": "Threads Tab-左侧抽屉菜单",
+      "search": {
+        "tab": "threads",
+        "menu": "drawer"
+      },
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/chat/new",
+      "routePath": "/chat/new",
+      "uiStateId": "chatNew.base",
+      "component": "NewChatPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [],
+      "description": "新建聊天页",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/inbox?tab=notifications",
+      "routePath": "/inbox",
+      "uiStateId": "inbox.notifications",
+      "component": "InboxPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "通知列表"
+        }
+      ],
+      "description": "通知 Tab",
+      "search": {
+        "tab": "notifications"
+      },
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/inbox?tab=messages",
+      "routePath": "/inbox",
+      "uiStateId": "inbox.messages",
+      "component": "InboxPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "通知列表"
+        }
+      ],
+      "description": "消息 Tab",
+      "search": {
+        "tab": "messages"
+      },
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/inbox?tab=notifications&menu=drawer",
+      "routePath": "/inbox",
+      "uiStateId": "inbox.notifications.menu.drawer",
+      "component": "InboxPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "通知列表"
+        }
+      ],
+      "description": "通知 Tab-左侧抽屉菜单",
+      "search": {
+        "tab": "notifications",
+        "menu": "drawer"
+      },
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/inbox?tab=messages&menu=drawer",
+      "routePath": "/inbox",
+      "uiStateId": "inbox.messages.menu.drawer",
+      "component": "InboxPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "通知列表"
+        }
+      ],
+      "description": "消息 Tab-左侧抽屉菜单",
+      "search": {
+        "tab": "messages",
+        "menu": "drawer"
+      },
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/me?tab=posts",
+      "routePath": "/me",
+      "uiStateId": "profile.posts",
+      "component": "ProfilePage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "个人主页内容"
+        }
+      ],
+      "description": "个人主页-Posts",
+      "search": {
+        "tab": "posts"
+      },
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/me?tab=comments",
+      "routePath": "/me",
+      "uiStateId": "profile.comments",
+      "component": "ProfilePage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "个人主页内容"
+        }
+      ],
+      "description": "个人主页-Comments",
+      "search": {
+        "tab": "comments"
+      },
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/me?tab=about",
+      "routePath": "/me",
+      "uiStateId": "profile.about",
+      "component": "ProfilePage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "个人主页内容"
+        }
+      ],
+      "description": "个人主页-About",
+      "search": {
+        "tab": "about"
+      },
+      "queryParams": {},
+      "actions": []
+    }
+  ],
+  "edges": [
+    {
+      "source": "/",
+      "sourceNodeId": "/",
+      "target": "/?menu=drawer",
+      "targetNodeId": "/?menu=drawer",
+      "id": "home.drawer.open",
+      "label": "打开左侧抽屉菜单",
+      "type": "state",
+      "mode": "push",
+      "search": {
+        "menu": "drawer"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/",
+        "search": {
+          "menu": null
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "drawer_menu",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/",
+      "sourceNodeId": "/",
+      "target": "/?menu=home",
+      "targetNodeId": "/?menu=home",
+      "id": "home.menu.open",
+      "label": "打开 Home 菜单",
+      "type": "state",
+      "mode": "push",
+      "search": {
+        "menu": "home"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/",
+        "search": {
+          "menu": null
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "home_menu",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/communities",
+      "sourceNodeId": "/communities",
+      "target": "/",
+      "targetNodeId": "/",
+      "id": "tab.home",
+      "label": "切换到主页",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "home",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/chat?tab=messages",
+      "sourceNodeId": "/chat?tab=messages",
+      "target": "/",
+      "targetNodeId": "/",
+      "id": "tab.home",
+      "label": "切换到主页",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/chat",
+        "search": {
+          "tab": "messages"
+        }
+      },
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "home",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/chat?tab=unread",
+      "sourceNodeId": "/chat?tab=unread",
+      "target": "/",
+      "targetNodeId": "/",
+      "id": "tab.home",
+      "label": "切换到主页",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/chat",
+        "search": {
+          "tab": "unread"
+        }
+      },
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "home",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/chat?tab=requests",
+      "sourceNodeId": "/chat?tab=requests",
+      "target": "/",
+      "targetNodeId": "/",
+      "id": "tab.home",
+      "label": "切换到主页",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/chat",
+        "search": {
+          "tab": "requests"
+        }
+      },
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "home",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/chat?tab=threads",
+      "sourceNodeId": "/chat?tab=threads",
+      "target": "/",
+      "targetNodeId": "/",
+      "id": "tab.home",
+      "label": "切换到主页",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/chat",
+        "search": {
+          "tab": "threads"
+        }
+      },
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "home",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/inbox?tab=notifications",
+      "sourceNodeId": "/inbox?tab=notifications",
+      "target": "/",
+      "targetNodeId": "/",
+      "id": "tab.home",
+      "label": "切换到主页",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/inbox",
+        "search": {
+          "tab": "notifications"
+        }
+      },
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "home",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/inbox?tab=messages",
+      "sourceNodeId": "/inbox?tab=messages",
+      "target": "/",
+      "targetNodeId": "/",
+      "id": "tab.home",
+      "label": "切换到主页",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/inbox",
+        "search": {
+          "tab": "messages"
+        }
+      },
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "home",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/inbox?tab=notifications&menu=drawer",
+      "sourceNodeId": "/inbox?tab=notifications&menu=drawer",
+      "target": "/",
+      "targetNodeId": "/",
+      "id": "tab.home",
+      "label": "切换到主页",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/inbox",
+        "search": {
+          "tab": "notifications",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "home",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/inbox?tab=messages&menu=drawer",
+      "sourceNodeId": "/inbox?tab=messages&menu=drawer",
+      "target": "/",
+      "targetNodeId": "/",
+      "id": "tab.home",
+      "label": "切换到主页",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/inbox",
+        "search": {
+          "tab": "messages",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "home",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/create",
+      "sourceNodeId": "/create",
+      "target": "/",
+      "targetNodeId": "/",
+      "id": "tab.home",
+      "label": "切换到主页",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "home",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/me?tab=posts",
+      "sourceNodeId": "/me?tab=posts",
+      "target": "/",
+      "targetNodeId": "/",
+      "id": "tab.home",
+      "label": "切换到主页",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/me",
+        "search": {
+          "tab": "posts"
+        }
+      },
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "home",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/me?tab=comments",
+      "sourceNodeId": "/me?tab=comments",
+      "target": "/",
+      "targetNodeId": "/",
+      "id": "tab.home",
+      "label": "切换到主页",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/me",
+        "search": {
+          "tab": "comments"
+        }
+      },
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "home",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/me?tab=about",
+      "sourceNodeId": "/me?tab=about",
+      "target": "/",
+      "targetNodeId": "/",
+      "id": "tab.home",
+      "label": "切换到主页",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/me",
+        "search": {
+          "tab": "about"
+        }
+      },
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "home",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/",
+      "sourceNodeId": "/",
+      "target": "/communities",
+      "targetNodeId": "/communities",
+      "id": "tab.communities",
+      "label": "切换到 Answers",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "users",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/chat?tab=messages",
+      "sourceNodeId": "/chat?tab=messages",
+      "target": "/communities",
+      "targetNodeId": "/communities",
+      "id": "tab.communities",
+      "label": "切换到 Answers",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/chat",
+        "search": {
+          "tab": "messages"
+        }
+      },
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "users",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/chat?tab=unread",
+      "sourceNodeId": "/chat?tab=unread",
+      "target": "/communities",
+      "targetNodeId": "/communities",
+      "id": "tab.communities",
+      "label": "切换到 Answers",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/chat",
+        "search": {
+          "tab": "unread"
+        }
+      },
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "users",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/chat?tab=requests",
+      "sourceNodeId": "/chat?tab=requests",
+      "target": "/communities",
+      "targetNodeId": "/communities",
+      "id": "tab.communities",
+      "label": "切换到 Answers",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/chat",
+        "search": {
+          "tab": "requests"
+        }
+      },
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "users",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/chat?tab=threads",
+      "sourceNodeId": "/chat?tab=threads",
+      "target": "/communities",
+      "targetNodeId": "/communities",
+      "id": "tab.communities",
+      "label": "切换到 Answers",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/chat",
+        "search": {
+          "tab": "threads"
+        }
+      },
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "users",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/inbox?tab=notifications",
+      "sourceNodeId": "/inbox?tab=notifications",
+      "target": "/communities",
+      "targetNodeId": "/communities",
+      "id": "tab.communities",
+      "label": "切换到 Answers",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/inbox",
+        "search": {
+          "tab": "notifications"
+        }
+      },
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "users",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/inbox?tab=messages",
+      "sourceNodeId": "/inbox?tab=messages",
+      "target": "/communities",
+      "targetNodeId": "/communities",
+      "id": "tab.communities",
+      "label": "切换到 Answers",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/inbox",
+        "search": {
+          "tab": "messages"
+        }
+      },
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "users",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/inbox?tab=notifications&menu=drawer",
+      "sourceNodeId": "/inbox?tab=notifications&menu=drawer",
+      "target": "/communities",
+      "targetNodeId": "/communities",
+      "id": "tab.communities",
+      "label": "切换到 Answers",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/inbox",
+        "search": {
+          "tab": "notifications",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "users",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/inbox?tab=messages&menu=drawer",
+      "sourceNodeId": "/inbox?tab=messages&menu=drawer",
+      "target": "/communities",
+      "targetNodeId": "/communities",
+      "id": "tab.communities",
+      "label": "切换到 Answers",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/inbox",
+        "search": {
+          "tab": "messages",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "users",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/create",
+      "sourceNodeId": "/create",
+      "target": "/communities",
+      "targetNodeId": "/communities",
+      "id": "tab.communities",
+      "label": "切换到 Answers",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "users",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/me?tab=posts",
+      "sourceNodeId": "/me?tab=posts",
+      "target": "/communities",
+      "targetNodeId": "/communities",
+      "id": "tab.communities",
+      "label": "切换到 Answers",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/me",
+        "search": {
+          "tab": "posts"
+        }
+      },
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "users",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/me?tab=comments",
+      "sourceNodeId": "/me?tab=comments",
+      "target": "/communities",
+      "targetNodeId": "/communities",
+      "id": "tab.communities",
+      "label": "切换到 Answers",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/me",
+        "search": {
+          "tab": "comments"
+        }
+      },
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "users",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/me?tab=about",
+      "sourceNodeId": "/me?tab=about",
+      "target": "/communities",
+      "targetNodeId": "/communities",
+      "id": "tab.communities",
+      "label": "切换到 Answers",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/me",
+        "search": {
+          "tab": "about"
+        }
+      },
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "users",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/",
+      "sourceNodeId": "/",
+      "target": "/create",
+      "targetNodeId": "/create",
+      "id": "tab.create",
+      "label": "打开发布",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "plus",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/communities",
+      "sourceNodeId": "/communities",
+      "target": "/create",
+      "targetNodeId": "/create",
+      "id": "tab.create",
+      "label": "打开发布",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "plus",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/chat?tab=messages",
+      "sourceNodeId": "/chat?tab=messages",
+      "target": "/create",
+      "targetNodeId": "/create",
+      "id": "tab.create",
+      "label": "打开发布",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/chat",
+        "search": {
+          "tab": "messages"
+        }
+      },
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "plus",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/chat?tab=unread",
+      "sourceNodeId": "/chat?tab=unread",
+      "target": "/create",
+      "targetNodeId": "/create",
+      "id": "tab.create",
+      "label": "打开发布",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/chat",
+        "search": {
+          "tab": "unread"
+        }
+      },
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "plus",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/chat?tab=requests",
+      "sourceNodeId": "/chat?tab=requests",
+      "target": "/create",
+      "targetNodeId": "/create",
+      "id": "tab.create",
+      "label": "打开发布",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/chat",
+        "search": {
+          "tab": "requests"
+        }
+      },
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "plus",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/chat?tab=threads",
+      "sourceNodeId": "/chat?tab=threads",
+      "target": "/create",
+      "targetNodeId": "/create",
+      "id": "tab.create",
+      "label": "打开发布",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/chat",
+        "search": {
+          "tab": "threads"
+        }
+      },
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "plus",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/inbox?tab=notifications",
+      "sourceNodeId": "/inbox?tab=notifications",
+      "target": "/create",
+      "targetNodeId": "/create",
+      "id": "tab.create",
+      "label": "打开发布",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/inbox",
+        "search": {
+          "tab": "notifications"
+        }
+      },
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "plus",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/inbox?tab=messages",
+      "sourceNodeId": "/inbox?tab=messages",
+      "target": "/create",
+      "targetNodeId": "/create",
+      "id": "tab.create",
+      "label": "打开发布",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/inbox",
+        "search": {
+          "tab": "messages"
+        }
+      },
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "plus",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/inbox?tab=notifications&menu=drawer",
+      "sourceNodeId": "/inbox?tab=notifications&menu=drawer",
+      "target": "/create",
+      "targetNodeId": "/create",
+      "id": "tab.create",
+      "label": "打开发布",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/inbox",
+        "search": {
+          "tab": "notifications",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "plus",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/inbox?tab=messages&menu=drawer",
+      "sourceNodeId": "/inbox?tab=messages&menu=drawer",
+      "target": "/create",
+      "targetNodeId": "/create",
+      "id": "tab.create",
+      "label": "打开发布",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/inbox",
+        "search": {
+          "tab": "messages",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "plus",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/me?tab=posts",
+      "sourceNodeId": "/me?tab=posts",
+      "target": "/create",
+      "targetNodeId": "/create",
+      "id": "tab.create",
+      "label": "打开发布",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/me",
+        "search": {
+          "tab": "posts"
+        }
+      },
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "plus",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/me?tab=comments",
+      "sourceNodeId": "/me?tab=comments",
+      "target": "/create",
+      "targetNodeId": "/create",
+      "id": "tab.create",
+      "label": "打开发布",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/me",
+        "search": {
+          "tab": "comments"
+        }
+      },
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "plus",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/me?tab=about",
+      "sourceNodeId": "/me?tab=about",
+      "target": "/create",
+      "targetNodeId": "/create",
+      "id": "tab.create",
+      "label": "打开发布",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/me",
+        "search": {
+          "tab": "about"
+        }
+      },
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "plus",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/?menu=drawer",
+      "sourceNodeId": "/?menu=drawer",
+      "target": "/create",
+      "targetNodeId": "/create",
+      "id": "drawer.create.open",
+      "label": "从抽屉打开发布（自动关闭抽屉）",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/",
+        "search": {
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "drawer",
+        "icon": "plus",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/communities?menu=drawer",
+      "sourceNodeId": "/communities?menu=drawer",
+      "target": "/create",
+      "targetNodeId": "/create",
+      "id": "drawer.create.open",
+      "label": "从抽屉打开发布（自动关闭抽屉）",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/communities",
+        "search": {
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "drawer",
+        "icon": "plus",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/chat?tab=messages&menu=drawer",
+      "sourceNodeId": "/chat?tab=messages&menu=drawer",
+      "target": "/create",
+      "targetNodeId": "/create",
+      "id": "drawer.create.open",
+      "label": "从抽屉打开发布（自动关闭抽屉）",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/chat",
+        "search": {
+          "tab": "messages",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "drawer",
+        "icon": "plus",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/chat?tab=unread&menu=drawer",
+      "sourceNodeId": "/chat?tab=unread&menu=drawer",
+      "target": "/create",
+      "targetNodeId": "/create",
+      "id": "drawer.create.open",
+      "label": "从抽屉打开发布（自动关闭抽屉）",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/chat",
+        "search": {
+          "tab": "unread",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "drawer",
+        "icon": "plus",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/chat?tab=requests&menu=drawer",
+      "sourceNodeId": "/chat?tab=requests&menu=drawer",
+      "target": "/create",
+      "targetNodeId": "/create",
+      "id": "drawer.create.open",
+      "label": "从抽屉打开发布（自动关闭抽屉）",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/chat",
+        "search": {
+          "tab": "requests",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "drawer",
+        "icon": "plus",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/chat?tab=threads&menu=drawer",
+      "sourceNodeId": "/chat?tab=threads&menu=drawer",
+      "target": "/create",
+      "targetNodeId": "/create",
+      "id": "drawer.create.open",
+      "label": "从抽屉打开发布（自动关闭抽屉）",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/chat",
+        "search": {
+          "tab": "threads",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "drawer",
+        "icon": "plus",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/inbox?tab=notifications&menu=drawer",
+      "sourceNodeId": "/inbox?tab=notifications&menu=drawer",
+      "target": "/create",
+      "targetNodeId": "/create",
+      "id": "drawer.create.open",
+      "label": "从抽屉打开发布（自动关闭抽屉）",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/inbox",
+        "search": {
+          "tab": "notifications",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "drawer",
+        "icon": "plus",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/inbox?tab=messages&menu=drawer",
+      "sourceNodeId": "/inbox?tab=messages&menu=drawer",
+      "target": "/create",
+      "targetNodeId": "/create",
+      "id": "drawer.create.open",
+      "label": "从抽屉打开发布（自动关闭抽屉）",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/inbox",
+        "search": {
+          "tab": "messages",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "drawer",
+        "icon": "plus",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/",
+      "sourceNodeId": "/",
+      "target": "/chat?tab=messages",
+      "targetNodeId": "/chat?tab=messages",
+      "id": "tab.chat",
+      "label": "切换到聊天",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {
+        "tab": "messages"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "message-circle",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/communities",
+      "sourceNodeId": "/communities",
+      "target": "/chat?tab=messages",
+      "targetNodeId": "/chat?tab=messages",
+      "id": "tab.chat",
+      "label": "切换到聊天",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {
+        "tab": "messages"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "message-circle",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/inbox?tab=notifications",
+      "sourceNodeId": "/inbox?tab=notifications",
+      "target": "/chat?tab=messages",
+      "targetNodeId": "/chat?tab=messages",
+      "id": "tab.chat",
+      "label": "切换到聊天",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {
+        "tab": "messages"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/inbox",
+        "search": {
+          "tab": "notifications"
+        }
+      },
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "message-circle",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/inbox?tab=messages",
+      "sourceNodeId": "/inbox?tab=messages",
+      "target": "/chat?tab=messages",
+      "targetNodeId": "/chat?tab=messages",
+      "id": "tab.chat",
+      "label": "切换到聊天",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {
+        "tab": "messages"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/inbox",
+        "search": {
+          "tab": "messages"
+        }
+      },
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "message-circle",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/inbox?tab=notifications&menu=drawer",
+      "sourceNodeId": "/inbox?tab=notifications&menu=drawer",
+      "target": "/chat?tab=messages",
+      "targetNodeId": "/chat?tab=messages",
+      "id": "tab.chat",
+      "label": "切换到聊天",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {
+        "tab": "messages"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/inbox",
+        "search": {
+          "tab": "notifications",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "message-circle",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/inbox?tab=messages&menu=drawer",
+      "sourceNodeId": "/inbox?tab=messages&menu=drawer",
+      "target": "/chat?tab=messages",
+      "targetNodeId": "/chat?tab=messages",
+      "id": "tab.chat",
+      "label": "切换到聊天",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {
+        "tab": "messages"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/inbox",
+        "search": {
+          "tab": "messages",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "message-circle",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/create",
+      "sourceNodeId": "/create",
+      "target": "/chat?tab=messages",
+      "targetNodeId": "/chat?tab=messages",
+      "id": "tab.chat",
+      "label": "切换到聊天",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {
+        "tab": "messages"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "message-circle",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/me?tab=posts",
+      "sourceNodeId": "/me?tab=posts",
+      "target": "/chat?tab=messages",
+      "targetNodeId": "/chat?tab=messages",
+      "id": "tab.chat",
+      "label": "切换到聊天",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {
+        "tab": "messages"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/me",
+        "search": {
+          "tab": "posts"
+        }
+      },
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "message-circle",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/me?tab=comments",
+      "sourceNodeId": "/me?tab=comments",
+      "target": "/chat?tab=messages",
+      "targetNodeId": "/chat?tab=messages",
+      "id": "tab.chat",
+      "label": "切换到聊天",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {
+        "tab": "messages"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/me",
+        "search": {
+          "tab": "comments"
+        }
+      },
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "message-circle",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/me?tab=about",
+      "sourceNodeId": "/me?tab=about",
+      "target": "/chat?tab=messages",
+      "targetNodeId": "/chat?tab=messages",
+      "id": "tab.chat",
+      "label": "切换到聊天",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {
+        "tab": "messages"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/me",
+        "search": {
+          "tab": "about"
+        }
+      },
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "message-circle",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/",
+      "sourceNodeId": "/",
+      "target": "/inbox?tab=notifications",
+      "targetNodeId": "/inbox?tab=notifications",
+      "id": "tab.inbox",
+      "label": "切换到收件箱",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {
+        "tab": "notifications"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "bell",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/communities",
+      "sourceNodeId": "/communities",
+      "target": "/inbox?tab=notifications",
+      "targetNodeId": "/inbox?tab=notifications",
+      "id": "tab.inbox",
+      "label": "切换到收件箱",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {
+        "tab": "notifications"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "bell",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/chat?tab=messages",
+      "sourceNodeId": "/chat?tab=messages",
+      "target": "/inbox?tab=notifications",
+      "targetNodeId": "/inbox?tab=notifications",
+      "id": "tab.inbox",
+      "label": "切换到收件箱",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {
+        "tab": "notifications"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/chat",
+        "search": {
+          "tab": "messages"
+        }
+      },
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "bell",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/chat?tab=unread",
+      "sourceNodeId": "/chat?tab=unread",
+      "target": "/inbox?tab=notifications",
+      "targetNodeId": "/inbox?tab=notifications",
+      "id": "tab.inbox",
+      "label": "切换到收件箱",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {
+        "tab": "notifications"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/chat",
+        "search": {
+          "tab": "unread"
+        }
+      },
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "bell",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/chat?tab=requests",
+      "sourceNodeId": "/chat?tab=requests",
+      "target": "/inbox?tab=notifications",
+      "targetNodeId": "/inbox?tab=notifications",
+      "id": "tab.inbox",
+      "label": "切换到收件箱",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {
+        "tab": "notifications"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/chat",
+        "search": {
+          "tab": "requests"
+        }
+      },
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "bell",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/chat?tab=threads",
+      "sourceNodeId": "/chat?tab=threads",
+      "target": "/inbox?tab=notifications",
+      "targetNodeId": "/inbox?tab=notifications",
+      "id": "tab.inbox",
+      "label": "切换到收件箱",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {
+        "tab": "notifications"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/chat",
+        "search": {
+          "tab": "threads"
+        }
+      },
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "bell",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/create",
+      "sourceNodeId": "/create",
+      "target": "/inbox?tab=notifications",
+      "targetNodeId": "/inbox?tab=notifications",
+      "id": "tab.inbox",
+      "label": "切换到收件箱",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {
+        "tab": "notifications"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "bell",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/me?tab=posts",
+      "sourceNodeId": "/me?tab=posts",
+      "target": "/inbox?tab=notifications",
+      "targetNodeId": "/inbox?tab=notifications",
+      "id": "tab.inbox",
+      "label": "切换到收件箱",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {
+        "tab": "notifications"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/me",
+        "search": {
+          "tab": "posts"
+        }
+      },
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "bell",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/me?tab=comments",
+      "sourceNodeId": "/me?tab=comments",
+      "target": "/inbox?tab=notifications",
+      "targetNodeId": "/inbox?tab=notifications",
+      "id": "tab.inbox",
+      "label": "切换到收件箱",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {
+        "tab": "notifications"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/me",
+        "search": {
+          "tab": "comments"
+        }
+      },
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "bell",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/me?tab=about",
+      "sourceNodeId": "/me?tab=about",
+      "target": "/inbox?tab=notifications",
+      "targetNodeId": "/inbox?tab=notifications",
+      "id": "tab.inbox",
+      "label": "切换到收件箱",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {
+        "tab": "notifications"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/me",
+        "search": {
+          "tab": "about"
+        }
+      },
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "bell",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/inbox?tab=notifications",
+      "sourceNodeId": "/inbox?tab=notifications",
+      "target": "/inbox?tab=messages",
+      "targetNodeId": "/inbox?tab=messages",
+      "id": "inbox.tab.switch",
+      "label": "切换收件箱 Tab → 消息 Tab",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "messages"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/inbox",
+        "search": {
+          "tab": "notifications"
+        }
+      },
+      "expandedFrom": "searchParams",
+      "uiMeta": {
+        "placement": "content",
+        "icon": "",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/inbox?tab=messages",
+      "sourceNodeId": "/inbox?tab=messages",
+      "target": "/inbox?tab=notifications",
+      "targetNodeId": "/inbox?tab=notifications",
+      "id": "inbox.tab.switch",
+      "label": "切换收件箱 Tab → 通知 Tab",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "notifications"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/inbox",
+        "search": {
+          "tab": "messages"
+        }
+      },
+      "expandedFrom": "searchParams",
+      "uiMeta": {
+        "placement": "content",
+        "icon": "",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/inbox?tab=notifications&menu=drawer",
+      "sourceNodeId": "/inbox?tab=notifications&menu=drawer",
+      "target": "/inbox?tab=notifications",
+      "targetNodeId": "/inbox?tab=notifications",
+      "id": "inbox.tab.switch",
+      "label": "切换收件箱 Tab → 通知 Tab",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "notifications"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/inbox",
+        "search": {
+          "tab": "notifications",
+          "menu": "drawer"
+        }
+      },
+      "expandedFrom": "searchParams",
+      "uiMeta": {
+        "placement": "content",
+        "icon": "",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/inbox?tab=notifications&menu=drawer",
+      "sourceNodeId": "/inbox?tab=notifications&menu=drawer",
+      "target": "/inbox?tab=messages",
+      "targetNodeId": "/inbox?tab=messages",
+      "id": "inbox.tab.switch",
+      "label": "切换收件箱 Tab → 消息 Tab",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "messages"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/inbox",
+        "search": {
+          "tab": "notifications",
+          "menu": "drawer"
+        }
+      },
+      "expandedFrom": "searchParams",
+      "uiMeta": {
+        "placement": "content",
+        "icon": "",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/inbox?tab=messages&menu=drawer",
+      "sourceNodeId": "/inbox?tab=messages&menu=drawer",
+      "target": "/inbox?tab=notifications",
+      "targetNodeId": "/inbox?tab=notifications",
+      "id": "inbox.tab.switch",
+      "label": "切换收件箱 Tab → 通知 Tab",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "notifications"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/inbox",
+        "search": {
+          "tab": "messages",
+          "menu": "drawer"
+        }
+      },
+      "expandedFrom": "searchParams",
+      "uiMeta": {
+        "placement": "content",
+        "icon": "",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/inbox?tab=messages&menu=drawer",
+      "sourceNodeId": "/inbox?tab=messages&menu=drawer",
+      "target": "/inbox?tab=messages",
+      "targetNodeId": "/inbox?tab=messages",
+      "id": "inbox.tab.switch",
+      "label": "切换收件箱 Tab → 消息 Tab",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "messages"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/inbox",
+        "search": {
+          "tab": "messages",
+          "menu": "drawer"
+        }
+      },
+      "expandedFrom": "searchParams",
+      "uiMeta": {
+        "placement": "content",
+        "icon": "",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/communities",
+      "sourceNodeId": "/communities",
+      "target": "/communities?menu=drawer",
+      "targetNodeId": "/communities?menu=drawer",
+      "id": "communities.drawer.open",
+      "label": "打开左侧抽屉菜单（Answers）",
+      "type": "state",
+      "mode": "push",
+      "search": {
+        "menu": "drawer"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/communities",
+        "search": {
+          "menu": null
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "drawer_menu",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/chat?tab=messages",
+      "sourceNodeId": "/chat?tab=messages",
+      "target": "/chat?tab=unread",
+      "targetNodeId": "/chat?tab=unread",
+      "id": "chat.tab.switch",
+      "label": "切换 Chats Tab → Unread Tab",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "unread"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/chat",
+        "search": {
+          "tab": "messages"
+        }
+      },
+      "expandedFrom": "searchParams",
+      "uiMeta": {
+        "placement": "content",
+        "icon": "",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/chat?tab=messages",
+      "sourceNodeId": "/chat?tab=messages",
+      "target": "/chat?tab=requests",
+      "targetNodeId": "/chat?tab=requests",
+      "id": "chat.tab.switch",
+      "label": "切换 Chats Tab → Requests Tab",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "requests"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/chat",
+        "search": {
+          "tab": "messages"
+        }
+      },
+      "expandedFrom": "searchParams",
+      "uiMeta": {
+        "placement": "content",
+        "icon": "",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/chat?tab=messages",
+      "sourceNodeId": "/chat?tab=messages",
+      "target": "/chat?tab=threads",
+      "targetNodeId": "/chat?tab=threads",
+      "id": "chat.tab.switch",
+      "label": "切换 Chats Tab → Threads Tab",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "threads"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/chat",
+        "search": {
+          "tab": "messages"
+        }
+      },
+      "expandedFrom": "searchParams",
+      "uiMeta": {
+        "placement": "content",
+        "icon": "",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/chat?tab=unread",
+      "sourceNodeId": "/chat?tab=unread",
+      "target": "/chat?tab=messages",
+      "targetNodeId": "/chat?tab=messages",
+      "id": "chat.tab.switch",
+      "label": "切换 Chats Tab → Messages Tab",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "messages"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/chat",
+        "search": {
+          "tab": "unread"
+        }
+      },
+      "expandedFrom": "searchParams",
+      "uiMeta": {
+        "placement": "content",
+        "icon": "",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/chat?tab=unread",
+      "sourceNodeId": "/chat?tab=unread",
+      "target": "/chat?tab=requests",
+      "targetNodeId": "/chat?tab=requests",
+      "id": "chat.tab.switch",
+      "label": "切换 Chats Tab → Requests Tab",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "requests"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/chat",
+        "search": {
+          "tab": "unread"
+        }
+      },
+      "expandedFrom": "searchParams",
+      "uiMeta": {
+        "placement": "content",
+        "icon": "",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/chat?tab=unread",
+      "sourceNodeId": "/chat?tab=unread",
+      "target": "/chat?tab=threads",
+      "targetNodeId": "/chat?tab=threads",
+      "id": "chat.tab.switch",
+      "label": "切换 Chats Tab → Threads Tab",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "threads"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/chat",
+        "search": {
+          "tab": "unread"
+        }
+      },
+      "expandedFrom": "searchParams",
+      "uiMeta": {
+        "placement": "content",
+        "icon": "",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/chat?tab=requests",
+      "sourceNodeId": "/chat?tab=requests",
+      "target": "/chat?tab=messages",
+      "targetNodeId": "/chat?tab=messages",
+      "id": "chat.tab.switch",
+      "label": "切换 Chats Tab → Messages Tab",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "messages"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/chat",
+        "search": {
+          "tab": "requests"
+        }
+      },
+      "expandedFrom": "searchParams",
+      "uiMeta": {
+        "placement": "content",
+        "icon": "",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/chat?tab=requests",
+      "sourceNodeId": "/chat?tab=requests",
+      "target": "/chat?tab=unread",
+      "targetNodeId": "/chat?tab=unread",
+      "id": "chat.tab.switch",
+      "label": "切换 Chats Tab → Unread Tab",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "unread"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/chat",
+        "search": {
+          "tab": "requests"
+        }
+      },
+      "expandedFrom": "searchParams",
+      "uiMeta": {
+        "placement": "content",
+        "icon": "",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/chat?tab=requests",
+      "sourceNodeId": "/chat?tab=requests",
+      "target": "/chat?tab=threads",
+      "targetNodeId": "/chat?tab=threads",
+      "id": "chat.tab.switch",
+      "label": "切换 Chats Tab → Threads Tab",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "threads"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/chat",
+        "search": {
+          "tab": "requests"
+        }
+      },
+      "expandedFrom": "searchParams",
+      "uiMeta": {
+        "placement": "content",
+        "icon": "",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/chat?tab=threads",
+      "sourceNodeId": "/chat?tab=threads",
+      "target": "/chat?tab=messages",
+      "targetNodeId": "/chat?tab=messages",
+      "id": "chat.tab.switch",
+      "label": "切换 Chats Tab → Messages Tab",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "messages"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/chat",
+        "search": {
+          "tab": "threads"
+        }
+      },
+      "expandedFrom": "searchParams",
+      "uiMeta": {
+        "placement": "content",
+        "icon": "",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/chat?tab=threads",
+      "sourceNodeId": "/chat?tab=threads",
+      "target": "/chat?tab=unread",
+      "targetNodeId": "/chat?tab=unread",
+      "id": "chat.tab.switch",
+      "label": "切换 Chats Tab → Unread Tab",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "unread"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/chat",
+        "search": {
+          "tab": "threads"
+        }
+      },
+      "expandedFrom": "searchParams",
+      "uiMeta": {
+        "placement": "content",
+        "icon": "",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/chat?tab=threads",
+      "sourceNodeId": "/chat?tab=threads",
+      "target": "/chat?tab=requests",
+      "targetNodeId": "/chat?tab=requests",
+      "id": "chat.tab.switch",
+      "label": "切换 Chats Tab → Requests Tab",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "requests"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/chat",
+        "search": {
+          "tab": "threads"
+        }
+      },
+      "expandedFrom": "searchParams",
+      "uiMeta": {
+        "placement": "content",
+        "icon": "",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/chat?tab=messages",
+      "sourceNodeId": "/chat?tab=messages",
+      "target": "/chat/new",
+      "targetNodeId": "/chat/new",
+      "id": "chat.new.open",
+      "label": "新建聊天",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/chat",
+        "search": {
+          "tab": "messages"
+        }
+      },
+      "uiMeta": {
+        "placement": "fab",
+        "icon": "plus",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/chat?tab=unread",
+      "sourceNodeId": "/chat?tab=unread",
+      "target": "/chat/new",
+      "targetNodeId": "/chat/new",
+      "id": "chat.new.open",
+      "label": "新建聊天",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/chat",
+        "search": {
+          "tab": "unread"
+        }
+      },
+      "uiMeta": {
+        "placement": "fab",
+        "icon": "plus",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/chat?tab=requests",
+      "sourceNodeId": "/chat?tab=requests",
+      "target": "/chat/new",
+      "targetNodeId": "/chat/new",
+      "id": "chat.new.open",
+      "label": "新建聊天",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/chat",
+        "search": {
+          "tab": "requests"
+        }
+      },
+      "uiMeta": {
+        "placement": "fab",
+        "icon": "plus",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/chat?tab=threads",
+      "sourceNodeId": "/chat?tab=threads",
+      "target": "/chat/new",
+      "targetNodeId": "/chat/new",
+      "id": "chat.new.open",
+      "label": "新建聊天",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/chat",
+        "search": {
+          "tab": "threads"
+        }
+      },
+      "uiMeta": {
+        "placement": "fab",
+        "icon": "plus",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/chat?tab=messages",
+      "sourceNodeId": "/chat?tab=messages",
+      "target": "/chat?tab=messages&menu=drawer",
+      "targetNodeId": "/chat?tab=messages&menu=drawer",
+      "id": "chat.drawer.open",
+      "label": "打开左侧抽屉菜单（聊天）",
+      "type": "state",
+      "mode": "push",
+      "search": {
+        "menu": "drawer"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [
+        "tab"
+      ],
+      "fromConstraint": {
+        "path": "/chat",
+        "search": {
+          "tab": "messages"
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "drawer_menu",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/chat?tab=unread",
+      "sourceNodeId": "/chat?tab=unread",
+      "target": "/chat?tab=unread&menu=drawer",
+      "targetNodeId": "/chat?tab=unread&menu=drawer",
+      "id": "chat.drawer.open",
+      "label": "打开左侧抽屉菜单（聊天）",
+      "type": "state",
+      "mode": "push",
+      "search": {
+        "menu": "drawer"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [
+        "tab"
+      ],
+      "fromConstraint": {
+        "path": "/chat",
+        "search": {
+          "tab": "unread"
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "drawer_menu",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/chat?tab=requests",
+      "sourceNodeId": "/chat?tab=requests",
+      "target": "/chat?tab=requests&menu=drawer",
+      "targetNodeId": "/chat?tab=requests&menu=drawer",
+      "id": "chat.drawer.open",
+      "label": "打开左侧抽屉菜单（聊天）",
+      "type": "state",
+      "mode": "push",
+      "search": {
+        "menu": "drawer"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [
+        "tab"
+      ],
+      "fromConstraint": {
+        "path": "/chat",
+        "search": {
+          "tab": "requests"
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "drawer_menu",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/chat?tab=threads",
+      "sourceNodeId": "/chat?tab=threads",
+      "target": "/chat?tab=threads&menu=drawer",
+      "targetNodeId": "/chat?tab=threads&menu=drawer",
+      "id": "chat.drawer.open",
+      "label": "打开左侧抽屉菜单（聊天）",
+      "type": "state",
+      "mode": "push",
+      "search": {
+        "menu": "drawer"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [
+        "tab"
+      ],
+      "fromConstraint": {
+        "path": "/chat",
+        "search": {
+          "tab": "threads"
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "drawer_menu",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/inbox?tab=notifications",
+      "sourceNodeId": "/inbox?tab=notifications",
+      "target": "/inbox?tab=notifications&menu=drawer",
+      "targetNodeId": "/inbox?tab=notifications&menu=drawer",
+      "id": "inbox.drawer.open",
+      "label": "打开左侧抽屉菜单（收件箱）",
+      "type": "state",
+      "mode": "push",
+      "search": {
+        "menu": "drawer"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [
+        "tab"
+      ],
+      "fromConstraint": {
+        "path": "/inbox",
+        "search": {
+          "tab": "notifications"
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "drawer_menu",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/inbox?tab=messages",
+      "sourceNodeId": "/inbox?tab=messages",
+      "target": "/inbox?tab=messages&menu=drawer",
+      "targetNodeId": "/inbox?tab=messages&menu=drawer",
+      "id": "inbox.drawer.open",
+      "label": "打开左侧抽屉菜单（收件箱）",
+      "type": "state",
+      "mode": "push",
+      "search": {
+        "menu": "drawer"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [
+        "tab"
+      ],
+      "fromConstraint": {
+        "path": "/inbox",
+        "search": {
+          "tab": "messages"
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "drawer_menu",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/",
+      "sourceNodeId": "/",
+      "target": "/me?tab=posts",
+      "targetNodeId": "/me?tab=posts",
+      "id": "profile.me.open",
+      "label": "打开我的主页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {
+        "tab": "posts"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "avatar",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/communities",
+      "sourceNodeId": "/communities",
+      "target": "/me?tab=posts",
+      "targetNodeId": "/me?tab=posts",
+      "id": "profile.me.open",
+      "label": "打开我的主页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {
+        "tab": "posts"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "avatar",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/chat?tab=messages",
+      "sourceNodeId": "/chat?tab=messages",
+      "target": "/me?tab=posts",
+      "targetNodeId": "/me?tab=posts",
+      "id": "profile.me.open",
+      "label": "打开我的主页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {
+        "tab": "posts"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/chat",
+        "search": {
+          "tab": "messages"
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "avatar",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/chat?tab=unread",
+      "sourceNodeId": "/chat?tab=unread",
+      "target": "/me?tab=posts",
+      "targetNodeId": "/me?tab=posts",
+      "id": "profile.me.open",
+      "label": "打开我的主页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {
+        "tab": "posts"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/chat",
+        "search": {
+          "tab": "unread"
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "avatar",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/chat?tab=requests",
+      "sourceNodeId": "/chat?tab=requests",
+      "target": "/me?tab=posts",
+      "targetNodeId": "/me?tab=posts",
+      "id": "profile.me.open",
+      "label": "打开我的主页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {
+        "tab": "posts"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/chat",
+        "search": {
+          "tab": "requests"
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "avatar",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/chat?tab=threads",
+      "sourceNodeId": "/chat?tab=threads",
+      "target": "/me?tab=posts",
+      "targetNodeId": "/me?tab=posts",
+      "id": "profile.me.open",
+      "label": "打开我的主页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {
+        "tab": "posts"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/chat",
+        "search": {
+          "tab": "threads"
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "avatar",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/chat?tab=messages&menu=drawer",
+      "sourceNodeId": "/chat?tab=messages&menu=drawer",
+      "target": "/me?tab=posts",
+      "targetNodeId": "/me?tab=posts",
+      "id": "profile.me.open",
+      "label": "打开我的主页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {
+        "tab": "posts"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/chat",
+        "search": {
+          "tab": "messages",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "avatar",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/chat?tab=unread&menu=drawer",
+      "sourceNodeId": "/chat?tab=unread&menu=drawer",
+      "target": "/me?tab=posts",
+      "targetNodeId": "/me?tab=posts",
+      "id": "profile.me.open",
+      "label": "打开我的主页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {
+        "tab": "posts"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/chat",
+        "search": {
+          "tab": "unread",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "avatar",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/chat?tab=requests&menu=drawer",
+      "sourceNodeId": "/chat?tab=requests&menu=drawer",
+      "target": "/me?tab=posts",
+      "targetNodeId": "/me?tab=posts",
+      "id": "profile.me.open",
+      "label": "打开我的主页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {
+        "tab": "posts"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/chat",
+        "search": {
+          "tab": "requests",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "avatar",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/chat?tab=threads&menu=drawer",
+      "sourceNodeId": "/chat?tab=threads&menu=drawer",
+      "target": "/me?tab=posts",
+      "targetNodeId": "/me?tab=posts",
+      "id": "profile.me.open",
+      "label": "打开我的主页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {
+        "tab": "posts"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/chat",
+        "search": {
+          "tab": "threads",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "avatar",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/inbox?tab=notifications",
+      "sourceNodeId": "/inbox?tab=notifications",
+      "target": "/me?tab=posts",
+      "targetNodeId": "/me?tab=posts",
+      "id": "profile.me.open",
+      "label": "打开我的主页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {
+        "tab": "posts"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/inbox",
+        "search": {
+          "tab": "notifications"
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "avatar",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/inbox?tab=messages",
+      "sourceNodeId": "/inbox?tab=messages",
+      "target": "/me?tab=posts",
+      "targetNodeId": "/me?tab=posts",
+      "id": "profile.me.open",
+      "label": "打开我的主页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {
+        "tab": "posts"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/inbox",
+        "search": {
+          "tab": "messages"
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "avatar",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/inbox?tab=notifications&menu=drawer",
+      "sourceNodeId": "/inbox?tab=notifications&menu=drawer",
+      "target": "/me?tab=posts",
+      "targetNodeId": "/me?tab=posts",
+      "id": "profile.me.open",
+      "label": "打开我的主页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {
+        "tab": "posts"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/inbox",
+        "search": {
+          "tab": "notifications",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "avatar",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/inbox?tab=messages&menu=drawer",
+      "sourceNodeId": "/inbox?tab=messages&menu=drawer",
+      "target": "/me?tab=posts",
+      "targetNodeId": "/me?tab=posts",
+      "id": "profile.me.open",
+      "label": "打开我的主页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {
+        "tab": "posts"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/inbox",
+        "search": {
+          "tab": "messages",
+          "menu": "drawer"
+        }
+      },
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "avatar",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/me?tab=posts",
+      "sourceNodeId": "/me?tab=posts",
+      "target": "/me?tab=comments",
+      "targetNodeId": "/me?tab=comments",
+      "id": "profile.tab.switch",
+      "label": "切换个人主页 Tab → 个人主页-Comments",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "comments"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/me",
+        "search": {
+          "tab": "posts"
+        }
+      },
+      "expandedFrom": "searchParams",
+      "uiMeta": {
+        "placement": "content",
+        "icon": "",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/me?tab=posts",
+      "sourceNodeId": "/me?tab=posts",
+      "target": "/me?tab=about",
+      "targetNodeId": "/me?tab=about",
+      "id": "profile.tab.switch",
+      "label": "切换个人主页 Tab → 个人主页-About",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "about"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/me",
+        "search": {
+          "tab": "posts"
+        }
+      },
+      "expandedFrom": "searchParams",
+      "uiMeta": {
+        "placement": "content",
+        "icon": "",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/me?tab=comments",
+      "sourceNodeId": "/me?tab=comments",
+      "target": "/me?tab=posts",
+      "targetNodeId": "/me?tab=posts",
+      "id": "profile.tab.switch",
+      "label": "切换个人主页 Tab → 个人主页-Posts",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "posts"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/me",
+        "search": {
+          "tab": "comments"
+        }
+      },
+      "expandedFrom": "searchParams",
+      "uiMeta": {
+        "placement": "content",
+        "icon": "",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/me?tab=comments",
+      "sourceNodeId": "/me?tab=comments",
+      "target": "/me?tab=about",
+      "targetNodeId": "/me?tab=about",
+      "id": "profile.tab.switch",
+      "label": "切换个人主页 Tab → 个人主页-About",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "about"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/me",
+        "search": {
+          "tab": "comments"
+        }
+      },
+      "expandedFrom": "searchParams",
+      "uiMeta": {
+        "placement": "content",
+        "icon": "",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/me?tab=about",
+      "sourceNodeId": "/me?tab=about",
+      "target": "/me?tab=posts",
+      "targetNodeId": "/me?tab=posts",
+      "id": "profile.tab.switch",
+      "label": "切换个人主页 Tab → 个人主页-Posts",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "posts"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/me",
+        "search": {
+          "tab": "about"
+        }
+      },
+      "expandedFrom": "searchParams",
+      "uiMeta": {
+        "placement": "content",
+        "icon": "",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/me?tab=about",
+      "sourceNodeId": "/me?tab=about",
+      "target": "/me?tab=comments",
+      "targetNodeId": "/me?tab=comments",
+      "id": "profile.tab.switch",
+      "label": "切换个人主页 Tab → 个人主页-Comments",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "comments"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/me",
+        "search": {
+          "tab": "about"
+        }
+      },
+      "expandedFrom": "searchParams",
+      "uiMeta": {
+        "placement": "content",
+        "icon": "",
+        "gesture": "tap"
+      }
+    }
+  ]
+}

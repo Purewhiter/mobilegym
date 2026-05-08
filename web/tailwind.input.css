@@ -1,0 +1,14 @@
+@import "tailwindcss";
+
+@source "./index.html";
+@source "./scripts/**/*.js";
+
+@theme {
+  --font-sans: Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-serif: Charter, Georgia, serif;
+  --font-mono: "JetBrains Mono", "SF Mono", Menlo, monospace;
+
+  --color-brand-os: #3b82f6;
+  --color-brand-app: #10b981;
+  --color-brand-bench: #f59e0b;
+}

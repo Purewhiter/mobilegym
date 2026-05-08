@@ -1,0 +1,2882 @@
+[
+  {
+    "id": "akesudiqu",
+    "name": "阿克苏地区",
+    "adm1": "新疆",
+    "adm2": "阿克苏地区",
+    "pinyin": "akesudiqu",
+    "lon": 80.306,
+    "lat": 41.1448
+  },
+  {
+    "id": "alashanmeng",
+    "name": "阿拉善盟",
+    "adm1": "内蒙古",
+    "adm2": "阿拉善盟",
+    "pinyin": "alashanmeng",
+    "lon": 101.034,
+    "lat": 41.8987
+  },
+  {
+    "id": "aletaidiqu",
+    "name": "阿勒泰地区",
+    "adm1": "新疆",
+    "adm2": "阿勒泰地区",
+    "pinyin": "aletaidiqu",
+    "lon": 88.0908,
+    "lat": 47.7193
+  },
+  {
+    "id": "ankang",
+    "name": "安康市",
+    "adm1": "陕西",
+    "adm2": "安康市",
+    "pinyin": "ankang",
+    "lon": 109.0163,
+    "lat": 32.7126
+  },
+  {
+    "id": "anqing",
+    "name": "安庆市",
+    "adm1": "安徽",
+    "adm2": "安庆市",
+    "pinyin": "anqing",
+    "lon": 117.0651,
+    "lat": 30.5493
+  },
+  {
+    "id": "anshan",
+    "name": "鞍山市",
+    "adm1": "辽宁",
+    "adm2": "鞍山市",
+    "pinyin": "anshan",
+    "lon": 122.9853,
+    "lat": 41.112
+  },
+  {
+    "id": "anshun",
+    "name": "安顺市",
+    "adm1": "贵州",
+    "adm2": "安顺市",
+    "pinyin": "anshun",
+    "lon": 105.9441,
+    "lat": 26.2298
+  },
+  {
+    "id": "anyang",
+    "name": "安阳市",
+    "adm1": "河南",
+    "adm2": "安阳市",
+    "pinyin": "anyang",
+    "lon": 114.3397,
+    "lat": 36.1044
+  },
+  {
+    "id": "baicheng",
+    "name": "白城市",
+    "adm1": "吉林",
+    "adm2": "白城市",
+    "pinyin": "baicheng",
+    "lon": 122.8644,
+    "lat": 45.6176
+  },
+  {
+    "id": "baise",
+    "name": "百色市",
+    "adm1": "广西",
+    "adm2": "百色市",
+    "pinyin": "baise",
+    "lon": 106.6643,
+    "lat": 23.8858
+  },
+  {
+    "id": "baishan",
+    "name": "白山市",
+    "adm1": "吉林",
+    "adm2": "白山市",
+    "pinyin": "baishan",
+    "lon": 126.4583,
+    "lat": 41.9524
+  },
+  {
+    "id": "baiyin",
+    "name": "白银市",
+    "adm1": "甘肃",
+    "adm2": "白银市",
+    "pinyin": "baiyin",
+    "lon": 104.0991,
+    "lat": 36.5502
+  },
+  {
+    "id": "bangbu",
+    "name": "蚌埠市",
+    "adm1": "安徽",
+    "adm2": "蚌埠市",
+    "pinyin": "bangbu",
+    "lon": 117.3783,
+    "lat": 32.9435
+  },
+  {
+    "id": "baoding",
+    "name": "保定市",
+    "adm1": "河北",
+    "adm2": "保定市",
+    "pinyin": "baoding",
+    "lon": 115.2895,
+    "lat": 39.6465
+  },
+  {
+    "id": "baoji",
+    "name": "宝鸡市",
+    "adm1": "陕西",
+    "adm2": "宝鸡市",
+    "pinyin": "baoji",
+    "lon": 107.1527,
+    "lat": 34.3725
+  },
+  {
+    "id": "baotou",
+    "name": "包头市",
+    "adm1": "内蒙古",
+    "adm2": "包头市",
+    "pinyin": "baotou",
+    "lon": 109.9578,
+    "lat": 41.7729
+  },
+  {
+    "id": "bayannaoer",
+    "name": "巴彦淖尔市",
+    "adm1": "内蒙古",
+    "adm2": "巴彦淖尔市",
+    "pinyin": "bayannaoer",
+    "lon": 107.0217,
+    "lat": 40.3332
+  },
+  {
+    "id": "bazhong",
+    "name": "巴中市",
+    "adm1": "四川",
+    "adm2": "巴中市",
+    "pinyin": "bazhong",
+    "lon": 106.765,
+    "lat": 31.8748
+  },
+  {
+    "id": "beihai",
+    "name": "北海市",
+    "adm1": "广西",
+    "adm2": "北海市",
+    "pinyin": "beihai",
+    "lon": 109.1284,
+    "lat": 21.4531
+  },
+  {
+    "id": "beijing",
+    "name": "北京市",
+    "adm1": "北京",
+    "adm2": "北京市",
+    "pinyin": "beijing",
+    "lon": 116.4277,
+    "lat": 39.9028
+  },
+  {
+    "id": "benxi",
+    "name": "本溪市",
+    "adm1": "辽宁",
+    "adm2": "本溪市",
+    "pinyin": "benxi",
+    "lon": 123.7584,
+    "lat": 41.2949
+  },
+  {
+    "id": "bijie",
+    "name": "毕节市",
+    "adm1": "贵州",
+    "adm2": "毕节市",
+    "pinyin": "bijie",
+    "lon": 105.419,
+    "lat": 27.2621
+  },
+  {
+    "id": "binzhou",
+    "name": "滨州",
+    "adm1": "山东",
+    "adm2": "滨州",
+    "pinyin": "binzhou",
+    "lon": 118.0183,
+    "lat": 37.4533
+  },
+  {
+    "id": "bozhou",
+    "name": "亳州",
+    "adm1": "安徽",
+    "adm2": "亳州",
+    "pinyin": "bozhou",
+    "lon": 115.7974,
+    "lat": 33.8479
+  },
+  {
+    "id": "cangzhou",
+    "name": "沧州",
+    "adm1": "河北",
+    "adm2": "沧州",
+    "pinyin": "cangzhou",
+    "lon": 116.8776,
+    "lat": 38.3089
+  },
+  {
+    "id": "changchun",
+    "name": "长春市",
+    "adm1": "吉林",
+    "adm2": "长春市",
+    "pinyin": "changchun",
+    "lon": 125.3246,
+    "lat": 43.9115
+  },
+  {
+    "id": "changde",
+    "name": "常德市",
+    "adm1": "湖南",
+    "adm2": "常德市",
+    "pinyin": "changde",
+    "lon": 111.6953,
+    "lat": 29.0711
+  },
+  {
+    "id": "changjianglizuzizhixian",
+    "name": "昌江黎族自治县",
+    "adm1": "海南",
+    "adm2": "昌江黎族自治县",
+    "pinyin": "changjianglizuzizhixian",
+    "lon": 108.8073,
+    "lat": 19.3378
+  },
+  {
+    "id": "changjihuizuzizhizhou",
+    "name": "昌吉回族自治州",
+    "adm1": "新疆",
+    "adm2": "昌吉回族自治州",
+    "pinyin": "changjihuizuzizhizhou",
+    "lon": 86.1964,
+    "lat": 44.2494
+  },
+  {
+    "id": "changsha",
+    "name": "长沙市",
+    "adm1": "湖南",
+    "adm2": "长沙市",
+    "pinyin": "changsha",
+    "lon": 113.0138,
+    "lat": 28.194
+  },
+  {
+    "id": "changzhi",
+    "name": "长治市",
+    "adm1": "山西",
+    "adm2": "长治市",
+    "pinyin": "changzhi",
+    "lon": 113.0702,
+    "lat": 36.1884
+  },
+  {
+    "id": "changzhou",
+    "name": "常州",
+    "adm1": "江苏",
+    "adm2": "常州",
+    "pinyin": "changzhou",
+    "lon": 119.9732,
+    "lat": 31.7852
+  },
+  {
+    "id": "chaoyang",
+    "name": "朝阳区",
+    "adm1": "北京",
+    "adm2": "朝阳区",
+    "pinyin": "chaoyang",
+    "lon": 116.4434,
+    "lat": 39.9217
+  },
+  {
+    "id": "chaozhou",
+    "name": "潮州",
+    "adm1": "广东",
+    "adm2": "潮州",
+    "pinyin": "chaozhou",
+    "lon": 116.5881,
+    "lat": 23.5396
+  },
+  {
+    "id": "chengde",
+    "name": "承德市",
+    "adm1": "河北",
+    "adm2": "承德市",
+    "pinyin": "chengde",
+    "lon": 117.9556,
+    "lat": 40.965
+  },
+  {
+    "id": "chengdu",
+    "name": "成都市",
+    "adm1": "四川",
+    "adm2": "成都市",
+    "pinyin": "chengdu",
+    "lon": 104.0737,
+    "lat": 30.6971
+  },
+  {
+    "id": "chengmaixian",
+    "name": "澄迈县",
+    "adm1": "海南",
+    "adm2": "澄迈县",
+    "pinyin": "chengmaixian",
+    "lon": 110.1176,
+    "lat": 19.9328
+  },
+  {
+    "id": "chenzhou",
+    "name": "郴州",
+    "adm1": "湖南",
+    "adm2": "郴州",
+    "pinyin": "chenzhou",
+    "lon": 113.033,
+    "lat": 25.8087
+  },
+  {
+    "id": "chifeng",
+    "name": "赤峰市",
+    "adm1": "内蒙古",
+    "adm2": "赤峰市",
+    "pinyin": "chifeng",
+    "lon": 120.0686,
+    "lat": 43.8581
+  },
+  {
+    "id": "chizhou",
+    "name": "池州",
+    "adm1": "安徽",
+    "adm2": "池州",
+    "pinyin": "chizhou",
+    "lon": 117.5226,
+    "lat": 30.6193
+  },
+  {
+    "id": "chongqing",
+    "name": "重庆市",
+    "adm1": "重庆",
+    "adm2": "重庆市",
+    "pinyin": "chongqing",
+    "lon": 106.546,
+    "lat": 29.5489
+  },
+  {
+    "id": "chongqingjiaoxian",
+    "name": "重庆郊县",
+    "adm1": "重庆",
+    "adm2": "重庆郊县",
+    "pinyin": "chongqingjiaoxian",
+    "lon": 106.546,
+    "lat": 29.5489
+  },
+  {
+    "id": "chongzuo",
+    "name": "崇左市",
+    "adm1": "广西",
+    "adm2": "崇左市",
+    "pinyin": "chongzuo",
+    "lon": 107.3586,
+    "lat": 22.4037
+  },
+  {
+    "id": "chuxiongyizuzizhizhou",
+    "name": "楚雄彝族自治州",
+    "adm1": "云南",
+    "adm2": "楚雄彝族自治州",
+    "pinyin": "chuxiongyizuzizhizhou",
+    "lon": 101.5444,
+    "lat": 25.0822
+  },
+  {
+    "id": "chuzhou",
+    "name": "滁州",
+    "adm1": "安徽",
+    "adm2": "滁州",
+    "pinyin": "chuzhou",
+    "lon": 118.3199,
+    "lat": 32.1989
+  },
+  {
+    "id": "dalian",
+    "name": "大连市",
+    "adm1": "辽宁",
+    "adm2": "大连市",
+    "pinyin": "dalian",
+    "lon": 121.6333,
+    "lat": 38.9226
+  },
+  {
+    "id": "dalibaizuzizhizhou",
+    "name": "大理白族自治州",
+    "adm1": "云南",
+    "adm2": "大理白族自治州",
+    "pinyin": "dalibaizuzizhizhou",
+    "lon": 100.2506,
+    "lat": 25.5895
+  },
+  {
+    "id": "dandong",
+    "name": "丹东市",
+    "adm1": "辽宁",
+    "adm2": "丹东市",
+    "pinyin": "dandong",
+    "lon": 123.5858,
+    "lat": 39.9353
+  },
+  {
+    "id": "danzhou",
+    "name": "儋州",
+    "adm1": "海南",
+    "adm2": "儋州",
+    "pinyin": "danzhou",
+    "lon": 109.2538,
+    "lat": 19.659
+  },
+  {
+    "id": "daqing",
+    "name": "大庆市",
+    "adm1": "黑龙江",
+    "adm2": "大庆市",
+    "pinyin": "daqing",
+    "lon": 125.0115,
+    "lat": 46.5985
+  },
+  {
+    "id": "datong",
+    "name": "大同市",
+    "adm1": "山西",
+    "adm2": "大同市",
+    "pinyin": "datong",
+    "lon": 114.303,
+    "lat": 39.4793
+  },
+  {
+    "id": "dazhou",
+    "name": "达州",
+    "adm1": "四川",
+    "adm2": "达州",
+    "pinyin": "dazhou",
+    "lon": 107.453,
+    "lat": 31.199
+  },
+  {
+    "id": "deyang",
+    "name": "德阳市",
+    "adm1": "四川",
+    "adm2": "德阳市",
+    "pinyin": "deyang",
+    "lon": 104.39,
+    "lat": 31.1658
+  },
+  {
+    "id": "dezhou",
+    "name": "德州",
+    "adm1": "山东",
+    "adm2": "德州",
+    "pinyin": "dezhou",
+    "lon": 116.2884,
+    "lat": 37.4492
+  },
+  {
+    "id": "dingxi",
+    "name": "定西市",
+    "adm1": "甘肃",
+    "adm2": "定西市",
+    "pinyin": "dingxi",
+    "lon": 104.6253,
+    "lat": 35.5925
+  },
+  {
+    "id": "dongfang",
+    "name": "东方市",
+    "adm1": "海南",
+    "adm2": "东方市",
+    "pinyin": "dongfang",
+    "lon": 108.6912,
+    "lat": 19.0888
+  },
+  {
+    "id": "dongguan",
+    "name": "东莞市",
+    "adm1": "广东",
+    "adm2": "东莞市",
+    "pinyin": "dongguan",
+    "lon": 114.0406,
+    "lat": 22.9627
+  },
+  {
+    "id": "dongying",
+    "name": "东营市",
+    "adm1": "山东",
+    "adm2": "东营市",
+    "pinyin": "dongying",
+    "lon": 118.4721,
+    "lat": 37.4555
+  },
+  {
+    "id": "eerduosi",
+    "name": "鄂尔多斯市",
+    "adm1": "内蒙古",
+    "adm2": "鄂尔多斯市",
+    "pinyin": "eerduosi",
+    "lon": 109.9767,
+    "lat": 39.8156
+  },
+  {
+    "id": "enshitujiazumiaozuzizhizhou",
+    "name": "恩施土家族苗族自治州",
+    "adm1": "湖北",
+    "adm2": "恩施土家族苗族自治州",
+    "pinyin": "enshitujiazumiaozuzizhizhou",
+    "lon": 110.3583,
+    "lat": 30.6625
+  },
+  {
+    "id": "ezhou",
+    "name": "鄂州",
+    "adm1": "湖北",
+    "adm2": "鄂州",
+    "pinyin": "ezhou",
+    "lon": 114.8669,
+    "lat": 30.3621
+  },
+  {
+    "id": "fangchenggang",
+    "name": "防城港市",
+    "adm1": "广西",
+    "adm2": "防城港市",
+    "pinyin": "fangchenggang",
+    "lon": 108.3768,
+    "lat": 21.714
+  },
+  {
+    "id": "foshan",
+    "name": "佛山市",
+    "adm1": "广东",
+    "adm2": "佛山市",
+    "pinyin": "foshan",
+    "lon": 113.1039,
+    "lat": 23.0476
+  },
+  {
+    "id": "fushun",
+    "name": "抚顺市",
+    "adm1": "辽宁",
+    "adm2": "抚顺市",
+    "pinyin": "fushun",
+    "lon": 123.9182,
+    "lat": 41.8888
+  },
+  {
+    "id": "fuxin",
+    "name": "阜新市",
+    "adm1": "辽宁",
+    "adm2": "阜新市",
+    "pinyin": "fuxin",
+    "lon": 121.6595,
+    "lat": 42.0573
+  },
+  {
+    "id": "fuyang",
+    "name": "阜阳市",
+    "adm1": "安徽",
+    "adm2": "阜阳市",
+    "pinyin": "fuyang",
+    "lon": 115.8682,
+    "lat": 32.9146
+  },
+  {
+    "id": "fuzhou",
+    "name": "福州",
+    "adm1": "福建",
+    "adm2": "福州",
+    "pinyin": "fuzhou",
+    "lon": 119.3205,
+    "lat": 26.114
+  },
+  {
+    "id": "fuzhou",
+    "name": "抚州",
+    "adm1": "江西",
+    "adm2": "抚州",
+    "pinyin": "fuzhou",
+    "lon": 116.6262,
+    "lat": 28.2268
+  },
+  {
+    "id": "ganzhou",
+    "name": "赣州",
+    "adm1": "江西",
+    "adm2": "赣州",
+    "pinyin": "ganzhou",
+    "lon": 115.0047,
+    "lat": 24.7748
+  },
+  {
+    "id": "guangan",
+    "name": "广安市",
+    "adm1": "四川",
+    "adm2": "广安市",
+    "pinyin": "guangan",
+    "lon": 106.8966,
+    "lat": 30.4937
+  },
+  {
+    "id": "guangyuan",
+    "name": "广元市",
+    "adm1": "四川",
+    "adm2": "广元市",
+    "pinyin": "guangyuan",
+    "lon": 105.9154,
+    "lat": 31.7598
+  },
+  {
+    "id": "guangzhou",
+    "name": "广州",
+    "adm1": "广东",
+    "adm2": "广州",
+    "pinyin": "guangzhou",
+    "lon": 113.2581,
+    "lat": 23.1491
+  },
+  {
+    "id": "guigang",
+    "name": "贵港市",
+    "adm1": "广西",
+    "adm2": "贵港市",
+    "pinyin": "guigang",
+    "lon": 109.6129,
+    "lat": 23.1009
+  },
+  {
+    "id": "guilin",
+    "name": "桂林市",
+    "adm1": "广西",
+    "adm2": "桂林市",
+    "pinyin": "guilin",
+    "lon": 110.2822,
+    "lat": 25.2614
+  },
+  {
+    "id": "guiyang",
+    "name": "贵阳市",
+    "adm1": "贵州",
+    "adm2": "贵阳市",
+    "pinyin": "guiyang",
+    "lon": 106.7024,
+    "lat": 26.5566
+  },
+  {
+    "id": "guyuan",
+    "name": "固原市",
+    "adm1": "宁夏",
+    "adm2": "固原市",
+    "pinyin": "guyuan",
+    "lon": 106.3057,
+    "lat": 36.0213
+  },
+  {
+    "id": "haerbin",
+    "name": "哈尔滨市",
+    "adm1": "黑龙江",
+    "adm2": "哈尔滨市",
+    "pinyin": "haerbin",
+    "lon": 126.657,
+    "lat": 45.7763
+  },
+  {
+    "id": "haidian",
+    "name": "海淀区",
+    "adm1": "北京",
+    "adm2": "海淀区",
+    "pinyin": "haidian",
+    "lon": 116.2983,
+    "lat": 39.9593
+  },
+  {
+    "id": "haidong",
+    "name": "海东市",
+    "adm1": "青海",
+    "adm2": "海东市",
+    "pinyin": "haidong",
+    "lon": 102.85,
+    "lat": 36.3058
+  },
+  {
+    "id": "haikou",
+    "name": "海口市",
+    "adm1": "海南",
+    "adm2": "海口市",
+    "pinyin": "haikou",
+    "lon": 110.1614,
+    "lat": 20.0275
+  },
+  {
+    "id": "hami",
+    "name": "哈密市",
+    "adm1": "新疆",
+    "adm2": "哈密市",
+    "pinyin": "hami",
+    "lon": 93.5059,
+    "lat": 42.8505
+  },
+  {
+    "id": "handan",
+    "name": "邯郸市",
+    "adm1": "河北",
+    "adm2": "邯郸市",
+    "pinyin": "handan",
+    "lon": 114.3722,
+    "lat": 36.3604
+  },
+  {
+    "id": "hangzhou",
+    "name": "杭州",
+    "adm1": "浙江",
+    "adm2": "杭州",
+    "pinyin": "hangzhou",
+    "lon": 120.1829,
+    "lat": 30.2434
+  },
+  {
+    "id": "hanzhong",
+    "name": "汉中市",
+    "adm1": "陕西",
+    "adm2": "汉中市",
+    "pinyin": "hanzhong",
+    "lon": 107.323,
+    "lat": 33.1381
+  },
+  {
+    "id": "hebi",
+    "name": "鹤壁市",
+    "adm1": "河南",
+    "adm2": "鹤壁市",
+    "pinyin": "hebi",
+    "lon": 114.2741,
+    "lat": 35.7601
+  },
+  {
+    "id": "hechi",
+    "name": "河池市",
+    "adm1": "广西",
+    "adm2": "河池市",
+    "pinyin": "hechi",
+    "lon": 108.0651,
+    "lat": 24.6997
+  },
+  {
+    "id": "hefei",
+    "name": "合肥市",
+    "adm1": "安徽",
+    "adm2": "合肥市",
+    "pinyin": "hefei",
+    "lon": 117.3169,
+    "lat": 31.8852
+  },
+  {
+    "id": "hegang",
+    "name": "鹤岗市",
+    "adm1": "黑龙江",
+    "adm2": "鹤岗市",
+    "pinyin": "hegang",
+    "lon": 130.5225,
+    "lat": 47.4303
+  },
+  {
+    "id": "heihe",
+    "name": "黑河市",
+    "adm1": "黑龙江",
+    "adm2": "黑河市",
+    "pinyin": "heihe",
+    "lon": 126.5123,
+    "lat": 48.2354
+  },
+  {
+    "id": "hengshui",
+    "name": "衡水市",
+    "adm1": "河北",
+    "adm2": "衡水市",
+    "pinyin": "hengshui",
+    "lon": 115.6914,
+    "lat": 37.7438
+  },
+  {
+    "id": "hengyang",
+    "name": "衡阳市",
+    "adm1": "湖南",
+    "adm2": "衡阳市",
+    "pinyin": "hengyang",
+    "lon": 112.631,
+    "lat": 26.8895
+  },
+  {
+    "id": "hetiandiqu",
+    "name": "和田地区",
+    "adm1": "新疆",
+    "adm2": "和田地区",
+    "pinyin": "hetiandiqu",
+    "lon": 79.9069,
+    "lat": 37.1577
+  },
+  {
+    "id": "heyuan",
+    "name": "河源市",
+    "adm1": "广东",
+    "adm2": "河源市",
+    "pinyin": "heyuan",
+    "lon": 114.6836,
+    "lat": 23.7593
+  },
+  {
+    "id": "heze",
+    "name": "菏泽市",
+    "adm1": "山东",
+    "adm2": "菏泽市",
+    "pinyin": "heze",
+    "lon": 115.5817,
+    "lat": 34.826
+  },
+  {
+    "id": "hezhou",
+    "name": "贺州",
+    "adm1": "广西",
+    "adm2": "贺州",
+    "pinyin": "hezhou",
+    "lon": 111.5395,
+    "lat": 24.4549
+  },
+  {
+    "id": "huaian",
+    "name": "淮安市",
+    "adm1": "江苏",
+    "adm2": "淮安市",
+    "pinyin": "huaian",
+    "lon": 119.0333,
+    "lat": 33.6485
+  },
+  {
+    "id": "huaibei",
+    "name": "淮北市",
+    "adm1": "安徽",
+    "adm2": "淮北市",
+    "pinyin": "huaibei",
+    "lon": 116.8028,
+    "lat": 33.9667
+  },
+  {
+    "id": "huairou",
+    "name": "怀柔区",
+    "adm1": "北京",
+    "adm2": "怀柔区",
+    "pinyin": "huairou",
+    "lon": 116.6322,
+    "lat": 40.3162
+  },
+  {
+    "id": "huaihua",
+    "name": "怀化市",
+    "adm1": "湖南",
+    "adm2": "怀化市",
+    "pinyin": "huaihua",
+    "lon": 110.2556,
+    "lat": 27.8782
+  },
+  {
+    "id": "huainan",
+    "name": "淮南市",
+    "adm1": "安徽",
+    "adm2": "淮南市",
+    "pinyin": "huainan",
+    "lon": 117.0202,
+    "lat": 32.6307
+  },
+  {
+    "id": "huanggang",
+    "name": "黄冈市",
+    "adm1": "湖北",
+    "adm2": "黄冈市",
+    "pinyin": "huanggang",
+    "lon": 114.6325,
+    "lat": 31.0042
+  },
+  {
+    "id": "huangshan",
+    "name": "黄山市",
+    "adm1": "安徽",
+    "adm2": "黄山市",
+    "pinyin": "huangshan",
+    "lon": 118.3225,
+    "lat": 29.7226
+  },
+  {
+    "id": "huangshi",
+    "name": "黄石市",
+    "adm1": "湖北",
+    "adm2": "黄石市",
+    "pinyin": "huangshi",
+    "lon": 115.0005,
+    "lat": 30.1224
+  },
+  {
+    "id": "huhehaote",
+    "name": "呼和浩特市",
+    "adm1": "内蒙古",
+    "adm2": "呼和浩特市",
+    "pinyin": "huhehaote",
+    "lon": 111.6655,
+    "lat": 40.8313
+  },
+  {
+    "id": "huizhou",
+    "name": "惠州",
+    "adm1": "广东",
+    "adm2": "惠州",
+    "pinyin": "huizhou",
+    "lon": 114.4164,
+    "lat": 23.1515
+  },
+  {
+    "id": "huludao",
+    "name": "葫芦岛市",
+    "adm1": "辽宁",
+    "adm2": "葫芦岛市",
+    "pinyin": "huludao",
+    "lon": 120.8697,
+    "lat": 40.7542
+  },
+  {
+    "id": "hulunbeier",
+    "name": "呼伦贝尔市",
+    "adm1": "内蒙古",
+    "adm2": "呼伦贝尔市",
+    "pinyin": "hulunbeier",
+    "lon": 123.7303,
+    "lat": 50.5804
+  },
+  {
+    "id": "huzhou",
+    "name": "湖州",
+    "adm1": "浙江",
+    "adm2": "湖州",
+    "pinyin": "huzhou",
+    "lon": 119.6103,
+    "lat": 30.8149
+  },
+  {
+    "id": "jiamusi",
+    "name": "佳木斯市",
+    "adm1": "黑龙江",
+    "adm2": "佳木斯市",
+    "pinyin": "jiamusi",
+    "lon": 132.0467,
+    "lat": 47.2378
+  },
+  {
+    "id": "jian",
+    "name": "吉安市",
+    "adm1": "江西",
+    "adm2": "吉安市",
+    "pinyin": "jian",
+    "lon": 115.0209,
+    "lat": 27.105
+  },
+  {
+    "id": "jiangmen",
+    "name": "江门市",
+    "adm1": "广东",
+    "adm2": "江门市",
+    "pinyin": "jiangmen",
+    "lon": 113.0704,
+    "lat": 22.4879
+  },
+  {
+    "id": "jiaozuo",
+    "name": "焦作市",
+    "adm1": "河南",
+    "adm2": "焦作市",
+    "pinyin": "jiaozuo",
+    "lon": 113.2352,
+    "lat": 35.2219
+  },
+  {
+    "id": "jiaxing",
+    "name": "嘉兴市",
+    "adm1": "浙江",
+    "adm2": "嘉兴市",
+    "pinyin": "jiaxing",
+    "lon": 120.3917,
+    "lat": 30.4388
+  },
+  {
+    "id": "jiayuguan",
+    "name": "嘉峪关市",
+    "adm1": "甘肃",
+    "adm2": "嘉峪关市",
+    "pinyin": "jiayuguan",
+    "lon": 98.2546,
+    "lat": 39.7646
+  },
+  {
+    "id": "jieyang",
+    "name": "揭阳市",
+    "adm1": "广东",
+    "adm2": "揭阳市",
+    "pinyin": "jieyang",
+    "lon": 116.1994,
+    "lat": 23.2668
+  },
+  {
+    "id": "jilin",
+    "name": "吉林市",
+    "adm1": "吉林",
+    "adm2": "吉林市",
+    "pinyin": "jilin",
+    "lon": 127.351,
+    "lat": 43.7257
+  },
+  {
+    "id": "jinan",
+    "name": "济南市",
+    "adm1": "山东",
+    "adm2": "济南市",
+    "pinyin": "jinan",
+    "lon": 117.8898,
+    "lat": 36.3234
+  },
+  {
+    "id": "jinchang",
+    "name": "金昌市",
+    "adm1": "甘肃",
+    "adm2": "金昌市",
+    "pinyin": "jinchang",
+    "lon": 102.0636,
+    "lat": 38.3712
+  },
+  {
+    "id": "jincheng",
+    "name": "晋城市",
+    "adm1": "山西",
+    "adm2": "晋城市",
+    "pinyin": "jincheng",
+    "lon": 112.5222,
+    "lat": 35.5866
+  },
+  {
+    "id": "jingdezhen",
+    "name": "景德镇市",
+    "adm1": "江西",
+    "adm2": "景德镇市",
+    "pinyin": "jingdezhen",
+    "lon": 117.2223,
+    "lat": 29.2857
+  },
+  {
+    "id": "jingmen",
+    "name": "荆门市",
+    "adm1": "湖北",
+    "adm2": "荆门市",
+    "pinyin": "jingmen",
+    "lon": 112.212,
+    "lat": 31.0507
+  },
+  {
+    "id": "jingzhou",
+    "name": "荆州",
+    "adm1": "湖北",
+    "adm2": "荆州",
+    "pinyin": "jingzhou",
+    "lon": 112.213,
+    "lat": 30.3699
+  },
+  {
+    "id": "jinhua",
+    "name": "金华市",
+    "adm1": "浙江",
+    "adm2": "金华市",
+    "pinyin": "jinhua",
+    "lon": 119.6358,
+    "lat": 29.1108
+  },
+  {
+    "id": "jining",
+    "name": "济宁市",
+    "adm1": "山东",
+    "adm2": "济宁市",
+    "pinyin": "jining",
+    "lon": 116.6007,
+    "lat": 35.3925
+  },
+  {
+    "id": "jinzhong",
+    "name": "晋中市",
+    "adm1": "山西",
+    "adm2": "晋中市",
+    "pinyin": "jinzhong",
+    "lon": 111.9188,
+    "lat": 37.0185
+  },
+  {
+    "id": "jinzhou",
+    "name": "锦州",
+    "adm1": "辽宁",
+    "adm2": "锦州",
+    "pinyin": "jinzhou",
+    "lon": 122.1486,
+    "lat": 41.6126
+  },
+  {
+    "id": "jiujiang",
+    "name": "九江市",
+    "adm1": "江西",
+    "adm2": "九江市",
+    "pinyin": "jiujiang",
+    "lon": 115.7749,
+    "lat": 29.243
+  },
+  {
+    "id": "jiuquan",
+    "name": "酒泉市",
+    "adm1": "甘肃",
+    "adm2": "酒泉市",
+    "pinyin": "jiuquan",
+    "lon": 94.7845,
+    "lat": 40.1679
+  },
+  {
+    "id": "jixi",
+    "name": "鸡西市",
+    "adm1": "黑龙江",
+    "adm2": "鸡西市",
+    "pinyin": "jixi",
+    "lon": 133.0843,
+    "lat": 46.2003
+  },
+  {
+    "id": "jiyuan",
+    "name": "济源市",
+    "adm1": "河南",
+    "adm2": "济源市",
+    "pinyin": "jiyuan",
+    "lon": 112.5739,
+    "lat": 35.1101
+  },
+  {
+    "id": "kaifeng",
+    "name": "开封市",
+    "adm1": "河南",
+    "adm2": "开封市",
+    "pinyin": "kaifeng",
+    "lon": 114.3542,
+    "lat": 34.7709
+  },
+  {
+    "id": "kashidiqu",
+    "name": "喀什地区",
+    "adm1": "新疆",
+    "adm2": "喀什地区",
+    "pinyin": "kashidiqu",
+    "lon": 78.5496,
+    "lat": 39.8356
+  },
+  {
+    "id": "kelamayi",
+    "name": "克拉玛依市",
+    "adm1": "新疆",
+    "adm2": "克拉玛依市",
+    "pinyin": "kelamayi",
+    "lon": 84.8947,
+    "lat": 45.5288
+  },
+  {
+    "id": "kunming",
+    "name": "昆明市",
+    "adm1": "云南",
+    "adm2": "昆明市",
+    "pinyin": "kunming",
+    "lon": 103.2017,
+    "lat": 24.9304
+  },
+  {
+    "id": "laibin",
+    "name": "来宾市",
+    "adm1": "广西",
+    "adm2": "来宾市",
+    "pinyin": "laibin",
+    "lon": 109.2439,
+    "lat": 23.7515
+  },
+  {
+    "id": "langfang",
+    "name": "廊坊市",
+    "adm1": "河北",
+    "adm2": "廊坊市",
+    "pinyin": "langfang",
+    "lon": 116.7089,
+    "lat": 39.5091
+  },
+  {
+    "id": "lanzhou",
+    "name": "兰州",
+    "adm1": "甘肃",
+    "adm2": "兰州",
+    "pinyin": "lanzhou",
+    "lon": 103.6604,
+    "lat": 36.0866
+  },
+  {
+    "id": "lasa",
+    "name": "拉萨市",
+    "adm1": "西藏",
+    "adm2": "拉萨市",
+    "pinyin": "lasa",
+    "lon": 91.0704,
+    "lat": 29.623
+  },
+  {
+    "id": "ledonglizuzizhixian",
+    "name": "乐东黎族自治县",
+    "adm1": "海南",
+    "adm2": "乐东黎族自治县",
+    "pinyin": "ledonglizuzizhixian",
+    "lon": 108.8312,
+    "lat": 18.5285
+  },
+  {
+    "id": "leshan",
+    "name": "乐山市",
+    "adm1": "四川",
+    "adm2": "乐山市",
+    "pinyin": "leshan",
+    "lon": 103.5213,
+    "lat": 29.585
+  },
+  {
+    "id": "lianyungang",
+    "name": "连云港市",
+    "adm1": "江苏",
+    "adm2": "连云港市",
+    "pinyin": "lianyungang",
+    "lon": 119.112,
+    "lat": 34.8785
+  },
+  {
+    "id": "liaocheng",
+    "name": "聊城市",
+    "adm1": "山东",
+    "adm2": "聊城市",
+    "pinyin": "liaocheng",
+    "lon": 115.944,
+    "lat": 36.4575
+  },
+  {
+    "id": "liaoyang",
+    "name": "辽阳市",
+    "adm1": "辽宁",
+    "adm2": "辽阳市",
+    "pinyin": "liaoyang",
+    "lon": 123.4288,
+    "lat": 41.1677
+  },
+  {
+    "id": "liaoyuan",
+    "name": "辽源市",
+    "adm1": "吉林",
+    "adm2": "辽源市",
+    "pinyin": "liaoyuan",
+    "lon": 125.0833,
+    "lat": 43.0972
+  },
+  {
+    "id": "lijiang",
+    "name": "丽江市",
+    "adm1": "云南",
+    "adm2": "丽江市",
+    "pinyin": "lijiang",
+    "lon": 100.2527,
+    "lat": 26.8107
+  },
+  {
+    "id": "lincang",
+    "name": "临沧市",
+    "adm1": "云南",
+    "adm2": "临沧市",
+    "pinyin": "lincang",
+    "lon": 100.1106,
+    "lat": 23.9312
+  },
+  {
+    "id": "linfen",
+    "name": "临汾市",
+    "adm1": "山西",
+    "adm2": "临汾市",
+    "pinyin": "linfen",
+    "lon": 111.5814,
+    "lat": 36.2535
+  },
+  {
+    "id": "lingaoxian",
+    "name": "临高县",
+    "adm1": "海南",
+    "adm2": "临高县",
+    "pinyin": "lingaoxian",
+    "lon": 109.7594,
+    "lat": 19.8678
+  },
+  {
+    "id": "lingshuilizuzizhixian",
+    "name": "陵水黎族自治县",
+    "adm1": "海南",
+    "adm2": "陵水黎族自治县",
+    "pinyin": "lingshuilizuzizhixian",
+    "lon": 110.0334,
+    "lat": 18.5359
+  },
+  {
+    "id": "linyi",
+    "name": "临沂市",
+    "adm1": "山东",
+    "adm2": "临沂市",
+    "pinyin": "linyi",
+    "lon": 118.3435,
+    "lat": 35.0368
+  },
+  {
+    "id": "lishui",
+    "name": "丽水市",
+    "adm1": "浙江",
+    "adm2": "丽水市",
+    "pinyin": "lishui",
+    "lon": 119.9539,
+    "lat": 28.4421
+  },
+  {
+    "id": "liuan",
+    "name": "六安市",
+    "adm1": "安徽",
+    "adm2": "六安市",
+    "pinyin": "liuan",
+    "lon": 115.9756,
+    "lat": 31.6259
+  },
+  {
+    "id": "liupanshui",
+    "name": "六盘水市",
+    "adm1": "贵州",
+    "adm2": "六盘水市",
+    "pinyin": "liupanshui",
+    "lon": 104.5037,
+    "lat": 26.0014
+  },
+  {
+    "id": "liuzhou",
+    "name": "柳州",
+    "adm1": "广西",
+    "adm2": "柳州",
+    "pinyin": "liuzhou",
+    "lon": 109.3883,
+    "lat": 24.3079
+  },
+  {
+    "id": "longnan",
+    "name": "陇南市",
+    "adm1": "甘肃",
+    "adm2": "陇南市",
+    "pinyin": "longnan",
+    "lon": 104.2343,
+    "lat": 34.2202
+  },
+  {
+    "id": "longyan",
+    "name": "龙岩市",
+    "adm1": "福建",
+    "adm2": "龙岩市",
+    "pinyin": "longyan",
+    "lon": 116.6799,
+    "lat": 25.5243
+  },
+  {
+    "id": "loudi",
+    "name": "娄底市",
+    "adm1": "湖南",
+    "adm2": "娄底市",
+    "pinyin": "loudi",
+    "lon": 111.676,
+    "lat": 27.6848
+  },
+  {
+    "id": "luohe",
+    "name": "漯河市",
+    "adm1": "河南",
+    "adm2": "漯河市",
+    "pinyin": "luohe",
+    "lon": 114.0437,
+    "lat": 33.5702
+  },
+  {
+    "id": "luoyang",
+    "name": "洛阳市",
+    "adm1": "河南",
+    "adm2": "洛阳市",
+    "pinyin": "luoyang",
+    "lon": 112.4363,
+    "lat": 34.686
+  },
+  {
+    "id": "lvliang",
+    "name": "吕梁市",
+    "adm1": "山西",
+    "adm2": "吕梁市",
+    "pinyin": "lvliang",
+    "lon": 111.0221,
+    "lat": 38.4938
+  },
+  {
+    "id": "maanshan",
+    "name": "马鞍山市",
+    "adm1": "安徽",
+    "adm2": "马鞍山市",
+    "pinyin": "maanshan",
+    "lon": 118.5409,
+    "lat": 31.6926
+  },
+  {
+    "id": "maoming",
+    "name": "茂名市",
+    "adm1": "广东",
+    "adm2": "茂名市",
+    "pinyin": "maoming",
+    "lon": 110.8892,
+    "lat": 21.896
+  },
+  {
+    "id": "meishan",
+    "name": "眉山市",
+    "adm1": "四川",
+    "adm2": "眉山市",
+    "pinyin": "meishan",
+    "lon": 103.8225,
+    "lat": 30.0666
+  },
+  {
+    "id": "meizhou",
+    "name": "梅州",
+    "adm1": "广东",
+    "adm2": "梅州",
+    "pinyin": "meizhou",
+    "lon": 116.5772,
+    "lat": 24.4095
+  },
+  {
+    "id": "mianyang",
+    "name": "绵阳市",
+    "adm1": "四川",
+    "adm2": "绵阳市",
+    "pinyin": "mianyang",
+    "lon": 104.7707,
+    "lat": 31.7809
+  },
+  {
+    "id": "mudanjiang",
+    "name": "牡丹江市",
+    "adm1": "黑龙江",
+    "adm2": "牡丹江市",
+    "pinyin": "mudanjiang",
+    "lon": 130.5419,
+    "lat": 44.927
+  },
+  {
+    "id": "nanchang",
+    "name": "南昌市",
+    "adm1": "江西",
+    "adm2": "南昌市",
+    "pinyin": "nanchang",
+    "lon": 115.9197,
+    "lat": 28.6619
+  },
+  {
+    "id": "nanchong",
+    "name": "南充市",
+    "adm1": "四川",
+    "adm2": "南充市",
+    "pinyin": "nanchong",
+    "lon": 105.9576,
+    "lat": 31.558
+  },
+  {
+    "id": "nanjing",
+    "name": "南京市",
+    "adm1": "江苏",
+    "adm2": "南京市",
+    "pinyin": "nanjing",
+    "lon": 118.7975,
+    "lat": 32.0871
+  },
+  {
+    "id": "nanning",
+    "name": "南宁市",
+    "adm1": "广西",
+    "adm2": "南宁市",
+    "pinyin": "nanning",
+    "lon": 108.4549,
+    "lat": 22.3675
+  },
+  {
+    "id": "nanping",
+    "name": "南平市",
+    "adm1": "福建",
+    "adm2": "南平市",
+    "pinyin": "nanping",
+    "lon": 118.0933,
+    "lat": 27.4731
+  },
+  {
+    "id": "nantong",
+    "name": "南通市",
+    "adm1": "江苏",
+    "adm2": "南通市",
+    "pinyin": "nantong",
+    "lon": 121.183,
+    "lat": 31.9264
+  },
+  {
+    "id": "nanyang",
+    "name": "南阳市",
+    "adm1": "河南",
+    "adm2": "南阳市",
+    "pinyin": "nanyang",
+    "lon": 112.0706,
+    "lat": 32.6838
+  },
+  {
+    "id": "naqu",
+    "name": "那曲市",
+    "adm1": "西藏",
+    "adm2": "那曲市",
+    "pinyin": "naqu",
+    "lon": 91.9909,
+    "lat": 31.4431
+  },
+  {
+    "id": "neijiang",
+    "name": "内江市",
+    "adm1": "四川",
+    "adm2": "内江市",
+    "pinyin": "neijiang",
+    "lon": 105.2807,
+    "lat": 29.3561
+  },
+  {
+    "id": "ningbo",
+    "name": "宁波市",
+    "adm1": "浙江",
+    "adm2": "宁波市",
+    "pinyin": "ningbo",
+    "lon": 121.4646,
+    "lat": 29.628
+  },
+  {
+    "id": "ningde",
+    "name": "宁德市",
+    "adm1": "福建",
+    "adm2": "宁德市",
+    "pinyin": "ningde",
+    "lon": 120.1891,
+    "lat": 27.2826
+  },
+  {
+    "id": "panjin",
+    "name": "盘锦市",
+    "adm1": "辽宁",
+    "adm2": "盘锦市",
+    "pinyin": "panjin",
+    "lon": 122.063,
+    "lat": 41.1978
+  },
+  {
+    "id": "panzhihua",
+    "name": "攀枝花市",
+    "adm1": "四川",
+    "adm2": "攀枝花市",
+    "pinyin": "panzhihua",
+    "lon": 101.8509,
+    "lat": 26.5437
+  },
+  {
+    "id": "pingdingshan",
+    "name": "平顶山市",
+    "adm1": "河南",
+    "adm2": "平顶山市",
+    "pinyin": "pingdingshan",
+    "lon": 113.3055,
+    "lat": 33.7187
+  },
+  {
+    "id": "pingliang",
+    "name": "平凉市",
+    "adm1": "甘肃",
+    "adm2": "平凉市",
+    "pinyin": "pingliang",
+    "lon": 106.7079,
+    "lat": 35.5507
+  },
+  {
+    "id": "pingxiang",
+    "name": "萍乡市",
+    "adm1": "江西",
+    "adm2": "萍乡市",
+    "pinyin": "pingxiang",
+    "lon": 113.8413,
+    "lat": 27.6471
+  },
+  {
+    "id": "putian",
+    "name": "莆田市",
+    "adm1": "福建",
+    "adm2": "莆田市",
+    "pinyin": "putian",
+    "lon": 119.0639,
+    "lat": 25.3507
+  },
+  {
+    "id": "puyang",
+    "name": "濮阳市",
+    "adm1": "河南",
+    "adm2": "濮阳市",
+    "pinyin": "puyang",
+    "lon": 115.0233,
+    "lat": 35.7414
+  },
+  {
+    "id": "qianjiang",
+    "name": "潜江市",
+    "adm1": "湖北",
+    "adm2": "潜江市",
+    "pinyin": "qianjiang",
+    "lon": 112.9393,
+    "lat": 30.3895
+  },
+  {
+    "id": "qingdao",
+    "name": "青岛市",
+    "adm1": "山东",
+    "adm2": "青岛市",
+    "pinyin": "qingdao",
+    "lon": 120.3939,
+    "lat": 36.4042
+  },
+  {
+    "id": "qingyang",
+    "name": "庆阳市",
+    "adm1": "甘肃",
+    "adm2": "庆阳市",
+    "pinyin": "qingyang",
+    "lon": 107.753,
+    "lat": 35.3139
+  },
+  {
+    "id": "qingyuan",
+    "name": "清远市",
+    "adm1": "广东",
+    "adm2": "清远市",
+    "pinyin": "qingyuan",
+    "lon": 113.0663,
+    "lat": 23.6536
+  },
+  {
+    "id": "qinhuangdao",
+    "name": "秦皇岛市",
+    "adm1": "河北",
+    "adm2": "秦皇岛市",
+    "pinyin": "qinhuangdao",
+    "lon": 119.4199,
+    "lat": 39.8513
+  },
+  {
+    "id": "qinzhou",
+    "name": "钦州",
+    "adm1": "广西",
+    "adm2": "钦州",
+    "pinyin": "qinzhou",
+    "lon": 108.6685,
+    "lat": 21.9795
+  },
+  {
+    "id": "qionghai",
+    "name": "琼海市",
+    "adm1": "海南",
+    "adm2": "琼海市",
+    "pinyin": "qionghai",
+    "lon": 110.4913,
+    "lat": 19.2404
+  },
+  {
+    "id": "qiqihaer",
+    "name": "齐齐哈尔市",
+    "adm1": "黑龙江",
+    "adm2": "齐齐哈尔市",
+    "pinyin": "qiqihaer",
+    "lon": 123.8151,
+    "lat": 47.1614
+  },
+  {
+    "id": "qitaihe",
+    "name": "七台河市",
+    "adm1": "黑龙江",
+    "adm2": "七台河市",
+    "pinyin": "qitaihe",
+    "lon": 130.5588,
+    "lat": 45.7553
+  },
+  {
+    "id": "quanzhou",
+    "name": "泉州",
+    "adm1": "福建",
+    "adm2": "泉州",
+    "pinyin": "quanzhou",
+    "lon": 118.4592,
+    "lat": 24.7943
+  },
+  {
+    "id": "qujing",
+    "name": "曲靖市",
+    "adm1": "云南",
+    "adm2": "曲靖市",
+    "pinyin": "qujing",
+    "lon": 104.2697,
+    "lat": 25.6817
+  },
+  {
+    "id": "quzhou",
+    "name": "衢州",
+    "adm1": "浙江",
+    "adm2": "衢州",
+    "pinyin": "quzhou",
+    "lon": 118.6442,
+    "lat": 28.7727
+  },
+  {
+    "id": "rikaze",
+    "name": "日喀则市",
+    "adm1": "西藏",
+    "adm2": "日喀则市",
+    "pinyin": "rikaze",
+    "lon": 88.9148,
+    "lat": 29.221
+  },
+  {
+    "id": "rizhao",
+    "name": "日照市",
+    "adm1": "山东",
+    "adm2": "日照市",
+    "pinyin": "rizhao",
+    "lon": 119.2776,
+    "lat": 35.1873
+  },
+  {
+    "id": "sanmenxia",
+    "name": "三门峡市",
+    "adm1": "河南",
+    "adm2": "三门峡市",
+    "pinyin": "sanmenxia",
+    "lon": 110.8971,
+    "lat": 34.5104
+  },
+  {
+    "id": "sanming",
+    "name": "三明市",
+    "adm1": "福建",
+    "adm2": "三明市",
+    "pinyin": "sanming",
+    "lon": 117.59,
+    "lat": 26.2283
+  },
+  {
+    "id": "sanya",
+    "name": "三亚市",
+    "adm1": "海南",
+    "adm2": "三亚市",
+    "pinyin": "sanya",
+    "lon": 109.4089,
+    "lat": 18.3091
+  },
+  {
+    "id": "shanghai",
+    "name": "上海市",
+    "adm1": "上海",
+    "adm2": "上海市",
+    "pinyin": "shanghai",
+    "lon": 121.4556,
+    "lat": 31.2496
+  },
+  {
+    "id": "shangluo",
+    "name": "商洛市",
+    "adm1": "陕西",
+    "adm2": "商洛市",
+    "pinyin": "shangluo",
+    "lon": 110.3543,
+    "lat": 33.6798
+  },
+  {
+    "id": "shangqiu",
+    "name": "商丘市",
+    "adm1": "河南",
+    "adm2": "商丘市",
+    "pinyin": "shangqiu",
+    "lon": 115.1408,
+    "lat": 34.6449
+  },
+  {
+    "id": "shangrao",
+    "name": "上饶市",
+    "adm1": "江西",
+    "adm2": "上饶市",
+    "pinyin": "shangrao",
+    "lon": 118.0068,
+    "lat": 28.4905
+  },
+  {
+    "id": "shantou",
+    "name": "汕头市",
+    "adm1": "广东",
+    "adm2": "汕头市",
+    "pinyin": "shantou",
+    "lon": 116.4221,
+    "lat": 23.3811
+  },
+  {
+    "id": "shanwei",
+    "name": "汕尾市",
+    "adm1": "广东",
+    "adm2": "汕尾市",
+    "pinyin": "shanwei",
+    "lon": 115.125,
+    "lat": 22.8128
+  },
+  {
+    "id": "shaoguan",
+    "name": "韶关市",
+    "adm1": "广东",
+    "adm2": "韶关市",
+    "pinyin": "shaoguan",
+    "lon": 113.3962,
+    "lat": 25.1135
+  },
+  {
+    "id": "shaoxing",
+    "name": "绍兴市",
+    "adm1": "浙江",
+    "adm2": "绍兴市",
+    "pinyin": "shaoxing",
+    "lon": 120.5796,
+    "lat": 30.0143
+  },
+  {
+    "id": "shaoyang",
+    "name": "邵阳市",
+    "adm1": "湖南",
+    "adm2": "邵阳市",
+    "pinyin": "shaoyang",
+    "lon": 110.6169,
+    "lat": 27.095
+  },
+  {
+    "id": "shenyang",
+    "name": "沈阳市",
+    "adm1": "辽宁",
+    "adm2": "沈阳市",
+    "pinyin": "shenyang",
+    "lon": 123.3498,
+    "lat": 41.8277
+  },
+  {
+    "id": "shenzhen",
+    "name": "深圳市",
+    "adm1": "广东",
+    "adm2": "深圳市",
+    "pinyin": "shenzhen",
+    "lon": 114.0572,
+    "lat": 22.5382
+  },
+  {
+    "id": "shihezi",
+    "name": "石河子市",
+    "adm1": "新疆",
+    "adm2": "石河子市",
+    "pinyin": "shihezi",
+    "lon": 86.0621,
+    "lat": 44.2682
+  },
+  {
+    "id": "shijiazhuang",
+    "name": "石家庄市",
+    "adm1": "河北",
+    "adm2": "石家庄市",
+    "pinyin": "shijiazhuang",
+    "lon": 114.4843,
+    "lat": 38.0105
+  },
+  {
+    "id": "shiyan",
+    "name": "十堰市",
+    "adm1": "湖北",
+    "adm2": "十堰市",
+    "pinyin": "shiyan",
+    "lon": 110.7816,
+    "lat": 32.6036
+  },
+  {
+    "id": "shizuishan",
+    "name": "石嘴山市",
+    "adm1": "宁夏",
+    "adm2": "石嘴山市",
+    "pinyin": "shizuishan",
+    "lon": 106.3935,
+    "lat": 39.028
+  },
+  {
+    "id": "shuangyashan",
+    "name": "双鸭山市",
+    "adm1": "黑龙江",
+    "adm2": "双鸭山市",
+    "pinyin": "shuangyashan",
+    "lon": 132.2015,
+    "lat": 46.3538
+  },
+  {
+    "id": "shuozhou",
+    "name": "朔州",
+    "adm1": "山西",
+    "adm2": "朔州",
+    "pinyin": "shuozhou",
+    "lon": 113.1625,
+    "lat": 39.794
+  },
+  {
+    "id": "siping",
+    "name": "四平市",
+    "adm1": "吉林",
+    "adm2": "四平市",
+    "pinyin": "siping",
+    "lon": 124.3735,
+    "lat": 43.1678
+  },
+  {
+    "id": "songyuan",
+    "name": "松原市",
+    "adm1": "吉林",
+    "adm2": "松原市",
+    "pinyin": "songyuan",
+    "lon": 126.0039,
+    "lat": 45.0079
+  },
+  {
+    "id": "suihua",
+    "name": "绥化市",
+    "adm1": "黑龙江",
+    "adm2": "绥化市",
+    "pinyin": "suihua",
+    "lon": 125.3232,
+    "lat": 46.4018
+  },
+  {
+    "id": "suining",
+    "name": "遂宁市",
+    "adm1": "四川",
+    "adm2": "遂宁市",
+    "pinyin": "suining",
+    "lon": 105.2802,
+    "lat": 30.5677
+  },
+  {
+    "id": "suizhou",
+    "name": "随州",
+    "adm1": "湖北",
+    "adm2": "随州",
+    "pinyin": "suizhou",
+    "lon": 114.0368,
+    "lat": 31.6319
+  },
+  {
+    "id": "suqian",
+    "name": "宿迁市",
+    "adm1": "江苏",
+    "adm2": "宿迁市",
+    "pinyin": "suqian",
+    "lon": 118.2818,
+    "lat": 33.8747
+  },
+  {
+    "id": "suzhou",
+    "name": "苏州",
+    "adm1": "江苏",
+    "adm2": "苏州",
+    "pinyin": "suzhou",
+    "lon": 120.9576,
+    "lat": 31.3662
+  },
+  {
+    "id": "suzhou",
+    "name": "宿州",
+    "adm1": "安徽",
+    "adm2": "宿州",
+    "pinyin": "suzhou",
+    "lon": 116.3036,
+    "lat": 34.3866
+  },
+  {
+    "id": "tachengdiqu",
+    "name": "塔城地区",
+    "adm1": "新疆",
+    "adm2": "塔城地区",
+    "pinyin": "tachengdiqu",
+    "lon": 86.2751,
+    "lat": 46.4084
+  },
+  {
+    "id": "taian",
+    "name": "泰安市",
+    "adm1": "山东",
+    "adm2": "泰安市",
+    "pinyin": "taian",
+    "lon": 117.0357,
+    "lat": 36.1729
+  },
+  {
+    "id": "taiyuan",
+    "name": "太原市",
+    "adm1": "山西",
+    "adm2": "太原市",
+    "pinyin": "taiyuan",
+    "lon": 112.598,
+    "lat": 37.8013
+  },
+  {
+    "id": "taizhou",
+    "name": "台州",
+    "adm1": "浙江",
+    "adm2": "台州",
+    "pinyin": "taizhou",
+    "lon": 121.3628,
+    "lat": 29.0551
+  },
+  {
+    "id": "taizhou",
+    "name": "泰州",
+    "adm1": "江苏",
+    "adm2": "泰州",
+    "pinyin": "taizhou",
+    "lon": 119.9805,
+    "lat": 32.5289
+  },
+  {
+    "id": "tangshan",
+    "name": "唐山市",
+    "adm1": "河北",
+    "adm2": "唐山市",
+    "pinyin": "tangshan",
+    "lon": 118.5906,
+    "lat": 39.2179
+  },
+  {
+    "id": "tianjin",
+    "name": "天津市",
+    "adm1": "天津",
+    "adm2": "天津市",
+    "pinyin": "tianjin",
+    "lon": 117.2101,
+    "lat": 39.136
+  },
+  {
+    "id": "tianmen",
+    "name": "天门市",
+    "adm1": "湖北",
+    "adm2": "天门市",
+    "pinyin": "tianmen",
+    "lon": 113.4565,
+    "lat": 30.4275
+  },
+  {
+    "id": "tianshui",
+    "name": "天水市",
+    "adm1": "甘肃",
+    "adm2": "天水市",
+    "pinyin": "tianshui",
+    "lon": 106.5401,
+    "lat": 34.4424
+  },
+  {
+    "id": "tieling",
+    "name": "铁岭市",
+    "adm1": "辽宁",
+    "adm2": "铁岭市",
+    "pinyin": "tieling",
+    "lon": 124.118,
+    "lat": 42.7789
+  },
+  {
+    "id": "tonghua",
+    "name": "通化市",
+    "adm1": "吉林",
+    "adm2": "通化市",
+    "pinyin": "tonghua",
+    "lon": 126.2041,
+    "lat": 41.1357
+  },
+  {
+    "id": "tongliao",
+    "name": "通辽市",
+    "adm1": "内蒙古",
+    "adm2": "通辽市",
+    "pinyin": "tongliao",
+    "lon": 119.6693,
+    "lat": 45.5352
+  },
+  {
+    "id": "tongling",
+    "name": "铜陵市",
+    "adm1": "安徽",
+    "adm2": "铜陵市",
+    "pinyin": "tongling",
+    "lon": 117.8614,
+    "lat": 30.9187
+  },
+  {
+    "id": "tongren",
+    "name": "铜仁市",
+    "adm1": "贵州",
+    "adm2": "铜仁市",
+    "pinyin": "tongren",
+    "lon": 108.9733,
+    "lat": 28.0765
+  },
+  {
+    "id": "tulufan",
+    "name": "吐鲁番市",
+    "adm1": "新疆",
+    "adm2": "吐鲁番市",
+    "pinyin": "tulufan",
+    "lon": 90.1961,
+    "lat": 42.9187
+  },
+  {
+    "id": "wanning",
+    "name": "万宁市",
+    "adm1": "海南",
+    "adm2": "万宁市",
+    "pinyin": "wanning",
+    "lon": 110.3077,
+    "lat": 18.7248
+  },
+  {
+    "id": "weifang",
+    "name": "潍坊市",
+    "adm1": "山东",
+    "adm2": "潍坊市",
+    "pinyin": "weifang",
+    "lon": 119.0983,
+    "lat": 36.697
+  },
+  {
+    "id": "weihai",
+    "name": "威海市",
+    "adm1": "山东",
+    "adm2": "威海市",
+    "pinyin": "weihai",
+    "lon": 122.4079,
+    "lat": 37.1453
+  },
+  {
+    "id": "weinan",
+    "name": "渭南市",
+    "adm1": "陕西",
+    "adm2": "渭南市",
+    "pinyin": "weinan",
+    "lon": 109.9263,
+    "lat": 34.8341
+  },
+  {
+    "id": "wenchang",
+    "name": "文昌市",
+    "adm1": "海南",
+    "adm2": "文昌市",
+    "pinyin": "wenchang",
+    "lon": 110.7375,
+    "lat": 19.6062
+  },
+  {
+    "id": "wenshanzhuangzumiaozuzizhizhou",
+    "name": "文山壮族苗族自治州",
+    "adm1": "云南",
+    "adm2": "文山壮族苗族自治州",
+    "pinyin": "wenshanzhuangzumiaozuzizhizhou",
+    "lon": 105.5843,
+    "lat": 23.6744
+  },
+  {
+    "id": "wenzhou",
+    "name": "温州",
+    "adm1": "浙江",
+    "adm2": "温州",
+    "pinyin": "wenzhou",
+    "lon": 120.412,
+    "lat": 27.5279
+  },
+  {
+    "id": "wuhai",
+    "name": "乌海市",
+    "adm1": "内蒙古",
+    "adm2": "乌海市",
+    "pinyin": "wuhai",
+    "lon": 106.7377,
+    "lat": 39.4552
+  },
+  {
+    "id": "wuhan",
+    "name": "武汉市",
+    "adm1": "湖北",
+    "adm2": "武汉市",
+    "pinyin": "wuhan",
+    "lon": 114.4243,
+    "lat": 30.6067
+  },
+  {
+    "id": "wuhu",
+    "name": "芜湖市",
+    "adm1": "安徽",
+    "adm2": "芜湖市",
+    "pinyin": "wuhu",
+    "lon": 118.3916,
+    "lat": 31.348
+  },
+  {
+    "id": "wulanchabu",
+    "name": "乌兰察布市",
+    "adm1": "内蒙古",
+    "adm2": "乌兰察布市",
+    "pinyin": "wulanchabu",
+    "lon": 113.1636,
+    "lat": 40.4353
+  },
+  {
+    "id": "wulumuqi",
+    "name": "乌鲁木齐市",
+    "adm1": "新疆",
+    "adm2": "乌鲁木齐市",
+    "pinyin": "wulumuqi",
+    "lon": 87.5294,
+    "lat": 43.8406
+  },
+  {
+    "id": "wuwei",
+    "name": "武威市",
+    "adm1": "甘肃",
+    "adm2": "武威市",
+    "pinyin": "wuwei",
+    "lon": 102.6239,
+    "lat": 37.9036
+  },
+  {
+    "id": "wuxi",
+    "name": "无锡市",
+    "adm1": "江苏",
+    "adm2": "无锡市",
+    "pinyin": "wuxi",
+    "lon": 120.3063,
+    "lat": 31.5881
+  },
+  {
+    "id": "wuzhong",
+    "name": "吴忠市",
+    "adm1": "宁夏",
+    "adm2": "吴忠市",
+    "pinyin": "wuzhong",
+    "lon": 105.9332,
+    "lat": 37.9185
+  },
+  {
+    "id": "wuzhou",
+    "name": "梧州",
+    "adm1": "广西",
+    "adm2": "梧州",
+    "pinyin": "wuzhou",
+    "lon": 111.2407,
+    "lat": 23.487
+  },
+  {
+    "id": "xiamen",
+    "name": "厦门市",
+    "adm1": "福建",
+    "adm2": "厦门市",
+    "pinyin": "xiamen",
+    "lon": 118.1162,
+    "lat": 24.4676
+  },
+  {
+    "id": "xian",
+    "name": "西安市",
+    "adm1": "陕西",
+    "adm2": "西安市",
+    "pinyin": "xian",
+    "lon": 108.9618,
+    "lat": 34.2776
+  },
+  {
+    "id": "xiangtan",
+    "name": "湘潭市",
+    "adm1": "湖南",
+    "adm2": "湘潭市",
+    "pinyin": "xiangtan",
+    "lon": 112.5299,
+    "lat": 27.9205
+  },
+  {
+    "id": "xiangyang",
+    "name": "襄阳市",
+    "adm1": "湖北",
+    "adm2": "襄阳市",
+    "pinyin": "xiangyang",
+    "lon": 112.1562,
+    "lat": 32.0579
+  },
+  {
+    "id": "xianning",
+    "name": "咸宁市",
+    "adm1": "湖北",
+    "adm2": "咸宁市",
+    "pinyin": "xianning",
+    "lon": 113.93,
+    "lat": 29.7217
+  },
+  {
+    "id": "xiantao",
+    "name": "仙桃市",
+    "adm1": "湖北",
+    "adm2": "仙桃市",
+    "pinyin": "xiantao",
+    "lon": 113.5074,
+    "lat": 30.3209
+  },
+  {
+    "id": "xianyang",
+    "name": "咸阳市",
+    "adm1": "陕西",
+    "adm2": "咸阳市",
+    "pinyin": "xianyang",
+    "lon": 108.1249,
+    "lat": 35.0355
+  },
+  {
+    "id": "xiaogan",
+    "name": "孝感市",
+    "adm1": "湖北",
+    "adm2": "孝感市",
+    "pinyin": "xiaogan",
+    "lon": 113.6959,
+    "lat": 31.2575
+  },
+  {
+    "id": "xilinguolemeng",
+    "name": "锡林郭勒盟",
+    "adm1": "内蒙古",
+    "adm2": "锡林郭勒盟",
+    "pinyin": "xilinguolemeng",
+    "lon": 116.0277,
+    "lat": 43.9192
+  },
+  {
+    "id": "xinganmeng",
+    "name": "兴安盟",
+    "adm1": "内蒙古",
+    "adm2": "兴安盟",
+    "pinyin": "xinganmeng",
+    "lon": 119.9475,
+    "lat": 47.1727
+  },
+  {
+    "id": "xingtai",
+    "name": "邢台市",
+    "adm1": "河北",
+    "adm2": "邢台市",
+    "pinyin": "xingtai",
+    "lon": 115.714,
+    "lat": 36.9278
+  },
+  {
+    "id": "xining",
+    "name": "西宁市",
+    "adm1": "青海",
+    "adm2": "西宁市",
+    "pinyin": "xining",
+    "lon": 101.8143,
+    "lat": 36.6202
+  },
+  {
+    "id": "xinxiang",
+    "name": "新乡市",
+    "adm1": "河南",
+    "adm2": "新乡市",
+    "pinyin": "xinxiang",
+    "lon": 113.8596,
+    "lat": 35.3066
+  },
+  {
+    "id": "xinyang",
+    "name": "信阳市",
+    "adm1": "河南",
+    "adm2": "信阳市",
+    "pinyin": "xinyang",
+    "lon": 115.6694,
+    "lat": 31.9151
+  },
+  {
+    "id": "xinyu",
+    "name": "新余市",
+    "adm1": "江西",
+    "adm2": "新余市",
+    "pinyin": "xinyu",
+    "lon": 114.6633,
+    "lat": 27.8052
+  },
+  {
+    "id": "xinzhou",
+    "name": "忻州",
+    "adm1": "山西",
+    "adm2": "忻州",
+    "pinyin": "xinzhou",
+    "lon": 113.1011,
+    "lat": 38.601
+  },
+  {
+    "id": "xuancheng",
+    "name": "宣城市",
+    "adm1": "安徽",
+    "adm2": "宣城市",
+    "pinyin": "xuancheng",
+    "lon": 118.5716,
+    "lat": 30.0712
+  },
+  {
+    "id": "xuchang",
+    "name": "许昌市",
+    "adm1": "河南",
+    "adm2": "许昌市",
+    "pinyin": "xuchang",
+    "lon": 113.7353,
+    "lat": 34.2506
+  },
+  {
+    "id": "xuzhou",
+    "name": "徐州",
+    "adm1": "江苏",
+    "adm2": "徐州",
+    "pinyin": "xuzhou",
+    "lon": 117.937,
+    "lat": 33.9525
+  },
+  {
+    "id": "yaan",
+    "name": "雅安市",
+    "adm1": "四川",
+    "adm2": "雅安市",
+    "pinyin": "yaan",
+    "lon": 102.9057,
+    "lat": 29.2327
+  },
+  {
+    "id": "yanan",
+    "name": "延安市",
+    "adm1": "陕西",
+    "adm2": "延安市",
+    "pinyin": "yanan",
+    "lon": 109.3899,
+    "lat": 35.5806
+  },
+  {
+    "id": "yanbianchaoxianzuzizhizhou",
+    "name": "延边朝鲜族自治州",
+    "adm1": "吉林",
+    "adm2": "延边朝鲜族自治州",
+    "pinyin": "yanbianchaoxianzuzizhizhou",
+    "lon": 128.1337,
+    "lat": 42.4531
+  },
+  {
+    "id": "yancheng",
+    "name": "盐城市",
+    "adm1": "江苏",
+    "adm2": "盐城市",
+    "pinyin": "yancheng",
+    "lon": 119.9388,
+    "lat": 33.7988
+  },
+  {
+    "id": "yangjiang",
+    "name": "阳江市",
+    "adm1": "广东",
+    "adm2": "阳江市",
+    "pinyin": "yangjiang",
+    "lon": 111.7615,
+    "lat": 22.1894
+  },
+  {
+    "id": "yangquan",
+    "name": "阳泉市",
+    "adm1": "山西",
+    "adm2": "阳泉市",
+    "pinyin": "yangquan",
+    "lon": 113.592,
+    "lat": 37.8568
+  },
+  {
+    "id": "yangzhou",
+    "name": "扬州",
+    "adm1": "江苏",
+    "adm2": "扬州",
+    "pinyin": "yangzhou",
+    "lon": 119.3509,
+    "lat": 32.3896
+  },
+  {
+    "id": "yantai",
+    "name": "烟台市",
+    "adm1": "山东",
+    "adm2": "烟台市",
+    "pinyin": "yantai",
+    "lon": 120.5223,
+    "lat": 37.6194
+  },
+  {
+    "id": "yibin",
+    "name": "宜宾市",
+    "adm1": "四川",
+    "adm2": "宜宾市",
+    "pinyin": "yibin",
+    "lon": 105.2477,
+    "lat": 28.3348
+  },
+  {
+    "id": "yichang",
+    "name": "宜昌市",
+    "adm1": "湖北",
+    "adm2": "宜昌市",
+    "pinyin": "yichang",
+    "lon": 111.8124,
+    "lat": 30.8476
+  },
+  {
+    "id": "yichun",
+    "name": "宜春市",
+    "adm1": "江西",
+    "adm2": "宜春市",
+    "pinyin": "yichun",
+    "lon": 115.3858,
+    "lat": 28.4708
+  },
+  {
+    "id": "yichun",
+    "name": "伊春市",
+    "adm1": "黑龙江",
+    "adm2": "伊春市",
+    "pinyin": "yichun",
+    "lon": 129.49,
+    "lat": 46.9753
+  },
+  {
+    "id": "yinchuan",
+    "name": "银川市",
+    "adm1": "宁夏",
+    "adm2": "银川市",
+    "pinyin": "yinchuan",
+    "lon": 106.2741,
+    "lat": 38.7406
+  },
+  {
+    "id": "yingkou",
+    "name": "营口市",
+    "adm1": "辽宁",
+    "adm2": "营口市",
+    "pinyin": "yingkou",
+    "lon": 122.0944,
+    "lat": 40.188
+  },
+  {
+    "id": "yingtan",
+    "name": "鹰潭市",
+    "adm1": "江西",
+    "adm2": "鹰潭市",
+    "pinyin": "yingtan",
+    "lon": 117.0274,
+    "lat": 28.2353
+  },
+  {
+    "id": "yiyang",
+    "name": "益阳市",
+    "adm1": "湖南",
+    "adm2": "益阳市",
+    "pinyin": "yiyang",
+    "lon": 112.3422,
+    "lat": 28.5381
+  },
+  {
+    "id": "yongzhou",
+    "name": "永州",
+    "adm1": "湖南",
+    "adm2": "永州",
+    "pinyin": "yongzhou",
+    "lon": 111.3378,
+    "lat": 26.3785
+  },
+  {
+    "id": "yueyang",
+    "name": "岳阳市",
+    "adm1": "湖南",
+    "adm2": "岳阳市",
+    "pinyin": "yueyang",
+    "lon": 113.1198,
+    "lat": 29.3766
+  },
+  {
+    "id": "yulin",
+    "name": "榆林市",
+    "adm1": "陕西",
+    "adm2": "榆林市",
+    "pinyin": "yulin",
+    "lon": 107.5764,
+    "lat": 37.5617
+  },
+  {
+    "id": "yulin",
+    "name": "玉林市",
+    "adm1": "广西",
+    "adm2": "玉林市",
+    "pinyin": "yulin",
+    "lon": 109.994,
+    "lat": 22.2314
+  },
+  {
+    "id": "yuncheng",
+    "name": "运城市",
+    "adm1": "山西",
+    "adm2": "运城市",
+    "pinyin": "yuncheng",
+    "lon": 110.3106,
+    "lat": 34.6316
+  },
+  {
+    "id": "yunfu",
+    "name": "云浮市",
+    "adm1": "广东",
+    "adm2": "云浮市",
+    "pinyin": "yunfu",
+    "lon": 111.4697,
+    "lat": 23.2454
+  },
+  {
+    "id": "yuxi",
+    "name": "玉溪市",
+    "adm1": "云南",
+    "adm2": "玉溪市",
+    "pinyin": "yuxi",
+    "lon": 102.6685,
+    "lat": 24.1164
+  },
+  {
+    "id": "zaozhuang",
+    "name": "枣庄市",
+    "adm1": "山东",
+    "adm2": "枣庄市",
+    "pinyin": "zaozhuang",
+    "lon": 117.2564,
+    "lat": 35.09
+  },
+  {
+    "id": "zhangjiajie",
+    "name": "张家界市",
+    "adm1": "湖南",
+    "adm2": "张家界市",
+    "pinyin": "zhangjiajie",
+    "lon": 111.1191,
+    "lat": 29.417
+  },
+  {
+    "id": "zhangjiakou",
+    "name": "张家口市",
+    "adm1": "河北",
+    "adm2": "张家口市",
+    "pinyin": "zhangjiakou",
+    "lon": 114.4156,
+    "lat": 40.6702
+  },
+  {
+    "id": "zhangye",
+    "name": "张掖市",
+    "adm1": "甘肃",
+    "adm2": "张掖市",
+    "pinyin": "zhangye",
+    "lon": 100.5197,
+    "lat": 38.9743
+  },
+  {
+    "id": "zhangzhou",
+    "name": "漳州",
+    "adm1": "福建",
+    "adm2": "漳州",
+    "pinyin": "zhangzhou",
+    "lon": 117.3612,
+    "lat": 23.8917
+  },
+  {
+    "id": "zhanjiang",
+    "name": "湛江市",
+    "adm1": "广东",
+    "adm2": "湛江市",
+    "pinyin": "zhanjiang",
+    "lon": 110.3875,
+    "lat": 21.1866
+  },
+  {
+    "id": "zhaoqing",
+    "name": "肇庆市",
+    "adm1": "广东",
+    "adm2": "肇庆市",
+    "pinyin": "zhaoqing",
+    "lon": 112.1599,
+    "lat": 23.8926
+  },
+  {
+    "id": "zhaotong",
+    "name": "昭通市",
+    "adm1": "云南",
+    "adm2": "昭通市",
+    "pinyin": "zhaotong",
+    "lon": 103.7912,
+    "lat": 27.3855
+  },
+  {
+    "id": "zhaoyang",
+    "name": "朝阳市",
+    "adm1": "辽宁",
+    "adm2": "朝阳市",
+    "pinyin": "zhaoyang",
+    "lon": 120.7886,
+    "lat": 41.7683
+  },
+  {
+    "id": "zhengzhou",
+    "name": "郑州",
+    "adm1": "河南",
+    "adm2": "郑州",
+    "pinyin": "zhengzhou",
+    "lon": 113.6581,
+    "lat": 34.7458
+  },
+  {
+    "id": "zhenjiang",
+    "name": "镇江市",
+    "adm1": "江苏",
+    "adm2": "镇江市",
+    "pinyin": "zhenjiang",
+    "lon": 119.5928,
+    "lat": 32.0018
+  },
+  {
+    "id": "zhongshan",
+    "name": "中山市",
+    "adm1": "广东",
+    "adm2": "中山市",
+    "pinyin": "zhongshan",
+    "lon": 113.4328,
+    "lat": 22.5443
+  },
+  {
+    "id": "zhongwei",
+    "name": "中卫市",
+    "adm1": "宁夏",
+    "adm2": "中卫市",
+    "pinyin": "zhongwei",
+    "lon": 104.5255,
+    "lat": 37.455
+  },
+  {
+    "id": "zhoukou",
+    "name": "周口市",
+    "adm1": "河南",
+    "adm2": "周口市",
+    "pinyin": "zhoukou",
+    "lon": 115.1072,
+    "lat": 33.4229
+  },
+  {
+    "id": "zhuhai",
+    "name": "珠海市",
+    "adm1": "广东",
+    "adm2": "珠海市",
+    "pinyin": "zhuhai",
+    "lon": 113.5495,
+    "lat": 22.2154
+  },
+  {
+    "id": "zhumadian",
+    "name": "驻马店市",
+    "adm1": "河南",
+    "adm2": "驻马店市",
+    "pinyin": "zhumadian",
+    "lon": 114.0426,
+    "lat": 32.979
+  },
+  {
+    "id": "zhuzhou",
+    "name": "株洲市",
+    "adm1": "湖南",
+    "adm2": "株洲市",
+    "pinyin": "zhuzhou",
+    "lon": 113.5498,
+    "lat": 26.8104
+  },
+  {
+    "id": "zibo",
+    "name": "淄博市",
+    "adm1": "山东",
+    "adm2": "淄博市",
+    "pinyin": "zibo",
+    "lon": 118.0576,
+    "lat": 36.7889
+  },
+  {
+    "id": "zigong",
+    "name": "自贡市",
+    "adm1": "四川",
+    "adm2": "自贡市",
+    "pinyin": "zigong",
+    "lon": 104.7914,
+    "lat": 29.3559
+  },
+  {
+    "id": "ziyang",
+    "name": "资阳市",
+    "adm1": "四川",
+    "adm2": "资阳市",
+    "pinyin": "ziyang",
+    "lon": 104.6823,
+    "lat": 30.1256
+  },
+  {
+    "id": "zunyi",
+    "name": "遵义市",
+    "adm1": "贵州",
+    "adm2": "遵义市",
+    "pinyin": "zunyi",
+    "lon": 106.8309,
+    "lat": 28.3856
+  }
+]

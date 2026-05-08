@@ -1,0 +1,59 @@
+{
+  "app": "theme_store",
+  "appDir": "apps/ThemeStore",
+  "mode": "schema",
+  "routeCount": 2,
+  "edgeCount": 1,
+  "nodes": [
+    {
+      "id": "/",
+      "routePath": "/",
+      "component": "ThemeStoreHomePage",
+      "entryPoint": true,
+      "entry": {
+        "kind": "home",
+        "home": true,
+        "deepLink": false
+      },
+      "description": "主题商店首页",
+      "stateCount": 1,
+      "states": [
+        "/"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/item/:kind/:id",
+      "routePath": "/item/:kind/:id",
+      "component": "StoreItemDetailPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "deepLink",
+        "home": false,
+        "deepLink": true
+      },
+      "description": "主题详情页",
+      "stateCount": 1,
+      "states": [
+        "/item/:kind/:id"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    }
+  ],
+  "edges": [
+    {
+      "source": "/",
+      "target": "/item/:kind/:id",
+      "transitions": [
+        "item.open"
+      ],
+      "type": "navigation",
+      "label": "item.open",
+      "id": "item.open"
+    }
+  ]
+}

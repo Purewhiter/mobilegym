@@ -1,0 +1,616 @@
+<Widget version="1" screenWidth="1080" resDensity="480" scaleByDensity="false" frameRate="0" extraResources="sw1440:den560:1">
+    <VariableBinders>
+        <!-- ************************************* 调用api得到的变量 ************************************************ -->
+        <ContentProviderBinder name="weather_version_provider_dm231d" uri="content://weather/weatherVersionData" columns="weather_version">
+            <Variable name="weather_version_dm231d" type="string" column="weather_version"/>
+            <Trigger>
+                <VariableCommand name="isNewVersion_dm231d" expression="ifelse(len(@weather_version_dm231d)==8,ifelse(int(@weather_version_dm231d)}=16000400,1,0),len(@weather_version_dm231d)==9,ifelse(int(@weather_version_dm231d)}=160004000,1,0),0)"/>
+            </Trigger>
+        </ContentProviderBinder>
+        <ContentProviderBinder name="weather_provider_dm231d" uriFormat="content://weather/weatherData/4/%s" uriParas="@localId_dm231d" columns="city_id,temperature,weather_type,description,city_name,tmphighs,tmplows" countName="hasweather">
+            <Variable name="cityId_dm231d" type="string" column="city_id"/>
+            <Variable name="weather_location_dm231d" type="string" column="city_name"/>
+            <!-- 天气类型（实时）数字 -->
+            <Variable name="weather_id_raw" type="string[]" column="weather_type"/>
+            <Variable name="weather_temperatures_dm231d" type="int" column="temperature"/>
+            <!-- 天气现象（实时）：晴 -->
+            <Variable name="weather_description_dm231d" type="string" column="description"/>
+            <Variable name="weather_temphigh_dm231d" type="string[]" column="tmphighs"/>
+            <Variable name="weather_templow_dm231d" type="string[]" column="tmplows"/>
+            <Variable name="weather_aqi_dm231d" type="int" column="aqilevel"/>
+            <Trigger>
+                <VariableCommand name="weather_temperature_dm231d" expression="#weather_temperatures_dm231d" type="number"/>
+                <VariableCommand name="weather_degree_dm231d" expression="@weather_temphigh_dm231d[0]+'°/'+@weather_templow_dm231d[0]+'°'" type="string"/>
+                <LoopCommand count="6" indexName="i">
+                    <VariableCommand name="state.temphighList" expression="@weather_temphigh_dm231d[#i]" type="string[]" index="#i"/>
+                    <VariableCommand name="state.templowList" expression="@weather_templow_dm231d[#i]" type="string[]" index="#i"/>
+                    <VariableCommand name="state.weatherIdRaw" expression="@weather_id_raw[#i]" type="string[]" index="#i"/>
+                    <VariableCommand name="state.temphighListString" expression="@weather_temphigh_dm231d[#i+1]+'°'" type="string[]" index="#i"/>
+                    <VariableCommand name="state.tempLowListString" expression="@weather_templow_dm231d[#i+1]+'°'" type="string[]" index="#i"/>
+                    <VariableCommand name="state.temDegreeList" expression="@weather_temphigh_dm231d[#i+1]+'°/'+@weather_templow_dm231d[#i+1]+'°'" type="string[]" index="#i"/>
+                    <VariableCommand name="state.weatherIdList" expression="@weather_id_raw[#i+1]" type="string[]" index="#i"/>
+                    <VariableCommand name="state.timeList" expression="ifelse(@flag_display_weekday!='1',formatDate('MM-dd',#time_sys+86400000*(#i+1)),@flag_display_weekday=='1'**#i==0,@tomorrow_i18n,formatDate('E',#time_sys+86400000*(#i+1)))" type="string[]" index="#i"/>
+                </LoopCommand>
+                <VariableCommand name="weather_id_dm231d" expression="int(@weather_id_raw[0])"/>
+                <!-- 用于天气图标展示 -->
+                <VariableCommand name="weather_id_4ico_dm231d" expression="ifelse(#weather_id_dm231d}25||#weather_id_dm231d{0,0,#weather_id_dm231d}=5**#weather_id_dm231d{=6||#weather_id_dm231d==9,4,#weather_id_dm231d==8,11,#weather_id_dm231d==25,25,#weather_id_dm231d==13||#weather_id_dm231d==15,15,#weather_id_dm231d==16,13,#weather_id_dm231d==14||#weather_id_dm231d==17,17,#weather_id_dm231d==20||#weather_id_dm231d==21||#weather_id_dm231d==19,18,#weather_id_dm231d==23,20,#weather_id_dm231d)"/>
+                <!-- 用于天色展示 -->
+                <!-- 4阴天  5雾  6雨（4-12）  7雪（13-17）  8沙尘（20、21、23）9沙尘暴、强沙尘暴（18、19） 10霾  11冰雹、冻雨 -->
+                <VariableCommand name="weather_id_4bg_dm231d" expression="ifelse(#weather_id_dm231d}25||#weather_id_dm231d{0,0,#weather_id_dm231d==2,4,#weather_id_dm231d==3,5,#weather_id_dm231d}=4**#weather_id_dm231d{=12,6,#weather_id_dm231d}=13**#weather_id_dm231d{=17,7,#weather_id_dm231d==20||#weather_id_dm231d==21,8,#weather_id_dm231d==18||#weather_id_dm231d==19,9,#weather_id_dm231d==23||#weather_id_dm231d==24,10,#weather_id_dm231d==22||#weather_id_dm231d==25,11,#weather_id_dm231d)"/>
+            </Trigger>
+        </ContentProviderBinder>
+        <ContentProviderBinder name="hourly_weather_provider_dm231d" uriFormat="content://weather/hourlyData/4/%s" uriParas="@localId_dm231d" columns="sunrise,sunset" countName="hashourlydata">
+            <!-- 日出日落时间 -->
+            <Variable name="weather_sunrise_dm231d" type="int" column="sunrise"/>
+            <Variable name="weather_sunset_dm231d" type="int" column="sunset"/>
+            <Trigger>
+                <!-- 得到日出日落的时间戳 -->
+                <VariableCommand name="sunrise_time_dm231d" expression="#weather_sunrise_dm231d+#time0_dm231d" type="number"/>
+                <VariableCommand name="sunset_time_dm231d" expression="#weather_sunset_dm231d+#time0_dm231d" type="number"/>
+                <VariableCommand name="sunset_time_yesterday_dm231d" expression="#sunset_time_dm231d-86400000" type="number"/>
+                <VariableCommand name="H12_dm231d" expression="(#sunset_time_dm231d-#sunrise_time_dm231d)/12" type="number"/>
+                <VariableCommand name="H6_dm231d" expression="(#sunset_time_dm231d-#sunrise_time_dm231d)/6" type="number"/>
+                <VariableCommand name="h3_dm231d" expression="(#sunrise_time_dm231d-#sunset_time_yesterday_dm231d)/3" type="number"/>
+                <VariableCommand name="h4_dm231d" expression="(#sunrise_time_dm231d-#sunset_time_yesterday_dm231d)/4" type="number"/>
+                <VariableCommand name="h12_dm231d" expression="(#sunrise_time_dm231d-#sunset_time_yesterday_dm231d)/12" type="number"/>
+                <VariableCommand name="h36_dm231d" expression="(#sunrise_time_dm231d-#sunset_time_yesterday_dm231d)/36" type="number"/>
+            </Trigger>
+        </ContentProviderBinder>
+    </VariableBinders>
+    <Var name="HIDE_PAD_EDITABLE" expression="1" type="number" const="true"/>
+    <!-- 状态管理 -->
+    <Var name="state.rot" expression="10" type="number" const="true"/>
+    <Var name="state.PI" expression="3.141592653589793" type="number" const="true"/>
+    <Var name="state.scale" expression="#view_width/334"/>
+    <Var name="state.scaleY" expression="#view_height/150"/>
+    <Var name="state.aniCount" expression="0" type="number"/>
+    <Var name="state.weather_description" expression="@weather_description_dm231d" type="string"/>
+    <Var name="state.temphighList" size="6" type="string[]"/>
+    <Var name="state.templowList" size="6" type="string[]"/>
+    <Var name="state.temphighListString" size="6" type="string[]"/>
+    <Var name="state.tempLowListString" size="6" type="string[]"/>
+    <Var name="state.weatherIdRaw" size="6" type="string[]"/>
+    <Var name="state.temDegreeList" size="6" type="string[]"/>
+    <Var name="state.weatherIdList" size="6" type="string[]"/>
+    <Var name="state.timeList" size="6" type="string[]"/>
+    <Var name="state.loading" expression="0" const="true"/>
+    <!-- 接口 -->
+    <Group name="api">
+        <!-- 有可能被复用的命令 -->
+        <Group name="my_commands_dm231d">
+            <Triggers>
+                <Trigger action="update_data">
+                    <BinderCommand name="weather_provider_dm231d" command="refresh"/>
+                    <BinderCommand name="hourly_weather_provider_dm231d" command="refresh"/>
+                    <BinderCommand name="weather_version_provider_dm231d" command="refresh"/>
+                </Trigger>
+            </Triggers>
+        </Group>
+        <!-- 随整体组件更新刷新天气数据 -->
+        <Var expression="#minute" threshold="1">
+            <Trigger>
+                <FunctionCommand target="refreshData_dm231d"/>
+            </Trigger>
+        </Var>
+        <!-- 刷新天气数据函数 -->
+        <Function name="refreshData_dm231d">
+            <MethodCommand target="my_commands_dm231d" method="performAction" paramTypes="String" params="'update_data'"/>
+        </Function>
+        <!-- local id -->
+        <Var name="localId_dm231d" expression="@customEditLocalId" type="string">
+            <Trigger>
+                <MethodCommand delay="200" target="my_commands_dm231d" method="performAction" paramTypes="String" params="'update_data'"/>
+            </Trigger>
+        </Var>
+        <!-- 用于定位的变量 -->
+        <Var name="width_dm231d" expression="#view_width" type="number"/>
+        <Var name="height_dm231d" expression="#view_height" type="number"/>
+        <Var name="padding_dm231d" expression="50" type="number" const="true"/>
+        <!-- 天气图标正在显示哪个，天气切换时会有延迟 -->
+        <Var name="weather_id_4ico_dm231d" expression="-1" type="number" const="true"/>
+        <!-- 当天0点时间戳 -->
+        <Var name="time0_dm231d" expression="int((#time_sys-#hour24*3600000-#minute*60000-#second*1000)/1000)*1000" type="number"/>
+        <!-- 当天24点时间戳 -->
+        <Var name="time24_dm231d" expression="#time0_dm231d+86400000" type="number"/>
+        <!-- S天色判断规则 -->
+        <Var name="current_duration_new_dm231d" expression="ifelse((#time_sys}=#sunrise_time_dm231d-3*#h12_dm231d)**(#time_sys{#sunrise_time_dm231d-2*#h12_dm231d),1,(#time_sys}=#sunrise_time_dm231d-2*#h12_dm231d)**(#time_sys{#sunrise_time_dm231d-#h12_dm231d),2,(#time_sys}=#sunrise_time_dm231d-#h12_dm231d)**(#time_sys{#sunrise_time_dm231d),3,(#time_sys}=#sunrise_time_dm231d)**(#time_sys{#sunrise_time_dm231d+#H12_dm231d),4,(#time_sys}=#sunrise_time_dm231d+#H12_dm231d)**(#time_sys{#sunrise_time_dm231d+2*#H12_dm231d),5,(#time_sys}=#sunrise_time_dm231d+2*#H12_dm231d)**(#time_sys{#sunrise_time_dm231d+2*#H12_dm231d+#H6_dm231d),6,(#time_sys}=#sunrise_time_dm231d+2*#H12_dm231d+#H6_dm231d)**(#time_sys{#sunrise_time_dm231d+2*#H12_dm231d+2*#H6_dm231d),7,(#time_sys}=#sunrise_time_dm231d+2*#H12_dm231d+2*#H6_dm231d)**(#time_sys{#sunrise_time_dm231d+2*#H12_dm231d+3*#H6_dm231d),8,(#time_sys}=#sunrise_time_dm231d+2*#H12_dm231d+3*#H6_dm231d)**(#time_sys{#sunrise_time_dm231d+2*#H12_dm231d+4*#H6_dm231d),9,(#time_sys}=#sunrise_time_dm231d+2*#H12_dm231d+4*#H6_dm231d)**(#time_sys{#sunrise_time_dm231d+2*#H12_dm231d+4*#H6_dm231d+#H12_dm231d),10,(#time_sys}=#sunrise_time_dm231d+2*#H12_dm231d+4*#H6_dm231d+#H12_dm231d)**(#time_sys{#sunrise_time_dm231d+2*#H12_dm231d+4*#H6_dm231d+2*#H12_dm231d),11,(#time_sys}=#sunset_time_dm231d)**(#time_sys{#sunset_time_dm231d+#h36_dm231d),12,(#time_sys}=#sunset_time_dm231d+#h36_dm231d)**(#time_sys{#sunset_time_dm231d+2*#h36_dm231d),13,(#time_sys}=#sunset_time_dm231d+2*#h36_dm231d)**(#time_sys{#sunset_time_dm231d+3*#h36_dm231d),14,(#time_sys}=#sunset_time_dm231d+3*#h36_dm231d)**(#time_sys{#sunset_time_dm231d+3*#h36_dm231d+#h12_dm231d),15,0)" type="number"/>
+        <!-- 图标是否展示夜晚图标：0白天 1夜晚 -->
+        <Var name="icon_isNight_dm231d" expression="ifelse(#current_duration_new_dm231d{3,1,0)" type="number"/>
+        <!-- 天色是否展示夜晚天色： 0白天 1夜晚 -->
+        <Var name="sky_isNight_dm231d" expression="ifelse(#current_duration_new_dm231d{5,1,0)" type="number"/>
+    </Group>
+    <!-- 生命周期钩子 -->
+    <ExternalCommands>
+        <Trigger action="init,resume">
+            <FunctionCommand target="refreshData_dm231d"/>
+        </Trigger>
+        <Trigger action="init">
+            <FunctionCommand target="startAni_1"/>
+            <!-- 改变原先的背景颜色透明度和现在的背景透明度 -->
+            <VariableCommand name="weather_id_4bg_adj_cmor3u" expression="#weather_id_4bg_cmor3u" type="number" delay="1000"/>
+            <VariableCommand name="current_duration_4bg_cmor3u" expression="#current_duration" type="number" delay="1000"/>
+            <AnimationCommand target="bg0_alpha_cmor3u" command="play"/>
+            <AnimationCommand target="bg_alpha_cmor3u" command="play"/>
+        </Trigger>
+        <Trigger action="init">
+            <FunctionCommand target="init_rain_vdaibi"/>
+        </Trigger>
+        <!-- 屏幕切走时暂停动画 -->
+        <Trigger action="pause">
+            <AnimationCommand target="ani_progress_vdaibi" command="pause"/>
+        </Trigger>
+        <Trigger action="init">
+            <AnimationCommand target="timeout_first_nfk8ob" command="play" delay="50"/>
+        </Trigger>
+        <Trigger action="init">
+            <FunctionCommand target="init_snow_tr3d8j"/>
+        </Trigger>
+        <!-- 屏幕切走时暂停动画 -->
+        <Trigger action="pause">
+            <AnimationCommand target="ani_progress_tr3d8j" command="pause"/>
+        </Trigger>
+        <Trigger action="init">
+            <AnimationCommand target="timeout_first_vtftts" command="play" delay="50"/>
+        </Trigger>
+        <Trigger action="init">
+            <FunctionCommand target="init_star_gu4otl"/>
+            <!-- <FunctionCommand target="palyStarAni" /> -->
+        </Trigger>
+        <Trigger action="init">
+            <VariableCommand name="clould_type_y4xikv" type="number" expression="ifelse(#weatherId_kee2ln==0**#currentDuration_kee2ln}=6**#currentDuration_kee2ln{=11,1,#weatherId_kee2ln==0**#currentDuration_kee2ln}=0**#currentDuration_kee2ln{=5,2,#weatherId_kee2ln==0**#currentDuration_kee2ln}=12**#currentDuration_kee2ln{=16,2,#weatherId_kee2ln==1||#weatherId_kee2ln==2||#weatherId_kee2ln==3,3,#weatherId_kee2ln==4||#weatherId_kee2ln==5||#weatherId_kee2ln==6||#weatherId_kee2ln==7||#weatherId_kee2ln==8||#weatherId_kee2ln==9||#weatherId_kee2ln==10||#weatherId_kee2ln==11||#weatherId_kee2ln==12||#weatherId_kee2ln==18||#weatherId_kee2ln==19||#weatherId_kee2ln==20||#weatherId_kee2ln==21||#weatherId_kee2ln==23||#weatherId_kee2ln==24,4,#weatherId_kee2ln==7,5,#weatherId_kee2ln==13||#weatherId_kee2ln==14||#weatherId_kee2ln==15||#weatherId_kee2ln==16||#weatherId_kee2ln==17||#weatherId_kee2ln==22||#weatherId_kee2ln==25,6,1)"/>
+        </Trigger>
+        <Trigger action="init">
+            <AnimationCommand target="icon_timeout_first_1zmimq" command="play"/>
+        </Trigger>
+    </ExternalCommands>
+    <!-- 引入各组件 -->
+    <!-- 数据获取结束 -->
+    <Var expression="#state.loading+'_'+#time_sys">
+        <Trigger condition="#state.loading==0">
+            <VariableCommand name="weatherId_sa4ajf" expression="#weather_id_dm231d" type="number"/>
+            <VariableCommand name="currentDuration_sa4ajf" expression="#current_duration_new_dm231d" type="number"/>
+            <VariableCommand name="sky_isNight_sa4ajf" expression="#sky_isNight_dm231d" type="number"/>
+            <VariableCommand name="aqi_sa4ajf" expression="#weather_aqi_dm231d" type="number"/>
+        </Trigger>
+    </Var>
+    <!-- 天色 -->
+    <Group name="background" weatherId="#weatherId_sa4ajf" currentDuration="#currentDuration_sa4ajf" sky_isNight="#sky_isNight_sa4ajf">
+        <Var name="current_duration_new_cmor3u" expression="#current_duration_new_dm231d" type="number"/>
+        <Var name="sky_isNight_cmor3u" expression="#sky_isNight_dm231d" type="number"/>
+        <Var name="weather_id_4bg_cmor3u" expression="#weather_id_4bg_dm231d" type="number"/>
+        <!-- 背景正在显示哪个，天气切换时会有延迟 -->
+        <Var name="weather_id_4bg_adj_cmor3u" expression="-1" type="number" const="true"/>
+        <Var name="weather_duration_change_cmor3u" expression="#weather_id_4bg_dm231d+'_'+#current_duration_new_dm231d">
+            <Trigger>
+                <FunctionCommand target="startAni_1"/>
+                <!-- 改变原先的背景颜色透明度和现在的背景透明度 -->
+                <VariableCommand name="weather_id_4bg_adj_cmor3u" expression="#weather_id_4bg_cmor3u" type="number" delay="1000"/>
+                <VariableCommand name="current_duration_4bg_cmor3u" expression="#current_duration" type="number" delay="1000"/>
+                <AnimationCommand target="bg0_alpha_cmor3u" command="play"/>
+                <AnimationCommand target="bg_alpha_cmor3u" command="play"/>
+            </Trigger>
+        </Var>
+        <!-- 只有白天晚上的天气的颜色：前个4没用，随便填 -->
+        <!-- (后面天气前的数字为数组下标，天气后的为对应的weatherId)  4阴天（2）  5雾（3）  6雨（4-12）  7雪（13-17）  8沙尘（20、21） 9沙尘暴、强沙尘暴（18、19）  10霾、浮尘（23、24） 11冰雹、冻雨（22、25 -->
+        <!--  白天天色                   阴天        雾         雨         雪        沙尘       沙尘暴     霾、浮尘   冰雹、冻雨 -->
+        <Var name="gradient_top_colors_day_cmor3u" type="string[]" const="true" expression="''" values="'1','1','1','1','#3E5482','#496285','#496285','#415296','#7D5C2C','#3F280F','#7D5C2C','#496285'"/>
+        <Var name="gradient_mid1_colors_day_cmor3u" type="string[]" const="true" expression="''" values="'1','1','1','1','#465D8B','#546D89','#546D89','#5968AA','#8A6E41','#755227','#8A6E41','#546D89'"/>
+        <Var name="gradient_mid2_colors_day_cmor3u" type="string[]" const="true" expression="''" values="'1','1','1','1','#526893','#60788D','#60788D','#6D7CBF','#967D51','#9C7038','#967D51','#60788D'"/>
+        <Var name="gradient_mid3_colors_day_cmor3u" type="string[]" const="true" expression="''" values="'1','1','1','1','#708099','#6E8591','#6E8591','#99A0D2','#A28F6A','#AE853D','#A28F6A','#6E8591'"/>
+        <Var name="gradient_bottom_colors_day_cmor3u" type="string[]" const="true" expression="''" values="'1','1','1','1','#7C8794','#809596','#809596','#C4C2E6','#AE9F7D','#C2A04E','#AE9F7D','#809596'"/>
+        <!-- 晚上天色                   阴天        雾         雨         雪        沙尘       沙尘暴     霾、浮尘   冰雹、冻雨 -->
+        <Var name="gradient_top_colors_night_cmor3u" type="string[]" const="true" expression="''" values="'1','1','1','1','#0F1222','#0F1222','#0F1222','#262C43','#343230','#443A24','#343230','#0F1222'"/>
+        <Var name="gradient_mid1_colors_night_cmor3u" type="string[]" const="true" expression="''" values="'1','1','1','1','#101424','#101424','#101424','#2A3048','#302D29','#41331D','#302D29','#101424'"/>
+        <Var name="gradient_mid2_colors_night_cmor3u" type="string[]" const="true" expression="''" values="'1','1','1','1','#212842','#212842','#212842','#313750','#2C2823','#402F1A','#2C2823','#212842'"/>
+        <Var name="gradient_mid3_colors_night_cmor3u" type="string[]" const="true" expression="''" values="'1','1','1','1','#2E3552','#2E3552','#2E3552','#45495E','#272119','#3B250D','#272119','#2E3552'"/>
+        <Var name="gradient_bottom_colors_night_cmor3u" type="string[]" const="true" expression="''" values="'1','1','1','1','#3F4561','#3F4561','#3F4561','#525260','#1F1911','#191007','#1F1911','#3F4561'"/>
+        <!-- 分早中晚的天气的颜色：晴多云 早晨、白天、傍晚、晚上 (S0-S15  S0与S16相同，详见设计稿) maml不能嵌套数组，不然我也不想写这么多-->
+        <!--         S0√       S1√      S2√        S3√       S4√       S5√       S6√       S7√       S8√       S9√       S10√      S11      S12√       S13√      S14√      S15√    (下面是修改后的天色，从设计稿中拾取的颜色值)   -->
+        <Var name="clear_top_colors_new_cmor3u" type="string[]" const="true" expression="''" values="'#0F1226','#10152C','#181D4A','#262755','#2F2D8A','#1B4496','#36559B','#2A4E99','#2D529B','#34559C','#4466AB','#323C85','#4B427E','#403669','#2E2457','#14153F'"/>
+        <Var name="clear_mid1_colors_new_cmor3u" type="string[]" const="true" expression="''" values="'#111428','#161D3E','#242A61','#2A2B5D','#464596','#4666BF','#4064B0','#345FAF','#3E6BBB','#375AA4','#4C70B7','#4C559E','#6B5BA3','#6E5C97','#403075','#1C1E47'"/>
+        <Var name="clear_mid2_colors_new_cmor3u" type="string[]" const="true" expression="''" values="'#171B33','#1C2651','#3A3D7C','#36356E','#7869B2','#647ADE','#6D99E4','#345EAA','#3E6BBB','#446DBA','#5F87CD','#7D82C7','#9175A1','#9C708C','#5D4A87','#292B59'"/>
+        <Var name="clear_mid3_colors_new_cmor3u" type="string[]" const="true" expression="''" values="'#1D2340','#222D61','#514D7F','#6D5D8F','#A283BF','#909CE0','#A2C8F2','#74AEEA','#4473C4','#76A4E5','#8DB4E5','#B896B0','#D9959A','#DF7F69','#D6745E','#3F3E73'"/>
+        <Var name="clear_bottom_colors_new_cmor3u" type="string[]" const="true" expression="''" values="'#373E60','#39467E','#665C81','#966C84','#E5A8B8','#FAC3C7','#DAE4E6','#AAD3E4','#92C4EA','#ADCFE7','#CFDEDF','#FFAB87','#FF8D63','#EE7C58','#DE6F43','#554F8B"/>
+        <Var name="cloudy_top_colors_new_cmor3u" type="string[]" const="true" expression="''" values="'#0F1226','#10152C','#181D4A','#262755','#2F2D8A','#1B4496','#36559B','#2A4E99','#2D529B','#34559C','#4466AB','#323C85','#4B427E','#403669','#2E2457','#14153F'"/>
+        <Var name="cloudy_mid1_colors_new_cmor3u" type="string[]" const="true" expression="''" values="'#111428','#161D3E','#242A61','#2A2B5D','#464596','#4666BF','#4064B0','#345FAF','#3E6BBB','#375AA4','#4C70B7','#4C559E','#6B5BA3','#6E5C97','#403075','#1C1E47'"/>
+        <Var name="cloudy_mid2_colors_new_cmor3u" type="string[]" const="true" expression="''" values="'#171B33','#1C2651','#3A3D7C','#36356E','#7869B2','#647ADE','#6D99E4','#345EAA','#3E6BBB','#446DBA','#5F87CD','#7D82C7','#9175A1','#9C708C','#5D4A87','#292B59'"/>
+        <Var name="cloudy_mid3_colors_new_cmor3u" type="string[]" const="true" expression="''" values="'#1D2340','#222D61','#514D7F','#6D5D8F','#A283BF','#909CE0','#A2C8F2','#74AEEA','#4473C4','#76A4E5','#8DB4E5','#B896B0','#D9959A','#DF7F69','#D6745E','#3F3E73'"/>
+        <Var name="cloudy_bottom_colors_new_cmor3u" type="string[]" const="true" expression="''" values="'#373E60','#39467E','#665C81','#966C84','#E5A8B8','#FAC3C7','#DAE4E6','#AAD3E4','#92C4EA','#ADCFE7','#CFDEDF','#FFAB87','#FF8D63','#EE7C58','#DE6F43','#554F8B"/>
+        <!-- 组件采用的渐变色，相当于computed，加adj的会延迟800ms再变化，用来过渡 -->
+        <Var name="gradient_top_color_new_cmor3u" expression="ifelse(#weather_id_4bg_cmor3u}1,ifelse(#sky_isNight_cmor3u==0,@gradient_top_colors_day_cmor3u[#weather_id_4bg_cmor3u],@gradient_top_colors_night_cmor3u[#weather_id_4bg_cmor3u]),#weather_id_4bg_cmor3u==0,@clear_top_colors_new_cmor3u[#current_duration_new_cmor3u],#weather_id_4bg_cmor3u==1,@cloudy_top_colors_new_cmor3u[#current_duration_new_cmor3u],'#36559B')" type="string"/>
+        <Var name="gradient_mid1_color_new_cmor3u" expression="ifelse(#weather_id_4bg_cmor3u}1,ifelse(#sky_isNight_cmor3u==0,@gradient_mid1_colors_day_cmor3u[#weather_id_4bg_cmor3u],@gradient_mid1_colors_night_cmor3u[#weather_id_4bg_cmor3u]),#weather_id_4bg_cmor3u==0,@clear_mid1_colors_new_cmor3u[#current_duration_new_cmor3u],#weather_id_4bg_cmor3u==1,@cloudy_mid1_colors_new_cmor3u[#current_duration_new_cmor3u],'#4064B0')" type="string"/>
+        <Var name="gradient_mid2_color_new_cmor3u" expression="ifelse(#weather_id_4bg_cmor3u}1,ifelse(#sky_isNight_cmor3u==0,@gradient_mid2_colors_day_cmor3u[#weather_id_4bg_cmor3u],@gradient_mid2_colors_night_cmor3u[#weather_id_4bg_cmor3u]),#weather_id_4bg_cmor3u==0,@clear_mid2_colors_new_cmor3u[#current_duration_new_cmor3u],#weather_id_4bg_cmor3u==1,@cloudy_mid2_colors_new_cmor3u[#current_duration_new_cmor3u],'#6D99E4')" type="string"/>
+        <Var name="gradient_mid3_color_new_cmor3u" expression="ifelse(#weather_id_4bg_cmor3u}1,ifelse(#sky_isNight_cmor3u==0,@gradient_mid3_colors_day_cmor3u[#weather_id_4bg_cmor3u],@gradient_mid3_colors_night_cmor3u[#weather_id_4bg_cmor3u]),#weather_id_4bg_cmor3u==0,@clear_mid3_colors_new_cmor3u[#current_duration_new_cmor3u],#weather_id_4bg_cmor3u==1,@cloudy_mid3_colors_new_cmor3u[#current_duration_new_cmor3u],'#A2C8F2')" type="string"/>
+        <Var name="gradient_bottom_color_new_cmor3u" expression="ifelse(#weather_id_4bg_cmor3u}1,ifelse(#sky_isNight_cmor3u==0,@gradient_bottom_colors_day_cmor3u[#weather_id_4bg_cmor3u],@gradient_bottom_colors_night_cmor3u[#weather_id_4bg_cmor3u]),#weather_id_4bg_cmor3u==0,@clear_bottom_colors_new_cmor3u[#current_duration_new_cmor3u],#weather_id_4bg_cmor3u==1,@cloudy_bottom_colors_new_cmor3u[#current_duration_new_cmor3u],'#DAE4E6')" type="string"/>
+        <Var name="gradient_top_color_adj_new_cmor3u" expression="ifelse(#weather_id_4bg_adj_cmor3u}1,ifelse(#sky_isNight_cmor3u==0,@gradient_top_colors_day_cmor3u[#weather_id_4bg_adj_cmor3u],@gradient_top_colors_night_cmor3u[#weather_id_4bg_adj_cmor3u]),#weather_id_4bg_adj_cmor3u==0,@clear_top_colors_new_cmor3u[#current_duration_4bg_new],#weather_id_4bg_adj_cmor3u==1,@cloudy_top_colors_new_cmor3u[#current_duration_4bg_new],'#36559B')" type="string"/>
+        <Var name="gradient_mid1_color_adj_new_cmor3u" expression="ifelse(#weather_id_4bg_adj_cmor3u}1,ifelse(#sky_isNight_cmor3u==0,@gradient_mid1_colors_day_cmor3u[#weather_id_4bg_adj_cmor3u],@gradient_mid1_colors_night_cmor3u[#weather_id_4bg_adj_cmor3u]),#weather_id_4bg_adj_cmor3u==0,@clear_mid1_colors_new_cmor3u[#current_duration_4bg_new],#weather_id_4bg_adj_cmor3u==1,@cloudy_mid1_colors_new_cmor3u[#current_duration_4bg_new],'#4064B0')" type="string"/>
+        <Var name="gradient_mid2_color_adj_new_cmor3u" expression="ifelse(#weather_id_4bg_adj_cmor3u}1,ifelse(#sky_isNight_cmor3u==0,@gradient_mid2_colors_day_cmor3u[#weather_id_4bg_adj_cmor3u],@gradient_mid2_colors_night_cmor3u[#weather_id_4bg_adj_cmor3u]),#weather_id_4bg_adj_cmor3u==0,@clear_mid2_colors_new_cmor3u[#current_duration_4bg_new],#weather_id_4bg_adj_cmor3u==1,@cloudy_mid2_colors_new_cmor3u[#current_duration_4bg_new],'#6D99E4')" type="string"/>
+        <Var name="gradient_mid3_color_adj_new_cmor3u" expression="ifelse(#weather_id_4bg_adj_cmor3u}1,ifelse(#sky_isNight_cmor3u==0,@gradient_mid3_colors_day_cmor3u[#weather_id_4bg_adj_cmor3u],@gradient_mid3_colors_night_cmor3u[#weather_id_4bg_adj_cmor3u]),#weather_id_4bg_adj_cmor3u==0,@clear_mid3_colors_new_cmor3u[#current_duration_4bg_new],#weather_id_4bg_adj_cmor3u==1,@cloudy_mid3_colors_new_cmor3u[#current_duration_4bg_new],'#A2C8F2')" type="string"/>
+        <Var name="gradient_bottom_color_adj_new_cmor3u" expression="ifelse(#weather_id_4bg_adj_cmor3u}1,ifelse(#sky_isNight_cmor3u==0,@gradient_bottom_colors_day_cmor3u[#weather_id_4bg_adj_cmor3u],@gradient_bottom_colors_night_cmor3u[#weather_id_4bg_adj_cmor3u]),#weather_id_4bg_adj_cmor3u==0,@clear_bottom_colors_new_cmor3u[#current_duration_4bg_new],#weather_id_4bg_adj_cmor3u==1,@cloudy_bottom_colors_new_cmor3u[#current_duration_4bg_new],'#DAE4E6')" type="string"/>
+        <!-- 不分早中晚的天气的渐变色锚点的相对位置：前4个没用，随便填 -->
+        <Var name="gradient_mid1_poses_day_cmor3u" type="number[]" const="true" expression="" values="0.33,0.33,0.33,0.33,0.4792,0.23,0.23,0.19,0.26,0.27,0.26,0.23"/>
+        <Var name="gradient_mid2_poses_day_cmor3u" type="number[]" const="true" expression="" values="0.66,0.66,0.66,0.66,0.7427,0.46,0.46,0.40,0.51,0.45,0.51,0.46"/>
+        <Var name="gradient_mid3_poses_day_cmor3u" type="number[]" const="true" expression="" values="0.88,0.88,0.88,0.88,0.9010,0.71,0.71,0.69,0.76,0.71,0.76,0.71"/>
+        <Var name="gradient_mid1_poses_night_cmor3u" type="number[]" const="true" expression="" values="0.33,0.33,0.33,0.33,0.2538,0.2538,0.2538,0.2009,0.26,0.22,0.26,0.6193"/>
+        <Var name="gradient_mid2_poses_night_cmor3u" type="number[]" const="true" expression="" values="0.66,0.66,0.66,0.66,0.6204,0.6204,0.6204,0.4536,0.49,0.45,0.49,0.7609"/>
+        <Var name="gradient_mid3_poses_night_cmor3u" type="number[]" const="true" expression="" values="0.88,0.88,0.88,0.88,0.8179,0.8179,0.8179,0.8519,0.76,0.67,0.76,0.8754"/>
+        <!-- 分早中晚的天气的渐变色锚点相对位置：晴多云阴 早晨、白天、傍晚、晚上 -->
+        <Var name="clear_mid1_poses_new_cmor3u" type="number[]" const="true" expression="" values="0.21,0.25,0.32,0.3281,0.24,0.29,0.3115,0.2962,0.2677,0.2962,0.2614,0.29,0.40,0.49,0.27,0.32"/>
+        <Var name="clear_mid2_poses_new_cmor3u" type="number[]" const="true" expression="" values="0.42,0.46,0.59,0.5876,0.61,0.57,0.5968,0.5021,0.4663,0.5021,0.4467,0.61,0.62,0.75,0.52,0.55"/>
+        <Var name="clear_mid3_poses_new_cmor3u" type="number[]" const="true" expression="" values="0.63,0.65,0.80,0.8366,0.77,0.80,0.8615,0.7813,0.6910,0.7813,0.7803,0.78,0.87,0.94,0.90,0.81"/>
+        <Var name="cloudy_mid1_poses_new_cmor3u" type="number[]" const="true" expression="" values="0.21,0.25,0.32,0.3281,0.24,0.29,0.3115,0.2962,0.2677,0.2962,0.2614,0.29,0.40,0.49,0.27,0.32"/>
+        <Var name="cloudy_mid2_poses_new_cmor3u" type="number[]" const="true" expression="" values="0.42,0.46,0.59,0.5876,0.61,0.57,0.5968,0.5021,0.4663,0.5021,0.4467,0.61,0.62,0.75,0.52,0.55"/>
+        <Var name="cloudy_mid3_poses_new_cmor3u" type="number[]" const="true" expression="" values="0.63,0.65,0.80,0.8366,0.77,0.80,0.8615,0.7813,0.6910,0.7813,0.7803,0.78,0.87,0.94,0.90,0.81"/>
+        <!-- 渐变色锚点位置，computed，加adj的会延迟800ms再变化，用来过渡 -->
+        <Var name="gradient_mid1_pos_new_cmor3u" expression="ifelse(#weather_id_4bg_cmor3u}1,ifelse(#sky_isNight_cmor3u==0,#gradient_mid1_poses_day_cmor3u[#weather_id_4bg_cmor3u],#gradient_mid1_poses_night_cmor3u[#weather_id_4bg_cmor3u]),#weather_id_4bg_cmor3u==0,#clear_mid1_poses_new_cmor3u[#current_duration_new_cmor3u],#weather_id_4bg_cmor3u==1,#cloudy_mid1_poses_new_cmor3u[#current_duration_new_cmor3u],0.33)" type="number"/>
+        <Var name="gradient_mid2_pos_new_cmor3u" expression="ifelse(#weather_id_4bg_cmor3u}1,ifelse(#sky_isNight_cmor3u==0,#gradient_mid2_poses_day_cmor3u[#weather_id_4bg_cmor3u],#gradient_mid2_poses_night_cmor3u[#weather_id_4bg_cmor3u]),#weather_id_4bg_cmor3u==0,#clear_mid2_poses_new_cmor3u[#current_duration_new_cmor3u],#weather_id_4bg_cmor3u==1,#cloudy_mid2_poses_new_cmor3u[#current_duration_new_cmor3u],0.66)" type="number"/>
+        <Var name="gradient_mid3_pos_new_cmor3u" expression="ifelse(#weather_id_4bg_cmor3u}1,ifelse(#sky_isNight_cmor3u==0,#gradient_mid3_poses_day_cmor3u[#weather_id_4bg_cmor3u],#gradient_mid3_poses_night_cmor3u[#weather_id_4bg_cmor3u]),#weather_id_4bg_cmor3u==0,#clear_mid3_poses_new_cmor3u[#current_duration_new_cmor3u],#weather_id_4bg_cmor3u==1,#cloudy_mid3_poses_new_cmor3u[#current_duration_new_cmor3u],0.88)" type="number"/>
+        <Var name="gradient_mid1_pos_adj_new_cmor3u" expression="ifelse(#weather_id_4bg_adj_cmor3u}1,ifelse(#sky_isNight_cmor3u==0,#gradient_mid1_poses_day_cmor3u[#weather_id_4bg_adj_cmor3u],#gradient_mid1_poses_night_cmor3u[#weather_id_4bg_adj_cmor3u]),#weather_id_4bg_adj_cmor3u==0,#clear_mid1_poses_new_cmor3u[#current_duration_4bg_new],#weather_id_4bg_adj_cmor3u==1,#cloudy_mid1_poses_new_cmor3u[#current_duration_4bg_new],0.33)" type="number"/>
+        <Var name="gradient_mid2_pos_adj_new_cmor3u" expression="ifelse(#weather_id_4bg_adj_cmor3u}1,ifelse(#sky_isNight_cmor3u==0,#gradient_mid2_poses_day_cmor3u[#weather_id_4bg_adj_cmor3u],#gradient_mid2_poses_night_cmor3u[#weather_id_4bg_adj_cmor3u]),#weather_id_4bg_adj_cmor3u==0,#clear_mid2_poses_new_cmor3u[#current_duration_4bg_new],#weather_id_4bg_adj_cmor3u==1,#cloudy_mid2_poses_new_cmor3u[#current_duration_4bg_new],0.66)" type="number"/>
+        <Var name="gradient_mid3_pos_adj_new_cmor3u" expression="ifelse(#weather_id_4bg_adj_cmor3u}1,ifelse(#sky_isNight_cmor3u==0,#gradient_mid3_poses_day_cmor3u[#weather_id_4bg_adj_cmor3u],#gradient_mid3_poses_night_cmor3u[#weather_id_4bg_adj_cmor3u]),#weather_id_4bg_adj_cmor3u==0,#clear_mid3_poses_new_cmor3u[#current_duration_4bg_new],#weather_id_4bg_adj_cmor3u==1,#cloudy_mid3_poses_new_cmor3u[#current_duration_4bg_new],0.88)" type="number"/>
+        <Var name="gradient_y1_cmor3u" type="number" expression="ifelse(#weather_id_4bg_cmor3u}1,#view_height,#current_duration_new_cmor3u==100,#view_height,#view_height*1.14)"/>
+        <!-- 原先的背景颜色透明度动画 -->
+        <Var name="bg0_alpha_cmor3u">
+            <VariableAnimation initPause="true" loop="false">
+                <Item value="255" time="0"/>
+                <Item value="255" time="1000"/>
+                <Item value="0" time="1001"/>
+            </VariableAnimation>
+        </Var>
+        <!-- 新的背景颜色透明度动画 -->
+        <Var name="bg_alpha_cmor3u">
+            <VariableAnimation initPause="true" loop="false">
+                <Item value="0" time="0" easeType="CubicEaseOut"/>
+                <Item value="255" time="1000"/>
+            </VariableAnimation>
+        </Var>
+        <Group name="sky_color_cmor3u">
+            <!-- 原先的背景 -->
+            <Rectangle name="bg_old_cmor3u" x="0" y="0" w="#view_width" h="#view_height" alpha="#bg0_alpha_cmor3u">
+                <FillShaders>
+                    <LinearGradient x="#view_width/2" y="0" x1="#view_width/2" y1="#view_height" tile="clamp">
+                        <GradientStop color="@gradient_top_color_adj_new_cmor3u" position="0"/>
+                        <GradientStop color="@gradient_mid1_color_adj_new_cmor3u" position="#gradient_mid1_pos_adj_new_cmor3u"/>
+                        <GradientStop color="@gradient_mid2_color_adj_new_cmor3u" position="#gradient_mid2_pos_adj_new_cmor3u"/>
+                        <GradientStop color="@gradient_mid3_color_adj_new_cmor3u" position="#gradient_mid3_pos_adj_new_cmor3u"/>
+                        <GradientStop color="@gradient_bottom_color_adj_new_cmor3u" position="1"/>
+                    </LinearGradient>
+                </FillShaders>
+            </Rectangle>
+            <!-- 新的背景 -->
+            <Rectangle name="bg_cmor3u" x="0" y="0" w="#view_width" h="#view_height" alpha="#bg_alpha_cmor3u">
+                <FillShaders>
+                    <LinearGradient x="#view_width/2" y="0" x1="#view_width/2" y1="#view_height" tile="clamp">
+                        <GradientStop color="@gradient_top_color_new_cmor3u" position="0"/>
+                        <GradientStop color="@gradient_mid1_color_new_cmor3u" position="#gradient_mid1_pos_new_cmor3u"/>
+                        <GradientStop color="@gradient_mid2_color_new_cmor3u" position="#gradient_mid2_pos_new_cmor3u"/>
+                        <GradientStop color="@gradient_mid3_color_new_cmor3u" position="#gradient_mid3_pos_new_cmor3u"/>
+                        <GradientStop color="@gradient_bottom_color_new_cmor3u" position="1"/>
+                    </LinearGradient>
+                </FillShaders>
+            </Rectangle>
+        </Group>
+        <!-- 辉光（仅晴天/多云的S6-S10展示） -->
+        <Image x="0" y="0" w="#view_width" visibility="ifelse(#weather_id_dm231d==0||#weather_id_dm231d==1**#current_duration_new_cmor3u}=6**#current_duration_new_cmor3u{=10,1,0)" h="#view_height" srcExp="'assets/light/'+ifelse(#weather_id_dm231d==1,'cloudy/','')+#current_duration_new_cmor3u+'.png'"/>
+    </Group>
+    <!-- 低层元素 -->
+    <Group name="lowerElement">
+        <!-- 降雨信息 -->
+        <!-- 小雨：小雨、雨夹雪、冻雨、阵雨 -->
+        <Var name="show_small_rain_dtvzws" type="number" expression="#weather_id_dm231d==11||#weather_id_dm231d==12||#weather_id_dm231d==25||#weather_id_dm231d==8"/>
+        <!-- 中雨 -->
+        <Var name="show_middle_rain_dtvzws" type="number" expression="#weather_id_dm231d==10"/>
+        <!-- 大雨：大雨、冰雹、暴雨、大暴雨、特大暴雨 -->
+        <Var name="show_heavy_rain_dtvzws" type="number" expression="#weather_id_dm231d==9||#weather_id_dm231d==22||#weather_id_dm231d==6||#weather_id_dm231d==5||#weather_id_dm231d==4"/>
+        <FolmeState name="alpha255_vdaibi" alpha="255"/>
+        <FolmeState name="alpha0_vdaibi" alpha="0"/>
+        <FolmeConfig name="showConfig_vdaibi" ease="-2,0.95,0.35" delay="100"/>
+        <FolmeConfig name="disappearConfig_vdaibi" ease="-2,0.95,0.18"/>
+        <!-- 雨滴图片的尺寸（想要在界面中显示的1倍大小尺寸） -->
+        <Var name="image_w_vdaibi" type="number" const="true" expression="1"/>
+        <Var name="image_h_vdaibi" type="number" const="true" expression="12"/>
+        <!-- 垂直方向降落速度 -->
+        <Var name="speed_vdaibi" type="number" const="true" expression="8"/>
+        <!-- 动画持续时间 -->
+        <Var name="duration_vdaibi" type="number" const="true" expression="5000"/>
+        <!-- 初始坐标 -->
+        <Var name="rain_x_vdaibi" size="210" type="number[]" const="true"/>
+        <Var name="rain_y_vdaibi" size="210" type="number[]" const="true"/>
+        <!-- 大小 -->
+        <Var name="rain_scale_vdaibi" size="210" type="number[]" const="true"/>
+        <!-- 透明度 -->
+        <Var name="rain_a_vdaibi" size="210" type="number[]" const="true"/>
+        <!-- 角度 -->
+        <Var name="rain_bi_vdaibi" size="210" type="number[]" const="true"/>
+        <Function name="init_rain_vdaibi">
+            <LoopCommand count="210" indexName="i">
+                <VariableCommand name="rain_x_vdaibi" expression="rand()*#view_width" index="#i" type="number[]"/>
+                <VariableCommand name="rain_y_vdaibi" expression="rand()*#view_height" index="#i" type="number[]"/>
+                <!-- 动效师给的demo中，是rot=13+rand()*4, bi=(rot/13)5, 供参考，估计是某种效果实践出来的参数 -->
+                <!-- <VariableCommand name="rain_bi" expression="(13+rand()*4)/65" index="#i" type="number[]" /> -->
+                <VariableCommand name="rain_bi_vdaibi" expression="0" index="#i" type="number[]"/>
+                <VariableCommand name="rain_scale_vdaibi" expression="rand()*3+0.1" index="#i" type="number[]"/>
+                <VariableCommand name="rain_a_vdaibi" expression="(0.4+rand()/4)*255" index="#i" type="number[]"/>
+            </LoopCommand>
+        </Function>
+        <!-- 动画进度 0->1 -->
+        <Var name="ani_progress_vdaibi" type="number">
+            <VariableAnimation initPause="true" loop="false">
+                <AniFrame value="0" time="0" easeExp="#__ratio"/>
+                <AniFrame value="1" dtime="#duration_vdaibi"/>
+                <Triggers>
+                    <Trigger action="end" condition="#ani_progress_vdaibi==1">
+                        <!-- ani动画等于1时执行清理命令 -->
+                        <ExternCommand command="__clearResource"/>
+                    </Trigger>
+                </Triggers>
+            </VariableAnimation>
+        </Var>
+        <Function name="playRainAni_vdaibi">
+            <FunctionCommand target="startAni_6"/>
+            <AnimationCommand target="ani_progress_vdaibi" command="play"/>
+        </Function>
+        <Var name="show_condition_vdaibi" type="number" expression="ifelse(#show_small_rain_dtvzws,0,#show_middle_rain_dtvzws,1,#show_heavy_rain_dtvzws,2,-1)==0||ifelse(#show_small_rain_dtvzws,0,#show_middle_rain_dtvzws,1,#show_heavy_rain_dtvzws,2,-1)==1||ifelse(#show_small_rain_dtvzws,0,#show_middle_rain_dtvzws,1,#show_heavy_rain_dtvzws,2,-1)==2"/>
+        <Var name="switch_action_executed_vdaibi" type="number" expression="0" const="true"/>
+        <Function name="switchAction_vdaibi">
+            <VariableCommand name="switch_action_executed_vdaibi" expression="1" type="number"/>
+            <VariableCommand name="rain_show_adj_vdaibi" expression="#show_condition_vdaibi" condition="#show_condition_vdaibi==1" type="number"/>
+            <FolmeCommand target="rain_Group_vdaibi" states="'alpha0_vdaibi','alpha255_vdaibi'" config="'showConfig_vdaibi'" command="fromTo" condition="#show_condition_vdaibi==1"/>
+            <!--  加 delay="1" 是为了解决：下雨天，安装小部件时候，偶现动画不执行 -->
+            <FunctionCommand target="playRainAni_vdaibi" condition="#show_condition_vdaibi==1" delay="1"/>
+            <VariableCommand name="rain_show_adj_vdaibi" expression="#show_condition_vdaibi" delay="1000" condition="#show_condition_vdaibi==0"/>
+            <FolmeCommand target="rain_Group_vdaibi" states="'alpha255_vdaibi','alpha0_vdaibi'" config="'disappearConfig_vdaibi'" command="fromTo" condition="#show_condition_vdaibi==0"/>
+        </Function>
+        <Var name="rain_type_threshold_vdaibi" expression="ifelse(#show_small_rain_dtvzws,0,#show_middle_rain_dtvzws,1,#show_heavy_rain_dtvzws,2,-1)" type="number">
+            <Trigger>
+                <FunctionCommand target="switchAction_vdaibi"/>
+            </Trigger>
+        </Var>
+        <Group name="rain_retry">
+            <!-- 当前重试次数 -->
+            <Var name="cur_retry_count_nfk8ob" type="number" expression="0" const="true"/>
+            <!-- interval -->
+            <Var name="timeout_first_nfk8ob">
+                <VariableAnimation name="timeout_first_ani_nfk8ob" loop="false" initPause="true">
+                    <Item value="0" time="0"/>
+                    <Item value="1" time="100"/>
+                    <Triggers>
+                        <Trigger action="end" condition="#timeout_first_ani_nfk8ob.current_frame==-1**#cur_retry_count_nfk8ob{4**#switch_action_executed_vdaibi==0">
+                            <AnimationCommand target="timeout_first_nfk8ob" command="play"/>
+                            <VariableCommand name="cur_retry_count_nfk8ob" expression="#cur_retry_count_nfk8ob+1" type="number"/>
+                            <FunctionCommand target="switchAction_vdaibi" condition="#show_condition_vdaibi"/>
+                        </Trigger>
+                    </Triggers>
+                </VariableAnimation>
+            </Var>
+        </Group>
+        <Var name="speed2_vdaibi" expression="ifelse(#ani_progress_vdaibi}=0.6,(1-#ani_progress_vdaibi)/0.4*ifelse(#show_small_rain_dtvzws,6,#show_middle_rain_dtvzws,8,9),ifelse(#show_small_rain_dtvzws,6,#show_middle_rain_dtvzws,8,9))" type="number"/>
+        <Group name="rain_Group_vdaibi" visibility="#rain_show_adj_vdaibi">
+            <Array count="210" indexName="i">
+                <!-- x轴因为是往左移动，会产生负数，时间越久负值越大，稳妥起见直接 + #view_width*100 -->
+                <Image src="assets/texture/rain.png" x="((#rain_x_vdaibi[#i]-ifelse(#show_small_rain_dtvzws,6,#show_middle_rain_dtvzws,8,9)*#rain_bi_vdaibi[#i]*#rain_scale_vdaibi[#i]*#ani_progress_vdaibi*(#duration_vdaibi/16.67))+#view_width*100)%#view_width" y="(#rain_y_vdaibi[#i]+ifelse(#show_small_rain_dtvzws,6,#show_middle_rain_dtvzws,8,9)*(#rain_scale_vdaibi[#i]+1)*#ani_progress_vdaibi*(#duration_vdaibi/16.67))%#view_height" w="#rain_scale_vdaibi[#i]*#image_w_vdaibi" h="#rain_scale_vdaibi[#i]*#image_h_vdaibi" alpha="#rain_a_vdaibi[#i]" visibility="ifelse(#show_small_rain_dtvzws,0,#show_middle_rain_dtvzws,1,#show_heavy_rain_dtvzws,2,-1)==0**#i{60||ifelse(#show_small_rain_dtvzws,0,#show_middle_rain_dtvzws,1,#show_heavy_rain_dtvzws,2,-1)==1**#i{120||ifelse(#show_small_rain_dtvzws,0,#show_middle_rain_dtvzws,1,#show_heavy_rain_dtvzws,2,-1)==2"/>
+            </Array>
+        </Group>
+        <!-- 小雪：小雪、阵雪 -->
+        <Var name="show_small_snow_dtvzws" type="number" expression="#weather_id_dm231d==17||#weather_id_dm231d==14"/>
+        <!-- 中雪 -->
+        <Var name="show_middle_snow_dtvzws" type="number" expression="#weather_id_dm231d==16"/>
+        <!-- 大雪：大雪、暴雪 -->
+        <Var name="show_heavy_snow_dtvzws" type="number" expression="#weather_id_dm231d==15||#weather_id_dm231d==13"/>
+        <FolmeState name="alpha255_tr3d8j" alpha="255"/>
+        <FolmeState name="alpha0_tr3d8j" alpha="0"/>
+        <FolmeConfig name="showConfig_tr3d8j" ease="-2,0.95,0.35" delay="100"/>
+        <FolmeConfig name="disappearConfig_tr3d8j" ease="-2,0.95,0.18"/>
+        <Var name="PI_tr3d8j" type="number" const="true" expression="3.141592653589793"/>
+        <!-- 动画持续时间 -->
+        <Var name="duration_tr3d8j" type="number" const="true" expression="5000"/>
+        <!-- 初始坐标 -->
+        <Var name="snow_x_tr3d8j" size="450" type="number[]" const="true"/>
+        <Var name="snow_y_tr3d8j" size="450" type="number[]" const="true"/>
+        <!-- 大小 -->
+        <Var name="snow_scale_tr3d8j" size="450" type="number[]" const="true"/>
+        <!-- 透明度 -->
+        <Var name="snow_a_tr3d8j" size="450" type="number[]" const="true"/>
+        <!-- 角度 -->
+        <Var name="snow_bi_tr3d8j" size="450" type="number[]" const="true"/>
+        <!-- 初始偏移量 -->
+        <Var name="snow_seed_tr3d8j" size="450" type="number[]" const="true"/>
+        <Function name="init_snow_tr3d8j">
+            <LoopCommand count="450" indexName="i">
+                <VariableCommand name="snow_x_tr3d8j" expression="rand()*#view_width" index="#i" type="number[]"/>
+                <VariableCommand name="snow_y_tr3d8j" expression="rand()*#view_height" index="#i" type="number[]"/>
+                <!-- 动效师给的demo中，是rot=13+rand()*4, bi=(rot/13)5, 供参考，估计是某种效果实践出来的参数 -->
+                <VariableCommand name="snow_bi_tr3d8j" expression="(ifelse(#show_small_snow_dtvzws,13,#show_middle_snow_dtvzws,30,10)+rand()*4)/65" index="#i" type="number[]"/>
+                <VariableCommand name="snow_scale_tr3d8j" expression="rand()*2+0.7-#i*0.02" index="#i" type="number[]"/>
+                <VariableCommand name="snow_a_tr3d8j" expression="(0.3+rand()/2)*255" index="#i" type="number[]"/>
+                <VariableCommand name="snow_seed_tr3d8j" expression="rand()*360" index="#i" type="number[]"/>
+            </LoopCommand>
+        </Function>
+        <!-- 动画进度 0->1 -->
+        <Var name="ani_progress_tr3d8j" type="number">
+            <VariableAnimation initPause="true" loop="false">
+                <AniFrame value="0" time="0" easeExp="#__ratio"/>
+                <AniFrame value="1" dtime="#duration_tr3d8j"/>
+                <Triggers>
+                    <Trigger action="end" condition="#ani_progress_tr3d8j==1">
+                        <!-- ani动画等于1时执行清理命令 -->
+                        <ExternCommand command="__clearResource"/>
+                    </Trigger>
+                </Triggers>
+            </VariableAnimation>
+        </Var>
+        <Function name="playSnowAni_tr3d8j">
+            <FunctionCommand target="startAni_6"/>
+            <AnimationCommand target="ani_progress_tr3d8j" command="play"/>
+        </Function>
+        <Var name="show_condition_tr3d8j" type="number" expression="ifelse(#show_small_snow_dtvzws,0,#show_middle_snow_dtvzws,1,#show_heavy_snow_dtvzws,2,-1)==0||ifelse(#show_small_snow_dtvzws,0,#show_middle_snow_dtvzws,1,#show_heavy_snow_dtvzws,2,-1)==1||ifelse(#show_small_snow_dtvzws,0,#show_middle_snow_dtvzws,1,#show_heavy_snow_dtvzws,2,-1)==2"/>
+        <Var name="switch_action_executed_tr3d8j" type="number" expression="0" const="true"/>
+        <Function name="switchAction_tr3d8j">
+            <VariableCommand name="switch_action_executed_tr3d8j" expression="1" type="number"/>
+            <VariableCommand name="snow_show_adj_tr3d8j" expression="#show_condition_tr3d8j" condition="#show_condition_tr3d8j==1" type="number"/>
+            <FolmeCommand target="snow_Group_tr3d8j" states="'alpha0_tr3d8j','alpha255_tr3d8j'" config="'showConfig_tr3d8j'" command="fromTo" condition="#show_condition_tr3d8j==1"/>
+            <!--  加 delay="1" 是为了解决：安装小部件时候，偶现动画不执行 -->
+            <FunctionCommand target="playSnowAni_tr3d8j" condition="#show_condition_tr3d8j==1" delay="1"/>
+            <VariableCommand name="snow_show_adj_tr3d8j" expression="#show_condition_tr3d8j" delay="1000" condition="#show_condition_tr3d8j==0"/>
+            <FolmeCommand target="snow_Group_tr3d8j" states="'alpha255_tr3d8j','alpha0_tr3d8j'" config="'disappearConfig_tr3d8j'" command="fromTo" condition="#show_condition_tr3d8j==0"/>
+        </Function>
+        <Var name="snow_show_threshold_tr3d8j" expression="ifelse(#show_small_snow_dtvzws,0,#show_middle_snow_dtvzws,1,#show_heavy_snow_dtvzws,2,-1)" type="number">
+            <Trigger>
+                <FunctionCommand target="switchAction_tr3d8j"/>
+            </Trigger>
+        </Var>
+        <Group name="snow_retry">
+            <!-- 当前重试次数 -->
+            <Var name="cur_retry_count_vtftts" type="number" expression="0" const="true"/>
+            <!-- interval -->
+            <Var name="timeout_first_vtftts">
+                <VariableAnimation name="timeout_first_ani_vtftts" loop="false" initPause="true">
+                    <Item value="0" time="0"/>
+                    <Item value="1" time="100"/>
+                    <Triggers>
+                        <Trigger action="end" condition="#timeout_first_ani_vtftts.current_frame==-1**#cur_retry_count_vtftts{4**#switch_action_executed_tr3d8j==0">
+                            <AnimationCommand target="timeout_first_vtftts" command="play"/>
+                            <VariableCommand name="cur_retry_count_vtftts" expression="#cur_retry_count_vtftts+1" type="number"/>
+                            <FunctionCommand target="switchAction_tr3d8j" condition="#show_condition_tr3d8j"/>
+                        </Trigger>
+                    </Triggers>
+                </VariableAnimation>
+            </Var>
+        </Group>
+        <Group name="snow_Group_tr3d8j" visibility="#snow_show_adj_tr3d8j">
+            <Array count="450" indexName="i">
+                <Image src="assets/texture/snow.png" x="#snow_x_tr3d8j[#i]+sin((#snow_seed_tr3d8j[#i]+ifelse(#show_small_snow_dtvzws,2,#show_middle_snow_dtvzws,2.6,3.2)*#ani_progress_tr3d8j*(#duration_tr3d8j/16.67))*#PI_tr3d8j/180)*ifelse(#show_small_snow_dtvzws,8,#show_middle_snow_dtvzws,9,11)" y="(#snow_y_tr3d8j[#i]+ifelse(#show_small_snow_dtvzws,2,#show_middle_snow_dtvzws,2.6,3.2)*(ifelse(#show_small_snow_dtvzws,8,#show_middle_snow_dtvzws,9,11)+10)/20*#ani_progress_tr3d8j*(#duration_tr3d8j/16.67))%#view_height" w="#snow_scale_tr3d8j[#i]*ifelse(#show_small_snow_dtvzws,8,#show_middle_snow_dtvzws,9,11)" h="#snow_scale_tr3d8j[#i]*ifelse(#show_small_snow_dtvzws,8,#show_middle_snow_dtvzws,9,11)" alpha="#snow_a_tr3d8j[#i]" visibility="ifelse(#show_small_snow_dtvzws,0,#show_middle_snow_dtvzws,1,#show_heavy_snow_dtvzws,2,-1)==0**#i{120||ifelse(#show_small_snow_dtvzws,0,#show_middle_snow_dtvzws,1,#show_heavy_snow_dtvzws,2,-1)==1**#i{225||ifelse(#show_small_snow_dtvzws,0,#show_middle_snow_dtvzws,1,#show_heavy_snow_dtvzws,2,-1)==2"/>
+            </Array>
+        </Group>
+        <!-- 星星 -->
+        <Group name="star">
+            <Var name="weather_star_change_gu4otl" type="string" expression="#weather_id_4ico_dm231d+'_'+#sky_isNight_dm231d">
+                <Trigger>
+                    <!-- <FunctionCommand target="palyStarAni" /> -->
+                </Trigger>
+            </Var>
+            <!-- 星星图片的尺寸 -->
+            <Var name="image_w_gu4otl" type="number" const="true" expression="30"/>
+            <Var name="image_h_gu4otl" type="number" const="true" expression="30"/>
+            <!-- 初始坐标 -->
+            <Var name="star_x_gu4otl" size="30" type="number[]" const="true"/>
+            <Var name="star_y_gu4otl" size="30" type="number[]" const="true"/>
+            <!-- 大小 -->
+            <Var name="star_scale_gu4otl" size="30" type="number[]" const="true"/>
+            <!-- 透明度 -->
+            <Var name="star_a_gu4otl" size="30" type="number[]" const="true"/>
+            <!-- 角度 -->
+            <Var name="star_bi_gu4otl" size="30" type="number[]" const="true"/>
+            <!-- 星星路径数组 -->
+            <Var name="star_src_gu4otl" size="30" type="string[]" const="true"/>
+            <Function name="init_star_gu4otl">
+                <LoopCommand count="30" indexName="i">
+                    <VariableCommand name="star_x_gu4otl" expression="rand()*#view_width" index="#i" type="number[]"/>
+                    <VariableCommand name="star_y_gu4otl" expression="rand()*#view_height*0.95" index="#i" type="number[]"/>
+                    <VariableCommand name="star_bi_gu4otl" expression="rand()*360" index="#i" type="number[]"/>
+                    <VariableCommand name="star_scale_gu4otl" expression="0.2+(rand()*50)/100" index="#i" type="number[]"/>
+                    <VariableCommand name="star_a_gu4otl" expression="(0.5+(rand()*50)/100)*255" index="#i" type="number[]"/>
+                    <VariableCommand name="star_src_gu4otl" expression="'assets/texture/star'+int((rand()*3)+1)+'.png'" index="#i" type="string[]"/>
+                </LoopCommand>
+            </Function>
+            <!-- 动画进度 0->1 -->
+            <Var name="ani_progress_gu4otl" type="number">
+                <VariableAnimation initPause="false" loop="false">
+                    <Item value="1" time="0" easeExp="SineEaseIn"/>
+                    <Item value="1" time="300" easeExp="SineEaseIn"/>
+                    <Item value="0" dtime="1000" easeExp="SineEaseIn"/>
+                    <Item value="1" dtime="1700" easeExp="SineEaseIn"/>
+                    <Item value="1" dtime="2000" easeExp="SineEaseIn"/>
+                </VariableAnimation>
+            </Var>
+            <Array visibility="ifelse(#weather_id_4ico_dm231d==0**#sky_isNight_dm231d==1,1,0)" count="30" indexName="i">
+                <Image srcExp="@star_src_gu4otl[#i]" x="#star_x_gu4otl[#i]" y="#star_y_gu4otl[#i]" w="#star_scale_gu4otl[#i]*#image_w_gu4otl" h="#star_scale_gu4otl[#i]*#image_h_gu4otl" alpha="ifelse(#i%4==0,#star_a_gu4otl[#i]*#ani_progress_gu4otl,#star_a_gu4otl[#i])"/>
+            </Array>
+            <Function name="palyStarAni_gu4otl">
+                <FunctionCommand target="startAni_3"/>
+                <AnimationCommand target="ani_progress_gu4otl" command="play"/>
+            </Function>
+        </Group>
+    </Group>
+    <!-- 高层元素 -->
+    <Group name="higherElement">
+        <Var name="weatherId_kee2ln" expression="#weather_id_dm231d" type="number"/>
+        <Var name="currentDuration_kee2ln" expression="#current_duration_new_dm231d" type="number"/>
+        <!-- 云朵 -->
+        <!-- 旧云 -->
+        <FolmeState name="state_show_dif_y4xikv" alpha="255"/>
+        <FolmeState name="state_hide_dif_y4xikv" alpha="0"/>
+        <FolmeConfig name="folme_config_old_y4xikv" ease="15,300" onComplete="'oldFinishFunc'"/>
+        <Function name="oldFinishFunc">
+            <VariableCommand name="clould_type_y4xikv" type="number" expression="ifelse(#weatherId_kee2ln==0**#currentDuration_kee2ln}=6**#currentDuration_kee2ln{=11,1,#weatherId_kee2ln==0**#currentDuration_kee2ln}=0**#currentDuration_kee2ln{=5,2,#weatherId_kee2ln==0**#currentDuration_kee2ln}=12**#currentDuration_kee2ln{=16,2,#weatherId_kee2ln==1||#weatherId_kee2ln==2||#weatherId_kee2ln==3,3,#weatherId_kee2ln==4||#weatherId_kee2ln==5||#weatherId_kee2ln==6||#weatherId_kee2ln==7||#weatherId_kee2ln==8||#weatherId_kee2ln==9||#weatherId_kee2ln==10||#weatherId_kee2ln==11||#weatherId_kee2ln==12||#weatherId_kee2ln==18||#weatherId_kee2ln==19||#weatherId_kee2ln==20||#weatherId_kee2ln==21||#weatherId_kee2ln==23||#weatherId_kee2ln==24,4,#weatherId_kee2ln==7,5,#weatherId_kee2ln==13||#weatherId_kee2ln==14||#weatherId_kee2ln==15||#weatherId_kee2ln==16||#weatherId_kee2ln==17||#weatherId_kee2ln==22||#weatherId_kee2ln==25,6,1)"/>
+            <FunctionCommand target="startAni_6"/>
+            <FolmeCommand target="clould_y4xikv" states="'state_start_y4xikv'" command="setTo"/>
+            <FolmeCommand target="clould_y4xikv" states="'state_start_y4xikv','state_end_y4xikv'" config="'folme_config_new_y4xikv'" command="fromTo"/>
+        </Function>
+        <!-- 新云 -->
+        <FolmeState name="state_start_y4xikv" x="-60" scaleX="0.95" scaleY="0.95" alpha="0"/>
+        <FolmeState name="state_end_y4xikv" x="0" scaleX="1" scaleY="1" alpha="255"/>
+        <FolmeConfig name="folme_config_new_y4xikv">
+            <Special property="'scaleX'" ease="3,600"/>
+            <Special property="'scaleY'" ease="3,600"/>
+            <Special property="'alpha'" ease="3,500"/>
+            <Special property="'x'" ease="1,6000"/>
+        </FolmeConfig>
+        <!-- 初始化云层 -->
+        <!-- 天气变化切换云层 -->
+        <Var expression="#weatherId_kee2ln+'-'+#currentDuration_kee2ln">
+            <Trigger>
+                <FunctionCommand target="startAni_6"/>
+                <FolmeCommand target="clould_y4xikv" states="'state_show_dif_y4xikv','state_hide_dif_y4xikv'" config="'folme_config_old_y4xikv'" command="fromTo"/>
+            </Trigger>
+        </Var>
+        <Image name="clould_y4xikv" srcExp="'assets/cloud/cloud'+#clould_type_y4xikv+'.png'" w="1080*#state.scale/2.5" h="#view_height" centerX="#view_width/2" centerY="#view_height*(1.1-1)/2"/>
+    </Group>
+    <!-- 文字图标元素 -->
+    <!-- 未授权、预览及跳转应用内 -->
+    <Group name="abnormal">
+        <!-- 用于定位的变量 -->
+        <Var name="width_e9mahe" expression="#view_width" type="number"/>
+        <Var name="height_e9mahe" expression="#view_height" type="number"/>
+        <Var name="padding_e9mahe" expression="50" type="number" const="true"/>
+        <!-- ************************************* 未授权无数据(非预览且无数据>展示文档中的加载态) ************************************************ -->
+        <Group name="no_data_e9mahe" x="0" y="0" w="#width_e9mahe" h="#height_e9mahe" clip="true" visibility="#hasweather==0**eqs(@isPreviewMode,'true')==0">
+            <Image x="0" y="0" w="#width_e9mahe" h="#height_e9mahe" srcExp="'assets/preview/null.png'"/>
+            <Line x="62*#state.scale" y="62*#state.scale" x1="88*#state.scale" y1="62*#state.scale" visibility="!eqs(@isPreviewMode,'true')" strokeColor="#80ffffff" weight="4"/>
+        </Group>
+        <!-- *************** 无数据（预览且无数据->展示文档中的加载态） **************** -->
+        <Group name="no_data_e9mahe" x="0" y="0" w="#width_e9mahe" h="#height_e9mahe" clip="true" visibility="#hasweather==0**eqs(@isPreviewMode,'true')==1">
+            <Image w="#width_e9mahe" h="#height_e9mahe" srcExp="'assets/preview/loading.png'"/>
+        </Group>
+        <!-- ************************************* 点击跳转至应用内的按钮 ************************************* -->
+        <!-- 整体无障碍 -->
+        <!-- 区分数据状态和wifi状态 -->
+        <Var name="data_wifi_e9mahe" expression="ifelse(#wifi_state,1,#data_state,1,0)" type="number"/>
+        <Var name="weather_data_wifi_e9mahe" expression="#hasweather*#data_wifi_e9mahe" type="number"/>
+        <Var name="talkback_content_cn_e9mahe" expression="@weather_location_dm231d+'，'+@weather_description_dm231d+'，现在温度'+#weather_temperature_dm231d+'度，最高温度'+@weather_temphigh_dm231d[0]+'度，最低温度'+@weather_templow_dm231d[0]+'度，空气质量，'+@aqiDescTxt_1mxxb8+'，aqi，'+#aqiTxt_1mxxb8" type="string"/>
+        <Var name="talkback_temperature_replace_e9mahe" expression="strReplaceAll(strReplaceAll(@talkback_temperature_range,'变量1',@weather_temphigh_dm231d[0]),'变量2',@weather_templow_dm231d[0])" type="string"/>
+        <Var name="talkback_content_other_e9mahe" expression="@weather_location_dm231d+'，'+@weather_description_dm231d+'，'+#weather_temperature_dm231d+ifelse(eqs(@flag_display_talkback,'1'),'°','')+','+@talkback_temperature_replace_e9mahe+','+@aqiDescTxt_1mxxb8+' ，'+#aqiTxt_1mxxb8" type="string"/>
+        <Var name="talkback_all_e9mahe" expression="ifelse(#weather_data_wifi_e9mahe,ifelse(eqs(@flag_display_talkback,'1'),@talkback_content_cn_e9mahe,@talkback_content_other_e9mahe),@weather_auth_tip_1_i18n)" type="string"/>
+        <!-- 隐藏式开关，不显示该功能（不加的话无法使用wifi_state、data_state变量判断wifi及data状态） -->
+        <!-- <Text width="#view_width-60" multiLine="true" x="30" y="0" color="#ff00ff" size="25" textExp="'weather_version:'+get(api,@weather_version)" />
+  <Text width="#view_width-60" multiLine="true" x="30" y="70" color="#ff00ff" size="25" textExp="'action:'+ifelse(get(api,#isNewVersion)==1,'android.intent.action.MAIN','com.miui.weather.widget_weather_detail')" />
+  <Text width="#view_width-60" multiLine="true" x="30" y="150" color="#ff00ff" size="25" textExp="'launcherType:'+ifelse(get(api,#isNewVersion)==1,'weatherWidget','')" />  -->
+        <!-- <Text width="#view_width-20" multiLine="true" x="10" y="120" color="#ff00ff" size="30" textExp="@talkback_all" /> -->
+    </Group>
+    <!-- 动画帧率调整 -->
+    <FramerateController name="Fra" initPause="true" loop="false">
+        <ControlPoint frameRate="120" time="0"/>
+        <ControlPoint frameRate="120" time="6000"/>
+        <ControlPoint frameRate="0" time="6100"/>
+    </FramerateController>
+    <Function name="startAni_1">
+        <AnimationCommand target="Fra" command="play"/>
+        <ExternCommand delay="7000" command="__clearResource"/>
+    </Function>
+    <Function name="startAni_3">
+        <AnimationCommand target="Fra" command="play"/>
+    </Function>
+    <Function name="startAni_6">
+        <AnimationCommand target="Fra" command="play"/>
+    </Function>
+</Widget>

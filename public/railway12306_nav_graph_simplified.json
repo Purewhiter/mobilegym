@@ -1,0 +1,1809 @@
+{
+  "app": "railway12306",
+  "appDir": "apps/Railway12306",
+  "mode": "schema",
+  "routeCount": 48,
+  "edgeCount": 86,
+  "nodes": [
+    {
+      "id": "/",
+      "routePath": "/",
+      "component": "HomePage",
+      "entryPoint": true,
+      "entry": {
+        "kind": "home",
+        "home": true,
+        "deepLink": false
+      },
+      "description": "首页默认状态",
+      "stateCount": 1,
+      "states": [
+        "/"
+      ],
+      "actionCount": 2,
+      "actionIds": [
+        "home.form.swapStations",
+        "home.form.toggleStudent"
+      ],
+      "actions": [
+        {
+          "id": "home.form.swapStations",
+          "label": "交换出发/到达站",
+          "behavior": "other"
+        },
+        {
+          "id": "home.form.toggleStudent",
+          "label": "切换学生票",
+          "behavior": "toggle"
+        }
+      ]
+    },
+    {
+      "id": "/travel",
+      "routePath": "/travel",
+      "component": "TravelServicePage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "出行服务",
+      "stateCount": 1,
+      "states": [
+        "/travel"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/orders",
+      "routePath": "/orders",
+      "component": "OrdersPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "订单",
+      "stateCount": 1,
+      "states": [
+        "/orders"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/member",
+      "routePath": "/member",
+      "component": "MemberPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "铁路会员",
+      "stateCount": 1,
+      "states": [
+        "/member"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/my",
+      "routePath": "/my",
+      "component": "MyPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "我的",
+      "stateCount": 1,
+      "states": [
+        "/my"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/station-select",
+      "routePath": "/station-select",
+      "component": "StationSelectPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "车站选择",
+      "stateCount": 1,
+      "states": [
+        "/station-select"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/date-select",
+      "routePath": "/date-select",
+      "component": "DateSelectPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "日期选择",
+      "stateCount": 1,
+      "states": [
+        "/date-select"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/query-result",
+      "routePath": "/query-result",
+      "component": "QueryResultPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "直达结果",
+      "stateCount": 3,
+      "states": [
+        "/query-result?tab=direct",
+        "/query-result?tab=transfer",
+        "/query-result?tab=direct&filterPanel=open"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/my-tickets",
+      "routePath": "/my-tickets",
+      "component": "MyTicketsPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "本人车票",
+      "stateCount": 2,
+      "states": [
+        "/my-tickets?id=:id",
+        "/my-tickets?dialog=refundNotice&id=:id"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/paid-orders",
+      "routePath": "/paid-orders",
+      "component": "PaidOrdersPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "已支付",
+      "stateCount": 2,
+      "states": [
+        "/paid-orders?id=:id",
+        "/paid-orders?dialog=refundNotice&id=:id"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/order-detail",
+      "routePath": "/order-detail",
+      "component": "OrderDetailPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "订单详情",
+      "stateCount": 2,
+      "states": [
+        "/order-detail?id=:id",
+        "/order-detail?dialog=refundNotice&id=:id"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/incomplete-orders",
+      "routePath": "/incomplete-orders",
+      "component": "IncompleteOrdersPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "未完成",
+      "stateCount": 1,
+      "states": [
+        "/incomplete-orders"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/settings",
+      "routePath": "/settings",
+      "component": "SettingsPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "系统设置",
+      "stateCount": 1,
+      "states": [
+        "/settings"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/all-apps",
+      "routePath": "/all-apps",
+      "component": "AllAppsPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "全部应用",
+      "stateCount": 1,
+      "states": [
+        "/all-apps"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/station-board",
+      "routePath": "/station-board",
+      "component": "StationBoardPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "车站大屏",
+      "stateCount": 1,
+      "states": [
+        "/station-board"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/timetable",
+      "routePath": "/timetable",
+      "component": "TimetablePage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "时刻表",
+      "stateCount": 1,
+      "states": [
+        "/timetable"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/notifications",
+      "routePath": "/notifications",
+      "component": "NotificationsPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "通知消息",
+      "stateCount": 1,
+      "states": [
+        "/notifications"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/invoice",
+      "routePath": "/invoice",
+      "component": "InvoicePage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "电子发票",
+      "stateCount": 1,
+      "states": [
+        "/invoice"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/invoice-headers",
+      "routePath": "/invoice-headers",
+      "component": "InvoiceHeadersPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "发票抬头管理",
+      "stateCount": 1,
+      "states": [
+        "/invoice-headers"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/add-invoice-header",
+      "routePath": "/add-invoice-header",
+      "component": "AddInvoiceHeaderPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "添加发票抬头",
+      "stateCount": 1,
+      "states": [
+        "/add-invoice-header"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/invoice-email",
+      "routePath": "/invoice-email",
+      "component": "InvoiceEmailPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "发送邮箱设置",
+      "stateCount": 1,
+      "states": [
+        "/invoice-email"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/service-phone",
+      "routePath": "/service-phone",
+      "component": "ServicePhonePage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "客服电话",
+      "stateCount": 1,
+      "states": [
+        "/service-phone"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/my-account",
+      "routePath": "/my-account",
+      "component": "MyAccountPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "我的账户",
+      "stateCount": 1,
+      "states": [
+        "/my-account"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/change-password",
+      "routePath": "/change-password",
+      "component": "ChangePasswordPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "修改密码",
+      "stateCount": 1,
+      "states": [
+        "/change-password"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/notification-settings",
+      "routePath": "/notification-settings",
+      "component": "NotificationSettingsPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "通知设置",
+      "stateCount": 1,
+      "states": [
+        "/notification-settings"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/id-verify",
+      "routePath": "/id-verify",
+      "component": "IdVerifyPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "人证核验",
+      "stateCount": 1,
+      "states": [
+        "/id-verify"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/fingerprint",
+      "routePath": "/fingerprint",
+      "component": "FingerprintPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "指纹登录",
+      "stateCount": 1,
+      "states": [
+        "/fingerprint"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/version-switch",
+      "routePath": "/version-switch",
+      "component": "VersionSwitchPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "版本切换",
+      "stateCount": 1,
+      "states": [
+        "/version-switch"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/font-size",
+      "routePath": "/font-size",
+      "component": "FontSizePage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "字体大小及对比度",
+      "stateCount": 1,
+      "states": [
+        "/font-size"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/cancel-account",
+      "routePath": "/cancel-account",
+      "component": "CancelAccountPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "注销原因",
+      "stateCount": 1,
+      "states": [
+        "/cancel-account"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/payment-password",
+      "routePath": "/payment-password",
+      "component": "PaymentPasswordPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "消费密码",
+      "stateCount": 1,
+      "states": [
+        "/payment-password"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/student-verify",
+      "routePath": "/student-verify",
+      "component": "StudentVerifyPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "学生优惠资质信息",
+      "stateCount": 1,
+      "states": [
+        "/student-verify"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/change-phone",
+      "routePath": "/change-phone",
+      "component": "ChangePhonePage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "修改手机号",
+      "stateCount": 1,
+      "states": [
+        "/change-phone"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/special-passenger",
+      "routePath": "/special-passenger",
+      "component": "SpecialPassengerPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "重点旅客预约",
+      "stateCount": 1,
+      "states": [
+        "/special-passenger"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/air-rail",
+      "routePath": "/air-rail",
+      "component": "AirRailPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "机票·空铁联运",
+      "stateCount": 1,
+      "states": [
+        "/air-rail"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/bus-ticket",
+      "routePath": "/bus-ticket",
+      "component": "BusTicketPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "汽车票",
+      "stateCount": 1,
+      "states": [
+        "/bus-ticket"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/order-confirm",
+      "routePath": "/order-confirm",
+      "component": "OrderConfirmPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "确认订单",
+      "stateCount": 1,
+      "states": [
+        "/order-confirm?idx=:idx&seat=:seat"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/passengers",
+      "routePath": "/passengers",
+      "component": "PassengerListPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "乘车人管理",
+      "stateCount": 2,
+      "states": [
+        "/passengers?mode=manage",
+        "/passengers?mode=select"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/add-passenger",
+      "routePath": "/add-passenger",
+      "component": "AddPassengerPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "添加乘车人",
+      "stateCount": 4,
+      "states": [
+        "/add-passenger",
+        "/add-passenger?dialog=idType",
+        "/add-passenger?dialog=ticketType",
+        "/add-passenger?dialog=alert"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/edit-profile",
+      "routePath": "/edit-profile",
+      "component": "EditProfilePage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "修改个人信息",
+      "stateCount": 1,
+      "states": [
+        "/edit-profile"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/payment-platform",
+      "routePath": "/payment-platform",
+      "component": "PaymentPlatformPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "请您支付",
+      "stateCount": 1,
+      "states": [
+        "/payment-platform"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/payment-success",
+      "routePath": "/payment-success",
+      "component": "PaymentSuccessPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "支付成功",
+      "stateCount": 1,
+      "states": [
+        "/payment-success"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/refund-confirm",
+      "routePath": "/refund-confirm",
+      "component": "RefundConfirmPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "退票确认",
+      "stateCount": 2,
+      "states": [
+        "/refund-confirm?id=:id",
+        "/refund-confirm?dialog=refundNotice&id=:id"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/refund-success",
+      "routePath": "/refund-success",
+      "component": "RefundSuccessPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "退票成功",
+      "stateCount": 1,
+      "states": [
+        "/refund-success"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/auth/login",
+      "routePath": "/auth/login",
+      "component": "LoginPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "登录",
+      "stateCount": 1,
+      "states": [
+        "/auth/login"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/auth/register",
+      "routePath": "/auth/register",
+      "component": "RegisterPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "注册",
+      "stateCount": 1,
+      "states": [
+        "/auth/register"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/auth/register-verify",
+      "routePath": "/auth/register-verify",
+      "component": "RegisterVerifyPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "注册验证",
+      "stateCount": 1,
+      "states": [
+        "/auth/register-verify"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/auth/forgot-password",
+      "routePath": "/auth/forgot-password",
+      "component": "ForgotPasswordPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "找回密码",
+      "stateCount": 1,
+      "states": [
+        "/auth/forgot-password"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    }
+  ],
+  "edges": [
+    {
+      "source": "/travel",
+      "target": "/",
+      "transitions": [
+        "tab.home",
+        "travel.goHome"
+      ],
+      "type": "navigation",
+      "label": "tab.home, travel.goHome",
+      "id": "tab.home"
+    },
+    {
+      "source": "/orders",
+      "target": "/",
+      "transitions": [
+        "tab.home"
+      ],
+      "type": "navigation",
+      "label": "tab.home",
+      "id": "tab.home"
+    },
+    {
+      "source": "/member",
+      "target": "/",
+      "transitions": [
+        "tab.home"
+      ],
+      "type": "navigation",
+      "label": "tab.home",
+      "id": "tab.home"
+    },
+    {
+      "source": "/my",
+      "target": "/",
+      "transitions": [
+        "tab.home"
+      ],
+      "type": "navigation",
+      "label": "tab.home",
+      "id": "tab.home"
+    },
+    {
+      "source": "/",
+      "target": "/travel",
+      "transitions": [
+        "tab.travel"
+      ],
+      "type": "navigation",
+      "label": "tab.travel",
+      "id": "tab.travel"
+    },
+    {
+      "source": "/orders",
+      "target": "/travel",
+      "transitions": [
+        "tab.travel"
+      ],
+      "type": "navigation",
+      "label": "tab.travel",
+      "id": "tab.travel"
+    },
+    {
+      "source": "/member",
+      "target": "/travel",
+      "transitions": [
+        "tab.travel"
+      ],
+      "type": "navigation",
+      "label": "tab.travel",
+      "id": "tab.travel"
+    },
+    {
+      "source": "/my",
+      "target": "/travel",
+      "transitions": [
+        "tab.travel"
+      ],
+      "type": "navigation",
+      "label": "tab.travel",
+      "id": "tab.travel"
+    },
+    {
+      "source": "/",
+      "target": "/orders",
+      "transitions": [
+        "tab.orders"
+      ],
+      "type": "navigation",
+      "label": "tab.orders",
+      "id": "tab.orders"
+    },
+    {
+      "source": "/travel",
+      "target": "/orders",
+      "transitions": [
+        "tab.orders"
+      ],
+      "type": "navigation",
+      "label": "tab.orders",
+      "id": "tab.orders"
+    },
+    {
+      "source": "/member",
+      "target": "/orders",
+      "transitions": [
+        "tab.orders"
+      ],
+      "type": "navigation",
+      "label": "tab.orders",
+      "id": "tab.orders"
+    },
+    {
+      "source": "/my",
+      "target": "/orders",
+      "transitions": [
+        "tab.orders"
+      ],
+      "type": "navigation",
+      "label": "tab.orders",
+      "id": "tab.orders"
+    },
+    {
+      "source": "/",
+      "target": "/member",
+      "transitions": [
+        "tab.member"
+      ],
+      "type": "navigation",
+      "label": "tab.member",
+      "id": "tab.member"
+    },
+    {
+      "source": "/travel",
+      "target": "/member",
+      "transitions": [
+        "tab.member"
+      ],
+      "type": "navigation",
+      "label": "tab.member",
+      "id": "tab.member"
+    },
+    {
+      "source": "/orders",
+      "target": "/member",
+      "transitions": [
+        "tab.member"
+      ],
+      "type": "navigation",
+      "label": "tab.member",
+      "id": "tab.member"
+    },
+    {
+      "source": "/my",
+      "target": "/member",
+      "transitions": [
+        "tab.member"
+      ],
+      "type": "navigation",
+      "label": "tab.member",
+      "id": "tab.member"
+    },
+    {
+      "source": "/",
+      "target": "/my",
+      "transitions": [
+        "tab.my"
+      ],
+      "type": "navigation",
+      "label": "tab.my",
+      "id": "tab.my"
+    },
+    {
+      "source": "/travel",
+      "target": "/my",
+      "transitions": [
+        "tab.my"
+      ],
+      "type": "navigation",
+      "label": "tab.my",
+      "id": "tab.my"
+    },
+    {
+      "source": "/orders",
+      "target": "/my",
+      "transitions": [
+        "tab.my"
+      ],
+      "type": "navigation",
+      "label": "tab.my",
+      "id": "tab.my"
+    },
+    {
+      "source": "/member",
+      "target": "/my",
+      "transitions": [
+        "tab.my"
+      ],
+      "type": "navigation",
+      "label": "tab.my",
+      "id": "tab.my"
+    },
+    {
+      "source": "/",
+      "target": "/station-select",
+      "transitions": [
+        "home.stationSelect.from",
+        "home.stationSelect.to"
+      ],
+      "type": "navigation",
+      "label": "home.stationSelect.from, home.stationSelect.to",
+      "id": "home.stationSelect.from"
+    },
+    {
+      "source": "/",
+      "target": "/date-select",
+      "transitions": [
+        "home.dateSelect"
+      ],
+      "type": "navigation",
+      "label": "home.dateSelect",
+      "id": "home.dateSelect"
+    },
+    {
+      "source": "/query-result",
+      "target": "/date-select",
+      "transitions": [
+        "home.dateSelect"
+      ],
+      "type": "navigation",
+      "label": "home.dateSelect",
+      "id": "home.dateSelect"
+    },
+    {
+      "source": "/",
+      "target": "/query-result",
+      "transitions": [
+        "home.queryResult"
+      ],
+      "type": "navigation",
+      "label": "home.queryResult",
+      "id": "home.queryResult"
+    },
+    {
+      "source": "/orders",
+      "target": "/my-tickets",
+      "transitions": [
+        "orders.myTickets"
+      ],
+      "type": "navigation",
+      "label": "orders.myTickets",
+      "id": "orders.myTickets"
+    },
+    {
+      "source": "/orders",
+      "target": "/paid-orders",
+      "transitions": [
+        "orders.paidOrders"
+      ],
+      "type": "navigation",
+      "label": "orders.paidOrders",
+      "id": "orders.paidOrders"
+    },
+    {
+      "source": "/orders",
+      "target": "/incomplete-orders",
+      "transitions": [
+        "orders.incompleteOrders"
+      ],
+      "type": "navigation",
+      "label": "orders.incompleteOrders",
+      "id": "orders.incompleteOrders"
+    },
+    {
+      "source": "/order-confirm",
+      "target": "/incomplete-orders",
+      "transitions": [
+        "orders.incompleteOrders"
+      ],
+      "type": "navigation",
+      "label": "orders.incompleteOrders",
+      "id": "orders.incompleteOrders"
+    },
+    {
+      "source": "/incomplete-orders",
+      "target": "/",
+      "transitions": [
+        "incompleteOrders.backHome"
+      ],
+      "type": "navigation",
+      "label": "incompleteOrders.backHome",
+      "id": "incompleteOrders.backHome"
+    },
+    {
+      "source": "/incomplete-orders",
+      "target": "/orders",
+      "transitions": [
+        "incompleteOrders.backOrders"
+      ],
+      "type": "navigation",
+      "label": "incompleteOrders.backOrders",
+      "id": "incompleteOrders.backOrders"
+    },
+    {
+      "source": "/",
+      "target": "/all-apps",
+      "transitions": [
+        "home.allApps"
+      ],
+      "type": "navigation",
+      "label": "home.allApps",
+      "id": "home.allApps"
+    },
+    {
+      "source": "/",
+      "target": "/station-board",
+      "transitions": [
+        "service.stationBoard"
+      ],
+      "type": "navigation",
+      "label": "service.stationBoard",
+      "id": "service.stationBoard"
+    },
+    {
+      "source": "/my",
+      "target": "/station-board",
+      "transitions": [
+        "service.stationBoard"
+      ],
+      "type": "navigation",
+      "label": "service.stationBoard",
+      "id": "service.stationBoard"
+    },
+    {
+      "source": "/all-apps",
+      "target": "/station-board",
+      "transitions": [
+        "service.stationBoard"
+      ],
+      "type": "navigation",
+      "label": "service.stationBoard",
+      "id": "service.stationBoard"
+    },
+    {
+      "source": "/",
+      "target": "/timetable",
+      "transitions": [
+        "service.timetable"
+      ],
+      "type": "navigation",
+      "label": "service.timetable",
+      "id": "service.timetable"
+    },
+    {
+      "source": "/my",
+      "target": "/timetable",
+      "transitions": [
+        "service.timetable"
+      ],
+      "type": "navigation",
+      "label": "service.timetable",
+      "id": "service.timetable"
+    },
+    {
+      "source": "/all-apps",
+      "target": "/timetable",
+      "transitions": [
+        "service.timetable"
+      ],
+      "type": "navigation",
+      "label": "service.timetable",
+      "id": "service.timetable"
+    },
+    {
+      "source": "/",
+      "target": "/service-phone",
+      "transitions": [
+        "service.servicePhone"
+      ],
+      "type": "navigation",
+      "label": "service.servicePhone",
+      "id": "service.servicePhone"
+    },
+    {
+      "source": "/my",
+      "target": "/service-phone",
+      "transitions": [
+        "service.servicePhone"
+      ],
+      "type": "navigation",
+      "label": "service.servicePhone",
+      "id": "service.servicePhone"
+    },
+    {
+      "source": "/all-apps",
+      "target": "/service-phone",
+      "transitions": [
+        "service.servicePhone"
+      ],
+      "type": "navigation",
+      "label": "service.servicePhone",
+      "id": "service.servicePhone"
+    },
+    {
+      "source": "/my",
+      "target": "/special-passenger",
+      "transitions": [
+        "service.specialPassenger"
+      ],
+      "type": "navigation",
+      "label": "service.specialPassenger",
+      "id": "service.specialPassenger"
+    },
+    {
+      "source": "/all-apps",
+      "target": "/special-passenger",
+      "transitions": [
+        "service.specialPassenger"
+      ],
+      "type": "navigation",
+      "label": "service.specialPassenger",
+      "id": "service.specialPassenger"
+    },
+    {
+      "source": "/",
+      "target": "/air-rail",
+      "transitions": [
+        "service.airRail"
+      ],
+      "type": "navigation",
+      "label": "service.airRail",
+      "id": "service.airRail"
+    },
+    {
+      "source": "/all-apps",
+      "target": "/air-rail",
+      "transitions": [
+        "service.airRail"
+      ],
+      "type": "navigation",
+      "label": "service.airRail",
+      "id": "service.airRail"
+    },
+    {
+      "source": "/",
+      "target": "/bus-ticket",
+      "transitions": [
+        "service.busTicket"
+      ],
+      "type": "navigation",
+      "label": "service.busTicket",
+      "id": "service.busTicket"
+    },
+    {
+      "source": "/all-apps",
+      "target": "/bus-ticket",
+      "transitions": [
+        "service.busTicket"
+      ],
+      "type": "navigation",
+      "label": "service.busTicket",
+      "id": "service.busTicket"
+    },
+    {
+      "source": "/orders",
+      "target": "/invoice",
+      "transitions": [
+        "orders.invoice"
+      ],
+      "type": "navigation",
+      "label": "orders.invoice",
+      "id": "orders.invoice"
+    },
+    {
+      "source": "/invoice",
+      "target": "/invoice-headers",
+      "transitions": [
+        "invoice.invoiceHeaders"
+      ],
+      "type": "navigation",
+      "label": "invoice.invoiceHeaders",
+      "id": "invoice.invoiceHeaders"
+    },
+    {
+      "source": "/invoice-headers",
+      "target": "/add-invoice-header",
+      "transitions": [
+        "invoice.addHeader"
+      ],
+      "type": "navigation",
+      "label": "invoice.addHeader",
+      "id": "invoice.addHeader"
+    },
+    {
+      "source": "/invoice",
+      "target": "/invoice-email",
+      "transitions": [
+        "invoice.emailSettings"
+      ],
+      "type": "navigation",
+      "label": "invoice.emailSettings",
+      "id": "invoice.emailSettings"
+    },
+    {
+      "source": "/my",
+      "target": "/settings",
+      "transitions": [
+        "my.settings"
+      ],
+      "type": "navigation",
+      "label": "my.settings",
+      "id": "my.settings"
+    },
+    {
+      "source": "/my",
+      "target": "/notifications",
+      "transitions": [
+        "my.notifications"
+      ],
+      "type": "navigation",
+      "label": "my.notifications",
+      "id": "my.notifications"
+    },
+    {
+      "source": "/my",
+      "target": "/my-account",
+      "transitions": [
+        "my.account"
+      ],
+      "type": "navigation",
+      "label": "my.account",
+      "id": "my.account"
+    },
+    {
+      "source": "/settings",
+      "target": "/change-password",
+      "transitions": [
+        "settings.changePassword"
+      ],
+      "type": "navigation",
+      "label": "settings.changePassword",
+      "id": "settings.changePassword"
+    },
+    {
+      "source": "/my-account",
+      "target": "/change-password",
+      "transitions": [
+        "settings.changePassword"
+      ],
+      "type": "navigation",
+      "label": "settings.changePassword",
+      "id": "settings.changePassword"
+    },
+    {
+      "source": "/settings",
+      "target": "/notification-settings",
+      "transitions": [
+        "settings.notificationSettings"
+      ],
+      "type": "navigation",
+      "label": "settings.notificationSettings",
+      "id": "settings.notificationSettings"
+    },
+    {
+      "source": "/settings",
+      "target": "/id-verify",
+      "transitions": [
+        "settings.idVerify"
+      ],
+      "type": "navigation",
+      "label": "settings.idVerify",
+      "id": "settings.idVerify"
+    },
+    {
+      "source": "/settings",
+      "target": "/fingerprint",
+      "transitions": [
+        "settings.fingerprint"
+      ],
+      "type": "navigation",
+      "label": "settings.fingerprint",
+      "id": "settings.fingerprint"
+    },
+    {
+      "source": "/settings",
+      "target": "/version-switch",
+      "transitions": [
+        "settings.versionSwitch"
+      ],
+      "type": "navigation",
+      "label": "settings.versionSwitch",
+      "id": "settings.versionSwitch"
+    },
+    {
+      "source": "/settings",
+      "target": "/font-size",
+      "transitions": [
+        "settings.fontSize"
+      ],
+      "type": "navigation",
+      "label": "settings.fontSize",
+      "id": "settings.fontSize"
+    },
+    {
+      "source": "/font-size",
+      "target": "/",
+      "transitions": [
+        "fontSize.switchNow"
+      ],
+      "type": "navigation",
+      "label": "fontSize.switchNow",
+      "id": "fontSize.switchNow"
+    },
+    {
+      "source": "/settings",
+      "target": "/cancel-account",
+      "transitions": [
+        "settings.cancelAccount"
+      ],
+      "type": "navigation",
+      "label": "settings.cancelAccount",
+      "id": "settings.cancelAccount"
+    },
+    {
+      "source": "/settings",
+      "target": "/payment-password",
+      "transitions": [
+        "settings.paymentPassword"
+      ],
+      "type": "navigation",
+      "label": "settings.paymentPassword",
+      "id": "settings.paymentPassword"
+    },
+    {
+      "source": "/my-account",
+      "target": "/edit-profile",
+      "transitions": [
+        "account.editProfile"
+      ],
+      "type": "navigation",
+      "label": "account.editProfile",
+      "id": "account.editProfile"
+    },
+    {
+      "source": "/my-account",
+      "target": "/student-verify",
+      "transitions": [
+        "account.studentVerify"
+      ],
+      "type": "navigation",
+      "label": "account.studentVerify",
+      "id": "account.studentVerify"
+    },
+    {
+      "source": "/edit-profile",
+      "target": "/student-verify",
+      "transitions": [
+        "account.studentVerify"
+      ],
+      "type": "navigation",
+      "label": "account.studentVerify",
+      "id": "account.studentVerify"
+    },
+    {
+      "source": "/my-account",
+      "target": "/change-phone",
+      "transitions": [
+        "account.changePhone"
+      ],
+      "type": "navigation",
+      "label": "account.changePhone",
+      "id": "account.changePhone"
+    },
+    {
+      "source": "/query-result",
+      "target": "/order-confirm",
+      "transitions": [
+        "trainDetail.book"
+      ],
+      "type": "navigation",
+      "label": "trainDetail.book",
+      "id": "trainDetail.book"
+    },
+    {
+      "source": "/order-confirm",
+      "target": "/passengers",
+      "transitions": [
+        "orderConfirm.passengers"
+      ],
+      "type": "navigation",
+      "label": "orderConfirm.passengers",
+      "id": "orderConfirm.passengers"
+    },
+    {
+      "source": "/my",
+      "target": "/passengers",
+      "transitions": [
+        "my.passengers"
+      ],
+      "type": "navigation",
+      "label": "my.passengers",
+      "id": "my.passengers"
+    },
+    {
+      "source": "/passengers",
+      "target": "/add-passenger",
+      "transitions": [
+        "passengers.addPassenger"
+      ],
+      "type": "navigation",
+      "label": "passengers.addPassenger",
+      "id": "passengers.addPassenger"
+    },
+    {
+      "source": "/auth/login",
+      "target": "/",
+      "transitions": [
+        "auth.login.success"
+      ],
+      "type": "navigation",
+      "label": "auth.login.success",
+      "id": "auth.login.success"
+    },
+    {
+      "source": "/auth/login",
+      "target": "/auth/forgot-password",
+      "transitions": [
+        "auth.forgotPassword.open"
+      ],
+      "type": "navigation",
+      "label": "auth.forgotPassword.open",
+      "id": "auth.forgotPassword.open"
+    },
+    {
+      "source": "/auth/login",
+      "target": "/auth/register",
+      "transitions": [
+        "auth.register.open"
+      ],
+      "type": "navigation",
+      "label": "auth.register.open",
+      "id": "auth.register.open"
+    },
+    {
+      "source": "/auth/register",
+      "target": "/auth/register-verify",
+      "transitions": [
+        "auth.register.verify"
+      ],
+      "type": "navigation",
+      "label": "auth.register.verify",
+      "id": "auth.register.verify"
+    },
+    {
+      "source": "/auth/forgot-password",
+      "target": "/auth/login",
+      "transitions": [
+        "auth.forgotPassword.done"
+      ],
+      "type": "navigation",
+      "label": "auth.forgotPassword.done",
+      "id": "auth.forgotPassword.done"
+    },
+    {
+      "source": "/refund-success",
+      "target": "/orders",
+      "transitions": [
+        "refundSuccess.backOrders"
+      ],
+      "type": "navigation",
+      "label": "refundSuccess.backOrders",
+      "id": "refundSuccess.backOrders"
+    },
+    {
+      "source": "/incomplete-orders",
+      "target": "/payment-platform",
+      "transitions": [
+        "incompleteOrders.paymentPlatform.open"
+      ],
+      "type": "navigation",
+      "label": "incompleteOrders.paymentPlatform.open",
+      "id": "incompleteOrders.paymentPlatform.open"
+    },
+    {
+      "source": "/payment-platform",
+      "target": "/payment-success",
+      "transitions": [
+        "paymentPlatform.paymentSuccess"
+      ],
+      "type": "navigation",
+      "label": "paymentPlatform.paymentSuccess",
+      "id": "paymentPlatform.paymentSuccess"
+    },
+    {
+      "source": "/payment-success",
+      "target": "/",
+      "transitions": [
+        "paymentSuccess.backHome"
+      ],
+      "type": "navigation",
+      "label": "paymentSuccess.backHome",
+      "id": "paymentSuccess.backHome"
+    },
+    {
+      "source": "/payment-success",
+      "target": "/paid-orders",
+      "transitions": [
+        "paymentSuccess.backOrders"
+      ],
+      "type": "navigation",
+      "label": "paymentSuccess.backOrders",
+      "id": "paymentSuccess.backOrders"
+    },
+    {
+      "source": "/paid-orders",
+      "target": "/refund-confirm",
+      "transitions": [
+        "paidOrders.refundConfirm"
+      ],
+      "type": "navigation",
+      "label": "paidOrders.refundConfirm",
+      "id": "paidOrders.refundConfirm"
+    },
+    {
+      "source": "/order-detail",
+      "target": "/refund-confirm",
+      "transitions": [
+        "orderDetail.refundConfirm"
+      ],
+      "type": "navigation",
+      "label": "orderDetail.refundConfirm",
+      "id": "orderDetail.refundConfirm"
+    },
+    {
+      "source": "/my-tickets",
+      "target": "/refund-confirm",
+      "transitions": [
+        "myTickets.refundConfirm"
+      ],
+      "type": "navigation",
+      "label": "myTickets.refundConfirm",
+      "id": "myTickets.refundConfirm"
+    },
+    {
+      "source": "/refund-confirm",
+      "target": "/refund-success",
+      "transitions": [
+        "refundConfirm.refundSuccess"
+      ],
+      "type": "navigation",
+      "label": "refundConfirm.refundSuccess",
+      "id": "refundConfirm.refundSuccess"
+    },
+    {
+      "source": "/paid-orders",
+      "target": "/order-detail",
+      "transitions": [
+        "paidOrders.orderDetail"
+      ],
+      "type": "navigation",
+      "label": "paidOrders.orderDetail",
+      "id": "paidOrders.orderDetail"
+    }
+  ]
+}

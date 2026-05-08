@@ -1,0 +1,3080 @@
+{
+  "app": "alipay",
+  "appDir": "apps/Alipay",
+  "mode": "data",
+  "dataFile": "data/index.ts",
+  "reachability": {
+    "entryNodes": [
+      "/"
+    ],
+    "reachableNodeCount": 46,
+    "reachableEdgeCount": 76,
+    "unreachableNodeCount": 0,
+    "unreachableEdgeCount": 0,
+    "unreachableNodeIds": []
+  },
+  "routeCount": 46,
+  "transitionCount": 50,
+  "nodes": [
+    {
+      "id": "/",
+      "routePath": "/",
+      "uiStateId": "home.base",
+      "component": "HomePage",
+      "entryPoint": true,
+      "entry": {
+        "kind": "home",
+        "home": true,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区（Layout 容器）"
+        }
+      ],
+      "description": "首页",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/finance",
+      "routePath": "/finance",
+      "uiStateId": "finance.base",
+      "component": "FinancePage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区（Layout 容器）"
+        }
+      ],
+      "description": "理财",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/video",
+      "routePath": "/video",
+      "uiStateId": "video.base",
+      "component": "VideoPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区（Layout 容器）"
+        }
+      ],
+      "description": "视频",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/messages",
+      "routePath": "/messages",
+      "uiStateId": "messages.base",
+      "component": "MessagesPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区（Layout 容器）"
+        }
+      ],
+      "description": "消息",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/my",
+      "routePath": "/my",
+      "uiStateId": "my.base",
+      "component": "MyPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区（Layout 容器）"
+        }
+      ],
+      "description": "我的",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/chat?id=:id&type=:type",
+      "routePath": "/chat",
+      "uiStateId": "chat.base",
+      "component": "ChatPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区（Layout 容器）"
+        }
+      ],
+      "description": "聊天页面",
+      "search": {},
+      "queryParams": {
+        "id": "string",
+        "type": "string"
+      },
+      "actions": []
+    },
+    {
+      "id": "/contacts",
+      "routePath": "/contacts",
+      "uiStateId": "contacts.base",
+      "component": "ContactsPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区（Layout 容器）"
+        }
+      ],
+      "description": "通讯录",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/contacts/profile?contactId=:contactId",
+      "routePath": "/contacts/profile",
+      "uiStateId": "contacts.profile.base",
+      "component": "ContactProfilePage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区（Layout 容器）"
+        }
+      ],
+      "description": "联系人资料",
+      "search": {},
+      "queryParams": {
+        "contactId": "string"
+      },
+      "actions": []
+    },
+    {
+      "id": "/settings",
+      "routePath": "/settings",
+      "uiStateId": "settings.base",
+      "component": "SettingsPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区（Layout 容器）"
+        }
+      ],
+      "description": "设置",
+      "search": {},
+      "queryParams": {},
+      "actions": [
+        {
+          "id": "settings.visualRefresh.toggle",
+          "label": "视觉风格焕新：开关",
+          "behavior": "toggle"
+        }
+      ]
+    },
+    {
+      "id": "/settings/payment",
+      "routePath": "/settings/payment",
+      "uiStateId": "settings.payment.base",
+      "component": "PaymentSettingsPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区（Layout 容器）"
+        }
+      ],
+      "description": "支付设置",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/settings/payment/order",
+      "routePath": "/settings/payment/order",
+      "uiStateId": "settings.payment.order.base",
+      "component": "PayOrderSettingsPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区（Layout 容器）"
+        }
+      ],
+      "description": "支付顺序",
+      "search": {},
+      "queryParams": {},
+      "actions": [
+        {
+          "id": "payOrder.mode.select.system",
+          "label": "支付顺序：系统自动匹配",
+          "behavior": "select"
+        },
+        {
+          "id": "payOrder.mode.select.custom",
+          "label": "支付顺序：自定义顺序",
+          "behavior": "select"
+        }
+      ]
+    },
+    {
+      "id": "/settings/payment/fast-pay",
+      "routePath": "/settings/payment/fast-pay",
+      "uiStateId": "settings.payment.fastPay.base",
+      "component": "FastPaySettingsPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区（Layout 容器）"
+        }
+      ],
+      "description": "极速付款",
+      "search": {},
+      "queryParams": {},
+      "actions": [
+        {
+          "id": "fastPay.enabled.toggle",
+          "label": "极速付款：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "fastPay.easterEgg.toggle",
+          "label": "付款彩蛋：开关",
+          "behavior": "toggle"
+        }
+      ]
+    },
+    {
+      "id": "/settings/payment/fast-pay?modal=agreement",
+      "routePath": "/settings/payment/fast-pay",
+      "uiStateId": "settings.payment.fastPay.modal.agreement",
+      "component": "FastPaySettingsPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区（Layout 容器）"
+        }
+      ],
+      "description": "开通小额免密-协议弹窗",
+      "search": {
+        "modal": "agreement"
+      },
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/settings/payment/fast-pay?modal=password",
+      "routePath": "/settings/payment/fast-pay",
+      "uiStateId": "settings.payment.fastPay.modal.password",
+      "component": "FastPaySettingsPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区（Layout 容器）"
+        }
+      ],
+      "description": "开通小额免密-支付密码弹窗",
+      "search": {
+        "modal": "password"
+      },
+      "queryParams": {},
+      "actions": [
+        {
+          "id": "fastPayPassword.keypad.press",
+          "label": "输入支付密码数字键（开通小额免密）",
+          "behavior": "other",
+          "paramsSchema": {
+            "digit": "string"
+          }
+        },
+        {
+          "id": "fastPayPassword.keypad.delete",
+          "label": "删除支付密码一位（开通小额免密）",
+          "behavior": "other"
+        }
+      ]
+    },
+    {
+      "id": "/settings/payment/fast-pay?modal=noPwdDisableConfirm",
+      "routePath": "/settings/payment/fast-pay",
+      "uiStateId": "settings.payment.fastPay.modal.noPwdDisableConfirm",
+      "component": "FastPaySettingsPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区（Layout 容器）"
+        }
+      ],
+      "description": "关闭小额免密确认弹窗",
+      "search": {
+        "modal": "noPwdDisableConfirm"
+      },
+      "queryParams": {},
+      "actions": [
+        {
+          "id": "fastPay.noPwd.disable.submit",
+          "label": "确认关闭小额免密",
+          "behavior": "submit"
+        }
+      ]
+    },
+    {
+      "id": "/settings/payment/fast-pay?modal=disableFastPayConfirm",
+      "routePath": "/settings/payment/fast-pay",
+      "uiStateId": "settings.payment.fastPay.modal.disableFastPayConfirm",
+      "component": "FastPaySettingsPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区（Layout 容器）"
+        }
+      ],
+      "description": "关闭极速付款确认弹窗",
+      "search": {
+        "modal": "disableFastPayConfirm"
+      },
+      "queryParams": {},
+      "actions": [
+        {
+          "id": "fastPay.disable.submit",
+          "label": "确认关闭极速付款",
+          "behavior": "submit"
+        }
+      ]
+    },
+    {
+      "id": "/settings/notifications",
+      "routePath": "/settings/notifications",
+      "uiStateId": "settings.notifications.base",
+      "component": "NotificationSettingsPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区（Layout 容器）"
+        }
+      ],
+      "description": "新消息通知",
+      "search": {},
+      "queryParams": {},
+      "actions": [
+        {
+          "id": "notification.tradeSecurity.toggle",
+          "label": "交易与账号安全通知：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "notification.service.toggle",
+          "label": "服务通知：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "notification.activity.toggle",
+          "label": "活动通知：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "notification.avCall.toggle",
+          "label": "语音和视频通话通知：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "notification.avCallPopup.toggle",
+          "label": "语音和视频通话弹窗快捷接听：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "notification.friendReminder.toggle",
+          "label": "朋友消息提醒：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "notification.friendDetail.toggle",
+          "label": "显示朋友消息详情：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "notification.sound.toggle",
+          "label": "声音：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "notification.vibration.toggle",
+          "label": "振动：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "notification.avCallRing.toggle",
+          "label": "语音和视频通话来电铃声：开关",
+          "behavior": "toggle"
+        }
+      ]
+    },
+    {
+      "id": "/settings/general",
+      "routePath": "/settings/general",
+      "uiStateId": "settings.general.base",
+      "component": "GeneralSettingsPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区（Layout 容器）"
+        }
+      ],
+      "description": "通用",
+      "search": {},
+      "queryParams": {},
+      "actions": [
+        {
+          "id": "general.refreshSound.toggle",
+          "label": "刷新音效：开关",
+          "behavior": "toggle"
+        }
+      ]
+    },
+    {
+      "id": "/settings/general/language",
+      "routePath": "/settings/general/language",
+      "uiStateId": "settings.general.language.base",
+      "component": "LanguageSettingsPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区（Layout 容器）"
+        }
+      ],
+      "description": "多语言",
+      "search": {},
+      "queryParams": {},
+      "actions": [
+        {
+          "id": "language.select.zhCN",
+          "label": "选择语言：简体中文",
+          "behavior": "select"
+        },
+        {
+          "id": "language.select.zhTW",
+          "label": "选择语言：繁体中文(台湾)",
+          "behavior": "select"
+        },
+        {
+          "id": "language.select.zhHK",
+          "label": "选择语言：繁体中文(香港)",
+          "behavior": "select"
+        },
+        {
+          "id": "language.select.en",
+          "label": "选择语言：English",
+          "behavior": "select"
+        },
+        {
+          "id": "language.save.submit",
+          "label": "保存语言设置",
+          "behavior": "submit"
+        }
+      ]
+    },
+    {
+      "id": "/settings/general/font-size",
+      "routePath": "/settings/general/font-size",
+      "uiStateId": "settings.general.fontSize.base",
+      "component": "FontSizeSettingsPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区（Layout 容器）"
+        }
+      ],
+      "description": "字体大小",
+      "search": {},
+      "queryParams": {},
+      "actions": [
+        {
+          "id": "fontSize.slider.input",
+          "label": "字体大小：调整滑块",
+          "behavior": "input",
+          "paramsSchema": {
+            "value": "number"
+          }
+        }
+      ]
+    },
+    {
+      "id": "/settings/general/dark-mode",
+      "routePath": "/settings/general/dark-mode",
+      "uiStateId": "settings.general.darkMode.base",
+      "component": "DarkModeSettingsPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区（Layout 容器）"
+        }
+      ],
+      "description": "深色模式",
+      "search": {},
+      "queryParams": {},
+      "actions": [
+        {
+          "id": "darkMode.followSystem.toggle",
+          "label": "跟随系统：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "darkMode.mode.select.light",
+          "label": "选择普通模式",
+          "behavior": "select"
+        },
+        {
+          "id": "darkMode.mode.select.dark",
+          "label": "选择深色模式",
+          "behavior": "select"
+        }
+      ]
+    },
+    {
+      "id": "/settings/general/speed-mode",
+      "routePath": "/settings/general/speed-mode",
+      "uiStateId": "settings.general.speedMode.base",
+      "component": "SpeedModeSettingsPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区（Layout 容器）"
+        }
+      ],
+      "description": "极速模式",
+      "search": {},
+      "queryParams": {},
+      "actions": [
+        {
+          "id": "speedMode.enabled.toggle",
+          "label": "极速启动：开关",
+          "behavior": "toggle"
+        }
+      ]
+    },
+    {
+      "id": "/settings/general/clipboard",
+      "routePath": "/settings/general/clipboard",
+      "uiStateId": "settings.general.clipboard.base",
+      "component": "ClipboardSettingsPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区（Layout 容器）"
+        }
+      ],
+      "description": "剪贴板设置",
+      "search": {},
+      "queryParams": {},
+      "actions": [
+        {
+          "id": "clipboard.allowRead.toggle",
+          "label": "允许读取剪贴板：开关",
+          "behavior": "toggle"
+        }
+      ]
+    },
+    {
+      "id": "/settings/general/my-manage",
+      "routePath": "/settings/general/my-manage",
+      "uiStateId": "settings.general.myManage.base",
+      "component": "MyPageManagePage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区（Layout 容器）"
+        }
+      ],
+      "description": "我的页管理",
+      "search": {},
+      "queryParams": {},
+      "actions": [
+        {
+          "id": "myManage.documents.toggle",
+          "label": "证件：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "myManage.asset.yuebao.toggle",
+          "label": "余额宝：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "myManage.asset.huabei.toggle",
+          "label": "花呗：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "myManage.asset.antInsure.toggle",
+          "label": "蚂蚁保：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "myManage.asset.sesame.toggle",
+          "label": "芝麻信用：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "myManage.asset.yulibao.toggle",
+          "label": "余利宝：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "myManage.asset.mybankLoan.toggle",
+          "label": "网商贷：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "myManage.asset.mybank.toggle",
+          "label": "网商银行：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "myManage.civic.toggle",
+          "label": "我的民生保障：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "myManage.orders.toggle",
+          "label": "我的订单：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "myManage.moreServices.toggle",
+          "label": "更多服务：开关",
+          "behavior": "toggle"
+        }
+      ]
+    },
+    {
+      "id": "/settings/general/home-manage",
+      "routePath": "/settings/general/home-manage",
+      "uiStateId": "settings.general.homeManage.base",
+      "component": "HomeManagePage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区（Layout 容器）"
+        }
+      ],
+      "description": "首页管理",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/settings/general/home-manage/search-box",
+      "routePath": "/settings/general/home-manage/search-box",
+      "uiStateId": "settings.general.homeManage.searchBox.base",
+      "component": "SearchBoxManagePage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区（Layout 容器）"
+        }
+      ],
+      "description": "搜索框管理",
+      "search": {},
+      "queryParams": {},
+      "actions": [
+        {
+          "id": "homeManage.searchBox.recommend.toggle",
+          "label": "搜索框推荐：开关",
+          "behavior": "toggle"
+        },
+        {
+          "id": "homeManage.searchBox.ambience.toggle",
+          "label": "搜索框氛围：开关",
+          "behavior": "toggle"
+        }
+      ]
+    },
+    {
+      "id": "/settings/general/home-manage/search-pre",
+      "routePath": "/settings/general/home-manage/search-pre",
+      "uiStateId": "settings.general.homeManage.searchPre.base",
+      "component": "SearchPreManagePage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区（Layout 容器）"
+        }
+      ],
+      "description": "搜索前置页管理",
+      "search": {},
+      "queryParams": {},
+      "actions": [
+        {
+          "id": "homeManage.searchPreWords.toggle",
+          "label": "顶部搜索推荐词：开关",
+          "behavior": "toggle"
+        }
+      ]
+    },
+    {
+      "id": "/settings/general/home-manage/voice-float",
+      "routePath": "/settings/general/home-manage/voice-float",
+      "uiStateId": "settings.general.homeManage.voiceFloat.base",
+      "component": "VoiceFloatingBallPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区（Layout 容器）"
+        }
+      ],
+      "description": "语音快捷悬浮球",
+      "search": {},
+      "queryParams": {},
+      "actions": [
+        {
+          "id": "homeManage.voiceFloating.toggle",
+          "label": "语音快捷悬浮球：开关",
+          "behavior": "toggle"
+        }
+      ]
+    },
+    {
+      "id": "/settings/general/home-manage/activity-ambience",
+      "routePath": "/settings/general/home-manage/activity-ambience",
+      "uiStateId": "settings.general.homeManage.activityAmbience.base",
+      "component": "ActivityAmbiencePage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区（Layout 容器）"
+        }
+      ],
+      "description": "活动氛围图",
+      "search": {},
+      "queryParams": {},
+      "actions": [
+        {
+          "id": "homeManage.activityAmbience.toggle",
+          "label": "活动氛围图：开关",
+          "behavior": "toggle"
+        }
+      ]
+    },
+    {
+      "id": "/bill",
+      "routePath": "/bill",
+      "uiStateId": "bill.base",
+      "component": "BillsPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "deepLink",
+        "home": false,
+        "deepLink": true
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区（Layout 容器）"
+        }
+      ],
+      "description": "账单-全部",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/bill?tab=out",
+      "routePath": "/bill",
+      "uiStateId": "bill.tab.out",
+      "component": "BillsPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "deepLink",
+        "home": false,
+        "deepLink": true
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区（Layout 容器）"
+        }
+      ],
+      "description": "账单-支出",
+      "search": {
+        "tab": "out"
+      },
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/bill?tab=transfer",
+      "routePath": "/bill",
+      "uiStateId": "bill.tab.transfer",
+      "component": "BillsPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "deepLink",
+        "home": false,
+        "deepLink": true
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区（Layout 容器）"
+        }
+      ],
+      "description": "账单-转账",
+      "search": {
+        "tab": "transfer"
+      },
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/bill/analysis",
+      "routePath": "/bill/analysis",
+      "uiStateId": "bill.analysis.base",
+      "component": "BillAnalysisPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区（Layout 容器）"
+        }
+      ],
+      "description": "收支分析",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/balance",
+      "routePath": "/balance",
+      "uiStateId": "balance.base",
+      "component": "BalancePage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "deepLink",
+        "home": false,
+        "deepLink": true
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区（Layout 容器）"
+        }
+      ],
+      "description": "余额",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/balance/records",
+      "routePath": "/balance/records",
+      "uiStateId": "balance.records.base",
+      "component": "BalanceRecordsPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区（Layout 容器）"
+        }
+      ],
+      "description": "余额明细-全部",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/balance/records?tab=out",
+      "routePath": "/balance/records",
+      "uiStateId": "balance.records.tab.out",
+      "component": "BalanceRecordsPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区（Layout 容器）"
+        }
+      ],
+      "description": "余额明细-支出",
+      "search": {
+        "tab": "out"
+      },
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/balance/records?tab=in",
+      "routePath": "/balance/records",
+      "uiStateId": "balance.records.tab.in",
+      "component": "BalanceRecordsPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区（Layout 容器）"
+        }
+      ],
+      "description": "余额明细-收入",
+      "search": {
+        "tab": "in"
+      },
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/pay",
+      "routePath": "/pay",
+      "uiStateId": "pay.base",
+      "component": "PayPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "deepLink",
+        "home": false,
+        "deepLink": true
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区（Layout 容器）"
+        }
+      ],
+      "description": "收付款",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/pay/receive",
+      "routePath": "/pay/receive",
+      "uiStateId": "pay.receive.base",
+      "component": "ReceivePage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "deepLink",
+        "home": false,
+        "deepLink": true
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区（Layout 容器）"
+        }
+      ],
+      "description": "收钱",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/pay/transfer",
+      "routePath": "/pay/transfer",
+      "uiStateId": "pay.transfer.base",
+      "component": "TransferPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "deepLink",
+        "home": false,
+        "deepLink": true
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区（Layout 容器）"
+        }
+      ],
+      "description": "转账",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/pay/transfer/to-account",
+      "routePath": "/pay/transfer/to-account",
+      "uiStateId": "transfer.toAccount.base",
+      "component": "TransferToAlipayPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区（Layout 容器）"
+        }
+      ],
+      "description": "填写对方支付宝账号",
+      "search": {},
+      "queryParams": {},
+      "actions": [
+        {
+          "id": "transferToAccount.account.input",
+          "label": "输入对方账号",
+          "behavior": "input",
+          "paramsSchema": {
+            "value": "string"
+          }
+        }
+      ]
+    },
+    {
+      "id": "/pay/transfer/to-account?modal=contacts",
+      "routePath": "/pay/transfer/to-account",
+      "uiStateId": "transfer.toAccount.modal.contacts",
+      "component": "TransferToAlipayPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区（Layout 容器）"
+        }
+      ],
+      "description": "选择最近联系人",
+      "search": {
+        "modal": "contacts"
+      },
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/pay/transfer/to-account?modal=accountNotFound",
+      "routePath": "/pay/transfer/to-account",
+      "uiStateId": "transfer.toAccount.modal.accountNotFound",
+      "component": "TransferToAlipayPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区（Layout 容器）"
+        }
+      ],
+      "description": "账号不存在提示弹窗",
+      "search": {
+        "modal": "accountNotFound"
+      },
+      "queryParams": {},
+      "actions": []
+    },
+    {
+      "id": "/pay/transfer/amount?contactId=:contactId",
+      "routePath": "/pay/transfer/amount",
+      "uiStateId": "transfer.amount.base",
+      "component": "TransferAmountPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区（Layout 容器）"
+        }
+      ],
+      "description": "填写转账金额",
+      "search": {},
+      "queryParams": {
+        "contactId": "string"
+      },
+      "actions": [
+        {
+          "id": "transferAmount.note.select.borrow",
+          "label": "转账留言：出借",
+          "behavior": "select"
+        },
+        {
+          "id": "transferAmount.note.select.thanks",
+          "label": "转账留言：谢谢",
+          "behavior": "select"
+        },
+        {
+          "id": "transferAmount.note.select.living",
+          "label": "转账留言：生活费",
+          "behavior": "select"
+        },
+        {
+          "id": "transferAmount.note.select.rent",
+          "label": "转账留言：房租",
+          "behavior": "select"
+        },
+        {
+          "id": "transferAmount.note.select.buy",
+          "label": "转账留言：代买",
+          "behavior": "select"
+        },
+        {
+          "id": "transferAmount.note.select.repay",
+          "label": "转账留言：还款",
+          "behavior": "select"
+        }
+      ]
+    },
+    {
+      "id": "/pay/transfer/amount?modal=password&contactId=:contactId",
+      "routePath": "/pay/transfer/amount",
+      "uiStateId": "transfer.amount.modal.password",
+      "component": "TransferAmountPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区（Layout 容器）"
+        }
+      ],
+      "description": "支付密码弹窗",
+      "search": {
+        "modal": "password"
+      },
+      "queryParams": {
+        "contactId": "string"
+      },
+      "actions": [
+        {
+          "id": "transferPassword.keypad.press",
+          "label": "输入支付密码数字键",
+          "behavior": "other",
+          "paramsSchema": {
+            "digit": "string"
+          }
+        },
+        {
+          "id": "transferPassword.keypad.delete",
+          "label": "删除支付密码一位",
+          "behavior": "other"
+        }
+      ]
+    },
+    {
+      "id": "/pay/transfer/success",
+      "routePath": "/pay/transfer/success",
+      "uiStateId": "transfer.success.base",
+      "component": "TransferSuccessPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "params": {},
+      "scrollContainers": [
+        {
+          "name": "main",
+          "direction": "vertical",
+          "description": "主内容区（Layout 容器）"
+        }
+      ],
+      "description": "转账成功",
+      "search": {},
+      "queryParams": {},
+      "actions": []
+    }
+  ],
+  "edges": [
+    {
+      "source": "/finance",
+      "sourceNodeId": "/finance",
+      "target": "/",
+      "targetNodeId": "/",
+      "id": "tab.home",
+      "label": "切换到首页",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "tab_home",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/video",
+      "sourceNodeId": "/video",
+      "target": "/",
+      "targetNodeId": "/",
+      "id": "tab.home",
+      "label": "切换到首页",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "tab_home",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/messages",
+      "sourceNodeId": "/messages",
+      "target": "/",
+      "targetNodeId": "/",
+      "id": "tab.home",
+      "label": "切换到首页",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "tab_home",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/my",
+      "sourceNodeId": "/my",
+      "target": "/",
+      "targetNodeId": "/",
+      "id": "tab.home",
+      "label": "切换到首页",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "tab_home",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/",
+      "sourceNodeId": "/",
+      "target": "/finance",
+      "targetNodeId": "/finance",
+      "id": "tab.finance",
+      "label": "切换到理财",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "tab_finance",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/video",
+      "sourceNodeId": "/video",
+      "target": "/finance",
+      "targetNodeId": "/finance",
+      "id": "tab.finance",
+      "label": "切换到理财",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "tab_finance",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/messages",
+      "sourceNodeId": "/messages",
+      "target": "/finance",
+      "targetNodeId": "/finance",
+      "id": "tab.finance",
+      "label": "切换到理财",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "tab_finance",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/my",
+      "sourceNodeId": "/my",
+      "target": "/finance",
+      "targetNodeId": "/finance",
+      "id": "tab.finance",
+      "label": "切换到理财",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "tab_finance",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/",
+      "sourceNodeId": "/",
+      "target": "/video",
+      "targetNodeId": "/video",
+      "id": "tab.video",
+      "label": "切换到视频",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "tab_video",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/finance",
+      "sourceNodeId": "/finance",
+      "target": "/video",
+      "targetNodeId": "/video",
+      "id": "tab.video",
+      "label": "切换到视频",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "tab_video",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/messages",
+      "sourceNodeId": "/messages",
+      "target": "/video",
+      "targetNodeId": "/video",
+      "id": "tab.video",
+      "label": "切换到视频",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "tab_video",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/my",
+      "sourceNodeId": "/my",
+      "target": "/video",
+      "targetNodeId": "/video",
+      "id": "tab.video",
+      "label": "切换到视频",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "tab_video",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/",
+      "sourceNodeId": "/",
+      "target": "/messages",
+      "targetNodeId": "/messages",
+      "id": "tab.messages",
+      "label": "切换到消息",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "tab_messages",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/finance",
+      "sourceNodeId": "/finance",
+      "target": "/messages",
+      "targetNodeId": "/messages",
+      "id": "tab.messages",
+      "label": "切换到消息",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "tab_messages",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/video",
+      "sourceNodeId": "/video",
+      "target": "/messages",
+      "targetNodeId": "/messages",
+      "id": "tab.messages",
+      "label": "切换到消息",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "tab_messages",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/my",
+      "sourceNodeId": "/my",
+      "target": "/messages",
+      "targetNodeId": "/messages",
+      "id": "tab.messages",
+      "label": "切换到消息",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "tab_messages",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/",
+      "sourceNodeId": "/",
+      "target": "/my",
+      "targetNodeId": "/my",
+      "id": "tab.my",
+      "label": "切换到我的",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "tab_my",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/finance",
+      "sourceNodeId": "/finance",
+      "target": "/my",
+      "targetNodeId": "/my",
+      "id": "tab.my",
+      "label": "切换到我的",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "tab_my",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/video",
+      "sourceNodeId": "/video",
+      "target": "/my",
+      "targetNodeId": "/my",
+      "id": "tab.my",
+      "label": "切换到我的",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "tab_my",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/messages",
+      "sourceNodeId": "/messages",
+      "target": "/my",
+      "targetNodeId": "/my",
+      "id": "tab.my",
+      "label": "切换到我的",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "tabbar",
+        "icon": "tab_my",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/",
+      "sourceNodeId": "/",
+      "target": "/pay",
+      "targetNodeId": "/pay",
+      "id": "pay.open",
+      "label": "打开收付款",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "pay",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/",
+      "sourceNodeId": "/",
+      "target": "/pay/transfer",
+      "targetNodeId": "/pay/transfer",
+      "id": "transfer.open",
+      "label": "打开转账",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "transfer",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/pay",
+      "sourceNodeId": "/pay",
+      "target": "/pay/transfer",
+      "targetNodeId": "/pay/transfer",
+      "id": "transfer.open",
+      "label": "打开转账",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "transfer",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/balance",
+      "sourceNodeId": "/balance",
+      "target": "/pay/transfer",
+      "targetNodeId": "/pay/transfer",
+      "id": "transfer.open",
+      "label": "打开转账",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "transfer",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/my",
+      "sourceNodeId": "/my",
+      "target": "/settings",
+      "targetNodeId": "/settings",
+      "id": "settings.open",
+      "label": "打开设置",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "settings",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/my",
+      "sourceNodeId": "/my",
+      "target": "/bill",
+      "targetNodeId": "/bill",
+      "id": "bill.open",
+      "label": "打开账单",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "bill",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/my",
+      "sourceNodeId": "/my",
+      "target": "/balance",
+      "targetNodeId": "/balance",
+      "id": "balance.open",
+      "label": "打开余额",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "balance",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/balance",
+      "sourceNodeId": "/balance",
+      "target": "/balance/records",
+      "targetNodeId": "/balance/records",
+      "id": "balance.records.open",
+      "label": "查看余额明细",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "balance_records",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/settings",
+      "sourceNodeId": "/settings",
+      "target": "/settings/general",
+      "targetNodeId": "/settings/general",
+      "id": "settings.general.open",
+      "label": "打开通用设置",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "settings_general",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/settings",
+      "sourceNodeId": "/settings",
+      "target": "/settings/payment",
+      "targetNodeId": "/settings/payment",
+      "id": "settings.payment.open",
+      "label": "打开支付设置",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "settings_payment",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/settings",
+      "sourceNodeId": "/settings",
+      "target": "/settings/notifications",
+      "targetNodeId": "/settings/notifications",
+      "id": "settings.notifications.open",
+      "label": "打开新消息通知",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "settings_notifications",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/settings/payment",
+      "sourceNodeId": "/settings/payment",
+      "target": "/settings/payment/order",
+      "targetNodeId": "/settings/payment/order",
+      "id": "settings.payment.order.open",
+      "label": "打开支付顺序设置",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "pay_order",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/settings/payment",
+      "sourceNodeId": "/settings/payment",
+      "target": "/settings/payment/fast-pay",
+      "targetNodeId": "/settings/payment/fast-pay",
+      "id": "settings.payment.fastPay.open",
+      "label": "打开极速付款设置",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "fast_pay",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/settings/payment/fast-pay",
+      "sourceNodeId": "/settings/payment/fast-pay",
+      "target": "/settings/payment/order",
+      "targetNodeId": "/settings/payment/order",
+      "id": "fastPay.payOrder.open",
+      "label": "从极速付款进入支付顺序",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "pay_order",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/settings/payment/fast-pay",
+      "sourceNodeId": "/settings/payment/fast-pay",
+      "target": "/settings/payment/fast-pay?modal=agreement",
+      "targetNodeId": "/settings/payment/fast-pay?modal=agreement",
+      "id": "fastPay.noPwd.agreement.open",
+      "label": "开通小额免密：打开协议弹窗",
+      "type": "state",
+      "mode": "push",
+      "search": {
+        "modal": "agreement"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/settings/payment/fast-pay",
+        "search": {
+          "modal": null
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "fast_pay_no_pwd_agreement",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/settings/payment/fast-pay?modal=agreement",
+      "sourceNodeId": "/settings/payment/fast-pay?modal=agreement",
+      "target": "/settings/payment/fast-pay?modal=password",
+      "targetNodeId": "/settings/payment/fast-pay?modal=password",
+      "id": "fastPay.noPwd.password.open",
+      "label": "开通小额免密：打开支付密码弹窗",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "modal": "password"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/settings/payment/fast-pay",
+        "search": {
+          "modal": "agreement"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "fast_pay_password",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/settings/payment/fast-pay",
+      "sourceNodeId": "/settings/payment/fast-pay",
+      "target": "/settings/payment/fast-pay?modal=noPwdDisableConfirm",
+      "targetNodeId": "/settings/payment/fast-pay?modal=noPwdDisableConfirm",
+      "id": "fastPay.noPwd.disableConfirm.open",
+      "label": "关闭小额免密：打开确认弹窗",
+      "type": "state",
+      "mode": "push",
+      "search": {
+        "modal": "noPwdDisableConfirm"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/settings/payment/fast-pay",
+        "search": {
+          "modal": null
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "fast_pay_no_pwd_disable_confirm",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/settings/payment/fast-pay",
+      "sourceNodeId": "/settings/payment/fast-pay",
+      "target": "/settings/payment/fast-pay?modal=disableFastPayConfirm",
+      "targetNodeId": "/settings/payment/fast-pay?modal=disableFastPayConfirm",
+      "id": "fastPay.disableConfirm.open",
+      "label": "关闭极速付款：打开确认弹窗",
+      "type": "state",
+      "mode": "push",
+      "search": {
+        "modal": "disableFastPayConfirm"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/settings/payment/fast-pay",
+        "search": {
+          "modal": null
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "fast_pay_disable_confirm",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/settings/general",
+      "sourceNodeId": "/settings/general",
+      "target": "/settings/general/language",
+      "targetNodeId": "/settings/general/language",
+      "id": "settings.general.language.open",
+      "label": "打开多语言设置",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "language",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/settings/general",
+      "sourceNodeId": "/settings/general",
+      "target": "/settings/general/font-size",
+      "targetNodeId": "/settings/general/font-size",
+      "id": "settings.general.fontSize.open",
+      "label": "打开字体大小设置",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "font_size",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/settings/general",
+      "sourceNodeId": "/settings/general",
+      "target": "/settings/general/dark-mode",
+      "targetNodeId": "/settings/general/dark-mode",
+      "id": "settings.general.darkMode.open",
+      "label": "打开深色模式设置",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "dark_mode",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/settings/general",
+      "sourceNodeId": "/settings/general",
+      "target": "/settings/general/speed-mode",
+      "targetNodeId": "/settings/general/speed-mode",
+      "id": "settings.general.speedMode.open",
+      "label": "打开极速模式设置",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "speed_mode",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/settings/general",
+      "sourceNodeId": "/settings/general",
+      "target": "/settings/general/clipboard",
+      "targetNodeId": "/settings/general/clipboard",
+      "id": "settings.general.clipboard.open",
+      "label": "打开剪贴板设置",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "clipboard",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/settings/general",
+      "sourceNodeId": "/settings/general",
+      "target": "/settings/general/my-manage",
+      "targetNodeId": "/settings/general/my-manage",
+      "id": "settings.general.myManage.open",
+      "label": "打开我的页管理",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "my_manage",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/settings/general",
+      "sourceNodeId": "/settings/general",
+      "target": "/settings/general/home-manage",
+      "targetNodeId": "/settings/general/home-manage",
+      "id": "settings.general.homeManage.open",
+      "label": "打开首页管理",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "home_manage",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/settings/general/home-manage",
+      "sourceNodeId": "/settings/general/home-manage",
+      "target": "/settings/general/home-manage/search-box",
+      "targetNodeId": "/settings/general/home-manage/search-box",
+      "id": "settings.homeManage.searchBox.open",
+      "label": "打开搜索框管理",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "search_box_manage",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/settings/general/home-manage",
+      "sourceNodeId": "/settings/general/home-manage",
+      "target": "/settings/general/home-manage/search-pre",
+      "targetNodeId": "/settings/general/home-manage/search-pre",
+      "id": "settings.homeManage.searchPre.open",
+      "label": "打开搜索前置页管理",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "search_pre_manage",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/settings/general/home-manage",
+      "sourceNodeId": "/settings/general/home-manage",
+      "target": "/settings/general/home-manage/voice-float",
+      "targetNodeId": "/settings/general/home-manage/voice-float",
+      "id": "settings.homeManage.voiceFloat.open",
+      "label": "打开语音快捷悬浮球设置",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "voice_float",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/settings/general/home-manage",
+      "sourceNodeId": "/settings/general/home-manage",
+      "target": "/settings/general/home-manage/activity-ambience",
+      "targetNodeId": "/settings/general/home-manage/activity-ambience",
+      "id": "settings.homeManage.activityAmbience.open",
+      "label": "打开活动氛围图设置",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "activity_ambience",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/pay",
+      "sourceNodeId": "/pay",
+      "target": "/pay/receive",
+      "targetNodeId": "/pay/receive",
+      "id": "receive.open",
+      "label": "打开收钱页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "receive",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/pay/transfer",
+      "sourceNodeId": "/pay/transfer",
+      "target": "/pay/transfer/to-account",
+      "targetNodeId": "/pay/transfer/to-account",
+      "id": "transfer.toAccount.open",
+      "label": "填写对方账号",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "transfer_to_account",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/pay/transfer/to-account",
+      "sourceNodeId": "/pay/transfer/to-account",
+      "target": "/pay/transfer/amount?contactId=:contactId",
+      "targetNodeId": "/pay/transfer/amount?contactId=:contactId",
+      "id": "transfer.amount.open",
+      "label": "进入转账金额页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {
+        "contactId": "string"
+      },
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "transfer_amount",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/contacts/profile?contactId=:contactId",
+      "sourceNodeId": "/contacts/profile?contactId=:contactId",
+      "target": "/pay/transfer/amount?contactId=:contactId",
+      "targetNodeId": "/pay/transfer/amount?contactId=:contactId",
+      "id": "transfer.amount.open",
+      "label": "进入转账金额页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {
+        "contactId": "string"
+      },
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "transfer_amount",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/chat?id=:id&type=:type",
+      "sourceNodeId": "/chat?id=:id&type=:type",
+      "target": "/pay/transfer/amount?contactId=:contactId",
+      "targetNodeId": "/pay/transfer/amount?contactId=:contactId",
+      "id": "transfer.amount.open",
+      "label": "进入转账金额页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {
+        "contactId": "string"
+      },
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "transfer_amount",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/pay/transfer/amount?contactId=:contactId",
+      "sourceNodeId": "/pay/transfer/amount?contactId=:contactId",
+      "target": "/pay/transfer/success",
+      "targetNodeId": "/pay/transfer/success",
+      "id": "transfer.success.open",
+      "label": "打开转账成功页",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "none",
+        "icon": "transfer_success",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/pay/transfer/success",
+      "sourceNodeId": "/pay/transfer/success",
+      "target": "/pay/transfer",
+      "targetNodeId": "/pay/transfer",
+      "id": "transfer.success.done",
+      "label": "完成并返回转账页",
+      "type": "navigation",
+      "mode": "replace",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "done",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/pay/transfer/to-account",
+      "sourceNodeId": "/pay/transfer/to-account",
+      "target": "/pay/transfer/to-account?modal=contacts",
+      "targetNodeId": "/pay/transfer/to-account?modal=contacts",
+      "id": "transferToAccount.recentContacts.open",
+      "label": "打开最近联系人选择",
+      "type": "state",
+      "mode": "push",
+      "search": {
+        "modal": "contacts"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/pay/transfer/to-account",
+        "search": {
+          "modal": null
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "recent_contacts",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/pay/transfer/to-account",
+      "sourceNodeId": "/pay/transfer/to-account",
+      "target": "/pay/transfer/to-account?modal=accountNotFound",
+      "targetNodeId": "/pay/transfer/to-account?modal=accountNotFound",
+      "id": "transferToAccount.error.open",
+      "label": "显示账号不存在提示",
+      "type": "state",
+      "mode": "push",
+      "search": {
+        "modal": "accountNotFound"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/pay/transfer/to-account",
+        "search": {
+          "modal": null
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "account_not_found",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/pay/transfer/amount?contactId=:contactId",
+      "sourceNodeId": "/pay/transfer/amount?contactId=:contactId",
+      "target": "/pay/transfer/amount?modal=password&contactId=:contactId",
+      "targetNodeId": "/pay/transfer/amount?modal=password&contactId=:contactId",
+      "id": "transferAmount.password.open",
+      "label": "打开支付密码弹窗",
+      "type": "state",
+      "mode": "push",
+      "search": {
+        "modal": "password"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/pay/transfer/amount",
+        "search": {
+          "modal": null
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "payment_password",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/bill?tab=out",
+      "sourceNodeId": "/bill?tab=out",
+      "target": "/bill",
+      "targetNodeId": "/bill",
+      "id": "bill.tab.all",
+      "label": "切换账单 Tab：全部",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": null
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/bill",
+        "search": {
+          "tab": "out"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "bill_tab_all",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/bill?tab=transfer",
+      "sourceNodeId": "/bill?tab=transfer",
+      "target": "/bill",
+      "targetNodeId": "/bill",
+      "id": "bill.tab.all",
+      "label": "切换账单 Tab：全部",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": null
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/bill",
+        "search": {
+          "tab": "transfer"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "bill_tab_all",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/bill",
+      "sourceNodeId": "/bill",
+      "target": "/bill?tab=out",
+      "targetNodeId": "/bill?tab=out",
+      "id": "bill.tab.out",
+      "label": "切换账单 Tab：支出",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "out"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/bill",
+        "search": {
+          "tab": null
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "bill_tab_out",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/bill?tab=transfer",
+      "sourceNodeId": "/bill?tab=transfer",
+      "target": "/bill?tab=out",
+      "targetNodeId": "/bill?tab=out",
+      "id": "bill.tab.out",
+      "label": "切换账单 Tab：支出",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "out"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/bill",
+        "search": {
+          "tab": "transfer"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "bill_tab_out",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/bill",
+      "sourceNodeId": "/bill",
+      "target": "/bill?tab=transfer",
+      "targetNodeId": "/bill?tab=transfer",
+      "id": "bill.tab.transfer",
+      "label": "切换账单 Tab：转账",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "transfer"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/bill",
+        "search": {
+          "tab": null
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "bill_tab_transfer",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/bill?tab=out",
+      "sourceNodeId": "/bill?tab=out",
+      "target": "/bill?tab=transfer",
+      "targetNodeId": "/bill?tab=transfer",
+      "id": "bill.tab.transfer",
+      "label": "切换账单 Tab：转账",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "transfer"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/bill",
+        "search": {
+          "tab": "out"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "bill_tab_transfer",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/balance/records?tab=out",
+      "sourceNodeId": "/balance/records?tab=out",
+      "target": "/balance/records",
+      "targetNodeId": "/balance/records",
+      "id": "balanceRecords.tab.all",
+      "label": "切换余额明细 Tab：全部",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": null
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/balance/records",
+        "search": {
+          "tab": "out"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "balance_records_tab_all",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/balance/records?tab=in",
+      "sourceNodeId": "/balance/records?tab=in",
+      "target": "/balance/records",
+      "targetNodeId": "/balance/records",
+      "id": "balanceRecords.tab.all",
+      "label": "切换余额明细 Tab：全部",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": null
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/balance/records",
+        "search": {
+          "tab": "in"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "balance_records_tab_all",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/balance/records",
+      "sourceNodeId": "/balance/records",
+      "target": "/balance/records?tab=out",
+      "targetNodeId": "/balance/records?tab=out",
+      "id": "balanceRecords.tab.out",
+      "label": "切换余额明细 Tab：支出",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "out"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/balance/records",
+        "search": {
+          "tab": null
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "balance_records_tab_out",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/balance/records?tab=in",
+      "sourceNodeId": "/balance/records?tab=in",
+      "target": "/balance/records?tab=out",
+      "targetNodeId": "/balance/records?tab=out",
+      "id": "balanceRecords.tab.out",
+      "label": "切换余额明细 Tab：支出",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "out"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/balance/records",
+        "search": {
+          "tab": "in"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "balance_records_tab_out",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/balance/records",
+      "sourceNodeId": "/balance/records",
+      "target": "/balance/records?tab=in",
+      "targetNodeId": "/balance/records?tab=in",
+      "id": "balanceRecords.tab.in",
+      "label": "切换余额明细 Tab：收入",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "in"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/balance/records",
+        "search": {
+          "tab": null
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "balance_records_tab_in",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/balance/records?tab=out",
+      "sourceNodeId": "/balance/records?tab=out",
+      "target": "/balance/records?tab=in",
+      "targetNodeId": "/balance/records?tab=in",
+      "id": "balanceRecords.tab.in",
+      "label": "切换余额明细 Tab：收入",
+      "type": "state",
+      "mode": "replace",
+      "search": {
+        "tab": "in"
+      },
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "fromConstraint": {
+        "path": "/balance/records",
+        "search": {
+          "tab": "out"
+        }
+      },
+      "uiMeta": {
+        "placement": "content",
+        "icon": "balance_records_tab_in",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/messages",
+      "sourceNodeId": "/messages",
+      "target": "/contacts",
+      "targetNodeId": "/contacts",
+      "id": "contacts.open",
+      "label": "打开通讯录",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "topbar",
+        "icon": "contacts",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/contacts",
+      "sourceNodeId": "/contacts",
+      "target": "/contacts/profile?contactId=:contactId",
+      "targetNodeId": "/contacts/profile?contactId=:contactId",
+      "id": "contacts.profile.open",
+      "label": "打开联系人资料",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {
+        "contactId": "string"
+      },
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "contact_profile",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/bill",
+      "sourceNodeId": "/bill",
+      "target": "/bill/analysis",
+      "targetNodeId": "/bill/analysis",
+      "id": "bill.analysis.open",
+      "label": "打开收支分析",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {},
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "bill_analysis",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/messages",
+      "sourceNodeId": "/messages",
+      "target": "/chat?id=:id&type=:type",
+      "targetNodeId": "/chat?id=:id&type=:type",
+      "id": "chat.open",
+      "label": "打开聊天",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {
+        "id": "string",
+        "type": "string"
+      },
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "chat_open",
+        "gesture": "tap"
+      }
+    },
+    {
+      "source": "/contacts/profile?contactId=:contactId",
+      "sourceNodeId": "/contacts/profile?contactId=:contactId",
+      "target": "/chat?id=:id&type=:type",
+      "targetNodeId": "/chat?id=:id&type=:type",
+      "id": "chat.open",
+      "label": "打开聊天",
+      "type": "navigation",
+      "mode": "push",
+      "search": {},
+      "searchParams": {
+        "id": "string",
+        "type": "string"
+      },
+      "params": {},
+      "preserveParams": [],
+      "uiMeta": {
+        "placement": "content",
+        "icon": "chat_open",
+        "gesture": "tap"
+      }
+    }
+  ]
+}

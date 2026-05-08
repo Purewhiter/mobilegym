@@ -1,0 +1,38 @@
+<resources>
+  <string name="flag_display_weekday">1</string>
+  <string name="flag_display_talkback">1</string>
+  <string name="RTL">0</string>
+  <string name="high_i18n">最高</string>
+  <string name="low_i18n">最低</string>
+  <string name="aqi_good_i18n">空气优</string>
+  <string name="aqi_moderate_i18n">空气良</string>
+  <string name="aqi_pollution_i18n">轻度污染</string>
+  <string name="aqi_unhealthy_i18n">中度污染</string>
+  <string name="aqi_dangerous_i18n">重度污染</string>
+  <string name="aqi_hazardous_i18n">严重污染</string>
+  <string name="humidness_i18n">湿度</string>
+  <string name="now_i18n">现在</string>
+  <string name="location_i18n">所在地</string>
+  <string name="weather_i18n">天气</string>
+  <string name="low_temp_i18n">最低温度</string>
+  <string name="aqi_i18n">空气质量</string>
+  <string name="weather_auth_tip_i18n">点击获取天气信息</string>
+  <string name="weather_auth_tip_1_i18n">打开“天气”进行授权</string>
+  <string name="tomorrow_i18n">明天</string>
+  <string name="sunrise_i18n">日出</string>
+  <string name="sunset_i18n">日落</string>
+  <string name="sunrising_i18n">日出中</string>
+  <string name="sunseting_i18n">日落中</string>
+  <string name="sunrise_sunset_i18n">日出日落</string>
+  <string name="hour_after_i18n">#sun_hour+'小时后'</string>
+  <string name="minute_after_i18n">#sun_minute+'分钟后'</string>
+  <string name="morning_i18n">'上午'+#sun_morning</string>
+  <string name="afternoon_i18n">'下午'+#sun_afternoon</string>
+  <string name="authorization_and_open_i18n">请授权，开启天气</string>
+  <string name="wind_level_i18n">级</string>
+  <string name="aqi_null_i18n">空气质量--</string>
+
+  <string name="talkback_temperature_range">最高温度变量1度，最低温度变量2度</string>
+  <string name="talkback_humidity">湿度，变量3</string>
+  <string name="talkback_wind">风力，变量4</string>
+</resources>

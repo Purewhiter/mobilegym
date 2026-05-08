@@ -1,0 +1,318 @@
+{
+  "app": "weather",
+  "appDir": "apps/Weather",
+  "mode": "schema",
+  "routeCount": 8,
+  "edgeCount": 9,
+  "nodes": [
+    {
+      "id": "/",
+      "routePath": "/",
+      "component": "WeatherContent",
+      "entryPoint": true,
+      "entry": {
+        "kind": "home",
+        "home": true,
+        "deepLink": false
+      },
+      "description": "天气首页",
+      "stateCount": 1,
+      "states": [
+        "/"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/settings",
+      "routePath": "/settings",
+      "component": "WeatherSettingsPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "天气设置页",
+      "stateCount": 4,
+      "states": [
+        "/settings",
+        "/settings?picker=temp",
+        "/settings?picker=wind",
+        "/settings?picker=pressure"
+      ],
+      "actionCount": 10,
+      "actionIds": [
+        "settings.tempUnit.select.celsius",
+        "settings.tempUnit.select.fahrenheit",
+        "settings.windUnit.select.beaufort",
+        "settings.windUnit.select.kmh",
+        "settings.windUnit.select.ms",
+        "settings.windUnit.select.mph",
+        "settings.windUnit.select.kn",
+        "settings.pressureUnit.select.hpa",
+        "settings.pressureUnit.select.mmhg",
+        "settings.pressureUnit.select.inhg"
+      ],
+      "actions": [
+        {
+          "id": "settings.tempUnit.select.celsius",
+          "label": "选择摄氏度°C",
+          "behavior": "select"
+        },
+        {
+          "id": "settings.tempUnit.select.fahrenheit",
+          "label": "选择华氏度°F",
+          "behavior": "select"
+        },
+        {
+          "id": "settings.windUnit.select.beaufort",
+          "label": "选择蒲福风级",
+          "behavior": "select"
+        },
+        {
+          "id": "settings.windUnit.select.kmh",
+          "label": "选择公里/小时",
+          "behavior": "select"
+        },
+        {
+          "id": "settings.windUnit.select.ms",
+          "label": "选择米/秒",
+          "behavior": "select"
+        },
+        {
+          "id": "settings.windUnit.select.mph",
+          "label": "选择英里/小时",
+          "behavior": "select"
+        },
+        {
+          "id": "settings.windUnit.select.kn",
+          "label": "选择节",
+          "behavior": "select"
+        },
+        {
+          "id": "settings.pressureUnit.select.hpa",
+          "label": "选择百帕(hPa)",
+          "behavior": "select"
+        },
+        {
+          "id": "settings.pressureUnit.select.mmhg",
+          "label": "选择毫米汞柱(mmHg)",
+          "behavior": "select"
+        },
+        {
+          "id": "settings.pressureUnit.select.inhg",
+          "label": "选择英寸汞柱(inHg)",
+          "behavior": "select"
+        }
+      ]
+    },
+    {
+      "id": "/settings/privacy",
+      "routePath": "/settings/privacy",
+      "component": "WeatherPrivacySettingsPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "隐私设置页",
+      "stateCount": 1,
+      "states": [
+        "/settings/privacy"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/settings/permissions",
+      "routePath": "/settings/permissions",
+      "component": "WeatherPermissionsPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "权限说明页",
+      "stateCount": 1,
+      "states": [
+        "/settings/permissions"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/cities",
+      "routePath": "/cities",
+      "component": "WeatherCityManagerPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "城市管理页",
+      "stateCount": 1,
+      "states": [
+        "/cities"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/cities/search",
+      "routePath": "/cities/search",
+      "component": "WeatherCitySearchPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "城市搜索页",
+      "stateCount": 1,
+      "states": [
+        "/cities/search"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/cities/preview",
+      "routePath": "/cities/preview",
+      "component": "WeatherCityPreviewPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "城市预览页",
+      "stateCount": 1,
+      "states": [
+        "/cities/preview?cityId=:cityId"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/forecast/daily",
+      "routePath": "/forecast/daily",
+      "component": "WeatherDailyForecastPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "15日天气预报页",
+      "stateCount": 1,
+      "states": [
+        "/forecast/daily?cityId=:cityId"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    }
+  ],
+  "edges": [
+    {
+      "source": "/",
+      "target": "/cities",
+      "transitions": [
+        "cities.open"
+      ],
+      "type": "navigation",
+      "label": "cities.open",
+      "id": "cities.open"
+    },
+    {
+      "source": "/",
+      "target": "/settings",
+      "transitions": [
+        "settings.open"
+      ],
+      "type": "navigation",
+      "label": "settings.open",
+      "id": "settings.open"
+    },
+    {
+      "source": "/settings",
+      "target": "/settings/privacy",
+      "transitions": [
+        "privacy.open"
+      ],
+      "type": "navigation",
+      "label": "privacy.open",
+      "id": "privacy.open"
+    },
+    {
+      "source": "/settings/privacy",
+      "target": "/settings/permissions",
+      "transitions": [
+        "permissions.open"
+      ],
+      "type": "navigation",
+      "label": "permissions.open",
+      "id": "permissions.open"
+    },
+    {
+      "source": "/cities",
+      "target": "/cities/search",
+      "transitions": [
+        "city.search.open"
+      ],
+      "type": "navigation",
+      "label": "city.search.open",
+      "id": "city.search.open"
+    },
+    {
+      "source": "/cities/search",
+      "target": "/cities/preview",
+      "transitions": [
+        "city.preview.open"
+      ],
+      "type": "navigation",
+      "label": "city.preview.open",
+      "id": "city.preview.open"
+    },
+    {
+      "source": "/cities/preview",
+      "target": "/",
+      "transitions": [
+        "home.open"
+      ],
+      "type": "navigation",
+      "label": "home.open",
+      "id": "home.open"
+    },
+    {
+      "source": "/",
+      "target": "/forecast/daily",
+      "transitions": [
+        "forecast.daily.open"
+      ],
+      "type": "navigation",
+      "label": "forecast.daily.open",
+      "id": "forecast.daily.open"
+    },
+    {
+      "source": "/cities/preview",
+      "target": "/forecast/daily",
+      "transitions": [
+        "forecast.daily.open"
+      ],
+      "type": "navigation",
+      "label": "forecast.daily.open",
+      "id": "forecast.daily.open"
+    }
+  ]
+}

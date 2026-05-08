@@ -1,0 +1,1555 @@
+{
+  "preference_account_list_filter": {
+    "id": "preference_account_list_filter",
+    "title": "联系人显示范围",
+    "categories": [
+      {
+        "items": [
+          {
+            "type": "footer",
+            "key": "account_group",
+            "title": "账户：该页面由系统动态生成，模拟暂不支持"
+          }
+        ]
+      }
+    ]
+  },
+  "preference_device_other_fragment": {
+    "id": "preference_device_other_fragment",
+    "title": "其他设置",
+    "categories": [
+      {
+        "items": [
+          {
+            "type": "list",
+            "key": "device_group",
+            "title": "设备",
+            "defaultValue": "pref_key_pro_bt",
+            "options": [
+              {
+                "label": "支持蓝牙",
+                "value": "pref_key_pro_bt"
+              },
+              {
+                "label": "不支持蓝牙",
+                "value": "pref_key_not_pro_bt"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "preference_dial_pad_touch_tone": {
+    "id": "preference_dial_pad_touch_tone",
+    "title": "拨号音",
+    "categories": [
+      {
+        "items": [
+          {
+            "type": "checkbox",
+            "key": "pref_key_dial_pad_touch_tone",
+            "title": "拨号键盘触摸音效",
+            "defaultValue": "true"
+          },
+          {
+            "type": "list",
+            "key": "pref_key_tone",
+            "title": "音效",
+            "defaultValue": "0"
+          }
+        ]
+      }
+    ]
+  },
+  "preference_dial_pad_touch_tone_v11": {
+    "id": "preference_dial_pad_touch_tone_v11",
+    "title": "拨号音",
+    "categories": [
+      {
+        "items": [
+          {
+            "type": "checkbox",
+            "key": "pref_key_dial_pad_touch_tone",
+            "title": "拨号键盘触摸音效",
+            "defaultValue": "true"
+          },
+          {
+            "type": "list",
+            "key": "pref_key_tone",
+            "title": "音效",
+            "defaultValue": "-1",
+            "options": [
+              {
+                "label": "默认",
+                "value": "-1"
+              },
+              {
+                "label": "钢琴音",
+                "value": "0"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "preference_display_options": {
+    "id": "preference_display_options",
+    "title": "显示选项",
+    "categories": [
+      {
+        "items": [
+          {
+            "type": "checkbox",
+            "key": "pref_key_smart_group_company",
+            "title": "公司",
+            "summary": "根据联系人公司分组",
+            "defaultValue": "true"
+          },
+          {
+            "type": "checkbox",
+            "key": "pref_key_smart_group_location",
+            "title": "所在地",
+            "summary": "根据电话号码归属地分组",
+            "defaultValue": "true"
+          },
+          {
+            "type": "checkbox",
+            "key": "pref_key_smart_group_frequency",
+            "title": "最近联系时间",
+            "summary": "根据上次电话或短信联系时间分组",
+            "defaultValue": "true"
+          }
+        ]
+      }
+    ]
+  },
+  "preference_import_and_export": {
+    "id": "preference_import_and_export",
+    "title": "导入/导出",
+    "categories": [
+      {
+        "title": "导入",
+        "items": [
+          {
+            "type": "preference",
+            "key": "pref_key_import_from_sdcard",
+            "title": "从存储设备导入"
+          },
+          {
+            "type": "preference",
+            "key": "pref_key_import_from_sim",
+            "title": "从 SIM 卡导入"
+          },
+          {
+            "type": "preference",
+            "key": "pref_key_import_from_sim2",
+            "title": "从 SIM 卡2导入"
+          },
+          {
+            "type": "preference",
+            "key": "pref_key_import_from_other_phone",
+            "title": "从其他设备导入"
+          }
+        ]
+      },
+      {
+        "title": "导出",
+        "items": [
+          {
+            "type": "preference",
+            "key": "pref_key_export_to_sdcard",
+            "title": "导出到存储设备"
+          },
+          {
+            "type": "preference",
+            "key": "pref_key_export_to_sim",
+            "title": "导出到 SIM 卡"
+          },
+          {
+            "type": "preference",
+            "key": "pref_key_export_to_sim2",
+            "title": "导出到 SIM 卡2"
+          },
+          {
+            "type": "preference",
+            "key": "pref_key_share_visible_contacts",
+            "title": "分享联系人"
+          }
+        ]
+      },
+      {
+        "title": "账号导入",
+        "items": [
+          {
+            "type": "preference",
+            "key": "pref_key_import_from_account",
+            "title": "导入到小米账号",
+            "summary": "把Google和Exchange联系人导入到我的小米账号"
+          }
+        ]
+      }
+    ]
+  },
+  "preference_more": {
+    "id": "preference_more",
+    "title": "更多设置",
+    "categories": [
+      {
+        "items": [
+          {
+            "type": "preference",
+            "key": "pref_key_wipe_data",
+            "title": "清空联系人数据"
+          },
+          {
+            "type": "preference",
+            "key": "pref_key_rebuild_t9_index",
+            "title": "重建索引数据"
+          },
+          {
+            "type": "preference",
+            "key": "pref_key_sim_manage",
+            "title": "SIM 卡管理"
+          },
+          {
+            "type": "preference",
+            "key": "pref_key_sim_manage2",
+            "title": "SIM 卡2管理"
+          },
+          {
+            "type": "preference",
+            "key": "pref_key_sdn_manage",
+            "title": "查看 SDN"
+          },
+          {
+            "type": "preference",
+            "key": "pref_key_sdn_manage2",
+            "title": "查看 SDN 卡2"
+          }
+        ]
+      }
+    ]
+  },
+  "preference_privacy_contacts": {
+    "id": "preference_privacy_contacts",
+    "title": "隐私-联系人",
+    "categories": [
+      {
+        "title": "隐私政策",
+        "items": [
+          {
+            "type": "preference",
+            "key": "pref_key_view_privacy_policy",
+            "title": "查看隐私政策"
+          }
+        ]
+      },
+      {
+        "title": "权限相关",
+        "items": [
+          {
+            "type": "preference",
+            "key": "pref_key_permission_description",
+            "title": "权限说明"
+          }
+        ]
+      }
+    ]
+  },
+  "preference_privacy_permission": {
+    "id": "preference_privacy_permission",
+    "title": "隐私-权限",
+    "categories": [
+      {
+        "items": [
+          {
+            "type": "preference",
+            "key": "pref_key_read_contacts",
+            "title": "读取联系人",
+            "summary": "用于实现查看联系人数据等功能"
+          },
+          {
+            "type": "preference",
+            "key": "pref_key_write_contacts",
+            "title": "修改联系人",
+            "summary": "用于实现管理联系人数据等功能"
+          },
+          {
+            "type": "preference",
+            "key": "pref_key_read_call_log",
+            "title": "读取通话记录",
+            "summary": "用于实现查看通话记录数据等功能"
+          },
+          {
+            "type": "preference",
+            "key": "pref_key_write_call_log",
+            "title": "修改通话记录",
+            "summary": "用于实现修改通话记录数据等功能"
+          },
+          {
+            "type": "preference",
+            "key": "pref_key_read_phone_state",
+            "title": "获取设备信息",
+            "summary": "用于实现读取设备SIM卡信息等功能"
+          },
+          {
+            "type": "preference",
+            "key": "pref_key_read_write_phone",
+            "title": "读写设备存储",
+            "summary": "用于从相册添加联系人头像、导入vCard等功能"
+          },
+          {
+            "type": "preference",
+            "key": "pref_key_take_photo_record_video",
+            "title": "拍摄照片和录制视频",
+            "summary": "用于从拍摄照片和修改头像等功能"
+          },
+          {
+            "type": "preference",
+            "key": "pref_key_call_phone",
+            "title": "拨打电话",
+            "summary": "用于实现使用桌面快捷方式拨打电话功能"
+          },
+          {
+            "type": "preference",
+            "key": "pref_key_phone_position",
+            "title": "定位",
+            "summary": "用于通过蓝牙从其他设备导入联系人等功能"
+          },
+          {
+            "type": "preference",
+            "key": "pref_key_phone_bluetooth_scan",
+            "title": "连接附近的设备",
+            "summary": "用于通过蓝牙从其他设备导入联系人等功能"
+          }
+        ]
+      }
+    ]
+  },
+  "preference_privacy_settings": {
+    "id": "preference_privacy_settings",
+    "title": "隐私设置",
+    "categories": [
+      {
+        "items": [
+          {
+            "type": "preference",
+            "key": "pref_key_contacts_privacy_settings",
+            "title": "通讯录与拨号隐私设置"
+          },
+          {
+            "type": "preference",
+            "key": "pref_key_yellowpage_privacy_settings",
+            "title": "小米黄页隐私设置"
+          }
+        ]
+      }
+    ]
+  },
+  "preference_settings": {
+    "id": "preference_settings",
+    "title": "联系人设置",
+    "categories": [
+      {
+        "items": [
+          {
+            "type": "preference",
+            "key": "pref_key_import_export",
+            "title": "导入或导出联系人"
+          }
+        ]
+      },
+      {
+        "title": "联系人显示",
+        "items": [
+          {
+            "type": "switch",
+            "key": "pref_key_simple_mode",
+            "title": "显示联系人头像",
+            "defaultValue": "false"
+          },
+          {
+            "type": "switch",
+            "key": "pref_key_word_photo",
+            "title": "无头像则显示文字头像",
+            "defaultValue": "false"
+          },
+          {
+            "type": "switch",
+            "key": "only_phones_v2",
+            "title": "仅显示有电话的联系人",
+            "defaultValue": "true"
+          },
+          {
+            "type": "switch",
+            "key": "pref_key_display_sim_contacts",
+            "title": "显示 SIM 卡联系人",
+            "defaultValue": "true"
+          },
+          {
+            "type": "preference",
+            "key": "pref_key_contact_filter",
+            "title": "分账号显示"
+          },
+          {
+            "type": "preference",
+            "key": "sortOrder",
+            "title": "列表排序依据"
+          },
+          {
+            "type": "preference",
+            "key": "displayOrder",
+            "title": "联系人姓名的显示方式"
+          }
+        ]
+      },
+      {
+        "title": "联系人整理",
+        "items": [
+          {
+            "type": "preference",
+            "key": "pref_key_remove_duplicate_contact",
+            "title": "合并重复联系人"
+          },
+          {
+            "type": "preference",
+            "key": "pref_key_batch_delete",
+            "title": "批量删除联系人"
+          },
+          {
+            "type": "preference",
+            "key": "pref_key_contacts_more",
+            "title": "更多整理方式"
+          }
+        ]
+      },
+      {
+        "title": "其他",
+        "items": [
+          {
+            "type": "preference",
+            "key": "pref_key_dump_provider",
+            "title": "Export Contacts"
+          },
+          {
+            "type": "preference",
+            "key": "pref_key_sim_capacity",
+            "title": "查看 SIM 卡容量"
+          },
+          {
+            "type": "preference",
+            "key": "pref_key_trash_bin",
+            "title": "恢复联系人"
+          },
+          {
+            "type": "preference",
+            "key": "pref_key_contacts_display",
+            "title": "智能分组"
+          },
+          {
+            "type": "preference",
+            "key": "pref_key_yellowpage_function_setting",
+            "title": "黄页功能设置"
+          },
+          {
+            "type": "switch",
+            "key": "pref_key_show_firewall_calllog",
+            "title": "通话记录显示拦截号码",
+            "defaultValue": "true"
+          },
+          {
+            "type": "switch",
+            "key": "pref_key_show_business_hall",
+            "title": "营业厅",
+            "defaultValue": "true"
+          },
+          {
+            "type": "preference",
+            "key": "pref_key_privacy_policy",
+            "title": "隐私政策"
+          },
+          {
+            "type": "preference",
+            "key": "pref_key_privacy_setting",
+            "title": "隐私设置"
+          }
+        ]
+      }
+    ]
+  },
+  "answer_state_setting": {
+    "id": "answer_state_setting",
+    "title": "来电时状态",
+    "categories": [
+      {
+        "items": [
+          {
+            "type": "checkbox",
+            "key": "button_turnover_mute",
+            "title": "翻转静音",
+            "summary": "手机屏幕朝上水平放置时来电翻转可静音并停止振动和闪光灯提示",
+            "defaultValue": "false"
+          },
+          {
+            "type": "checkbox",
+            "key": "button_handon_ringer",
+            "title": "拿起时铃声减弱",
+            "summary": "手机水平放置时拿起可减弱铃声音量",
+            "defaultValue": "false"
+          },
+          {
+            "type": "checkbox",
+            "key": "button_crescendo_ringer",
+            "title": "来电铃音渐响",
+            "summary": "来电时从小声音3-4秒后渐响至设定铃声音量",
+            "defaultValue": "true"
+          },
+          {
+            "type": "checkbox",
+            "key": "button_flash_when_ring",
+            "title": "来电闪光灯",
+            "summary": "LED灯会持续闪动以提醒",
+            "defaultValue": "false"
+          },
+          {
+            "type": "checkbox",
+            "key": "button_enable_proximity",
+            "title": "启用距离感应器",
+            "summary": "通话中使用距离感应器自动开关屏幕",
+            "defaultValue": "true"
+          },
+          {
+            "type": "checkbox",
+            "key": "button_enable_antispam_strange",
+            "title": "拦截骚扰电话",
+            "summary": "陌生人来电第一声响铃静音"
+          }
+        ]
+      }
+    ]
+  },
+  "auto_answer_setting": {
+    "id": "auto_answer_setting",
+    "title": "自动接听设置",
+    "categories": [
+      {
+        "items": [
+          {
+            "type": "checkbox",
+            "key": "button_auto_answer",
+            "title": "自动接听",
+            "summary": "启用来电自动接听，但通话中来电不自动接听",
+            "defaultValue": "false"
+          },
+          {
+            "type": "list",
+            "key": "button_auto_answer_delay",
+            "title": "自动接听延迟设置",
+            "defaultValue": "3",
+            "options": [
+              {
+                "label": "0秒",
+                "value": "0"
+              },
+              {
+                "label": "3秒",
+                "value": "3"
+              },
+              {
+                "label": "5秒",
+                "value": "5"
+              },
+              {
+                "label": "10秒",
+                "value": "10"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "自动接听场景",
+        "items": [
+          {
+            "type": "footer",
+            "key": "button_auto_answer_scenario",
+            "title": "button_auto_answer_scenario：该页面由系统动态生成，模拟暂不支持"
+          }
+        ]
+      }
+    ]
+  },
+  "auto_ip_setting": {
+    "id": "auto_ip_setting",
+    "title": "智能IP拨号设置",
+    "categories": [
+      {
+        "items": [
+          {
+            "type": "checkbox",
+            "key": "button_autoip",
+            "title": "智能IP拨号",
+            "summary": "为异地呼叫号码自动添加IP号码前缀，需要在下面输入IP号码前缀和当前所在地区号",
+            "defaultValue": "false"
+          },
+          {
+            "type": "preference",
+            "key": "button_text_autoip_prefix",
+            "title": "IP号码前缀",
+            "summary": "运营商的IP拨号前缀: %s"
+          },
+          {
+            "type": "preference",
+            "key": "button_text_autoip_current_areacode",
+            "title": "所在地区号",
+            "summary": "当前所在地区号，若漫游则应为漫游地区号。例如:010"
+          },
+          {
+            "type": "checkbox",
+            "key": "button_autoip_support_local_numbers",
+            "title": "所在地号码使用IP拨号"
+          },
+          {
+            "type": "checkbox",
+            "key": "button_autoip_add_zero_prefix",
+            "title": "手机号码前加拨0"
+          },
+          {
+            "type": "preference",
+            "key": "button_autoip_exceptions",
+            "title": "无需IP拨号的号码"
+          }
+        ]
+      }
+    ]
+  },
+  "call_advanced_setting": {
+    "id": "call_advanced_setting",
+    "title": "高级设置",
+    "categories": [
+      {
+        "title": "拨号",
+        "items": [
+          {
+            "type": "preference",
+            "key": "pref_key_dial_pad_touch_tone",
+            "title": "拨号音"
+          },
+          {
+            "type": "list",
+            "key": "button_t9_index_method_settings",
+            "title": "T9搜索设定",
+            "options": [
+              {
+                "label": "拼音",
+                "value": "0"
+              },
+              {
+                "label": "注音",
+                "value": "1"
+              }
+            ]
+          },
+          {
+            "type": "preference",
+            "key": "button_quick_dial",
+            "title": "一键拨号"
+          },
+          {
+            "type": "checkbox",
+            "key": "button_auto_redial",
+            "title": "自动重拨",
+            "summary": "拨打电话未接通，系统自动重拨10次，手动挂断取消",
+            "defaultValue": "false"
+          }
+        ]
+      },
+      {
+        "title": "接听和通话",
+        "items": [
+          {
+            "type": "preference",
+            "key": "pref_key_auto_ip",
+            "title": "智能IP拨号"
+          },
+          {
+            "type": "list",
+            "key": "button_missed_call_notify_times",
+            "title": "未接来电提醒次数",
+            "summary": "每次间隔5分钟",
+            "defaultValue": "0",
+            "options": [
+              {
+                "label": "不提醒",
+                "value": "0"
+              },
+              {
+                "label": "1 次",
+                "value": "1"
+              },
+              {
+                "label": "2 次",
+                "value": "2"
+              },
+              {
+                "label": "3 次",
+                "value": "3"
+              },
+              {
+                "label": "5 次",
+                "value": "5"
+              },
+              {
+                "label": "10 次",
+                "value": "10"
+              }
+            ]
+          },
+          {
+            "type": "list",
+            "key": "button_connect_disconnect_vibrate",
+            "title": "对方接通/挂断时振动",
+            "defaultValue": "100"
+          },
+          {
+            "type": "checkbox",
+            "key": "button_display_precise_call_state",
+            "title": "显示准确通话状态",
+            "summary": "通话计时受网络运营商限制。如当地运营商支持，接通状态会更准确"
+          },
+          {
+            "type": "checkbox",
+            "key": "button_voice_privacy",
+            "title": "语音隐私权",
+            "summary": "启用增强型隐秘模式"
+          },
+          {
+            "type": "list",
+            "key": "button_call_waiting_tone",
+            "title": "来电等待提示音",
+            "defaultValue": "0",
+            "options": [
+              {
+                "label": "提示音一直响",
+                "value": "0"
+              },
+              {
+                "label": "提示音响两次",
+                "value": "1"
+              },
+              {
+                "label": "提示音响同时振动两次",
+                "value": "2"
+              }
+            ]
+          },
+          {
+            "type": "preference",
+            "key": "button_respond_via_sms_key",
+            "title": "来电拒接短信"
+          },
+          {
+            "type": "checkbox",
+            "key": "button_rtt_call",
+            "title": "RTT通话",
+            "summary": "开启后，您可以在通话期间借助“实时信息（RTT）”功能，使用文字进行沟通"
+          }
+        ]
+      },
+      {
+        "title": "其他",
+        "items": [
+          {
+            "type": "preference",
+            "key": "button_call_barring",
+            "title": "呼叫限制",
+            "summary": "呼叫限制设置"
+          },
+          {
+            "type": "preference",
+            "key": "button_caller_id",
+            "title": "发送本机号码",
+            "summary": "设置在外拨电话时是否发送本机号码，需运营商支持"
+          },
+          {
+            "type": "preference",
+            "key": "button_fdn",
+            "title": "固定拨号",
+            "summary": "固定拨号只能拨打指定号码"
+          },
+          {
+            "type": "preference",
+            "key": "button_voicemail",
+            "title": "语音信箱设置"
+          },
+          {
+            "type": "checkbox",
+            "key": "button_auto_retry",
+            "title": "自动重拨",
+            "summary": "启用自动重拨模式"
+          },
+          {
+            "type": "list",
+            "key": "button_tty_mode",
+            "title": "TTY 模式",
+            "summary": "设置 TTY 模式",
+            "options": [
+              {
+                "label": "TTY 关闭",
+                "value": "0"
+              },
+              {
+                "label": "TTY 完整",
+                "value": "1"
+              },
+              {
+                "label": "TTY HCO",
+                "value": "2"
+              },
+              {
+                "label": "TTY VCO",
+                "value": "3"
+              }
+            ]
+          },
+          {
+            "type": "checkbox",
+            "key": "button_hac",
+            "title": "助听器",
+            "summary": "启用助听器兼容模式"
+          },
+          {
+            "type": "list",
+            "key": "button_dtmf_settings",
+            "title": "DTMF 音",
+            "summary": "设置 DTMF 音长度",
+            "options": [
+              {
+                "label": "正常",
+                "value": "0"
+              },
+              {
+                "label": "长",
+                "value": "1"
+              }
+            ]
+          },
+          {
+            "type": "preference",
+            "key": "button_phone_account",
+            "title": "通话账户设置"
+          }
+        ]
+      }
+    ]
+  },
+  "call_fold_setting": {
+    "id": "call_fold_setting",
+    "title": "折叠屏通话设置",
+    "categories": [
+      {
+        "items": [
+          {
+            "type": "checkbox",
+            "key": "pref_fold_answer_call",
+            "title": "折叠自动接听",
+            "summary": "收到来电时，折叠手机自动接听电话",
+            "defaultValue": "false"
+          },
+          {
+            "type": "checkbox",
+            "key": "pref_unfold_turn_on_speaker",
+            "title": "展开自动免提",
+            "summary": "使用听筒通话时，展开手机自动打开免提",
+            "defaultValue": "false"
+          },
+          {
+            "type": "checkbox",
+            "key": "pref_unfold_close_camera",
+            "title": "展开自动关闭摄像头",
+            "summary": "使用前置摄像头进行视频通话时，展开手机自动关闭前置摄像头",
+            "defaultValue": "false"
+          },
+          {
+            "type": "checkbox",
+            "key": "pref_unfold_show_incall_bubble",
+            "title": "展开通话自动浮窗显示",
+            "summary": "语音通话界面处于全屏显示时，展开后自动切换为状态栏悬浮窗样式",
+            "defaultValue": "false"
+          }
+        ]
+      }
+    ]
+  },
+  "call_record_setting": {
+    "id": "call_record_setting",
+    "title": "通话录音",
+    "categories": [
+      {
+        "items": [
+          {
+            "type": "checkbox",
+            "key": "button_call_recording_notification",
+            "title": "录音通知",
+            "summary": "完成后在通知栏显示",
+            "defaultValue": "true"
+          },
+          {
+            "type": "checkbox",
+            "key": "button_auto_record_call",
+            "title": "自动录音",
+            "summary": "通话接通时自动录音，保存到内置SD卡的MIUI/sound_recorder/call_rec",
+            "defaultValue": "false"
+          }
+        ]
+      },
+      {
+        "title": "自动录音对象",
+        "items": [
+          {
+            "type": "footer",
+            "key": "button_auto_record_scenario",
+            "title": "button_auto_record_scenario：该页面由系统动态生成，模拟暂不支持"
+          }
+        ]
+      },
+      {
+        "title": "自定义",
+        "items": [
+          {
+            "type": "preference",
+            "key": "button_call_record_auto_whitelist",
+            "title": "指定号码"
+          },
+          {
+            "type": "checkbox",
+            "key": "button_auto_record_unknown",
+            "title": "陌生号码",
+            "defaultValue": "false"
+          },
+          {
+            "type": "checkbox",
+            "key": "button_auto_record_yellowpage",
+            "title": "黄页号码",
+            "defaultValue": "false"
+          }
+        ]
+      }
+    ]
+  },
+  "call_waiting": {
+    "id": "call_waiting",
+    "title": "来电等待",
+    "categories": [
+      {
+        "items": [
+          {
+            "type": "preference",
+            "key": "button_cdma_cw",
+            "title": "来电等待",
+            "summary": "在通话期间，通知我有其他来电"
+          }
+        ]
+      }
+    ]
+  },
+  "location_setting": {
+    "id": "location_setting",
+    "title": "归属地设置",
+    "categories": [
+      {
+        "title": "显示设置",
+        "items": [
+          {
+            "type": "checkbox",
+            "key": "button_enable_telocation",
+            "title": "显示归属地",
+            "defaultValue": "true"
+          }
+        ]
+      },
+      {
+        "title": "拨号辅助",
+        "items": [
+          {
+            "type": "preference",
+            "key": "button_text_telocation_contacts_countrycode",
+            "title": "国家码设置"
+          },
+          {
+            "type": "checkbox",
+            "key": "button_auto_country_code",
+            "title": "自动加拨国家码",
+            "summary": "在通讯录中的号码前自动加拨国家码，已设置国家码的号码会直接拨出",
+            "defaultValue": "true"
+          }
+        ]
+      }
+    ]
+  },
+  "miui_call_feature_setting": {
+    "id": "miui_call_feature_setting",
+    "title": "电话",
+    "categories": [
+      {
+        "items": [
+          {
+            "type": "preference",
+            "key": "button_xcap_setting",
+            "title": "通话服务设置",
+            "summary": "呼叫限制, 语音信箱 & 呼叫转移, 以及呼叫等待"
+          },
+          {
+            "type": "preference",
+            "key": "button_phone_account",
+            "title": "通话账户设置"
+          },
+          {
+            "type": "preference",
+            "key": "pref_key_call_network_setting",
+            "title": "移动网络"
+          },
+          {
+            "type": "checkbox",
+            "key": "button_filp_auto_answer_call_key",
+            "title": "展开手机接听语音来电"
+          },
+          {
+            "type": "checkbox",
+            "key": "button_filp_auto_hangup_call_key",
+            "title": "合上手机挂断电话",
+            "summary": "仅在未使用蓝牙耳机及线控耳机时生效"
+          },
+          {
+            "type": "preference",
+            "key": "pref_key_voip_setting",
+            "title": "免费电话"
+          },
+          {
+            "type": "preference",
+            "key": "pref_key_call_record_setting",
+            "title": "通话录音"
+          },
+          {
+            "type": "preference",
+            "key": "button_call_forwarding",
+            "title": "来电转接"
+          },
+          {
+            "type": "preference",
+            "key": "button_voicemail_callforward",
+            "title": "语音信箱/呼叫转移"
+          },
+          {
+            "type": "preference",
+            "key": "button_call_waiting",
+            "title": "来电等待",
+            "summary": "在通话期间，通知我有其他来电"
+          },
+          {
+            "type": "preference",
+            "key": "button_answer_state_setting",
+            "title": "来电时状态",
+            "summary": "设置来电时其他选项"
+          },
+          {
+            "type": "preference",
+            "key": "button_ai_assistant_setting",
+            "title": "AI通话"
+          },
+          {
+            "type": "preference",
+            "key": "pref_key_cloud_antispam",
+            "title": "智能识别陌生号码"
+          },
+          {
+            "type": "preference",
+            "key": "pref_key_antispam_setting",
+            "title": "骚扰拦截"
+          },
+          {
+            "type": "preference",
+            "key": "pref_key_telocation",
+            "title": "归属地及国家码"
+          },
+          {
+            "type": "preference",
+            "key": "button_auto_answer_screen",
+            "title": "自动接听"
+          },
+          {
+            "type": "checkbox",
+            "key": "perf_sensor_answer",
+            "title": "贴耳接听",
+            "summary": "来电时靠近耳朵自动接听",
+            "defaultValue": "false"
+          },
+          {
+            "type": "list",
+            "key": "button_incoming_call_report",
+            "title": "来电播报",
+            "defaultValue": "2",
+            "options": [
+              {
+                "label": "仅在连接耳机时",
+                "value": "0"
+              },
+              {
+                "label": "任何时候",
+                "value": "1"
+              },
+              {
+                "label": "关闭",
+                "value": "2"
+              }
+            ]
+          },
+          {
+            "type": "preference",
+            "key": "call_fold_setting",
+            "title": "折叠设置"
+          },
+          {
+            "type": "preference",
+            "key": "button_newcall",
+            "title": "5G新通话",
+            "summary": "5G新通话全部服务由运营商提供"
+          },
+          {
+            "type": "preference",
+            "key": "call_advanced_setting",
+            "title": "高级设置"
+          }
+        ]
+      },
+      {
+        "items": [
+          {
+            "type": "preference",
+            "key": "pref_key_privacy_policy",
+            "title": "隐私设置"
+          },
+          {
+            "type": "preference",
+            "key": "pref_key_feedback",
+            "title": "意见反馈"
+          }
+        ]
+      }
+    ]
+  },
+  "miui_callforward_options": {
+    "id": "miui_callforward_options",
+    "title": "来电转接",
+    "categories": [
+      {
+        "items": [
+          {
+            "type": "preference",
+            "key": "button_cfu_key",
+            "title": "始终转接"
+          },
+          {
+            "type": "preference",
+            "key": "button_cfb_key",
+            "title": "占线时转接"
+          },
+          {
+            "type": "preference",
+            "key": "button_cfnry_key",
+            "title": "无人接听时转接"
+          },
+          {
+            "type": "preference",
+            "key": "button_cfnrc_key",
+            "title": "无法接通时转接"
+          }
+        ]
+      }
+    ]
+  },
+  "miui_fdn_setting": {
+    "id": "miui_fdn_setting",
+    "title": "固定拨号",
+    "categories": [
+      {
+        "items": [
+          {
+            "type": "checkbox",
+            "key": "button_fdn_enable",
+            "title": "固定拨号"
+          },
+          {
+            "type": "preference",
+            "key": "button_change_pin2",
+            "title": "更改 PIN2 码",
+            "summary": "更改使用固定拨号所需的 PIN 码"
+          },
+          {
+            "type": "preference",
+            "key": "button_fdn_list",
+            "title": "固定拨号列表",
+            "summary": "管理号码列表"
+          }
+        ]
+      }
+    ]
+  },
+  "miui_network_setting": {
+    "id": "miui_network_setting",
+    "title": "移动网络设置",
+    "categories": [
+      {
+        "items": [
+          {
+            "type": "preference",
+            "key": "cdma_lte_data_service_key",
+            "title": "设置数据服务"
+          },
+          {
+            "type": "preference",
+            "key": "button_uplmn_key",
+            "title": "偏好设置"
+          }
+        ]
+      },
+      {
+        "title": "移动网络",
+        "items": [
+          {
+            "type": "checkbox",
+            "key": "button_data_enabled_key",
+            "title": "移动数据",
+            "summary": "允许通过移动网络存取数据"
+          },
+          {
+            "type": "checkbox",
+            "key": "button_5g_hosted_mode_key",
+            "title": "5G智能切换",
+            "summary": "开启后可自动选择最佳网络，提升续航能力"
+          },
+          {
+            "type": "checkbox",
+            "key": "button_data_warning_key",
+            "title": "连接移动数据时询问"
+          },
+          {
+            "type": "preference",
+            "key": "preference_5g_network",
+            "title": "5G网络"
+          },
+          {
+            "type": "checkbox",
+            "key": "button_intelligent_dual_sim_key",
+            "title": "智能双卡",
+            "summary": "使用副卡数据流量进行补充，提高网络流畅度"
+          },
+          {
+            "type": "checkbox",
+            "key": "button_smart_dual_sim_key",
+            "title": "智能双卡切换",
+            "summary": "当主卡网络不佳时暂时切换至副卡上网，需要消耗副卡流量。主卡网络恢复后，在不影响使用的情况下将自动切换回主卡"
+          },
+          {
+            "type": "checkbox",
+            "key": "button_vice_slot_volte_data",
+            "title": "副卡高清通话可联网",
+            "summary": "副卡在通话期间会临时将数据网络切换为副卡"
+          },
+          {
+            "type": "checkbox",
+            "key": "button_smart_switch_dual_sim_key",
+            "title": "智能切换上网卡",
+            "summary": "开启后将根据网络质量和通话状态，择优选择上网卡"
+          },
+          {
+            "type": "checkbox",
+            "key": "enhanced_4g_lte",
+            "title": "启用高清通话",
+            "summary": "开启后在驻留4G/5G时会尝试注册高清通话服务，从而获得更好的通话业务体验"
+          },
+          {
+            "type": "checkbox",
+            "key": "button_dual_4g",
+            "title": "启用双4G",
+            "summary": "打开后两张卡都支持开启4G"
+          },
+          {
+            "type": "checkbox",
+            "key": "button_mms_enabled_key",
+            "title": "始终接收彩信",
+            "summary": "在禁用数据时仍然接收彩信，可能会产生数据流量费用"
+          },
+          {
+            "type": "preference",
+            "key": "button_enter_business_hall_key",
+            "title": "话费流量设置",
+            "summary": "设置话费流量套餐，防止流量偷跑"
+          }
+        ]
+      },
+      {
+        "title": "eSIM设置",
+        "items": [
+          {
+            "type": "checkbox",
+            "key": "button_enable_esim_key",
+            "title": "开启eSIM",
+            "summary": "打开后eSIM将替换SIM卡%s"
+          },
+          {
+            "type": "preference",
+            "key": "preference_esim_manager",
+            "title": "管理eSIM卡"
+          },
+          {
+            "type": "preference",
+            "key": "preference_esim_service_support",
+            "title": "服务支持",
+            "summary": "查看已支持的运营商"
+          }
+        ]
+      },
+      {
+        "title": "WLAN通话",
+        "items": [
+          {
+            "type": "checkbox",
+            "key": "enable_wificall",
+            "title": "启用WLAN通话",
+            "summary": "当WLAN通话可用时，将使用WLAN接收或拨打电话"
+          },
+          {
+            "type": "preference",
+            "key": "preferred_wificall_key",
+            "title": "连接偏好设定"
+          },
+          {
+            "type": "preference",
+            "key": "roaming_preferred_wificall_key",
+            "title": "连接偏好设定(漫游)"
+          },
+          {
+            "type": "checkbox",
+            "key": "enable_voice_link",
+            "title": "通话辅助",
+            "summary": "当前无网络信号时，可使用上网卡数据流量接入WLAN通话"
+          }
+        ]
+      },
+      {
+        "title": "拨号设置",
+        "items": [
+          {
+            "type": "preference",
+            "key": "default_sms_key",
+            "title": "短信",
+            "defaultValue": "0"
+          },
+          {
+            "type": "checkbox",
+            "key": "button_last_sim_callback",
+            "title": "智能回拨",
+            "summary": "从通话记录回拨时，使用上一次与该联系人通话使用的SIM卡回拨"
+          },
+          {
+            "type": "checkbox",
+            "key": "button_smart_call_forward",
+            "title": "智能互转",
+            "summary": "一张SIM卡来电无法呼入时，呼叫转移至另一张SIM卡",
+            "defaultValue": "false"
+          }
+        ]
+      },
+      {
+        "title": "运营商服务",
+        "items": [
+          {
+            "type": "preference",
+            "key": "pref_china_mobile_palm",
+            "title": "移动掌厅"
+          }
+        ]
+      },
+      {
+        "title": "其他设置",
+        "items": [
+          {
+            "type": "preference",
+            "key": "button_roaming_key",
+            "title": "漫游设置",
+            "summary": "漫游时连接到移动数据网络服务"
+          },
+          {
+            "type": "checkbox",
+            "key": "button_roaming_checkbox_key",
+            "title": "漫游设置",
+            "summary": "漫游时连接到移动数据网络服务"
+          }
+        ]
+      }
+    ]
+  },
+  "miui_phone_account_settings": {
+    "id": "miui_phone_account_settings",
+    "title": "通话账户设置",
+    "categories": [
+      {
+        "items": [
+          {
+            "type": "list",
+            "key": "button_preferred_phone_account",
+            "title": "优先通话账户"
+          }
+        ]
+      }
+    ]
+  },
+  "miui_respond_via_sms_settings": {
+    "id": "miui_respond_via_sms_settings",
+    "title": "来电拒接短信设置",
+    "categories": [
+      {
+        "items": [
+          {
+            "type": "checkbox",
+            "key": "button_call_respond_via_sms",
+            "title": "来电拒接短信",
+            "summary": "在来电界面显示挂断并发送短信的按钮",
+            "defaultValue": "true"
+          }
+        ]
+      },
+      {
+        "title": "来电拒接短信设置",
+        "items": [
+          {
+            "type": "preference",
+            "key": "canned_response_pref_1",
+            "title": "canned_response_pref_1",
+            "defaultValue": "现在无法接听。有什么事吗？"
+          },
+          {
+            "type": "preference",
+            "key": "canned_response_pref_2",
+            "title": "canned_response_pref_2",
+            "defaultValue": "我马上会打给你。"
+          },
+          {
+            "type": "preference",
+            "key": "canned_response_pref_3",
+            "title": "canned_response_pref_3",
+            "defaultValue": "我稍后会再打给你。"
+          },
+          {
+            "type": "preference",
+            "key": "canned_response_pref_4",
+            "title": "canned_response_pref_4",
+            "defaultValue": "现在无法接听。能稍后再打给我吗？"
+          }
+        ]
+      }
+    ]
+  },
+  "miui_voicemail_callforward_options": {
+    "id": "miui_voicemail_callforward_options",
+    "title": "语音信箱与转移",
+    "categories": [
+      {
+        "items": [
+          {
+            "type": "preference",
+            "key": "button_play_voicemail",
+            "title": "呼叫语音信箱"
+          },
+          {
+            "type": "preference",
+            "key": "button_full_forwarding",
+            "title": "呼叫转移设置"
+          }
+        ]
+      }
+    ]
+  },
+  "permission_setting": {
+    "id": "permission_setting",
+    "title": "权限说明",
+    "categories": [
+      {
+        "items": [
+          {
+            "type": "preference",
+            "key": "pref_key_obtain_location",
+            "title": "定位",
+            "summary": "用于优化所在位置的网络"
+          },
+          {
+            "type": "preference",
+            "key": "pref_key_read_call_log",
+            "title": "录音",
+            "summary": "用于实现通话录音功能"
+          },
+          {
+            "type": "preference",
+            "key": "pref_key_read_contact",
+            "title": "读取联系人",
+            "summary": "读取联系人信息"
+          }
+        ]
+      }
+    ]
+  },
+  "privacy_setting": {
+    "id": "privacy_setting",
+    "title": "隐私设置",
+    "categories": [
+      {
+        "title": "隐私政策",
+        "items": [
+          {
+            "type": "preference",
+            "key": "pref_key_preference_check_privacy",
+            "title": "查看隐私政策"
+          }
+        ]
+      },
+      {
+        "title": "权限相关",
+        "items": [
+          {
+            "type": "preference",
+            "key": "pref_key_permission_description",
+            "title": "权限说明"
+          }
+        ]
+      }
+    ]
+  },
+  "voicemail_setting": {
+    "id": "voicemail_setting",
+    "title": "语音信箱设置",
+    "categories": [
+      {
+        "items": [
+          {
+            "type": "list",
+            "key": "button_voicemail_provider",
+            "title": "运营商服务"
+          },
+          {
+            "type": "preference",
+            "key": "button_voicemail",
+            "title": "语音信箱号码"
+          },
+          {
+            "type": "checkbox",
+            "key": "button_voicemail_notification_vibrate_key",
+            "title": "振动"
+          }
+        ]
+      }
+    ]
+  }
+}

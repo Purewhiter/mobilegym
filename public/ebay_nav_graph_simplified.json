@@ -1,0 +1,493 @@
+{
+  "app": "ebay",
+  "appDir": "apps/Ebay",
+  "mode": "schema",
+  "routeCount": 8,
+  "edgeCount": 25,
+  "nodes": [
+    {
+      "id": "/",
+      "routePath": "/",
+      "component": "HomePage",
+      "entryPoint": true,
+      "entry": {
+        "kind": "home",
+        "home": true,
+        "deepLink": false
+      },
+      "description": "eBay 首页",
+      "stateCount": 1,
+      "states": [
+        "/"
+      ],
+      "actionCount": 3,
+      "actionIds": [
+        "home.auth.login",
+        "home.auth.register",
+        "home.promo.getCoupon"
+      ],
+      "actions": [
+        {
+          "id": "home.auth.login",
+          "label": "登录",
+          "behavior": "other",
+          "description": "点击登录按钮"
+        },
+        {
+          "id": "home.auth.register",
+          "label": "注册",
+          "behavior": "other",
+          "description": "点击注册按钮"
+        },
+        {
+          "id": "home.promo.getCoupon",
+          "label": "获取优惠券",
+          "behavior": "other",
+          "description": "点击获取优惠券"
+        }
+      ]
+    },
+    {
+      "id": "/me",
+      "routePath": "/me",
+      "component": "MePage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "我的 eBay 页面",
+      "stateCount": 1,
+      "states": [
+        "/me"
+      ],
+      "actionCount": 3,
+      "actionIds": [
+        "me.auth.login",
+        "me.card.watchlist",
+        "me.card.bids"
+      ],
+      "actions": [
+        {
+          "id": "me.auth.login",
+          "label": "登录",
+          "behavior": "other",
+          "description": "点击登录按钮"
+        },
+        {
+          "id": "me.card.watchlist",
+          "label": "追踪列表",
+          "behavior": "other",
+          "description": "点击追踪列表卡片"
+        },
+        {
+          "id": "me.card.bids",
+          "label": "出价和议价",
+          "behavior": "other",
+          "description": "点击出价和议价卡片"
+        }
+      ]
+    },
+    {
+      "id": "/search",
+      "routePath": "/search",
+      "component": "SearchPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "搜索页面",
+      "stateCount": 1,
+      "states": [
+        "/search"
+      ],
+      "actionCount": 1,
+      "actionIds": [
+        "search.history.clear"
+      ],
+      "actions": [
+        {
+          "id": "search.history.clear",
+          "label": "清除记录",
+          "behavior": "other",
+          "description": "清除最近搜索记录"
+        }
+      ]
+    },
+    {
+      "id": "/sell",
+      "routePath": "/sell",
+      "component": "SellPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "出售页面",
+      "stateCount": 1,
+      "states": [
+        "/sell"
+      ],
+      "actionCount": 3,
+      "actionIds": [
+        "sell.auth.login",
+        "sell.auth.register",
+        "sell.info.learnMore"
+      ],
+      "actions": [
+        {
+          "id": "sell.auth.login",
+          "label": "登录",
+          "behavior": "other",
+          "description": "点击登录按钮"
+        },
+        {
+          "id": "sell.auth.register",
+          "label": "注册",
+          "behavior": "other",
+          "description": "点击注册按钮"
+        },
+        {
+          "id": "sell.info.learnMore",
+          "label": "了解详情",
+          "behavior": "other",
+          "description": "点击了解详情"
+        }
+      ]
+    },
+    {
+      "id": "/inbox",
+      "routePath": "/inbox",
+      "component": "InboxPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "收件箱页面",
+      "stateCount": 1,
+      "states": [
+        "/inbox"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/cart",
+      "routePath": "/cart",
+      "component": "CartPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "购物车页面",
+      "stateCount": 1,
+      "states": [
+        "/cart"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/categories",
+      "routePath": "/categories",
+      "component": "CategoriesPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "类别页面",
+      "stateCount": 1,
+      "states": [
+        "/categories"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    },
+    {
+      "id": "/settings",
+      "routePath": "/settings",
+      "component": "SettingsPage",
+      "entryPoint": false,
+      "entry": {
+        "kind": "none",
+        "home": false,
+        "deepLink": false
+      },
+      "description": "设置页面",
+      "stateCount": 1,
+      "states": [
+        "/settings"
+      ],
+      "actionCount": 0,
+      "actionIds": [],
+      "actions": []
+    }
+  ],
+  "edges": [
+    {
+      "source": "/",
+      "target": "/cart",
+      "transitions": [
+        "cart.open"
+      ],
+      "type": "navigation",
+      "label": "cart.open",
+      "id": "cart.open"
+    },
+    {
+      "source": "/me",
+      "target": "/cart",
+      "transitions": [
+        "cart.open"
+      ],
+      "type": "navigation",
+      "label": "cart.open",
+      "id": "cart.open"
+    },
+    {
+      "source": "/sell",
+      "target": "/cart",
+      "transitions": [
+        "cart.open"
+      ],
+      "type": "navigation",
+      "label": "cart.open",
+      "id": "cart.open"
+    },
+    {
+      "source": "/me",
+      "target": "/",
+      "transitions": [
+        "tab.home"
+      ],
+      "type": "navigation",
+      "label": "tab.home",
+      "id": "tab.home"
+    },
+    {
+      "source": "/search",
+      "target": "/",
+      "transitions": [
+        "tab.home"
+      ],
+      "type": "navigation",
+      "label": "tab.home",
+      "id": "tab.home"
+    },
+    {
+      "source": "/sell",
+      "target": "/",
+      "transitions": [
+        "tab.home"
+      ],
+      "type": "navigation",
+      "label": "tab.home",
+      "id": "tab.home"
+    },
+    {
+      "source": "/inbox",
+      "target": "/",
+      "transitions": [
+        "tab.home"
+      ],
+      "type": "navigation",
+      "label": "tab.home",
+      "id": "tab.home"
+    },
+    {
+      "source": "/",
+      "target": "/me",
+      "transitions": [
+        "tab.me"
+      ],
+      "type": "navigation",
+      "label": "tab.me",
+      "id": "tab.me"
+    },
+    {
+      "source": "/search",
+      "target": "/me",
+      "transitions": [
+        "tab.me"
+      ],
+      "type": "navigation",
+      "label": "tab.me",
+      "id": "tab.me"
+    },
+    {
+      "source": "/sell",
+      "target": "/me",
+      "transitions": [
+        "tab.me"
+      ],
+      "type": "navigation",
+      "label": "tab.me",
+      "id": "tab.me"
+    },
+    {
+      "source": "/inbox",
+      "target": "/me",
+      "transitions": [
+        "tab.me"
+      ],
+      "type": "navigation",
+      "label": "tab.me",
+      "id": "tab.me"
+    },
+    {
+      "source": "/",
+      "target": "/search",
+      "transitions": [
+        "tab.search",
+        "home.search.open"
+      ],
+      "type": "navigation",
+      "label": "tab.search, home.search.open",
+      "id": "tab.search"
+    },
+    {
+      "source": "/me",
+      "target": "/search",
+      "transitions": [
+        "tab.search"
+      ],
+      "type": "navigation",
+      "label": "tab.search",
+      "id": "tab.search"
+    },
+    {
+      "source": "/sell",
+      "target": "/search",
+      "transitions": [
+        "tab.search"
+      ],
+      "type": "navigation",
+      "label": "tab.search",
+      "id": "tab.search"
+    },
+    {
+      "source": "/inbox",
+      "target": "/search",
+      "transitions": [
+        "tab.search"
+      ],
+      "type": "navigation",
+      "label": "tab.search",
+      "id": "tab.search"
+    },
+    {
+      "source": "/",
+      "target": "/inbox",
+      "transitions": [
+        "tab.inbox"
+      ],
+      "type": "navigation",
+      "label": "tab.inbox",
+      "id": "tab.inbox"
+    },
+    {
+      "source": "/me",
+      "target": "/inbox",
+      "transitions": [
+        "tab.inbox"
+      ],
+      "type": "navigation",
+      "label": "tab.inbox",
+      "id": "tab.inbox"
+    },
+    {
+      "source": "/search",
+      "target": "/inbox",
+      "transitions": [
+        "tab.inbox"
+      ],
+      "type": "navigation",
+      "label": "tab.inbox",
+      "id": "tab.inbox"
+    },
+    {
+      "source": "/sell",
+      "target": "/inbox",
+      "transitions": [
+        "tab.inbox"
+      ],
+      "type": "navigation",
+      "label": "tab.inbox",
+      "id": "tab.inbox"
+    },
+    {
+      "source": "/",
+      "target": "/sell",
+      "transitions": [
+        "tab.sell",
+        "home.quick_filter.sell"
+      ],
+      "type": "navigation",
+      "label": "tab.sell, home.quick_filter.sell",
+      "id": "tab.sell"
+    },
+    {
+      "source": "/me",
+      "target": "/sell",
+      "transitions": [
+        "tab.sell"
+      ],
+      "type": "navigation",
+      "label": "tab.sell",
+      "id": "tab.sell"
+    },
+    {
+      "source": "/search",
+      "target": "/sell",
+      "transitions": [
+        "tab.sell"
+      ],
+      "type": "navigation",
+      "label": "tab.sell",
+      "id": "tab.sell"
+    },
+    {
+      "source": "/inbox",
+      "target": "/sell",
+      "transitions": [
+        "tab.sell"
+      ],
+      "type": "navigation",
+      "label": "tab.sell",
+      "id": "tab.sell"
+    },
+    {
+      "source": "/",
+      "target": "/categories",
+      "transitions": [
+        "home.quick_filter.categories"
+      ],
+      "type": "navigation",
+      "label": "home.quick_filter.categories",
+      "id": "home.quick_filter.categories"
+    },
+    {
+      "source": "/me",
+      "target": "/settings",
+      "transitions": [
+        "me.settings.open"
+      ],
+      "type": "navigation",
+      "label": "me.settings.open",
+      "id": "me.settings.open"
+    }
+  ]
+}
