@@ -7,14 +7,16 @@
 #                   └── /api/gw/* → Python (:PORT+1)
 #
 # 使用:
-#   ./start_server.sh          # 默认 4180
-#   ./start_server.sh 4185     # 自定义端口
-#   ./start_server.sh stop     # 停止
+#   ./scripts/server/start_nginx_gateway.sh          # 默认 4180
+#   ./scripts/server/start_nginx_gateway.sh 4185     # 自定义端口
+#   ./scripts/server/start_nginx_gateway.sh stop     # 停止
 # ============================================================
 
 PORT=${1:-4180}
 API_PORT=$((PORT + 1))
-DIR="$(cd "$(dirname "$0")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+ROOT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
+cd "$ROOT_DIR" || exit 1
 
 find_bin() {
     local names=("$@")
@@ -41,9 +43,9 @@ find_bin() {
 }
 
 NGINX_BIN="${NGINX_BIN:-$(find_bin nginx)}"
-NGINX_DIR="$DIR/.nginx"
-PIDFILE_API="$DIR/.serve_api.pid"
-NGINX_SOURCE_CONFIG="$DIR/.nginx/nginx.source.conf"
+NGINX_DIR="$ROOT_DIR/.nginx"
+PIDFILE_API="$ROOT_DIR/.api_gateway.pid"
+NGINX_SOURCE_CONFIG="$ROOT_DIR/.nginx/nginx.source.conf"
 
 escape_sed_replacement() {
     printf '%s' "$1" | sed -e 's/[\/&]/\\&/g'
@@ -59,7 +61,7 @@ render_nginx_config() {
     local esc_nginx_dir esc_mime_types esc_root
     esc_nginx_dir="$(escape_sed_replacement "$NGINX_DIR")"
     esc_mime_types="$(escape_sed_replacement "$MIME_TYPES")"
-    esc_root="$(escape_sed_replacement "$DIR")"
+    esc_root="$(escape_sed_replacement "$ROOT_DIR")"
 
     sed \
         -e "s/__NGINX_DIR__/$esc_nginx_dir/g" \
@@ -126,8 +128,8 @@ render_nginx_config
 PYTHON_BIN="${PYTHON_BIN:-$(find_bin python python3)}"
 API_WORKERS=${API_WORKERS:-8}
 echo "[start] API gateway on :${API_PORT} (workers=${API_WORKERS})"
-setsid "$PYTHON_BIN" "$DIR/serve_api.py" --port "$API_PORT" --workers "$API_WORKERS" \
-    >> "$NGINX_DIR/logs/serve_api.log" 2>&1 &
+setsid "$PYTHON_BIN" "$SCRIPT_DIR/api_gateway.py" --port "$API_PORT" --workers "$API_WORKERS" \
+    >> "$NGINX_DIR/logs/api_gateway.log" 2>&1 &
 echo $! > "$PIDFILE_API"
 
 # 2. Start Nginx
@@ -141,4 +143,4 @@ echo "   Static:  Nginx (sendfile + HTTP/2 + 8 workers)"
 echo "   API:     uvicorn + starlette (:${API_PORT}, ${API_WORKERS} workers)"
 echo ""
 echo "   Stop:    $0 stop"
-echo "   Logs:    $NGINX_DIR/logs/{error,access,serve_api}.log"
+echo "   Logs:    $NGINX_DIR/logs/{error,access,api_gateway}.log"

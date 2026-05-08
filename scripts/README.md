@@ -36,6 +36,10 @@ Benchmark 运行结果统计、任务数量统计、judge 验证、run patch/rej
 
 开发辅助脚本，例如 dist 清理、App state schema 导出、主题资源准备、浏览器存储实验。
 
+## server
+
+Nginx + API gateway 生产服务入口。`start_nginx_gateway.sh` 启动静态资源服务和 `/api/gw/*` 后端网关，`api_gateway.py` 提供 Starlette 转发服务。
+
 ## reverse
 
 APK、真机 UI、反编译资源抽取与相关分析脚本。开源清理时优先审查这一组。
