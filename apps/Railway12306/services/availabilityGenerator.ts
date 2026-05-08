@@ -36,7 +36,7 @@ const SEAT_TIGHTNESS: Record<string, number> = {
 
 /**
  * 始发站三字码 → 开售时刻（HH:mm）。
- * 来源：2026-04-23 真实抓取验证——同一始发站所有车次 saleDt 时刻一致。
+ * 来源：2026-04-23 数据快照校验——同一始发站所有车次 saleDt 时刻一致。
  */
 const STATION_SALE_TIME: Record<string, string> = {
   BJP: '14:00', SHH: '14:00', GZQ: '13:00', SZQ: '13:00',

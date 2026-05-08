@@ -6,7 +6,7 @@ Constraints (per user request):
 - Implement judgeable tasks (state-based judge, not VLM-based) in "tasks form".
 
 How it works:
-- Run `python scripts/build_action_task_specs.py` to generate:
+- Run `python scripts/bench/build_action_task_specs.py` to generate:
   bench_env/task/action_tasks/spec.jsonl
 - This module loads spec.jsonl and dynamically creates BaseTask subclasses.
 - TaskRegistry will discover them under app="action_tasks".

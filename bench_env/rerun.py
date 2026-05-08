@@ -227,7 +227,7 @@ def build_rerun_config(
 
 
 # ---------------------------------------------------------------------------
-# Merge logic (adapted from scripts/patch_run.py)
+# Merge logic (adapted from scripts/bench/patch_run.py)
 # ---------------------------------------------------------------------------
 
 def _task_dir_name(task_id: str, trial_id: int, repeat_n: int) -> str:

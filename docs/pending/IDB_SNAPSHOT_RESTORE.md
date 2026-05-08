@@ -72,7 +72,7 @@ async function restoreFull(snap: SimSnapshot) {
 
 **关键性质：**
 
-- `Map<string, Blob>` 跨 IDB transaction **共享 blob backing**，restore 不复制 binary（已用 `scripts/idb_blob_sharing_test.py` 实测验证：S2 - S1 = 0 MB）
+- `Map<string, Blob>` 跨 IDB transaction **共享 blob backing**，restore 不复制 binary（已用 `scripts/dev/idb_blob_sharing_test.py` 实测验证：S2 - S1 = 0 MB）
 - 不 reload page → 不重 mount React → 不重新 import App data loader → 没有 dynamic import 的 fetch 开销
 - 不需要 `window.location.reload()`，所以 React tree 整体保留，只是 stores 内容被覆盖
 
@@ -91,7 +91,7 @@ async function restoreFull(snap: SimSnapshot) {
 
 ## 实测预期
 
-基于 `scripts/mem_microbench.py` 的 `snapshot_restore` 路径（不含 IDB）：
+基于 `scripts/bench/mem_microbench.py` 的 `snapshot_restore` 路径（不含 IDB）：
 
 | 路径 | median | 含义 |
 |---|---|---|
@@ -187,7 +187,7 @@ n=64 并行 browser × 200 MB sdcard = 12.8 GB —— 这是 OS 隔离的固有�
 
 ### Phase 3：验证（~1 小时）
 
-- [ ] 扩 `scripts/mem_microbench.py` 的 `snapshot_restore` 路径，加 `--with-idb` 选项，覆盖 OS 完整路径，实测端到端时延
+- [ ] 扩 `scripts/bench/mem_microbench.py` 的 `snapshot_restore` 路径，加 `--with-idb` 选项，覆盖 OS 完整路径，实测端到端时延
 - [ ] 跑一组 par=64 的 GRPO mini-batch 模拟，对比 reset 时间总和与峰值内存
 - [ ] 跨任务串跑 10 个 task，confirm 文件状态、App store 状态、OS settings 都正确恢复（与每次完整 reset 的状态做 diff）
 
@@ -207,7 +207,7 @@ n=64 并行 browser × 200 MB sdcard = 12.8 GB —— 这是 OS 隔离的固有�
 
 | 风险 | 缓解 |
 |---|---|
-| Blob 跨 IDB 写入是否真的不复制 | 已 `scripts/idb_blob_sharing_test.py` 实测验证，S2-S1=0 MB |
+| Blob 跨 IDB 写入是否真的不复制 | 已 `scripts/dev/idb_blob_sharing_test.py` 实测验证，S2-S1=0 MB |
 | `setState` 不接 `os.providers` | **已确认接**（`applyOsStatePatch` line 248-253） |
 | `restoreFull` 后 React tree 状态错乱 | 不 reload，依赖 Zustand 订阅自动 re-render；需要测 launcher / status bar / shade 等 OS UI 是否正确刷新 |
 | Blob URL 缓存（`blobUrlCache`）失效 | restore 时清空缓存，应用代码下次 `getFileBlobUrl` 重新生成 |

@@ -2,8 +2,7 @@
  * 离线 catalog 查询服务。
  *
  * 数据源：apps/Railway12306/data/catalog/trainCatalog.json
- *   - 由 apps/Railway12306/data/crawl_seed.py 从真实 12306 leftTicket / queryTrainInfo /
- *     queryTransfer 聚合而成。
+ *   - 离线车次 catalog 数据，供前端和 bench_env 复用。
  *   - availability: 以 `${trainCode}|${fromCode}|${toCode}` 为键，含 seatTypes /
  *     count / price / berthPrices / discount / canWaitlist / exchangeable / saleTime。
  *   - trains:  以 trainCode 为键，含内部 trainNo 与经停 stops[]。
@@ -244,7 +243,7 @@ export function normalizeTrainType(trainCode: string): TrainType {
 
 /**
  * catalog 中 seatKey → 简化席别名（与 parseTicketResult 保持一致）。
- * 注意：爬虫产出的 `premiumSeat` 实际对应 12306 `tz_num`（特等座 'P'），
+ * 注意：数据快照中的 `premiumSeat` 实际对应 12306 `tz_num`（特等座 'P'），
  * 与 `specialSeat` 同义——两个 key 都映射到 '特等'。
  */
 const SEAT_KEY_TO_NAME: Record<string, string> = {

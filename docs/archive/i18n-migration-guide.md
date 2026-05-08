@@ -138,8 +138,8 @@ export function useAppStrings<T extends Record<string, string>>(
 ### 步骤 1：检测未翻译的字符串
 
 ```bash
-node scripts/detect_untranslated.mjs <AppName>
-node scripts/detect_untranslated.mjs <AppName> --verbose  # 显示每个文件最多 100 条
+node scripts/i18n/detect_untranslated.mjs <AppName>
+node scripts/i18n/detect_untranslated.mjs <AppName> --verbose  # 显示每个文件最多 100 条
 ```
 
 脚本会输出：
@@ -242,7 +242,7 @@ friend_groups_count: '个',
 npx tsc --noEmit 2>&1 | grep "<AppName>"
 
 # 重新检测未翻译字符串
-node scripts/detect_untranslated.mjs <AppName>
+node scripts/i18n/detect_untranslated.mjs <AppName>
 ```
 
 ---
@@ -255,11 +255,11 @@ node scripts/detect_untranslated.mjs <AppName>
 
 ```bash
 # 检查所有应用
-node scripts/check_translation_coverage.mjs --all
+node scripts/i18n/check_translation_coverage.mjs --all
 
 # 检查单个应用（显示详细问题）
-node scripts/check_translation_coverage.mjs Alipay
-node scripts/check_translation_coverage.mjs TencentMeeting
+node scripts/i18n/check_translation_coverage.mjs Alipay
+node scripts/i18n/check_translation_coverage.mjs TencentMeeting
 ```
 
 **输出示例**：
@@ -289,10 +289,10 @@ Wechat                       266    266   100.0%      2
 
 ```bash
 # 预览（不实际修改）
-node scripts/create_app_strings_hook.mjs <AppName> --dry-run
+node scripts/i18n/create_app_strings_hook.mjs <AppName> --dry-run
 
 # 实际执行
-node scripts/create_app_strings_hook.mjs <AppName>
+node scripts/i18n/create_app_strings_hook.mjs <AppName>
 ```
 
 **自动完成**：
@@ -314,9 +314,9 @@ node scripts/create_app_strings_hook.mjs <AppName>
 检测代码中的硬编码中文字符串（排除已在 `strings.ts` 中定义的）。
 
 ```bash
-node scripts/detect_untranslated.mjs <AppName>
-node scripts/detect_untranslated.mjs <AppName> --verbose  # 显示所有位置
-node scripts/detect_untranslated.mjs <AppName> --all      # 包括已翻译的
+node scripts/i18n/detect_untranslated.mjs <AppName>
+node scripts/i18n/detect_untranslated.mjs <AppName> --verbose  # 显示所有位置
+node scripts/i18n/detect_untranslated.mjs <AppName> --all      # 包括已翻译的
 ```
 
 **输出示例**：
@@ -361,9 +361,9 @@ node scripts/detect_untranslated.mjs <AppName> --all      # 包括已翻译的
 
 ```bash
 # 解析反编译 APK 的 strings.xml
-node scripts/parse_apk_strings.mjs <DecompiledApp>
-node scripts/parse_apk_strings.mjs Weread_decompiled --match setting
-node scripts/parse_apk_strings.mjs Weread_decompiled --compare WechatReading
+node scripts/reverse/parse_apk_strings.mjs <DecompiledApp>
+node scripts/reverse/parse_apk_strings.mjs Weread_decompiled --match setting
+node scripts/reverse/parse_apk_strings.mjs Weread_decompiled --compare WechatReading
 ```
 
 ---
@@ -462,13 +462,13 @@ A: 可以。`stringsEn` 使用 `Partial<Record<StringKey, string>>`，未翻译�
 
 ```bash
 # 查看分组统计
-node scripts/parse_apk_strings.mjs Weread_decompiled
+node scripts/reverse/parse_apk_strings.mjs Weread_decompiled
 
 # 查看特定前缀的字符串
-node scripts/parse_apk_strings.mjs Weread_decompiled --match setting
+node scripts/reverse/parse_apk_strings.mjs Weread_decompiled --match setting
 
 # 与项目 strings.ts 对比
-node scripts/parse_apk_strings.mjs Weread_decompiled --compare WechatReading
+node scripts/reverse/parse_apk_strings.mjs Weread_decompiled --compare WechatReading
 ```
 
 **对比模式输出**：
@@ -492,7 +492,7 @@ node scripts/parse_apk_strings.mjs Weread_decompiled --compare WechatReading
 **匹配模式输出**：
 
 ```bash
-node scripts/parse_apk_strings.mjs Weread_decompiled --match setting
+node scripts/reverse/parse_apk_strings.mjs Weread_decompiled --match setting
 
 setting_about_app:
   中文: 关于微信读书
@@ -520,7 +520,7 @@ setting_about_business_cooperation:
 
 ```bash
 # 查看当前状态
-node scripts/detect_untranslated.mjs Wechat
+node scripts/i18n/detect_untranslated.mjs Wechat
 
 # 输出示例
 📚 已定义翻译: 253 个字符串

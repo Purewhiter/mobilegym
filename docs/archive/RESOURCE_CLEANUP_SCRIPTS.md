@@ -16,7 +16,7 @@
 ### 分析颜色使用情况
 
 ```bash
-node scripts/analyze_colors_usage.mjs
+node scripts/migrate/analyze_colors_usage.mjs
 ```
 
 输出示例：
@@ -32,37 +32,37 @@ node scripts/analyze_colors_usage.mjs
 
 ```bash
 # 预览模式（不修改文件）
-node scripts/cleanup_unused_colors.mjs
+node scripts/migrate/cleanup_unused_colors.mjs
 
 # 执行清理
-node scripts/cleanup_unused_colors.mjs --execute
+node scripts/migrate/cleanup_unused_colors.mjs --execute
 ```
 
 ### 分析尺寸使用情况
 
 ```bash
 # 分析所有应用
-node scripts/analyze_dimens_usage.mjs
+node scripts/migrate/analyze_dimens_usage.mjs
 
 # 分析单个应用
-node scripts/analyze_dimens_usage.mjs --app=Alipay
+node scripts/migrate/analyze_dimens_usage.mjs --app=Alipay
 
 # 显示未使用项详情
-node scripts/analyze_dimens_usage.mjs --unused
+node scripts/migrate/analyze_dimens_usage.mjs --unused
 ```
 
 ### 清理未使用尺寸
 
 ```bash
 # 预览模式
-node scripts/cleanup_unused_dimens.mjs --app=Alipay
+node scripts/migrate/cleanup_unused_dimens.mjs --app=Alipay
 
 # 执行清理
-node scripts/cleanup_unused_dimens.mjs --app=Alipay --execute
+node scripts/migrate/cleanup_unused_dimens.mjs --app=Alipay --execute
 
 # 批量清理所有应用
 for app in Alipay Bilibili Browser ...; do
-  node scripts/cleanup_unused_dimens.mjs --app=$app --execute
+  node scripts/migrate/cleanup_unused_dimens.mjs --app=$app --execute
 done
 ```
 

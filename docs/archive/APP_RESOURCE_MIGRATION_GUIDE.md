@@ -76,7 +76,7 @@ icSizeBtnIcon: 18,   // 按钮内图标（CTA 按钮里的小图标）
 **如果必须迁移**，使用保值迁移（视觉零差异）：
 
 ```bash
-node scripts/migrate_colors_preserve_value.mjs --app=<AppName> --execute
+node scripts/migrate/migrate_colors_preserve_value.mjs --app=<AppName> --execute
 ```
 
 ### 3.2 安全迁移（已在用的语义色）
@@ -104,17 +104,17 @@ node scripts/migrate_colors_preserve_value.mjs --app=<AppName> --execute
 
 ```bash
 # 1. 预览（默认 dry-run，不修改文件）
-node scripts/migrate_icon_sizes.mjs --app=<AppName>
+node scripts/migrate/migrate_icon_sizes.mjs --app=<AppName>
 
 # 2. 查看详细匹配（看哪些被跳过及原因）
-node scripts/migrate_icon_sizes.mjs --app=<AppName> --verbose
+node scripts/migrate/migrate_icon_sizes.mjs --app=<AppName> --verbose
 
 # 3. 执行迁移
-node scripts/migrate_icon_sizes.mjs --app=<AppName> --execute
+node scripts/migrate/migrate_icon_sizes.mjs --app=<AppName> --execute
 
 # 4. 批量预览所有 App
 for app in Alipay Spotify Railway12306 Clock Gallery Settings; do
-  echo "=== $app ===" && node scripts/migrate_icon_sizes.mjs --app=$app 2>&1 | grep -E "(总数|可迁移)"
+  echo "=== $app ===" && node scripts/migrate/migrate_icon_sizes.mjs --app=$app 2>&1 | grep -E "(总数|可迁移)"
 done
 ```
 
@@ -128,10 +128,10 @@ done
 
 ```bash
 # 检查 App 的 dimens 定义是否覆盖代码中实际使用的尺寸
-node scripts/verify_dimens_coverage.mjs --app=<AppName>
+node scripts/migrate/verify_dimens_coverage.mjs --app=<AppName>
 
 # 检查所有 App 并输出汇总
-node scripts/verify_dimens_coverage.mjs
+node scripts/migrate/verify_dimens_coverage.mjs
 ```
 
 ### 4.3 迁移后验证

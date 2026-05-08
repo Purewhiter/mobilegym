@@ -1,10 +1,10 @@
 /**
  * Built-in pinyin data for Chinese IME.
  * 
- * AUTO-GENERATED from all_dicts/ by scripts/build_pinyin_dict.mjs
+ * AUTO-GENERATED from all_dicts/ by scripts/ime/build_pinyin_dict.mjs
  * DO NOT EDIT MANUALLY
  * 
- * To regenerate: node scripts/build_pinyin_dict.mjs
+ * To regenerate: node scripts/ime/build_pinyin_dict.mjs
  */
 
 export const PINYIN_PHRASES: Record<string, string[]> = {

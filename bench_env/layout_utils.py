@@ -23,7 +23,7 @@ bench_env/layout_utils.py
 import xml.etree.ElementTree as ET
 
 
-# ── ADB XML 解析（适配自 scripts/dump_ui_layout.py） ──
+# ── ADB XML 解析（适配自 scripts/reverse/dump_ui_layout.py） ──
 
 def _parse_bounds(bounds_str: str) -> dict | None:
     """解析 bounds 字符串 '[left,top][right,bottom]'"""

@@ -1,0 +1,25 @@
+mobile-gym
+Copyright 2026 The mobile-gym Authors
+
+This product includes software developed by The mobile-gym Authors and
+contributors. Licensed under the Apache License, Version 2.0; see the
+LICENSE file in the root of this repository.
+
+For notices regarding trademarks, third-party application references,
+dataset provenance, and the takedown procedure, see DISCLAIMER.md.
+
+------------------------------------------------------------------------
+Third-party components
+
+This project bundles or depends on third-party software with their own
+licenses. Their copyrights remain with their respective authors. See
+package.json and bench_env/requirements.txt for the authoritative list
+of dependencies and consult each project for its license terms.
+
+------------------------------------------------------------------------
+Patents
+
+Portions of this codebase may be covered by patents held by the
+contributors. Use of this software is licensed under the patent grant
+in Section 3 of the Apache License, Version 2.0, and is limited to that
+grant. No additional patent rights are conveyed.

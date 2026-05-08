@@ -61,7 +61,6 @@ def find_adb_path() -> str:
     # 2. 尝试常见路径
     home = os.path.expanduser("~")
     common_paths = [
-        "/Users/purew/Library/Android/sdk/platform-tools/adb", # Explicit path
         os.path.join(home, "Library/Android/sdk/platform-tools/adb"),  # macOS Android Studio
         os.path.join(home, "AppData/Local/Android/Sdk/platform-tools/adb.exe"),  # Windows
         "/usr/bin/adb",

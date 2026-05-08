@@ -300,7 +300,7 @@ python3 scripts/nav_path_finder.py \
 
 ### 📋 dump_app_state_schema：生成 App 状态 API 文档
 
-`scripts/dump_app_state_schema.py` 从运行中的模拟器获取 `__SIM__.getState()` 的真实数据结构，自动生成 Markdown 格式的 API 文档。运行时会先 **`await __SIM__.preloadAllAppStores()`**（预加载全部 `state.ts`，不依赖 lazy 是否在 headless 里已经加载完）；可选 `--warm-ui` 再调用 `warmUpAllApps()`；可用 `--settle-ms` 调整收尾等待时间。
+`scripts/dev/dump_app_state_schema.py` 从运行中的模拟器获取 `__SIM__.getState()` 的真实数据结构，自动生成 Markdown 格式的 API 文档。运行时会先 **`await __SIM__.preloadAllAppStores()`**（预加载全部 `state.ts`，不依赖 lazy 是否在 headless 里已经加载完）；可选 `--warm-ui` 再调用 `warmUpAllApps()`；可用 `--settle-ms` 调整收尾等待时间。
 
 ```bash
 # 前提：先启动开发服务器；首次需安装 Playwright 浏览器（与 bench_env 相同）
@@ -308,19 +308,19 @@ npm run dev
 # pip install -r bench_env/requirements.txt && python -m playwright install chromium
 
 # 生成文档（默认输出到 docs/os-services/APP_STATE_API.md）
-python scripts/dump_app_state_schema.py
+python scripts/dev/dump_app_state_schema.py
 
 # 指定输出路径
-python scripts/dump_app_state_schema.py --out docs/os-services/APP_STATE_API.md
+python scripts/dev/dump_app_state_schema.py --out docs/os-services/APP_STATE_API.md
 
 # 指定服务器地址
-python scripts/dump_app_state_schema.py --url http://localhost:3000
+python scripts/dev/dump_app_state_schema.py --url http://localhost:3000
 
 # 预加载后再多等一会（persist 较慢时）
-python scripts/dump_app_state_schema.py --settle-ms 3000
+python scripts/dev/dump_app_state_schema.py --settle-ms 3000
 
 # 同时拉起全部 Task 视图（重，一般不必）
-python scripts/dump_app_state_schema.py --warm-ui
+python scripts/dev/dump_app_state_schema.py --warm-ui
 ```
 
 ## 🔌 可访问的调试/自动化接口（window 全局）

@@ -191,7 +191,7 @@
 - 禁止在 apps 中直接 `Date.now/new Date`（强制走 `os/TimeService`）  
   现实中已有不少直接调用（例如 `apps/Weather/services/weatherService.ts` 等，可作为迁移清单）。
 - AppState 的 schema 需要可验证（persistentReaders 与 runtime getter 对齐），并提供自动检查/生成文档：  
-  README 已提到 `scripts/dump_app_state_schema.py`（见 README 中相关章节）。
+  README 已提到 `scripts/dev/dump_app_state_schema.py`（见 README 中相关章节）。
 
 这样项目才会具备“教材项目应有的强一致性与可回归性”。
 

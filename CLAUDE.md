@@ -125,7 +125,7 @@ Python-based evaluation framework using Playwright. Tasks are defined per-app wi
 - **`navigation_declaration_analyzer.mjs`** — Generates nav graph JSON (schema and data modes)
 - **`generate_action_tasks_from_nav_graph.mjs`** — Enumerates action trajectories from nav graphs
 - **`nav_path_finder.py`** — Shortest path search on nav graphs for verification
-- **`build_pinyin_dict.mjs`** — Generates IME pinyin dictionary from Rime dict sources
+- **`ime/build_pinyin_dict.mjs`** — Generates IME pinyin dictionary from Rime dict sources
 - **`lint_store_getters.mjs`** — Detects query getter functions in store actions and consumer subscriptions to them (§5.3 violation). Usage: `node scripts/lint_store_getters.mjs [AppName...]`
 
 ## Key Development Rules

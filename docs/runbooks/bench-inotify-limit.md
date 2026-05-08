@@ -129,7 +129,7 @@ sysctl -w fs.inotify.max_user_instances=8192
 
 debug 这个 case 的过程中先后试过下面这些,**都不解决问题但保留为中性改动**(下次别再重复测):
 
-- **TMPDIR 重定向到 `/home`**(`bench_env/env/pool.py`)— 怀疑 `/tmp` 92% 满导致 IDB 写慢,实测无效。chromium user-data-dir 现在在 `/home/dingbang_wu/.cache/mobile-gym/playwright_tmp/`
+- **TMPDIR 重定向到用户 cache 目录**(`bench_env/env/pool.py`)— 怀疑 `/tmp` 空间不足导致 IDB 写慢,实测无效。chromium user-data-dir 现在在用户 cache 下的 `mobile-gym/playwright_tmp/`
 - **Worker 错峰启动**(`bench_env/runner/parallel.py`)— `await asyncio.sleep(wid * 0.05)`,把首次 reset 摊到 12.8s 窗口。无效但保留以防真有 asyncio 同步 fan-out 问题
 - 其他打过脸的猜测(都不是因):Playwright Node 单进程瓶颈、nginx accept queue、mihomo proxy 拥塞、per-browser network process serialize、孤儿 chromium 累积
 

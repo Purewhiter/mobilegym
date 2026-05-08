@@ -1,5 +1,5 @@
 # 运行指标汇总报告
-生成时间: /home/rui.hao/mobile-gym/runs_metrics_report.md
+生成时间: runs_metrics_report.md
 
 ## 运行列表
 
@@ -338,4 +338,3 @@
 - deep_dive: 18.1% (19/105)
 - sequential: 37.5% (95/253)
 - transfer: 23.7% (18/76)
-

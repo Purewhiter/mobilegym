@@ -67,13 +67,13 @@ stateDiagram-v2
 
 - **探索与分析根目录**：`auto_explore/<AppName>/`
 - **Trace 目录（脚本真实落盘位置）**：`auto_explore/<AppName>/traces/<Trace>/`
-  - 其中 `<Trace>` **等价于** `scripts/agent_interact.py --session <Trace>`
-  - `<StepName>` **等价于** `scripts/agent_interact.py --step-name <StepName>`
+  - 其中 `<Trace>` **等价于** `scripts/reverse/agent_interact.py --session <Trace>`
+  - `<StepName>` **等价于** `scripts/reverse/agent_interact.py --step-name <StepName>`
 
 `auto_explore/<AppName>/` 下的**必须**产出物（缺一不可）：
 
 - **静态分析**
-  - `capability_map.json`：静态宏观能力图（`scripts/analyze_apk.py --output`）。
+  - `capability_map.json`：静态宏观能力图（`scripts/reverse/analyze_apk.py --output`）。
   - `static_assets.md`：Design Tokens + 原子组件索引 + Fast Path 资产清单。
 - **动态探索（规划与状态机）**
   - `bfs_plan.md`：BFS 探索计划（Step 0 产出）。
@@ -98,17 +98,17 @@ stateDiagram-v2
 
 - `layout_preview.html`
   - **来源**：
-    - `scripts/agent_interact.py` 每个 step 会在 `traces/<Trace>/<StepName>/layout_preview.html` 自动生成（推荐）。
-    - 或使用 `python scripts/dump_ui_layout.py --session ...` 的多屏采集流程时，在每个 `screen_XX/` 目录内生成。
+    - `scripts/reverse/agent_interact.py` 每个 step 会在 `traces/<Trace>/<StepName>/layout_preview.html` 自动生成（推荐）。
+    - 或使用 `python scripts/reverse/dump_ui_layout.py --session ...` 的多屏采集流程时，在每个 `screen_XX/` 目录内生成。
   - **用途**：快速浏览屏幕元素框、层级与大致样式，便于定位“哪一块不对”。
 - `web_mock.html`
   - **来源**：
-    - `scripts/agent_interact.py` 每个 step 会在 `traces/<Trace>/<StepName>/web_mock.html` 自动生成（推荐）。
-    - 或通过 `scripts/generate_web_mock.py` 从某个屏幕目录下的 `elements_tree.json` 再生。
+    - `scripts/reverse/agent_interact.py` 每个 step 会在 `traces/<Trace>/<StepName>/web_mock.html` 自动生成（推荐）。
+    - 或通过 `scripts/reverse/generate_web_mock.py` 从某个屏幕目录下的 `elements_tree.json` 再生。
   - **生成命令**（目标目录需包含 `elements_tree.json`，且格式为 `dump_ui_layout.generate_element_tree_json()` 生成的标准结构：包含 `screen` 与 `element_tree` 字段）：
 
 ```bash
-python scripts/generate_web_mock.py <screen_dir>
+python scripts/reverse/generate_web_mock.py <screen_dir>
 ```
 
 ---
@@ -120,7 +120,7 @@ python scripts/generate_web_mock.py <screen_dir>
 对于现代大型 App（如小红书），资源文件名往往被混淆为 `APKTOOL_DUMMYVAL_*`。在进行任何分析前，**必须**执行：
 
 ```bash
-python scripts/deobfuscate_resources.py --dir decompiled/<AppName>_decompiled
+python scripts/reverse/deobfuscate_resources.py --dir decompiled/<AppName>_decompiled
 ```
 
 * **原理**：该工作流不依赖脆弱的元数据，而是通过扫描 Smali 代码中的十六进制 ID，自动关联资源与其所在的 Activity/Fragment。
@@ -132,7 +132,7 @@ python scripts/deobfuscate_resources.py --dir decompiled/<AppName>_decompiled
 在深入通过 grep 搜索资源前，先运行全自动分析脚本获取全局视野：
 
 ```bash
-python scripts/analyze_apk.py --decompiled-dir decompiled/<AppName>_decompiled --output auto_explore/<AppName>/capability_map.json
+python scripts/reverse/analyze_apk.py --decompiled-dir decompiled/<AppName>_decompiled --output auto_explore/<AppName>/capability_map.json
 ```
 
 * **输入**：反编译目录。
@@ -197,7 +197,7 @@ Agent 必须扫描并建立以下"资产索引"：
 
 **适用场景**：无法静态还原的复杂页面。
 **核心理念**：**Plan First, Act Second.** (先策划，后行动)。
-**工具依赖**：`scripts/agent_interact.py` (集成了截图、Dump、元素提取、动作执行)。
+**工具依赖**：`scripts/reverse/agent_interact.py` (集成了截图、Dump、元素提取、动作执行)。
 
 ### 5.1 Step 0: 战略观测与策划 (Strategic Observation & Planning)
 
@@ -205,7 +205,7 @@ Agent 必须扫描并建立以下"资产索引"：
 
 1. **静默采集**：
    ```bash
-   python scripts/agent_interact.py --app <AppName> --session <Trace> --step-name 00_init --action capture_only
+   python scripts/reverse/agent_interact.py --app <AppName> --session <Trace> --step-name 00_init --action capture_only
    ```
 2. **分析 UI 布局**：查看生成的 `screenshot.png`, `elements_tree.json` 和 `actionable_elements.json`。
 3. **制定探索计划**：根据 APP 的功能架构，制定 **BFS (广度优先)** 策略。
@@ -230,7 +230,7 @@ Agent 必须严格遵守 **Check-Act-Update** 闭环：
 
 * 使用 `agent_interact.py` 执行动作。**严禁**使用原始 `adb` 命令。
   ```bash
-  python scripts/agent_interact.py --app <AppName> --session <Trace> \
+  python scripts/reverse/agent_interact.py --app <AppName> --session <Trace> \
     --step-name <StepID>_<ActionDesc> \
     --action tap \
     --target-id <ResourceID> \

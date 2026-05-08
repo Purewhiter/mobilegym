@@ -349,7 +349,7 @@ python -m bench_env.run \
     --agent autoglm --judge-mode vlm \
     --judge-model qwen-vl-max-latest \
     --judge-base-url https://dashscope.aliyuncs.com/compatible-mode/v1/ \
-    --judge-api-key sk-5ecfea8fb2ad4da585ec489762443936
+    --judge-api-key "$JUDGE_API_KEY"
 ```
 
 #### 参数说明
