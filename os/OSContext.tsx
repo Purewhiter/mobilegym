@@ -725,7 +725,7 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
                 if (item?.kind === 'folder') return { slot, kind: 'folder', folderId: item.folderId };
                 if (item?.kind === 'widget') {
                   const summary: any = { slot, kind: 'widget', widgetType: item.widgetType };
-                  if (item.widgetType === 'maml') {
+                  if (item.widgetType === 'wmr') {
                     summary.widgetId = item.widgetId;
                     summary.variant = item.variant;
                     summary.previewUrl = item.previewUrl;

@@ -2,7 +2,7 @@ import { cdn } from '../utils/cdn';
 
 const THEME_CDN = cdn('themes');
 
-export type MamlWidgetVariant = {
+export type WmrWidgetVariant = {
   entry: string;
   spanX: number;
   spanY: number;
@@ -10,26 +10,26 @@ export type MamlWidgetVariant = {
   preview: string;
 };
 
-export type MamlWidgetMeta = {
+export type WmrWidgetMeta = {
   id: string;
   title: string;
   author: string;
   description: string;
   source?: 'theme' | 'standalone';
   themeId?: string;
-  variants: MamlWidgetVariant[];
+  variants: WmrWidgetVariant[];
 };
 
-let _cache: MamlWidgetMeta[] | null = null;
+let _cache: WmrWidgetMeta[] | null = null;
 
-export async function listMamlWidgets(): Promise<MamlWidgetMeta[]> {
+export async function listWmrWidgets(): Promise<WmrWidgetMeta[]> {
   if (_cache) return _cache;
   try {
     const res = await fetch(`${THEME_CDN}/manifest.json`);
     if (!res.ok) return [];
     const manifest = await res.json();
     const raw: any[] = manifest.widgets ?? [];
-    const metas: MamlWidgetMeta[] = [];
+    const metas: WmrWidgetMeta[] = [];
     for (const w of raw) {
       if (!w.id || !Array.isArray(w.variants) || w.variants.length === 0) continue;
       metas.push({
@@ -55,7 +55,7 @@ export async function listMamlWidgets(): Promise<MamlWidgetMeta[]> {
   }
 }
 
-export function getWidgetPreviewUrl(widgetId: string, variant: MamlWidgetVariant): string {
+export function getWidgetPreviewUrl(widgetId: string, variant: WmrWidgetVariant): string {
   if (variant.preview) {
     // 老 manifest 里 preview 形如 /themes/<uuid>/preview.png，迁移后这部分直接走 THEME_CDN
     if (variant.preview.startsWith('/themes/')) {
@@ -70,11 +70,11 @@ export function getWidgetPreviewUrl(widgetId: string, variant: MamlWidgetVariant
 }
 
 /**
- * Get the XML base URL for a MAML widget variant's manifest.xml.
+ * Get the XML base URL for a WMR widget variant's manifest.xml.
  * For theme clock widgets: ${THEME_CDN}/<themeId>/clock_2x4/
  * For standalone widgets:  ${THEME_CDN}/<widgetId>/<variant>/
  */
-export function getWidgetXmlBaseUrl(widget: MamlWidgetMeta, variant: MamlWidgetVariant): string | undefined {
+export function getWidgetXmlBaseUrl(widget: WmrWidgetMeta, variant: WmrWidgetVariant): string | undefined {
   if (widget.source === 'theme' && widget.themeId) {
     return `${THEME_CDN}/${widget.themeId}/${variant.entry}/`;
   }

@@ -1,7 +1,7 @@
 /**
- * MAML expression tokenizer, parser, and evaluator.
+ * WMR expression tokenizer, parser, and evaluator.
  *
- * MAML uses non-standard operators:
+ * WMR uses non-standard operators:
  *   }  → >     {  → <     }= → >=    {= → <=    ** → &&
  *
  * Variable references:
@@ -13,7 +13,7 @@
  * Functions: ifelse, int, max, min, abs, sin, cos, rand, eq, not,
  *            strContains, strIsEmpty, strlen, formatDate, eval
  */
-import type { ExprNode, BinaryOp, UnaryOp, MamlVarContext } from './types';
+import type { ExprNode, BinaryOp, UnaryOp, WmrVarContext } from './types';
 import * as TimeService from '../../TimeService';
 import localeApi from '../../locale';
 
@@ -131,7 +131,7 @@ class ExprParser {
   private advance(): Token { return this.tokens[this.pos++]; }
   private expect(type: Tk): Token {
     const t = this.advance();
-    if (t.type !== type) throw new Error(`MAML expr: expected ${type}, got ${t.type} at ${t.pos}`);
+    if (t.type !== type) throw new Error(`WMR expr: expected ${type}, got ${t.type} at ${t.pos}`);
     return t;
   }
 
@@ -326,7 +326,7 @@ export function compileExpr(src: string): ExprNode {
 // Evaluate
 // ---------------------------------------------------------------------------
 
-export function evalExpr(node: ExprNode, ctx: MamlVarContext): any {
+export function evalExpr(node: ExprNode, ctx: WmrVarContext): any {
   switch (node.kind) {
     case 'number': return node.value;
     case 'string': return node.value;
@@ -388,7 +388,7 @@ export function evalExpr(node: ExprNode, ctx: MamlVarContext): any {
   }
 }
 
-function evalCall(fn: string, args: ExprNode[], ctx: MamlVarContext): unknown {
+function evalCall(fn: string, args: ExprNode[], ctx: WmrVarContext): unknown {
   switch (fn) {
     case 'ifelse': {
       // ifelse(c1,v1[,c2,v2,...][,else])
@@ -652,15 +652,15 @@ export function toStr(v: unknown): string {
 }
 
 /** Convenience: compile + eval in one call. */
-export function evalExprStr(src: string | undefined, ctx: MamlVarContext): any {
+export function evalExprStr(src: string | undefined, ctx: WmrVarContext): any {
   if (!src) return 0;
   return evalExpr(compileExpr(src), ctx);
 }
 
-export function evalNum(src: string | undefined, ctx: MamlVarContext): number {
+export function evalNum(src: string | undefined, ctx: WmrVarContext): number {
   return toNum(evalExprStr(src, ctx));
 }
 
-export function evalStr(src: string | undefined, ctx: MamlVarContext): string {
+export function evalStr(src: string | undefined, ctx: WmrVarContext): string {
   return toStr(evalExprStr(src, ctx));
 }

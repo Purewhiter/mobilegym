@@ -5,13 +5,13 @@ type MetricSample = {
   lastMs: number;
 };
 
-type MamlPerfStore = {
+type WmrPerfStore = {
   metrics: Record<string, Record<string, MetricSample>>;
 };
 
 declare global {
   interface Window {
-    __MAML_PERF__?: MamlPerfStore;
+    __WMR_PERF__?: WmrPerfStore;
   }
 }
 
@@ -19,15 +19,15 @@ function isPerfEnabled(): boolean {
   return typeof window !== 'undefined' && !!import.meta.env.DEV;
 }
 
-function getPerfStore(): MamlPerfStore | null {
+function getPerfStore(): WmrPerfStore | null {
   if (!isPerfEnabled()) return null;
-  if (!window.__MAML_PERF__) {
-    window.__MAML_PERF__ = { metrics: {} };
+  if (!window.__WMR_PERF__) {
+    window.__WMR_PERF__ = { metrics: {} };
   }
-  return window.__MAML_PERF__;
+  return window.__WMR_PERF__;
 }
 
-export function recordMamlPerf(metric: string, key: string, durationMs: number): void {
+export function recordWmrPerf(metric: string, key: string, durationMs: number): void {
   const store = getPerfStore();
   if (!store) return;
   const byMetric = store.metrics[metric] ?? (store.metrics[metric] = {});
@@ -43,10 +43,10 @@ export function recordMamlPerf(metric: string, key: string, durationMs: number):
   sample.lastMs = durationMs;
 }
 
-export function beginMamlPerf(metric: string, key: string): () => void {
+export function beginWmrPerf(metric: string, key: string): () => void {
   if (!isPerfEnabled()) return () => {};
   const startedAt = performance.now();
   return () => {
-    recordMamlPerf(metric, key, performance.now() - startedAt);
+    recordWmrPerf(metric, key, performance.now() - startedAt);
   };
 }

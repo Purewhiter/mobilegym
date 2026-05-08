@@ -1,12 +1,12 @@
 /**
- * MAML Canvas renderer.
- * Traverses the MamlNode AST and draws onto a CanvasRenderingContext2D.
+ * WMR Canvas renderer.
+ * Traverses the WmrNode AST and draws onto a CanvasRenderingContext2D.
  */
 import type {
-  MamlNode, MamlGroup, MamlImage, MamlText, MamlDateTime,
-  MamlRectangle, MamlArc, MamlButton, MamlBaseAttrs,
-  MamlImageNumber, MamlMask, MamlArray, MamlTime, MamlMusicControl, MamlTrigger,
-  MamlLine, MamlCircle,
+  WmrNode, WmrGroup, WmrImage, WmrText, WmrDateTime,
+  WmrRectangle, WmrArc, WmrButton, WmrBaseAttrs,
+  WmrImageNumber, WmrMask, WmrArray, WmrTime, WmrMusicControl, WmrTrigger,
+  WmrLine, WmrCircle,
 } from './types';
 import { evalNum, evalStr, evalExprStr, toNum, compileExpr, evalExpr } from './expression';
 import { VarContext, formatDateTime } from './variables';
@@ -124,8 +124,8 @@ interface HitRegion {
   y: number;
   w: number;
   h: number;
-  button?: MamlButton;
-  triggers?: MamlTrigger[];
+  button?: WmrButton;
+  triggers?: WmrTrigger[];
 }
 
 interface CachedTextLayout {
@@ -137,7 +137,7 @@ interface CachedTextLayout {
   blockHeight: number;
 }
 
-export class MamlCanvasRenderer {
+export class WmrCanvasRenderer {
   private ctx!: CanvasRenderingContext2D;
   private vars: VarContext;
   private opts: RenderOptions;
@@ -154,8 +154,8 @@ export class MamlCanvasRenderer {
   private offsetY = 0;
   private measureOnly = false;
   private activeRegion: HitRegion | null = null;
-  private activeButton: MamlButton | null = null;
-  private lastResolvedImageByNode = new WeakMap<MamlImage, { src: string; frameIndex?: number }>();
+  private activeButton: WmrButton | null = null;
+  private lastResolvedImageByNode = new WeakMap<WmrImage, { src: string; frameIndex?: number }>();
   private enableHitRegions: boolean;
   private enableMeasurePass: boolean;
   private lastCanvasWidth = 0;
@@ -183,7 +183,7 @@ export class MamlCanvasRenderer {
     return this.opts.assetUrlResolver ? this.opts.assetUrlResolver(src) : this.opts.basePath + src;
   }
 
-  render(canvas: HTMLCanvasElement, nodes: MamlNode[]): void {
+  render(canvas: HTMLCanvasElement, nodes: WmrNode[]): void {
     const dpr = window.devicePixelRatio || 1;
     const displayW = canvas.clientWidth;
     const displayH = canvas.clientHeight;
@@ -301,13 +301,13 @@ export class MamlCanvasRenderer {
     return this.triggerRegion(region, 'up');
   }
 
-  private renderNodes(nodes: MamlNode[]): void {
+  private renderNodes(nodes: WmrNode[]): void {
     for (const node of nodes) {
       this.renderNode(node);
     }
   }
 
-  private renderNode(node: MamlNode): void {
+  private renderNode(node: WmrNode): void {
     switch (node.tag) {
       case 'Group': this.renderGroup(node); break;
       case 'Image': this.renderImage(node); break;
@@ -377,12 +377,12 @@ export class MamlCanvasRenderer {
   }
 
   private registerTriggerHitRegion(
-    node: { triggers?: MamlTrigger[] },
+    node: { triggers?: WmrTrigger[] },
     x: number,
     y: number,
     w: number,
     h: number,
-    button?: MamlButton,
+    button?: WmrButton,
   ): void {
     if (!this.enableHitRegions || this.measureOnly || !w || !h) return;
     if (!node.triggers?.length && !button) return;
@@ -416,13 +416,13 @@ export class MamlCanvasRenderer {
     };
   }
 
-  private isVisible(node: MamlBaseAttrs): boolean {
+  private isVisible(node: WmrBaseAttrs): boolean {
     if (node.visibility === undefined) return true;
     const v = evalNum(node.visibility, this.vars);
     return v !== 0;
   }
 
-  private getAlpha(node: MamlBaseAttrs): number {
+  private getAlpha(node: WmrBaseAttrs): number {
     if (node.name && this.vars.has(`${node.name}.alpha`)) {
       return Math.max(0, Math.min(1, this.vars.getNum(`${node.name}.alpha`) / 255));
     }
@@ -431,7 +431,7 @@ export class MamlCanvasRenderer {
     return Math.max(0, Math.min(1, a / 255));
   }
 
-  private getX(node: MamlBaseAttrs): number {
+  private getX(node: WmrBaseAttrs): number {
     if (node.name && this.vars.has(`${node.name}.x`)) return this.vars.getNum(`${node.name}.x`);
     let base: number;
     if (node.x !== undefined) base = evalNum(node.x, this.vars);
@@ -442,7 +442,7 @@ export class MamlCanvasRenderer {
     }
     return base;
   }
-  private getY(node: MamlBaseAttrs): number {
+  private getY(node: WmrBaseAttrs): number {
     if (node.name && this.vars.has(`${node.name}.y`)) return this.vars.getNum(`${node.name}.y`);
     let base: number;
     if (node.y !== undefined) base = evalNum(node.y, this.vars);
@@ -453,68 +453,68 @@ export class MamlCanvasRenderer {
     }
     return base;
   }
-  private getW(node: MamlBaseAttrs): number { return evalNum(node.w ?? node.width, this.vars); }
-  private getH(node: MamlBaseAttrs): number { return evalNum(node.h ?? node.height, this.vars); }
-  private getScaleX(node: MamlBaseAttrs): number {
+  private getW(node: WmrBaseAttrs): number { return evalNum(node.w ?? node.width, this.vars); }
+  private getH(node: WmrBaseAttrs): number { return evalNum(node.h ?? node.height, this.vars); }
+  private getScaleX(node: WmrBaseAttrs): number {
     if (node.name && this.vars.has(`${node.name}.scaleX`)) return this.vars.getNum(`${node.name}.scaleX`);
     if (node.scaleX !== undefined) return evalNum(node.scaleX, this.vars);
     if (node.scale !== undefined) return evalNum(node.scale, this.vars);
     return 1;
   }
-  private getScaleY(node: MamlBaseAttrs): number {
+  private getScaleY(node: WmrBaseAttrs): number {
     if (node.name && this.vars.has(`${node.name}.scaleY`)) return this.vars.getNum(`${node.name}.scaleY`);
     if (node.scaleY !== undefined) return evalNum(node.scaleY, this.vars);
     if (node.scale !== undefined) return evalNum(node.scale, this.vars);
     return 1;
   }
 
-  private getRotation(node: MamlBaseAttrs): number {
+  private getRotation(node: WmrBaseAttrs): number {
     if (node.name && this.vars.has(`${node.name}.rotation`)) return this.vars.getNum(`${node.name}.rotation`);
     return node.rotation ? evalNum(node.rotation, this.vars) : 0;
   }
 
-  private usesCenterXAlignment(node: MamlBaseAttrs): boolean {
+  private usesCenterXAlignment(node: WmrBaseAttrs): boolean {
     return node.x === undefined && node.centerX !== undefined;
   }
 
-  private usesCenterYAlignment(node: MamlBaseAttrs): boolean {
+  private usesCenterYAlignment(node: WmrBaseAttrs): boolean {
     return node.y === undefined && node.centerY !== undefined;
   }
 
-  private getPivotX(node: MamlBaseAttrs): number {
+  private getPivotX(node: WmrBaseAttrs): number {
     if (node.pivotX !== undefined) return evalNum(node.pivotX, this.vars);
     if (node.x !== undefined && node.centerX !== undefined) return evalNum(node.centerX, this.vars);
     return 0;
   }
 
-  private getPivotY(node: MamlBaseAttrs): number {
+  private getPivotY(node: WmrBaseAttrs): number {
     if (node.pivotY !== undefined) return evalNum(node.pivotY, this.vars);
     if (node.y !== undefined && node.centerY !== undefined) return evalNum(node.centerY, this.vars);
     return 0;
   }
 
-  private applyAlign(node: MamlBaseAttrs, x: number, w: number): number {
+  private applyAlign(node: WmrBaseAttrs, x: number, w: number): number {
     const align = node.align ?? (this.usesCenterXAlignment(node) ? 'center' : undefined);
     if (align === 'center') return x - w / 2;
     if (align === 'right') return x - w;
     return x;
   }
 
-  private applyAlignV(node: MamlBaseAttrs, y: number, h: number): number {
+  private applyAlignV(node: WmrBaseAttrs, y: number, h: number): number {
     const alignV = node.alignV ?? (this.usesCenterYAlignment(node) ? 'center' : undefined);
     if (alignV === 'center') return y - h / 2;
     if (alignV === 'bottom') return y - h;
     return y;
   }
 
-  private getTextAlign(node: MamlBaseAttrs): CanvasTextAlign {
+  private getTextAlign(node: WmrBaseAttrs): CanvasTextAlign {
     const align = node.align ?? (this.usesCenterXAlignment(node) ? 'center' : undefined);
     if (align === 'center') return 'center';
     if (align === 'right') return 'right';
     return 'left';
   }
 
-  private getTextBaseline(node: MamlBaseAttrs): CanvasTextBaseline {
+  private getTextBaseline(node: WmrBaseAttrs): CanvasTextBaseline {
     const alignV = node.alignV ?? (this.usesCenterYAlignment(node) ? 'center' : undefined);
     if (alignV === 'center') return 'middle';
     if (alignV === 'bottom') return 'bottom';
@@ -534,7 +534,7 @@ export class MamlCanvasRenderer {
     return Math.max(2, size * 0.12);
   }
 
-  private getTextBlockTop(node: MamlBaseAttrs, y: number, blockHeight: number): number {
+  private getTextBlockTop(node: WmrBaseAttrs, y: number, blockHeight: number): number {
     const baseline = this.getTextBaseline(node);
     if (baseline === 'middle') return y - blockHeight / 2;
     if (baseline === 'bottom') return y - blockHeight;
@@ -599,7 +599,7 @@ export class MamlCanvasRenderer {
     return lines.length > 0 ? lines : [''];
   }
 
-  private renderGroup(node: MamlGroup): void {
+  private renderGroup(node: WmrGroup): void {
     if (!this.isVisible(node)) return;
 
     if (node.layered) {
@@ -649,7 +649,7 @@ export class MamlCanvasRenderer {
     c.restore();
   }
 
-  private renderLayeredGroup(node: MamlGroup): void {
+  private renderLayeredGroup(node: WmrGroup): void {
     const w = node.w ? this.getW(node) : this.designWidth;
     const h = node.h ? this.getH(node) : this.designHeight;
     if (!w || !h) return;
@@ -689,7 +689,7 @@ export class MamlCanvasRenderer {
     releaseCanvas(offscreen);
   }
 
-  private renderImage(node: MamlImage): void {
+  private renderImage(node: WmrImage): void {
     if (!this.isVisible(node)) return;
     const resolvedSrc = this.resolveImageSource(node);
     if (!resolvedSrc) return;
@@ -806,7 +806,7 @@ export class MamlCanvasRenderer {
     c.restore();
   }
 
-  private resolveImageSource(node: MamlImage): string {
+  private resolveImageSource(node: WmrImage): string {
     if (node.srcExp) return String(evalExprStr(node.srcExp, this.vars));
     if (!node.src) return '';
     if (node.src.startsWith('@') || node.src.startsWith('#')) {
@@ -870,7 +870,7 @@ export class MamlCanvasRenderer {
     return `${stem}_${frameIndex}${ext}`;
   }
 
-  private renderText(node: MamlText): void {
+  private renderText(node: WmrText): void {
     if (!this.isVisible(node)) return;
 
     let text: string;
@@ -958,7 +958,7 @@ export class MamlCanvasRenderer {
     c.restore();
   }
 
-  private renderDateTime(node: MamlDateTime): void {
+  private renderDateTime(node: WmrDateTime): void {
     if (!this.isVisible(node)) return;
 
     const fmt = node.formatExp ? String(evalExprStr(node.formatExp, this.vars)) : (node.format ?? 'HH:mm');
@@ -1016,7 +1016,7 @@ export class MamlCanvasRenderer {
     c.restore();
   }
 
-  private renderRectangle(node: MamlRectangle): void {
+  private renderRectangle(node: WmrRectangle): void {
     if (!this.isVisible(node)) return;
 
     const c = this.ctx;
@@ -1082,7 +1082,7 @@ export class MamlCanvasRenderer {
     c.restore();
   }
 
-  private getRectangleFillStyle(node: MamlRectangle): string | CanvasGradient | null {
+  private getRectangleFillStyle(node: WmrRectangle): string | CanvasGradient | null {
     if (node.fillShader?.type === 'linearGradient') {
       const gradient = this.ctx.createLinearGradient(
         evalNum(node.fillShader.x, this.vars),
@@ -1102,7 +1102,7 @@ export class MamlCanvasRenderer {
     return null;
   }
 
-  private renderArc(node: MamlArc): void {
+  private renderArc(node: WmrArc): void {
     if (!this.isVisible(node)) return;
 
     const c = this.ctx;
@@ -1150,7 +1150,7 @@ export class MamlCanvasRenderer {
     c.restore();
   }
 
-  private renderCircle(node: MamlCircle): void {
+  private renderCircle(node: WmrCircle): void {
     if (!this.isVisible(node)) return;
 
     const c = this.ctx;
@@ -1181,7 +1181,7 @@ export class MamlCanvasRenderer {
     c.restore();
   }
 
-  private renderLine(node: MamlLine): void {
+  private renderLine(node: WmrLine): void {
     if (!this.isVisible(node)) return;
 
     const c = this.ctx;
@@ -1205,7 +1205,7 @@ export class MamlCanvasRenderer {
     c.restore();
   }
 
-  private renderButton(node: MamlButton): void {
+  private renderButton(node: WmrButton): void {
     if (!this.isVisible(node)) return;
 
     const w = this.getW(node);
@@ -1240,7 +1240,7 @@ export class MamlCanvasRenderer {
     c.restore();
   }
 
-  private renderImageNumber(node: MamlImageNumber): void {
+  private renderImageNumber(node: WmrImageNumber): void {
     if (!this.isVisible(node) || !node.src || !node.textExp) return;
 
     const text = String(evalExprStr(node.textExp, this.vars));
@@ -1278,7 +1278,7 @@ export class MamlCanvasRenderer {
     c.restore();
   }
 
-  private renderTime(node: MamlTime): void {
+  private renderTime(node: WmrTime): void {
     if (!this.isVisible(node)) return;
 
     const srcPath = node.srcExp ? String(evalExprStr(node.srcExp, this.vars)) : node.src;
@@ -1350,12 +1350,12 @@ export class MamlCanvasRenderer {
     c.restore();
   }
 
-  private renderMask(node: MamlMask): void {
+  private renderMask(node: WmrMask): void {
     if (!this.isVisible(node)) return;
     this.renderNodes(node.children);
   }
 
-  private renderArray(node: MamlArray): void {
+  private renderArray(node: WmrArray): void {
     if (!this.isVisible(node)) return;
     const count = evalNum(node.count, this.vars) || 0;
     const indexName = node.indexName ?? '__index';
@@ -1365,7 +1365,7 @@ export class MamlCanvasRenderer {
     }
   }
 
-  private renderMusicControl(node: MamlMusicControl): void {
+  private renderMusicControl(node: WmrMusicControl): void {
     this.renderNodes(node.children);
   }
 
@@ -1650,7 +1650,7 @@ export class MamlCanvasRenderer {
     return handled;
   }
 
-  private executeCommand(cmd: MamlTrigger['commands'][number]): boolean {
+  private executeCommand(cmd: WmrTrigger['commands'][number]): boolean {
     if (cmd.type === 'intent' && this.opts.onIntent) {
       const pkg = cmd.packageExp ? String(evalExprStr(cmd.packageExp, this.vars)) : cmd.package;
       const cls = cmd.classExp ? String(evalExprStr(cmd.classExp, this.vars)) : cmd.class;

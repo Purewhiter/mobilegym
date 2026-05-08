@@ -1,5 +1,5 @@
 /**
- * Image preloading and caching for MAML widgets.
+ * Image preloading and caching for WMR widgets.
  * Handles sprite sheets (srcid selects a frame from a vertically-stacked strip).
  */
 
@@ -61,9 +61,9 @@ export function timeDigitSrcs(srcBase: string): string[] {
 /**
  * Collect all image src references from an AST node tree.
  */
-export function collectImageSrcs(nodes: import('./types').MamlNode[]): string[] {
+export function collectImageSrcs(nodes: import('./types').WmrNode[]): string[] {
   const srcs = new Set<string>();
-  function walk(ns: import('./types').MamlNode[]) {
+  function walk(ns: import('./types').WmrNode[]) {
     for (const n of ns) {
       if (n.tag === 'Image' && n.src) srcs.add(n.src);
       if (n.tag === 'ImageNumber' && n.src) srcs.add(n.src);
@@ -86,7 +86,7 @@ export function collectImageSrcs(nodes: import('./types').MamlNode[]): string[] 
 }
 
 /**
- * Preload all images from a MAML widget.
+ * Preload all images from a WMR widget.
  * @param basePath  URL prefix, e.g. "/themes/<themeId>/clock_2x4/"
  * @param srcs      Relative src paths from collectImageSrcs
  */
@@ -102,7 +102,7 @@ export async function preloadAll(
 
 /**
  * Draw a sprite frame from a vertically-stacked sprite strip.
- * MAML sprite images are stacked vertically: frame 0 at top, frame 1 below, etc.
+ * WMR sprite images are stacked vertically: frame 0 at top, frame 1 below, etc.
  * Each frame has width = img.naturalWidth, height = img.naturalHeight / frameCount.
  * frameCount is inferred from aspect ratio (assumes square-ish frames).
  */

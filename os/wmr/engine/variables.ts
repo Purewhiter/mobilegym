@@ -1,13 +1,13 @@
 /**
- * MAML variable context.
+ * WMR variable context.
  * Maintains built-in time/system variables and user-defined Var/VarArray.
  */
 import type {
-  MamlVarContext, MamlNode, MamlVar, MamlVarArray,
-  MamlContentProviderBinder, VarValue, MamlBroadcastBinder, MamlCommand,
-  MamlTrigger, MamlVariableAnimation, MamlFramerateController, MamlFunction,
-  MamlFolmeState, MamlFolmeConfig, MamlVirtualElement, MamlPropertyAnimation,
-  MamlBaseAttrs, ExprNode,
+  WmrVarContext, WmrNode, WmrVar, WmrVarArray,
+  WmrContentProviderBinder, VarValue, WmrBroadcastBinder, WmrCommand,
+  WmrTrigger, WmrVariableAnimation, WmrFramerateController, WmrFunction,
+  WmrFolmeState, WmrFolmeConfig, WmrVirtualElement, WmrPropertyAnimation,
+  WmrBaseAttrs, ExprNode,
 } from './types';
 import { compileExpr, evalExpr, toNum, toStr } from './expression';
 import localeApi from '../../locale';
@@ -41,7 +41,7 @@ type TimelineState = {
 type RegisteredPropertyAnimation = {
   key: string;
   target: string;
-  animation: MamlPropertyAnimation;
+  animation: WmrPropertyAnimation;
   state: TimelineState;
 };
 
@@ -50,7 +50,7 @@ type RegisteredVarAnimation = {
   target: string;
   slot: string;
   index?: number;
-  animation: MamlVariableAnimation;
+  animation: WmrVariableAnimation;
   state: TimelineState;
 };
 
@@ -124,7 +124,7 @@ function isStaticExprNode(node: ExprNode): boolean {
 }
 
 // ---------------------------------------------------------------------------
-// Easing functions — standard Robert Penner equations used by MAML
+// Easing functions — standard Robert Penner equations used by WMR
 // ---------------------------------------------------------------------------
 
 function easeLinear(t: number): number { return t; }
@@ -269,32 +269,32 @@ function getCycleIndex(value: number, size: number): number {
   return ((value % size) + size) % size;
 }
 
-const PERSIST_STORAGE_PREFIX = 'maml_persist_v1:';
+const PERSIST_STORAGE_PREFIX = 'wmr_persist_v1:';
 
-export class VarContext implements MamlVarContext {
+export class VarContext implements WmrVarContext {
   private vars = new Map<string, VarValue>();
   private arrays = new Map<string, VarValue[]>();
   private elementProps = new Map<string, number>(); // "el.prop" → number
   private persistStore = new Map<string, VarValue>();
-  private varDefs = new Map<string, MamlVar>();
-  private triggerLastValues = new WeakMap<MamlVar, VarValue>();
+  private varDefs = new Map<string, WmrVar>();
+  private triggerLastValues = new WeakMap<WmrVar, VarValue>();
   private variableAnimations = new Map<string, RegisteredVarAnimation>();
   private variableAnimationTargets = new Map<string, RegisteredVarAnimation[]>();
   private variableAnimationAliases = new Map<string, RegisteredVarAnimation[]>();
   private activeVarAnimationBySlot = new Map<string, string>();
-  private framerateControllers = new Map<string, MamlFramerateController>();
+  private framerateControllers = new Map<string, WmrFramerateController>();
   private framerateStates = new Map<string, TimelineState>();
-  private functions = new Map<string, MamlFunction>();
-  private folmeStates = new Map<string, MamlFolmeState>();
-  private folmeConfigs = new Map<string, MamlFolmeConfig>();
+  private functions = new Map<string, WmrFunction>();
+  private folmeStates = new Map<string, WmrFolmeState>();
+  private folmeConfigs = new Map<string, WmrFolmeConfig>();
   private folmeTransitions = new Map<string, RegisteredFolmeTransition>();
   private propertyAnimations = new Map<string, RegisteredPropertyAnimation>();
   private propertyAnimationTargets = new Map<string, RegisteredPropertyAnimation[]>();
-  private preparedAnimationTimelines = new WeakMap<MamlVariableAnimation | MamlPropertyAnimation, PreparedAnimationTimeline>();
+  private preparedAnimationTimelines = new WeakMap<WmrVariableAnimation | WmrPropertyAnimation, PreparedAnimationTimeline>();
   private methodHandlers = new Map<string, (...args: VarValue[]) => void>();
-  private namedElements = new Map<string, MamlBaseAttrs>();
-  private actionTargets = new Map<string, MamlTrigger[]>();
-  private contentProviders = new Map<string, MamlContentProviderBinder>();
+  private namedElements = new Map<string, WmrBaseAttrs>();
+  private actionTargets = new Map<string, WmrTrigger[]>();
+  private contentProviders = new Map<string, WmrContentProviderBinder>();
   private intentHandler: ((pkg: string, cls?: string) => boolean | void) | null = null;
   private frameRateOverride = 0;
   private defaultFrameRate = 0;
@@ -360,8 +360,8 @@ export class VarContext implements MamlVarContext {
     this.vars.set('view_height', h);
   }
 
-  private registerNamedNode(node: MamlNode): void {
-    const attrs = node as MamlBaseAttrs & { triggers?: MamlTrigger[] };
+  private registerNamedNode(node: WmrNode): void {
+    const attrs = node as WmrBaseAttrs & { triggers?: WmrTrigger[] };
     if (attrs.name) {
       this.namedElements.set(attrs.name, attrs);
       if (attrs.triggers?.length) {
@@ -374,7 +374,7 @@ export class VarContext implements MamlVarContext {
   }
 
   /** Walk the AST to initialize user-defined Var/VarArray and ContentProviderBinder variables. */
-  initFromNodes(nodes: MamlNode[]): void {
+  initFromNodes(nodes: WmrNode[]): void {
     for (const node of nodes) {
       this.registerNamedNode(node);
       this.registerNodeAnimations(node);
@@ -428,8 +428,8 @@ export class VarContext implements MamlVarContext {
     }
   }
 
-  private registerNodeAnimations(node: MamlNode): void {
-    const attrs = node as MamlBaseAttrs;
+  private registerNodeAnimations(node: WmrNode): void {
+    const attrs = node as WmrBaseAttrs;
     if (!attrs.name || !attrs.animations?.length) return;
     for (let i = 0; i < attrs.animations.length; i++) {
       const animation = attrs.animations[i];
@@ -457,7 +457,7 @@ export class VarContext implements MamlVarContext {
     }
   }
 
-  private initVirtualElement(node: MamlVirtualElement): void {
+  private initVirtualElement(node: WmrVirtualElement): void {
     if (!node.name) return;
     this.setRuntimeProp(node.name, 'x', node.x);
     this.setRuntimeProp(node.name, 'y', node.y);
@@ -467,7 +467,7 @@ export class VarContext implements MamlVarContext {
     this.setRuntimeProp(node.name, 'rotation', node.rotation);
   }
 
-  private initVar(v: MamlVar): void {
+  private initVar(v: WmrVar): void {
     if (v.name) this.varDefs.set(v.name, v);
     const animations = v.animations?.length ? v.animations : (v.animation ? [v.animation] : []);
 
@@ -520,7 +520,7 @@ export class VarContext implements MamlVarContext {
     this.arrays.set(name, next);
   }
 
-  private makeVarAnimationKey(target: string, animation: MamlVariableAnimation, index?: number, ordinal = 0): string {
+  private makeVarAnimationKey(target: string, animation: WmrVariableAnimation, index?: number, ordinal = 0): string {
     const parts = [target];
     if (index !== undefined) parts.push(`[${index}]`);
     if (animation.tag) parts.push(`#${animation.tag}`);
@@ -533,7 +533,7 @@ export class VarContext implements MamlVarContext {
     return index === undefined ? target : `${target}[${index}]`;
   }
 
-  private registerVarAnimations(target: string, animations: MamlVariableAnimation[], index: number | undefined, baseValue: VarValue): void {
+  private registerVarAnimations(target: string, animations: WmrVariableAnimation[], index: number | undefined, baseValue: VarValue): void {
     const slot = this.getVarAnimationSlot(target, index);
     animations.forEach((animation, ordinal) => {
       const key = this.makeVarAnimationKey(target, animation, index, ordinal);
@@ -577,7 +577,7 @@ export class VarContext implements MamlVarContext {
     });
   }
 
-  private updateVarValues(v: MamlVar): void {
+  private updateVarValues(v: WmrVar): void {
     if (!v.name || !v.values) return;
     const values = v.values.map((entry) => {
       try {
@@ -592,7 +592,7 @@ export class VarContext implements MamlVarContext {
     }
   }
 
-  private initVarArray(va: MamlVarArray): void {
+  private initVarArray(va: WmrVarArray): void {
     // Items define the array data
     if (va.items.length > 0) {
       if (va.name) {
@@ -616,7 +616,7 @@ export class VarContext implements MamlVarContext {
     }
   }
 
-  private initContentProvider(cpb: MamlContentProviderBinder): void {
+  private initContentProvider(cpb: WmrContentProviderBinder): void {
     // Initialize variable slots with defaults
     for (const v of cpb.variables) {
       if (!this.vars.has(v.name)) {
@@ -634,7 +634,7 @@ export class VarContext implements MamlVarContext {
     }
   }
 
-  private initBroadcastBinder(binder: MamlBroadcastBinder): void {
+  private initBroadcastBinder(binder: WmrBroadcastBinder): void {
     for (const v of binder.variables) {
       if (v.type === 'int' || v.type === 'number') this.vars.set(v.name, this.getNum(v.name));
       else if (v.type.endsWith('[]')) this.arrays.set(v.name, this.getArray(v.name));
@@ -647,7 +647,7 @@ export class VarContext implements MamlVarContext {
 
   /** Re-evaluate all non-const Var nodes (call after refreshBuiltins). */
   reevaluateVars(
-    nodes: MamlNode[],
+    nodes: WmrNode[],
     options: {
       includeAnimations?: boolean;
       includeBinders?: boolean;
@@ -730,7 +730,7 @@ export class VarContext implements MamlVarContext {
     }
   }
 
-  registerFramerateControllers(controllers: MamlFramerateController[]): void {
+  registerFramerateControllers(controllers: WmrFramerateController[]): void {
     for (const controller of controllers) {
       this.framerateControllers.set(controller.name, controller);
       const lastTime = controller.controlPoints[controller.controlPoints.length - 1]?.time ?? 0;
@@ -750,7 +750,7 @@ export class VarContext implements MamlVarContext {
     }
   }
 
-  executeTriggerList(triggers: MamlTrigger[] | undefined, action = 'up'): void {
+  executeTriggerList(triggers: WmrTrigger[] | undefined, action = 'up'): void {
     if (!triggers?.length) return;
     for (const trigger of triggers) {
       if (!this.matchesTriggerAction(trigger.action, action)) continue;
@@ -759,12 +759,12 @@ export class VarContext implements MamlVarContext {
     }
   }
 
-  executeCommands(commands: MamlCommand[]): void {
+  executeCommands(commands: WmrCommand[]): void {
     for (const command of commands) {
       if (command.type !== 'if' && !this.evalCondition(command.condition)) continue;
       const delay = 'delay' in command ? command.delay : undefined;
       if (delay && delay > 0 && typeof window !== 'undefined') {
-        window.setTimeout(() => this.executeCommands([{ ...command, delay: undefined } as MamlCommand]), delay);
+        window.setTimeout(() => this.executeCommands([{ ...command, delay: undefined } as WmrCommand]), delay);
         continue;
       }
 
@@ -838,7 +838,7 @@ export class VarContext implements MamlVarContext {
     }
   }
 
-  private executeVariableCommand(command: Extract<MamlCommand, { type: 'variable' }>): void {
+  private executeVariableCommand(command: Extract<WmrCommand, { type: 'variable' }>): void {
     try {
       const value = evalExpr(compileExpr(command.expression), this);
       if (command.index) {
@@ -857,7 +857,7 @@ export class VarContext implements MamlVarContext {
     }
   }
 
-  private maybeRunVarTriggers(node: MamlVar, previous: VarValue | undefined, next: VarValue): void {
+  private maybeRunVarTriggers(node: WmrVar, previous: VarValue | undefined, next: VarValue): void {
     if (!node.triggers?.length) return;
     const prev = this.triggerLastValues.has(node) ? this.triggerLastValues.get(node) : previous;
     this.triggerLastValues.set(node, next);
@@ -933,7 +933,7 @@ export class VarContext implements MamlVarContext {
     }
   }
 
-  private executeFolmeCommand(command: Extract<MamlCommand, { type: 'folme' }>): void {
+  private executeFolmeCommand(command: Extract<WmrCommand, { type: 'folme' }>): void {
     const apply = () => {
       const states = this.parseFolmeStates(command.states);
       const config = command.config ? this.folmeConfigs.get(this.stripQuoted(command.config)) : undefined;
@@ -968,7 +968,7 @@ export class VarContext implements MamlVarContext {
     }
   }
 
-  private applyFolmeState(target: string, state: MamlFolmeState): void {
+  private applyFolmeState(target: string, state: WmrFolmeState): void {
     if (!state) return;
     this.setRuntimeProp(target, 'x', state.x);
     this.setRuntimeProp(target, 'y', state.y);
@@ -1046,7 +1046,7 @@ export class VarContext implements MamlVarContext {
     }
   }
 
-  private getFolmeStateProp(state: MamlFolmeState | undefined, prop: FolmeProp): string | undefined {
+  private getFolmeStateProp(state: WmrFolmeState | undefined, prop: FolmeProp): string | undefined {
     if (!state) return undefined;
     switch (prop) {
       case 'x': return state.x;
@@ -1058,16 +1058,16 @@ export class VarContext implements MamlVarContext {
     }
   }
 
-  private getFolmeTransitionSpec(config: MamlFolmeConfig | undefined, prop: FolmeProp): string | undefined {
+  private getFolmeTransitionSpec(config: WmrFolmeConfig | undefined, prop: FolmeProp): string | undefined {
     const special = config?.specials.find((item) => this.stripQuoted(item.property) === prop);
     return special?.ease ?? config?.ease;
   }
 
   private startFolmeTransition(
     target: string,
-    fromState: MamlFolmeState | undefined,
-    toState: MamlFolmeState | undefined,
-    config: MamlFolmeConfig | undefined,
+    fromState: WmrFolmeState | undefined,
+    toState: WmrFolmeState | undefined,
+    config: WmrFolmeConfig | undefined,
   ): void {
     const props: FolmeTransitionProp[] = [];
     const allProps: FolmeProp[] = ['x', 'y', 'alpha', 'scaleX', 'scaleY', 'rotation'];
@@ -1193,7 +1193,7 @@ export class VarContext implements MamlVarContext {
     return currentTime;
   }
 
-  private prepareAnimationTimeline(animation: MamlVariableAnimation | MamlPropertyAnimation): PreparedAnimationTimeline {
+  private prepareAnimationTimeline(animation: WmrVariableAnimation | WmrPropertyAnimation): PreparedAnimationTimeline {
     const cached = this.preparedAnimationTimelines.get(animation);
     if (cached) return cached;
 
@@ -1239,12 +1239,12 @@ export class VarContext implements MamlVarContext {
     return timeline;
   }
 
-  private getAnimationTimeline(animation: MamlVariableAnimation | MamlPropertyAnimation): EvaluatedAnimationFrame[] {
+  private getAnimationTimeline(animation: WmrVariableAnimation | WmrPropertyAnimation): EvaluatedAnimationFrame[] {
     const prepared = this.prepareAnimationTimeline(animation);
     return prepared.staticTimeline ?? this.buildEvaluatedAnimationFrames(prepared.frames);
   }
 
-  private evaluateAnimationValue(animation: MamlVariableAnimation, currentTime: number): VarValue {
+  private evaluateAnimationValue(animation: WmrVariableAnimation, currentTime: number): VarValue {
     const frames = this.getAnimationTimeline(animation);
     if (frames.length === 0) return 0;
     if (currentTime <= frames[0].time) {
@@ -1372,7 +1372,7 @@ export class VarContext implements MamlVarContext {
     state.completed = false;
     if (!state.playing) {
       state.currentTime = toTime;
-      // MAML 里的 play(0,0) 常用于“瞬时复位”动画，不应该在下一帧再次触发 end。
+      // WMR 里的 play(0,0) 常用于“瞬时复位”动画，不应该在下一帧再次触发 end。
       state.completed = false;
     }
   }
@@ -1417,7 +1417,7 @@ export class VarContext implements MamlVarContext {
     return result;
   }
 
-  private maybeFireAnimationEnd(triggers: MamlTrigger[] | undefined, state: TimelineState): void {
+  private maybeFireAnimationEnd(triggers: WmrTrigger[] | undefined, state: TimelineState): void {
     if (!triggers?.length || !state.completed) return;
     state.completed = false;
     this.executeTriggerList(triggers, 'end');
@@ -1467,7 +1467,7 @@ export class VarContext implements MamlVarContext {
     }
   }
 
-  private evaluatePropertyAnimationValues(animation: MamlPropertyAnimation, currentTime: number): {
+  private evaluatePropertyAnimationValues(animation: WmrPropertyAnimation, currentTime: number): {
     x?: number;
     y?: number;
     scaleX?: number;
@@ -1527,7 +1527,7 @@ export class VarContext implements MamlVarContext {
     }
   }
 
-  // ---- MamlVarContext interface ----
+  // ---- WmrVarContext interface ----
 
   get(name: string): VarValue {
     return this.vars.get(name) ?? 0;
@@ -1603,11 +1603,11 @@ export class VarContext implements MamlVarContext {
 }
 
 // ---------------------------------------------------------------------------
-// DateTime format helper  (Java SimpleDateFormat subset used by MAML)
+// DateTime format helper  (Java SimpleDateFormat subset used by WMR)
 // ---------------------------------------------------------------------------
 
 /**
- * Format a Date using MAML's DateTime format strings.
+ * Format a Date using WMR's DateTime format strings.
  * Supports: HH, hh, H, h, mm, ss, M, d, yyyy, yy, EEEE, E, aa, a,
  *           A (生肖年), YY (干支年), N (lunar month), NNNN (农历), e (lunar day), D (day of year)
  */

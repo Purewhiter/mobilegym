@@ -628,7 +628,7 @@ class ChangeWallpaperAndAddWidget(BaseTask):
                 "actual": {"init": init_wp, "curr": curr_wp},
                 "passed": wp_changed,
             },
-            launcher.check_maml_widget_added(
+            launcher.check_wmr_widget_added(
                 dajuguan_id,
                 label="大桔观",
                 field="widget_added",

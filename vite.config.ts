@@ -483,8 +483,8 @@ function runsExplorerPlugin() {
  * URL:
  * - /@app-assets/<AppName>/<path>
  *   → 文件: apps/<AppName>/assets/<path>
- * - /@app-assets/<AppName>/maml/<path>
- *   → 文件: apps/<AppName>/maml/<path>
+ * - /@app-assets/<AppName>/wmr/<path>
+ *   → 文件: apps/<AppName>/wmr/<path>
  *
  * Dev:  中间件直接伺服文件
  * Build: generateBundle 把文件拷贝到 dist/@app-assets/
@@ -512,8 +512,8 @@ function serveAppAssetsPlugin() {
   function resolveAppStaticFile(appName: string, relPath: string): string | null {
     for (const base of ['apps', 'system']) {
       const appRoot = path.join(__dirname, base, appName);
-      const target = relPath.startsWith('maml/')
-        ? path.join(appRoot, 'maml', relPath.slice('maml/'.length))
+      const target = relPath.startsWith('wmr/')
+        ? path.join(appRoot, 'wmr', relPath.slice('wmr/'.length))
         : path.join(appRoot, 'assets', relPath);
       if (target.startsWith(appRoot) && fs.existsSync(target)) return target;
     }
@@ -569,12 +569,12 @@ function serveAppAssetsPlugin() {
             });
           }
 
-          const mamlDir = path.join(baseDir, app.name, 'maml');
-          if (fs.existsSync(mamlDir)) {
-            walkDir(mamlDir, '', (filePath, relPath) => {
+          const wmrDir = path.join(baseDir, app.name, 'wmr');
+          if (fs.existsSync(wmrDir)) {
+            walkDir(wmrDir, '', (filePath, relPath) => {
               (this as any).emitFile({
                 type: 'asset',
-                fileName: `@app-assets/${app.name}/maml/${relPath}`,
+                fileName: `@app-assets/${app.name}/wmr/${relPath}`,
                 source: fs.readFileSync(filePath),
               });
             });

@@ -204,7 +204,7 @@
         <Var name="gradient_mid2_colors_night_cmor3u" type="string[]" const="true" expression="''" values="'1','1','1','1','#212842','#212842','#212842','#313750','#2C2823','#402F1A','#2C2823','#212842'"/>
         <Var name="gradient_mid3_colors_night_cmor3u" type="string[]" const="true" expression="''" values="'1','1','1','1','#2E3552','#2E3552','#2E3552','#45495E','#272119','#3B250D','#272119','#2E3552'"/>
         <Var name="gradient_bottom_colors_night_cmor3u" type="string[]" const="true" expression="''" values="'1','1','1','1','#3F4561','#3F4561','#3F4561','#525260','#1F1911','#191007','#1F1911','#3F4561'"/>
-        <!-- 分早中晚的天气的颜色：晴多云 早晨、白天、傍晚、晚上 (S0-S15  S0与S16相同，详见设计稿) maml不能嵌套数组，不然我也不想写这么多-->
+        <!-- 分早中晚的天气的颜色：晴多云 早晨、白天、傍晚、晚上 (S0-S15  S0与S16相同，详见设计稿) wmr不能嵌套数组，不然我也不想写这么多-->
         <!--         S0√       S1√      S2√        S3√       S4√       S5√       S6√       S7√       S8√       S9√       S10√      S11      S12√       S13√      S14√      S15√    (下面是修改后的天色，从设计稿中拾取的颜色值)   -->
         <Var name="clear_top_colors_new_cmor3u" type="string[]" const="true" expression="''" values="'#0F1226','#10152C','#181D4A','#262755','#2F2D8A','#1B4496','#36559B','#2A4E99','#2D529B','#34559C','#4466AB','#323C85','#4B427E','#403669','#2E2457','#14153F'"/>
         <Var name="clear_mid1_colors_new_cmor3u" type="string[]" const="true" expression="''" values="'#111428','#161D3E','#242A61','#2A2B5D','#464596','#4666BF','#4064B0','#345FAF','#3E6BBB','#375AA4','#4C70B7','#4C559E','#6B5BA3','#6E5C97','#403075','#1C1E47'"/>

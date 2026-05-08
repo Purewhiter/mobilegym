@@ -140,7 +140,7 @@
 
 ### 13. Widgets（桌面小组件）
 
-**已有（有创新性实现）：** 内置 Widget（Clock/Weather）+ MAML Widget（JSON 描述格式），多尺寸、可拖拽
+**已有（有创新性实现）：** 内置 Widget（Clock/Weather）+ WMR Widget（XML 描述格式），多尺寸、可拖拽
 
 **缺失：** 第三方 App 注册 Widget、Widget 远程更新、Widget 点击交互
 
@@ -220,7 +220,7 @@
 3. **SystemShell ↔ Window Manager + SystemUI** — z-order 层叠对应 Android SystemUI 层次
 4. **display:none 保活 ↔ Activity.onStop()** — 完美对应 App 切后台设计
 5. **FileSystemService ↔ /sdcard + MediaStore** — 虚拟文件系统路径完全对应 Android 真实路径
-6. **MAML Widget ↔ Android AppWidget** — 对 RemoteViews 机制的创新式 Web 实现
+6. **WMR Widget ↔ Android AppWidget** — 对 RemoteViews 机制的创新式 Web 实现
 
 ### Web 范式泄漏的地方
 
@@ -262,7 +262,7 @@ const { notificationManager, clipboardManager } = useAppContext();
 
 3. **维护 `docs/ANDROID_COMPAT.md`** — 按子系统记录已实现和缺失的功能
 
-4. **MAML Widget vs. RemoteViews 对比说明**
+4. **WMR Widget vs. RemoteViews 对比说明**
 
 ### 与其他教育性 OS 项目对比
 

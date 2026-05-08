@@ -290,7 +290,7 @@ Manager 是 OsStateStore 特定域的**写入 facade**，封装约束逻辑和�
 | **MediaService** | — | 媒体选择器、pick/save |
 | **ThemeService** | — | 主题资源、状态栏图标颜色 |
 | **SkinService** | — | 皮肤/图片滤镜 |
-| **MamlWidgetService** | — | MAML 小部件元数据 |
+| **WmrWidgetService** | — | WMR 小部件元数据 |
 
 **持久化原则**：数据类 store 用 `createOsStore`（持久化），UI/会话/运行态用 `createVolatileOsStore`（不持久化）。
 
@@ -378,12 +378,12 @@ SystemShell 是整个模拟器的视觉容器，负责渲染所有系统级 UI�
 - **`designViewportWidth`**：App 可声明设计稿宽度，SystemShell 通过 CSS zoom 缩放
 - **Recents**：卡片化显示所有 Task，支持滑动关闭
 
-### 3.12 MAML 引擎
+### 3.12 WMR 引擎
 
-MAML（Mobile Application Markup Language）是桌面小部件的渲染引擎：
+WMR（Widget Markup Runtime）是 mobile-gym 内部的桌面小部件渲染运行时，用于承载从主题资源中抽取的 XML 小部件：
 
 ```
-XML 描述 → parser.ts → MamlDocument
+XML 描述 → parser.ts → WmrDocument
                           ↓
              variables.ts + expression.ts （变量/表达式求值）
                           ↓
