@@ -43,6 +43,7 @@
   "bilibili.ToggleAnimeSubscriptionTask": "帮我追番'鬼灭之刃 游郭篇 中配版'。",
   "bilibili.VideoAnswerTagsTask": "打开b站视频'一口气看完2025年美国有多离谱'，说出其中任意3个标签。",
   "clock.ToggleAlarm": "关闭08:00的闹钟",
+  "crossapp_commerce.AlipayShareBillDetail": "在支付宝看最近一笔支出账单，把交易标题和交易金额微信发给blank.",
   "crossapp_content.BilibiliRankingToWechat": "看看B站全站区排行榜第1名是什么视频，把标题微信发给blank.",
   "crossapp_content.NotesContentToRedbookAndX": "在笔记里写一段关于AI代理的想法，然后分别在小红书和X上发布出来",
   "crossapp_life.CalendarFreeWeatherInvite": "看看日历下周末哪天没安排，查那天北京天气，有一天没有安排而且不下雨就给blank.发消息约出去玩",

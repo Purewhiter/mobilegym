@@ -8,13 +8,13 @@
 - [bench_env/splits/train.raw.txt](../../bench_env/splits/train.raw.txt) — 训练集 provenance，来自 qwen3-vl-4b base 8 次 rollout 中通过次数在 1-7 之间的任务
 - [bench_env/splits/test.txt](../../bench_env/splits/test.txt) — 256 任务的最终评测集
 - [bench_env/splits/train.legacy_199.txt](../../bench_env/splits/train.legacy_199.txt) — 旧 199 任务训练 split 备份，不作为 paper 训练口径
-- [sim2real_instructions.json](./sim2real_instructions.json) — test selection 中 59 个真机可执行任务的烘焙指令（53 个已有真机 + 6 个补跑）
+- [sim2real_instructions.json](../../bench_env/splits/sim2real_instructions.json) — test selection 中 59 个真机可执行任务的烘焙指令（53 个已有真机 + 6 个补跑）
 
 待补 artifact：
 
 - `SIM2REAL_SELECTION_TEST.txt` / `SIM2REAL_TEST_BUCKETS.csv` — 固化 test 的桶、sim pass count、真机覆盖状态
 - `SIM2REAL_PARAM_AUDIT_TEST.txt` — test selection 67 的参数/模板审计
-- `sim2real_instructions_test.json` — 可选：从当前 `sim2real_instructions.json` 拆出的 test-only `--task-instructions`
+- `sim2real_instructions_test.json` — 可选：从当前 `bench_env/splits/sim2real_instructions.json` 拆出的 test-only `--task-instructions`
 
 ---
 
@@ -195,7 +195,7 @@ selection 67 中：
 
 ## 9. test ∩ 真机数据的完整盘点
 
-当前 [sim2real_instructions.json](./sim2real_instructions.json) 包含 **59 个任务**，正好等于 selection 67 扣除 8 个不可配置任务后的真机可执行主表集合；没有额外 stable_fail 任务混入，也没有不可配置任务残留。
+当前 [sim2real_instructions.json](../../bench_env/splits/sim2real_instructions.json) 包含 **59 个任务**，正好等于 selection 67 扣除 8 个不可配置任务后的真机可执行主表集合；没有额外 stable_fail 任务混入，也没有不可配置任务残留。
 
 注意：`crossapp_life.CalendarFreeWeatherInvite` 和 `wechat.ToggleDiscoverEntry` 在当前 sim 统计中是 **mid**（base 0/4，trained 2/4），因此它们属于 selection 和 59 个真机主表任务，不是 selection 外的 stable_fail sanity check。
 
