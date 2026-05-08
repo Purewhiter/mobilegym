@@ -60,7 +60,7 @@ _PROCESS_GROUPS = {
     "chromium": ["chromium", "chrome"],
     "vllm": ["vllm", "vllm_envs"],
     "bench": ["bench_env"],
-    "serve_api": ["serve_api"],
+    "api_gateway": ["api_gateway"],
 }
 
 

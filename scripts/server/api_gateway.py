@@ -10,10 +10,10 @@ Feature parity with Vite apiGatewayPlugin:
 - Force accept-encoding: identity to upstream
 
 Usage (single worker, dev):
-    python serve_api.py --port 4181
+    python scripts/server/api_gateway.py --port 4181
 
 Usage (multi-worker, production):
-    uvicorn serve_api:app --host 127.0.0.1 --port 4181 --workers 8
+    uvicorn scripts.server.api_gateway:app --host 127.0.0.1 --port 4181 --workers 8
 """
 
 import argparse
@@ -331,9 +331,9 @@ def main():
     parser.add_argument("--workers", type=int, default=1)
     args = parser.parse_args()
 
-    print(f"[serve_api] API gateway on :{args.port} (workers={args.workers})")
+    print(f"[api_gateway] API gateway on :{args.port} (workers={args.workers})")
     uvicorn.run(
-        "serve_api:app",
+        "scripts.server.api_gateway:app",
         host="127.0.0.1",
         port=args.port,
         workers=args.workers,
