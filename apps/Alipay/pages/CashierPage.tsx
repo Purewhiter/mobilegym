@@ -10,6 +10,11 @@ import { useLocale } from '@/apps/Alipay/locale';
 import { useAlipayStrings } from '../hooks/useAlipayStrings';
 import { localizeBankName } from '../utils/localizeBankName';
 import { DefaultAvatar } from '../components/DefaultAvatar';
+import type { AlipayUserInfo } from '../types';
+
+export function getCashierExpectedPassword(userInfo: Pick<AlipayUserInfo, 'paymentPassword'> | null | undefined): string {
+  return String(userInfo?.paymentPassword ?? '');
+}
 
 export const CashierPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -32,7 +37,7 @@ export const CashierPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState(false);
   const calledRef = useRef(false);
-  const expectedPassword = '000000';
+  const expectedPassword = getCashierExpectedPassword(userInfo);
 
   const os = window.__OS__;
   const intentPayload =
