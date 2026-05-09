@@ -130,6 +130,11 @@
               <img src="figures/icons/com.MobileTicket.png" alt="" loading="lazy" />
             </span>
           </button>
+          <button type="button" class="state-dock-tab" data-studio-tab="weather" data-state-dock-tab="weather" aria-selected="false" aria-label="Weather data">
+            <span class="state-dock-tab-icon state-dock-tab-icon-img">
+              <img src="figures/icons/com.miui.weather2.png" alt="" loading="lazy" />
+            </span>
+          </button>
         </aside>
         <span class="state-dock-hint" aria-hidden="true">Patch state</span>
       </div>
@@ -195,6 +200,12 @@
               <img src="figures/icons/com.MobileTicket.png" alt="" loading="lazy" />
             </span>
             <span class="state-builder-tab-label">12306</span>
+          </button>
+          <button type="button" class="state-builder-tab" data-studio-tab="weather" aria-selected="false" aria-controls="state-panel-weather">
+            <span class="state-builder-tab-icon state-builder-tab-icon-img">
+              <img src="figures/icons/com.miui.weather2.png" alt="" loading="lazy" />
+            </span>
+            <span class="state-builder-tab-label">Weather</span>
           </button>
         </div>
 
@@ -512,6 +523,49 @@
                   </div>
                 </div>
                 <button type="button" id="studio-add-railway-order" class="studio-action w-full">Add ticket/order</button>
+              </div>
+            </section>
+        <section id="state-panel-weather" class="studio-panel space-y-3" data-studio-panel="weather" data-active="false">
+              <div class="studio-action-rail" role="tablist" aria-label="Weather data actions">
+                <button type="button" class="studio-action-tab" data-studio-action="weather-now" aria-selected="true">Conditions</button>
+              </div>
+              <div class="studio-action-panel space-y-3" data-studio-action-panel="weather-now" data-active="true">
+                <div class="studio-snapshot-meta">
+                  Patches the located page's current weather. Switch city via the Device → Location panel.
+                </div>
+                <div class="studio-field">
+                  <label for="studio-weather-condition">Condition</label>
+                  <select id="studio-weather-condition" class="studio-input">
+                    <option value="sunny">晴 (Sunny)</option>
+                    <option value="cloudy">多云 (Partly cloudy)</option>
+                    <option value="overcast">阴 (Overcast)</option>
+                    <option value="light-rain">小雨 (Light rain)</option>
+                    <option value="heavy-rain">大雨 (Heavy rain)</option>
+                    <option value="thunderstorm">雷阵雨 (Thunderstorm)</option>
+                    <option value="light-snow">小雪 (Light snow)</option>
+                    <option value="fog">雾 (Fog)</option>
+                    <option value="haze">霾 (Haze)</option>
+                  </select>
+                </div>
+                <div class="grid grid-cols-3 gap-3">
+                  <div class="studio-field">
+                    <label for="studio-weather-temp">Temp °C</label>
+                    <input id="studio-weather-temp" class="studio-input" type="number" step="1" value="20" />
+                  </div>
+                  <div class="studio-field">
+                    <label for="studio-weather-high">High °C</label>
+                    <input id="studio-weather-high" class="studio-input" type="number" step="1" value="25" />
+                  </div>
+                  <div class="studio-field">
+                    <label for="studio-weather-low">Low °C</label>
+                    <input id="studio-weather-low" class="studio-input" type="number" step="1" value="15" />
+                  </div>
+                </div>
+                <div class="studio-field">
+                  <label for="studio-weather-aqi">AQI (0–500)</label>
+                  <input id="studio-weather-aqi" class="studio-input" type="number" step="1" value="50" />
+                </div>
+                <button type="button" id="studio-apply-weather-now" class="studio-action w-full">Apply weather</button>
               </div>
             </section>
         </div>

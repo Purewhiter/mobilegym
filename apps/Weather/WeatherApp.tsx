@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useContext, useCallback } from 'react';
+import React, { useEffect, useState, useRef, useContext, useCallback, useMemo } from 'react';
 import { MemoryRouter, useNavigate, useLocation, useSearchParams, UNSAFE_NavigationContext, Routes, Route } from 'react-router-dom';
 import { getWeatherBundle } from './services/weatherService';
 import type { WeatherBundle } from './types';
@@ -49,6 +49,7 @@ import { useAppStrings } from '../../os/useAppStrings';
 import { strings } from './res/strings';
 import { stringsEn } from './res/strings.en';
 import { useAppNavigationHandler } from '../../os/hooks/useAppNavigationHandler';
+import { AppLifecycle } from '../../os/AppLifecycle';
 import { useWeatherGestures } from './hooks/useWeatherGestures';
 import WeatherDynamicBackground from './components/WeatherDynamicBackground';
 import { normalizeAqiLevel, getAqiLevelLabel } from './utils/airQuality';
@@ -261,24 +262,67 @@ const WeatherContent: React.FC = () => {
   const isSwiping = useRef(false);
   const swipeDirection = useRef<'horizontal' | 'vertical' | null>(null);
 
-  // 定位页面的天气数据
-  const storedLocated = weatherState.bundlesByCityId['located'];
-  const [locationData, setLocationData] = useState<CityWeatherData>(() => {
-    if (storedLocated?.bundle) {
-      const name = storedLocated.locationName || '定位';
-      return cityWeatherDataFromBundle(name, storedLocated.bundle);
+  // 各城市的"正在拉取/未拉取"状态。包含两类条目：
+  //   1) cold-mount 时 store 里没有 bundle 的城市 → 渲染显示 spinner
+  //   2) fetch 进行中的城市 → 渲染显示 spinner（仅当 store 仍无 bundle 时；
+  //      已有 bundle 走静默刷新，渲染派生规则会跳过 loading）
+  // fetch effect 在完成时（成功或失败）从集合里移除 cityId，
+  // 让 render 派生切换到「无 bundle + 不再 loading」= 失败/空态。
+  const [loadingCityIds, setLoadingCityIds] = useState<Set<string>>(() => {
+    const initial = new Set<string>();
+    if (!weatherState.bundlesByCityId['located']?.bundle) initial.add('located');
+    for (const city of savedCities) {
+      if (!weatherState.bundlesByCityId[city.id]?.bundle) initial.add(city.id);
     }
-    return emptyCityWeatherData(s.locating);
+    return initial;
   });
 
-  // 已添加城市的天气数据
-  const [citiesData, setCitiesData] = useState<CityWeatherData[]>(
-    savedCities.map((city) => {
-      const entry = weatherState.bundlesByCityId[city.id];
-      if (entry?.bundle) return cityWeatherDataFromBundle(city.name, entry.bundle);
-      return emptyCityWeatherData(city.name);
-    })
-  );
+  // 定位页"取定位失败"的提示文案。仅 located 有这个特殊 UX——
+  // saved cities fetch 失败时直接停留在空态卡片，没有专门的失败文案。
+  const [locatedFailureMessage, setLocatedFailureMessage] = useState<string | null>(null);
+
+  const markLoading = useCallback((cityId: string) => {
+    setLoadingCityIds(prev => {
+      if (prev.has(cityId)) return prev;
+      const next = new Set(prev);
+      next.add(cityId);
+      return next;
+    });
+  }, []);
+
+  const clearLoading = useCallback((cityId: string) => {
+    setLoadingCityIds(prev => {
+      if (!prev.has(cityId)) return prev;
+      const next = new Set(prev);
+      next.delete(cityId);
+      return next;
+    });
+  }, []);
+
+  // 派生：定位页 UI 数据。store 是单一事实来源——
+  // state-builder/bench 通过 __SIM__.setState patch bundlesByCityId.located
+  // 时，下面的 useMemo 会重算，UI 立即反映。
+  const locationData = useMemo<CityWeatherData>(() => {
+    const stored = weatherState.bundlesByCityId['located'];
+    if (stored?.bundle) {
+      return cityWeatherDataFromBundle(stored.locationName || s.locating, stored.bundle);
+    }
+    if (locatedFailureMessage) {
+      return { ...emptyCityWeatherData(locatedFailureMessage), loading: false };
+    }
+    return { ...emptyCityWeatherData(s.locating), loading: loadingCityIds.has('located') };
+  }, [weatherState.bundlesByCityId, loadingCityIds, locatedFailureMessage, s.locating]);
+
+  // 派生：已添加城市的 UI 数据。
+  const citiesData = useMemo<CityWeatherData[]>(() => {
+    return savedCities.map((city) => {
+      const stored = weatherState.bundlesByCityId[city.id];
+      if (stored?.bundle) {
+        return cityWeatherDataFromBundle(city.name, stored.bundle);
+      }
+      return { ...emptyCityWeatherData(city.name), loading: loadingCityIds.has(city.id) };
+    });
+  }, [savedCities, weatherState.bundlesByCityId, loadingCityIds]);
 
   // 所有页面数据
   const allPagesData = [locationData, ...citiesData];
@@ -362,58 +406,92 @@ const WeatherContent: React.FC = () => {
     return { lonLat, bundle, data };
   }, [s]);
 
-  // 获取/刷新定位页面的天气
-  // 真机行为：进入定位页时检查"当前定位坐标 + 缓存新鲜度"，
-  // 满足任一条件才重新拉取：(1) 没有缓存；(2) 当前定位坐标与缓存的 lonLat 不一致；(3) 缓存超过 TTL。
-  // 这样 state-builder 改定位、模拟时间推进越过 TTL 都能正确联动；坐标未变 + 未过期则维持原数据。
-  useEffect(() => {
+  // 重新评估定位页：检查当前定位坐标 + 缓存新鲜度，满足任一条件才重新拉取：
+  // (1) 没有缓存；(2) 当前定位坐标与缓存的 lonLat 不一致；(3) 缓存超过 TTL。
+  // 对应 Android 真机的 ViewModel.revalidate()：mount 时跑一次（冷启动）、
+  // 进入前台时跑一次（onResume）、currentIndex 变到 0 时跑一次（用户切到定位页）。
+  // 三条触发路径调用同一个函数，逻辑只在这一处。
+  // 不引入 cancellation：让 IIFE 跑到底，setStoredBundle 总会写入，render 通过
+  // useMemo 自动同步；并发调用极少（用户操作触发），最坏情况下后到的覆盖前面的。
+  const revalidateLocated = useCallback(async () => {
     if (currentIndex !== 0) return;
-    let cancelled = false;
-
-    (async () => {
-      try {
-        const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-          LocationService.getCurrentPosition(resolve, reject, { timeout: 10000, enableHighAccuracy: true });
-        });
-        if (cancelled) return;
-
-        const currentLonLat = `${position.coords.longitude},${position.coords.latitude}`;
-        const stored = weatherState.bundlesByCityId['located'];
-        if (
-          stored?.bundle &&
-          stored.lonLat === currentLonLat &&
-          isBundleFresh(stored, LOCATED_WEATHER_TTL_MS)
-        ) {
-          return;
-        }
-
-        const res = await fetchCityWeather(position.coords.longitude, position.coords.latitude);
-        if (cancelled) return;
-        setLocationData(prev => ({ ...prev, ...res.data }));
-        setWeatherState(prev => setStoredBundle(prev, 'located', {
+    let didMarkLoading = false;
+    // 抓一份 entry 引用作为"开始时世界的样子"。fetch 期间如果外部改了 entry
+    // 任意字段（state-builder __SIM__.setState patch bundle/locationName/lonLat/
+    // updatedAt 任意之一、另一次 revalidate 并发完成），写入前会发现
+    // storedNow !== startEntry，放弃覆盖以尊重外部修改。
+    // 注意必须比较整个 entry 引用：deepMerge 仅 patch entry 级字段（如 locationName）
+    // 时不会改 bundle 引用，但会创建新的 entry 引用；setStoredBundle 会整体替换
+    // entry 包括 locationName/lonLat/updatedAt，会覆盖外部 patch。
+    // 这条等价于 refactor B 之前 useEffect 把 bundlesByCityId 放进 deps 提供
+    // 的隐式 cancellation —— 现在改成显式快照对比。
+    const startEntry = useWeatherStore.getState().bundlesByCityId['located'];
+    try {
+      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+        LocationService.getCurrentPosition(resolve, reject, { timeout: 10000, enableHighAccuracy: true });
+      });
+      const currentLonLat = `${position.coords.longitude},${position.coords.latitude}`;
+      const stored = useWeatherStore.getState().bundlesByCityId['located'];
+      if (
+        stored?.bundle &&
+        stored.lonLat === currentLonLat &&
+        isBundleFresh(stored, LOCATED_WEATHER_TTL_MS)
+      ) {
+        return;
+      }
+      didMarkLoading = true;
+      markLoading('located');
+      const res = await fetchCityWeather(position.coords.longitude, position.coords.latitude);
+      // 写入前再次确认 entry 没被外部覆盖：startEntry 是 fetch 启动时的整个 entry
+      // 引用快照，storedNow 是当前 store 里的 entry 引用。引用相同代表 fetch 期间
+      // 无人修改，正常写入；引用不同代表 state-builder __SIM__.setState 或另一次
+      // revalidate 已经改写过任一字段（bundle / locationName / lonLat / updatedAt
+      // 都算），放弃这次写入以尊重外部修改。
+      // 冷启动情形（startEntry === undefined 且 storedNow === undefined）下
+      // undefined === undefined，正常写入；冷启动期间外部抢先写入则
+      // undefined !== entry，正确跳过。
+      const storedNow = useWeatherStore.getState().bundlesByCityId['located'];
+      if (storedNow !== startEntry) {
+        return;
+      }
+      useWeatherStore.setState(
+        setStoredBundle(useWeatherStore.getState(), 'located', {
           lonLat: res.lonLat,
           bundle: res.bundle,
           locationName: res.data.locationName,
-        }));
-      } catch (error) {
-        if (cancelled) return;
-        console.error('Failed to fetch location weather', error);
-        const stored = weatherState.bundlesByCityId['located'];
-        // 取定位失败：始终退出 loading；仅在没有缓存可展示时才回落到"定位失败"文案，
-        // 否则保留 prev 已有的城市名/天气数据（可能来自缓存或外部注入）
-        setLocationData(prev => stored?.bundle
-          ? { ...prev, loading: false }
-          : { ...prev, loading: false, locationName: s.location_failed }
-        );
+        }),
+        true,
+      );
+      setLocatedFailureMessage(null);
+    } catch (error) {
+      console.error('Failed to fetch location weather', error);
+      // 取定位失败：仅在没有缓存可展示时才落到"定位失败"文案，
+      // 否则保留旧缓存继续渲染（render 派生会读 stored.locationName）。
+      const stored = useWeatherStore.getState().bundlesByCityId['located'];
+      if (!stored?.bundle) {
+        setLocatedFailureMessage(s.location_failed);
       }
-    })();
+    } finally {
+      if (didMarkLoading) {
+        clearLoading('located');
+      }
+    }
+  }, [currentIndex, fetchCityWeather, markLoading, clearLoading, s.location_failed]);
 
-    return () => {
-      cancelled = true;
-    };
-  }, [fetchCityWeather, currentIndex, weatherState.bundlesByCityId]);
+  // 路径 1：mount + currentIndex 变化（冷启动 / 用户切到定位页）
+  useEffect(() => {
+    revalidateLocated();
+  }, [revalidateLocated]);
 
-  // 按需获取“已添加城市”的天气：用户滑到该城市页面时才加载/刷新
+  // 路径 2：App 回到前台（真机 onResume 语义）—— 用户改完 device-location 后
+  // 点 Weather 卡片回前台时，这里会触发 revalidate 重取。
+  useEffect(() => {
+    return AppLifecycle.subscribe(manifest.id, (event) => {
+      if (event === 'foreground') revalidateLocated();
+    });
+  }, [revalidateLocated]);
+
+  // 按需获取"已添加城市"的天气：用户滑到该城市页面时才加载/刷新
   // currentIndex: 0 = 定位页, 1+ = savedCities[currentIndex - 1]
   const inflightCityIdsRef = useRef<Set<string>>(new Set());
   useEffect(() => {
@@ -425,38 +503,28 @@ const WeatherContent: React.FC = () => {
     if (!city) return;
 
     const stored = weatherState.bundlesByCityId[city.id];
-    const hasBundle = !!stored?.bundle;
-    // 不做自动刷新：只有当从未成功请求过该城市天气时才请求一次
-    if (hasBundle) return;
+    if (stored?.bundle) return; // 不做自动刷新：仅在没有缓存时才请求一次
     if (inflightCityIdsRef.current.has(city.id)) return;
     inflightCityIdsRef.current.add(city.id);
+    markLoading(city.id);
 
+    // 不引入 cancelled flag：让 IIFE 跑到底，成功时 setStoredBundle 总是写入，
+    // bundlesByCityId 引用变化必然触发 effect 重新评估。否则一旦 cancel 阻止
+    // 了 store 写入 + clearLoading，就没有任何信号能再触发重试，cityId 会
+    // 永久卡在 loadingCityIds 集合里。这与原版（未引入 cancellation）行为一致。
     (async () => {
       try {
         const res = await fetchCityWeather(city.lon, city.lat, city.name);
-        setCitiesData(prev => {
-          const newData = [...prev];
-          if (!newData[cityIdx]) return prev;
-          newData[cityIdx] = { ...newData[cityIdx], ...res.data };
-          return newData;
-        });
         setWeatherState(prev => setStoredBundle(prev, city.id, { lonLat: res.lonLat, bundle: res.bundle }));
       } catch (error) {
         console.error(`Failed to fetch weather for ${city.name}`, error);
-        // 仅在没有任何可展示数据时才把 loading 置为 false，避免刷新失败导致 UI 变空
-        if (!hasBundle) {
-          setCitiesData(prev => {
-            const newData = [...prev];
-            if (!newData[cityIdx]) return prev;
-            newData[cityIdx] = { ...newData[cityIdx], loading: false };
-            return newData;
-          });
-        }
+        // 失败时不显式标记 failure；clearLoading 把 spinner 收掉，render 派生回到空态卡片
       } finally {
         inflightCityIdsRef.current.delete(city.id);
+        clearLoading(city.id);
       }
     })();
-  }, [currentIndex, fetchCityWeather, savedCities, weatherState.bundlesByCityId]);
+  }, [currentIndex, fetchCityWeather, savedCities, weatherState.bundlesByCityId, markLoading, clearLoading]);
 
   // 监听水平滚动容器
   const handleHorizontalScroll = useCallback(() => {

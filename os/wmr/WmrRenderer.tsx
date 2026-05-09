@@ -31,6 +31,15 @@ interface WmrRendererProps {
   active?: boolean;
   shouldLoad?: boolean;
   initialVariables?: Record<string, string | number>;
+  /**
+   * 外部数据变化信号：token 变化时，立即重跑 injectProviderData 把最新的
+   * provider 数据（如 weather store）拉进 VarContext，并强制一次重渲染。
+   * 不会完整 re-init bundle/textures，避免画面 flash。
+   * 默认情况下 provider 数据每 60s（无 time updater 时）才被动刷新一次，
+   * 外部对底层 store 的修改（state-builder / bench setState）需要这个 prop
+   * 才能即时反映到 WMR canvas。token 内容无所谓，引用变化即触发刷新。
+   */
+  dataRefreshToken?: unknown;
   onClick?: () => void;
   onLongPress?: (el: HTMLElement) => void;
 }
@@ -68,6 +77,7 @@ export const WmrRenderer: React.FC<WmrRendererProps> = ({
   active = true,
   shouldLoad = true,
   initialVariables,
+  dataRefreshToken,
   onClick,
   onLongPress,
 }) => {
@@ -270,6 +280,32 @@ export const WmrRenderer: React.FC<WmrRendererProps> = ({
       reportError('lifecycle', err);
     }
   }, [active, ready, errorMessage, reportError, sourceKey]);
+
+  // ---- External data refresh ----
+  // dataRefreshToken 变化时立刻重跑 injectProviderData，让外部 store 修改
+  // （state-builder / bench setState）即时反映到 canvas。不重建 bundle。
+  useEffect(() => {
+    if (!ready || errorMessage || !active) return;
+    const canvas = canvasRef.current;
+    const doc = docRef.current;
+    const vars = varsRef.current;
+    const renderer = rendererRef.current;
+    const analysis = bundleAnalysisRef.current;
+    if (!canvas || !doc || !vars || !renderer || !analysis) return;
+
+    try {
+      vars.refreshBuiltins();
+      injectProviderData(vars, {
+        binders: analysis.binders,
+        dependencies: analysis.providerDependencies,
+      });
+      vars.reevaluateVars(doc.root.children, { includeAnimations: true, includeBinders: true });
+      renderer.render(canvas, doc.root.children);
+    } catch (err) {
+      reportError('dataRefresh', err);
+    }
+    // 仅依赖 token；ready/active 守护已在前面，避免 mount 重复触发由 active 路径处理
+  }, [dataRefreshToken]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ---- Render loop ----
   useEffect(() => {
