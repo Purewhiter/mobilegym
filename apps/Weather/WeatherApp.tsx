@@ -33,6 +33,7 @@ import WeatherAirQualityPage from './pages/WeatherAirQualityPage';
 import {
   setSelectedCityId,
   setStoredBundle,
+  isBundleFresh,
 } from './utils/weatherStore';
 import { useWeatherStore } from './state';
 import { convertTemp } from './utils/unitConversion';
@@ -57,6 +58,10 @@ import { getLocalizedLocationName, getLocalizedWeatherCityName } from './utils/c
 // 城市来源说明：
 // - 主页面与城市管理页统一从 localStorage 单键 `weather` 恢复城市列表
 // - 若首次启动无状态，则使用 weatherStore 的默认“已添加城市”列表 + 1 个定位页（共 7 页）
+
+// 定位页天气缓存 TTL：与真机实况刷新间隔对齐（30 分钟）。
+// 配合 lonLat 比对，定位变化或时间推进越过 TTL 都会触发重新拉取。
+const LOCATED_WEATHER_TTL_MS = 30 * 60 * 1000;
 
 // 单个城市的天气数据
 interface CityWeatherData {
@@ -357,19 +362,33 @@ const WeatherContent: React.FC = () => {
     return { lonLat, bundle, data };
   }, [s]);
 
-  // 获取定位页面的天气
+  // 获取/刷新定位页面的天气
+  // 真机行为：进入定位页时检查"当前定位坐标 + 缓存新鲜度"，
+  // 满足任一条件才重新拉取：(1) 没有缓存；(2) 当前定位坐标与缓存的 lonLat 不一致；(3) 缓存超过 TTL。
+  // 这样 state-builder 改定位、模拟时间推进越过 TTL 都能正确联动；坐标未变 + 未过期则维持原数据。
   useEffect(() => {
-    const stored = weatherState.bundlesByCityId['located'];
-    // 不做自动刷新：只有当从未成功请求过定位天气时才请求一次
-    if (stored?.bundle) return;
+    if (currentIndex !== 0) return;
+    let cancelled = false;
 
-    const fetchLocationWeather = async () => {
+    (async () => {
       try {
         const position = await new Promise<GeolocationPosition>((resolve, reject) => {
           LocationService.getCurrentPosition(resolve, reject, { timeout: 10000, enableHighAccuracy: true });
         });
+        if (cancelled) return;
+
+        const currentLonLat = `${position.coords.longitude},${position.coords.latitude}`;
+        const stored = weatherState.bundlesByCityId['located'];
+        if (
+          stored?.bundle &&
+          stored.lonLat === currentLonLat &&
+          isBundleFresh(stored, LOCATED_WEATHER_TTL_MS)
+        ) {
+          return;
+        }
 
         const res = await fetchCityWeather(position.coords.longitude, position.coords.latitude);
+        if (cancelled) return;
         setLocationData(prev => ({ ...prev, ...res.data }));
         setWeatherState(prev => setStoredBundle(prev, 'located', {
           lonLat: res.lonLat,
@@ -377,13 +396,22 @@ const WeatherContent: React.FC = () => {
           locationName: res.data.locationName,
         }));
       } catch (error) {
+        if (cancelled) return;
         console.error('Failed to fetch location weather', error);
-        setLocationData(prev => ({ ...prev, loading: false, locationName: s.location_failed }));
+        const stored = weatherState.bundlesByCityId['located'];
+        // 取定位失败：始终退出 loading；仅在没有缓存可展示时才回落到"定位失败"文案，
+        // 否则保留 prev 已有的城市名/天气数据（可能来自缓存或外部注入）
+        setLocationData(prev => stored?.bundle
+          ? { ...prev, loading: false }
+          : { ...prev, loading: false, locationName: s.location_failed }
+        );
       }
-    };
+    })();
 
-    fetchLocationWeather();
-  }, [fetchCityWeather]);
+    return () => {
+      cancelled = true;
+    };
+  }, [fetchCityWeather, currentIndex, weatherState.bundlesByCityId]);
 
   // 按需获取“已添加城市”的天气：用户滑到该城市页面时才加载/刷新
   // currentIndex: 0 = 定位页, 1+ = savedCities[currentIndex - 1]
