@@ -73,6 +73,13 @@ this repository are responsible for ensuring that their own downstream
 use complies with each relevant platform's **current** developer terms
 and applicable law in their jurisdiction.
 
+The dataset compilation and any synthetic content authored by the
+maintainers are licensed under the Creative Commons
+Attribution-NonCommercial 4.0 International License (CC BY-NC 4.0).
+The full text and a preamble describing how this license interacts with
+the underlying author copyright in API-collected content are in the
+LICENSE-DATA file at the root of this repository.
+
 ### No model training on platform content
 
 The data described above is provided solely as **environment content**
@@ -155,6 +162,8 @@ mobile-gym 是用于**训练和评测**手机操作 Agent的研究**环境**。�
 （二）**通过相关平台的官方开发者接口采集**：遵循采集当时有效的访问条款，仅限官方接口返回的、当时公开可见的内容，并遵循平台使用协议。
 
 上述数据仅为复现配套论文描述的评测结果而再分发，**仅限非商业学术研究使用**。任何用户产生内容（UGC）的版权归原作者所有，维护者**不主张任何所有权**。使用者需自行确保其下游使用符合相关平台**当前**的开发者条款，以及所在司法管辖区的适用法律。
+
+数据集的整理、处理及维护者原创的合成内容采用 **Creative Commons 署名-非商业性使用 4.0 国际许可协议（CC BY-NC 4.0）** 授权。完整协议文本，以及说明该许可与"通过 API 采集内容的原作者版权"如何分层共存的前言，见仓库根目录的 LICENSE-DATA 文件。
 
 ### 不基于平台内容训练模型
 

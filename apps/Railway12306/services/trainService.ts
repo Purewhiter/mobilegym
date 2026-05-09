@@ -497,13 +497,13 @@ function parseFromYpInfoCover(ypInfoCover: string): SeatInfo[] {
     const priceRaw = parseFloat(ypInfoCover.substring(f, c)) / 10;
     const price = isNaN(priceRaw) ? 0 : priceRaw;
 
-    // 简化席别名称（和真实 APP 一致）
+    // 简化席别名称，保持列表展示稳定
     type = getSeatTypeSimple(type);
 
     rawSeats.push({ typeId, type, typeRate, count, price, isNone });
   }
 
-  // 按 typeRate 排序（和真实 APP 一致）
+  // 按 typeRate 排序，保持席别展示稳定
   rawSeats.sort((a, b) => a.typeRate - b.typeRate);
   // 再按价格排序，无座排最后
   rawSeats.sort((a, b) => {
