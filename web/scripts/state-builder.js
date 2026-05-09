@@ -818,6 +818,80 @@
     setStudioStatus(`12306 order added: ${trainNo} ${from} → ${to}.`, 'ok');
   }
 
+  // 天况预设：text/icon 与 QWeather 编码对齐（icon 与 weatherBundles.json 一致）
+  const WEATHER_CONDITION_PRESETS = {
+    sunny:        { text: '晴',     icon: '100' },
+    cloudy:       { text: '多云',   icon: '101' },
+    overcast:     { text: '阴',     icon: '104' },
+    'light-rain': { text: '小雨',   icon: '305' },
+    'heavy-rain': { text: '大雨',   icon: '308' },
+    thunderstorm: { text: '雷阵雨', icon: '302' },
+    'light-snow': { text: '小雪',   icon: '400' },
+    fog:          { text: '雾',     icon: '501' },
+    haze:         { text: '霾',     icon: '502' },
+  };
+
+  // AQI → category/level 映射（与 normalizeAqiLevel 一致：6 级国标）
+  function aqiClassify(aqi) {
+    if (aqi <= 50)  return { category: '优',         level: '1' };
+    if (aqi <= 100) return { category: '良',         level: '2' };
+    if (aqi <= 150) return { category: '轻度污染',   level: '3' };
+    if (aqi <= 200) return { category: '中度污染',   level: '4' };
+    if (aqi <= 300) return { category: '重度污染',   level: '5' };
+    return                  { category: '严重污染',   level: '6' };
+  }
+
+  function applyWeatherNow(win, state) {
+    const located = state.apps?.weather?.bundlesByCityId?.located;
+    if (!located?.bundle) {
+      setStudioStatus('Located bundle not loaded yet — open Weather first to populate.', 'warn');
+      return;
+    }
+    const conditionKey = $('studio-weather-condition').value;
+    const condition = WEATHER_CONDITION_PRESETS[conditionKey] || WEATHER_CONDITION_PRESETS.sunny;
+    const temp = String(Math.round(clampNumber($('studio-weather-temp').value, -50, 60, 20)));
+    const high = String(Math.round(clampNumber($('studio-weather-high').value, -50, 60, 25)));
+    const low  = String(Math.round(clampNumber($('studio-weather-low').value,  -50, 60, 15)));
+    const aqiNum = Math.round(clampNumber($('studio-weather-aqi').value, 0, 500, 50));
+    const aqi = String(aqiNum);
+    const aqiMeta = aqiClassify(aqiNum);
+
+    // daily 是数组，deepMerge 把数组当 atomic（整体替换）。要 patch daily[0] 的高低温，
+    // 必须把当前 daily 整体读出 → 替换 daily[0] → 整体写回。
+    const daily = (located.bundle.daily || []).map((day, idx) =>
+      idx === 0 ? { ...day, tempMax: high, tempMin: low } : day,
+    );
+
+    win.__SIM__.setState({
+      apps: {
+        weather: {
+          selectedCityId: 'located',
+          bundlesByCityId: {
+            located: {
+              bundle: {
+                now: {
+                  temp,
+                  feelsLike: temp,
+                  text: condition.text,
+                  icon: condition.icon,
+                },
+                daily,
+                airQuality: {
+                  aqi,
+                  category: aqiMeta.category,
+                  level: aqiMeta.level,
+                },
+              },
+            },
+          },
+        },
+      },
+    }, { deep: true });
+
+    setStudioStatus(`Weather patched: ${condition.text} ${temp}°C (H${high}/L${low}), AQI ${aqi}.`, 'ok');
+    syncStudioFromState();
+  }
+
   // iframe 内 scrollIntoView 会沿祖先 scroll container 链冒泡到父页面，浏览器 focus 时也会自动
   // scroll-into-view 跨 iframe 冒泡。同源前提下直接 patch iframe 内的两个 prototype：
   //   - scrollIntoView 改成只在 iframe 内最近的可滚祖先上滚动，到顶就停，不再外冒泡
@@ -1048,6 +1122,7 @@
   $('studio-save-contact').addEventListener('click', () => withSimulator(saveContactOnly));
   $('studio-send-sms').addEventListener('click', () => withSimulator(sendSmsOnly));
   $('studio-add-railway-order').addEventListener('click', () => withSimulator(addRailwayOrder));
+  $('studio-apply-weather-now').addEventListener('click', () => withSimulator(applyWeatherNow));
 
   languageChoices.forEach((btn) => {
     btn.addEventListener('click', () => {
