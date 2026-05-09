@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { IcWarning, IcCalendar, IcCheck, IcNavBack, IcAdd, IcTicket, IcClose } from '../res/icons';
 import { useLocation } from 'react-router-dom';
 import { useRailwayStore, maskIdNo } from '../state';
-import { randomSeatNo } from '../types';
+import { randomSeatNo, supportsPositionPick, buildSeatNosFromPositions, computeSeatReassignProbability } from '../types';
 import { useRailwayGestures } from '../hooks/useRailwayGestures';
 import { useShallow } from 'zustand/react/shallow';
 import { fromTimestamp, getISOString, now as timeNow, parseToTimestamp } from '../../../os/TimeService';
@@ -142,16 +142,29 @@ export const OrderConfirmPage: React.FC = () => {
     const createTime = getISOString();
     const orderSeed = String(timeNow()).slice(-8);
 
-    const tickets = selectedPassengerIds
+    const validPassengers = selectedPassengerIds
       .map(pid => state.passengers.find(p => p.id === pid))
-      .filter((p): p is NonNullable<typeof p> => !!p)
-      .map(passenger => ({
-        passengerName: passenger.name,
-        ticketType: state.isStudent ? '学生票' : '成人票',
-        seatType: seatInfo.type,
-        seatNo: randomSeatNo(seatInfo.type),
-        price: seatInfo.price,
-      }));
+      .filter((p): p is NonNullable<typeof p> => !!p);
+
+    const canHonorPositions = supportsPositionPick(seatInfo.type) && selectedSeatPositions.length > 0;
+    // 失败概率以「本席别购票人数」为需求量(而非用户实际点中的格子数),
+    // 否则 2 人购票只点 1 个位置时会低估概率。
+    const reassignProb = canHonorPositions
+      ? computeSeatReassignProbability(seatInfo.count, validPassengers.length)
+      : 0;
+    const seatReassigned = canHonorPositions && Math.random() < reassignProb;
+
+    const honoredSeatNos = canHonorPositions && !seatReassigned
+      ? buildSeatNosFromPositions(seatInfo.type, selectedSeatPositions)
+      : [];
+
+    const tickets = validPassengers.map((passenger, idx) => ({
+      passengerName: passenger.name,
+      ticketType: state.isStudent ? '学生票' : '成人票',
+      seatType: seatInfo.type,
+      seatNo: honoredSeatNos[idx] ?? randomSeatNo(seatInfo.type),
+      price: seatInfo.price,
+    }));
 
     if (tickets.length === 0) return;
 
@@ -166,6 +179,7 @@ export const OrderConfirmPage: React.FC = () => {
       tickets,
       status: 'pending',
       createTime,
+      ...(seatReassigned ? { seatReassigned: true } : {}),
     });
 
     setShowProcessing(true);
@@ -376,7 +390,7 @@ export const OrderConfirmPage: React.FC = () => {
             </div>
           )}
 
-          {!seatInfo.type.includes('卧') && (() => {
+          {supportsPositionPick(seatInfo.type) && (() => {
             const isBizOrFirst = seatInfo.type.includes('商务') || seatInfo.type.includes('一等');
             const leftCols = ['A', ...(isBizOrFirst ? [] : ['B']), 'C'];
             const rightCols = [(seatInfo.type.includes('商务') ? '' : 'D'), 'F'].filter(Boolean);

@@ -19,6 +19,11 @@ export interface OrderRecord {
   tickets: TicketInfo[];
   status: 'completed' | 'pending' | 'cancelled';
   createTime: string;     // ISO
+  // 用户选了具体座位号但系统无法满足、自动改派后置 true。仅出现在 pending 单上,
+  // 提交订单时由概率(根据余票数)决定。
+  seatReassigned?: boolean;
+  // 用户在未完成订单页点过"确定"后置 true,避免重复弹窗。
+  seatReassignedAcked?: boolean;
 }
 
 /** 根据座位类型生成随机座位号 */
@@ -51,6 +56,49 @@ export function randomSeatNo(seatType: string): string {
   const row = String(Math.floor(Math.random() * 20) + 1).padStart(2, '0');
   const col = cols[Math.floor(Math.random() * cols.length)];
   return `${car}车 ${row}${col}号`;
+}
+
+/**
+ * 仅高铁/动车的商务/一等/二等席别使用「车厢 + 行号 + 列字母」格式,picker 上的选位才构成有效偏好。
+ * 特等/高软/软座/硬座/无座/卧铺等席别座位号格式不同,不进入选座概率流程。
+ */
+export function supportsPositionPick(seatType: string): boolean {
+  return seatType.includes('商务') || seatType.includes('一等') || seatType.includes('二等');
+}
+
+/**
+ * 把 picker 输出的相对位置(如 ["0-A", "1-C"])映射成实际座位号数组。
+ * 同一订单的多张票共用同一车厢号,picker 行号(0/1)对应连续真实行号,列字母直接沿用。
+ * 返回值长度与 positions 相同。
+ */
+export function buildSeatNosFromPositions(seatType: string, positions: string[]): string[] {
+  const car = String(Math.floor(Math.random() * 16) + 1).padStart(2, '0');
+  const baseRow = Math.floor(Math.random() * 18) + 1; // 1..18,留两行余量
+  return positions.map(pos => {
+    const [rawRow, col] = pos.split('-');
+    const rowOffset = Number.parseInt(rawRow ?? '0', 10) || 0;
+    const row = String(baseRow + rowOffset).padStart(2, '0');
+    const safeCol = col || 'A';
+    return `${car}车 ${row}${safeCol}号`;
+  });
+}
+
+/**
+ * 给定本席别余票数与购票人数,返回「无法满足用户选位」的概率。
+ *  - requestedCount <= 0:0(用户没需求)
+ *  - count <= 0:1(售罄;实际由 canSubmit 拦截,这里兜底)
+ *  - requestedCount > count:1(余票不够,必改派)
+ *  - count >= 20 / Infinity:0(余票充足,直接 honor)
+ *  - 1 <= count < 20:线性插值 (20 - count) / 20
+ *
+ * 分支顺序保证 `requestedCount > count` 优先于「充足」判断,避免 count=Infinity 时被误算。
+ */
+export function computeSeatReassignProbability(count: number, requestedCount: number): number {
+  if (requestedCount <= 0) return 0;
+  if (count <= 0) return 1;
+  if (requestedCount > count) return 1;
+  if (!Number.isFinite(count) || count >= 20) return 0;
+  return (20 - count) / 20;
 }
 
 /** Convenience helpers */
