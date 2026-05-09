@@ -61,6 +61,16 @@ playwright install chromium
 
 ### 命令行使用
 
+以下示例用环境变量表示模型服务配置：
+
+```bash
+export MODEL_BASE_URL=http://localhost:8001/v1
+export MODEL_API_KEY=
+export JUDGE_MODEL=vlm-judge-model
+export JUDGE_BASE_URL="$MODEL_BASE_URL"
+export JUDGE_API_KEY="$MODEL_API_KEY"
+```
+
 ```bash
 # 查看所有可用任务
 python -m bench_env.run --list
@@ -75,7 +85,8 @@ python -m bench_env.run --list --suite railway12306 --list-online --env-url http
 python -m bench_env.run \
     --task-id wechat.ReadMyWxid \
     --env-url http://localhost:3000 \
-    --model-base-url http://14.103.173.234:8003/v1 \
+    --model-base-url "$MODEL_BASE_URL" \
+    --model-api-key "$MODEL_API_KEY" \
     --model-name autoglm \
     --agent autoglm
 
@@ -83,7 +94,8 @@ python -m bench_env.run \
 python -m bench_env.run \
     --suite wechat \
     --env-url http://localhost:3000 \
-    --model-base-url http://14.103.173.234:8001/v1 \
+    --model-base-url "$MODEL_BASE_URL" \
+    --model-api-key "$MODEL_API_KEY" \
     --model-name gelab-zero \
     --agent gelab
 
@@ -93,7 +105,8 @@ python -m bench_env.run \
     --parallel 8 \
     --isolation pages \
     --env-url http://localhost:3000 \
-    --model-base-url http://14.103.173.234:8003/v1 \
+    --model-base-url "$MODEL_BASE_URL" \
+    --model-api-key "$MODEL_API_KEY" \
     --model-name autoglm \
     --headless \
     --agent autoglm
@@ -106,7 +119,8 @@ python -m bench_env.run \
     --browsers 16 \
     --isolation contexts \
     --env-url http://localhost:4173 \
-    --model-base-url http://14.103.173.234:8003/v1 \
+    --model-base-url "$MODEL_BASE_URL" \
+    --model-api-key "$MODEL_API_KEY" \
     --model-name autoglm \
     --headless \
     --agent autoglm
@@ -118,7 +132,8 @@ python -m bench_env.run \
     --sample-seed 42 \
     --parallel 8 \
     --env-url http://localhost:4173 \
-    --model-base-url http://14.103.173.234:8003/v1 \
+    --model-base-url "$MODEL_BASE_URL" \
+    --model-api-key "$MODEL_API_KEY" \
     --model-name autoglm \
     --headless \
     --agent autoglm
@@ -130,7 +145,8 @@ python -m bench_env.run \
     --isolation browsers \
     --repeat-n 8 \
     --env-url http://localhost:4173 \
-    --model-base-url http://14.103.173.234:8003/v1 \
+    --model-base-url "$MODEL_BASE_URL" \
+    --model-api-key "$MODEL_API_KEY" \
     --model-name autoglm \
     --headless \
     --agent autoglm
@@ -143,7 +159,8 @@ python -m bench_env.run \
     --parallel 32 \
     --isolation browsers \
     --env-url http://localhost:4173 \
-    --model-base-url http://14.103.173.234:8003/v1 \
+    --model-base-url "$MODEL_BASE_URL" \
+    --model-api-key "$MODEL_API_KEY" \
     --model-name autoglm \
     --headless \
     --agent autoglm
@@ -153,8 +170,8 @@ python -m bench_env.run \
     --parallel 18 \
     --isolation pages \
     --env-url http://localhost:4173 \
-    --model-base-url http://api.yourapi.cn/v1 \
-    --model-api-key YOUR_API_KEY \
+    --model-base-url "$MODEL_BASE_URL" \
+    --model-api-key "$MODEL_API_KEY" \
     --model-name gemini-3-flash-preview \
     --headless \
     --agent generic_v2
@@ -164,9 +181,9 @@ python -m bench_env.run \
     --parallel 18 \
     --isolation pages \
     --env-url http://localhost:4173 \
-    --model-base-url https://open.bigmodel.cn/api/paas/v4  \
+    --model-base-url "$MODEL_BASE_URL" \
     --model-name autoglm-phone \
-    --model-api-key YOUR_API_KEY \
+    --model-api-key "$MODEL_API_KEY" \
     --headless \
     --agent autoglm
 
@@ -181,7 +198,8 @@ python -m bench_env.run \
     --exec "打开小红书查看我的昵称是什么" \
     --env-url http://localhost:3000 \
     --agent autoglm \
-    --model-base-url http://14.103.173.234:8003/v1 \
+    --model-base-url "$MODEL_BASE_URL" \
+    --model-api-key "$MODEL_API_KEY" \
     --model-name autoglm
 ```
 
@@ -200,7 +218,8 @@ python -m bench_env.run \
     --split test \
     --env-url http://localhost:3000 \
     --agent autoglm \
-    --model-base-url http://14.103.173.234:8003/v1 \
+    --model-base-url "$MODEL_BASE_URL" \
+    --model-api-key "$MODEL_API_KEY" \
     --model-name autoglm
 
 # 多 split 并集（| 号分隔用 +）
@@ -317,7 +336,8 @@ The `RealDeviceEnv` is currently a **lightweight implementation** with the follo
 python -m bench_env.run \
     --task-id wechat.ReadMyWxid \
     --device real \
-    --model-base-url http://14.103.173.234:8003/v1 \
+    --model-base-url "$MODEL_BASE_URL" \
+    --model-api-key "$MODEL_API_KEY" \
     --model-name autoglm \
     --agent autoglm
 
@@ -326,29 +346,32 @@ python -m bench_env.run \
     --task-id wechat.ReadMyWxid \
     --env-url http://localhost:3000 \
     --judge-mode vlm \
-    --model-base-url http://14.103.173.234:8003/v1 \
+    --model-base-url "$MODEL_BASE_URL" \
+    --model-api-key "$MODEL_API_KEY" \
     --model-name autoglm \
     --agent autoglm
 
-# 使用不同模型做评估（Agent 用 autoglm，评估用 gpt-4o）
+# 使用不同模型做评估
 python -m bench_env.run \
     --task-id wechat.ReadMyWxid \
     --device real \
-    --model-base-url http://14.103.173.234:8003/v1 \
+    --model-base-url "$MODEL_BASE_URL" \
+    --model-api-key "$MODEL_API_KEY" \
     --model-name autoglm \
     --agent autoglm \
-    --judge-model gpt-4o \
-    --judge-base-url https://api.openai.com/v1 \
-    --judge-api-key sk-xxx
+    --judge-model "$JUDGE_MODEL" \
+    --judge-base-url "$JUDGE_BASE_URL" \
+    --judge-api-key "$JUDGE_API_KEY"
 
 python -m bench_env.run \
     --task-id wechat.SetAddMeSearch \
-    --device real \              
-    --model-base-url http://14.103.173.234:8003/v1 \
+    --device real \
+    --model-base-url "$MODEL_BASE_URL" \
+    --model-api-key "$MODEL_API_KEY" \
     --model-name autoglm \
     --agent autoglm --judge-mode vlm \
-    --judge-model qwen-vl-max-latest \
-    --judge-base-url https://dashscope.aliyuncs.com/compatible-mode/v1/ \
+    --judge-model "$JUDGE_MODEL" \
+    --judge-base-url "$JUDGE_BASE_URL" \
     --judge-api-key "$JUDGE_API_KEY"
 ```
 
@@ -401,7 +424,7 @@ The `RunnerConfig` class provides a unified way to configure the benchmark.
 | `env_url`            | -                 | Simulator URL (required for sim mode)                            |
 | `device_serial`      | -                 | ADB device serial (for real device mode)                         |
 | `headless`           | `False`         | Run simulator in headless mode                                   |
-| `proxy`              | -                 | Browser proxy server (e.g. `http://127.0.0.1:7890`)            |
+| `proxy`              | -                 | Browser proxy server (e.g. `http://127.0.0.1:PORT`)            |
 | `coord_space`        | `norm_0_1000`   | Coordinate space (`norm_0_1000`, `norm_0_1`, `physical`)   |
 | `delay_after_action` | `1.0`           | Wait time (seconds) after each action                            |
 | `max_steps`          | 自适应          | Maximum steps per episode (未显式指定时按任务难度自适应，见下文) |

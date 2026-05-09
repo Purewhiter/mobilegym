@@ -2,8 +2,16 @@ mobile-gym
 Copyright 2026 The mobile-gym Authors
 
 This product includes software developed by The mobile-gym Authors and
-contributors. Licensed under the Apache License, Version 2.0; see the
-LICENSE file in the root of this repository.
+contributors. Source code in this repository is licensed under the
+Apache License, Version 2.0; see the LICENSE file.
+
+Data files distributed with this repository (including but not limited
+to apps/*/data, apps/*/assets, and dataset snapshots under public/) are
+licensed separately under the Creative Commons Attribution-NonCommercial
+4.0 International License (CC BY-NC 4.0); see LICENSE-DATA. Some data
+originates from third-party platforms via their official developer APIs,
+in which case copyright in the underlying user-generated content remains
+with its original authors and is not relicensed by this project.
 
 For notices regarding trademarks, third-party application references,
 dataset provenance, and the takedown procedure, see DISCLAIMER.md.

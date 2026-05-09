@@ -1,8 +1,7 @@
 /**
  * 车站数据
  *
- * 完整数据由 loader.ts 异步加载（stationList.json，3383 个车站），
- * 来源于 12306 真实 APP 反编译数据。
+ * 完整数据由 loader.ts 异步加载（stationList.json，3383 个车站）。
  */
 
 import { getStationsSync } from './loader';
