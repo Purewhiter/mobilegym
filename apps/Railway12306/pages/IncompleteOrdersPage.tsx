@@ -314,6 +314,23 @@ export const IncompleteOrdersPage: React.FC = () => {
         </div>
       )}
 
+      {pendingOrder.seatReassigned && !pendingOrder.seatReassignedAcked && (
+        <div className="fixed inset-0 z-[130] bg-black/45 flex items-center justify-center px-10">
+          <div className="bg-white rounded-2xl w-full max-w-[300px] overflow-hidden px-5 pt-5 pb-4">
+            <p className="text-center text-[17px] font-medium text-[#2B3038]">{s.common_notice}</p>
+            <p className="mt-3 text-[14px] text-[#525C6A] leading-relaxed">
+              {s.incomplete_orders_seat_reassigned_message}
+            </p>
+            <button
+              className="mt-5 w-full h-[44px] rounded-[10px] bg-[#4FA4F7] text-white text-[16px] font-medium"
+              onClick={() => updateOrder(pendingOrder.id, { seatReassignedAcked: true })}
+            >
+              {s.action_confirm}
+            </button>
+          </div>
+        </div>
+      )}
+
       {showLeaveConfirm && (
         <div className="fixed inset-0 z-[120] bg-black/45 flex items-center justify-center px-10">
           <div className="bg-white rounded-xl w-full max-w-[280px] overflow-hidden">

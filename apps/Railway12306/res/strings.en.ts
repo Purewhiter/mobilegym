@@ -469,6 +469,7 @@ export const stringsEn: Partial<Record<StringKey, string>> = {
   incomplete_orders_person: 'person',
   incomplete_orders_accident_luggage_plan: 'Accident cover',
   incomplete_orders_go_pay: 'Pay',
+  incomplete_orders_seat_reassigned_message: 'Your preferred seat is no longer available on this train. The system has automatically assigned another seat for you. Please confirm to continue payment, or cancel the order.',
 
   // Order detail page
   order_detail_title: 'Order details',

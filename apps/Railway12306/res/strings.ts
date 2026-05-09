@@ -471,6 +471,7 @@ export const strings = {
   incomplete_orders_person: '人',
   incomplete_orders_accident_luggage_plan: '乘意险·行李',
   incomplete_orders_go_pay: '去支付',
+  incomplete_orders_seat_reassigned_message: '本次列车剩余席位（铺位）已无法满足您的需求，系统已经为您自动分配了其他席位（铺位），请确认后继续支付或取消订单。',
 
   // Order detail page
   order_detail_title: '订单详情',
