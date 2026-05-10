@@ -16,6 +16,8 @@ import {
     UNSAFE_NavigationContext,
 } from 'react-router-dom';
 import { useAppNavigationHandler } from '../../os/hooks/useAppNavigationHandler';
+import { AppNavigatorRegistry } from '../../os/AppNavigatorRegistry';
+import { useActivityContext } from '../../os/ActivityContext';
 import { ConversationListPage } from './components/ConversationListPage';
 import { NewMessagePage } from './components/NewMessagePage';
 import { ConversationDetailPage } from './components/ConversationDetailPage';
@@ -32,6 +34,7 @@ const SmsNavigationHandler: React.FC = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const { navigator } = useContext(UNSAFE_NavigationContext);
+    const { activityId } = useActivityContext();
     const { back } = useAppNavigate();
     const mem = navigator as { index?: number; entries?: unknown[] };
 
@@ -41,6 +44,20 @@ const SmsNavigationHandler: React.FC = () => {
         back();
         return true;
     }, [back, location.pathname, mem]);
+
+    // Activity-level navigator 注册：用于 OS 在 foreign-task push 时（如 12306 调用 ACTION_VIEW + scheme=sms
+    // 把 SMS Activity 推到 12306 task 上）通过 navigateToActivity 把内部路由切到 /new 等目标 route。
+    // 不注册的话，OS 的 waitForNavigator 会等到 5 秒超时再放弃。
+    // 默认 replace=true 兼容 OS 内部"重置到根"的旧调用，但尊重显式 { replace: false } 让 singleTask 等场景能 push。
+    useEffect(() => {
+        const navFn = (path: string, opts?: { replace?: boolean }) => {
+            navigate(path, { replace: opts?.replace ?? true });
+        };
+        AppNavigatorRegistry.registerActivity(activityId, { navigate: navFn, back: handleBackPress }, 'sms');
+        return () => {
+            AppNavigatorRegistry.unregisterActivity(activityId);
+        };
+    }, [activityId, handleBackPress, navigate]);
 
     useAppNavigationHandler('sms', {
         onBack: handleBackPress,

@@ -2093,6 +2093,17 @@ export const NAVIGATION_DECLARATION = {
     // Contacts / chats
     // =========================
     {
+      id: 'share.forward.send.toChat',
+      from: ['/share/forward'],
+      to: '/chat/:id',
+      search: {},
+      searchParams: {},
+      mode: 'replace',
+      params: { id: 'string' },
+      label: '分享发送完成 → 进入目标会话',
+      ui: { placement: 'content', icon: 'share_send', gesture: 'tap' },
+    },
+    {
       id: 'chat.open',
       from: ['/', '/user-profile/:id', '/search'],
       to: '/chat/:id',

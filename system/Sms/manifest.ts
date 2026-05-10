@@ -49,7 +49,7 @@ export const manifest: AppManifest = {
       action: 'ACTION_VIEW',
       scheme: 'sms',
       route: '/new',
-      description: '通过 sms: 链接发短信',
+      description: '通过 sms: 链接发短信 — 调用方需要传 { newTask: true } 让 SMS 进入独立 Task',
     },
   ],
   queries: [

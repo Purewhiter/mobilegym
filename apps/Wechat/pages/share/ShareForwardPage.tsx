@@ -6,6 +6,7 @@ import { WechatSmartImage } from '../../components/WechatSmartImage';
 import { useActivityContext } from '../../../../os/ActivityContext';
 import { BackDispatcher } from '../../../../os/BackDispatcher';
 import { useWechatStrings } from '../../hooks/useWechatStrings';
+import { useAppNavigate } from '../../navigation';
 import * as TimeService from '../../../../os/TimeService';
 import type { ChatSession, ContactItem } from '../../types';
 
@@ -456,6 +457,7 @@ const ConfirmSheet: React.FC<{
 // ----- Top-level page -----
 export const ShareForwardPage: React.FC = () => {
   const { activityId } = useActivityContext();
+  const { go, back } = useAppNavigate();
   const sendImages = useWechatStore(s => s.sendImages);
   const sendMessage = useWechatStore(s => s.sendMessage);
 
@@ -484,16 +486,22 @@ export const ShareForwardPage: React.FC = () => {
   const [caption, setCaption] = useState('');
   const [sending, setSending] = useState(false);
 
+  // 取消分享：回到 wechat 主页（singleTask 启动后历史是 ['/', '/share/forward']，
+  // 退一步即落到 '/'）。本入口完全运行在微信 Task 内，不再借栈到调用方。
   const cancelAndClose = useCallback(() => {
-    window.__OS__?.setResult?.({ resultCode: 'CANCELED' });
-  }, []);
+    back();
+  }, [back]);
 
   const closeConfirm = useCallback(() => {
     setConfirmTargets(null);
     setCaption('');
   }, []);
 
-  // Foreign-task: only BackDispatcher; app-level handler is skipped.
+  // BackDispatcher（priority 150）覆盖 App 默认 back（priority 100）：
+  // - sending 中：吞掉 back，避免发送途中误退
+  // - confirm 浮层打开：先关浮层
+  // - create 视图：先回到 main 视图
+  // - 否则：cancelAndClose() 回到 wechat 主页（singleTask 启动后历史为 ['/', '/share/forward']）
   useEffect(() => {
     return BackDispatcher.register('wechat.share.forward', () => {
       const latestState = window.__OS__?.getState?.();
@@ -572,18 +580,13 @@ export const ShareForwardPage: React.FC = () => {
       sendImages(target.wxid, intentImages);
       if (trimmedCaption) sendMessage(target.wxid, trimmedCaption);
     }
+    // 真机微信：发送后跳到目标会话页面，wechat 主页留作返回栈底。
+    // 这里 replace 当前 '/share/forward' 为 '/chat/:id'，使历史变为 ['/', '/chat/:id']。
+    const target = confirmTargets[0];
     requestAnimationFrame(() => {
-      window.__OS__?.setResult?.({
-        resultCode: 'OK',
-        data: {
-          targets: confirmTargets.map(t => t.wxid),
-          targetNames: confirmTargets.map(t => t.name),
-          count: intentImages.length,
-          sentAt: TimeService.now(),
-        },
-      });
+      go('share.forward.send.toChat', { id: target.wxid });
     });
-  }, [confirmTargets, sending, intentImages, caption, sendImages, sendMessage]);
+  }, [confirmTargets, sending, intentImages, caption, sendImages, sendMessage, go]);
 
   const toggleCreateContact = (wxid: string) => {
     setCreateSelectedIds(prev => {

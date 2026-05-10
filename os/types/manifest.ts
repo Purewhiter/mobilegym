@@ -124,6 +124,15 @@ export interface AppIntentFilter {
   scheme?: string;
   /** 接收此 intent 时导航到的路由路径（如 '/receive-share'） */
   route: string;
+  /**
+   * 启动模式（对应 Android `<activity android:launchMode>`）。
+   * - `standard`（默认）：进入调用方 Task 或新 Task（取决于 caller flags），完成后回到调用方。
+   * - `singleTask`：始终进入接收方自己的 Task；若该 Task 已存在，则**清空其上层 Activity 并重置 root 历史**到本 route，
+   *   接收方处理完成后停留在自己 Task 中，不会回退到调用方（典型场景：分享接收 / 二维码扫描结果）。
+   *
+   * 真机上 launchMode 是 per-Activity 的，本模拟器以 per-intent-filter 表达 —— 每条 filter 等价于真机里一个独立的接收 Activity。
+   */
+  launchMode?: 'standard' | 'singleTask';
   /** 路由参数说明 */
   params?: { name: string; type: 'string' | 'number'; description?: string }[];
   /** 描述（供文档 / bench_env） */

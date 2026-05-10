@@ -29,10 +29,18 @@ function sumSize(nodes: FSNode[]): number {
 }
 
 function openFileManager(route: string) {
+  // 真机做法：发 ACTION_VIEW + type=inode/directory intent，让系统找匹配的文件管理器。
+  // 我们在 intent.route 上明示目标子页（IntentResolver 让 caller hint 优先于 filter.route），
+  // 一次性带 OS 跳到指定路由，不依赖 App-side dispatcher 二次跳转。
+  // 默认 same-task push（不加 newTask），FileManager Activity 入栈到 Settings task，
+  // 用户按返回单步即可回 Settings。
   const os = window.__OS__;
-  if (os && typeof os.openApp === 'function') {
-    os.openApp('file_manager', route);
-    return;
+  if (os && typeof os.startActivity === 'function') {
+    os.startActivity({
+      action: 'ACTION_VIEW',
+      type: 'inode/directory',
+      route,
+    });
   }
 }
 

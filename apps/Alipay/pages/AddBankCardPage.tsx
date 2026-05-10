@@ -7,7 +7,7 @@ import { useAlipayStrings } from '../hooks/useAlipayStrings';
 import { useAlipayStore } from '../state';
 import { BANK_OPTIONS, type BankOption } from '../constants';
 import BackDispatcher from '../../../os/BackDispatcher';
-import { memoryHistoryPopToAlipayBankCardsList } from '../../../os/utils/memoryHistoryPopTo';
+import { popToAlipayBankCardsList } from '../utils/popToBankCardsList';
 import { useLocale } from '@/apps/Alipay/locale';
 import { localizeBankName } from '../utils/localizeBankName';
 
@@ -256,7 +256,7 @@ export const AddBankCardPage: React.FC = () => {
                 className="flex-1 py-3 rounded-full border border-gray-200 text-sm font-medium text-gray-900 active:bg-gray-50"
                 onClick={() => {
                   setShowExitDialog(false);
-                  if (!memoryHistoryPopToAlipayBankCardsList(navigator)) {
+                  if (!popToAlipayBankCardsList(navigator)) {
                     back();
                   }
                 }}

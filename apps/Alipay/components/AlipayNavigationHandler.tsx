@@ -33,8 +33,9 @@ export const AlipayNavigationHandler: React.FC = () => {
 
   // Per-activity navigation registration (activity-system level)
   useEffect(() => {
-    const navFn = (path: string) => {
-      navigate(path, { replace: true });
+    // 默认 replace=true 兼容已有调用，但尊重显式 { replace: false }（singleTask 启动需要 push 才能保留 '/' 在历史栈底）。
+    const navFn = (path: string, opts?: { replace?: boolean }) => {
+      navigate(path, { replace: opts?.replace ?? true });
     };
     AppNavigatorRegistry.registerActivity(activityId, { navigate: navFn, back: handleBackPress }, 'alipay');
 

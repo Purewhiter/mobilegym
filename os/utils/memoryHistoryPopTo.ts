@@ -1,10 +1,13 @@
 import { getTracker } from './memoryHistoryTracker';
 
-const BANK_CARDS_PARENT_PATHS = ['/settings/payment/bank-cards', '/bank-cards'] as const;
-
 /**
- * 自栈顶向下查找首个匹配的 pathname，并回退到该条目（不含 inclusive 语义时落点即为该页）。
- * 用于「添加银行卡」等子流程结束后回到列表页，避免 replace 后栈中仍残留 /add 导致返回错乱。
+ * 按候选顺序在历史栈里查找第一个匹配的 pathname，并 popTo 到它。
+ * 常用于"Up 导航"语义——一个子页可能从多个父页进入，按声明顺序尝试落到最合适的父页。
+ *
+ * inclusive=false（默认）：保留目标条目，落点即为该条目；
+ * inclusive=true：连同目标条目一起 pop，落点为其下方一条。
+ *
+ * 返回是否成功 popTo 了某个候选；返回 false 时调用方通常 fallback 到单步 `back()`。
  */
 export function memoryHistoryPopToFirstMatch(
   navigator: unknown,
@@ -23,11 +26,6 @@ export function memoryHistoryPopToFirstMatch(
     }
   }
   return false;
-}
-
-/** 支付宝银行卡：自「我的-银行卡」或「支付设置-银行卡」进入添卡流程时的统一回退目标顺序 */
-export function memoryHistoryPopToAlipayBankCardsList(navigator: unknown): boolean {
-  return memoryHistoryPopToFirstMatch(navigator, BANK_CARDS_PARENT_PATHS, { inclusive: false });
 }
 
 /**

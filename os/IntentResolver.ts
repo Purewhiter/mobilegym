@@ -3,6 +3,7 @@ import type { ActivityResult, AppIntentFilter, IntentPayload } from './types/man
 import { SIMULATOR_CONFIG } from './data';
 import PackageManagerService from './PackageManagerService';
 import { getActiveTask, getTaskTopActivity } from './taskUtils';
+import { AppNavigatorRegistry } from './AppNavigatorRegistry';
 
 type ChooserListener = (state: IntentChooserState) => void;
 
@@ -24,6 +25,7 @@ export interface StartActivityPlainDeps {
   getState: () => OSState;
   nextActivityId: () => string;
   pushActivity: (taskId: string, activity: ActivityInstance) => void;
+  popActivity: (taskId: string) => void;
   navigateToActivity: (activityId: string, route: string, opts?: { fallbackAppId?: AppId; replace?: boolean }) => void;
   launchApp: (appId: AppId) => void;
   markExternalRoute: (appId: AppId) => void;
@@ -151,13 +153,12 @@ function launchResolvedIntentForResult(
   }
 
   const requestCode = deps.allocRequestCode(callerActivity.activityId, callback);
-  const baseRoute = targetFilter?.route ?? intent.route ?? '/';
-
-  if (intent.route && targetFilter && intent.route !== targetFilter.route) {
-    console.warn(
-      `[OS] startActivityForResult: Provided route=${intent.route} differs from manifest route=${targetFilter.route}, using manifest route`,
-    );
-  }
+  // 调用方 intent.route 优先于 manifest filter.route。
+  // 真机对应：filter 决定哪个 Activity 接收，调用方通过 intent extras / data 决定 Activity 内部细节；
+  // 我们把 route 当成"caller hint"暴露出来，让调用方一次性指明目标子页（如 Settings → FM /category/images），
+  // 避免 OS 先 navigate('/') 又被 App-side dispatcher replace 到子页的双跳竞态。
+  // 缺省（未指定 intent.route）时仍走 filter.route。
+  const baseRoute = intent.route ?? targetFilter?.route ?? '/';
 
   const newActivity: ActivityInstance = {
     activityId: deps.nextActivityId(),
@@ -201,22 +202,82 @@ function launchResolvedIntent(
     return false;
   }
 
-  const baseRoute = targetFilter?.route ?? intent.route ?? '/';
+  // 同 forResult 路径：intent.route 优先（caller hint 一次性指明目标子页），缺省走 filter.route。
+  const baseRoute = intent.route ?? targetFilter?.route ?? '/';
 
   const enrichedIntent: IntentPayload = {
     ...intent,
     data: { ...intent.data, __callerAppId: callerAppId },
   };
 
+  // 接收方声明 launchMode='singleTask' 时，强制 promote 到 newTask 路径，对应真机
+  // "Activity 上的 launchMode 由接收方决定，凌驾于调用方 flag" 的语义：
+  // 即使调用方没传 FLAG_ACTIVITY_NEW_TASK，singleTask Activity 也始终落在自己的 task 里。
+  // 典型例子：12306 不传 newTask 调 startActivity(ACTION_VIEW + scheme=sms)，SMS 仍然进入自己的独立 task。
+  const launchMode = targetFilter?.launchMode ?? 'standard';
+  const effectiveNewTask = newTask || launchMode === 'singleTask';
+
   console.log(
     `[OSDBG] startActivity caller=${callerAppId} target=${appId} route=${baseRoute} newTask=${String(newTask)} `
+    + `effectiveNewTask=${String(effectiveNewTask)} launchMode=${launchMode} `
     + `action=${intent.action} scheme=${intent.scheme ?? '-'} type=${intent.type ?? '-'} `
     + `stack=${buildIntentDebugStack('startActivity')}`,
   );
 
-  if (newTask) {
+  if (effectiveNewTask) {
     const callerTaskId = getActiveTask(deps.getState())?.taskId;
     const taskExisted = deps.getState().tasks.some((t) => t.rootAppId === appId);
+
+    // singleTask + 已存在 Task：清栈到 root + 重置 root 历史 + 重新投递 intent。
+    // 对应真机 Activity 上 launchMode="singleTask" 的语义。
+    if (launchMode === 'singleTask' && taskExisted) {
+      const existingTask = deps.getState().tasks.find((t) => t.rootAppId === appId);
+      if (!existingTask || existingTask.stack.length === 0) return false;
+
+      // Pop 掉 root 之上所有 Activity（含 foreign-task 借栈来的）。
+      while (true) {
+        const cur = deps.getState().tasks.find((t) => t.rootAppId === appId);
+        if (!cur || cur.stack.length <= 1) break;
+        deps.popActivity(cur.taskId);
+      }
+
+      const refreshedTask = deps.getState().tasks.find((t) => t.rootAppId === appId);
+      if (!refreshedTask || refreshedTask.stack.length === 0) return false;
+      const rootActivity = refreshedTask.stack[0];
+
+      // 把 enrichedIntent 投递到 root activity（ShareForwardPage 通过 getIntentPayload 读取）。
+      deps.setActivityIntent(refreshedTask.taskId, rootActivity.activityId, enrichedIntent);
+
+      // 把 wechat Task 切到前台。LAUNCH_APP 不会动其它 task — Gallery Task 仍保留在后台。
+      deps.launchApp(appId);
+
+      // 重置 MemoryRouter 历史到 ['/', baseRoute]：先 popToRoot 退回 '/'，再 push baseRoute。
+      requestAnimationFrame(() => {
+        // rAF 间隙里 task 可能被外部 closeTask 移除（如用户立刻在 recents 里划掉）。
+        // 此时 navigator 可能尚未走完 React 异步 unregister，仍能拿到引用，但不该再操作已关闭的 Task。
+        const stillExists = deps.getState().tasks.some((t) => t.rootAppId === appId);
+        if (!stillExists) {
+          console.warn(`[OS] startActivity(singleTask): ${appId} task closed before rAF — aborting nav reset`);
+          return;
+        }
+        const nav = AppNavigatorRegistry.get(appId);
+        if (!nav) {
+          console.warn(`[OS] startActivity(singleTask): navigator not registered for ${appId}`);
+          return;
+        }
+        if (nav.popToRoot) {
+          nav.popToRoot();
+        } else {
+          // Older AppNavigator without popToRoot — fallback to replace
+          nav.navigate('/', { replace: true });
+        }
+        nav.navigate(baseRoute, { replace: false });
+      });
+
+      console.log(`[OS] startActivity: ${callerAppId} → ${appId} route=${baseRoute} (singleTask, reused)`);
+      return true;
+    }
+
     deps.launchApp(appId);
     if (!taskExisted) {
       deps.markExternalRoute(appId);
@@ -237,8 +298,12 @@ function launchResolvedIntent(
       deps.setActivityIntent(task.taskId, targetActivity.activityId, enrichedIntent);
 
       const targetActivityId = targetActivity.activityId;
+      // singleTask 新建 Task 时用 push 模式，使根 Activity 历史为 ['/', baseRoute]，
+      // 完成后 replace 到结果路由形成 ['/', resultRoute]，返回键能回到主页 '/'.
+      // 默认 standard 走 replace（历史为 [baseRoute]），保持 ACTION_PAY 等"finish 即回调用方"的精确语义。
+      const replaceMode = launchMode !== 'singleTask';
       requestAnimationFrame(() => {
-        deps.navigateToActivity(targetActivityId, baseRoute, { replace: true, fallbackAppId: appId });
+        deps.navigateToActivity(targetActivityId, baseRoute, { replace: replaceMode, fallbackAppId: appId });
       });
     } else {
       const newActivity: ActivityInstance = {

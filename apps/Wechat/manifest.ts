@@ -46,7 +46,8 @@ export const manifest: AppManifest = {
       action: 'ACTION_SEND',
       type: 'image/*',
       route: '/share/forward',
-      description: '接收图片分享 — 选择会话后转发图片',
+      launchMode: 'singleTask',
+      description: '接收图片分享 — 选择会话后转发图片，完成后停留在微信',
     },
     {
       action: 'ACTION_VIEW',

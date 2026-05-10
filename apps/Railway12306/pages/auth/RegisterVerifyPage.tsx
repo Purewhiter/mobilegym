@@ -51,7 +51,18 @@ const RegisterVerifyPage: React.FC = () => {
   }, []);
 
   const handleSendSms = useCallback(() => {
-    window.__OS__?.openApp('sms', `/new?address=12306&body=999`);
+    // 真机做法：发 ACTION_VIEW + scheme=sms intent，让系统找匹配的短信 App 处理。
+    // 加 { newTask: true }（≈ FLAG_ACTIVITY_NEW_TASK）让 SMS 进入自己的独立 task，
+    // 这样多任务里 SMS 是独立窗口，用户在 /new 单步 back 后 SMS task 关闭并返回 12306。
+    // 不加 newTask 会走 same-task push，SMS Activity 嵌进 12306 task — 与真机行为不符。
+    window.__OS__?.startActivity(
+      {
+        action: 'ACTION_VIEW',
+        scheme: 'sms',
+        data: { address: '12306', body: '999' },
+      },
+      { newTask: true },
+    );
   }, []);
 
   const handleComplete = () => {

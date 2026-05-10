@@ -9,6 +9,7 @@ import { stringsEn } from '../res/strings.en';
 import { useAppStrings } from '@/os/useAppStrings';
 import ContentResolver from '../../../os/ContentResolver';
 import { ensureContactsProviderRegistered } from '../../../os/providers/ContactsProvider';
+import { useActivityContext } from '../../../os/ActivityContext';
 import { useSmsGestures } from '../hooks/useSmsGestures';
 
 interface ContactOption {
@@ -21,10 +22,26 @@ export const NewMessagePage: React.FC = () => {
     const { go, bindBack } = useSmsGestures();
     const s = useAppStrings(strings, stringsEn);
     const location = useLocation();
+    const { activityId } = useActivityContext();
     const queryParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
+    // 接收 intent.data（外部 startActivity ACTION_VIEW scheme=sms 投递时填这里），
+    // 没有则回退 URL search params（保持原 deep-link 兼容）。
+    const intentData = useMemo(() => {
+        const os = window.__OS__;
+        const payload = os?.getIntentPayload?.(activityId) ?? os?.getIntentPayload?.('sms');
+        return (payload as { data?: Record<string, any> } | null)?.data;
+    }, [activityId]);
     const [showAttachments, setShowAttachments] = useState(false);
-    const [recipient, setRecipient] = useState(() => queryParams.get('address') ?? '');
-    const [message, setMessage] = useState(() => queryParams.get('body') ?? '');
+    const [recipient, setRecipient] = useState(
+        () => (typeof intentData?.address === 'string' ? intentData.address : null)
+            ?? queryParams.get('address')
+            ?? '',
+    );
+    const [message, setMessage] = useState(
+        () => (typeof intentData?.body === 'string' ? intentData.body : null)
+            ?? queryParams.get('body')
+            ?? '',
+    );
     const [boundPhone, setBoundPhone] = useState<string | null>(null);
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [showErrorDialog, setShowErrorDialog] = useState(false);
