@@ -66,9 +66,10 @@ const getFeedTextCardClass = (text: string) => {
 
 export const NoteItem: React.FC<{ note: Note; showTime?: boolean }> = ({ note, showTime }) => {
   const { bindTap } = useRedBookGestures();
-  const { usersById, user: currentUser } = useRedBookStore(useShallow(s => ({
+  const { usersById, user: currentUser, toggleLike } = useRedBookStore(useShallow(s => ({
     usersById: s.entities.usersById,
     user: s.user,
+    toggleLike: s.toggleLike,
   })));
   const s = useRedBookStrings();
 
@@ -174,7 +175,13 @@ export const NoteItem: React.FC<{ note: Note; showTime?: boolean }> = ({ note, s
                     )}
                 </div>
             </div>
-            <div className="flex items-center gap-1 flex-shrink-0 ml-2">
+            <div
+                className="flex items-center gap-1 flex-shrink-0 ml-2 cursor-pointer active:scale-95 transition-transform"
+                {...bindTap(
+                    { kind: 'action', id: 'note.item.like.toggle' },
+                    { params: { noteId: note.id, to: !isLiked }, stopPropagation: true, onTrigger: () => toggleLike(note.id) },
+                )}
+            >
                 {isLiked ? (
                     <RedBookHeartFilledIcon className="text-app-primary" />
                 ) : (
