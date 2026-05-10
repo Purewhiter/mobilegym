@@ -177,8 +177,10 @@ const WechatNavigationHandler: React.FC = () => {
   }, [back, go, location.pathname, location.search, navigator]);
 
   useEffect(() => {
-    const navFn = (path: string) => {
-      navigate(path, { replace: true });
+    // 默认 replace=true（兼容 OS 内部 finishActivity/back 等"重置到根"的旧调用），
+    // 但调用方显式传 { replace: false } 时尊重之 —— singleTask 启动需要 push 才能保留 '/' 在历史栈底。
+    const navFn = (path: string, opts?: { replace?: boolean }) => {
+      navigate(path, { replace: opts?.replace ?? true });
     };
     AppNavigatorRegistry.registerActivity(activityId, { navigate: navFn, back: handleBackPress }, 'wechat');
 

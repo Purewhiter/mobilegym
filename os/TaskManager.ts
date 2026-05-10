@@ -12,6 +12,7 @@ export type OSAction =
   | { type: 'POP_ACTIVITY'; taskId: string }
   | { type: 'MARK_EXTERNAL_ROUTE'; appId: AppId }
   | { type: 'SET_ACTIVITY_INTENT'; taskId: string; activityId: string; intent: IntentPayload }
+  | { type: 'CONSUME_LAUNCHED_BY'; taskId: string }
   | { type: 'RESET'; state?: OSState | any };
 
 function createInitialState(): OSState {
@@ -188,6 +189,19 @@ function osReducer(state: OSState, action: OSAction): OSState {
       };
     }
 
+    case 'CONSUME_LAUNCHED_BY': {
+      // 用户通过 launchedByTaskId 链回到 caller 后调用此 action，把源 task 的 launchedByTaskId 清掉。
+      // 语义：launchedByTaskId 是一次性指针，用过即作废。再次通过 recents 进入此 task 后按返回，
+      // 不应再沿原启动链跳回旧 caller，而是走默认的回桌面行为。
+      const target = state.tasks.find((t) => t.taskId === action.taskId);
+      if (!target || target.launchedByTaskId === undefined) return state;
+      return {
+        ...state,
+        tasks: state.tasks.map((t) =>
+          t.taskId === action.taskId ? { ...t, launchedByTaskId: undefined } : t),
+      };
+    }
+
     case 'RESET':
       return action.state ? coerceResetState(action.state) : createInitialState();
 
@@ -281,6 +295,10 @@ export const TaskManager = {
 
   markExternalRoute(appId: AppId): void {
     TaskManager.dispatch({ type: 'MARK_EXTERNAL_ROUTE', appId });
+  },
+
+  consumeLaunchedBy(taskId: string): void {
+    TaskManager.dispatch({ type: 'CONSUME_LAUNCHED_BY', taskId });
   },
 
   setActivityIntent(taskId: string, activityId: string, intent: IntentPayload): void {

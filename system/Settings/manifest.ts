@@ -33,4 +33,7 @@ export const manifest: AppManifest = {
       description: '打开系统设置',
     },
   ],
+  queries: [
+    { action: 'ACTION_VIEW', type: 'inode/directory' },
+  ],
 };

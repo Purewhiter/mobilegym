@@ -1199,8 +1199,10 @@ function listSiblingImages(targetPath: string): MediaItem[] {
 function shareImagesAsIntent(paths: string[]): void {
   if (paths.length === 0) return;
   const os = window.__OS__;
-  if (!os?.startActivityForResult) return;
-  os.startActivityForResult(
+  if (!os?.startActivity) return;
+  // 真机：分享走 startActivity + FLAG_ACTIVITY_NEW_TASK；接收方（如微信）的 manifest
+  // 自行决定 launchMode（singleTask 时会留在自己 Task）。Gallery 不期望返回结果。
+  os.startActivity(
     {
       action: 'ACTION_SEND',
       type: 'image/*',
@@ -1209,9 +1211,7 @@ function shareImagesAsIntent(paths: string[]): void {
         mimeType: 'image/jpeg',
       },
     },
-    () => {
-      // resultCode handled by caller — no-op; if user wants a toast on OK, hook it here.
-    },
+    { newTask: true },
   );
 }
 

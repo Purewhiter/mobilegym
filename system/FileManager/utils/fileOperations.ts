@@ -31,13 +31,16 @@ export async function transferNodesToDirectory(
 /**
  * Fire ACTION_SEND for image files in selection. Returns true if at least one
  * image was found and the intent was dispatched.
+ *
+ * 用 startActivity + newTask 走 fire-and-forget 语义（接收方如微信声明 launchMode='singleTask'
+ * 时会留在自己 Task）。FileManager 不需要回执，与真机分享行为一致。
  */
 export function shareNodesAsImages(nodes: FSNode[]): boolean {
   const imagePaths = nodes
     .filter((n) => n.type === 'file' && n.mimeType?.startsWith('image/'))
     .map((n) => n.path);
   if (imagePaths.length === 0) return false;
-  window.__OS__?.startActivityForResult?.(
+  window.__OS__?.startActivity?.(
     {
       action: 'ACTION_SEND',
       type: 'image/*',
@@ -46,7 +49,7 @@ export function shareNodesAsImages(nodes: FSNode[]): boolean {
         mimeType: 'image/jpeg',
       },
     },
-    () => {},
+    { newTask: true },
   );
   return true;
 }

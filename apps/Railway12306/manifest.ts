@@ -36,5 +36,6 @@ export const manifest: AppManifest = {
   ],
   queries: [
     { action: 'ACTION_PAY', scheme: 'alipays' },
+    { action: 'ACTION_VIEW', scheme: 'sms' },
   ],
 };

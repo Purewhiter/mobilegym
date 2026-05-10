@@ -2,6 +2,12 @@ export interface AppNavigator {
   navigate: (path: string, options?: { replace?: boolean }) => void;
   back: () => boolean;
   route: () => AppRouteInfo;
+  /**
+   * 把 MemoryRouter 历史回退到根 '/'（含 inclusive=false 语义：保留 '/'，删除其上方所有条目）。
+   * 若历史中没有 '/'，则用 replace 模式把当前条目改成 '/'。供 OS 在 singleTask 启动模式下重置 App 历史使用。
+   * 返回是否成功完成回退（无论用 popTo 还是 fallback）。
+   */
+  popToRoot?: () => boolean;
 }
 
 export interface ActivityNavigator {

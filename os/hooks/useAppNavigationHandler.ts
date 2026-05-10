@@ -10,7 +10,8 @@ import { BackDispatcher } from '../BackDispatcher';
 import { useActivityContext } from '../ActivityContext';
 import { TaskManager } from '../TaskManager';
 import { useAppReady } from './useAppReady';
-import { syncTracker } from '../utils/memoryHistoryTracker';
+import { syncTracker, getTracker } from '../utils/memoryHistoryTracker';
+import { memoryHistoryPopTo } from '../utils/memoryHistoryPopTo';
 
 interface Options {
   onBack: () => boolean;
@@ -68,14 +69,39 @@ export function useAppNavigationHandler(appId: string, options: Options) {
 
     AppNavigatorRegistry.register(appId, {
       navigate: (path: string, opts?: NavOptions) => navigateRef.current(path, opts),
-      back: () => optionsRef.current.onBack(),
+      back: () => {
+        // 与下面 `app.back.${appId}` BackDispatcher 条目同样的 activeTask 校验。
+        // OS 的 `os.appBack`（os/OSContext.tsx）通过 AppNavigatorRegistry.getBackHandler 直接取这个
+        // 闭包，绕过 BackDispatcher 注册时的过滤；如果不在这里也加一遍，foreign-task push 同 appId
+        // 的场景下背景 own-task 实例的 onBack 仍会被调用（消费别人的返回事件）。
+        const state = TaskManager.getState();
+        if (taskId && state.activeTaskId !== taskId) return false;
+        return optionsRef.current.onBack();
+      },
       route: () => routeRef.current,
+      popToRoot: () => {
+        const tracker = getTracker(navigator as object);
+        if (tracker && tracker.findPopToDelta('/', false) >= 0) {
+          memoryHistoryPopTo(navigator, '/', { inclusive: false });
+          return true;
+        }
+        // Fallback: 历史中找不到 '/'（极少数 replace 链覆盖了根条目），直接 replace 当前条目为 '/'.
+        navigate('/', { replace: true });
+        return true;
+      },
     });
 
     isForegroundRef.current = window.__OS__?.state.activeAppId === appId;
 
     const unregisterBack = BackDispatcher.register(`app.back.${appId}`, () => {
+      // foreground 检查：只有当我自己的 own-task 是当前 active task 时才处理 back。
+      // 否则（同 appId 的 Activity 被 foreign-task push 到别的 task 上时，原本 own-task 在后台
+      // 但 activeAppId 仍 == 我的 appId）让位给 activity-level handler（priority 50），
+      // 否则 own-task 实例的 handleBackPress 会用自己 MemoryRouter 的状态消费 back，
+      // 导致前台 foreign-task Activity 不动。
       if (!isForegroundRef.current) return false;
+      const state = TaskManager.getState();
+      if (taskId && state.activeTaskId !== taskId) return false;
       return !!optionsRef.current.onBack();
     }, 100);
 
@@ -83,7 +109,7 @@ export function useAppNavigationHandler(appId: string, options: Options) {
       unregisterBack();
       AppNavigatorRegistry.unregister(appId);
     };
-  }, [appId, navigate, taskId]);
+  }, [appId, navigate, navigator, taskId]);
 
   useEffect(() => {
     const state = TaskManager.getState();

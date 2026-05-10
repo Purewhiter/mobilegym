@@ -44,6 +44,12 @@ export const manifest: AppManifest = {
       route: '/',
       description: '打开 content URI',
     },
+    {
+      action: 'ACTION_VIEW',
+      type: 'inode/directory',
+      route: '/',
+      description: '打开 FileManager；调用方通过 intent.route 指定具体子页（如 /category/images），缺省落在根目录',
+    },
   ],
   queries: [
     { action: 'ACTION_VIEW', type: 'image/*' },

@@ -290,21 +290,32 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     }
 
     if (activeTask.stack.length > 1) {
+      // Foreign-task pop（如同 task 上叠加的 Activity finish）：弹掉这个 Activity，回到下层。
       TaskManager.popActivity(activeTask.taskId);
       if (top.launchedByTaskId && latestState.tasks.some((t) => t.taskId === top.launchedByTaskId)) {
         TaskManager.activateTask(top.launchedByTaskId);
       }
     } else if (activeTask.launchedByTaskId && latestState.tasks.some((t) => t.taskId === activeTask.launchedByTaskId)) {
-      closeTask(activeTask.taskId);
+      // 单 Activity in own task + 有 caller：activate caller，但**不销毁** target task。
+      // Android 默认 task 在 recents 里持久保留（除非用户主动划掉或系统 OOM），
+      // 模拟器之前 closeTask 是非真机行为；上面 line 287-290 已经把 App 的 MemoryRouter
+      // 重置到 '/'，用户从 recents 重新进入会看到 App 主页。
+      // 同时消费 launchedByTaskId 指针：它是"启动时记录的来源"，用过一次即作废。
+      // 否则用户从 recents 重新进入此 task 后再 back，会沿原启动链回到旧 caller，
+      // 而不是真机预期的"直接回桌面"。
       TaskManager.activateTask(activeTask.launchedByTaskId);
+      TaskManager.consumeLaunchedBy(activeTask.taskId);
     } else {
-      closeTask(activeTask.taskId);
+      // 单 Activity in own task + 无 caller（如从桌面起的 App 调 finishActivity）：
+      // 同样不销毁，回桌面让用户继续在 recents 看到此 task。
+      // inline 调用 TaskManager.goHome (避免依赖下方还未定义的 goHome useCallback)。
+      TaskManager.goHome();
     }
 
     if (callbackToRun) {
       requestAnimationFrame(() => callbackToRun?.(callbackPayload));
     }
-  }, [closeTask]);
+  }, []);
 
   const launchApp = useCallback((appId: AppId) => {
     KeyboardService.hide();
@@ -388,16 +399,30 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
         const { launchedByTaskId } = activeTask;
         if (!launchedByTaskId) return false;
         if (!latestState.tasks.some((t) => t.taskId === launchedByTaskId)) return false;
-        closeTask(activeTask.taskId);
+        // 重置 App MemoryRouter 到 '/'，让用户从 recents 重新进入时看到 App 主页（如 SMS inbox）
+        // 而不是上次离开时的子页（如 /new compose）。
+        const top = getTaskTopActivity(activeTask);
+        if (top) {
+          const activityNav = AppNavigatorRegistry.getActivity(top.activityId)?.navigate;
+          try { activityNav?.('/'); } catch { /* ignore */ }
+        }
+        // 不 closeTask —— Android 默认 task 持久保留在 recents，模拟器跟齐这一行为。
+        // 同时消费 launchedByTaskId 指针（一次性）：用户从 recents 重新进入此 task 再 back 时，
+        // 会走 goHomeFallback 回桌面，而非沿原启动链跳回旧 caller。
         TaskManager.activateTask(launchedByTaskId);
+        TaskManager.consumeLaunchedBy(activeTask.taskId);
         return true;
       }, 12),
       BackDispatcher.register('os.goHomeFallback', () => {
         const latestState = TaskManager.getState();
         const activeTask = getActiveTask(latestState);
-        if (activeTask?.wasExternallyRouted) {
-          closeTask(activeTask.taskId);
-          return true;
+        // 同 returnToLauncherTask：不 closeTask，只重置 App 到 '/' 并回桌面。
+        if (activeTask) {
+          const top = getTaskTopActivity(activeTask);
+          if (top) {
+            const activityNav = AppNavigatorRegistry.getActivity(top.activityId)?.navigate;
+            try { activityNav?.('/'); } catch { /* ignore */ }
+          }
         }
         goHome();
         return true;
@@ -406,7 +431,7 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     return () => {
       unregisters.forEach((unregister) => unregister());
     };
-  }, [finishActivity, goHome, closeTask]);
+  }, [finishActivity, goHome]);
 
   const handleSystemBack = useCallback(() => {
     BackDispatcher.handleBack();
@@ -435,6 +460,7 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
       getState: TaskManager.getState,
       nextActivityId: TaskManager.nextActivityId,
       pushActivity: TaskManager.pushActivity,
+      popActivity: TaskManager.popActivity,
       navigateToActivity,
       launchApp,
       markExternalRoute: TaskManager.markExternalRoute,
@@ -491,7 +517,11 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
         ? [...task.stack].reverse().find((act) => act.appId === appId) ?? task.stack[task.stack.length - 1]
         : null;
       if (activity) {
-        void navigateToActivity(activity.activityId, initialRoute, { replace: !taskExisted });
+        // 永远 push（不 replace）—— 对应真机 PendingIntent + TaskStackBuilder.addNextIntentWithParentStack 的"合成 back stack"语义：
+        // - 未运行：root 启动于 '/'，push initialRoute → 历史 ['/', initialRoute]，返回回主页
+        // - 已运行：保留用户当前页，push initialRoute → 用户能按返回回到原所在页
+        // 旧逻辑 `replace: !taskExisted` 在 fresh task 场景会 clobber 掉根 '/'，导致按返回直接出 App，与真机不符。
+        void navigateToActivity(activity.activityId, initialRoute, { replace: false });
       }
     });
   }, [launchApp, navigateToActivity]);
