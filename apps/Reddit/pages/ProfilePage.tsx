@@ -12,6 +12,9 @@ import { useShallow } from 'zustand/react/shallow';
 import { useRedditGestures } from '../hooks/useRedditGestures';
 import { strings } from '../res/strings';
 import { stringsEn } from '../res/strings.en';
+import { useMyRedditComments } from '../hooks/useRedditComments';
+import { useRedditPosts } from '../hooks/useRedditPosts';
+import type { RedditPost } from '../types';
 import * as TimeService from '../../../os/TimeService';
 const asset = (r: unknown) => { const s = String(r ?? '').trim(); return (!s || s.startsWith('http')) ? s : `/@app-assets/Reddit/${s}`; };
 
@@ -100,17 +103,17 @@ const ProfilePostImageCarousel: React.FC<{ images: string[] }> = ({ images }) =>
 
 export const ProfilePage: React.FC = () => {
   const s = useAppStrings(strings, stringsEn);
-  const { user, posts, userCommentsByPostId, postVotes, joinedCommunityIds, userPosts } = useRedditStore(useShallow((st) => ({
+  const posts = useRedditPosts();
+  const { user, postsTable, commentsTable, postVotes, joinedCommunityIds } = useRedditStore(useShallow((st) => ({
     user: st.user,
-    posts: st.posts,
-    userCommentsByPostId: st.userCommentsByPostId,
-    postVotes: st.postVotes,
-    joinedCommunityIds: st.joinedCommunityIds,
-    userPosts: st.userPosts,
+    postsTable: st.posts,
+    commentsTable: st.comments,
+    postVotes: st.user.postVotes,
+    joinedCommunityIds: st.user.joinedCommunityIds,
   })));
   const votePost = useRedditStore((st) => st.votePost);
   const toggleJoin = useRedditStore((st) => st.toggleJoin);
-  const storeDeletePost = useRedditStore((st) => st.deletePost);
+  const storeDeletePost = useRedditStore((st) => st.deleteOwnPost);
   const location = useLocation();
   const { bindTap, bindBack, back } = useRedditGestures();
   const [moreMenuPostId, setMoreMenuPostId] = React.useState<string | null>(null);
@@ -130,14 +133,17 @@ export const ProfilePage: React.FC = () => {
   const achievements = 5;
 
   const myPosts = React.useMemo(() => {
-    return posts.filter((p) => p.author === user.username);
-  }, [posts, user.username]);
+    return user.postIds
+      .map((id) => postsTable[id])
+      .filter((post): post is RedditPost => Boolean(post));
+  }, [postsTable, user.postIds]);
+  const myComments = useMyRedditComments();
 
   const isOwnPost = React.useCallback(
     (postId: string): boolean => {
-      return userPosts.some((p) => p.id === postId);
+      return user.postIds.includes(postId) && Boolean(postsTable[postId]);
     },
-    [userPosts],
+    [postsTable, user.postIds],
   );
 
   const deletePost = React.useCallback(
@@ -179,9 +185,7 @@ export const ProfilePage: React.FC = () => {
 
   const commentFeed = React.useMemo(() => {
     const postById = new Map(posts.map((p) => [p.id, p]));
-    const all = Object.entries(userCommentsByPostId).flatMap(([postId, list]) =>
-      (Array.isArray(list) ? list : []).map((c) => ({ postId, comment: c })),
-    );
+    const all = myComments.map((comment) => ({ postId: comment.postId, comment }));
 
     const findContextBody = (postId: string, comment: (typeof all)[number]['comment']): string => {
       const post = postById.get(postId);
@@ -192,7 +196,7 @@ export const ProfilePage: React.FC = () => {
         const parentFromDataset = post.commentsData?.find((x) => x.id === comment.parentId);
         if (parentFromDataset?.body) return parentFromDataset.body;
 
-        const parentFromUser = userCommentsByPostId[postId]?.find((x) => x.id === comment.parentId);
+        const parentFromUser = Object.values(commentsTable).find((x) => x && x.postId === postId && x.id === comment.parentId);
         if (parentFromUser?.body) return parentFromUser.body;
       }
 
@@ -222,7 +226,7 @@ export const ProfilePage: React.FC = () => {
       .sort((a, b) => b.created - a.created);
 
     return rows;
-  }, [posts, userCommentsByPostId]);
+  }, [commentsTable, myComments, posts]);
 
   return (
     <div className="flex flex-col h-full bg-app-surface">
@@ -917,4 +921,3 @@ const AccountMenuItem: React.FC<{
     {trailing && <div className="shrink-0">{trailing}</div>}
   </button>
 );
-

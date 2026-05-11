@@ -27,15 +27,11 @@ import { useRedditStore } from '../state';
 import { useShallow } from 'zustand/react/shallow';
 import { useRedditGestures } from '../hooks/useRedditGestures';
 import { getUserAvatar } from '../utils/userIdentity';
+import { useRedditComments } from '../hooks/useRedditComments';
+import { useRedditPostById } from '../hooks/useRedditPosts';
+import type { Comment } from '../types';
 
-type CommentItem = {
-  id: string;
-  author: string;
-  body: string;
-  score: number;
-  created_utc?: number;
-  parentId?: string;
-};
+type CommentItem = Comment;
 
 function pickAvatar(usernameLike: string): string | undefined {
   return getUserAvatar(usernameLike);
@@ -136,13 +132,11 @@ const CommentsImageCarousel: React.FC<{ images: string[] }> = ({ images }) => {
 };
 
 export const PostCommentsPage: React.FC = () => {
-  const { posts, communities, joinedCommunityIds, userCommentsByPostId, commentVotes, postVotes, user } = useRedditStore(useShallow((s) => ({
-    posts: s.posts,
-    communities: s.communities,
-    joinedCommunityIds: s.joinedCommunityIds,
-    userCommentsByPostId: s.userCommentsByPostId,
-    commentVotes: s.commentVotes,
-    postVotes: s.postVotes,
+  const { joinedCommunityIds, commentsTable, commentVotes, postVotes, user } = useRedditStore(useShallow((s) => ({
+    joinedCommunityIds: s.user.joinedCommunityIds,
+    commentsTable: s.comments,
+    commentVotes: s.user.commentVotes,
+    postVotes: s.user.postVotes,
     user: s.user,
   })));
   const storeVotePost = useRedditStore((s) => s.votePost);
@@ -159,11 +153,8 @@ export const PostCommentsPage: React.FC = () => {
   const [confirmDelete, setConfirmDelete] = React.useState<{ comment: CommentItem } | null>(null);
   const [selectedOwnCommentId, setSelectedOwnCommentId] = React.useState<string | null>(null);
   const inputRef = React.useRef<HTMLInputElement | null>(null);
-
-  const post = React.useMemo(() => {
-    if (!postId) return null;
-    return posts.find((p) => p.id === postId) ?? null;
-  }, [postId, posts]);
+  const post = useRedditPostById(postId);
+  const allComments = useRedditComments(postId);
 
   const displayPostUpvotes = React.useMemo(() => {
     const base = parseCompactCount(post?.upvotes);
@@ -175,22 +166,13 @@ export const PostCommentsPage: React.FC = () => {
 
   const communityIdForPost = React.useMemo(() => {
     const name = String(post?.subreddit ?? '').trim();
-    if (!name || !Array.isArray(communities)) return null;
-    const item = communities.find((c) => String(c.name).trim() === name);
-    return item?.id ? String(item.id) : null;
-  }, [communities, post]);
+    return name || null;
+  }, [post]);
 
   const isJoined = React.useMemo(() => {
     if (!communityIdForPost) return false;
     return Array.isArray(joinedCommunityIds) && joinedCommunityIds.includes(communityIdForPost);
   }, [communityIdForPost, joinedCommunityIds]);
-
-  const baseComments = post?.commentsData as CommentItem[] | undefined;
-  const safeBaseComments = Array.isArray(baseComments) ? baseComments : [];
-  const userComments = (postId && userCommentsByPostId[postId]) ? (userCommentsByPostId[postId] as CommentItem[]) : [];
-  const allComments: CommentItem[] = React.useMemo(() => {
-    return [...safeBaseComments, ...(Array.isArray(userComments) ? userComments : [])];
-  }, [safeBaseComments, userComments]);
 
   const displayPostCommentsCount = React.useMemo(() => {
     return String(allComments.length);
@@ -252,15 +234,12 @@ export const PostCommentsPage: React.FC = () => {
 
   const isOwnUserComment = React.useCallback(
     (c: CommentItem): boolean => {
-      if (!postId) return false;
-      const list = userCommentsByPostId[postId];
-      if (!Array.isArray(list)) return false;
-      const inUserList = list.some((x) => x.id === c.id);
-      if (!inUserList) return false;
+      const created = commentsTable[c.id];
+      if (!created) return false;
       const me = String(user.username || 'Embarrassed_Fee8630');
-      return String(c.author) === me;
+      return String(created.author) === me;
     },
-    [postId, user.username, userCommentsByPostId],
+    [commentsTable, user.username],
   );
 
   const openMoreMenuFor = React.useCallback((c: CommentItem) => {
@@ -271,7 +250,7 @@ export const PostCommentsPage: React.FC = () => {
     (c: CommentItem) => {
       if (!postId) return;
       if (!isOwnUserComment(c)) return;
-      storeDeleteOwnComment(postId, c);
+      storeDeleteOwnComment(c.id);
     },
     [isOwnUserComment, postId, storeDeleteOwnComment],
   );
@@ -279,7 +258,7 @@ export const PostCommentsPage: React.FC = () => {
   const voteComment = React.useCallback(
     (commentId: string, dir: 'up' | 'down') => {
       if (!postId) return;
-      storeVoteComment(postId, commentId, dir);
+      storeVoteComment(buildCommentKey(postId, commentId), dir);
     },
     [postId, storeVoteComment],
   );
@@ -843,4 +822,3 @@ const MoreMenuItem: React.FC<{
     </button>
   );
 };
-

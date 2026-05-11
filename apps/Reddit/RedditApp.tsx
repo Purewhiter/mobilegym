@@ -214,11 +214,11 @@ const RedditApp: React.FC = () => {
   const { isDark } = useDarkMode();
 
   // Side-effect: trim user comments on mount and whenever comments change
-  const userCommentsByPostId = useRedditStore((s) => s.userCommentsByPostId);
+  const commentIds = useRedditStore((s) => s.user.commentIds);
   const trimUserComments = useRedditStore((s) => s.trimUserComments);
   useEffect(() => {
     trimUserComments();
-  }, [userCommentsByPostId, trimUserComments]);
+  }, [commentIds, trimUserComments]);
 
   const themeColors = isDark
     ? { ...manifest.theme.colors, ...(manifest.theme.colorsDark ?? {}) }

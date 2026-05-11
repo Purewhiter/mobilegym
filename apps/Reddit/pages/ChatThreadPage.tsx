@@ -27,9 +27,9 @@ function getUsernameFromPath(pathname: string): string | null {
 }
 
 export const ChatThreadPage: React.FC = () => {
-  const { chatThreadsByUsername, chatThreadRepliesByKey, user } = useRedditStore(useShallow((s) => ({
-    chatThreadsByUsername: s.chatThreadsByUsername,
-    chatThreadRepliesByKey: s.chatThreadRepliesByKey,
+  const { chatThreads, chatReplies, user } = useRedditStore(useShallow((s) => ({
+    chatThreads: s.chatThreads,
+    chatReplies: s.chatReplies,
     user: s.user,
   })));
   const storeSeedChatThread = useRedditStore((s) => s.seedChatThread);
@@ -51,19 +51,19 @@ export const ChatThreadPage: React.FC = () => {
 
   const thread = React.useMemo(() => {
     if (!username) return [];
-    const list = chatThreadsByUsername[username];
+    const list = chatThreads[username];
     return Array.isArray(list) ? (list as ChatMessage[]) : [];
-  }, [chatThreadsByUsername, username]);
+  }, [chatThreads, username]);
 
   // Seed initial message for the demo chats, if empty.
   React.useEffect(() => {
     if (!username) return;
-    const existing = chatThreadsByUsername[username];
+    const existing = chatThreads[username];
     if (Array.isArray(existing) && existing.length > 0) return;
 
     const seedBody = username === 'Objective-Skill-2591' ? "well,it's so funny" : 'hello';
     storeSeedChatThread(username, seedBody);
-  }, [storeSeedChatThread, chatThreadsByUsername, username]);
+  }, [storeSeedChatThread, chatThreads, username]);
 
   // 消息变化时滚到底部
   React.useLayoutEffect(() => {
@@ -114,12 +114,12 @@ export const ChatThreadPage: React.FC = () => {
     (messageId: string): { count: number; lastFrom: 'me' | 'them' } => {
       if (!username) return { count: 0, lastFrom: 'me' };
       const k = `${username}:${messageId}`;
-      const list = chatThreadRepliesByKey?.[k];
+      const list = chatReplies?.[k];
       if (!Array.isArray(list) || list.length === 0) return { count: 0, lastFrom: 'me' };
       const last = list[list.length - 1] as ChatMessage;
       return { count: list.length, lastFrom: last?.from ?? 'me' };
     },
-    [chatThreadRepliesByKey, username],
+    [chatReplies, username],
   );
 
   if (!username) {
@@ -509,4 +509,3 @@ export const ChatThreadPage: React.FC = () => {
     </div>
   );
 };
-

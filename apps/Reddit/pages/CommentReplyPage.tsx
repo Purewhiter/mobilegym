@@ -2,18 +2,10 @@ import React from 'react';
 import { IcClose, IcLink, IcImage, IcSticker, IcSend } from '../res/icons';
 import { useLocation } from 'react-router-dom';
 import { useRedditStore } from '../state';
-import { useShallow } from 'zustand/react/shallow';
 import { useRedditGestures } from '../hooks/useRedditGestures';
 import * as TimeService from '../../../os/TimeService';
-
-type CommentItem = {
-  id: string;
-  author: string;
-  body: string;
-  score: number;
-  created_utc?: number;
-  parentId?: string;
-};
+import { useRedditComments } from '../hooks/useRedditComments';
+import type { Comment } from '../types';
 
 function getIdsFromPath(pathname: string): { postId: string; commentId: string } | null {
   const m = pathname.match(/^\/post\/([^/?#]+)\/reply\/([^/?#]+)/);
@@ -35,11 +27,6 @@ function formatAge(createdUtc?: number): string {
 }
 
 export const CommentReplyPage: React.FC = () => {
-  const { posts, userCommentsByPostId, user } = useRedditStore(useShallow((s) => ({
-    posts: s.posts,
-    userCommentsByPostId: s.userCommentsByPostId,
-    user: s.user,
-  })));
   const storeAddReplyComment = useRedditStore((s) => s.addReplyComment);
   const { bindBack, bindTap, back } = useRedditGestures();
   const location = useLocation();
@@ -54,20 +41,11 @@ export const CommentReplyPage: React.FC = () => {
     requestAnimationFrame(() => inputRef.current?.focus());
   }, []);
 
-  const post = React.useMemo(() => {
-    if (!postId) return null;
-    return posts.find((p) => p.id === postId) ?? null;
-  }, [postId, posts]);
-
-  const allComments = React.useMemo(() => {
-    const base = ((post as any)?.commentsData as CommentItem[] | undefined) ?? [];
-    const userC = (postId && userCommentsByPostId[postId]) ? (userCommentsByPostId[postId] as CommentItem[]) : [];
-    return [...(Array.isArray(base) ? base : []), ...(Array.isArray(userC) ? userC : [])];
-  }, [post, postId, userCommentsByPostId]);
+  const allComments = useRedditComments(postId);
 
   const targetComment = React.useMemo(() => {
     if (!commentId) return null;
-    return allComments.find((c) => c.id === commentId) ?? null;
+    return allComments.find((c: Comment) => c.id === commentId) ?? null;
   }, [allComments, commentId]);
 
   const canPost = text.trim().length > 0 && !!postId && !!commentId;
@@ -156,4 +134,3 @@ export const CommentReplyPage: React.FC = () => {
     </div>
   );
 };
-

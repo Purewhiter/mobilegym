@@ -4,15 +4,7 @@ import { useLocation } from 'react-router-dom';
 import { useRedditStore } from '../state';
 import { useShallow } from 'zustand/react/shallow';
 import { useRedditGestures } from '../hooks/useRedditGestures';
-
-type CommentItem = {
-  id: string;
-  author: string;
-  body: string;
-  score: number;
-  created_utc?: number;
-  parentId?: string;
-};
+import type { Comment } from '../types';
 
 function getIdsFromPath(pathname: string): { postId: string; commentId: string } | null {
   const m = pathname.match(/^\/post\/([^/?#]+)\/edit\/([^/?#]+)/);
@@ -21,9 +13,9 @@ function getIdsFromPath(pathname: string): { postId: string; commentId: string }
 }
 
 export const CommentEditPage: React.FC = () => {
-  const { user, userCommentsByPostId } = useRedditStore(useShallow((s) => ({
+  const { user, commentsTable } = useRedditStore(useShallow((s) => ({
     user: s.user,
-    userCommentsByPostId: s.userCommentsByPostId,
+    commentsTable: s.comments,
   })));
   const storeEditComment = useRedditStore((s) => s.editComment);
   const { bindBack, bindTap, back } = useRedditGestures();
@@ -33,8 +25,7 @@ export const CommentEditPage: React.FC = () => {
   const commentId = ids?.commentId ?? null;
 
   const myName = String(user.username || 'Embarrassed_Fee8630');
-  const list = postId && Array.isArray(userCommentsByPostId[postId]) ? userCommentsByPostId[postId] : [];
-  const target = commentId ? (list as CommentItem[]).find((c) => c.id === commentId) ?? null : null;
+  const target: Comment | null = commentId ? commentsTable[commentId] ?? null : null;
 
   const [text, setText] = React.useState('');
   const inputRef = React.useRef<HTMLTextAreaElement | null>(null);
@@ -56,7 +47,7 @@ export const CommentEditPage: React.FC = () => {
     const body = text.trim();
     if (!body) return;
 
-    storeEditComment(postId, commentId, body);
+    storeEditComment(commentId, body);
 
     back();
   }, [back, commentId, myName, postId, storeEditComment, target, text]);
@@ -130,4 +121,3 @@ export const CommentEditPage: React.FC = () => {
     </div>
   );
 };
-
