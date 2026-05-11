@@ -3,7 +3,7 @@
 #
 # [L3] SetAudiencePrivacyBundle           我想改一下X的隐私设置：帖子私密{private_posts}，视频保护{protect_videos}，照片圈人{photo_tagging}
 # [L1] SetCallPermissionsBundle           我想在X设置里打开音视频通话，只让我关注的人和认证用户能打给我，不让通讯录里的人打过来
-# [L3] SetPushNotificationMix             我想改改X的推送，把推荐类推送关掉，保留紧急警报和专业版相关的通知
+# [L3] SetPushNotificationMix              我想改改X的推送，把推荐类推送关掉，保留紧急警报和专业版相关的通知
 # [L4] QuotePostAndTweet                  我想找到{author_handle}发的那条带「{post_preview}」的推文，引用它再发一条新推文，内容是「{content}」
 # [L1] SendDmToConversation               我想在X私信里找到和{participant_handle}的聊天框，发一句「{content}」
 # [L2] SearchAndBookmark                  我想在X搜「{keyword}」，从结果里找一条相关推文收藏
@@ -81,8 +81,8 @@ class SetCallPermissionsBundle(CriteriaTask):
 
 class SetPushNotificationMix(CriteriaTask):
     templates = [
-        "我想改改X的推送，把推荐类推送关掉，保留紧急警报和专业版相关的通知",
-        "帮我修改下X的推送设置，推荐内容别推送了，但紧急警报和专业版通知要保留",
+        "我想改改X的推送，把推荐推送关掉，保留紧急警报和专业版相关的通知",
+        "帮我修改下X的推送设置，推荐关掉，但紧急警报和专业版通知要保留",
         "I want to change X's push notifications: turn off recommendation pushes, keep only emergency alerts and professional-related notifications",
         "Help me adjust X's push settings: disable recommended content, but keep emergency alerts and Pro notifications",
     ]
@@ -150,12 +150,12 @@ class QuotePostAndTweet(BaseTask):
             "description": "推文内容",
         },
     }
-    expected_changes = ["apps.x.posts[+1]"]
+    expected_changes = ["apps.x.posts", "apps.x.user.postIds[+1]"]
 
     def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
         post_id = str(self.p.post_id or "").strip()
         if not post_id:
-            raise RuntimeError("任务设计错误：未能从 apps.x.posts 采样到 post_id")
+            raise RuntimeError("任务设计错误：未能从 X base dataset 采样到 post_id")
 
         if not str(self.p.content or "").strip():
             raise RuntimeError("任务设计错误：content 不能为空")
@@ -233,7 +233,7 @@ class SearchAndBookmark(BaseTask):
             "description": "搜索关键字（硬编码候选词）",
         },
     }
-    expected_changes = ["apps.x.bookmarkedPostIds[+1]", "apps.x.posts", "apps.x.currentSearchQuery"]
+    expected_changes = ["apps.x.user.bookmarkedPostIds[+1]"]
 
     def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
         if not str(self.p.keyword or "").strip():
@@ -281,9 +281,8 @@ class FollowUserAndLikeTheirPost(BaseTask):
         },
     }
     expected_changes = [
-        "apps.x.followedUserIds[+1]",
-        "apps.x.likedPostIds[+1]",
-        "apps.x.posts",
+        "apps.x.user.followedUserIds[+1]",
+        "apps.x.user.likedPostIds[+1]",
         "apps.x.user.following",
     ]
 
@@ -342,12 +341,15 @@ class ReplyAndRetweetSamePost(BaseTask):
             "description": "回复内容",
         },
     }
-    # posts[+2]：1 条 reply 真实 post + 1 条 retweet shell（由 X registerStateAdapter 的 _mergeLocalPosts 派生注入 snapshot）
-    expected_changes = ["apps.x.posts[+2]", "apps.x.retweetedPostIds[+1]", "apps.x.posts[id={post_id}].stats.retweets"]
+    expected_changes = [
+        "apps.x.posts",
+        "apps.x.user.replyIds[+1]",
+        "apps.x.user.retweetedPostIds[+1]",
+    ]
 
     def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
         if not str(self.p.post_id or "").strip():
-            raise RuntimeError("任务设计错误：未能从 apps.x.posts 采样到 post_id")
+            raise RuntimeError("任务设计错误：未能从 X base dataset 采样到 post_id")
         if not str(self.p.reply_content or "").strip():
             raise RuntimeError("任务设计错误：reply_content 不能为空")
         app = X(input.apps["x"], init=input.apps_init["x"])
@@ -367,8 +369,8 @@ class ComplexSettingsChain(CriteriaTask):
         await self._invert_criteria(env)
 
     templates = [
-        "帮我统一调一下X的几个设置：帖子互动显示互动量，关闭探索页里“显示你当前所在位置的内容”，过滤器只留重要通知，只开聊天推送，再把推送通知里的“推荐”关掉",
-        "我想统一调下X的设置：开启显示互动量，关掉探索页里的“显示你当前所在位置的内容”，过滤器里只留重要通知，聊天只开聊天推送，推送通知里的“推荐”也关掉",
+        "帮我统一调一下X的几个设置：帖子互动显示互动量，关闭探索页里“显示你当前所在位置的内容”，过滤器打开只留重要通知，只启用聊天推送，再把推送通知里的“推荐”关掉",
+        "我想统一调下X的设置：开启显示互动量，关掉探索页里的“显示你当前所在位置的内容”，过滤器打开只留重要通知，聊天只启用聊天推送，推送通知里的“推荐”也关掉",
         "Help me change a few X settings: show interaction counts for post interactions, turn off 'Show content in your current location' in Explore, set the notification filter to important only, enable push for chats only, and turn off 'Recommendations' in push notifications",
         "I want to adjust X's settings: enable show interaction counts, disable 'Show content in your current location' in Explore, set the filter to important notifications only, enable chat-only push, and turn off 'Recommendations' in push notifications",
     ]
@@ -420,10 +422,8 @@ class SearchMultipleKeywordsAndInteract(BaseTask):
         },
     }
     expected_changes = [
-        "apps.x.likedPostIds[+1]",
-        "apps.x.bookmarkedPostIds[+1]",
-        "apps.x.posts",
-        "apps.x.currentSearchQuery",
+        "apps.x.user.likedPostIds[+1]",
+        "apps.x.user.bookmarkedPostIds[+1]",
     ]
 
     def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
@@ -463,7 +463,7 @@ class PostWithImageAndReply(BaseTask):
             "description": "回复内容（自然中文句子）",
         },
     }
-    expected_changes = ["apps.x.posts[+2]"]
+    expected_changes = ["apps.x.posts", "apps.x.user.postIds[+1]", "apps.x.user.replyIds[+1]"]
 
     def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
         if not str(self.p.content or "").strip() or not str(self.p.reply_content or "").strip():

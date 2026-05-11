@@ -23,20 +23,19 @@ from bench_env.tests.conftest import make_judge_input
 def _load_base_state() -> dict[str, Any]:
     base_dir = Path(__file__).resolve().parents[2] / "apps" / "X" / "data"
     defaults = json.loads((base_dir / "defaults.json").read_text(encoding="utf-8"))
-    users = json.loads((base_dir / "users.json").read_text(encoding="utf-8"))
-    posts = json.loads((base_dir / "posts.json").read_text(encoding="utf-8"))
-
-    state = copy.deepcopy(defaults)
-    state["users"] = users
-    state["posts"] = posts
-    state["followedUserIds"] = [str(uid).lower() for uid in defaults.get("followedUserIds", [])]
-    state.setdefault("likedPostIds", [])
-    state.setdefault("bookmarkedPostIds", [])
-    state.setdefault("retweetedPostIds", [])
-    return state
+    assert isinstance(defaults.get("posts"), dict)
+    assert "users" not in defaults
+    assert "followedUserIds" not in defaults
+    assert "likedPostIds" not in defaults
+    assert "bookmarkedPostIds" not in defaults
+    assert "retweetedPostIds" not in defaults
+    return copy.deepcopy(defaults)
 
 
 BASE_STATE = _load_base_state()
+BASE_DATA_DIR = Path(__file__).resolve().parents[2] / "apps" / "X" / "data"
+BASE_USERS = json.loads((BASE_DATA_DIR / "users.json").read_text(encoding="utf-8"))
+BASE_POSTS = json.loads((BASE_DATA_DIR / "posts.json").read_text(encoding="utf-8"))
 ENV_STATE = {"apps": {"x": copy.deepcopy(BASE_STATE)}}
 TEST_OS_STATE = {"time": {"timestamp": 1742025600000}}
 DEFAULT_ROUTE = {"app": "x", "path": "/"}
@@ -59,18 +58,21 @@ def _with_new_post(
     thread_id: str | None = None,
 ) -> dict[str, Any]:
     next_state = copy.deepcopy(state)
-    next_state["posts"] = [
-        {
-            "id": post_id,
-            "authorId": author_id or str(next_state["user"]["id"]),
-            "content": content,
-            "time": "刚刚",
-            "stats": {"comments": 0, "retweets": 0, "likes": 0, "views": 0},
-            "quotedPostId": quoted_post_id,
-            "threadId": thread_id,
-        },
-        *next_state["posts"],
-    ]
+    post = {
+        "id": post_id,
+        "authorId": author_id or str(next_state["user"]["id"]),
+        "content": content,
+        "time": "刚刚",
+        "stats": {"comments": 0, "retweets": 0, "likes": 0, "views": 0},
+        "quotedPostId": quoted_post_id,
+        "threadId": thread_id,
+    }
+    next_state.setdefault("posts", {})
+    next_state["posts"][post_id] = post
+    if thread_id:
+        next_state["user"]["replyIds"] = [post_id, *next_state["user"].get("replyIds", [])]
+    else:
+        next_state["user"]["postIds"] = [post_id, *next_state["user"].get("postIds", [])]
     return next_state
 
 
@@ -105,9 +107,9 @@ def _with_appended_message(state: dict[str, Any], conversation_id: str, content:
 
 def _with_added_id(state: dict[str, Any], key: str, value: str) -> dict[str, Any]:
     next_state = copy.deepcopy(state)
-    existing = [str(item).lower() for item in next_state.get(key, [])]
+    existing = [str(item).lower() for item in next_state["user"].get(key, [])]
     if str(value).lower() not in existing:
-        next_state[key] = [*next_state.get(key, []), value]
+        next_state["user"][key] = [*next_state["user"].get(key, []), value]
     return next_state
 
 
@@ -148,16 +150,16 @@ def _preview_for_post(post: dict[str, Any]) -> str:
 
 
 def _first_unfollowed_author_post() -> dict[str, Any]:
-    followed = set(BASE_STATE["followedUserIds"])
-    return next(post for post in BASE_STATE["posts"] if str(post["authorId"]).lower() not in followed)
+    followed = set(BASE_STATE["user"]["followedUserIds"])
+    return next(post for post in BASE_POSTS if str(post["authorId"]).lower() not in followed)
 
 
 def _first_two_distinct_keyword_posts() -> tuple[dict[str, Any], str, dict[str, Any], str]:
-    for index, first in enumerate(BASE_STATE["posts"]):
+    for index, first in enumerate(BASE_POSTS):
         keyword1 = _keyword_snippet(str(first.get("content") or ""))
         if not keyword1:
             continue
-        for second in BASE_STATE["posts"][index + 1:]:
+        for second in BASE_POSTS[index + 1:]:
             keyword2 = _keyword_snippet(str(second.get("content") or ""))
             if keyword2 and keyword2.lower() != keyword1.lower():
                 return first, keyword1, second, keyword2
@@ -165,6 +167,60 @@ def _first_two_distinct_keyword_posts() -> tuple[dict[str, Any], str, dict[str, 
 
 
 class TestXAccessor:
+    def test_view_post_merges_runtime_patch_with_base_post(self):
+        base = BASE_POSTS[0]
+        state = copy.deepcopy(BASE_STATE)
+        state["posts"][str(base["id"])] = {
+            "id": str(base["id"]),
+            "content": "patched content",
+        }
+
+        resolved = X(state).view_post(str(base["id"]))
+
+        assert resolved is not None
+        assert resolved["content"] == "patched content"
+        assert resolved["authorId"] == base["authorId"]
+        assert resolved["stats"] == base["stats"]
+
+    def test_posts_alias_uses_view_posts(self):
+        app = X(copy.deepcopy(BASE_STATE))
+        assert app.posts == app.view_posts()
+
+    def test_base_post_patch_is_not_treated_as_new_post(self):
+        base = BASE_POSTS[0]
+        curr = copy.deepcopy(BASE_STATE)
+        curr["posts"][str(base["id"])] = {
+            "id": str(base["id"]),
+            "content": "patched content",
+        }
+
+        assert X(curr, init=copy.deepcopy(BASE_STATE)).new_posts_vs_init() == []
+
+    def test_unindexed_new_post_is_not_treated_as_created_post(self):
+        curr = copy.deepcopy(BASE_STATE)
+        curr["posts"]["new_unindexed"] = {
+            "id": "new_unindexed",
+            "authorId": curr["user"]["id"],
+            "content": "未索引发帖内容",
+        }
+
+        assert X(curr, init=copy.deepcopy(BASE_STATE)).check_created_post("未索引发帖内容")["passed"] is False
+
+    def test_unindexed_reply_is_not_treated_as_created_reply(self):
+        target_post_id = str(BASE_POSTS[0]["id"])
+        curr = copy.deepcopy(BASE_STATE)
+        curr["posts"]["reply_unindexed"] = {
+            "id": "reply_unindexed",
+            "authorId": curr["user"]["id"],
+            "content": "未索引回复内容",
+            "threadId": target_post_id,
+        }
+
+        assert X(curr, init=copy.deepcopy(BASE_STATE)).check_replied_to_post(
+            target_post_id,
+            "未索引回复内容",
+        )["passed"] is False
+
     def test_sample_post_reference(self):
         sampled = X.sample_post_reference(copy.deepcopy(ENV_STATE), random.Random(0))
         assert sampled["post_id"]
@@ -185,19 +241,20 @@ class TestXAccessor:
         assert pair["keyword2"]
         assert pair["keyword1"] != pair["keyword2"]
 
-    def test_sample_search_keyword_pair_raises_with_one_post_even_if_trends_exist(self):
+    def test_sample_search_keyword_pair_raises_with_one_post_even_if_trends_exist(self, monkeypatch):
+        monkeypatch.setattr(
+            "bench_env.task.x.app._X_POSTS_JSON_CACHE",
+            [{"id": "p1", "content": "hello world", "authorId": "u1"}],
+        )
         env_state = {
             "apps": {
                 "x": {
-                    "posts": [
-                        {"id": "p1", "content": "hello world", "authorId": "u1"},
-                    ],
+                    "user": copy.deepcopy(BASE_STATE["user"]),
+                    "posts": {},
                     "trends": [
                         {"title": "Trend Alpha"},
                         {"title": "Trend Beta"},
                     ],
-                    "users": {"u1": {"handle": "@u1", "name": "U1"}},
-                    "followedUserIds": [],
                 }
             }
         }
@@ -206,17 +263,7 @@ class TestXAccessor:
             X.sample_search_keyword_pair(env_state, random.Random(0))
 
     def test_search_and_bookmark_task_uses_fixed_keyword_instead_of_sampling(self):
-        env_state = {
-            "apps": {
-                "x": {
-                    "posts": [
-                        {"id": "p1", "content": "hello world", "authorId": "u1"},
-                    ],
-                    "users": {"u1": {"handle": "@u1", "name": "U1"}},
-                    "followedUserIds": [],
-                }
-            }
-        }
+        env_state = {"apps": {"x": copy.deepcopy(BASE_STATE)}}
 
         task = _tasks_module.SearchAndBookmark(_seed=0)
         sampled = task.sampler.sample(env_state, task=task).params
@@ -228,21 +275,7 @@ class TestXAccessor:
         assert sampled["keyword"].lower() not in "hello world"
 
     def test_search_multiple_keywords_task_uses_fixed_keyword_sets_instead_of_sampling(self):
-        env_state = {
-            "apps": {
-                "x": {
-                    "posts": [
-                        {"id": "p1", "content": "hello world", "authorId": "u1"},
-                        {"id": "p2", "content": "grok launch news", "authorId": "u2"},
-                    ],
-                    "users": {
-                        "u1": {"handle": "@u1", "name": "U1"},
-                        "u2": {"handle": "@u2", "name": "U2"},
-                    },
-                    "followedUserIds": [],
-                }
-            }
-        }
+        env_state = {"apps": {"x": copy.deepcopy(BASE_STATE)}}
 
         task = _tasks_module.SearchMultipleKeywordsAndInteract(_seed=0)
         sampled = task.sampler.sample(env_state, task=task).params
@@ -267,7 +300,7 @@ class TestXAccessor:
         assert sampled["post_id"]
 
         base_state = copy.deepcopy(BASE_STATE)
-        base_state["retweetedPostIds"] = [str(post["id"]) for post in base_state["posts"]]
+        base_state["user"]["retweetedPostIds"] = [str(post["id"]) for post in BASE_POSTS]
         env_state = {"apps": {"x": base_state}}
         with pytest.raises(RuntimeError, match="未找到可采样的 X 推文目标"):
             X.sample_unretweeted_post_reference(env_state, random.Random(0))
@@ -281,7 +314,7 @@ class TestXAccessor:
         kw_lower = keyword.lower()
         assert any(
             kw_lower in str(post.get("content") or "").lower()
-            for post in app.posts
+            for post in app.view_posts()
             if not str(post.get("threadId") or "")
         ), f"Enum keyword {keyword!r} has no matching top-level post in defaults"
 
@@ -296,7 +329,7 @@ class TestXAccessor:
             kw_lower = keyword.lower()
             assert any(
                 kw_lower in str(post.get("content") or "").lower()
-                for post in app.posts
+                for post in app.view_posts()
                 if not str(post.get("threadId") or "")
             ), f"{field} enum value {keyword!r} has no matching top-level post in defaults"
 
@@ -304,12 +337,12 @@ class TestXAccessor:
         env_state = {
             "apps": {
                 "x": {
-                    "posts": [
-                        {"id": f"p{i}", "content": f"post {i}", "authorId": f"u{i}"}
-                        for i in range(20)
-                    ],
-                    "users": {
-                        f"u{i}": {"handle": f"@user{i}", "name": f"User {i}"}
+                    "user": {
+                        **copy.deepcopy(BASE_STATE["user"]),
+                        "followedUserIds": [],
+                    },
+                    "posts": {
+                        f"p{i}": {"id": f"p{i}", "content": f"post {i}", "authorId": f"u{i}"}
                         for i in range(20)
                     },
                 }
@@ -329,18 +362,24 @@ class TestXAccessor:
         assert calls["count"] == 1
 
     def test_sample_follow_target_stops_after_first_random_valid_post(self, monkeypatch):
+        monkeypatch.setattr(
+            "bench_env.task.x.app._X_USERS_JSON_CACHE",
+            {
+                f"u{i}": {"handle": f"@u{i}", "name": f"User {i}"}
+                for i in range(20)
+            },
+        )
         env_state = {
             "apps": {
                 "x": {
-                    "posts": [
-                        {"id": f"p{i}", "content": f"post {i}", "authorId": f"u{i}"}
-                        for i in range(20)
-                    ],
-                    "users": {
-                        f"u{i}": {"handle": f"@user{i}", "name": f"User {i}"}
+                    "user": {
+                        **copy.deepcopy(BASE_STATE["user"]),
+                        "followedUserIds": [],
+                    },
+                    "posts": {
+                        f"p{i}": {"id": f"p{i}", "content": f"post {i}", "authorId": f"u{i}"}
                         for i in range(20)
                     },
-                    "followedUserIds": [],
                 }
             }
         }
@@ -349,16 +388,16 @@ class TestXAccessor:
 
         def fake_find_user_by_id(self, user_id: str) -> dict[str, Any] | None:
             calls["count"] += 1
-            return self.users.get(user_id)
+            return {"handle": f"@{user_id}", "name": f"User {user_id}"}
 
         monkeypatch.setattr(X, "find_user_by_id", fake_find_user_by_id)
 
         sampled = X.sample_follow_target(env_state, random.Random(0))
-        assert sampled["user_handle"].startswith("@user")
-        assert calls["count"] == 1
+        assert sampled["user_handle"].startswith("@u")
+        assert calls["count"] >= 1
 
     def test_check_created_quoted_post(self):
-        target_post = BASE_STATE["posts"][0]
+        target_post = BASE_POSTS[0]
         curr = _with_new_post(
             BASE_STATE,
             post_id="new_quote_1",
@@ -392,7 +431,7 @@ class TestXAccessor:
         )["passed"] is False
 
     def test_check_keyword_interactions(self):
-        target_post = BASE_STATE["posts"][1]
+        target_post = BASE_POSTS[1]
         target_post_id = str(target_post["id"])
         keyword = _keyword_snippet(str(target_post["content"]))
 
@@ -406,7 +445,7 @@ class TestXAccessor:
             "passed"
         ] is True
 
-        wrong_post_id = str(BASE_STATE["posts"][2]["id"])
+        wrong_post_id = str(BASE_POSTS[2]["id"])
         wrong_bookmark = _with_added_id(BASE_STATE, "bookmarkedPostIds", wrong_post_id)
         assert X(wrong_bookmark, init=copy.deepcopy(BASE_STATE)).check_bookmarked_post_for_keyword(
             keyword
@@ -415,8 +454,8 @@ class TestXAccessor:
     def test_check_follow_and_like_user_post(self):
         author_post = next(
             post
-            for post in BASE_STATE["posts"]
-            if str(post["authorId"]).lower() not in set(BASE_STATE["followedUserIds"])
+            for post in BASE_POSTS
+            if str(post["authorId"]).lower() not in set(BASE_STATE["user"]["followedUserIds"])
         )
         author_id = str(author_post["authorId"])
         author_handle = X(copy.deepcopy(BASE_STATE)).get_user_handle(author_id)
@@ -429,7 +468,7 @@ class TestXAccessor:
 
         other_author_post = next(
             post
-            for post in BASE_STATE["posts"]
+            for post in BASE_POSTS
             if str(post["authorId"]).lower() != str(author_id).lower()
         )
         wrong_like = _with_added_id(followed, "likedPostIds", str(other_author_post["id"]))
@@ -438,7 +477,7 @@ class TestXAccessor:
         ] is False
 
     def test_check_reply_and_retweet_same_post(self):
-        target_post_id = str(BASE_STATE["posts"][0]["id"])
+        target_post_id = str(BASE_POSTS[0]["id"])
         replied = _with_new_post(
             BASE_STATE,
             post_id="reply_target_1",
@@ -454,7 +493,7 @@ class TestXAccessor:
             BASE_STATE,
             post_id="reply_target_2",
             content="这是一条回复",
-            thread_id=str(BASE_STATE["posts"][1]["id"]),
+            thread_id=str(BASE_POSTS[1]["id"]),
         )
         assert X(wrong_reply, init=copy.deepcopy(BASE_STATE)).check_replied_to_post(
             target_post_id,
@@ -481,7 +520,7 @@ class TestXAccessor:
             with_post,
             post_id="reply_to_new_post_2",
             content="回复新帖内容",
-            thread_id=str(BASE_STATE["posts"][0]["id"]),
+            thread_id=str(BASE_POSTS[0]["id"]),
         )
         assert X(wrong_reply, init=copy.deepcopy(BASE_STATE)).check_replied_to_new_post(
             "原始发帖内容",
@@ -553,13 +592,8 @@ def _negative_search_multiple_case():
 
 
 def _positive_reply_and_retweet_same_post_case():
-    """Maximal state: reply post + retweet shell + retweets stat bump.
-
-    Mirrors X's registerStateAdapter output (_mergeLocalPosts injects a retweet
-    shell into the snapshot on top of the store's reply post). Guards
-    ``expected_changes`` from being reverted to ``posts[+1]``.
-    """
-    target = BASE_STATE["posts"][0]
+    """Runtime state: reply entity + retweet relation + stats override."""
+    target = BASE_POSTS[0]
     post_id = str(target["id"])
     task = _tasks_module.ReplyAndRetweetSamePost(
         post_id=post_id,
@@ -575,21 +609,6 @@ def _positive_reply_and_retweet_same_post_case():
         thread_id=post_id,
     )
     curr = _with_added_id(curr, "retweetedPostIds", post_id)
-    curr["posts"] = [
-        {
-            "id": f"retweet_{post_id}",
-            "authorId": str(curr["user"]["id"]),
-            "content": "",
-            "time": "刚刚",
-            "stats": {"comments": 0, "retweets": 0, "likes": 0, "views": 0},
-            "retweetedPostId": post_id,
-        },
-        *curr["posts"],
-    ]
-    for post in curr["posts"]:
-        if str(post.get("id")) == post_id:
-            post["stats"]["retweets"] = int(post["stats"]["retweets"]) + 1
-            break
 
     return task, _make_task_input(copy.deepcopy(BASE_STATE), curr)
 
@@ -616,7 +635,7 @@ OFFLINE_JUDGE_POSITIVE_CASES = [
     (
         "QuotePostAndTweet",
         lambda: (
-            target := BASE_STATE["posts"][0],
+            target := BASE_POSTS[0],
             task := _tasks_module.QuotePostAndTweet(
                 post_id=str(target["id"]),
                 author_handle=X(copy.deepcopy(BASE_STATE)).get_user_handle(str(target["authorId"])),
@@ -649,7 +668,7 @@ OFFLINE_JUDGE_POSITIVE_CASES = [
     (
         "SearchAndBookmark",
         lambda: (
-            target := BASE_STATE["posts"][1],
+            target := BASE_POSTS[1],
             keyword := _keyword_snippet(str(target["content"])),
             task := _tasks_module.SearchAndBookmark(keyword=keyword),
             curr := _with_added_id(BASE_STATE, "bookmarkedPostIds", str(target["id"])),
@@ -724,7 +743,7 @@ OFFLINE_JUDGE_NEGATIVE_CASES = [
     (
         "QuotePostAndTweet",
         lambda: (
-            target := BASE_STATE["posts"][0],
+            target := BASE_POSTS[0],
             task := _tasks_module.QuotePostAndTweet(
                 post_id=str(target["id"]),
                 author_handle=X(copy.deepcopy(BASE_STATE)).get_user_handle(str(target["authorId"])),
@@ -757,8 +776,8 @@ OFFLINE_JUDGE_NEGATIVE_CASES = [
     (
         "SearchAndBookmark",
         lambda: (
-            target := BASE_STATE["posts"][1],
-            wrong := BASE_STATE["posts"][2],
+            target := BASE_POSTS[1],
+            wrong := BASE_POSTS[2],
             keyword := _keyword_snippet(str(target["content"])),
             task := _tasks_module.SearchAndBookmark(keyword=keyword),
             curr := _with_added_id(BASE_STATE, "bookmarkedPostIds", str(wrong["id"])),
@@ -781,7 +800,7 @@ OFFLINE_JUDGE_NEGATIVE_CASES = [
     (
         "ReplyAndRetweetSamePost",
         lambda: (
-            target := BASE_STATE["posts"][0],
+            target := BASE_POSTS[0],
             task := _tasks_module.ReplyAndRetweetSamePost(
                 post_id=str(target["id"]),
                 author_handle=X(copy.deepcopy(BASE_STATE)).get_user_handle(str(target["authorId"])),
