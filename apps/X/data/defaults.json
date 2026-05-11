@@ -12,41 +12,33 @@
     "joinDate": "Mon Mar 15 08:00:00 +0000 2021",
     "following": 3,
     "followers": 12,
-    "screenName": "xiaoming_dev"
+    "screenName": "xiaoming_dev",
+    "postIds": [],
+    "replyIds": [],
+    "followedUserIds": [
+      "u_OpenAI",
+      "u_elonmusk",
+      "u_nateleex"
+    ],
+    "followerUserIds": [
+      "u_yihong0618",
+      "u_MaimaiLee123",
+      "u_xiongchun007",
+      "u_yihui_indie",
+      "u_plusyip",
+      "u_s1ntone",
+      "u__KleinHe_",
+      "u_cellinlab",
+      "u_vikingmute",
+      "u_fkysly",
+      "u_goocarlos",
+      "u_LeeMmai"
+    ],
+    "likedPostIds": [],
+    "retweetedPostIds": [],
+    "bookmarkedPostIds": []
   },
-  "followedUserIds": [
-    "u_OpenAI",
-    "u_elonmusk",
-    "u_nateleex"
-  ],
-  "followerUserIds": [
-    "u_yihong0618",
-    "u_MaimaiLee123",
-    "u_xiongchun007",
-    "u_yihui_indie",
-    "u_plusyip",
-    "u_s1ntone",
-    "u__KleinHe_",
-    "u_cellinlab",
-    "u_vikingmute",
-    "u_fkysly",
-    "u_goocarlos",
-    "u_LeeMmai"
-  ],
-  "quotedPosts": {
-    "p_william_quote": {
-      "id": "p_william_quote",
-      "authorId": "u_williameijer",
-      "content": "Open borders would mean the end of the West because the vast majority of non-Westerners aren’t psychologically Western\nThe Multivariate Rarity of Western Psycho...",
-      "time": "1d",
-      "stats": {
-        "comments": 0,
-        "retweets": 0,
-        "likes": 0,
-        "views": 0
-      }
-    }
-  },
+  "posts": {},
   "trends": [
     {
       "id": "t_promo_1",

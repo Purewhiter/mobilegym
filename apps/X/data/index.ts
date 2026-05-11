@@ -5,9 +5,8 @@ import type { XConversation, XSettings } from '../types';
 export * from '../types';
 
 export const currentUser = (defaults as any).user;
-export const defaultFollowedUserIds = ((defaults as any).followedUserIds as string[]).map((id: string) => id.toLowerCase());
-export const defaultFollowerUserIds = ((defaults as any).followerUserIds as string[]).map((id: string) => id.toLowerCase());
-export const quotedPosts = (defaults as any).quotedPosts as Record<string, any>;
+export const defaultFollowedUserIds = (((defaults as any).user?.followedUserIds ?? []) as string[]).map((id: string) => id.toLowerCase());
+export const defaultFollowerUserIds = (((defaults as any).user?.followerUserIds ?? []) as string[]).map((id: string) => id.toLowerCase());
 export const trends = (defaults as any).trends as any[];
 export const notifications = (defaults as any).notifications as any[];
 export const conversations = (defaults as any).conversations as XConversation[];
@@ -16,7 +15,7 @@ export const xSettings = (defaults as any).settings as XSettings;
 
 export const X_CONFIG = {
   user: currentUser,
-  quotedPosts,
+  posts: (defaults as any).posts ?? {},
   trends,
   notifications,
   conversations,

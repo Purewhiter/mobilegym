@@ -12,7 +12,15 @@ from typing import Any
 from bench_env.task.base import BaseApp
 
 
-_X_DEFAULT_USERS: dict[str, dict[str, Any]] | None = None
+_REPO_ROOT = Path(__file__).resolve().parents[3]
+_X_DATA_DIR = _REPO_ROOT / "apps" / "X" / "data"
+
+_X_USERS_JSON_PATH = _X_DATA_DIR / "users.json"
+_X_POSTS_JSON_PATH = _X_DATA_DIR / "posts.json"
+
+_X_USERS_JSON_CACHE: dict[str, dict[str, Any]] | None = None
+_X_POSTS_JSON_CACHE: list[dict[str, Any]] | None = None
+_X_POSTS_BY_ID_CACHE: dict[str, dict[str, Any]] | None = None
 
 _AMBIGUOUS_HANDLES = {"@openai", "@elonmusk"}
 
@@ -45,35 +53,64 @@ def _pick_keyword(text: Any) -> str:
     return plain[: min(8, len(plain))]
 
 
-def _load_default_x_users() -> dict[str, Any]:
+def _merge_entity(base: dict[str, Any], patch: dict[str, Any]) -> dict[str, Any]:
+    result = dict(base)
+    for key, value in patch.items():
+        base_value = result.get(key)
+        if isinstance(base_value, dict) and isinstance(value, dict):
+            result[key] = _merge_entity(base_value, value)
+        else:
+            result[key] = value
+    return result
+
+
+def _load_users_json() -> dict[str, Any]:
     """
-    加载 X 应用的默认用户表。
+    加载 X 应用公共用户表。
     """
-    global _X_DEFAULT_USERS
-    if _X_DEFAULT_USERS is not None:
-        return _X_DEFAULT_USERS
+    global _X_USERS_JSON_CACHE
+    if _X_USERS_JSON_CACHE is not None:
+        return _X_USERS_JSON_CACHE
 
     try:
-        repo_root = Path(__file__).resolve().parents[3]
-        users_path = repo_root / "apps" / "X" / "data" / "users.json"
-        if users_path.exists():
-            with users_path.open("r", encoding="utf-8") as f:
-                users = json.load(f) or {}
-                if isinstance(users, dict):
-                    _X_DEFAULT_USERS = users  # type: ignore[assignment]
-                    return _X_DEFAULT_USERS
-
-        defaults_path = repo_root / "apps" / "X" / "data" / "defaults.json"
-        with defaults_path.open("r", encoding="utf-8") as f:
-            data = json.load(f) or {}
-        users = data.get("xUsers") or {}
-        _X_DEFAULT_USERS = users if isinstance(users, dict) else {}
+        with _X_USERS_JSON_PATH.open("r", encoding="utf-8") as f:
+            users = json.load(f) or {}
+        _X_USERS_JSON_CACHE = users if isinstance(users, dict) else {}
     except Exception:
-        _X_DEFAULT_USERS = {}
-    return _X_DEFAULT_USERS
+        _X_USERS_JSON_CACHE = {}
+    return _X_USERS_JSON_CACHE
 
 
-X_POST_CHANGES = ["x.posts"]
+def _load_posts_json() -> list[dict[str, Any]]:
+    """
+    加载 X 应用公共推文表。
+    """
+    global _X_POSTS_JSON_CACHE
+    if _X_POSTS_JSON_CACHE is not None:
+        return _X_POSTS_JSON_CACHE
+
+    try:
+        with _X_POSTS_JSON_PATH.open("r", encoding="utf-8") as f:
+            posts = json.load(f) or []
+        _X_POSTS_JSON_CACHE = posts if isinstance(posts, list) else []
+    except Exception:
+        _X_POSTS_JSON_CACHE = []
+    return _X_POSTS_JSON_CACHE
+
+
+def _load_posts_by_id() -> dict[str, dict[str, Any]]:
+    global _X_POSTS_BY_ID_CACHE
+    if _X_POSTS_BY_ID_CACHE is not None:
+        return _X_POSTS_BY_ID_CACHE
+    _X_POSTS_BY_ID_CACHE = {
+        _normalize_id(post.get("id")): post
+        for post in _load_posts_json()
+        if isinstance(post, dict) and _normalize_id(post.get("id"))
+    }
+    return _X_POSTS_BY_ID_CACHE
+
+
+X_POST_CHANGES = ["x.posts", "x.user.postIds"]
 
 
 class X(BaseApp):
@@ -82,7 +119,7 @@ class X(BaseApp):
 
     Usage:
         x = X(input.apps["x"])
-        x.posts
+        x.view_posts()
         x.conversations
         x.users
     """
@@ -93,7 +130,161 @@ class X(BaseApp):
 
     @property
     def posts(self) -> list[dict[str, Any]]:
-        return self.get_list("posts")
+        """只读便捷别名；语义等同 view_posts()。"""
+        return self.view_posts()
+
+    def state_user(self) -> dict[str, Any]:
+        user = self.get("user") or {}
+        return user if isinstance(user, dict) else {}
+
+    @property
+    def state_posts(self) -> dict[str, Any]:
+        posts = self.get("posts") or {}
+        return posts if isinstance(posts, dict) else {}
+
+    @property
+    def base_posts(self) -> list[dict[str, Any]]:
+        return _load_posts_json()
+
+    def base_post(self, post_id: str) -> dict[str, Any] | None:
+        return _load_posts_by_id().get(_normalize_id(post_id))
+
+    def state_post(self, post_id: str) -> dict[str, Any] | None:
+        table = self.state_posts
+        if post_id in table:
+            value = table[post_id]
+        else:
+            value = table.get(_normalize_id(post_id))
+        return value if isinstance(value, dict) else None
+
+    def state_post_entities(self) -> list[dict[str, Any]]:
+        return [post for post in self.state_posts.values() if isinstance(post, dict)]
+
+    def view_post(self, post_id: str) -> dict[str, Any] | None:
+        table = self.state_posts
+        key = str(post_id)
+        normalized = _normalize_id(post_id)
+        base = self.base_post(post_id)
+        if key in table:
+            value = table[key]
+            if value is None:
+                return None
+            if isinstance(value, dict):
+                post = _merge_entity(base, value) if base else value
+                return self._with_relationship_derived_stats(post)
+            return None
+        if normalized in table:
+            value = table[normalized]
+            if value is None:
+                return None
+            if isinstance(value, dict):
+                post = _merge_entity(base, value) if base else value
+                return self._with_relationship_derived_stats(post)
+            return None
+        if not base:
+            return None
+        return self._with_relationship_derived_stats(base)
+
+    def _runtime_comment_counts(self) -> dict[str, int]:
+        counts: dict[str, int] = {}
+        for item in self.state_post_entities():
+            thread_id = _normalize_id(item.get("threadId"))
+            if thread_id:
+                counts[thread_id] = counts.get(thread_id, 0) + 1
+        return counts
+
+    def _with_relationship_derived_stats(
+        self,
+        post: dict[str, Any],
+        *,
+        liked_ids: set[str] | None = None,
+        retweeted_ids: set[str] | None = None,
+        comment_counts: dict[str, int] | None = None,
+    ) -> dict[str, Any]:
+        stats = post.get("stats")
+        if not isinstance(stats, dict):
+            return post
+        post_id = _normalize_id(post.get("id"))
+        liked_ids = liked_ids if liked_ids is not None else self.liked_post_ids
+        retweeted_ids = retweeted_ids if retweeted_ids is not None else self.retweeted_post_ids
+        comment_counts = comment_counts if comment_counts is not None else self._runtime_comment_counts()
+        runtime_comments = comment_counts.get(post_id, 0)
+        likes_delta = 1 if post_id in liked_ids else 0
+        retweets_delta = 1 if post_id in retweeted_ids else 0
+        if not runtime_comments and not likes_delta and not retweets_delta:
+            return post
+        return {
+            **post,
+            "stats": {
+                **stats,
+                "comments": max(0, int(stats.get("comments") or 0) + runtime_comments),
+                "likes": max(0, int(stats.get("likes") or 0) + likes_delta),
+                "retweets": max(0, int(stats.get("retweets") or 0) + retweets_delta),
+            },
+        }
+
+    def view_posts(self) -> list[dict[str, Any]]:
+        table = self.state_posts
+        tombstones = {
+            _normalize_id(post_id)
+            for post_id, value in table.items()
+            if value is None
+        }
+        liked_ids = self.liked_post_ids
+        retweeted_ids = self.retweeted_post_ids
+        comment_counts = self._runtime_comment_counts()
+        base_by_id = {_normalize_id(post.get("id")): post for post in self.base_posts if isinstance(post, dict)}
+        combined = []
+        for post_id, value in table.items():
+            if value is None or not isinstance(value, dict):
+                continue
+            normalized = _normalize_id(post_id)
+            base = base_by_id.get(normalized)
+            combined.append(_merge_entity(base, value) if base else value)
+        combined.extend(
+            post for post in self.base_posts if _normalize_id(post.get("id")) not in tombstones
+        )
+        seen: set[str] = set()
+        out: list[dict[str, Any]] = []
+        for post in combined:
+            pid = _normalize_id(post.get("id"))
+            if not pid or pid in seen:
+                continue
+            seen.add(pid)
+            out.append(
+                self._with_relationship_derived_stats(
+                    post,
+                    liked_ids=liked_ids,
+                    retweeted_ids=retweeted_ids,
+                    comment_counts=comment_counts,
+                )
+            )
+        return out
+
+    def resolved_posts(self) -> list[dict[str, Any]]:
+        out = self.view_posts()
+
+        by_id = {_normalize_id(post.get("id")): post for post in out}
+        retweet_shells = []
+        emitted: set[str] = set()
+        for post_id in reversed(list(self.retweeted_post_ids)):
+            if not post_id or post_id in emitted:
+                continue
+            source = by_id.get(post_id)
+            if not source:
+                continue
+            retweet_shells.append(
+                {
+                    "id": f"retweet_{source.get('id')}",
+                    "authorId": self.get("user.id"),
+                    "content": "",
+                    "time": "刚刚",
+                    "stats": source.get("stats") or {"comments": 0, "retweets": 0, "likes": 0, "views": 0},
+                    "retweetedPostId": source.get("id"),
+                }
+            )
+            emitted.add(post_id)
+        return [*retweet_shells, *out]
 
     @property
     def conversations(self) -> list[dict[str, Any]]:
@@ -101,26 +292,35 @@ class X(BaseApp):
 
     @property
     def users(self) -> dict[str, Any]:
-        users = self.get("users") or {}
-        if not users:
-            users = _load_default_x_users()
+        users = dict(_load_users_json())
+        current_user = self.state_user()
+        if isinstance(current_user, dict) and current_user.get("id"):
+            users[str(current_user["id"])] = current_user
         return users
 
     @property
     def followed_user_ids(self) -> set[str]:
-        return {_normalize_id(uid) for uid in (self.get("followedUserIds") or []) if _normalize_id(uid)}
+        return {_normalize_id(uid) for uid in (self.state_user().get("followedUserIds") or []) if _normalize_id(uid)}
 
     @property
     def liked_post_ids(self) -> set[str]:
-        return {_normalize_id(pid) for pid in (self.get("likedPostIds") or []) if _normalize_id(pid)}
+        return {_normalize_id(pid) for pid in (self.state_user().get("likedPostIds") or []) if _normalize_id(pid)}
 
     @property
     def bookmarked_post_ids(self) -> set[str]:
-        return {_normalize_id(pid) for pid in (self.get("bookmarkedPostIds") or []) if _normalize_id(pid)}
+        return {_normalize_id(pid) for pid in (self.state_user().get("bookmarkedPostIds") or []) if _normalize_id(pid)}
 
     @property
     def retweeted_post_ids(self) -> set[str]:
-        return {_normalize_id(pid) for pid in (self.get("retweetedPostIds") or []) if _normalize_id(pid)}
+        return {_normalize_id(pid) for pid in (self.state_user().get("retweetedPostIds") or []) if _normalize_id(pid)}
+
+    @property
+    def user_post_ids(self) -> set[str]:
+        return {_normalize_id(pid) for pid in (self.state_user().get("postIds") or []) if _normalize_id(pid)}
+
+    @property
+    def user_reply_ids(self) -> set[str]:
+        return {_normalize_id(pid) for pid in (self.state_user().get("replyIds") or []) if _normalize_id(pid)}
 
     def get_new_ids(self, now_list: list[dict[str, Any]], init_list: list[dict[str, Any]]) -> set[str]:
         init_ids = {_normalize_id(item.get("id")) for item in init_list if _normalize_id(item.get("id"))}
@@ -158,8 +358,7 @@ class X(BaseApp):
         return None
 
     def find_post_by_id(self, post_id: str) -> dict[str, Any] | None:
-        target = _normalize_id(post_id)
-        return next((post for post in self.posts if _normalize_id(post.get("id")) == target), None)
+        return self.view_post(post_id)
 
     def find_conversation_by_id(self, conversation_id: str) -> dict[str, Any] | None:
         target = _normalize_id(conversation_id)
@@ -171,8 +370,28 @@ class X(BaseApp):
     def new_posts_vs_init(self) -> list[dict[str, Any]]:
         if not self.has_init:
             raise ValueError("Init state required for X post diff")
-        new_ids = self.get_new_ids(self.posts, self.init.posts)
-        return [post for post in self.posts if _normalize_id(post.get("id")) in new_ids]
+        current_posts = self.state_post_entities()
+        init_posts = self.init.state_post_entities()
+        base_ids = {
+            _normalize_id(post.get("id"))
+            for post in self.base_posts
+            if isinstance(post, dict) and _normalize_id(post.get("id"))
+        }
+        new_ids = self.get_new_ids(current_posts, init_posts) - base_ids
+        new_post_ids = self.new_user_post_ids()
+        new_reply_ids = self.new_user_reply_ids()
+        out: list[dict[str, Any]] = []
+        for post in current_posts:
+            post_id = _normalize_id(post.get("id"))
+            if post_id not in new_ids:
+                continue
+            if _normalize_id(post.get("threadId")):
+                if post_id not in new_reply_ids:
+                    continue
+            elif post_id not in new_post_ids:
+                continue
+            out.append(post)
+        return out
 
     def new_followed_user_ids(self) -> set[str]:
         if not self.has_init:
@@ -193,6 +412,16 @@ class X(BaseApp):
         if not self.has_init:
             raise ValueError("Init state required for X retweet diff")
         return self.retweeted_post_ids - self.init.retweeted_post_ids
+
+    def new_user_post_ids(self) -> set[str]:
+        if not self.has_init:
+            raise ValueError("Init state required for X post index diff")
+        return self.user_post_ids - self.init.user_post_ids
+
+    def new_user_reply_ids(self) -> set[str]:
+        if not self.has_init:
+            raise ValueError("Init state required for X reply index diff")
+        return self.user_reply_ids - self.init.user_reply_ids
 
     def new_messages_in_conversation(self, conversation_id: str) -> list[dict[str, Any]]:
         if not self.has_init:
@@ -217,13 +446,13 @@ class X(BaseApp):
     ) -> dict[str, Any]:
         keyword_lower = str(keyword or "").lower().strip()
         assert keyword_lower, "keyword must not be empty"
-        assert any(keyword_lower in str(post.get("content") or "").lower() for post in self.init.posts), (
+        assert any(keyword_lower in str(post.get("content") or "").lower() for post in self.init.view_posts()), (
             f"Keyword '{keyword}' does not match any init X posts"
         )
 
         matched = [
             {"id": post.get("id"), "content": post.get("content")}
-            for post in self.posts
+            for post in self.view_posts()
             if _normalize_id(post.get("id")) in added_ids
             and keyword_lower in str(post.get("content") or "").lower()
         ]
@@ -367,7 +596,7 @@ class X(BaseApp):
 
         matched = [
             {"id": post.get("id"), "content": post.get("content")}
-            for post in self.posts
+            for post in self.view_posts()
             if _normalize_id(post.get("id")) in self.new_liked_post_ids()
             and _normalize_id(post.get("authorId")) == normalized_user_id
         ]
@@ -500,7 +729,7 @@ class X(BaseApp):
         profile_rank_limit: int = 40,
     ) -> dict[str, str]:
         app = X._from_env_state(env_state)
-        posts = app.posts
+        posts = app.view_posts()
         if not posts:
             raise RuntimeError("未找到可采样的 X 推文目标")
 
@@ -580,7 +809,7 @@ class X(BaseApp):
         app = X._from_env_state(env_state)
         keywords = []
         seen: set[str] = set()
-        for post in app.posts:
+        for post in app.view_posts():
             keyword = _pick_keyword(post.get("content"))
             keyword_lower = keyword.lower()
             if not keyword or keyword_lower in seen:
@@ -596,7 +825,7 @@ class X(BaseApp):
         app = X._from_env_state(env_state)
         keywords = []
         seen: set[str] = set()
-        for post in app.posts:
+        for post in app.view_posts():
             keyword = _pick_keyword(post.get("content"))
             keyword_lower = keyword.lower()
             if not keyword or keyword_lower in seen:
@@ -623,7 +852,7 @@ class X(BaseApp):
                 continue
             handle_to_ids.setdefault(handle, set()).add(_normalize_id(uid))
 
-        posts = app.posts
+        posts = app.view_posts()
         if not posts:
             raise RuntimeError("未找到可采样的 X 关注目标")
 

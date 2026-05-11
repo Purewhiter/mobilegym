@@ -24,6 +24,10 @@ interface XPostActionBarProps {
   className?: string;
 }
 
+const normalizePostId = (id: string): string => String(id || '').toLowerCase();
+const hasPostId = (ids: string[], targetId: string): boolean =>
+  ids.some((id) => normalizePostId(id) === targetId);
+
 export const XPostActionBar: React.FC<XPostActionBarProps> = ({
   postId,
   stats,
@@ -37,11 +41,11 @@ export const XPostActionBar: React.FC<XPostActionBarProps> = ({
   className = '',
 }) => {
   const toggleLike = useXStore(s => s.toggleLike);
-  const likedPostIds = useXStore(s => s.likedPostIds);
+  const likedPostIds = useXStore(s => s.user.likedPostIds);
   const toggleRetweet = useXStore(s => s.toggleRetweet);
-  const retweetedPostIds = useXStore(s => s.retweetedPostIds);
+  const retweetedPostIds = useXStore(s => s.user.retweetedPostIds);
   const toggleBookmark = useXStore(s => s.toggleBookmark);
-  const bookmarkedPostIds = useXStore(s => s.bookmarkedPostIds);
+  const bookmarkedPostIds = useXStore(s => s.user.bookmarkedPostIds);
   const defaultShowCounts = useXStore(s => s.settings.showInteractionCounts);
   const { bindTap } = useXGestures(isActive);
 
@@ -50,9 +54,11 @@ export const XPostActionBar: React.FC<XPostActionBarProps> = ({
   const retweets = stats?.retweets ?? 0;
   const likes = stats?.likes ?? 0;
   const views = stats?.views ?? 0;
-  const isLiked = likedPostIds.includes(postId);
-  const isRetweeted = retweetedPostIds.includes(postId);
-  const isBookmarked = bookmarkedPostIds.includes(postId);
+  const normalizedPostId = normalizePostId(postId);
+  const retweetTargetPostId = normalizePostId(postId.startsWith('retweet_') ? postId.slice('retweet_'.length) : postId);
+  const isLiked = hasPostId(likedPostIds, normalizedPostId);
+  const isRetweeted = hasPostId(retweetedPostIds, retweetTargetPostId);
+  const isBookmarked = hasPostId(bookmarkedPostIds, normalizedPostId);
 
   return (
     <div className={`flex justify-between mt-3 text-gray-500 text-sm max-w-[450px] ${className}`.trim()}>
