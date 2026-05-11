@@ -7,6 +7,7 @@ from __future__ import annotations
 import copy
 import inspect
 import json
+import ast
 from pathlib import Path
 from typing import Any
 
@@ -14,7 +15,7 @@ import pytest
 
 from bench_env.task.base import BaseTask
 from bench_env.task.reddit import tasks as _tasks_module
-from bench_env.task.reddit.app import Reddit
+from bench_env.task.reddit.app import Reddit, load_reddit_posts
 from bench_env.tests.conftest import make_judge_input
 
 ALL_TASK_CLASSES: list[type[BaseTask]] = [
@@ -23,6 +24,8 @@ ALL_TASK_CLASSES: list[type[BaseTask]] = [
     if issubclass(obj, BaseTask) and obj is not BaseTask and obj.__module__ == _tasks_module.__name__
 ]
 ALL_TASK_IDS = [cls.__name__ for cls in ALL_TASK_CLASSES]
+TASKS_SOURCE = Path(_tasks_module.__file__).read_text(encoding="utf-8")
+TASKS_AST = ast.parse(TASKS_SOURCE)
 
 TEST_OS_STATE = {"time": {"timestamp": 1773619200000}}
 DEFAULT_ROUTE = {"app": "reddit", "path": "/"}
@@ -36,17 +39,20 @@ def _load_defaults() -> dict[str, Any]:
 def _make_base_state() -> dict[str, Any]:
     defaults = _load_defaults()
     return {
-        "user": copy.deepcopy(defaults["user"]),
-        "communities": copy.deepcopy(defaults["communities"]),
+        "user": {
+            **copy.deepcopy(defaults["user"]),
+            "postIds": copy.deepcopy(defaults["user"].get("postIds", [])),
+            "commentIds": copy.deepcopy(defaults["user"].get("commentIds", [])),
+            "savedPostIds": copy.deepcopy(defaults["user"].get("savedPostIds", [])),
+            "joinedCommunityIds": copy.deepcopy(defaults["user"].get("joinedCommunityIds", [])),
+            "postVotes": copy.deepcopy(defaults["user"].get("postVotes", {})),
+            "commentVotes": copy.deepcopy(defaults["user"].get("commentVotes", {})),
+        },
         "settings": copy.deepcopy(defaults["settings"]),
-        "posts": copy.deepcopy(defaults["samplePosts"]),
-        "userPosts": copy.deepcopy(defaults["userPosts"]),
-        "joinedCommunityIds": [],
-        "postVotes": {},
-        "commentVotes": {},
-        "chatThreadsByUsername": copy.deepcopy(defaults["chatThreads"]),
-        "chatThreadRepliesByKey": copy.deepcopy(defaults["chatReplies"]),
-        "userCommentsByPostId": copy.deepcopy(defaults["userComments"]),
+        "posts": copy.deepcopy(defaults.get("posts", {})),
+        "comments": copy.deepcopy(defaults.get("comments", {})),
+        "chatThreads": copy.deepcopy(defaults["chatThreads"]),
+        "chatReplies": copy.deepcopy(defaults["chatReplies"]),
     }
 
 
@@ -89,9 +95,28 @@ def _append_user_post(
         "url": "",
         "commentsData": [],
     }
-    state["userPosts"].insert(0, post)
-    state["posts"].insert(0, copy.deepcopy(post))
-    state["postVotes"][post_id] = "up"
+    state["posts"][post_id] = post
+    state["user"]["postIds"].append(post_id)
+    state["user"]["postVotes"][post_id] = "up"
+
+
+def _append_user_comment(
+    state: dict[str, Any],
+    *,
+    post_id: str,
+    comment_id: str,
+    body: str,
+    author: str | None = None,
+) -> None:
+    state["comments"][comment_id] = {
+        "id": comment_id,
+        "postId": post_id,
+        "author": author or state["user"]["username"],
+        "body": body,
+        "score": 1,
+        "created_utc": 1710000003,
+    }
+    state["user"]["commentIds"].append(comment_id)
 
 
 class TestTaskDefinitions:
@@ -127,8 +152,111 @@ class TestTaskDefinitions:
         assert cls.composition in ("atomic", "sequential", "transfer", "deep_dive")
         assert cls.difficulty in ("L1", "L2", "L3", "L4")
 
+    def test_expected_changes_are_app_constants(self):
+        violations = []
+        for node in ast.walk(TASKS_AST):
+            if isinstance(node, ast.Assign):
+                if not any(isinstance(target, ast.Name) and target.id == "expected_changes" for target in node.targets):
+                    continue
+                if any(isinstance(child, ast.List) for child in ast.walk(node.value)):
+                    violations.append(node.lineno)
+        assert violations == []
+
+    def test_tasks_do_not_read_reddit_fixture_loader_directly(self):
+        violations = []
+        for node in ast.walk(TASKS_AST):
+            if isinstance(node, ast.Name) and node.id == "load_reddit_posts":
+                violations.append(node.lineno)
+        assert violations == []
+
 
 class TestRedditAccessor:
+    def test_sample_deep_thread_pair_uses_current_state_text_and_ids(self):
+        sample = Reddit.sample_deep_thread_reply_and_delete_pair(
+            {"apps": {"reddit": copy.deepcopy(BASE_STATE)}},
+            rng=None,
+        )
+        thread = BASE_STATE["chatThreads"]["Objective-Skill-2591"]
+
+        assert sample["username"] == "Objective-Skill-2591"
+        assert sample["thread_source_message_id"] == thread[0]["id"]
+        assert sample["thread_seed_message"] == thread[0]["body"]
+        assert sample["delete_message_id"] == thread[1]["id"]
+        assert sample["delete_seed_message"] == thread[1]["body"]
+
+    def test_deep_thread_task_uses_sampled_message_ids_in_judge(self):
+        init = copy.deepcopy(BASE_STATE)
+        curr = copy.deepcopy(BASE_STATE)
+        curr["chatReplies"]["Objective-Skill-2591:ct_obj_1"].append({
+            "id": "bench_reply_1",
+            "from": "me",
+            "body": "哈哈同感！我也觉得他们家辣度刚刚好，下次一起去试试新菜。",
+            "created_utc": 1710000200,
+        })
+        curr["chatThreads"]["Objective-Skill-2591"] = [
+            m for m in curr["chatThreads"]["Objective-Skill-2591"]
+            if m["id"] != "ct_obj_2"
+        ]
+        task = _tasks_module.Reddit_DeepThreadReplyAndDeleteSeedMessage(
+            username="Objective-Skill-2591",
+            thread_seed_message=init["chatThreads"]["Objective-Skill-2591"][0]["body"],
+            thread_source_message_id="ct_obj_1",
+            delete_seed_message=init["chatThreads"]["Objective-Skill-2591"][1]["body"],
+            delete_message_id="ct_obj_2",
+        )
+
+        assert task.is_successful(_make_task_input(init, curr))
+
+    def test_view_posts_list_respects_tombstone_and_user_insert_order(self):
+        curr = copy.deepcopy(BASE_STATE)
+        base_post = next(post for post in load_reddit_posts() if isinstance(post, dict) and post.get("id"))
+        base_id = str(base_post["id"])
+        curr["posts"][base_id] = None
+        _append_user_post(
+            curr,
+            post_id="bench_overlay_post_1",
+            subreddit="r/Games",
+            title="Overlay title",
+            content="Overlay body",
+        )
+
+        reddit = Reddit(curr)
+
+        assert reddit.base_post(base_id)["id"] == base_id
+        assert reddit.state_post(base_id) is None
+        assert reddit.view_post(base_id) is None
+        ids = [str(post.get("id")) for post in reddit.view_posts_list()]
+        assert "bench_overlay_post_1" in ids[:len(curr["user"]["postIds"])]
+        assert base_id not in ids
+
+    def test_view_comments_list_respects_tombstone_and_user_comments(self):
+        curr = copy.deepcopy(BASE_STATE)
+        base_post = next(
+            post
+            for post in load_reddit_posts()
+            if isinstance(post, dict) and post.get("id") and isinstance(post.get("commentsData"), list) and post["commentsData"]
+        )
+        post_id = str(base_post["id"])
+        base_comment = next(comment for comment in base_post["commentsData"] if isinstance(comment, dict) and comment.get("id"))
+        base_comment_id = str(base_comment["id"])
+        curr["comments"][base_comment_id] = None
+        _append_user_comment(
+            curr,
+            post_id=post_id,
+            comment_id="bench_overlay_comment_1",
+            body="Overlay comment body",
+        )
+
+        reddit = Reddit(curr)
+
+        assert reddit.base_comment(post_id, base_comment_id)["id"] == base_comment_id
+        assert reddit.state_comment(base_comment_id) is None
+        assert reddit.view_comment(base_comment_id, post_id) is None
+        comments = reddit.view_comments_list(post_id)
+        ids = [str(comment.get("id")) for comment in comments]
+        assert base_comment_id not in ids
+        assert "bench_overlay_comment_1" in ids
+
     def test_new_posts_diff(self):
         curr = copy.deepcopy(BASE_STATE)
         _append_user_post(
@@ -143,7 +271,7 @@ class TestRedditAccessor:
         assert len(new_posts) == 1
         assert new_posts[0]["id"] == "bench_new_post_1"
 
-    def test_check_new_post_in_subreddit_contains_positive(self):
+    def test_check_created_post_positive(self):
         curr = copy.deepcopy(BASE_STATE)
         _append_user_post(
             curr,
@@ -153,14 +281,13 @@ class TestRedditAccessor:
             content="Body with benchmark keywords",
         )
         reddit = Reddit(curr, init=copy.deepcopy(BASE_STATE))
-        check = reddit.check_new_post_in_subreddit_contains(
-            "r/Music",
-            "Bench Title",
-            "benchmark",
+        check = reddit.check_created_post(
+            "Bench Title", "benchmark",
+            subreddit="r/Music",
         )
         assert check["passed"] is True
 
-    def test_check_new_post_in_subreddit_contains_negative(self):
+    def test_check_created_post_negative(self):
         curr = copy.deepcopy(BASE_STATE)
         _append_user_post(
             curr,
@@ -170,35 +297,51 @@ class TestRedditAccessor:
             content="Body with benchmark keywords",
         )
         reddit = Reddit(curr, init=copy.deepcopy(BASE_STATE))
-        check = reddit.check_new_post_in_subreddit_contains(
-            "r/Music",
-            "Bench Title",
-            "benchmark",
+        check = reddit.check_created_post(
+            "Bench Title", "benchmark",
+            subreddit="r/Music",
         )
         assert check["passed"] is False
 
-    def test_check_new_post_or_comment_contains_positive_for_comment(self):
+    def test_check_new_content_contains_positive_for_comment(self):
         init = copy.deepcopy(BASE_STATE)
         curr = copy.deepcopy(BASE_STATE)
-        target_post = next(
-            post for post in curr["posts"]
-            if str(post.get("subreddit") or "").strip().removeprefix("r/").lower() == "china_irl"
-        )
-        curr.setdefault("userCommentsByPostId", {})
-        curr["userCommentsByPostId"].setdefault(str(target_post["id"]), []).append(
-            {
-                "id": "bench_comment_1",
-                "body": "elonmusk: Mars base alpha is on schedule.",
-            }
-        )
         reddit = Reddit(curr, init=init)
-        check = reddit.check_new_post_or_comment_contains(
+        target_post = next(
+            post for post in reddit.view_posts_list()
+            if str(post.get("subreddit") or "").strip().removeprefix("r/").lower() == "askreddit"
+        )
+        _append_user_comment(
+            curr,
+            post_id=str(target_post["id"]),
+            comment_id="bench_comment_1",
+            body="elonmusk: Mars base alpha is on schedule.",
+        )
+        check = reddit.check_new_content_contains(
             "elonmusk:",
             "Mars base alpha is on schedule.",
-            subreddit="China_irl",
+            subreddit="AskReddit",
             normalize_match=True,
         )
         assert check["passed"] is True
+
+    def test_check_deleted_comment_requires_comment_id_removed_from_user_index(self):
+        init = copy.deepcopy(BASE_STATE)
+        curr = copy.deepcopy(BASE_STATE)
+        _append_user_comment(
+            init,
+            post_id="post_1rfdbcx",
+            comment_id="bench_delete_comment_1",
+            body="delete me",
+        )
+        curr["user"]["commentIds"].append("bench_delete_comment_1")
+        reddit = Reddit(curr, init=init)
+
+        check = reddit.check_deleted_comment("bench_delete_comment_1")
+
+        assert check["passed"] is False
+        assert check["actual"]["in_comments"] is False
+        assert check["actual"]["in_user_comment_ids"] is True
 
 
 def _create_post_positive_case():

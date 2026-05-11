@@ -3,6 +3,7 @@ import { TopBar } from '../components/TopBar';
 import type { RedditPost } from '../types';
 import { useRedditStore } from '../state';
 import { useShallow } from 'zustand/react/shallow';
+import { useRedditPosts } from '../hooks/useRedditPosts';
 import {
   IcUpvote,
   IcDownvote,
@@ -237,10 +238,10 @@ const PostCard: React.FC<PostCardProps> = React.memo(({
 /* ── Main page ── */
 
 export const HomePage: React.FC = () => {
-  const { posts, joinedCommunityIds, postVotes } = useRedditStore(useShallow((s) => ({
-    posts: s.posts,
-    joinedCommunityIds: s.joinedCommunityIds,
-    postVotes: s.postVotes,
+  const posts = useRedditPosts();
+  const { joinedCommunityIds, postVotes } = useRedditStore(useShallow((s) => ({
+    joinedCommunityIds: s.user.joinedCommunityIds,
+    postVotes: s.user.postVotes,
   })));
   const votePost = useRedditStore((s) => s.votePost);
   const toggleJoin = useRedditStore((s) => s.toggleJoin);

@@ -7,6 +7,8 @@ import { useRedditStore } from '../state';
 import { strings } from '../res/strings';
 import { stringsEn } from '../res/strings.en';
 import type { RedditCommunity, RedditPost } from '../types';
+import { REDDIT_COMMUNITIES } from '../data';
+import { useRedditPosts } from '../hooks/useRedditPosts';
 
 const TRENDING_TOPICS = [
   { title: 'Arc Raiders Shrouded Sky Update', subtitle: 'Based on your interests' },
@@ -41,9 +43,9 @@ const matchesWord = (text: string, query: string): boolean => {
 export const SearchPage: React.FC = () => {
   const s = useAppStrings(strings, stringsEn);
   const { bindBack, bindTap } = useRedditGestures();
-  const { posts, communities, user } = useRedditStore(useShallow((state) => ({
-    posts: state.posts,
-    communities: state.communities,
+  const posts = useRedditPosts();
+  const communities = REDDIT_COMMUNITIES;
+  const { user } = useRedditStore(useShallow((state) => ({
     user: state.user,
   })));
   const [searchQuery, setSearchQuery] = useState('');

@@ -2,10 +2,23 @@ import defaults from './defaults.json';
 import { AVATAR_SOURCES } from './avatarSources';
 import { SUBREDDIT_ICON_SOURCES } from './subredditIconSources';
 import { getUserAvatar, normalizeUsername } from '../utils/userIdentity';
-import type { RedditPost, RedditSettings, RedditCommunity } from '../types';
-const asset = (r: unknown) => { const s = String(r ?? '').trim(); return (!s || s.startsWith('/') || s.startsWith('http')) ? s : `/@app-assets/Reddit/${s}`; };
+import { REDDIT_COMMUNITY_DEFAULTS } from '../constants';
+import type { Comment, RedditPost, RedditSettings, RedditCommunity } from '../types';
 
-export type { RedditPost, RedditSettings, RedditCommunity };
+const asset = (r: unknown) => {
+  const s = String(r ?? '').trim();
+  return (!s || s.startsWith('/') || s.startsWith('http')) ? s : `/@app-assets/Reddit/${s}`;
+};
+
+export type { Comment, RedditPost, RedditSettings, RedditCommunity };
+
+// ── Static app-owned resources ─────────────────────────────────────
+
+export const REDDIT_ASSETS = {
+  chatWelcome: asset('others/chat_welcome.png'),
+  emptyInbox: asset('others/inbox_empty.png'),
+};
+
 
 // ── Processing helpers ─────────────────────────────────────────────
 
@@ -125,6 +138,17 @@ const interleaveBySubreddit = (posts: RedditPost[]): RedditPost[] => {
   return out;
 };
 
+const processUserPost = (post: any, username: string): RedditPost => ({
+  ...post,
+  author: post.author || username,
+  image: post.image || undefined,
+  images: post.images || undefined,
+  subredditIcon: post.subredditIcon || undefined,
+  authorAvatar: getUserAvatar(normalizeUsername(post.author || username)),
+  upvotes: String(post.upvotes ?? '0'),
+  comments: String(post.comments ?? '0'),
+});
+
 export const processPosts = (posts: any[]): RedditPost[] => {
   const normalized = posts.map(p => {
     const base = normalizeTimeAgo(p.timeAgo);
@@ -149,93 +173,33 @@ export const processPosts = (posts: any[]): RedditPost[] => {
   return interleaveBySubreddit(normalized);
 };
 
-// ── Export ──────────────────────────────────────────────────────────
+export const REDDIT_COMMUNITIES = REDDIT_COMMUNITY_DEFAULTS.map((c) => ({
+  ...c,
+  icon: pickCommunityAvatar(c.id || c.name) ?? (c.icon ? asset(c.icon) : undefined),
+  spotlightImage: c.spotlightImage ? asset(c.spotlightImage) : undefined,
+}));
 
-const resolveAssetsDeep = (value: unknown): unknown => {
-  if (Array.isArray(value)) return value.map(resolveAssetsDeep);
-  if (value && typeof value === 'object') {
-    const obj = value as Record<string, unknown>;
-    const out: Record<string, unknown> = {};
-    for (const [k, v] of Object.entries(obj)) {
-      out[k] = resolveAssetsDeep(typeof v === 'string' && v.includes('/') ? asset(v) : v);
-    }
-    return out;
-  }
-  if (typeof value === 'string' && value.includes('/')) return asset(value);
-  return value;
+const typedDefaults = defaults as typeof defaults & {
+  user: typeof defaults.user & { bio?: string };
+  posts?: Record<string, any>;
+  comments?: Record<string, Comment>;
 };
 
-interface DefaultsExtensions {
-  samplePosts?: any[];
-  userPosts?: any[];
-  chatThreads?: Record<string, any[]>;
-  chatReplies?: Record<string, any[]>;
-  userComments?: Record<string, any[]>;
-}
-
-const typedDefaults = defaults as typeof defaults & DefaultsExtensions;
-const resolvedDefaults = resolveAssetsDeep(defaults) as typeof defaults;
-
-const processSamplePosts = (raw: any[]): RedditPost[] => {
-  if (!Array.isArray(raw)) return [];
-  return raw.map((p) => {
-    const authorKey = p.author || p.id || '';
-    return {
-      ...p,
-      image: p.image || undefined,
-      images: p.images || undefined,
-      subredditIcon: undefined,
-      authorAvatar: getUserAvatar(normalizeUsername(authorKey)),
-      upvotes: String(p.upvotes ?? '0'),
-      comments: String(p.comments ?? '0'),
-    } as RedditPost;
-  });
-};
-
-const processUserPosts = (raw: any[], username: string): RedditPost[] => {
-  if (!Array.isArray(raw)) return [];
-  return raw.map((p) => ({
-    ...p,
-    author: username,
-    image: p.image || undefined,
-    images: p.images || undefined,
-    subredditIcon: undefined,
-    authorAvatar: getUserAvatar(username),
-    upvotes: String(p.upvotes ?? '0'),
-    comments: String(p.comments ?? '0'),
-  } as RedditPost));
-};
-
-const processUserComments = (raw: Record<string, any[]>, username: string): Record<string, any[]> => {
-  if (!raw || typeof raw !== 'object') return {};
-  const out: Record<string, any[]> = {};
-  for (const [postId, list] of Object.entries(raw)) {
-    if (!Array.isArray(list)) continue;
-    out[postId] = list.map((c) => ({ ...c, author: c.author || username }));
-  }
-  return out;
-};
+const username = String(typedDefaults.user.username || 'Embarrassed_Fee8630');
 
 export const REDDIT_CONFIG = {
   user: {
-    ...resolvedDefaults.user,
-    avatar: getUserAvatar(resolvedDefaults.user.username) ?? '',
-    bio: '',
+    ...typedDefaults.user,
+    avatar: getUserAvatar(username) ?? '',
+    bio: typedDefaults.user.bio ?? '',
     bannerImage: '',
   },
-
-  communities: (resolvedDefaults.communities as RedditCommunity[]).map((c) => ({
-    ...c,
-    icon: pickCommunityAvatar(c.id || c.name) ?? (c.icon ? asset(c.icon) : undefined),
-  })),
-
-  settings: defaults.settings as RedditSettings,
-
-  assets: resolvedDefaults.assets,
-
-  samplePosts: processSamplePosts(typedDefaults.samplePosts ?? []),
-  userPosts: processUserPosts(typedDefaults.userPosts ?? [], resolvedDefaults.user.username),
-  chatThreads: (typedDefaults.chatThreads ?? {}) as Record<string, any[]>,
-  chatReplies: (typedDefaults.chatReplies ?? {}) as Record<string, any[]>,
-  userComments: processUserComments(typedDefaults.userComments ?? {}, resolvedDefaults.user.username),
+  posts: Object.fromEntries(
+    Object.entries(typedDefaults.posts ?? {}).map(([id, post]) => [id, processUserPost(post, username)]),
+  ) as Record<string, RedditPost>,
+  comments: (typedDefaults.comments ?? {}) as Record<string, Comment>,
+  chatThreads: typedDefaults.chatThreads as Record<string, any[]>,
+  chatReplies: typedDefaults.chatReplies as Record<string, any[]>,
+  settings: typedDefaults.settings as RedditSettings,
+  assets: REDDIT_ASSETS,
 };

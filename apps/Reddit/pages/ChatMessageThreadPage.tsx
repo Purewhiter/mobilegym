@@ -27,9 +27,9 @@ function threadKey(username: string, messageId: string): string {
 }
 
 export const ChatMessageThreadPage: React.FC = () => {
-  const { chatThreadsByUsername, chatThreadRepliesByKey, user } = useRedditStore(useShallow((s) => ({
-    chatThreadsByUsername: s.chatThreadsByUsername,
-    chatThreadRepliesByKey: s.chatThreadRepliesByKey,
+  const { chatThreads, chatReplies, user } = useRedditStore(useShallow((s) => ({
+    chatThreads: s.chatThreads,
+    chatReplies: s.chatReplies,
     user: s.user,
   })));
   const storeSendChatReply = useRedditStore((s) => s.sendChatReply);
@@ -48,17 +48,17 @@ export const ChatMessageThreadPage: React.FC = () => {
 
   const sourceMessage = React.useMemo(() => {
     if (!username || !messageId) return null;
-    const list = chatThreadsByUsername[username];
+    const list = chatThreads[username];
     const thread = Array.isArray(list) ? (list as ChatMessage[]) : [];
     return thread.find((m) => String(m.id) === String(messageId)) ?? null;
-  }, [messageId, chatThreadsByUsername, username]);
+  }, [messageId, chatThreads, username]);
 
   const replies = React.useMemo(() => {
     if (!username || !messageId) return [];
     const k = threadKey(username, messageId);
-    const list = chatThreadRepliesByKey?.[k];
+    const list = chatReplies?.[k];
     return Array.isArray(list) ? (list as ChatMessage[]) : [];
-  }, [messageId, chatThreadRepliesByKey, username]);
+  }, [messageId, chatReplies, username]);
 
   const canSend = draft.trim().length > 0 && !!username && !!messageId;
 
@@ -226,4 +226,3 @@ export const ChatMessageThreadPage: React.FC = () => {
     </div>
   );
 };
-

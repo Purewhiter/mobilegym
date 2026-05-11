@@ -1,6 +1,5 @@
 import React from 'react';
 import { TopBar } from '../components/TopBar';
-import { REDDIT_CONFIG } from '../data';
 import { useRedditGestures } from '../hooks/useRedditGestures';
 import { IcNavForward, IcAddPost, IcTelescope } from '../res/icons';
 import { useLocation } from 'react-router-dom';
@@ -20,8 +19,7 @@ type ChatTabKey = 'messages' | 'unread' | 'requests' | 'threads';
 const pickAvatar = (usernameLike: string): string | undefined => getUserAvatar(usernameLike);
 
 export const ChatPage: React.FC = () => {
-  const { assets } = REDDIT_CONFIG;
-  const chatThreadsByUsername = useRedditStore((s) => s.chatThreadsByUsername);
+  const chatThreads = useRedditStore((s) => s.chatThreads);
   const storeSeedChatThread = useRedditStore((s) => s.seedChatThread);
   const { bindTap } = useRedditGestures();
   const location = useLocation();
@@ -60,21 +58,21 @@ export const ChatPage: React.FC = () => {
   // Ensure demo threads exist with stable timestamps (seed once, persisted in localStorage).
   React.useEffect(() => {
     const needsSeed = seedUsers.some((u) => {
-      const list = chatThreadsByUsername[u.username];
+      const list = chatThreads[u.username];
       return !Array.isArray(list) || list.length === 0;
     });
     if (!needsSeed) return;
 
     for (const u of seedUsers) {
-      const existing = chatThreadsByUsername[u.username];
+      const existing = chatThreads[u.username];
       if (Array.isArray(existing) && existing.length > 0) continue;
       storeSeedChatThread(u.username, u.seedBody);
     }
-  }, [seedUsers, storeSeedChatThread, chatThreadsByUsername]);
+  }, [seedUsers, storeSeedChatThread, chatThreads]);
 
   const chatRows = React.useMemo(() => {
     return seedUsers.map((u) => {
-      const list = chatThreadsByUsername[u.username];
+      const list = chatThreads[u.username];
       const thread = Array.isArray(list) ? list : [];
       const last = thread.length ? thread[thread.length - 1] : null;
       const preview = last ? `${last.from === 'me' ? 'You' : u.username}: ${last.body}` : `You: ${u.seedBody}`;
@@ -85,7 +83,7 @@ export const ChatPage: React.FC = () => {
         ts,
       };
     });
-  }, [seedUsers, chatThreadsByUsername]);
+  }, [seedUsers, chatThreads]);
 
   const isTopAlignedTab = currentTab === 'requests' || currentTab === 'messages';
 

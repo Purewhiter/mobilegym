@@ -14,13 +14,17 @@ export interface RedditPost {
   shares?: number;
   url?: string;
   authorAvatar?: string;
-  commentsData?: Array<{
-    id: string;
-    author: string;
-    body: string;
-    score: number;
-    created_utc?: number;
-  }>;
+  commentsData?: Array<Omit<Comment, 'postId'>>;
+}
+
+export interface Comment {
+  id: string;
+  postId: string;
+  author: string;
+  body: string;
+  score?: number;
+  created_utc?: number;
+  parentId?: string;
 }
 
 export interface RedditSettings {
@@ -49,6 +53,9 @@ export interface RedditSettings {
   savedImageAttribution: boolean;
   defaultMarkdown: boolean;
 }
+
+export type RedditPostsOverlay = Record<string, RedditPost | null>;
+export type RedditCommentsOverlay = Record<string, Comment | null>;
 
 export interface RedditCommunity {
   id: string;

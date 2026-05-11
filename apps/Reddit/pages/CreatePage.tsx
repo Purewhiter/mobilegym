@@ -4,6 +4,8 @@ import { useRedditGestures } from '../hooks/useRedditGestures';
 import { useRedditStore } from '../state';
 import { useShallow } from 'zustand/react/shallow';
 import * as MediaService from '../../../os/MediaService';
+import * as TimeService from '../../../os/TimeService';
+import { getUserAvatar } from '../utils/userIdentity';
 
 /* ── flair data per community ── */
 const COMMUNITY_FLAIRS: Record<string, string[]> = {
@@ -186,7 +188,7 @@ const AddTagsSheet: React.FC<{
 /* ── CreatePage ── */
 export const CreatePage: React.FC = () => {
   const { bindBack, bindTap, back } = useRedditGestures();
-  const { createDraft } = useRedditStore(useShallow((s) => ({ createDraft: s.createDraft })));
+  const { createDraft, user } = useRedditStore(useShallow((s) => ({ createDraft: s.createDraft, user: s.user })));
   const storeAddFlair = useRedditStore((s) => s.addFlair);
   const storeCreatePost = useRedditStore((s) => s.createPost);
   const [title, setTitle] = useState('');
@@ -228,7 +230,24 @@ export const CreatePage: React.FC = () => {
 
   const handlePost = () => {
     if (!canPost) return;
-    storeCreatePost({ title: title.trim(), body: body.trim(), imageUris });
+    const id = `user_post_${TimeService.now()}`;
+    storeCreatePost({
+      id,
+      subreddit: selectedCommunity?.name ?? 'r/self',
+      subredditIcon: undefined,
+      author: user.username,
+      authorAvatar: getUserAvatar(user.username),
+      timeAgo: 'now',
+      title: title.trim(),
+      content: body.trim(),
+      image: imageUris[0],
+      images: imageUris.length > 0 ? imageUris : undefined,
+      upvotes: '1',
+      comments: '0',
+      shares: 0,
+      isAd: false,
+      commentsData: [],
+    });
     back();
   };
 
