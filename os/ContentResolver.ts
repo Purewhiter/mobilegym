@@ -17,14 +17,16 @@ const providers = new Map<string, ContentProvider>();
 function parseUri(uri: ContentUri): ParsedContentUri {
   const raw = String(uri ?? '').trim();
   if (!raw) throw new Error('[ContentResolver] URI is required');
-  const u = new URL(raw);
-  if (u.protocol !== 'content:') {
-    throw new Error(`[ContentResolver] Unsupported scheme: ${u.protocol}`);
+  if (!raw.startsWith('content:')) {
+    const scheme = raw.match(/^([^:]+):/)?.[1] ?? '';
+    throw new Error(`[ContentResolver] Unsupported scheme: ${scheme ? `${scheme}:` : '(none)'}; uri=${JSON.stringify(raw)}`);
   }
-  const authority = u.host.trim();
-  if (!authority) throw new Error('[ContentResolver] Missing authority');
-  const path = u.pathname || '/';
-  return { uri: raw, authority, path, query: u.searchParams };
+
+  const match = raw.match(/^content:\/\/([^/?#]+)([^?#]*)?(?:\?([^#]*))?(?:#.*)?$/);
+  const authority = String(match?.[1] ?? '').trim();
+  if (!authority) throw new Error(`[ContentResolver] Missing authority; uri=${JSON.stringify(raw)}`);
+  const path = match?.[2] || '/';
+  return { uri: raw, authority, path, query: new URLSearchParams(match?.[3] ?? '') };
 }
 
 function getProviderOrThrow(uri: ContentUri): { provider: ContentProvider; parsed: ParsedContentUri } {
@@ -100,10 +102,11 @@ export const ContentResolver = {
   },
 
   notifyChange(uri: ContentUri): void {
+    const parsed = parseUri(uri);
     BroadcastBus.sendBroadcast({
       action: ACTION_PROVIDER_CHANGED,
-      data: { uri },
-      extras: { uri },
+      data: { uri: parsed.uri },
+      extras: { uri: parsed.uri },
     });
   },
 
