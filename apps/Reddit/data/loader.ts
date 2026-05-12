@@ -42,11 +42,20 @@ const rawData = createLoader<RawRedditData>(postsUrl);
 let processedCache: RedditPost[] | null = null;
 let processedLoading: Promise<RedditPost[]> | null = null;
 
+const subscribers = new Set<() => void>();
+
+function notifySubscribers(): void {
+  for (const fn of subscribers) {
+    try { fn(); } catch { /* swallow listener errors */ }
+  }
+}
+
 export function loadPosts(): Promise<RedditPost[]> {
   if (processedCache) return Promise.resolve(processedCache);
   if (!processedLoading) {
     processedLoading = rawData.load().then(data => {
       processedCache = processPosts(data.posts);
+      notifySubscribers();
       return processedCache;
     });
   }
@@ -55,6 +64,16 @@ export function loadPosts(): Promise<RedditPost[]> {
 
 export function getPostsSync(): RedditPost[] | null {
   return processedCache;
+}
+
+/**
+ * Subscribe to fixture-posts cache updates. Used by `useSyncExternalStore`
+ * to re-render once `loadPosts()` resolves and `getPostsSync()` flips from
+ * null to the processed array. Returns the unsubscribe function.
+ */
+export function subscribePosts(listener: () => void): () => void {
+  subscribers.add(listener);
+  return () => { subscribers.delete(listener); };
 }
 
 export async function preload(): Promise<void> {

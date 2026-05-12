@@ -14,6 +14,7 @@ import {
   UNSAFE_NavigationContext,
 } from 'react-router-dom';
 import { useRedditStore } from './state';
+import { preload as preloadRedditPosts } from './data/loader';
 import { HomePage } from './pages/HomePage';
 import { CommunitiesPage } from './pages/CommunitiesPage';
 import { ChatPage } from './pages/ChatPage';
@@ -219,6 +220,12 @@ const RedditApp: React.FC = () => {
   useEffect(() => {
     trimUserComments();
   }, [commentIds, trimUserComments]);
+
+  // Kick off lazy fixture posts load on mount; the useFixturePosts hooks
+  // subscribe via useSyncExternalStore and re-render when the cache flips.
+  useEffect(() => {
+    void preloadRedditPosts();
+  }, []);
 
   const themeColors = isDark
     ? { ...manifest.theme.colors, ...(manifest.theme.colorsDark ?? {}) }
