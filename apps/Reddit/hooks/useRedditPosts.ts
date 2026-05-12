@@ -1,27 +1,21 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useSyncExternalStore } from 'react';
 import { useRedditStore } from '../state';
 import type { RedditPost } from '../types';
-import { getPostsSync, loadPosts } from '../data/loader';
+import { getPostsSync, subscribePosts } from '../data/loader';
 
 function isRedditPost(value: RedditPost | null | undefined): value is RedditPost {
   return Boolean(value);
 }
 
+// Stable empty fallback so useSyncExternalStore's snapshot identity stays
+// fixed before loadPosts() resolves — otherwise React would re-render on
+// every commit (different `[]` reference each call).
+const EMPTY_POSTS: RedditPost[] = Object.freeze([]) as readonly RedditPost[] as RedditPost[];
+
+const getFixtureSnapshot = (): RedditPost[] => getPostsSync() ?? EMPTY_POSTS;
+
 export function useFixturePosts(): RedditPost[] {
-  const [posts, setPosts] = useState<RedditPost[]>(() => getPostsSync() ?? []);
-
-  useEffect(() => {
-    if (getPostsSync()) return;
-    let cancelled = false;
-    loadPosts().then((loaded) => {
-      if (!cancelled) setPosts(loaded);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  return posts;
+  return useSyncExternalStore(subscribePosts, getFixtureSnapshot, getFixtureSnapshot);
 }
 
 export function useRedditPosts(): RedditPost[] {
@@ -30,15 +24,22 @@ export function useRedditPosts(): RedditPost[] {
   const postIds = useRedditStore((state) => state.user.postIds);
 
   return useMemo(() => {
-    const myPosts = postIds.map((id) => postsOverlay[id]).filter(isRedditPost);
-    const seen = new Set(myPosts.map((post) => post.id));
+    const fixtureById = new Map(fixture.map((post) => [String(post.id), post]));
+    const resolvePost = (id: string): RedditPost | null => {
+      if (Object.prototype.hasOwnProperty.call(postsOverlay, id)) {
+        return postsOverlay[id];
+      }
+      return fixtureById.get(id) ?? null;
+    };
+    const indexedPosts = postIds.map((id) => resolvePost(id)).filter(isRedditPost);
+    const seen = new Set(indexedPosts.map((post) => post.id));
     const fixturePosts = fixture
       .map((post) => {
         const id = String(post.id);
         if (Object.prototype.hasOwnProperty.call(postsOverlay, id)) {
           const overlay = postsOverlay[id];
           if (overlay === null) return null;
-          return { ...post, ...overlay };
+          return overlay;
         }
         return post;
       })
@@ -48,7 +49,7 @@ export function useRedditPosts(): RedditPost[] {
         seen.add(post.id);
         return true;
       });
-    return [...myPosts, ...fixturePosts];
+    return [...indexedPosts, ...fixturePosts];
   }, [postIds, postsOverlay, fixture]);
 }
 

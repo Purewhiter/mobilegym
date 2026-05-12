@@ -112,12 +112,17 @@ interface PostCardProps {
   onToggleJoin: (communityId: string) => void;
   onMoreMenu: (postId: string) => void;
   onPostClick: (e: React.MouseEvent, postId: string) => void;
-  bindTap: ReturnType<typeof useRedditGestures>['bindTap'];
 }
 
+// 注意：bindTap 不能作为 prop 传入——`useTriggerGestures` 内的 bindTap 是普通函数
+// 声明，每次 HomePage rerender 都是新引用，会让 React.memo 的浅比较失败导致全表卡片
+// 重渲染。改为在卡片内部调用 useRedditGestures()，让 prop 集合保持稳定（post 引用
+// 由 useRedditPosts useMemo 保证、voted/isJoined 是原始值、其他 callback 已 useCallback
+// 化或是 Zustand action）。
 const PostCard: React.FC<PostCardProps> = React.memo(({
-  post, voted, isJoined, onVote, onToggleJoin, onMoreMenu, onPostClick, bindTap,
+  post, voted, isJoined, onVote, onToggleJoin, onMoreMenu, onPostClick,
 }) => {
+  const { bindTap } = useRedditGestures();
   const communityId = post.subreddit;
   return (
     <div
@@ -245,7 +250,7 @@ export const HomePage: React.FC = () => {
   })));
   const votePost = useRedditStore((s) => s.votePost);
   const toggleJoin = useRedditStore((s) => s.toggleJoin);
-  const { bindTap, go } = useRedditGestures();
+  const { go } = useRedditGestures();
   const [postMoreMenuPostId, setPostMoreMenuPostId] = React.useState<string | null>(null);
 
   const [displayCount, setDisplayCount] = React.useState(PAGE_SIZE);
@@ -353,7 +358,6 @@ export const HomePage: React.FC = () => {
             onToggleJoin={toggleJoin}
             onMoreMenu={openMoreMenu}
             onPostClick={handlePostClick}
-            bindTap={bindTap}
           />
         ))}
 

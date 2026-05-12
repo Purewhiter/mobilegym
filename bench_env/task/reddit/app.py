@@ -19,7 +19,9 @@ _POSTS_JSON = _REDDIT_DATA_DIR / "posts.json"
 REDDIT_CHAT_THREADS_CHANGES = ["chatThreads"]
 REDDIT_CHAT_REPLIES_CHANGES = ["chatReplies"]
 REDDIT_COMMENT_CREATE_CHANGES = ["comments", "user.commentIds"]
-REDDIT_COMMENT_DELETE_CHANGES = REDDIT_COMMENT_CREATE_CHANGES
+# deleteOwnComment 会同步清理被删评论上自己投过的票（state.ts:223-252），
+# 因此 delete 的 fence 必须覆盖 user.commentVotes，否则一旦 init 含自投票即误判。
+REDDIT_COMMENT_DELETE_CHANGES = ["comments", "user.commentIds", "user.commentVotes"]
 REDDIT_COMMENT_UPDATE_CHANGES = ["comments"]
 REDDIT_COMMENT_VOTE_CHANGES = ["user.commentVotes"]
 REDDIT_JOIN_AND_POST_VOTE_CHANGES = ["user.joinedCommunityIds", "user.postVotes"]
@@ -143,22 +145,21 @@ class Reddit(BaseApp):
         return rng.choice(candidates) if rng is not None else candidates[0]
 
     @staticmethod
-    def sample_home_feed_post_rank_10_20(env_state: dict[str, Any], rng: Any) -> dict[str, Any]:
+    def sample_home_feed_post_rank_15(env_state: dict[str, Any], rng: Any) -> dict[str, Any]:
         """
-        Sample a post located in the initial home feed window [10..20] (1-based).
+        Pick the fixture post at rank 15 (1-based) of the interleaved fixture feed.
 
-        HomePage.tsx renders `posts.slice(0, displayCount)` where displayCount initial value is 20.
+        HomePage.tsx renders `posts.slice(0, displayCount)` where displayCount
+        initial value is 20. 默认 state 还会把 user.postIds 里的 my_post_1 插到
+        fixture posts 前面，因此该 fixture rank 15 在真实首页 UI 中通常是第 16 条；
+        仍然落在初始 20 条窗口内，需要 Agent 滚动一段。Returns the post at that
+        fixed fixture rank（fixture 不足时回退到最后一个）。
         """
         posts = interleave_by_subreddit(load_reddit_posts())
         if not posts:
             raise RuntimeError("任务设计错误：Reddit fixture posts 为空，无法采样首页帖子")
 
-        min_rank = 10
-        max_rank = min(20, len(posts))
-        if min_rank > max_rank:
-            min_rank = 1
-
-        feed_rank = min(max(15, min_rank), max_rank)
+        feed_rank = min(15, len(posts))
         post = posts[feed_rank - 1]
 
         return {
@@ -211,14 +212,14 @@ class Reddit(BaseApp):
         created_utc: int = 1710000000,
     ) -> dict[str, Any]:
         """返回注入 seeded comment 后的新 reddit state。
-        若已存在同 id 或同作者+包含相同 body 文本的评论则原样返回（幂等）。
+
+        若 comment_id 已存在则原样返回（幂等）。仅按 id 判重——不要再用 body
+        子串匹配，否则用户先前留过包含相同子串的评论会让 _prepare 静默跳过，
+        导致后续 check_deleted_comment / check_comment_body_contains 找不到目标。
         """
         author = str(self.user["username"])
-        for comment in self.state_comments.values():
-            if str(comment["id"]) == comment_id:
-                return self.raw
-            if str(comment["author"]) == author and body.strip().lower() in str(comment["body"]).strip().lower():
-                return self.raw
+        if comment_id in self.state_comments:
+            return self.raw
 
         comment_ids = list(self.user["commentIds"])
         next_comments = {
@@ -284,15 +285,7 @@ class Reddit(BaseApp):
         thread_key = f"{username}:{source_id}"
         init_ids = {m["id"] for m in self.init.chat_replies.get(thread_key, [])}
         current = self.chat_replies.get(thread_key, [])
-        replies = [m for m in current if m["id"] not in init_ids]
-
-        # 兼容未来把 reply 写回 chatThreads 并带 replyToId 的 schema。
-        init_thread_ids = {m["id"] for m in self.init.chat_threads.get(username, [])}
-        replies.extend(
-            m for m in self.chat_threads.get(username, [])
-            if m["id"] not in init_thread_ids and m.get("replyToId") == source_id
-        )
-        return replies
+        return [m for m in current if m["id"] not in init_ids]
 
     def new_joined_communities(self) -> list[str]:
         """返回 current 相对 init 新加入的社区 id 列表。"""
@@ -648,8 +641,7 @@ class Reddit(BaseApp):
                 return None
             if not isinstance(post, dict):
                 return None
-            base = self.base_post(pid)
-            return {**base, **post} if isinstance(base, dict) else post
+            return post
         return self.base_post(pid)
 
     def base_comment(self, post_id: str, comment_id: str) -> dict[str, Any] | None:
@@ -678,25 +670,21 @@ class Reddit(BaseApp):
                 return None
             if not isinstance(comment, dict):
                 return None
-            pid = str(comment.get("postId") or post_id or "")
-            base = self.base_comment(pid, cid) if pid else _base_comments_by_id().get(cid)
-            return {**base, **comment} if isinstance(base, dict) else comment
+            return comment
         if post_id is not None:
             return self.base_comment(str(post_id), cid)
         return _base_comments_by_id().get(cid)
 
     def view_posts_list(self) -> list[dict[str, Any]]:
         seen: set[str] = set()
-        my_posts = [
-            self.state_post(str(pid))
-            for pid in self.user["postIds"]
-            if self.state_post(str(pid)) is not None
-        ]
         out = []
-        for post in my_posts:
-            if not isinstance(post, dict):
+        for indexed_id in self.user["postIds"]:
+            post = self.view_post(str(indexed_id))
+            if not isinstance(post, dict) or post.get("id") is None:
                 continue
             pid = str(post["id"])
+            if pid in seen:
+                continue
             seen.add(pid)
             out.append(post)
         for post in load_reddit_posts():
@@ -724,14 +712,16 @@ class Reddit(BaseApp):
                 ]
                 fixture_comments = [comment for comment in fixture_comments if isinstance(comment, dict)]
         seen = {str(comment.get("id")) for comment in fixture_comments if isinstance(comment, dict)}
-        my_comments = [
-            self.state_comment(str(cid))
-            for cid in self.user["commentIds"]
-            if self.state_comment(str(cid)) is not None
-            and str(self.state_comment(str(cid))["postId"]) == pid
-            and str(cid) not in seen
-        ]
-        return [*fixture_comments, *my_comments]
+        runtime_comments = []
+        for comment in self.state_comments.values():
+            if not isinstance(comment, dict) or str(comment.get("postId")) != pid:
+                continue
+            cid = str(comment.get("id"))
+            if not cid or cid in seen:
+                continue
+            seen.add(cid)
+            runtime_comments.append(comment)
+        return [*fixture_comments, *runtime_comments]
 
     def check_created_post(
         self,

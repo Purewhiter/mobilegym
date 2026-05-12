@@ -234,6 +234,9 @@ export const PostCommentsPage: React.FC = () => {
 
   const isOwnUserComment = React.useCallback(
     (c: CommentItem): boolean => {
+      // 仅认 runtime overlay 中作者为当前用户的评论：deleteOwnComment 的前置条件
+      // 要求 commentId 在 user.commentIds 且 state.comments 有条目，fixture-only
+      // 评论不满足，因此不该露出删除/编辑入口。
       const created = commentsTable[c.id];
       if (!created) return false;
       const me = String(user.username || 'Embarrassed_Fee8630');

@@ -182,7 +182,7 @@ class Reddit_UpvoteSpecificFeedPost(BaseTask):
         # Use a home-feed rank in the initial page (HomePage shows PAGE_SIZE=20 items first),
         # instead of relying on a specific title being visible.
         "post": {
-            "sampler": Reddit.sample_home_feed_post_rank_10_20,
+            "sampler": Reddit.sample_home_feed_post_rank_15,
             # The sampler returns a dict; TaskSampler will flatten it into params when `fields` is present.
             "fields": {"post_id": "post_id", "post_title": "post_title", "feed_rank": "feed_rank"},
         },
@@ -311,8 +311,9 @@ class Reddit_DeleteSeededOwnComment(BaseTask):
         reddit = Reddit(state["apps"]["reddit"])
         seed_post_id = str(Reddit.fixture_post()["id"])
         seeded_id = "bench_seed_comment_delete_1"
-        seed_comment = str(self.parameters["seed_comment"]["default"])
-        next_reddit = reddit.prepare_state_with_seeded_comment(seeded_id, seed_post_id, seed_comment)
+        next_reddit = reddit.prepare_state_with_seeded_comment(
+            seeded_id, seed_post_id, str(self.p.seed_comment),
+        )
         await env.set_state({"apps": {"reddit": next_reddit}})
 
     def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
@@ -429,11 +430,10 @@ class Reddit_EditSeededOwnComment(BaseTask):
         reddit = Reddit(state["apps"]["reddit"])
         seed_post_id = str(Reddit.fixture_post()["id"])
         seeded_id = "bench_seed_comment_edit_1"
-        seed_comment = str(self.parameters["seed_comment"]["default"])
         next_reddit = reddit.prepare_state_with_seeded_comment(
             seeded_id,
             seed_post_id,
-            seed_comment,
+            str(self.p.seed_comment),
             created_utc=1710000002,
         )
         await env.set_state({"apps": {"reddit": next_reddit}})

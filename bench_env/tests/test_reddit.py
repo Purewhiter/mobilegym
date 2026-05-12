@@ -229,6 +229,22 @@ class TestRedditAccessor:
         assert "bench_overlay_post_1" in ids[:len(curr["user"]["postIds"])]
         assert base_id not in ids
 
+    def test_view_post_treats_runtime_object_as_full_base_override(self):
+        curr = copy.deepcopy(BASE_STATE)
+        base_post = next(post for post in load_reddit_posts() if isinstance(post, dict) and post.get("id"))
+        base_id = str(base_post["id"])
+        override = {
+            "id": base_id,
+            "title": "Runtime override title",
+        }
+        curr["posts"][base_id] = override
+
+        reddit = Reddit(curr)
+
+        assert reddit.view_post(base_id) == override
+        assert "subreddit" not in reddit.view_post(base_id)
+        assert "author" not in reddit.view_post(base_id)
+
     def test_view_comments_list_respects_tombstone_and_user_comments(self):
         curr = copy.deepcopy(BASE_STATE)
         base_post = next(
@@ -256,6 +272,63 @@ class TestRedditAccessor:
         ids = [str(comment.get("id")) for comment in comments]
         assert base_comment_id not in ids
         assert "bench_overlay_comment_1" in ids
+
+    def test_view_comments_list_includes_runtime_comment_not_owned_by_current_user(self):
+        curr = copy.deepcopy(BASE_STATE)
+        base_post = next(
+            post
+            for post in load_reddit_posts()
+            if isinstance(post, dict) and post.get("id")
+        )
+        post_id = str(base_post["id"])
+        curr["comments"]["bench_injected_comment_1"] = {
+            "id": "bench_injected_comment_1",
+            "postId": post_id,
+            "author": "ScenarioUser",
+            "body": "Injected scene comment body",
+            "score": 3,
+            "created_utc": 1710000010,
+        }
+
+        reddit = Reddit(curr)
+
+        comments = reddit.view_comments_list(post_id)
+        ids = [str(comment.get("id")) for comment in comments]
+        assert "bench_injected_comment_1" in ids
+
+    def test_view_posts_list_uses_view_post_for_user_indexed_base_post(self):
+        curr = copy.deepcopy(BASE_STATE)
+        base_post = next(post for post in load_reddit_posts() if isinstance(post, dict) and post.get("id"))
+        base_id = str(base_post["id"])
+        curr["user"]["postIds"].insert(0, base_id)
+
+        reddit = Reddit(curr)
+
+        posts = reddit.view_posts_list()
+        assert str(posts[0]["id"]) == base_id
+        assert posts.count(reddit.view_post(base_id)) == 1
+
+    def test_view_comment_treats_runtime_object_as_full_base_override(self):
+        curr = copy.deepcopy(BASE_STATE)
+        base_post = next(
+            post
+            for post in load_reddit_posts()
+            if isinstance(post, dict) and post.get("id") and isinstance(post.get("commentsData"), list) and post["commentsData"]
+        )
+        post_id = str(base_post["id"])
+        base_comment = next(comment for comment in base_post["commentsData"] if isinstance(comment, dict) and comment.get("id"))
+        base_comment_id = str(base_comment["id"])
+        override = {
+            "id": base_comment_id,
+            "body": "Runtime override comment",
+        }
+        curr["comments"][base_comment_id] = override
+
+        reddit = Reddit(curr)
+
+        assert reddit.view_comment(base_comment_id, post_id) == override
+        assert "postId" not in reddit.view_comment(base_comment_id, post_id)
+        assert "author" not in reddit.view_comment(base_comment_id, post_id)
 
     def test_new_posts_diff(self):
         curr = copy.deepcopy(BASE_STATE)
