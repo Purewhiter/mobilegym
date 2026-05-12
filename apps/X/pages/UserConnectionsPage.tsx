@@ -1,25 +1,31 @@
 import React from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
-import { X_IDS } from '../constants';
-import { useXStore, selectAllUsers, selectEffectiveFollowedSet } from '../state';
+import { currentUser } from '../data';
+import { useXStore, selectEffectiveFollowedSet } from '../state';
+import { useXAllUsers } from '../data/view';
 import { useXGestures } from '../hooks/useXGestures';
 import { useXStrings } from '../hooks/useXStrings';
 import { XImage } from '../components/XMedia';
 import { XUser } from '../types';
+
+const meUserId: string = currentUser.id;
 
 export const UserConnectionsPage: React.FC = () => {
   const { id } = useParams();
   const [searchParams] = useSearchParams();
   const type = (searchParams.get('type') as 'following' | 'followers') || 'following';
 
-  const users = useXStore(selectAllUsers);
+  const users = useXAllUsers();
   const followedSet = useXStore(selectEffectiveFollowedSet);
   const toggleFollow = useXStore(s => s.toggleFollow);
   const { bindBack, bindTap, go } = useXGestures();
   const s = useXStrings();
 
-  const isFollowing = (userId: string) => followedSet.has(userId.toLowerCase());
   const user = id ? users[id] : null;
+  const isFollowing = React.useCallback(
+    (userId: string) => followedSet.has(userId),
+    [followedSet],
+  );
 
   const connections = React.useMemo(() => {
     if (!id) return [];
@@ -27,28 +33,28 @@ export const UserConnectionsPage: React.FC = () => {
     const allUsers = Object.values(users) as XUser[];
 
     if (type === 'following') {
-      if (id === X_IDS.meUserId) {
-        return allUsers.filter(item => isFollowing(item.id));
+      if (id === meUserId) {
+        return allUsers.filter(item => followedSet.has(item.id));
       }
       return allUsers.slice(0, 15);
     }
 
-    if (id === X_IDS.meUserId) {
+    if (id === meUserId) {
       return allUsers.slice(5, 20);
     }
 
     const simulated = allUsers.slice(10, 25);
-    if (isFollowing(id)) {
-      const me = users[X_IDS.meUserId];
+    if (followedSet.has(id)) {
+      const me = users[meUserId];
       if (me && !simulated.find(item => item.id === me.id)) {
         simulated.unshift(me);
       }
     } else {
-      const index = simulated.findIndex(item => item.id === X_IDS.meUserId);
+      const index = simulated.findIndex(item => item.id === meUserId);
       if (index !== -1) simulated.splice(index, 1);
     }
     return simulated;
-  }, [id, isFollowing, type, users]);
+  }, [id, followedSet, type, users]);
 
   if (!user) return null;
 
@@ -60,7 +66,7 @@ export const UserConnectionsPage: React.FC = () => {
         </div>
         <div>
           <div className="font-bold text-lg">{user.name}</div>
-          <div className="text-gray-500 text-xs">{user.handle}</div>
+          <div className="text-gray-500 text-xs">{`@${user.id}`}</div>
         </div>
       </div>
 
@@ -77,7 +83,7 @@ export const UserConnectionsPage: React.FC = () => {
 
       <div className="flex-1">
         {connections.map(connection => {
-          const isMe = connection.id === X_IDS.meUserId;
+          const isMe = connection.id === meUserId;
           const amIFollowing = isFollowing(connection.id);
 
           return (
@@ -93,7 +99,7 @@ export const UserConnectionsPage: React.FC = () => {
               </div>
               <div className="flex-1 min-w-0 cursor-pointer" {...bindTap('user.open.fromPost', { params: { id: connection.id } })}>
                 <div className="font-bold truncate">{connection.name}</div>
-                <div className="text-gray-500 text-sm truncate">{connection.handle}</div>
+                <div className="text-gray-500 text-sm truncate">{`@${connection.id}`}</div>
                 {connection.bio && <div className="text-gray-400 text-sm truncate">{connection.bio}</div>}
               </div>
               {!isMe && (

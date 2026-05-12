@@ -1,8 +1,7 @@
 {
   "user": {
-    "id": "u_xiaoming_dev",
+    "id": "xiaoming_dev",
     "name": "小明",
-    "handle": "@xiaoming_dev",
     "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=xiaoming",
     "banner": "",
     "verified": false,
@@ -10,29 +9,26 @@
     "location": "北京",
     "website": "",
     "joinDate": "Mon Mar 15 08:00:00 +0000 2021",
-    "following": 3,
-    "followers": 12,
-    "screenName": "xiaoming_dev",
     "postIds": [],
     "replyIds": [],
     "followedUserIds": [
-      "u_OpenAI",
-      "u_elonmusk",
-      "u_nateleex"
+      "OpenAI",
+      "elonmusk",
+      "nateleex"
     ],
     "followerUserIds": [
-      "u_yihong0618",
-      "u_MaimaiLee123",
-      "u_xiongchun007",
-      "u_yihui_indie",
-      "u_plusyip",
-      "u_s1ntone",
-      "u__KleinHe_",
-      "u_cellinlab",
-      "u_vikingmute",
-      "u_fkysly",
-      "u_goocarlos",
-      "u_LeeMmai"
+      "yihong0618",
+      "MaimaiLee123",
+      "xiongchun007",
+      "yihui_indie",
+      "plusyip",
+      "s1ntone",
+      "_KleinHe_",
+      "cellinlab",
+      "vikingmute",
+      "fkysly",
+      "goocarlos",
+      "LeeMmai"
     ],
     "likedPostIds": [],
     "retweetedPostIds": [],
@@ -163,16 +159,16 @@
     {
       "id": "n1",
       "type": "like",
-      "actorId": "u_elonmusk",
+      "actorId": "elonmusk",
       "time": "6小时",
       "read": false,
-      "postId": "p_1879267274185756896",
-      "content": "Recent post from Elon Musk\nYes!"
+      "postId": "p_2036665153778000143",
+      "content": "Recent post from Elon Musk\nOptimus"
     },
     {
       "id": "n2",
       "type": "like",
-      "actorId": "u_stillgray",
+      "actorId": "stillgray",
       "time": "1天",
       "read": true,
       "content": "BREAKING — HAPPENING NOW:\nThe United States is rapidly redeploying the entire USS Abraham..."
@@ -180,7 +176,7 @@
     {
       "id": "n3",
       "type": "like",
-      "actorId": "u_lidangzzz",
+      "actorId": "lidangzzz",
       "time": "1天",
       "read": true,
       "content": "（全网劝人卖房、劝人学CS、劝人买SP500和NASDAQ100第一人）"
@@ -188,7 +184,7 @@
     {
       "id": "n4",
       "type": "mention",
-      "actorId": "u_slatt",
+      "actorId": "slatt",
       "time": "1天",
       "read": true,
       "content": "Kai Cenat really cooking behind the scenes with his new clothing brand \"Vivet 😮‍💨🔥\""
@@ -196,14 +192,14 @@
     {
       "id": "n5",
       "type": "like",
-      "actorId": "u_pleb",
+      "actorId": "pleb",
       "time": "1天",
       "read": true
     },
     {
       "id": "n_mention_1",
       "type": "mention",
-      "actorId": "u_vikingmute",
+      "actorId": "vikingmute",
       "time": "2h",
       "read": false,
       "content": "@yihong0618 这个项目看起来很棒，Star了！"
@@ -211,7 +207,7 @@
     {
       "id": "n_mention_2",
       "type": "mention",
-      "actorId": "u_waylybaye",
+      "actorId": "waylybaye",
       "time": "5h",
       "read": true,
       "content": "回复 @yihong0618: 确实，独立开发不容易。"
@@ -220,22 +216,22 @@
   "conversations": [
     {
       "id": "c1",
-      "participantId": "u_waylybaye",
+      "participantId": "waylybaye",
       "unreadCount": 1,
       "lastMessageId": "m2",
       "messages": [
         {
           "id": "m1",
-          "senderId": "u_xiaoming_dev",
-          "receiverId": "u_waylybaye",
+          "senderId": "xiaoming_dev",
+          "receiverId": "waylybaye",
           "content": "Yo how is ServerCat doing?",
           "time": "15m",
           "read": true
         },
         {
           "id": "m2",
-          "senderId": "u_waylybaye",
-          "receiverId": "u_xiaoming_dev",
+          "senderId": "waylybaye",
+          "receiverId": "xiaoming_dev",
           "content": "Indie dev life is hard bro",
           "time": "10m",
           "read": false
@@ -247,7 +243,7 @@
     {
       "id": "rs1",
       "type": "user",
-      "userId": "u_xiaoming_dev"
+      "userId": "xiaoming_dev"
     }
   ],
   "settings": {
@@ -290,15 +286,15 @@
     "hideSuggestions": false
   },
   "suggestedFollowingIds": [
-    "u_DennisThink",
-    "u_Linmiv",
-    "u_MaimaiLee123",
-    "u__KleinHe_",
-    "u_alanblogsooo",
-    "u_appinn",
-    "u_cellinlab",
-    "u_chuckchen_zh",
-    "u_daiming_cn",
-    "u_dotey"
+    "DennisThink",
+    "Linmiv",
+    "MaimaiLee123",
+    "_KleinHe_",
+    "alanblogsooo",
+    "appinn",
+    "cellinlab",
+    "chuckchen_zh",
+    "daiming_cn",
+    "dotey"
   ]
 }

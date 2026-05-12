@@ -1,13 +1,14 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
 import { IcAdd, IcSettings } from '../res/icons';
-import { useXStore, selectConversations, selectUser } from '../state';
+import { useXStore, selectUser } from '../state';
+import { useXConversations } from '../data/view';
 import { useXGestures } from '../hooks/useXGestures';
 import { useXStrings } from '../hooks/useXStrings';
 import { XImage } from '../components/XMedia';
 
 export const MessagesPage: React.FC<{ isActive?: boolean }> = ({ isActive = true }) => {
-  const conversations = useXStore(selectConversations);
+  const conversations = useXConversations();
   const user = useXStore(selectUser);
   const location = useLocation();
   const { bindTap } = useXGestures(isActive);
@@ -79,7 +80,7 @@ export const MessagesPage: React.FC<{ isActive?: boolean }> = ({ isActive = true
                 <div className="flex items-center gap-1 overflow-hidden">
                   <span className="font-bold truncate">{conversation.participant.name}</span>
                   {conversation.participant.verified && <span className="text-blue-400 shrink-0">✓</span>}
-                  <span className="text-gray-500 text-sm truncate">{conversation.participant.handle}</span>
+                  <span className="text-gray-500 text-sm truncate">{`@${conversation.participant.id}`}</span>
                 </div>
                 <span className="text-gray-500 text-sm shrink-0 ml-2">{conversation.lastMessage.time}</span>
               </div>

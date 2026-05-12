@@ -1,6 +1,7 @@
 import React from 'react';
 import { useParams } from 'react-router-dom';
-import { useXStore, selectHydratedPosts, selectEffectiveFollowedSet, selectResolvedPostById } from '../state';
+import { useXStore, selectEffectiveFollowedSet } from '../state';
+import { useXHydratedPosts, useXResolvedPost } from '../data/view';
 import { useXGestures } from '../hooks/useXGestures';
 import { XImage } from '../components/XMedia';
 import { useXStrings } from '../hooks/useXStrings';
@@ -8,11 +9,11 @@ import type { XPost, XUser } from '../types';
 import { IcSort } from '../res/icons';
 export const PostActivityPage: React.FC = () => {
   const { id } = useParams();
-  const posts = useXStore(selectHydratedPosts);
-  const post = useXStore(React.useMemo(() => selectResolvedPostById(id || ''), [id]));
+  const posts = useXHydratedPosts();
+  const post = useXResolvedPost(id || '');
   const toggleFollow = useXStore(s => s.toggleFollow);
   const followedSet = useXStore(selectEffectiveFollowedSet);
-  const isFollowing = (userId: string) => followedSet.has(userId.toLowerCase());
+  const isFollowing = (userId: string) => followedSet.has(userId);
   const { bindBack, bindTap, go } = useXGestures();
   const s = useXStrings();
   const [activeTab, setActiveTab] = React.useState<'quotes' | 'retweets'>('quotes');
@@ -29,13 +30,15 @@ export const PostActivityPage: React.FC = () => {
     return q;
   }, [posts, id, sortMethod]);
 
+  // Mock retweeter 列表 — 用于"谁转推了这条推文"展示, 不与 base data 关联。
+  // 遵守 data contract: id 即 handle (无 @ 前缀), 没有独立的 handle 字段。
   const retweeters = React.useMemo<XUser[]>(() => [
-    { id: 'u_ishq', name: 'Ishq🏵️', handle: '@__Ishq_', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Ishq', verified: true, following: 100, followers: 200 },
-    { id: 'u_rishi', name: 'Rishi Ajnoti', handle: '@RishiAjnoti', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Rishi', verified: true, bio: 'Creator', following: 50, followers: 300 },
-    { id: 'u_kira', name: 'Kira_life 🇺🇸', handle: '@Aliya562219', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Kira', verified: true, bio: 'X Creator | Turning thoughts, life lessons, and powerful quotes into daily inspiration for every soul', following: 120, followers: 400 },
-    { id: 'u_sherri', name: 'Sherri', handle: '@SherriVermaat', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sherri', verified: true, bio: 'Passionate about my friends, inspirational quotes, art, MAGA CONSERVATIVE🇺🇸 SAVE AMERICA ✝️ NO DMS', following: 200, followers: 500 },
-    { id: 'u_sankichi', name: 'さんきち👍✨', handle: '@sankichi48', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sankichi', verified: true, bio: '戦国武将⚔️ 武田信玄の名言', following: 300, followers: 600 },
-    { id: 'u_playerone', name: 'PlayerOneVideogamer', handle: '@CG97POV', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=PlayerOne', verified: true, bio: '🇺🇸 1st. Gamer!', following: 400, followers: 700 },
+    { id: '__Ishq_', name: 'Ishq🏵️', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Ishq', verified: true, following: 100, followers: 200 },
+    { id: 'RishiAjnoti', name: 'Rishi Ajnoti', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Rishi', verified: true, bio: 'Creator', following: 50, followers: 300 },
+    { id: 'Aliya562219', name: 'Kira_life 🇺🇸', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Kira', verified: true, bio: 'X Creator | Turning thoughts, life lessons, and powerful quotes into daily inspiration for every soul', following: 120, followers: 400 },
+    { id: 'SherriVermaat', name: 'Sherri', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sherri', verified: true, bio: 'Passionate about my friends, inspirational quotes, art, MAGA CONSERVATIVE🇺🇸 SAVE AMERICA ✝️ NO DMS', following: 200, followers: 500 },
+    { id: 'sankichi48', name: 'さんきち👍✨', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sankichi', verified: true, bio: '戦国武将⚔️ 武田信玄の名言', following: 300, followers: 600 },
+    { id: 'CG97POV', name: 'PlayerOneVideogamer', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=PlayerOne', verified: true, bio: '🇺🇸 1st. Gamer!', following: 400, followers: 700 },
   ], []);
 
   if (!post) {
@@ -108,7 +111,7 @@ export const PostActivityPage: React.FC = () => {
                       <div className="flex items-center text-gray-500 text-sm">
                         <span className="font-bold text-app-text mr-1">{quote.author?.name}</span>
                         {quote.author?.verified && <span className="text-blue-400 mr-1">✓</span>}
-                        <span className="mr-1">{quote.author?.handle}</span>
+                        <span className="mr-1">{quote.author?.id ? `@${quote.author.id}` : ''}</span>
                         <span>· {quote.time}</span>
                       </div>
                       <div className="mt-1 text-app-text whitespace-pre-wrap">{quote.content}</div>
@@ -118,7 +121,7 @@ export const PostActivityPage: React.FC = () => {
                             {post.author?.avatar && <XImage src={post.author.avatar} alt={post.author.name} className="w-full h-full object-cover" />}
                           </div>
                           <span className="font-bold text-sm text-app-text">{post.author?.name}</span>
-                          <span className="text-gray-500 text-sm">{post.author?.handle}</span>
+                          <span className="text-gray-500 text-sm">{post.author?.id ? `@${post.author.id}` : ''}</span>
                           <span className="text-gray-500 text-sm">· {post.time}</span>
                         </div>
                         <div className="text-app-text text-sm line-clamp-3">{post.content}</div>
@@ -181,7 +184,7 @@ export const PostActivityPage: React.FC = () => {
                       <span className="truncate">{user.name}</span>
                       {user.verified && <span className="text-blue-400 ml-1 shrink-0">✓</span>}
                     </div>
-                    <div className="text-gray-500 text-sm truncate">{user.handle}</div>
+                    <div className="text-gray-500 text-sm truncate">{`@${user.id}`}</div>
                     {user.bio && <div className="text-app-text text-sm mt-1 line-clamp-2">{user.bio}</div>}
                   </div>
                 </div>

@@ -34,7 +34,7 @@ export const SettingsPrivacyYourPostsPage: React.FC = () => {
         </button>
         <div className="flex flex-col items-center">
           <span className="text-lg font-bold leading-tight">{isEnglish ? 'Your posts' : '你的帖子'}</span>
-          <span className="text-sm text-gray-500">{user.handle}</span>
+          <span className="text-sm text-gray-500">{`@${user.id}`}</span>
         </div>
       </div>
       <div className="px-4 py-3 text-[13px] text-gray-600">{isEnglish ? 'Manage information associated with your posts.' : '管理与你的帖子相关的信息。'}</div>

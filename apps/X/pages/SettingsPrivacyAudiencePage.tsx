@@ -34,7 +34,7 @@ export const SettingsPrivacyAudiencePage: React.FC = () => {
         </button>
         <div className="flex flex-col items-center">
           <span className="text-lg font-bold leading-tight">{isEnglish ? 'Audience and tagging' : '受众和圈人'}</span>
-          <span className="text-sm text-gray-500">{user.handle}</span>
+          <span className="text-sm text-gray-500">{`@${user.id}`}</span>
         </div>
       </div>
       <div className="px-4 py-3 text-[13px] text-gray-600">{isEnglish ? 'Manage what information you allow other people on X to see.' : '管理你允许其他人在 X 上看到的信息。'}</div>

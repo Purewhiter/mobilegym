@@ -68,7 +68,7 @@ export function XDrawer({ isOpen }: XDrawerProps) {
 
             <div className="mt-3 cursor-pointer active:opacity-80" {...bindTap('profile.open')}>
               <div className="text-[18px] font-bold text-app-text leading-tight">{user.name}</div>
-              <div className="text-[14px] text-gray-500">{user.handle}</div>
+              <div className="text-[14px] text-gray-500">{`@${user.id}`}</div>
             </div>
 
             <div className="mt-3 flex items-center gap-4 text-[14px]">

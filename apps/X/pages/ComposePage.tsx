@@ -2,7 +2,8 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { IcAddCircle, IcCamera, IcChart, IcGlobe, IcImage, IcLocation } from '../res/icons';
 import { dimens } from '../res/dimens';
-import { useXStore, selectResolvedPostById, selectUser } from '../state';
+import { useXStore, selectUser } from '../state';
+import { useXResolvedPost } from '../data/view';
 import { useXGestures } from '../hooks/useXGestures';
 import { useXStrings } from '../hooks/useXStrings';
 import { XImage } from '../components/XMedia';
@@ -20,11 +21,7 @@ export const ComposePage: React.FC = () => {
   const s = useXStrings();
 
   const effectiveQuotedPostId = quotedPostIdFromUrl || pendingQuotedPostId;
-  const quotedPostSelector = useMemo(
-    () => effectiveQuotedPostId ? selectResolvedPostById(effectiveQuotedPostId) : null,
-    [effectiveQuotedPostId],
-  );
-  const quotedPost = useXStore(quotedPostSelector ?? (() => null));
+  const quotedPost = useXResolvedPost(effectiveQuotedPostId || '');
 
   useEffect(() => {
     return () => {
@@ -102,7 +99,7 @@ export const ComposePage: React.FC = () => {
                     <span className="font-bold text-sm text-app-text truncate">{quotedPost.author?.name}</span>
                     {quotedPost.author?.verified && <span className="text-blue-400 text-xs">✓</span>}
                   </div>
-                  <div className="text-gray-500 text-xs">{quotedPost.author?.handle}</div>
+                  <div className="text-gray-500 text-xs">{quotedPost.author?.id ? `@${quotedPost.author.id}` : ''}</div>
                 </div>
               </div>
               <div className="text-app-text text-sm line-clamp-4 whitespace-pre-wrap">{quotedPost.content}</div>

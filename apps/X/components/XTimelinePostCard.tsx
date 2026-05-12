@@ -6,8 +6,8 @@ import { XPostActionBar, type XPostActionIds } from './XPostActionBar';
 import type { XPost } from '../types';
 
 type TimelineAuthor = {
+  id?: string;
   name?: string;
-  handle?: string;
   avatar?: string;
   verified?: boolean;
 };
@@ -22,7 +22,7 @@ type TimelineQuotedPost = Partial<XPost> & {
 export type XTimelinePost = XPost & {
   author?: TimelineAuthor;
   quotedPost?: TimelineQuotedPost;
-  replyToHandle?: string;
+  replyToUserId?: string;
 };
 
 interface XTimelinePostCardProps {
@@ -49,7 +49,7 @@ export const XTimelinePostCard: React.FC<XTimelinePostCardProps> = ({
   const { bindTap } = useXGestures(isActive);
   const s = useXStrings();
   const authorName = post.author?.name ?? 'Unknown';
-  const authorHandle = post.author?.handle ?? '@unknown';
+  const authorHandle = post.author?.id ? `@${post.author.id}` : '@unknown';
 
   return (
     <div className="border-b border-app-border p-4 active:bg-black/5 cursor-pointer transition-colors" {...bindTap('post.open', { params: { id: post.id } })}>
@@ -83,10 +83,10 @@ export const XTimelinePostCard: React.FC<XTimelinePostCardProps> = ({
             {headerRight}
           </div>
 
-          {post.replyToHandle ? (
+          {post.replyToUserId ? (
             <div className="text-gray-500 text-sm mt-0.5">
               {s.reply_to_prefix}
-              <span className="text-blue-400">{post.replyToHandle}</span>
+              <span className="text-blue-400">{`@${post.replyToUserId}`}</span>
             </div>
           ) : null}
 
@@ -118,7 +118,7 @@ export const XTimelinePostCard: React.FC<XTimelinePostCardProps> = ({
                       <span className="font-bold text-sm text-app-text truncate">{post.quotedPost.author?.name ?? 'Unknown'}</span>
                       {post.quotedPost.author?.verified && <span className="text-blue-400 text-xs">✓</span>}
                     </div>
-                    <div className="text-gray-500 text-xs">{post.quotedPost.author?.handle ?? '@unknown'}</div>
+                    <div className="text-gray-500 text-xs">{post.quotedPost.author?.id ? `@${post.quotedPost.author.id}` : '@unknown'}</div>
                   </div>
                 </div>
                 <div className="text-app-text text-sm line-clamp-4 whitespace-pre-wrap">{post.quotedPost.content}</div>

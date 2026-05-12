@@ -1,7 +1,8 @@
 import React from 'react';
 import { useParams } from 'react-router-dom';
 import { IcCamera, IcChart, IcImage, IcLocation, IcSmile } from '../res/icons';
-import { useXStore, selectHydratedPosts, selectResolvedPostById, selectUser } from '../state';
+import { useXStore, selectUser } from '../state';
+import { useXAllUsers, useXLocalPosts, useXRepliesForPost, useXResolvedPost } from '../data/view';
 import { useXGestures } from '../hooks/useXGestures';
 import { useXStrings } from '../hooks/useXStrings';
 import { XImage, XVideo } from '../components/XMedia';
@@ -9,16 +10,18 @@ import { XImage, XVideo } from '../components/XMedia';
 export const ReplyPage: React.FC = () => {
   const { id } = useParams();
   const user = useXStore(selectUser);
-  const posts = useXStore(selectHydratedPosts);
-  const original = useXStore(React.useMemo(() => selectResolvedPostById(id || ''), [id]));
+  const localPosts = useXLocalPosts();
+  const importedReplies = useXRepliesForPost(id || '');
+  const allUsers = useXAllUsers();
+  const original = useXResolvedPost(id || '');
   const addReply = useXStore(s => s.addReply);
   const { bindBack, bindTap, back } = useXGestures();
   const s = useXStrings();
 
   const replies = React.useMemo(() => {
-    const dynamicReplies = posts.filter(post => post.threadId === id);
-    const importedReplies = Array.isArray(original?.replies) ? original.replies : [];
-    const combined = [...importedReplies, ...dynamicReplies];
+    const dynamicReplies = localPosts.filter(post => post.threadId === id);
+    const inlineReplies = Array.isArray(original?.replies) ? original.replies : [];
+    const combined = [...importedReplies, ...inlineReplies, ...dynamicReplies];
     const seen = new Set<string>();
 
     return combined.filter(reply => {
@@ -26,7 +29,7 @@ export const ReplyPage: React.FC = () => {
       seen.add(reply.id);
       return true;
     });
-  }, [id, original, posts]);
+  }, [id, importedReplies, localPosts, original]);
 
   const [content, setContent] = React.useState('');
   const trimmed = content.trim();
@@ -86,7 +89,7 @@ export const ReplyPage: React.FC = () => {
               <div className="flex items-center text-gray-500 text-sm flex-wrap">
                 <span className="font-bold text-app-text mr-1">{original.author?.name}</span>
                 {original.author?.verified ? <span className="text-blue-400 mr-1">✓</span> : null}
-                <span className="mr-1">{original.author?.handle}</span>
+                <span className="mr-1">{original.author?.id ? `@${original.author.id}` : ''}</span>
                 <span>· {original.time}</span>
               </div>
               <div className="mt-1 text-app-text whitespace-pre-wrap">{original.content}</div>
@@ -105,7 +108,7 @@ export const ReplyPage: React.FC = () => {
 
           <div className="mt-3 text-gray-500 text-sm">
             {s.reply_to_prefix}
-            <span className="text-blue-400">{original.author?.handle}</span>
+            <span className="text-blue-400">{original.author?.id ? `@${original.author.id}` : ''}</span>
           </div>
 
           <div className="mt-4 flex">
@@ -133,27 +136,30 @@ export const ReplyPage: React.FC = () => {
 
           {replies.length > 0 && (
             <div className="mt-6 pt-4 border-t border-app-border">
-              {replies.map(reply => (
-                <div key={reply.id} className="flex gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden shrink-0">
-                    {reply.author?.avatar ? (
-                      <XImage src={reply.author.avatar} alt={reply.author.name} className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full bg-gray-200 flex items-center justify-center font-bold">
-                        {reply.author?.name?.[0]}
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 text-sm text-gray-500 mb-0.5">
-                      <span className="text-app-text font-bold">{reply.author?.name}</span>
-                      <span>{reply.author?.handle}</span>
-                      <span>· {reply.time}</span>
+              {replies.map(reply => {
+                const replyAuthor = (reply as any).author ?? allUsers[reply.authorId];
+                return (
+                  <div key={reply.id} className="flex gap-3 mb-6">
+                    <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden shrink-0">
+                      {replyAuthor?.avatar ? (
+                        <XImage src={replyAuthor.avatar} alt={replyAuthor.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full bg-gray-200 flex items-center justify-center font-bold">
+                          {replyAuthor?.name?.[0]}
+                        </div>
+                      )}
                     </div>
-                    <div className="text-app-text text-[15px] whitespace-pre-wrap">{reply.content}</div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 text-sm text-gray-500 mb-0.5">
+                        <span className="text-app-text font-bold">{replyAuthor?.name}</span>
+                        <span>{replyAuthor?.id ? `@${replyAuthor.id}` : ''}</span>
+                        <span>· {reply.time}</span>
+                      </div>
+                      <div className="text-app-text text-[15px] whitespace-pre-wrap">{reply.content}</div>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>

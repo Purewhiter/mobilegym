@@ -1,9 +1,9 @@
 export interface XUser {
+  // 主键: 不带 @, 保留 case (例如 'OpenAI' / 'MrBeast' / 'xiaoming_dev')。
+  // 显示 @handle 时, UI 拼 '@' + id。
   id: string;
   name: string;
-  handle: string;
   avatar: string;
-  screenName?: string;
   restId?: string;
   banner?: string;
   verified: boolean;
@@ -12,8 +12,8 @@ export interface XUser {
   website?: string;
   birthDate?: string;
   joinDate?: string;
-  following: number;
-  followers: number;
+  following?: number;
+  followers?: number;
 }
 
 export interface XPost {

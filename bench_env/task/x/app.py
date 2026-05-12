@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import json
 import random
+from functools import cached_property
 from pathlib import Path
 from typing import Any
 
@@ -21,19 +22,6 @@ _X_POSTS_JSON_PATH = _X_DATA_DIR / "posts.json"
 _X_USERS_JSON_CACHE: dict[str, dict[str, Any]] | None = None
 _X_POSTS_JSON_CACHE: list[dict[str, Any]] | None = None
 _X_POSTS_BY_ID_CACHE: dict[str, dict[str, Any]] | None = None
-
-_AMBIGUOUS_HANDLES = {"@openai", "@elonmusk"}
-
-
-def _normalize_id(value: Any) -> str:
-    return str(value or "").strip().lower()
-
-
-def _normalize_handle(value: Any) -> str:
-    handle = str(value or "").strip()
-    if not handle:
-        return ""
-    return handle if handle.startswith("@") else f"@{handle}"
 
 
 def _preview_text(text: Any, *, limit: int = 40) -> str:
@@ -51,17 +39,6 @@ def _pick_keyword(text: Any) -> str:
     if len(words) >= 3:
         return " ".join(words[: min(5, len(words))])
     return plain[: min(8, len(plain))]
-
-
-def _merge_entity(base: dict[str, Any], patch: dict[str, Any]) -> dict[str, Any]:
-    result = dict(base)
-    for key, value in patch.items():
-        base_value = result.get(key)
-        if isinstance(base_value, dict) and isinstance(value, dict):
-            result[key] = _merge_entity(base_value, value)
-        else:
-            result[key] = value
-    return result
 
 
 def _load_users_json() -> dict[str, Any]:
@@ -103,9 +80,9 @@ def _load_posts_by_id() -> dict[str, dict[str, Any]]:
     if _X_POSTS_BY_ID_CACHE is not None:
         return _X_POSTS_BY_ID_CACHE
     _X_POSTS_BY_ID_CACHE = {
-        _normalize_id(post.get("id")): post
+        post.get("id"): post
         for post in _load_posts_json()
-        if isinstance(post, dict) and _normalize_id(post.get("id"))
+        if isinstance(post, dict) and post.get("id")
     }
     return _X_POSTS_BY_ID_CACHE
 
@@ -147,14 +124,10 @@ class X(BaseApp):
         return _load_posts_json()
 
     def base_post(self, post_id: str) -> dict[str, Any] | None:
-        return _load_posts_by_id().get(_normalize_id(post_id))
+        return _load_posts_by_id().get(post_id)
 
     def state_post(self, post_id: str) -> dict[str, Any] | None:
-        table = self.state_posts
-        if post_id in table:
-            value = table[post_id]
-        else:
-            value = table.get(_normalize_id(post_id))
+        value = self.state_posts.get(post_id)
         return value if isinstance(value, dict) else None
 
     def state_post_entities(self) -> list[dict[str, Any]]:
@@ -162,25 +135,13 @@ class X(BaseApp):
 
     def view_post(self, post_id: str) -> dict[str, Any] | None:
         table = self.state_posts
-        key = str(post_id)
-        normalized = _normalize_id(post_id)
+        # runtime overlay: dict 覆盖 base; None 表示 tombstone (隐藏 base)
+        if post_id in table:
+            value = table[post_id]
+            if not isinstance(value, dict):
+                return None
+            return self._with_relationship_derived_stats(value)
         base = self.base_post(post_id)
-        if key in table:
-            value = table[key]
-            if value is None:
-                return None
-            if isinstance(value, dict):
-                post = _merge_entity(base, value) if base else value
-                return self._with_relationship_derived_stats(post)
-            return None
-        if normalized in table:
-            value = table[normalized]
-            if value is None:
-                return None
-            if isinstance(value, dict):
-                post = _merge_entity(base, value) if base else value
-                return self._with_relationship_derived_stats(post)
-            return None
         if not base:
             return None
         return self._with_relationship_derived_stats(base)
@@ -188,7 +149,7 @@ class X(BaseApp):
     def _runtime_comment_counts(self) -> dict[str, int]:
         counts: dict[str, int] = {}
         for item in self.state_post_entities():
-            thread_id = _normalize_id(item.get("threadId"))
+            thread_id = item.get("threadId")
             if thread_id:
                 counts[thread_id] = counts.get(thread_id, 0) + 1
         return counts
@@ -204,7 +165,7 @@ class X(BaseApp):
         stats = post.get("stats")
         if not isinstance(stats, dict):
             return post
-        post_id = _normalize_id(post.get("id"))
+        post_id = post.get("id")
         liked_ids = liked_ids if liked_ids is not None else self.liked_post_ids
         retweeted_ids = retweeted_ids if retweeted_ids is not None else self.retweeted_post_ids
         comment_counts = comment_counts if comment_counts is not None else self._runtime_comment_counts()
@@ -226,28 +187,25 @@ class X(BaseApp):
     def view_posts(self) -> list[dict[str, Any]]:
         table = self.state_posts
         tombstones = {
-            _normalize_id(post_id)
+            post_id
             for post_id, value in table.items()
             if value is None
         }
         liked_ids = self.liked_post_ids
         retweeted_ids = self.retweeted_post_ids
         comment_counts = self._runtime_comment_counts()
-        base_by_id = {_normalize_id(post.get("id")): post for post in self.base_posts if isinstance(post, dict)}
         combined = []
-        for post_id, value in table.items():
+        for _post_id, value in table.items():
             if value is None or not isinstance(value, dict):
                 continue
-            normalized = _normalize_id(post_id)
-            base = base_by_id.get(normalized)
-            combined.append(_merge_entity(base, value) if base else value)
+            combined.append(value)
         combined.extend(
-            post for post in self.base_posts if _normalize_id(post.get("id")) not in tombstones
+            post for post in self.base_posts if post.get("id") not in tombstones
         )
         seen: set[str] = set()
         out: list[dict[str, Any]] = []
         for post in combined:
-            pid = _normalize_id(post.get("id"))
+            pid = post.get("id")
             if not pid or pid in seen:
                 continue
             seen.add(pid)
@@ -264,10 +222,10 @@ class X(BaseApp):
     def resolved_posts(self) -> list[dict[str, Any]]:
         out = self.view_posts()
 
-        by_id = {_normalize_id(post.get("id")): post for post in out}
+        by_id = {post.get("id"): post for post in out}
         retweet_shells = []
         emitted: set[str] = set()
-        for post_id in reversed(list(self.retweeted_post_ids)):
+        for post_id in reversed(list(self.state_user().get("retweetedPostIds") or [])):
             if not post_id or post_id in emitted:
                 continue
             source = by_id.get(post_id)
@@ -290,80 +248,75 @@ class X(BaseApp):
     def conversations(self) -> list[dict[str, Any]]:
         return self.get_list("conversations")
 
-    @property
+    @cached_property
     def users(self) -> dict[str, Any]:
-        users = dict(_load_users_json())
-        current_user = self.state_user()
-        if isinstance(current_user, dict) and current_user.get("id"):
-            users[str(current_user["id"])] = current_user
-        return users
+        """
+        Base users + me user 的合并视图。Instance 生命周期内只构建一次。
+
+        Contract: X instance 一旦构造, 其 _state 不应被替换 (BaseApp 的常规用法是
+        每次 task judge 创建新 instance, 不复用)。若调用方违反该约定, 此 cache 会
+        固化为旧 me user 快照。
+        """
+        me = self.state_user()
+        base = _load_users_json()
+        if isinstance(me, dict) and me.get("id"):
+            return {**base, str(me["id"]): me}
+        return base
 
     @property
     def followed_user_ids(self) -> set[str]:
-        return {_normalize_id(uid) for uid in (self.state_user().get("followedUserIds") or []) if _normalize_id(uid)}
+        return {uid for uid in (self.state_user().get("followedUserIds") or []) if uid}
 
     @property
     def liked_post_ids(self) -> set[str]:
-        return {_normalize_id(pid) for pid in (self.state_user().get("likedPostIds") or []) if _normalize_id(pid)}
+        return {pid for pid in (self.state_user().get("likedPostIds") or []) if pid}
 
     @property
     def bookmarked_post_ids(self) -> set[str]:
-        return {_normalize_id(pid) for pid in (self.state_user().get("bookmarkedPostIds") or []) if _normalize_id(pid)}
+        return {pid for pid in (self.state_user().get("bookmarkedPostIds") or []) if pid}
 
     @property
     def retweeted_post_ids(self) -> set[str]:
-        return {_normalize_id(pid) for pid in (self.state_user().get("retweetedPostIds") or []) if _normalize_id(pid)}
+        return {pid for pid in (self.state_user().get("retweetedPostIds") or []) if pid}
 
     @property
     def user_post_ids(self) -> set[str]:
-        return {_normalize_id(pid) for pid in (self.state_user().get("postIds") or []) if _normalize_id(pid)}
+        return {pid for pid in (self.state_user().get("postIds") or []) if pid}
 
     @property
     def user_reply_ids(self) -> set[str]:
-        return {_normalize_id(pid) for pid in (self.state_user().get("replyIds") or []) if _normalize_id(pid)}
+        return {pid for pid in (self.state_user().get("replyIds") or []) if pid}
 
     def get_new_ids(self, now_list: list[dict[str, Any]], init_list: list[dict[str, Any]]) -> set[str]:
-        init_ids = {_normalize_id(item.get("id")) for item in init_list if _normalize_id(item.get("id"))}
+        init_ids = {item.get("id") for item in init_list if item.get("id")}
         return {
-            _normalize_id(item.get("id"))
+            item.get("id")
             for item in now_list
-            if _normalize_id(item.get("id")) and _normalize_id(item.get("id")) not in init_ids
+            if item.get("id") and item.get("id") not in init_ids
         }
 
     def find_user_by_id(self, user_id: str) -> dict[str, Any] | None:
-        target = _normalize_id(user_id)
-        for uid, user_obj in self.users.items():
-            if _normalize_id(uid) == target:
-                return user_obj
-        return None
+        return self.users.get(user_id)
 
     def get_user_handle(self, user_id: str) -> str:
-        user = self.find_user_by_id(user_id)
-        if not user:
+        """返回 @-prefixed handle (data contract: user.id 不带 @, handle = '@' + id)。"""
+        if not self.find_user_by_id(user_id):
             return "@unknown"
-        handle = _normalize_handle(user.get("handle") or user.get("screenName"))
-        return handle or "@unknown"
+        return f"@{user_id}"
 
     def find_user_id_by_handle(self, handle: str) -> str | None:
-        target = _normalize_handle(handle).lower()
-        if not target:
+        """传入 '@xxx' 或 'xxx'; 返回 user.id (不带 @)。Case-sensitive 精确匹配。"""
+        if not isinstance(handle, str):
             return None
-
-        for uid, user_obj in self.users.items():
-            if not isinstance(user_obj, dict):
-                continue
-            user_handle = _normalize_handle(user_obj.get("handle") or user_obj.get("screenName")).lower()
-            if user_handle == target:
-                return str(uid)
-        return None
+        target = handle.lstrip("@")
+        return target if target and target in self.users else None
 
     def find_post_by_id(self, post_id: str) -> dict[str, Any] | None:
         return self.view_post(post_id)
 
     def find_conversation_by_id(self, conversation_id: str) -> dict[str, Any] | None:
-        target = _normalize_id(conversation_id)
         return next(
-            (conversation for conversation in self.conversations if _normalize_id(conversation.get("id")) == target),
+            (c for c in self.conversations if c.get("id") == conversation_id),
             None,
         )
 
@@ -373,19 +326,19 @@ class X(BaseApp):
         current_posts = self.state_post_entities()
         init_posts = self.init.state_post_entities()
         base_ids = {
-            _normalize_id(post.get("id"))
+            post.get("id")
             for post in self.base_posts
-            if isinstance(post, dict) and _normalize_id(post.get("id"))
+            if isinstance(post, dict) and post.get("id")
         }
         new_ids = self.get_new_ids(current_posts, init_posts) - base_ids
         new_post_ids = self.new_user_post_ids()
         new_reply_ids = self.new_user_reply_ids()
         out: list[dict[str, Any]] = []
         for post in current_posts:
-            post_id = _normalize_id(post.get("id"))
+            post_id = post.get("id")
             if post_id not in new_ids:
                 continue
-            if _normalize_id(post.get("threadId")):
+            if post.get("threadId"):
                 if post_id not in new_reply_ids:
                     continue
             elif post_id not in new_post_ids:
@@ -453,7 +406,7 @@ class X(BaseApp):
         matched = [
             {"id": post.get("id"), "content": post.get("content")}
             for post in self.view_posts()
-            if _normalize_id(post.get("id")) in added_ids
+            if post.get("id") in added_ids
             and keyword_lower in str(post.get("content") or "").lower()
         ]
         return {
@@ -490,7 +443,7 @@ class X(BaseApp):
         *,
         field: str = "quoted_post_created",
     ) -> dict[str, Any]:
-        target_post_id = _normalize_id(post_id)
+        target_post_id = post_id
         target_content = str(content or "").lower().strip()
         assert self.init.find_post_by_id(post_id) is not None, f"Post '{post_id}' not found in init state"
         assert target_content, "content must not be empty"
@@ -502,7 +455,7 @@ class X(BaseApp):
                 "content": post.get("content"),
             }
             for post in self.new_posts_vs_init()
-            if _normalize_id(post.get("quotedPostId")) == target_post_id
+            if post.get("quotedPostId") == target_post_id
             and target_content in str(post.get("content") or "").lower()
         ]
         return {
@@ -528,12 +481,20 @@ class X(BaseApp):
     ) -> dict[str, Any]:
         target_content = str(content or "").strip()
         assert target_content, "content must not be empty"
+        me_user_id = str(self.get("user.id") or "")
         new_messages = self.new_messages_in_conversation(conversation_id)
-        actual_tail = [message.get("content") for message in new_messages[-3:]]
-        passed = bool(new_messages) and str(new_messages[-1].get("content") or "").strip() == target_content
+        actual_tail = [
+            {"senderId": message.get("senderId"), "content": message.get("content")}
+            for message in new_messages[-3:]
+        ]
+        # 必须是当前用户发的, 且最后一条内容匹配。避免对方刚好发了同样文本时巧合 pass。
+        last = new_messages[-1] if new_messages else None
+        passed = bool(last) \
+            and str(last.get("senderId") or "") == me_user_id \
+            and str(last.get("content") or "").strip() == target_content
         return {
             "field": field,
-            "expected": target_content,
+            "expected": {"senderId": me_user_id, "content": target_content},
             "actual": actual_tail,
             "passed": passed,
         }
@@ -572,8 +533,7 @@ class X(BaseApp):
     ) -> dict[str, Any]:
         user_id = self.init.find_user_id_by_handle(user_handle)
         assert user_id is not None, f"Handle '{user_handle}' not found in init state"
-        normalized_user_id = _normalize_id(user_id)
-        assert normalized_user_id not in self.init.followed_user_ids, (
+        assert user_id not in self.init.followed_user_ids, (
             f"User '{user_handle}' was already followed in init state"
         )
         new_follows = self.new_followed_user_ids()
@@ -581,7 +541,7 @@ class X(BaseApp):
             "field": field,
             "expected": user_handle,
             "actual": list(new_follows),
-            "passed": normalized_user_id in new_follows,
+            "passed": user_id in new_follows,
         }
 
     def check_liked_post_by_user(
@@ -592,13 +552,12 @@ class X(BaseApp):
     ) -> dict[str, Any]:
         user_id = self.init.find_user_id_by_handle(user_handle)
         assert user_id is not None, f"Handle '{user_handle}' not found in init state"
-        normalized_user_id = _normalize_id(user_id)
 
         matched = [
             {"id": post.get("id"), "content": post.get("content")}
             for post in self.view_posts()
-            if _normalize_id(post.get("id")) in self.new_liked_post_ids()
-            and _normalize_id(post.get("authorId")) == normalized_user_id
+            if post.get("id") in self.new_liked_post_ids()
+            and post.get("authorId") == user_id
         ]
         return {
             "field": field,
@@ -614,7 +573,7 @@ class X(BaseApp):
         *,
         field: str = "reply_created",
     ) -> dict[str, Any]:
-        target_post_id = _normalize_id(post_id)
+        target_post_id = post_id
         target_content = str(reply_content or "").lower().strip()
         assert self.init.find_post_by_id(post_id) is not None, f"Post '{post_id}' not found in init state"
         assert target_content, "reply_content must not be empty"
@@ -622,7 +581,7 @@ class X(BaseApp):
         matched = [
             {"id": post.get("id"), "threadId": post.get("threadId"), "content": post.get("content")}
             for post in self.new_posts_vs_init()
-            if _normalize_id(post.get("threadId")) == target_post_id
+            if post.get("threadId") == target_post_id
             and target_content in str(post.get("content") or "").lower()
         ]
         return {
@@ -647,7 +606,7 @@ class X(BaseApp):
             "field": field,
             "expected": post_id,
             "actual": list(new_retweets),
-            "passed": _normalize_id(post_id) in new_retweets,
+            "passed": post_id in new_retweets,
         }
 
     def check_created_post(
@@ -662,7 +621,7 @@ class X(BaseApp):
         matched = [
             {"id": post.get("id"), "content": post.get("content")}
             for post in self.new_posts_vs_init()
-            if not _normalize_id(post.get("threadId"))
+            if not post.get("threadId")
             and target_content in str(post.get("content") or "").lower()
         ]
         return {
@@ -671,7 +630,7 @@ class X(BaseApp):
             "actual": matched or [
                 {"id": post.get("id"), "content": post.get("content")}
                 for post in self.new_posts_vs_init()
-                if not _normalize_id(post.get("threadId"))
+                if not post.get("threadId")
             ],
             "passed": bool(matched),
         }
@@ -691,7 +650,7 @@ class X(BaseApp):
         new_top_level_posts = [
             post
             for post in self.new_posts_vs_init()
-            if not _normalize_id(post.get("threadId"))
+            if not post.get("threadId")
             and original_lower in str(post.get("content") or "").lower()
         ]
         if not new_top_level_posts:
@@ -702,11 +661,11 @@ class X(BaseApp):
                 "passed": False,
             }
 
-        original_post_id = _normalize_id(new_top_level_posts[0].get("id"))
+        original_post_id = new_top_level_posts[0].get("id")
         matched = [
             {"id": post.get("id"), "threadId": post.get("threadId"), "content": post.get("content")}
             for post in self.new_posts_vs_init()
-            if _normalize_id(post.get("threadId")) == original_post_id
+            if post.get("threadId") == original_post_id
             and reply_lower in str(post.get("content") or "").lower()
         ]
         return {
@@ -715,7 +674,7 @@ class X(BaseApp):
             "actual": matched or [
                 {"id": post.get("id"), "threadId": post.get("threadId"), "content": post.get("content")}
                 for post in self.new_posts_vs_init()
-                if _normalize_id(post.get("threadId")) == original_post_id
+                if post.get("threadId") == original_post_id
             ],
             "passed": bool(matched),
         }
@@ -741,12 +700,12 @@ class X(BaseApp):
         author_rank: dict[str, int] = {}
         eligible: list[dict[str, Any]] = []
         for post in posts:
-            pid = _normalize_id(post.get("id"))
+            pid = post.get("id")
             if not pid:
                 continue
             if not str(post.get("content") or "").strip():
                 continue
-            if _normalize_id(post.get("threadId")):
+            if post.get("threadId"):
                 continue
             if pid in already_retweeted:
                 continue
@@ -841,39 +800,29 @@ class X(BaseApp):
 
     @staticmethod
     def sample_follow_target(env_state: dict[str, Any], rng: random.Random) -> dict[str, str]:
+        """
+        从可见 post 池里收集 "未关注 + 有 handle" 的作者作为候选, 均匀随机抽一个。
+        要求未关注是因为任务模板是 "先关注 X 再点赞", check_followed_user 查
+        new_followed_user_ids 增量, 已关注的用户无法形成增量。
+        """
         app = X._from_env_state(env_state)
         followed = app.followed_user_ids
-        handle_to_ids: dict[str, set[str]] = {}
-        for uid, user_obj in app.users.items():
-            if not isinstance(user_obj, dict):
-                continue
-            handle = _normalize_handle(user_obj.get("handle") or user_obj.get("screenName")).lower()
-            if not handle:
-                continue
-            handle_to_ids.setdefault(handle, set()).add(_normalize_id(uid))
 
-        posts = app.view_posts()
-        if not posts:
-            raise RuntimeError("未找到可采样的 X 关注目标")
-
-        start = rng.randrange(len(posts))
-        for offset in range(len(posts)):
-            post = posts[(start + offset) % len(posts)]
-            author_id = _normalize_id(post.get("authorId"))
-            if not author_id or author_id in followed:
+        candidates: list[dict[str, str]] = []
+        seen_authors: set[str] = set()
+        for post in app.view_posts():
+            author_id = post.get("authorId")
+            if not author_id or author_id in followed or author_id in seen_authors:
                 continue
+            seen_authors.add(author_id)
             user = app.find_user_by_id(author_id)
             if not user:
                 continue
-            handle = _normalize_handle(user.get("handle") or user.get("screenName"))
-            canonical_handle = handle.lower()
-            if not handle or canonical_handle in _AMBIGUOUS_HANDLES:
-                continue
-            if len(handle_to_ids.get(canonical_handle, set())) != 1:
-                continue
-            return {
-                "user_handle": handle,
+            candidates.append({
+                "user_handle": f"@{author_id}",
                 "user_name": str(user.get("name") or "某位用户").strip() or "某位用户",
-            }
+            })
 
-        raise RuntimeError("未找到可采样的 X 关注目标")
+        if not candidates:
+            raise RuntimeError("未找到可采样的 X 关注目标")
+        return rng.choice(candidates)
