@@ -51,7 +51,7 @@ export const SettingsNotificationPushPage: React.FC = () => {
         </button>
         <div className="flex flex-col items-center">
           <span className="text-lg font-bold leading-tight">{isEnglish ? 'Push notifications' : '推送通知'}</span>
-          <span className="text-sm text-gray-500">{user.handle}</span>
+          <span className="text-sm text-gray-500">{`@${user.id}`}</span>
         </div>
       </div>
       <div className="px-4 py-2">

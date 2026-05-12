@@ -2,7 +2,8 @@ import React from 'react';
 import { useParams } from 'react-router-dom';
 import { useLocale } from '@/os/locale';
 import { IcCalendar, IcBalloon, IcClose, IcLocation, IcRepost, IcStar, IcTabNotifications, IcUserMinus } from '../res/icons';
-import { useXStore, selectAllUsers, selectEffectiveFollowedSet, selectUserProfilePosts, selectUserReplies } from '../state';
+import { useXStore, selectEffectiveFollowedSet } from '../state';
+import { useXAllUsers, useXRepliesLoaded, useXUserProfilePosts, useXUserReplies } from '../data/view';
 import { useXGestures } from '../hooks/useXGestures';
 import { useXStrings } from '../hooks/useXStrings';
 import { XImage } from '../components/XMedia';
@@ -14,23 +15,20 @@ import { shouldShowProfileTopBar } from '../utils/topBarVisibility';
 
 export const UserProfilePage: React.FC = () => {
   const { id } = useParams();
-  const users = useXStore(selectAllUsers);
-  const userPostsSelector = React.useMemo(() => selectUserProfilePosts(id || '', 80), [id]);
-  const userPosts = useXStore(userPostsSelector);
+  const users = useXAllUsers();
+  const userPosts = useXUserProfilePosts(id || '', 80);
   const toggleFollow = useXStore(s => s.toggleFollow);
   const followedSet = useXStore(selectEffectiveFollowedSet);
   const ensureRepliesLoaded = useXStore(s => s.ensureRepliesLoaded);
-  const repliesLoaded = useXStore(s => s._temp.repliesLoaded);
-  const repliesLoading = useXStore(s => s._temp.repliesLoading);
-  const userRepliesSelector = React.useMemo(() => selectUserReplies(id || '', 80), [id]);
-  const rawUserReplies = useXStore(userRepliesSelector);
+  const repliesLoaded = useXRepliesLoaded();
+  const rawUserReplies = useXUserReplies(id || '', 80);
   const toggleRetweet = useXStore(s => s.toggleRetweet);
   const { bindBack, bindTap, go } = useXGestures();
   const s = useXStrings();
   const locale = useLocale();
 
   const user = (id ? users[id] : undefined) ?? null;
-  const isFollowing = (userId: string) => followedSet.has(userId.toLowerCase());
+  const isFollowing = (userId: string) => followedSet.has(userId);
   const isFollowed = id ? isFollowing(id) : false;
   const [showFollowMenu, setShowFollowMenu] = React.useState(false);
   const [retweetMenuPostId, setRetweetMenuPostId] = React.useState<string | null>(null);
@@ -44,10 +42,13 @@ export const UserProfilePage: React.FC = () => {
   const topBarHeight = useElementHeight(topBarRef, 96);
   const [isTopBarVisible, setIsTopBarVisible] = React.useState(false);
 
+  // Loading 派生于 activeTab + repliesLoaded; effect 只触发懒加载, 不维护额外 state。
+  const repliesLoading = activeTab === 'replies' && !!id && !repliesLoaded;
+
   React.useEffect(() => {
-    if (activeTab !== 'replies' || !id) return;
-    void ensureRepliesLoaded().catch(() => {});
-  }, [activeTab, ensureRepliesLoaded, id]);
+    if (!repliesLoading) return;
+    ensureRepliesLoaded().catch(() => {});
+  }, [ensureRepliesLoaded, repliesLoading]);
 
   const measureThreshold = React.useCallback(() => {
     const scrollEl = scrollElRef.current;
@@ -121,16 +122,16 @@ export const UserProfilePage: React.FC = () => {
   }
 
   const userArticlesEmptyDesc = locale === 'en'
-    ? `When ${user.handle} ${s.user_articles_empty_desc_tpl}`
-    : `当 ${user.handle}${s.user_articles_empty_desc_tpl}`;
+    ? `When ${`@${user.id}`} ${s.user_articles_empty_desc_tpl}`
+    : `当 ${`@${user.id}`}${s.user_articles_empty_desc_tpl}`;
 
   const userSubsUnlockDesc = locale === 'en'
-    ? `${user.handle} ${s.user_subs_unlock_desc_tpl}`
-    : `${user.handle} ${s.user_subs_unlock_desc_tpl}`;
+    ? `${`@${user.id}`} ${s.user_subs_unlock_desc_tpl}`
+    : `${`@${user.id}`} ${s.user_subs_unlock_desc_tpl}`;
   const localizedUserArticlesEmptyDesc =
     locale === 'en'
       ? userArticlesEmptyDesc
-      : `当 ${user.handle}${s.user_articles_empty_desc_tpl}`;
+      : `当 ${`@${user.id}`}${s.user_articles_empty_desc_tpl}`;
 
   return (
     <div ref={rootRef} className="flex flex-col bg-app-bg min-h-full text-app-text pb-20 pt-10">
@@ -195,7 +196,7 @@ export const UserProfilePage: React.FC = () => {
             {user.name}
             {user.verified ? <span className="text-blue-400">✓</span> : null}
           </div>
-          <div className="text-gray-500 text-sm">{user.handle}</div>
+          <div className="text-gray-500 text-sm">{`@${user.id}`}</div>
         </div>
 
         {user.bio ? <div className="mt-3 text-sm whitespace-pre-wrap">{user.bio}</div> : null}
@@ -263,7 +264,9 @@ export const UserProfilePage: React.FC = () => {
             <div className="text-sm">{localizedUserArticlesEmptyDesc}</div>
           </div>
         ) : activeTab === 'replies' ? (
-          userReplies.length === 0 ? (
+          repliesLoading ? (
+            <div className="p-10 text-center text-gray-500">{s.post_loading_replies}</div>
+          ) : userReplies.length === 0 ? (
             <div className="p-10 text-center text-gray-500">
               <div className="font-bold text-lg text-app-text mb-2">{s.user_replies_empty}</div>
             </div>
@@ -285,7 +288,7 @@ export const UserProfilePage: React.FC = () => {
                     <div className="flex-1 pb-3">
                       <div className="flex items-center text-gray-500 text-sm flex-wrap">
                         <span className="font-bold text-app-text mr-1">{parent.author?.name}</span>
-                        <span className="mr-1">{parent.author?.handle}</span>
+                        <span className="mr-1">{parent.author?.id ? `@${parent.author.id}` : ''}</span>
                         <span>· {parent.time}</span>
                       </div>
                       <div className="mt-0.5 text-app-text whitespace-pre-wrap text-sm line-clamp-3">{parent.content}</div>
@@ -300,7 +303,7 @@ export const UserProfilePage: React.FC = () => {
                     <div className="flex items-center text-gray-500 text-sm flex-wrap">
                       <span className="font-bold text-app-text mr-1">{user.name}</span>
                       {user.verified && <span className="text-blue-400 mr-1">✓</span>}
-                      <span className="mr-1">{user.handle}</span>
+                      <span className="mr-1">{`@${user.id}`}</span>
                       <span>· {reply.time}</span>
                     </div>
                     <div className="mt-1 text-app-text whitespace-pre-wrap">{reply.content}</div>
@@ -363,7 +366,7 @@ export const UserProfilePage: React.FC = () => {
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowFollowMenu(false)} />
           <div className="relative bg-white text-black w-full max-w-sm rounded-t-2xl sm:rounded-2xl overflow-hidden animate-in slide-in-from-bottom-10 fade-in-0 duration-200">
             <div className="p-4 border-b border-gray-100 flex items-center justify-between">
-              <div className="font-bold text-lg">{user.handle}</div>
+              <div className="font-bold text-lg">{`@${user.id}`}</div>
               <button onClick={() => setShowFollowMenu(false)} className="p-1 rounded-full hover:bg-gray-100" aria-label={s.follow_menu_close_aria_label}>
                 <IcClose size={20} />
               </button>

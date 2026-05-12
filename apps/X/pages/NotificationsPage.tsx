@@ -1,13 +1,14 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
-import { useXStore, selectMentionNotifications, selectNotifications, selectUser } from '../state';
+import { useXStore, selectUser } from '../state';
+import { useXMentionNotifications, useXNotifications } from '../data/view';
 import { useXGestures } from '../hooks/useXGestures';
 import { useXStrings } from '../hooks/useXStrings';
 import { XImage } from '../components/XMedia';
 
 export const NotificationsPage: React.FC<{ isActive?: boolean }> = ({ isActive = true }) => {
-  const notifications = useXStore(selectNotifications);
-  const mentionNotifications = useXStore(selectMentionNotifications);
+  const notifications = useXNotifications();
+  const mentionNotifications = useXMentionNotifications();
   const user = useXStore(selectUser);
   const location = useLocation();
   const { bindTap } = useXGestures(isActive);

@@ -3,13 +3,13 @@
 #
 # [L3] SetAudiencePrivacyBundle           我想改一下X的隐私设置：帖子私密{private_posts}，视频保护{protect_videos}，照片圈人{photo_tagging}
 # [L1] SetCallPermissionsBundle           我想在X设置里打开音视频通话，只让我关注的人和认证用户能打给我，不让通讯录里的人打过来
-# [L3] SetPushNotificationMix              我想改改X的推送，把推荐类推送关掉，保留紧急警报和专业版相关的通知
+# [L3] SetPushNotificationMix             我想改改X的推送，把推荐推送关掉，保留紧急警报和专业版相关的通知
 # [L4] QuotePostAndTweet                  我想找到{author_handle}发的那条带「{post_preview}」的推文，引用它再发一条新推文，内容是「{content}」
 # [L1] SendDmToConversation               我想在X私信里找到和{participant_handle}的聊天框，发一句「{content}」
 # [L2] SearchAndBookmark                  我想在X搜「{keyword}」，从结果里找一条相关推文收藏
 # [L1] FollowUserAndLikeTheirPost         我想在X上关注{user_handle}（{user_name}），再给TA发的随便一条推文点个赞
 # [L2] ReplyAndRetweetSamePost            我想找到{author_handle}发的有「{post_preview}」的推文，先评论「{reply_content}」，再把这条推文转发出去
-# [L2] ComplexSettingsChain               帮我统一调一下X的几个设置：帖子互动显示互动量，关闭探索页里“显示你当前所在位置的内容”，过滤器只留重要通知，只开聊天推送，再把推送通知里的“推荐”关掉
+# [L2] ComplexSettingsChain               帮我统一调一下X的几个设置：帖子互动显示互动量，关闭探索页里“显示你当前所在位置的内容”，过滤器打开只留重要通知，只启用聊天推送，再把推送通知里的“推荐”关掉
 # [L4] SearchMultipleKeywordsAndInteract  我想先在X搜「{keyword1}」，给一条相关推文点赞，再搜「{keyword2}」，把一条相关推文收藏起来
 # [L1] PostWithImageAndReply              我想在X发一条推文说「{content}」，再给自己这条推文回复一句「{reply_content}」
 # -- End Task Index --
@@ -95,6 +95,11 @@ class SetPushNotificationMix(CriteriaTask):
 
     async def _post_sample(self, env: Any) -> None:
         await self._invert_criteria(env)
+
+    # UI 上 SettingsNotificationPushPage 有两个标签都叫"推荐":
+    #   - section1 顶部 (推送偏好): prefRecommend  ← criteria 要求的目标
+    #   - section2 "来自 X":         fromXRecommend ← 允许同时被关, 不警告
+    # 任务文案"推荐推送关掉"在 UI 上 ambiguous, 接受用户关其中一个或两个都通过。
     expected_changes = ["apps.x.settings.fromXRecommend"]
     criteria = {
         "settings.prefRecommend": False,
@@ -251,7 +256,7 @@ class FollowUserAndLikeTheirPost(BaseTask):
     """
     多步骤任务：先关注一个用户，再点赞该用户的推文。
     考验 Agent 的多步骤规划和状态追踪能力。
-    使用用户名（handle）而非 id 进行内部判定，并在模板中明确给出目标用户的用户名和昵称，方便在 UI 中精确定位。
+    模板用 @handle 给 Agent 做 UI 定位；judge 内部把 handle 解析为精确 user.id 后比对。
     """
     templates = [
         "我想在X上关注{user_handle}（{user_name}），再给TA发的随便一条推文点个赞",
@@ -283,7 +288,6 @@ class FollowUserAndLikeTheirPost(BaseTask):
     expected_changes = [
         "apps.x.user.followedUserIds[+1]",
         "apps.x.user.likedPostIds[+1]",
-        "apps.x.user.following",
     ]
 
     def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
@@ -380,6 +384,9 @@ class ComplexSettingsChain(CriteriaTask):
     composition = "sequential"
     difficulty = "L2"
     capabilities = ["nav", "settings", "explore"]
+    # 与 SetPushNotificationMix 同一对 ambiguous 字段: prefRecommend 是 criteria 目标,
+    # fromXRecommend 进 allowlist (允许用户同时关掉, 不警告)。
+    expected_changes = ["apps.x.settings.fromXRecommend"]
     criteria = {
         "settings.showInteractionCounts": True,
         "settings.showLocalContent": False,
@@ -387,7 +394,6 @@ class ComplexSettingsChain(CriteriaTask):
         "settings.pushOnlyDm": True,
         "settings.prefRecommend": False,
     }
-    expected_changes = ["apps.x.settings.fromXRecommend"]
 
 
 class SearchMultipleKeywordsAndInteract(BaseTask):

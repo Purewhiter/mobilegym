@@ -90,7 +90,7 @@ export const SettingsPage: React.FC = () => {
         </button>
         <div className="flex flex-col items-center">
           <span className="text-lg font-bold leading-tight">{isEnglish ? 'Settings' : '设置'}</span>
-          <span className="text-sm text-gray-500">{user.handle}</span>
+          <span className="text-sm text-gray-500">{`@${user.id}`}</span>
         </div>
       </div>
 

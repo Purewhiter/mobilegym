@@ -1,6 +1,7 @@
 import React from 'react';
 import { IcBalloon, IcCalendar, IcLocation, IcRepost } from '../res/icons';
-import { useXStore, selectHydratedPosts, selectUser } from '../state';
+import { useXStore, selectUser } from '../state';
+import { useXUserProfilePosts } from '../data/view';
 import { useXGestures } from '../hooks/useXGestures';
 import { useXStrings } from '../hooks/useXStrings';
 import { XImage } from '../components/XMedia';
@@ -10,15 +11,13 @@ import { XTimelinePostCard } from '../components/XTimelinePostCard';
 
 export const ProfilePage: React.FC = () => {
   const user = useXStore(selectUser);
-  const posts = useXStore(selectHydratedPosts);
+  const myPosts = useXUserProfilePosts(user.id, 80);
   const toggleRetweet = useXStore(s => s.toggleRetweet);
   const { bindBack, go } = useXGestures();
   const s = useXStrings();
   const [retweetMenuPostId, setRetweetMenuPostId] = React.useState<string | null>(null);
   const [showBookmarkToast, setShowBookmarkToast] = React.useState(false);
   const [activeTab, setActiveTab] = React.useState<'posts' | 'replies' | 'subs' | 'videos' | 'photos' | 'articles'>('posts');
-
-  const myPosts = React.useMemo(() => posts.filter(post => post.authorId === user.id), [posts, user.id]);
 
   const tabs = [
     { id: 'posts', label: s.profile_tab_posts },
@@ -59,7 +58,7 @@ export const ProfilePage: React.FC = () => {
             {user.name}
             {user.verified && <span className="text-blue-400">✓</span>}
           </div>
-          <div className="text-gray-500 text-sm">{user.handle}</div>
+          <div className="text-gray-500 text-sm">{`@${user.id}`}</div>
         </div>
 
         {user.bio ? <div className="mt-3 text-sm whitespace-pre-wrap">{user.bio}</div> : null}
@@ -192,4 +191,3 @@ export const ProfilePage: React.FC = () => {
     </div>
   );
 };
-

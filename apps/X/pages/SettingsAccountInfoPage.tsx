@@ -10,7 +10,7 @@ export const SettingsAccountInfoPage: React.FC = () => {
   const isEnglish = useLocale() === 'en';
 
   const infoItems = [
-    { label: isEnglish ? 'Username' : '用户名', value: user.handle },
+    { label: isEnglish ? 'Username' : '用户名', value: `@${user.id}` },
     { label: isEnglish ? 'Phone' : '手机', value: isEnglish ? 'Add' : '添加', valueColor: 'text-gray-500' },
     { label: isEnglish ? 'Email' : '邮箱地址', value: 'example@gmail.com' },
     { label: isEnglish ? 'Country / Region' : '国家 / 地区', value: isEnglish ? 'Hong Kong, China' : '香港（中国）', valueColor: 'text-gray-500' },
@@ -29,7 +29,7 @@ export const SettingsAccountInfoPage: React.FC = () => {
         </button>
         <div className="flex flex-col items-center">
           <span className="text-lg font-bold leading-tight">{isEnglish ? 'Account information' : '账号信息'}</span>
-          <span className="text-sm text-gray-500">{user.handle}</span>
+          <span className="text-sm text-gray-500">{`@${user.id}`}</span>
         </div>
       </div>
 

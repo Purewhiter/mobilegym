@@ -34,7 +34,7 @@ export const SettingsPrivacyFindContactsPage: React.FC = () => {
         </button>
         <div className="flex flex-col items-center">
           <span className="text-lg font-bold leading-tight">{isEnglish ? 'Discoverability and contacts' : '允许认识我的人找到我和联系人'}</span>
-          <span className="text-sm text-gray-500">{user.handle}</span>
+          <span className="text-sm text-gray-500">{`@${user.id}`}</span>
         </div>
       </div>
       <div className="px-4 py-3 text-[13px] text-gray-600">{isEnglish ? 'Control whether people who know you can find you, and manage imported contacts.' : '控制认识你的人是否能找到你，并管理已导入的联系人。'}</div>

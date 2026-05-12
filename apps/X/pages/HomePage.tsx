@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { IcRepost } from '../res/icons';
-import { useXStore, selectEffectiveFollowedSet, selectHydratedFollowingPosts, selectHydratedPosts, selectUser } from '../state';
+import { useXStore, selectEffectiveFollowedSet, selectUser } from '../state';
+import { useXHomeTimelines } from '../data/view';
 import { useXGestures } from '../hooks/useXGestures';
 import { useXStrings } from '../hooks/useXStrings';
 import { XImage } from '../components/XMedia';
@@ -13,8 +14,7 @@ import { useVirtualList } from '../../../os/hooks/useVirtualList';
 import { getNextTimelineTopBarVisibility } from '../utils/topBarVisibility';
 
 export const HomePage: React.FC<{ isActive?: boolean }> = ({ isActive = true }) => {
-  const posts = useXStore(selectHydratedPosts);
-  const followingPosts = useXStore(selectHydratedFollowingPosts);
+  const { forYou: posts, following: followingPosts } = useXHomeTimelines();
   const user = useXStore(selectUser);
   const followedSet = useXStore(selectEffectiveFollowedSet);
   const toggleFollow = useXStore(s => s.toggleFollow);
@@ -37,7 +37,7 @@ export const HomePage: React.FC<{ isActive?: boolean }> = ({ isActive = true }) 
     isOnHome && (tab === 'foryou' || tab === 'following') ? tab : 'foryou';
 
   const displayPosts = activeTab === 'foryou' ? posts : followingPosts;
-  const isFollowing = (userId: string) => followedSet.has(userId.toLowerCase());
+  const isFollowing = (userId: string) => followedSet.has(userId);
   const { parentRef, virtualizer, virtualItems, totalSize } = useVirtualList({
     items: displayPosts,
     estimateSize: () => 200,

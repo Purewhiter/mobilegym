@@ -1,6 +1,7 @@
 import React from 'react';
 import { useParams, useLocation } from 'react-router-dom';
-import { useXStore, selectHydratedPosts, selectUser, selectAllUsers, selectRepliesForPost, selectResolvedPostById } from '../state';
+import { useXStore, selectUser } from '../state';
+import { useXHydratedPosts, useXAllUsers, useXRepliesForPost, useXRepliesLoaded, useXResolvedPost } from '../data/view';
 import { useXGestures } from '../hooks/useXGestures';
 import { XImage, XVideo } from '../components/XMedia';
 import { BookmarkToast } from '../components/BookmarkToast';
@@ -16,27 +17,30 @@ import { parseXTimeToMinutes } from '../utils/formatTime';
 export const PostDetailsPage: React.FC = () => {
   const { id } = useParams();
   const location = useLocation();
-  const posts = useXStore(selectHydratedPosts);
-  const resolvedPost = useXStore(React.useMemo(() => selectResolvedPostById(id || ''), [id]));
+  const posts = useXHydratedPosts();
+  const resolvedPost = useXResolvedPost(id || '');
   const user = useXStore(selectUser);
+  // 顶层一次订阅 user 字典, 传给所有 ReplyItem, 避免每条回复独立订阅。
+  const allUsers = useXAllUsers();
   const toggleRetweet = useXStore(s => s.toggleRetweet);
-  const repliesLoaded = useXStore(s => s._temp.repliesLoaded);
-  const repliesLoading = useXStore(s => s._temp.repliesLoading);
+  const repliesLoaded = useXRepliesLoaded();
   const ensureRepliesLoaded = useXStore(s => s.ensureRepliesLoaded);
-  const repliesForRoutePost = useXStore(React.useMemo(() => selectRepliesForPost(id || ''), [id]));
+  const repliesForRoutePost = useXRepliesForPost(id || '');
   const { bindBack, bindTap, go } = useXGestures();
   const s = useXStrings();
   const [sortMethod, setSortMethod] = React.useState<'relevant' | 'recent' | 'likes'>('relevant');
   const [showSortMenu, setShowSortMenu] = React.useState(false);
   const [retweetMenuPostId, setRetweetMenuPostId] = React.useState<string | null>(null);
   const [showBookmarkToast, setShowBookmarkToast] = React.useState(false);
+  // Loading 完全派生于 (id 形态 + loader cache 状态), 不引入额外 useState 状态,
+  // 因此路由参数切换时不会有 stale loading/empty 闪现。
+  const repliesLoading = !!id && !id.startsWith('mock_') && !repliesLoaded;
 
   React.useEffect(() => {
-    // Replies dataset is huge; only load when entering details.
-    if (!id) return;
-    if (id.startsWith('mock_')) return;
-    void ensureRepliesLoaded().catch(() => {});
-  }, [ensureRepliesLoaded, id]);
+    if (!repliesLoading) return;
+    // loader 内部有 in-flight 去重 + 加载完 bump baseSnapshot 触发 useXRepliesLoaded() 重渲染。
+    ensureRepliesLoaded().catch(() => {});
+  }, [ensureRepliesLoaded, repliesLoading]);
 
   const post = React.useMemo(() => {
     if (resolvedPost) return resolvedPost;
@@ -48,17 +52,17 @@ export const PostDetailsPage: React.FC = () => {
       const quotedPostId = state?.quotedPostId;
       const quotedPost = quotedPostId ? posts.find(p => p.id === quotedPostId) : undefined;
 
+      const mockAuthorId = id.includes('1') ? 'fotobeek' : 'cb_doge';
       return {
-        id: id,
-        authorId: 'mock_user_' + id,
+        id,
+        authorId: mockAuthorId,
         content: id.includes('1')
           ? "Utter bullshit, X is an ultraright propaganda platform.\nMusk is a manipulator.\nIt has nothing to do with objective journalism."
           : "X is the only platform you can trust for honest information. All the others are bought and paid for.",
         time: '1h',
         author: {
-          id: 'mock_user_' + id,
+          id: mockAuthorId,
           name: id.includes('1') ? 'John ter Beek 🌶️' : 'DogeDesigner',
-          handle: id.includes('1') ? '@fotobeek' : '@cb_doge',
           avatar: id.includes('1')
             ? 'https://api.dicebear.com/7.x/avataaars/svg?seed=John'
             : 'https://api.dicebear.com/7.x/avataaars/svg?seed=Doge',
@@ -109,13 +113,17 @@ export const PostDetailsPage: React.FC = () => {
   };
 
   if (!post) {
+    // Reply id 深链 (r_p_xxx) 进入时, post 解析依赖 replies map 加载完成;
+    // 加载中显示 loading 占位, 避免错误闪现 "未找到帖子"。
     return (
       <div className="flex flex-col bg-app-bg min-h-full text-app-text pt-10 px-4">
         <div className="flex items-center py-2">
           <button className="text-app-text mr-4" {...bindBack()}>←</button>
           <div className="font-bold text-lg">{s.post_title}</div>
         </div>
-        <div className="mt-6 text-gray-500">{s.post_not_found}</div>
+        <div className="mt-6 text-gray-500">
+          {repliesLoading ? s.post_loading_replies : s.post_not_found}
+        </div>
       </div>
     );
   }
@@ -154,7 +162,7 @@ export const PostDetailsPage: React.FC = () => {
                   {post.author.name}
                   {post.author.verified && <span className="text-blue-400 ml-1">✓</span>}
                 </div>
-                <div className="text-gray-500 text-sm">{post.author.handle}</div>
+                <div className="text-gray-500 text-sm">{`@${post.author.id}`}</div>
               </div>
             </div>
             <button className="text-gray-500" aria-label="More options">
@@ -188,7 +196,7 @@ export const PostDetailsPage: React.FC = () => {
                   )}
                 </div>
                 <span className="font-bold text-sm text-app-text">{post.quotedPost.author.name}</span>
-                <span className="text-gray-500 text-sm">{post.quotedPost.author.handle}</span>
+                <span className="text-gray-500 text-sm">{`@${post.quotedPost.author.id}`}</span>
                 <span className="text-gray-500 text-sm">· {post.quotedPost.time}</span>
               </div>
               <div className="text-app-text text-sm line-clamp-3">{post.quotedPost.content}</div>
@@ -237,18 +245,17 @@ export const PostDetailsPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Replies List */}
+        {/* Replies List — loading / list / empty 三态互斥 */}
         <div className="pb-20">
-          {!repliesLoaded && repliesLoading && (
+          {!repliesLoaded && repliesLoading ? (
             <div className="p-6 text-center text-gray-500">{s.post_loading_replies}</div>
+          ) : sortedReplies.length > 0 ? (
+            sortedReplies.map((reply: XPost) => (
+              <ReplyItem key={reply.id} reply={reply} onRetweet={setRetweetMenuPostId} users={allUsers} />
+            ))
+          ) : (
+            <div className="p-8 text-center text-gray-500">{s.post_no_replies}</div>
           )}
-          {sortedReplies && sortedReplies.length > 0
-            ? sortedReplies.map((reply: XPost) => (
-                <ReplyItem key={reply.id} reply={reply} onRetweet={setRetweetMenuPostId} />
-              ))
-            : (
-              <div className="p-8 text-center text-gray-500">{s.post_no_replies}</div>
-            )}
         </div>
       </div>
 
@@ -326,10 +333,16 @@ export const PostDetailsPage: React.FC = () => {
   );
 };
 
-const ReplyItem: React.FC<{ reply: XPost & { author?: { name: string; handle: string; avatar?: string; verified?: boolean } }; onRetweet: (id: string) => void }> = ({ reply, onRetweet }) => {
-  const users = useXStore(selectAllUsers);
+interface ReplyItemProps {
+  reply: XPost & { author?: { id: string; name: string; avatar?: string; verified?: boolean } };
+  onRetweet: (id: string) => void;
+  // Parent 一次性传入用户字典, 避免每个回复实例各自订阅整个 user table。
+  users: Record<string, any>;
+}
+
+const ReplyItem: React.FC<ReplyItemProps> = ({ reply, onRetweet, users }) => {
   const { bindTap } = useXGestures();
-  const author = reply.author ?? users[reply.authorId?.toLowerCase()] ?? users[reply.authorId];
+  const author = reply.author ?? users[reply.authorId];
 
   return (
     <div className="border-b border-app-border p-4 flex">
@@ -345,7 +358,7 @@ const ReplyItem: React.FC<{ reply: XPost & { author?: { name: string; handle: st
         <div className="flex items-center text-gray-500 text-sm">
           <span className="font-bold text-app-text mr-1">{author?.name ?? 'Unknown'}</span>
           {author?.verified && <span className="text-blue-400 mr-1">✓</span>}
-          <span className="mr-1">{author?.handle ?? '@unknown'}</span>
+          <span className="mr-1">{author?.id ? `@${author.id}` : '@unknown'}</span>
           <span>· {reply.time}</span>
         </div>
         <div className="mt-1 text-app-text whitespace-pre-wrap">{reply.content}</div>
@@ -368,7 +381,7 @@ const ReplyItem: React.FC<{ reply: XPost & { author?: { name: string; handle: st
         {reply.replies && reply.replies.length > 0 && (
           <div className="mt-3">
             {reply.replies.map(subReply => (
-              <ReplyItem key={subReply.id} reply={subReply} onRetweet={onRetweet} />
+              <ReplyItem key={subReply.id} reply={subReply} onRetweet={onRetweet} users={users} />
             ))}
           </div>
         )}

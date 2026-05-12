@@ -46,7 +46,7 @@ export const SettingsPrivacyChatPage: React.FC = () => {
         </button>
         <div className="flex flex-col items-center">
           <span className="text-lg font-bold leading-tight">{isEnglish ? 'Direct Messages' : '聊天'}</span>
-          <span className="text-sm text-gray-500">{user.handle}</span>
+          <span className="text-sm text-gray-500">{`@${user.id}`}</span>
         </div>
       </div>
       <div className="px-4 py-3 text-[13px] text-gray-600">{isEnglish ? 'Manage settings related to your Direct Messages and calls.' : '管理与你的私信和通话相关的设置。'}</div>

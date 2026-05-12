@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { resolveXRuntimePost, resolveXRuntimePosts } from '../apps/X/utils/runtimePostResolver';
 
 describe('X runtime post resolver', () => {
-  it('merges a runtime patch with the matching base post', () => {
+  it('treats a runtime object as a full override for the matching base post', () => {
     const base = {
       id: 'p1',
       authorId: 'u_base',
@@ -11,17 +11,15 @@ describe('X runtime post resolver', () => {
       time: '1h',
       stats: { comments: 1, retweets: 2, likes: 3, views: 4 },
     };
+    const override = { id: 'p1', content: 'override content' };
 
     expect(
       resolveXRuntimePost(
-        { p1: { id: 'p1', content: 'patched content' } },
+        { p1: override as any },
         new Map([['p1', base]]),
         'p1',
       ),
-    ).toEqual({
-      ...base,
-      content: 'patched content',
-    });
+    ).toBe(override);
   });
 
   it('returns null when a runtime tombstone hides a base post', () => {
@@ -36,7 +34,7 @@ describe('X runtime post resolver', () => {
     expect(resolveXRuntimePost({ p1: null }, new Map([['p1', base]]), 'p1')).toBeNull();
   });
 
-  it('keeps patched base posts and tombstones in resolved post lists', () => {
+  it('keeps runtime overrides and tombstones in resolved post lists', () => {
     const basePosts = [
       {
         id: 'p1',
@@ -53,20 +51,16 @@ describe('X runtime post resolver', () => {
         stats: { comments: 0, retweets: 0, likes: 0, views: 0 },
       },
     ];
+    const override = { id: 'p1', content: 'override content' };
 
     expect(
       resolveXRuntimePosts(
         {
-          p1: { id: 'p1', content: 'patched content' },
+          p1: override as any,
           p2: null,
         },
         basePosts,
       ),
-    ).toEqual([
-      {
-        ...basePosts[0],
-        content: 'patched content',
-      },
-    ]);
+    ).toEqual([override]);
   });
 });

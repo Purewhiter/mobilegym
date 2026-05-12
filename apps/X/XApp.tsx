@@ -92,13 +92,14 @@ const XNavigationHandler: React.FC = () => {
       const isValid =
         pathname === '/' || // 允许根路径，即使没有 tab（HomePage 有默认值）
         pathname === '/search' ||
+        pathname === '/search/input' ||
         pathname === '/notifications' ||
         pathname === '/messages' ||
         pathname === '/grok' ||
         pathname.startsWith('/user/') ||
         pathname === '/profile' ||
         pathname === '/compose' ||
-        pathname === '/reply' ||
+        pathname.startsWith('/reply/') ||
         pathname.startsWith('/connections/') ||
         pathname.startsWith('/messages/') ||
         pathname.startsWith('/status/') ||

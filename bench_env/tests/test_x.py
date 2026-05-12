@@ -107,9 +107,9 @@ def _with_appended_message(state: dict[str, Any], conversation_id: str, content:
 
 def _with_added_id(state: dict[str, Any], key: str, value: str) -> dict[str, Any]:
     next_state = copy.deepcopy(state)
-    existing = [str(item).lower() for item in next_state["user"].get(key, [])]
-    if str(value).lower() not in existing:
-        next_state["user"][key] = [*next_state["user"].get(key, []), value]
+    existing = next_state["user"].get(key, [])
+    if value not in existing:
+        next_state["user"][key] = [*existing, value]
     return next_state
 
 
@@ -151,7 +151,7 @@ def _preview_for_post(post: dict[str, Any]) -> str:
 
 def _first_unfollowed_author_post() -> dict[str, Any]:
     followed = set(BASE_STATE["user"]["followedUserIds"])
-    return next(post for post in BASE_POSTS if str(post["authorId"]).lower() not in followed)
+    return next(post for post in BASE_POSTS if post["authorId"] not in followed)
 
 
 def _first_two_distinct_keyword_posts() -> tuple[dict[str, Any], str, dict[str, Any], str]:
@@ -167,20 +167,36 @@ def _first_two_distinct_keyword_posts() -> tuple[dict[str, Any], str, dict[str, 
 
 
 class TestXAccessor:
-    def test_view_post_merges_runtime_patch_with_base_post(self):
+    def test_resolved_posts_preserves_retweet_list_reverse_order(self):
+        state = copy.deepcopy(BASE_STATE)
+        posts = [post for post in BASE_POSTS if isinstance(post, dict) and post.get("id")][:3]
+        retweeted_ids = [str(post["id"]) for post in posts]
+        state["user"]["retweetedPostIds"] = retweeted_ids
+
+        resolved_ids = [post.get("id") for post in X(state).resolved_posts()[:3]]
+
+        assert resolved_ids == [f"retweet_{post_id}" for post_id in reversed(retweeted_ids)]
+
+    def test_find_user_id_by_handle_is_case_sensitive(self):
+        app = X(copy.deepcopy(BASE_STATE))
+
+        assert app.find_user_id_by_handle("@OpenAI") == "OpenAI"
+        assert app.find_user_id_by_handle("@OPENAI") is None
+
+    def test_view_post_treats_runtime_object_as_full_base_override(self):
         base = BASE_POSTS[0]
         state = copy.deepcopy(BASE_STATE)
-        state["posts"][str(base["id"])] = {
+        override = {
             "id": str(base["id"]),
-            "content": "patched content",
+            "content": "override content",
         }
+        state["posts"][str(base["id"])] = override
 
         resolved = X(state).view_post(str(base["id"]))
 
-        assert resolved is not None
-        assert resolved["content"] == "patched content"
-        assert resolved["authorId"] == base["authorId"]
-        assert resolved["stats"] == base["stats"]
+        assert resolved == override
+        assert "authorId" not in resolved
+        assert "stats" not in resolved
 
     def test_posts_alias_uses_view_posts(self):
         app = X(copy.deepcopy(BASE_STATE))
@@ -362,13 +378,12 @@ class TestXAccessor:
         assert calls["count"] == 1
 
     def test_sample_follow_target_stops_after_first_random_valid_post(self, monkeypatch):
+        # 隔离掉 base users/posts cache, 让 sampler 只看到 fixture 数据
         monkeypatch.setattr(
             "bench_env.task.x.app._X_USERS_JSON_CACHE",
-            {
-                f"u{i}": {"handle": f"@u{i}", "name": f"User {i}"}
-                for i in range(20)
-            },
+            {f"u{i}": {"id": f"u{i}", "name": f"User {i}"} for i in range(20)},
         )
+        monkeypatch.setattr("bench_env.task.x.app._X_POSTS_JSON_CACHE", [])
         env_state = {
             "apps": {
                 "x": {
@@ -388,7 +403,7 @@ class TestXAccessor:
 
         def fake_find_user_by_id(self, user_id: str) -> dict[str, Any] | None:
             calls["count"] += 1
-            return {"handle": f"@{user_id}", "name": f"User {user_id}"}
+            return {"id": user_id, "name": f"User {user_id}"}
 
         monkeypatch.setattr(X, "find_user_by_id", fake_find_user_by_id)
 
@@ -452,12 +467,9 @@ class TestXAccessor:
         )["passed"] is False
 
     def test_check_follow_and_like_user_post(self):
-        author_post = next(
-            post
-            for post in BASE_POSTS
-            if str(post["authorId"]).lower() not in set(BASE_STATE["user"]["followedUserIds"])
-        )
-        author_id = str(author_post["authorId"])
+        followed_set = set(BASE_STATE["user"]["followedUserIds"])
+        author_post = next(post for post in BASE_POSTS if post["authorId"] not in followed_set)
+        author_id = author_post["authorId"]
         author_handle = X(copy.deepcopy(BASE_STATE)).get_user_handle(author_id)
 
         followed = _with_added_id(BASE_STATE, "followedUserIds", author_id)
@@ -466,11 +478,7 @@ class TestXAccessor:
         assert app.check_followed_user(author_handle)["passed"] is True
         assert app.check_liked_post_by_user(author_handle)["passed"] is True
 
-        other_author_post = next(
-            post
-            for post in BASE_POSTS
-            if str(post["authorId"]).lower() != str(author_id).lower()
-        )
+        other_author_post = next(post for post in BASE_POSTS if post["authorId"] != author_id)
         wrong_like = _with_added_id(followed, "likedPostIds", str(other_author_post["id"]))
         assert X(wrong_like, init=copy.deepcopy(BASE_STATE)).check_liked_post_by_user(author_handle)[
             "passed"

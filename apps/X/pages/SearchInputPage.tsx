@@ -1,7 +1,8 @@
 import React from 'react';
 import { useLocale } from '@/os/locale';
 import { IcRepost, IcTabSearch } from '../res/icons';
-import { useXStore, selectAllUsers, selectEffectiveFollowedSet, selectRecentSearches, selectSearchPosts } from '../state';
+import { useXStore, selectEffectiveFollowedSet } from '../state';
+import { useXAllUsers, useXRecentSearches, useXSearchPosts } from '../data/view';
 import { useXGestures } from '../hooks/useXGestures';
 import { useXStrings } from '../hooks/useXStrings';
 import { BookmarkToast } from '../components/BookmarkToast';
@@ -12,8 +13,8 @@ import { compareXPostsByRecencyDesc } from '../utils/formatTime';
 type SearchTab = 'hot' | 'latest' | 'people' | 'video' | 'photo';
 
 export const SearchInputPage: React.FC = () => {
-  const recentSearches = useXStore(selectRecentSearches);
-  const users = useXStore(selectAllUsers);
+  const recentSearches = useXRecentSearches();
+  const users = useXAllUsers();
   const followedSet = useXStore(selectEffectiveFollowedSet);
   const toggleFollow = useXStore(s => s.toggleFollow);
   const toggleRetweet = useXStore(s => s.toggleRetweet);
@@ -32,14 +33,14 @@ export const SearchInputPage: React.FC = () => {
     return () => setSearchQuery('');
   }, [inputValue, setSearchQuery]);
 
+  // People Search: user-input fuzzy match, 不属于 data contract 范围, 允许 case-insensitive。
+  // 这是除 selectSearchPosts 之外的另一个合法 lowercase 例外, 都仅用于 query/content 文本匹配。
   const matchedUsers = React.useMemo(() => {
     if (!query) return [];
 
     const list = Object.values(users) as Array<{
       id: string;
       name?: string;
-      handle?: string;
-      screenName?: string;
       restId?: string;
       followers?: number;
       avatar?: string;
@@ -50,26 +51,20 @@ export const SearchInputPage: React.FC = () => {
     const scored = list
       .map(user => {
         const name = (user.name || '').toLowerCase();
-        const handle = (user.handle || '').toLowerCase();
-        const screenName = (user.screenName || '').toLowerCase();
+        const id = (user.id || '').toLowerCase();
         const restId = (user.restId || '').toLowerCase();
         const normalizedQuery = query.replace(/^@/, '');
         const hit =
           name.includes(query) ||
-          handle.includes(query) ||
-          screenName.includes(normalizedQuery) ||
+          id.includes(normalizedQuery) ||
           restId.includes(query);
 
         if (!hit) return null;
 
-        const exactHandle = handle === `@${normalizedQuery}` || handle === query;
-        const exactScreenName = screenName === normalizedQuery;
-        const starts =
-          handle.startsWith(`@${normalizedQuery}`) ||
-          screenName.startsWith(normalizedQuery) ||
-          name.startsWith(query);
+        const exactId = id === normalizedQuery;
+        const starts = id.startsWith(normalizedQuery) || name.startsWith(query);
 
-        const score = (exactHandle ? 300 : 0) + (exactScreenName ? 250 : 0) + (starts ? 50 : 0);
+        const score = (exactId ? 300 : 0) + (starts ? 50 : 0);
         return { user, score };
       })
       .filter(Boolean) as { user: any; score: number }[];
@@ -78,8 +73,7 @@ export const SearchInputPage: React.FC = () => {
     return scored.slice(0, 20).map(item => item.user);
   }, [query, users]);
 
-  const searchPostsSelector = React.useMemo(() => selectSearchPosts(query), [query]);
-  const matchedPosts = useXStore(searchPostsSelector);
+  const matchedPosts = useXSearchPosts(query);
 
   const DISPLAY_LIMIT = 80;
   const displayedPosts = React.useMemo(() => {
@@ -96,7 +90,7 @@ export const SearchInputPage: React.FC = () => {
     return result.slice(0, DISPLAY_LIMIT);
   }, [activeTab, matchedPosts]);
 
-  const isFollowing = (userId: string) => followedSet.has(userId.toLowerCase());
+  const isFollowing = (userId: string) => followedSet.has(userId);
   const emptyResultsLabel = locale === 'en' ? 'No results found' : '没有找到相关内容';
   const tabs = [
     { id: 'hot', label: s.search_input_tab_hot },
@@ -209,7 +203,7 @@ export const SearchInputPage: React.FC = () => {
                             <span className="truncate font-bold">{user.name}</span>
                             {user.verified ? <span className="text-blue-400">✓</span> : null}
                           </div>
-                          <div className="truncate text-sm text-gray-500">{user.handle}</div>
+                          <div className="truncate text-sm text-gray-500">{`@${user.id}`}</div>
                         </div>
                         <button
                           className={`rounded-full px-4 py-1.5 text-sm font-bold ${
@@ -251,7 +245,7 @@ export const SearchInputPage: React.FC = () => {
                           </div>
                           <div className="flex flex-col items-center px-2 pb-3 pt-6 text-center">
                             <div className="w-full truncate text-sm font-bold">{user.name}</div>
-                            <div className="mb-2 w-full truncate text-xs text-gray-500">{user.handle}</div>
+                            <div className="mb-2 w-full truncate text-xs text-gray-500">{`@${user.id}`}</div>
                             <button
                               className={`w-full rounded-full px-4 py-1 text-xs font-bold ${
                                 isFollowing(user.id) ? 'border border-app-border text-app-text' : 'bg-app-text text-app-bg'
@@ -310,7 +304,7 @@ export const SearchInputPage: React.FC = () => {
                       <span className="font-bold">{item.user.name}</span>
                       {item.user.verified ? <span className="text-blue-400">✓</span> : null}
                     </div>
-                    <div className="text-sm text-gray-500">{item.user.handle}</div>
+                    <div className="text-sm text-gray-500">{`@${item.user.id}`}</div>
                   </div>
                 </>
               ) : (

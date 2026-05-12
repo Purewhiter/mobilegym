@@ -18,7 +18,7 @@ export const SettingsPrivacyAboutAccountPage: React.FC = () => {
         </button>
         <div className="flex flex-col items-center">
           <span className="text-lg font-bold leading-tight">{isEnglish ? 'About your account' : '关于你的账号'}</span>
-          <span className="text-sm text-gray-500">{user.handle}</span>
+          <span className="text-sm text-gray-500">{`@${user.id}`}</span>
         </div>
       </div>
       <div className="px-4 py-3 text-[13px] text-gray-600">{isEnglish ? 'Privacy settings' : '隐私设置'}</div>

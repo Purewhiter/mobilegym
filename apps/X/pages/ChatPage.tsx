@@ -5,13 +5,14 @@ import { useKeyboard } from '../../../os/keyboard';
 import * as TimeService from '../../../os/TimeService';
 import { IcImage, IcInfo, IcNavBack, IcSendArrow } from '../res/icons';
 import { dimens } from '../res/dimens';
-import { useXStore, selectConversations, selectUser } from '../state';
+import { useXStore, selectUser } from '../state';
+import { useXConversations } from '../data/view';
 import { useXGestures } from '../hooks/useXGestures';
 import { useXStrings } from '../hooks/useXStrings';
 
 export const ChatPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const conversations = useXStore(selectConversations);
+  const conversations = useXConversations();
   const sendMessage = useXStore(s => s.sendMessage);
   const user = useXStore(selectUser);
   const [inputValue, setInputValue] = useState('');
@@ -89,7 +90,7 @@ export const ChatPage: React.FC = () => {
             {conversation.participant.name}
             {conversation.participant.verified && <span className="text-blue-400">✓</span>}
           </div>
-          <div className="text-gray-500 text-xs">{conversation.participant.handle}</div>
+          <div className="text-gray-500 text-xs">{`@${conversation.participant.id}`}</div>
         </div>
         <IcInfo size={20} className="text-app-text" />
       </div>
@@ -109,13 +110,13 @@ export const ChatPage: React.FC = () => {
             {conversation.participant.name}
             {conversation.participant.verified && <span className="text-blue-400">✓</span>}
           </div>
-          <div className="text-gray-500 text-sm mb-4">{conversation.participant.handle}</div>
+          <div className="text-gray-500 text-sm mb-4">{`@${conversation.participant.id}`}</div>
           <div className="text-gray-500 text-sm mb-4">
             {s.chat_joined_prefix}{joinedDate}
           </div>
         </div>
 
-        {conversation.messages.map(message => {
+        {conversation.messages.map((message: any) => {
           const isMe = message.isMe;
           return (
             <div key={message.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>

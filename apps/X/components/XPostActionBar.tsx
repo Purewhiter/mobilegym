@@ -24,10 +24,6 @@ interface XPostActionBarProps {
   className?: string;
 }
 
-const normalizePostId = (id: string): string => String(id || '').toLowerCase();
-const hasPostId = (ids: string[], targetId: string): boolean =>
-  ids.some((id) => normalizePostId(id) === targetId);
-
 export const XPostActionBar: React.FC<XPostActionBarProps> = ({
   postId,
   stats,
@@ -54,11 +50,10 @@ export const XPostActionBar: React.FC<XPostActionBarProps> = ({
   const retweets = stats?.retweets ?? 0;
   const likes = stats?.likes ?? 0;
   const views = stats?.views ?? 0;
-  const normalizedPostId = normalizePostId(postId);
-  const retweetTargetPostId = normalizePostId(postId.startsWith('retweet_') ? postId.slice('retweet_'.length) : postId);
-  const isLiked = hasPostId(likedPostIds, normalizedPostId);
-  const isRetweeted = hasPostId(retweetedPostIds, retweetTargetPostId);
-  const isBookmarked = hasPostId(bookmarkedPostIds, normalizedPostId);
+  // 调用方必须传源帖 id; HomePage/ProfilePage 都已 sourcePost = post.retweetedPost ?? post。
+  const isLiked = likedPostIds.includes(postId);
+  const isRetweeted = retweetedPostIds.includes(postId);
+  const isBookmarked = bookmarkedPostIds.includes(postId);
 
   return (
     <div className={`flex justify-between mt-3 text-gray-500 text-sm max-w-[450px] ${className}`.trim()}>
