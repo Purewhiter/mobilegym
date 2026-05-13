@@ -74,7 +74,8 @@ export function snapshotProviders(): Record<string, any> {
 export function patchProviders(patch: Record<string, any>, deep: boolean): string[] {
   const patched: string[] = [];
   const deepMerge = (target: any, source: any): any => {
-    if (source === null || source === undefined) return target;
+    if (source === undefined) return target;
+    if (source === null) return null;
     if (typeof source !== 'object' || Array.isArray(source)) return source;
     if (typeof target !== 'object' || target === null || Array.isArray(target)) return source;
     const result = { ...target };
@@ -85,7 +86,7 @@ export function patchProviders(patch: Record<string, any>, deep: boolean): strin
   };
 
   for (const [providerName, providerPatch] of Object.entries(patch)) {
-    if (providerPatch === undefined) continue;
+    if (providerPatch === undefined || providerPatch === null) continue;
     const store = _providerStoreRefs.get(providerName);
     if (!store) {
       console.warn(`[patchProviders] unknown provider '${providerName}', registered:`, [..._providerStoreRefs.keys()]);

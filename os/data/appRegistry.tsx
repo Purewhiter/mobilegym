@@ -15,6 +15,7 @@ import { getLocale } from '../locale';
 import PackageManagerService from '../PackageManagerService';
 import { AppErrorBoundary } from '../components/AppErrorBoundary';
 import { AppLaunchSplash } from '../components/AppLaunchSplash';
+import { runAppDataLoaderModule, type AppDataLoaderModule } from '../appDataLoaderReady';
 
 export const APP_REGISTRY: AppManifest[] = [
   ...PackageManagerService.getInstalledPackages(),
@@ -47,13 +48,45 @@ const appModules = import.meta.glob<{ default: ComponentType<any> }>(
   ['../../apps/*/*App.tsx', '../../system/*/*App.tsx'],
 );
 
+// Data loaders: 让 App 的 lazy 包装 await preload + hydrateStore + waitReady
+// 完成后再返回 component。这样 Suspense fallback (AppLaunchSplash) 自动跨越
+//   - 模块下载（小，几十 KB）
+//   - 数据加载（大，13MB JSON.parse / sqlite-wasm deserialize）
+// 直到数据 ready，真实 App 才挂载——彻底消除"App 进了但 base feed 是空的"race。
+// 不需要每个 App 自己再 useEffect(() => preload()) 或 isBaseLoaded splash gate。
+//
+// 注：preload 失败时**不 catch**，让 Promise reject 抛到 React Suspense 上层，
+// 由 `AppErrorBoundary` 接管显示错误态。早期版本用 try/catch + warn 会让错误
+// 被静默吞掉，App 落到空 UI——比明确报错更难排查。
+const _dataLoaderModules = import.meta.glob<AppDataLoaderModule>(
+  ['../../apps/*/data/loader.ts', '../../system/*/data/loader.ts'],
+);
+/** appId → 该 app 的 data loader module 动态 import 工厂。
+ *  appRegistry 内 lazy() 用，OSContext.waitForData 也复用此 map（避免重复 glob 维护）。 */
+export const dataLoaderByAppId = new Map<string, () => Promise<AppDataLoaderModule>>();
+for (const [path, importFn] of Object.entries(_dataLoaderModules)) {
+  const m = path.match(/\/(apps|system)\/([^/]+)\/data\/loader\.ts$/);
+  if (!m) continue;
+  const appId = dirToAppId.get(m[2]);
+  if (appId && !dataLoaderByAppId.has(appId)) {
+    dataLoaderByAppId.set(appId, importFn);
+  }
+}
+
 const AppComponents: Record<string, React.LazyExoticComponent<ComponentType<any>>> = {};
 for (const [path, importFn] of Object.entries(appModules)) {
   const m = path.match(/\/(apps|system)\/([^/]+)\//);
   if (!m) continue;
   const appId = dirToAppId.get(m[2]);
   if (appId && !AppComponents[appId]) {
-    AppComponents[appId] = lazy(importFn);
+    const dataLoaderFn = dataLoaderByAppId.get(appId);
+    AppComponents[appId] = lazy(async () => {
+      if (dataLoaderFn) {
+        const loaderMod = await dataLoaderFn();
+        await runAppDataLoaderModule(loaderMod);
+      }
+      return importFn();
+    });
   }
 }
 
