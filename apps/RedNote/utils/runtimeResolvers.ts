@@ -1,0 +1,62 @@
+import type { Comment, Note, User } from '../types';
+
+export type RedNoteRuntimeNoteTable = Record<string, Note | null | undefined>;
+export type RedNoteRuntimeUserTable = Record<string, User | null | undefined>;
+export type RedNoteRuntimeComment = Comment & { noteId: string };
+export type RedNoteRuntimeCommentTable = Record<string, RedNoteRuntimeComment | null | undefined>;
+
+export const parseRedNoteCount = (count: number | string | undefined | null): number => {
+  if (count === null || count === undefined) return 0;
+  if (typeof count === 'number') return Number.isFinite(count) ? count : 0;
+  const raw = String(count).replace(/\+/g, '').trim();
+  if (!raw) return 0;
+  if (raw.includes('万')) return (parseFloat(raw.replace('万', '')) || 0) * 10000;
+  if (raw.toLowerCase().includes('w')) return (parseFloat(raw.toLowerCase().replace('w', '')) || 0) * 10000;
+  return parseFloat(raw) || 0;
+};
+
+export const getRedNoteFollowingIds = (user: Pick<User, 'followingIds'> | undefined | null): string[] =>
+  user?.followingIds || [];
+
+function tableEntry<T>(
+  table: Record<string, T | null | undefined> | undefined,
+  id: string,
+): T | null | undefined {
+  if (!table || !id) return undefined;
+  return Object.prototype.hasOwnProperty.call(table, id) ? table[id] : undefined;
+}
+
+export function resolveRedNoteRuntimeUser(
+  users: RedNoteRuntimeUserTable | undefined,
+  baseUser: User | null,
+  currentUser: User,
+  userId: string,
+): User | null {
+  if (!userId) return null;
+  if (userId === currentUser.id) {
+    return {
+      ...currentUser,
+      following: getRedNoteFollowingIds(currentUser).length,
+      followers: currentUser.followerIds?.length || 0,
+    };
+  }
+
+  const patch = tableEntry(users, userId);
+  if (patch === null) return null;
+  if (!baseUser && !patch) return null;
+
+  const merged = patch && typeof patch === 'object' ? patch : baseUser;
+  if (!merged) return null;
+
+  const isFollowed = getRedNoteFollowingIds(currentUser).includes(merged.id);
+  return {
+    ...merged,
+    followers: parseRedNoteCount(merged.followers) + (isFollowed ? 1 : 0),
+  };
+}
+
+// NOTE: the per-note `resolveRedNoteRuntimeNote` resolver previously lived
+// here. After the SQL-loader migration the view layer materializes notes
+// per-id via `useNoteById` (see data/view.ts), which inlines the same merge
+// logic. No remaining caller — removed to avoid a stale duplicate that
+// could drift from the hook's version.
