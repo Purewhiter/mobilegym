@@ -8,6 +8,11 @@ type AnyStore = StoreApi<any>;
 
 // 内部注册表
 const storeRegistry = new Map<string, AnyStore>();
+// Reset 入口: 把 store 内存状态浅合并回 initialState (actions 保留)。
+// `_resetStateCore` 在 cancelAllPendingPersistWrites + localStorage.clear 之前调用,
+// 否则 page.goto 触发 beforeunload → flushAll 会把残留 setState 写回 localStorage,
+// 导致新 task hydrate 时读到上一 task 末态 (例如 bookmark 仍标蓝).
+const resetRegistry = new Map<string, () => void>();
 
 // --- Reference-equality cache for getAllStoreStates() ---
 // Zustand uses immutable updates: each setState produces a new reference.
@@ -116,6 +121,7 @@ export function createAppStore<T extends Record<string, any>>(
     })
   );
   storeRegistry.set(appId, store as unknown as AnyStore);
+  resetRegistry.set(appId, () => store.setState({ ...initialState }));
   if (options?.afterHydration) {
     runAfterHydration(store, options.afterHydration);
   }
@@ -129,6 +135,7 @@ export function createVolatileAppStore<T extends Record<string, any>>(
 ) {
   const store = create<T>()(() => ({ ...initialState }));
   storeRegistry.set(appId, store as unknown as AnyStore);
+  resetRegistry.set(appId, () => store.setState({ ...initialState }));
   return store;
 }
 
@@ -171,10 +178,28 @@ export function createAppStoreWithActions<
     )
   );
   storeRegistry.set(appId, store as unknown as AnyStore);
+  // Shallow merge initialState 回去, actions 不在 initialState 里所以保留。
+  resetRegistry.set(appId, () => store.setState({ ...initialState } as any));
   if (options?.afterHydration) {
     runAfterHydration(store, options.afterHydration);
   }
   return store;
+}
+
+/**
+ * 把所有 app store 内存状态重置回 initialState (actions 保留)。
+ * 调用时机: `__SIM__.resetState` 内, 必须早于 `cancelAllPendingPersistWrites()`
+ * + `localStorage.clear()`, 才能避免 reset 触发的 persist 写入在 page.goto 的
+ * beforeunload 阶段被 flushAll 落回 localStorage。
+ */
+export function resetAllAppStores(): void {
+  for (const [appId, reset] of resetRegistry) {
+    try {
+      reset();
+    } catch (err) {
+      console.error(`[AppStoreRegistry] reset failed: ${appId}`, err);
+    }
+  }
 }
 
 /**
@@ -289,4 +314,12 @@ export function getAllStoreStates(): Record<string, any> {
     if (persisted) states[manifest.id] = persisted;
   }
   return states;
+}
+
+// Dev-only: expose the live store registry so bench tests can dispatch real
+// app actions via Playwright (e.g. window.__BENCH_STORES__.get('reddit').
+// getState().deleteOwnComment(id)). The Map is bound once but stays live as
+// new apps register, since later registrations mutate the same Map instance.
+if (import.meta.env?.DEV && typeof window !== 'undefined') {
+  (window as any).__BENCH_STORES__ = storeRegistry;
 }

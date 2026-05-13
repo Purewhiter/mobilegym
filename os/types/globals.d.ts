@@ -142,8 +142,6 @@ interface OSApi {
 }
 
 interface SimApi {
-  /** Apps whose state was set via setState (benchmark patch marker) */
-  _benchmarkPatchedApps: Set<string>;
   /** Clear all state WITHOUT reloading (for Playwright page.reload() pattern) */
   resetState(): Promise<void>;
   reset(seed?: number): Promise<void>;

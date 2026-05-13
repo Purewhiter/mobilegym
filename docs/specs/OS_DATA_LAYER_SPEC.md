@@ -365,12 +365,11 @@ OS 部分通过 `applyOsStatePatch()`（`os/simState.ts`）处理，自动路由
 重置模拟器到初始基线状态（清空所有 localStorage + 重置所有 store + 刷新页面），用于 bench_env 任务间隔离：
 
 ```
-1. _benchmarkPatchedApps.clear()
-2. localStorage.clear()            ← 清空所有 localStorage（含 App 数据）
-3. OsStateStore.reset()            ← 重置为 OS_DEFAULTS
-4. resetAllOsStores()              ← 重置 registry 中所有 store（volatile 和 persisted）
-5. TaskManager.reset()             ← 清空任务栈
-6. window.location.reload()        ← 整页刷新
+1. localStorage.clear()            ← 清空所有 localStorage（含 App 数据）
+2. OsStateStore.reset()            ← 重置为 OS_DEFAULTS
+3. resetAllOsStores()              ← 重置 registry 中所有 store（volatile 和 persisted）
+4. TaskManager.reset()             ← 清空任务栈
+5. window.location.reload()        ← 整页刷新
 ```
 
 Provider store 通过 `localStorage.clear()` 间接重置（持久化数据被清除，刷新后从默认状态恢复）。

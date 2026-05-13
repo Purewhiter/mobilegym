@@ -1,12 +1,11 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useSyncExternalStore } from 'react';
 import type { AppId, OSState } from './types';
 import type { ActivityResult, AppIntentFilter, IntentPayload } from './types/manifest';
-import { getAllAppStates } from './AppStateRegistry';
 import { getStore, readPersistedAppState, writePersistedAppState } from './createAppStore';
 import { flushAll, flushKey } from './debouncedPersist';
 import { getTimeConfig, now, realNow, formatTime, formatDate, getDayOfWeek } from './TimeService';
 import { getLocationConfig, getSimulatedCoords } from './LocationService';
-import { isValidAppId, dirToAppId } from './data/appRegistry';
+import { isValidAppId, dataLoaderByAppId } from './data/appRegistry';
 import { clearFileSystemDB, initFileSystem } from './FileSystemService';
 import * as MediaService from './MediaService';
 import { KeyboardService } from './keyboard/KeyboardService';
@@ -38,6 +37,8 @@ import { TaskManager } from './TaskManager';
 import { IntentResolver } from './IntentResolver';
 import { PendingIntent } from './PendingIntent';
 import { resetAllOsStores } from './createOsStore';
+import { resetAllAppStores } from './createAppStore';
+import { cancelAllPending as cancelAllPendingPersistWrites, beginPersistReset, endPersistReset } from './debouncedPersist';
 import TextSelectionService from './TextSelectionService';
 import { OsStateStore } from './OsStateStore';
 import { ConnectivityManager } from './managers/ConnectivityManager';
@@ -46,35 +47,21 @@ import {
   applyOsStatePatch,
   buildSimState,
 } from './simState';
-import {
-  runAppDataLoaderModule,
-  type AppDataLoaderModule,
-} from './appDataLoaderReady';
+import { runAppDataLoaderModule } from './appDataLoaderReady';
 
-const _dataLoaders = import.meta.glob<AppDataLoaderModule>(
-  ['../apps/*/data/loader.ts', '../system/*/data/loader.ts'],
-);
 /** 预加载所有 App 的 state.ts（eager: 打进主 bundle，页面加载即执行 createAppStore 副作用） */
 const _eagerAppStateModules = import.meta.glob<unknown>(
   ['../apps/*/state.ts', '../system/*/state.ts'],
   { eager: true },
 );
 void _eagerAppStateModules; // 确保 tree-shaking 不会移除
-const _loaderByAppId = new Map<string, () => Promise<AppDataLoaderModule>>();
-for (const [path, importFn] of Object.entries(_dataLoaders)) {
-  const m = path.match(/\/(apps|system)\/([^/]+)\/data\/loader\.ts$/);
-  if (m) {
-    const appId = dirToAppId.get(m[2]);
-    if (appId) _loaderByAppId.set(appId, importFn);
-  }
-}
+// data loader map 来自 appRegistry，避免在 OSContext 和 appRegistry 两处独立 glob。
+// appRegistry 的 lazy() 也用同一个 map，确保 cold-start 路径和 bench `waitForData`
+// 路径覆盖完全一致的 app 集合。
 
 // --- getState() cache for launcher (rarely changes, expensive to parse) ---
 let _launcherCacheRaw: string | null | undefined = undefined;
 let _launcherCacheParsed: any = null;
-
-// --- Benchmark patch marker: apps whose state was set via __SIM__.setState ---
-const _benchmarkPatchedApps = new Set<string>();
 
 interface OSContextProps {
   state: OSState;
@@ -628,22 +615,47 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
 
   useEffect(() => {
     const _resetStateCore = async () => {
-      _benchmarkPatchedApps.clear();
-      localStorage.clear();
-      OsStateStore.reset();
+      // 顺序很关键 — 解释见 createAppStore.ts:resetAllAppStores 注释。
+      //   0) beginPersistReset: 翻开 reset gate。即便有 effect 在后续异步窗口触发
+      //      setState 排进 pending, 之后 page.goto 触发的 beforeunload → flushAll
+      //      看到 gate 已开 → 直接 clear timer 不写 localStorage。模块级 flag, page
+      //      reload 后新文档重新加载本模块自动回到 false。
+      //   1) 内存 reset: app + OS stores 全部回到 initialState。setState 会触发
+      //      persist 写入排到 debounce 队列。
+      //   2) cancelAllPending: 把 step 1 的 pending 写入丢掉, 否则 page.goto 时
+      //      的 beforeunload → flushAll 会把这些"reset 后的 initial"写入 localStorage,
+      //      同时 X store 在 reset 前残留的 task 末态 setState (如 toggleBookmark)
+      //      若仍在 debounce 队列里也会被一起 flush。
+      //   3) localStorage.clear: 清掉旧持久化, 让新 page hydrate 时拿到 initialState。
+      //   4) clearFileSystemDB 是 await IndexedDB transaction, 期间旧 page 仍存活,
+      //      React effect cleanup / 用户操作可能再次 setState 排入 pending。
+      //      所以在它后面再清一次 pending + localStorage 兜底, 把 await 期间的脏写
+      //      也丢掉。
+      //   5) 第二次 sweep 之后到 Python page.goto 之间仍有 effect 窗口, 但 gate 已开,
+      //      beforeunload flushAll 会跳过。
+      beginPersistReset();
+      resetAllAppStores();
       resetAllOsStores();
+      OsStateStore.reset();
+      TaskManager.reset();
+
+      cancelAllPendingPersistWrites();
+      localStorage.clear();
+
       // TextSelectionService is opted out of the registry (DOM refs in state),
       // so reset it manually to avoid stale targetElement / menu state.
       TextSelectionService.hideSelectionMenu();
-      TaskManager.reset();
       try {
         await clearFileSystemDB();
       } catch (error) {
         console.error('[SIM] clearFileSystemDB failed (non-fatal, reload will reinit):', error);
       }
+
+      // Second sweep: 关闭 clearFileSystemDB await 窗口期内任何新的 persist 排队。
+      cancelAllPendingPersistWrites();
+      localStorage.clear();
     };
     window.__SIM__ = {
-      _benchmarkPatchedApps,
       /** Clear all state WITHOUT reloading. Use with Playwright page.reload(). */
       resetState: _resetStateCore,
       /** Clear all state AND reload (legacy). */
@@ -671,7 +683,7 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
         };
 
         const entries: { appId: string; importFn: () => Promise<any> }[] = [];
-        for (const [appId, importFn] of _loaderByAppId) {
+        for (const [appId, importFn] of dataLoaderByAppId) {
           if (!has(appId)) continue;
           entries.push({ appId, importFn });
         }
@@ -825,13 +837,19 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
         });
       },
       setState: (patch: { apps?: Record<string, any>; os?: Record<string, any> }, options?: { deep?: boolean; reload?: boolean }) => {
+        // 外部脚本显式调 setState (state-builder snapshot restore / bench inject /
+        // mem_microbench) 等场景, 意味着 reset 阶段已完成、应当接收新 state 写入。
+        // 关闭 reset gate, 让后续 zustand persist 正常落盘 (主 bench 路径 page.goto
+        // 之后新文档模块自然重置 flag, 这里只为非 reload 场景关 gate)。
+        endPersistReset();
         const { deep = true, reload = false } = options || {};
 
         const ARRAY_MATCH_RE = /^(\w+)\[(\w+)=(.+)\]$/;
         const ARRAY_PUSH_RE = /^(\w+)\[\]$/;
 
         const deepMerge = (target: any, source: any): any => {
-          if (source === null || source === undefined) return target;
+          if (source === undefined) return target;
+          if (source === null) return null;
           if (typeof source !== 'object' || Array.isArray(source)) return source;
           if (typeof target !== 'object' || target === null || Array.isArray(target)) return source;
 
@@ -883,7 +901,7 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
 
         if (patch.apps && typeof patch.apps === 'object') {
           for (const [appId, appPatch] of Object.entries(patch.apps)) {
-            if (appPatch === undefined) continue;
+            if (appPatch === undefined || appPatch === null) continue;
             const store = getStore(appId);
             if (store) {
               if (deep) {
@@ -905,7 +923,6 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
                   : { ...current, ...appPatch };
               writePersistedAppState(appId, merged as Record<string, any>);
             }
-            _benchmarkPatchedApps.add(appId);
           }
         }
 

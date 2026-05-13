@@ -232,11 +232,11 @@ const apps = __SIM__.getState().apps;
 | `map` | 地图 | `user, searchHistory, settings, currentLocation, currentView` |
 | `railway12306` | railway12306 | `from, to, date, isStudent, searchHistory, stationSelectTarget, orders, passengers, settings, selectedTrain, notificationsRead, lastQuerySummary, invoiceHeaders, invoiceEmail, userProfile, isLoggedIn, loginUser, auth, directTrains, transferPlans, _temp, searchForm, user, notifications, account, studentVerify, servicePhones, queryState, lastPickedTrain, lastLoginHint` |
 | `redbook` | 小红书 | `user, entities, feedIds, userIds, chats, notifications, history, settings, storage, homeState, publishDraft` |
-| `reddit` | reddit | `user, communities, posts, joinedCommunityIds, postVotes, commentVotes, chatThreadsByUsername, chatThreadRepliesByKey, userCommentsByPostId, userPosts, createDraft, settings` |
+| `reddit` | reddit | `user, posts, comments, chatThreads, chatReplies, settings, createDraft` |
 | `tencent_meeting` | 腾讯会议 | `user, personalRoom, messages, otherDevices, ongoingMeetings, history, contacts, scheduledMeetings, settings, activeMeeting, pendingMeetingConfig, currentScheduledMeeting` |
 | `wechat` | 微信 | `user, auth, chats, contacts, moments, authorizedApps, nearbyPeople, momentDraft, textMomentDraft, settings, subscriptions, _temp` |
 | `wechat_reading` | 微信读书 | `user, shelf, store, bookProgress, readingRecords, settings, readerPrefs, recommendedAudiobooks, likedListBooks, likedListSyncToHome, _temp, allProgressBookIds, readingBookIds, finishedBookIds, homeFinishedBookIds, hotSearch, audiobooks, users` |
-| `x` | X (Twitter) | `posts, conversations, followedUserIds, likedPostIds, retweetedPostIds, bookmarkedPostIds, settings, currentSearchQuery, pendingQuotedPostId, importedUsers, importedPosts, _temp, user, users, followerUserIds, trends, notifications, recentSearches` |
+| `x` | X (Twitter) | `user, posts, conversations, settings` |
 | `answer_sheet` | answer_sheet | `question, hint, fields, answers, submitted` |
 | `browser` | 浏览器 | `tabs, activeTabId, visitedUrls` |
 | `calculator2` | calculator2 | `state, formula, result` |
@@ -2474,49 +2474,25 @@ const state = __SIM__.getState().apps.reddit;
 | `posts[].images` | NoneType |  |
 | `posts[].subredditIcon` | NoneType |  |
 | `posts[].authorAvatar` | str | `/apps/Reddit/assets/avatars/0042c9bad3f2bad01c8...` |
-| `joinedCommunityIds` | array | (0 项) |
-| `postVotes` | object |  |
-| `commentVotes` | object |  |
-| `chatThreadsByUsername` | object |  |
-| `chatThreadsByUsername.Objective-Skill-2591` | array&lt;object&gt; | (2 项) |
-| `chatThreadsByUsername.Objective-Skill-2591[].id` | str | `ct_obj_1` |
-| `chatThreadsByUsername.Objective-Skill-2591[].from` | str | `them` |
-| `chatThreadsByUsername.Objective-Skill-2591[].body` | str | `你上次推荐的那家店我去了，味道确实不错！` |
-| `chatThreadsByUsername.Objective-Skill-2591[].created_utc` | int | `1710000001` |
-| `chatThreadsByUsername.Intelligent_Drama_46` | array&lt;object&gt; | (2 项) |
-| `chatThreadsByUsername.Intelligent_Drama_46[].id` | str | `ct_int_1` |
-| `chatThreadsByUsername.Intelligent_Drama_46[].from` | str | `me` |
-| `chatThreadsByUsername.Intelligent_Drama_46[].body` | str | `hello` |
-| `chatThreadsByUsername.Intelligent_Drama_46[].created_utc` | int | `1710000100` |
-| `chatThreadRepliesByKey` | object |  |
-| `chatThreadRepliesByKey.Objective-Skill-2591:ct_obj_1` | array&lt;object&gt; | (1 项) |
-| `chatThreadRepliesByKey.Objective-Skill-2591:ct_obj_1[].id` | str | `cr_obj_1` |
-| `chatThreadRepliesByKey.Objective-Skill-2591:ct_obj_1[].from` | str | `me` |
-| `chatThreadRepliesByKey.Objective-Skill-2591:ct_obj_1[].body` | str | `确实不错，下次我再去试试别的菜。` |
-| `chatThreadRepliesByKey.Objective-Skill-2591:ct_obj_1[].created_utc` | int | `1710000004` |
-| `userCommentsByPostId` | object |  |
-| `userCommentsByPostId.sample_post_1` | array&lt;object&gt; | (2 项) |
-| `userCommentsByPostId.sample_post_1[].id` | str | `uc_1` |
-| `userCommentsByPostId.sample_post_1[].body` | str | `补充一点：晚上早点放下手机真的有用。` |
-| `userCommentsByPostId.sample_post_1[].score` | int | `1` |
-| `userCommentsByPostId.sample_post_1[].created_utc` | int | `1710000002` |
-| `userCommentsByPostId.sample_post_1[].author` | str | `Embarrassed_Fee8630` |
-| `userPosts` | array&lt;object&gt; | (1 项) |
-| `userPosts[].id` | str | `my_post_1` |
-| `userPosts[].subreddit` | str | `r/self` |
-| `userPosts[].timeAgo` | str | `now` |
-| `userPosts[].title` | str | `有没有人也会半夜突然想整理房间？` |
-| `userPosts[].content` | str | `明明很困了，但一想到明天事情多，就忍不住开始收拾桌面、整理衣柜，结果越收拾越精神。你们会这样吗？` |
-| `userPosts[].upvotes` | str | `1` |
-| `userPosts[].comments` | str | `0` |
-| `userPosts[].shares` | int | `0` |
-| `userPosts[].isAd` | bool | `False` |
-| `userPosts[].url` | str |  |
-| `userPosts[].author` | str | `Embarrassed_Fee8630` |
-| `userPosts[].image` | NoneType |  |
-| `userPosts[].images` | NoneType |  |
-| `userPosts[].subredditIcon` | NoneType |  |
-| `userPosts[].authorAvatar` | str | `/apps/Reddit/assets/avatars/0042c9bad3f2bad01c8...` |
+| `user.postIds` | array&lt;str&gt; | (1 项) |
+| `user.commentIds` | array&lt;str&gt; | (0 项) |
+| `user.savedPostIds` | array&lt;str&gt; | (0 项) |
+| `user.joinedCommunityIds` | array&lt;str&gt; | (0 项) |
+| `user.postVotes` | object |  |
+| `user.commentVotes` | object |  |
+| `comments` | object |  |
+| `chatThreads` | object |  |
+| `chatThreads.Objective-Skill-2591` | array&lt;object&gt; | (2 项) |
+| `chatThreads.Objective-Skill-2591[].id` | str | `ct_obj_1` |
+| `chatThreads.Objective-Skill-2591[].from` | str | `them` |
+| `chatThreads.Objective-Skill-2591[].body` | str | `你上次推荐的那家店我去了，味道确实不错！` |
+| `chatThreads.Objective-Skill-2591[].created_utc` | int | `1710000001` |
+| `chatReplies` | object |  |
+| `chatReplies.Objective-Skill-2591:ct_obj_1` | array&lt;object&gt; | (1 项) |
+| `chatReplies.Objective-Skill-2591:ct_obj_1[].id` | str | `cr_obj_1` |
+| `chatReplies.Objective-Skill-2591:ct_obj_1[].from` | str | `me` |
+| `chatReplies.Objective-Skill-2591:ct_obj_1[].body` | str | `确实不错，下次我再去试试别的菜。` |
+| `chatReplies.Objective-Skill-2591:ct_obj_1[].created_utc` | int | `1710000004` |
 | `createDraft` | object |  |
 | `createDraft.selectedCommunity` | NoneType |  |
 | `createDraft.selectedFlairs` | array | (0 项) |
@@ -3078,10 +3054,13 @@ const state = __SIM__.getState().apps.x;
 | `conversations[].messages[].content` | str | `Yo how is ServerCat doing?` |
 | `conversations[].messages[].time` | str | `15m` |
 | `conversations[].messages[].read` | bool | `True` |
-| `followedUserIds` | array&lt;str&gt; | (3 项) |
-| `likedPostIds` | array | (0 项) |
-| `retweetedPostIds` | array | (0 项) |
-| `bookmarkedPostIds` | array | (0 项) |
+| `user.followedUserIds` | array&lt;str&gt; | (3 项) |
+| `user.followerUserIds` | array&lt;str&gt; | (12 项) |
+| `user.likedPostIds` | array&lt;str&gt; | (0 项) |
+| `user.retweetedPostIds` | array&lt;str&gt; | (0 项) |
+| `user.bookmarkedPostIds` | array&lt;str&gt; | (0 项) |
+| `user.postIds` | array&lt;str&gt; | (0 项) |
+| `user.replyIds` | array&lt;str&gt; | (0 项) |
 | `settings` | object |  |
 | `settings.showInteractionCounts` | bool | `True` |
 | `settings.enablePostSwipeGesture` | bool | `False` |
@@ -3120,13 +3099,6 @@ const state = __SIM__.getState().apps.x;
 | `settings.proNotify` | bool | `True` |
 | `settings.onlyImportant` | bool | `False` |
 | `settings.hideSuggestions` | bool | `False` |
-| `currentSearchQuery` | str |  |
-| `pendingQuotedPostId` | NoneType |  |
-| `importedUsers` | object |  |
-| `importedPosts` | array | (0 项) |
-| `_temp` | object |  |
-| `_temp.repliesLoaded` | bool | `False` |
-| `_temp.repliesLoading` | bool | `False` |
 | `user` | object |  |
 | `user.id` | str | `u_xiaoming_dev` |
 | `user.name` | str | `小明` |
@@ -3141,26 +3113,6 @@ const state = __SIM__.getState().apps.x;
 | `user.following` | int | `3` |
 | `user.followers` | int | `12` |
 | `user.screenName` | str | `xiaoming_dev` |
-| `users` | object |  |
-| `followerUserIds` | array&lt;str&gt; | (12 项) |
-| `trends` | array&lt;object&gt; | (13 项) |
-| `trends[].id` | str | `t_promo_1` |
-| `trends[].title` | str | `Fashion Weeks (Menswear FW26 & Haute Couture SS...` |
-| `trends[].category` | str | `LIVE` |
-| `trends[].image` | str | `https://pbs.twimg.com/media/GhV3RrObsAAEetk.jpg` |
-| `trends[].type` | str | `promoted` |
-| `notifications` | array&lt;object&gt; | (7 项) |
-| `notifications[].id` | str | `n1` |
-| `notifications[].type` | str | `like` |
-| `notifications[].actorId` | str | `u_elonmusk` |
-| `notifications[].time` | str | `6小时` |
-| `notifications[].read` | bool | `False` |
-| `notifications[].postId` | str | `p_1879267274185756896` |
-| `notifications[].content` | str | `Recent post from Elon Musk Yes!` |
-| `recentSearches` | array&lt;object&gt; | (1 项) |
-| `recentSearches[].id` | str | `rs1` |
-| `recentSearches[].type` | str | `user` |
-| `recentSearches[].userId` | str | `u_xiaoming_dev` |
 
 ### answer_sheet (`answer_sheet`)
 
