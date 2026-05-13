@@ -14,7 +14,7 @@ import pytest
 from bench_env.task.base import BaseTask
 from bench_env.task.common_tasks import AnswerTask, CriteriaTask
 from bench_env.task.redbook import tasks as _tasks_module
-from bench_env.task.redbook.app import Redbook
+from bench_env.task.redbook.app import REDBOOK_PUBLISH_CHANGES, Redbook
 from bench_env.task.utils import int_to_chinese
 from bench_env.tests.conftest import make_judge_input
 
@@ -36,6 +36,11 @@ def _load_defaults() -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def _load_base_notes() -> list[dict[str, Any]]:
+    path = Path(__file__).resolve().parents[2] / "apps" / "RedBook" / "data" / "notes.json"
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
 def _resolve_relative_ts(value: Any) -> int:
     if isinstance(value, (int, float)):
         return int(value)
@@ -52,41 +57,29 @@ def _resolve_relative_ts(value: Any) -> int:
 
 def _make_base_state() -> dict[str, Any]:
     defaults = copy.deepcopy(_load_defaults())
-    user = defaults["user"]
-    users = defaults["users"]
-    notes = defaults["sampleNotes"]
-
-    for note in notes:
+    for note in defaults.get("notes", {}).values():
         note["createdAt"] = _resolve_relative_ts(note["createdAt"])
         note.setdefault("commentList", [])
         for comment in note["commentList"]:
             comment["time"] = _resolve_relative_ts(comment["time"])
-
-    users_by_id = {item["id"]: item for item in users}
-    notes_by_id = {note["id"]: note for note in notes}
-
-    return {
-        "user": user,
-        "entities": {"usersById": users_by_id, "notesById": notes_by_id},
-        "feedIds": [note["id"] for note in notes],
-        "userIds": list(users_by_id.keys()),
-        "chats": [],
-        "notifications": [],
-        "history": [],
-        "searchHistory": defaults["searchHistory"],
-        "settings": defaults["settings"],
-        "storage": {"cacheSizeBytes": 5382144},
-        "homeState": {
-            "activeCategory": "recommend",
-            "citySubTab": "recommend",
-            "displayCount": 20,
-        },
-        "publishDraft": {
-            "text": "",
-            "templateId": "basic",
-            "images": [],
-        },
-    }
+    for comment in defaults.get("comments", {}).values():
+        comment["time"] = _resolve_relative_ts(comment["time"])
+    for chat in defaults.get("chats", []) or []:
+        chat["lastTime"] = _resolve_relative_ts(chat["lastTime"])
+        for message in chat.get("messages", []) or []:
+            message["timestamp"] = _resolve_relative_ts(message["timestamp"])
+    defaults.setdefault("notes", {})
+    defaults.setdefault("comments", {})
+    defaults.setdefault("users", {})
+    defaults.setdefault("chats", [])
+    defaults.setdefault("notifications", [])
+    defaults.setdefault("history", [])
+    defaults.setdefault("publishDraft", {"text": "", "templateId": "basic", "title": "", "images": []})
+    # `_temp` is ephemeral nav state — initialized in TS, not defaults.json.
+    # Tests that simulate "user switched to category X" need to mutate it,
+    # so seed it here to match the runtime store shape.
+    defaults.setdefault("_temp", {"activeCategory": "recommend", "citySubTab": "recommend"})
+    return defaults
 
 
 BASE_STATE = _make_base_state()
@@ -162,7 +155,7 @@ def _append_chat_message(state: dict[str, Any], target_user_id: str, content: st
         "type": "text",
     }
     if chat is None:
-        target_user = state["entities"]["usersById"][target_user_id]
+        target_user = Redbook(state).require_user_entity(target_user_id)
         chats.insert(0, {
             "userId": target_user_id,
             "username": target_user["name"],
@@ -178,52 +171,31 @@ def _append_chat_message(state: dict[str, Any], target_user_id: str, content: st
     chat["lastTime"] = TEST_OS_STATE["time"]["timestamp"]
 
 
-def _seed_chats(state: dict[str, Any]) -> None:
-    state["chats"] = Redbook.build_seed_chats(
-        state["entities"]["usersById"],
-        state["user"]["id"],
-        TEST_OS_STATE["time"]["timestamp"],
-    )
-
-
 def _follow_user(state: dict[str, Any], user_id: str) -> None:
-    if user_id not in state["user"]["followings"]:
-        state["user"]["followings"].append(user_id)
-        state["user"]["following"] = int(state["user"]["following"]) + 1
-        state["entities"]["usersById"][user_id]["followers"] = int(
-            state["entities"]["usersById"][user_id]["followers"]
-        ) + 1
+    if user_id not in state["user"]["followingIds"]:
+        state["user"]["followingIds"].append(user_id)
 
 
 def _collect_note(state: dict[str, Any], note_id: str) -> None:
     if note_id not in state["user"]["collectedNotes"]:
         state["user"]["collectedNotes"].append(note_id)
-        state["entities"]["notesById"][note_id]["collections"] = int(
-            state["entities"]["notesById"][note_id]["collections"]
-        ) + 1
 
 
 def _like_note(state: dict[str, Any], note_id: str) -> None:
     if note_id not in state["user"]["likedNotes"]:
         state["user"]["likedNotes"].append(note_id)
-        state["entities"]["notesById"][note_id]["likes"] = int(
-            state["entities"]["notesById"][note_id]["likes"]
-        ) + 1
 
 
 def _remove_like(state: dict[str, Any], note_id: str) -> None:
     if note_id in state["user"]["likedNotes"]:
         state["user"]["likedNotes"] = [item for item in state["user"]["likedNotes"] if item != note_id]
-        state["entities"]["notesById"][note_id]["likes"] = max(
-            0,
-            int(state["entities"]["notesById"][note_id]["likes"]) - 1,
-        )
 
 
 def _add_comment(state: dict[str, Any], note_id: str, content: str, reply_to_id: str | None = None) -> None:
-    note = state["entities"]["notesById"][note_id]
+    note = Redbook(state).require_note(note_id)
     comment = {
-        "id": f"c_test_{len(note.get('commentList', [])) + 1}",
+        "id": f"c_test_{len(state.setdefault('comments', {})) + 1}",
+        "noteId": note_id,
         "userId": state["user"]["id"],
         "username": state["user"]["name"],
         "avatar": state["user"]["avatar"],
@@ -233,21 +205,13 @@ def _add_comment(state: dict[str, Any], note_id: str, content: str, reply_to_id:
         "replyToId": reply_to_id,
         "location": state["user"]["location"],
     }
-    note.setdefault("commentList", [])
-    note["commentList"].insert(0, comment)
-    note["comments"] = int(note["comments"]) + 1
-    state["user"]["commentList"].append({
-        "noteId": note_id,
-        "commentId": comment["id"],
-        "content": content,
-        "time": TEST_OS_STATE["time"]["timestamp"],
-        "replyToId": reply_to_id,
-    })
+    state.setdefault("comments", {})[comment["id"]] = comment
+    state["user"].setdefault("commentIds", []).append(comment["id"])
 
 
 def _publish_note(state: dict[str, Any], title: str, content: str) -> None:
-    note_id = f"note_test_{len(state['entities']['notesById']) + 1}"
-    state["entities"]["notesById"][note_id] = {
+    note_id = f"note_test_{len(state.setdefault('notes', {})) + 1}"
+    state["notes"][note_id] = {
         "id": note_id,
         "title": title,
         "content": content,
@@ -260,7 +224,6 @@ def _publish_note(state: dict[str, Any], title: str, content: str) -> None:
         "createdAt": TEST_OS_STATE["time"]["timestamp"],
         "category": "测试",
     }
-    state["feedIds"].insert(0, note_id)
     state["user"]["publishedNoteIds"].insert(0, note_id)
 
 
@@ -303,7 +266,7 @@ def _current_uncollected_search_keyword() -> str:
 
 def _current_followed_username(*, require_notes: bool = False) -> str:
     rb = Redbook(BASE_STATE)
-    for user_id in rb.followings:
+    for user_id in rb.following_ids:
         user = rb.require_user_entity(str(user_id))
         if require_notes and rb.user_note_count(str(user_id)) <= 0:
             continue
@@ -323,7 +286,7 @@ def _current_searchable_username() -> str:
 
 def _current_unfollowed_username_with_location() -> str:
     rb = Redbook(BASE_STATE)
-    followed = set(rb.followings)
+    followed = set(rb.following_ids)
     for user_id, user in rb.users_by_id.items():
         if user_id in followed or user_id == rb.user_id:
             continue
@@ -363,20 +326,12 @@ def _remove_initial_like(state: dict[str, Any], note_id: str) -> None:
     if note_id not in state["user"]["likedNotes"]:
         return
     state["user"]["likedNotes"] = [item for item in state["user"]["likedNotes"] if item != note_id]
-    state["entities"]["notesById"][note_id]["likes"] = max(
-        0,
-        int(state["entities"]["notesById"][note_id]["likes"]) - 1,
-    )
 
 
 def _remove_initial_collection(state: dict[str, Any], note_id: str) -> None:
     if note_id not in state["user"]["collectedNotes"]:
         return
     state["user"]["collectedNotes"] = [item for item in state["user"]["collectedNotes"] if item != note_id]
-    state["entities"]["notesById"][note_id]["collections"] = max(
-        0,
-        int(state["entities"]["notesById"][note_id]["collections"]) - 1,
-    )
 
 
 def _positive_answer_case(
@@ -466,6 +421,134 @@ class TestRedbookAccessor:
     def redbook(self) -> Redbook:
         return Redbook(copy.deepcopy(BASE_STATE))
 
+    def test_defaults_are_runtime_schema_not_public_content(self):
+        defaults = _load_defaults()
+        assert "sampleNotes" not in defaults
+        assert isinstance(defaults.get("notes"), dict)
+        assert isinstance(defaults.get("comments"), dict)
+        assert isinstance(defaults.get("users"), dict)
+        assert {"note_0", "note_1"}.issubset(defaults["notes"].keys())
+        assert set(defaults["user"]["publishedNoteIds"]) == {"note_0", "note_1"}
+        assert "following" not in defaults["user"]
+        assert "followers" not in defaults["user"]
+        assert "followings" not in defaults["user"]
+        assert "commentList" not in defaults["user"]
+        assert isinstance(defaults["user"]["followingIds"], list)
+        assert isinstance(defaults["user"]["followerIds"], list)
+        assert isinstance(defaults["user"]["commentIds"], list)
+
+    def test_default_notifications_live_in_runtime_defaults(self):
+        defaults = _load_defaults()
+        notifications = defaults.get("notifications")
+        assert isinstance(notifications, list)
+        assert len(notifications) >= 6
+        assert {item["id"] for item in notifications[:6]} == {"n1", "n2", "n3", "n4", "n5", "n6"}
+        assert all(not str(item.get("userId", "")).startswith("seed_user_") for item in notifications)
+
+    def test_view_note_uses_full_runtime_overlay_and_derives_relationship_counts(self):
+        base_note = _load_base_notes()[0]
+        base_id = str(base_note["id"])
+        state = copy.deepcopy(_load_defaults())
+        state.setdefault("notes", {})
+        state.setdefault("comments", {})
+        state["notes"][base_id] = {**base_note, "title": "运行态覆盖标题"}
+        state["comments"]["runtime_comment_1"] = {
+            "id": "runtime_comment_1",
+            "noteId": base_id,
+            "userId": state["user"]["id"],
+            "username": state["user"]["name"],
+            "avatar": state["user"]["avatar"],
+            "content": "运行态评论",
+            "time": TEST_OS_STATE["time"]["timestamp"],
+            "likes": 0,
+            "location": state["user"]["location"],
+        }
+        state["user"]["likedNotes"] = [base_id]
+        state["user"]["collectedNotes"] = [base_id]
+        state["user"]["commentIds"] = ["runtime_comment_1"]
+
+        note = Redbook(state).view_note(base_id)
+
+        assert note is not None
+        assert note["title"] == "运行态覆盖标题"
+        assert note["authorId"] == base_note["authorId"]
+        assert note["likes"] == int(base_note["likes"]) + 1
+        assert note["collections"] == int(base_note["collections"]) + 1
+        assert note["comments"] == int(base_note["comments"]) + 1
+        assert note["commentList"][0]["id"] == "runtime_comment_1"
+
+    def test_base_entity_overlay_does_not_backfill_missing_fields(self):
+        base_note = _load_base_notes()[0]
+        base_id = str(base_note["id"])
+        state = copy.deepcopy(_load_defaults())
+        state["notes"][base_id] = {"id": base_id, "title": "缺字段 overlay"}
+
+        note = Redbook(state).view_note(base_id)
+
+        assert note is not None
+        assert note["title"] == "缺字段 overlay"
+        assert "authorId" not in note
+
+    def test_base_user_overlay_does_not_backfill_missing_fields(self):
+        state = copy.deepcopy(_load_defaults())
+        base_user_id = next(iter(Redbook(state).base_users_by_id.keys()))
+        state["users"][base_user_id] = {"id": base_user_id, "name": "缺字段用户 overlay"}
+
+        user = Redbook(state).view_user(base_user_id)
+
+        assert user is not None
+        assert user["name"] == "缺字段用户 overlay"
+        assert "avatar" not in user
+
+    def test_view_note_tombstone_hides_base_note(self):
+        base_id = str(_load_base_notes()[0]["id"])
+        state = copy.deepcopy(_load_defaults())
+        state.setdefault("notes", {})
+        state["notes"][base_id] = None
+
+        assert Redbook(state).view_note(base_id) is None
+
+    def test_view_note_replaces_and_hides_base_comments(self):
+        base_note = next(note for note in _load_base_notes() if note.get("commentList"))
+        base_id = str(base_note["id"])
+        patched_comment = base_note["commentList"][0]
+        hidden_comment = base_note["commentList"][1]
+        state = copy.deepcopy(_load_defaults())
+        state.setdefault("comments", {})
+        state["comments"][patched_comment["id"]] = {
+            **patched_comment,
+            "id": patched_comment["id"],
+            "content": "运行态覆盖评论",
+            "likes": 8,
+        }
+        state["comments"][hidden_comment["id"]] = None
+
+        note = Redbook(state).view_note(base_id)
+
+        assert note is not None
+        visible_comments = {comment["id"]: comment for comment in note["commentList"]}
+        assert visible_comments[patched_comment["id"]]["content"] == "运行态覆盖评论"
+        assert hidden_comment["id"] not in visible_comments
+        assert note["comments"] == int(base_note["comments"]) - 1
+
+    def test_base_comment_overlay_does_not_backfill_missing_fields(self):
+        base_note = next(note for note in _load_base_notes() if note.get("commentList"))
+        base_id = str(base_note["id"])
+        base_comment = base_note["commentList"][0]
+        state = copy.deepcopy(_load_defaults())
+        state["comments"][base_comment["id"]] = {
+            "id": base_comment["id"],
+            "noteId": base_id,
+            "content": "缺字段评论 overlay",
+        }
+
+        note = Redbook(state).view_note(base_id)
+
+        assert note is not None
+        visible_comments = {comment["id"]: comment for comment in note["commentList"]}
+        assert visible_comments[base_comment["id"]]["content"] == "缺字段评论 overlay"
+        assert "username" not in visible_comments[base_comment["id"]]
+
     def test_basic_properties(self, redbook: Redbook):
         defaults = _load_defaults()
         user = defaults["user"]
@@ -473,11 +556,88 @@ class TestRedbookAccessor:
         assert redbook.user_name == "小明"
         assert redbook.general_settings["mobileNetwork"] is True
         assert redbook.settings["language"] == "zh-CN"
-        assert redbook.feed_ids[0] == str(defaults["sampleNotes"][0]["id"])
-        assert set(redbook.followings) == set(user["followings"])
+        # Seed runtime-only notes (defaults.notes.note_0/note_1) sit at the front of
+        # `feed_ids` (createdAt desc, before any base-feed entry). Note: these seeds
+        # don't carry a `category`, so HomePage 推荐 tab filters them out in the UI —
+        # they only surface via MePage 我的笔记 / 消息中心 / DetailPage. This assertion
+        # is about store-level feed ordering, not UI visibility on any specific tab.
+        assert redbook.feed_ids[0] == "note_0"
+        assert set(redbook.following_ids) == set(user["followingIds"])
+        assert set(redbook.follower_ids) == set(user["followerIds"])
+        assert redbook.view_user(redbook.user_id)["following"] == len(user["followingIds"])
+        assert redbook.view_user(redbook.user_id)["followers"] == len(user["followerIds"])
         assert set(redbook.liked_notes) == set(user["likedNotes"])
         assert set(redbook.collected_notes) == set(user["collectedNotes"])
         assert set(redbook.published_notes) == set(user["publishedNoteIds"])
+
+    def test_ignores_obsolete_entities_feed_and_user_id_state(self):
+        state = copy.deepcopy(BASE_STATE)
+        state["entities"] = {
+            "notesById": {
+                "obsolete_note": {
+                    "id": "obsolete_note",
+                    "title": "不应读取的旧结构笔记",
+                    "content": "",
+                    "authorId": "obsolete_user",
+                    "images": [],
+                    "likes": 0,
+                    "collections": 0,
+                    "comments": 0,
+                    "commentList": [],
+                    "createdAt": TEST_OS_STATE["time"]["timestamp"],
+                }
+            },
+            "usersById": {
+                "obsolete_user": {
+                    "id": "obsolete_user",
+                    "name": "不应读取的旧结构用户",
+                    "avatar": "",
+                }
+            },
+        }
+        state["feedIds"] = ["obsolete_note"]
+        state["userIds"] = ["obsolete_user"]
+
+        redbook = Redbook(state)
+
+        assert "obsolete_note" not in redbook.base_notes_by_id
+        assert "obsolete_note" not in redbook.feed_ids
+        assert "obsolete_user" not in redbook.base_users_by_id
+        assert "obsolete_user" not in redbook.base_user_ids
+        with pytest.raises(ValueError):
+            redbook.require_note("obsolete_note")
+        with pytest.raises(ValueError):
+            redbook.require_user_entity("obsolete_user")
+
+    def test_publish_expected_changes_do_not_allow_entire_user_object(self):
+        assert "redbook.user" not in REDBOOK_PUBLISH_CHANGES
+        assert "redbook.user.publishedNoteIds" in REDBOOK_PUBLISH_CHANGES
+        assert "redbook.notes" in REDBOOK_PUBLISH_CHANGES
+
+    def test_newly_published_note_surfaces_in_feed_and_user_view(self):
+        curr = copy.deepcopy(BASE_STATE)
+        curr["notes"]["note_new"] = {
+            "id": "note_new",
+            "title": "新发布的搜索测试",
+            "content": "刚刚发布",
+            "authorId": curr["user"]["id"],
+            "images": [],
+            "cover": "",
+            "likes": 0,
+            "collections": 0,
+            "comments": 0,
+            "commentList": [],
+            "createdAt": TEST_OS_STATE["time"]["timestamp"],
+            "category": "生活",
+        }
+        curr["user"]["publishedNoteIds"] = ["note_new", *curr["user"]["publishedNoteIds"]]
+
+        redbook = Redbook(curr)
+        # Runtime-only notes (newly published) are prepended to feed by createdAt desc,
+        # so they appear at the top of Home/Search/UserPage feeds — matching the prior
+        # `addNote` prepend semantics.
+        assert redbook.feed_ids[0] == "note_new"
+        assert redbook.user_notes(redbook.user_id)[0]["id"] == "note_new"
 
     def test_note_and_profile_helpers(self, redbook: Redbook):
         defaults = _load_defaults()
@@ -487,37 +647,42 @@ class TestRedbookAccessor:
         assert redbook.hot_search[0]["keyword"] == "贺娇龙因意外坠马逝世"
         assert redbook.count_value("1.2万") == pytest.approx(12000)
         # Search helper should return a valid note and author name.
-        keyword = str(defaults["sampleNotes"][0].get("category") or defaults["sampleNotes"][0].get("title") or "")[:2]
+        first_base_note = _load_base_notes()[0]
+        keyword = str(first_base_note.get("category") or first_base_note.get("title") or "")[:2]
         note = redbook.first_search_note(keyword)
         assert isinstance(note.get("id"), str)
         assert isinstance(redbook.note_author(note).get("name"), str)
         # First collected author field should be retrievable.
         assert redbook.first_collected_author_field("location") is not None
         # Followed user note count should be non-negative.
-        followed_name = redbook.require_user_entity(str(user["followings"][0]))["name"]
+        followed_name = redbook.require_user_entity(str(user["followingIds"][0]))["name"]
         assert redbook.followed_user_note_count(followed_name) >= 0
 
     def test_seeded_chat_helpers(self):
-        curr = copy.deepcopy(BASE_STATE)
-        _seed_chats(curr)
-        redbook = Redbook(curr)
+        # BASE_STATE 已经从 defaults.json 加载到两条 seed chats，无需手动注入。
+        redbook = Redbook(copy.deepcopy(BASE_STATE))
         defaults = _load_defaults()
-        assert redbook.first_chat()["userId"] in set(defaults["user"]["followings"])
+        assert redbook.first_chat()["userId"] in set(defaults["user"]["followingIds"])
         assert redbook.first_chat_last_message() == "周末要不要一起去逛逛？"
 
     def test_require_helpers_raise(self, redbook: Redbook):
         with pytest.raises(ValueError):
             redbook.first_feed_note_with_title_keyword("不存在的标题")
+        # `first_chat_last_message` should raise on a chat-less state; BASE_STATE
+        # now has seed chats from defaults.json, so construct an empty state for the assertion.
+        empty_chat_state = copy.deepcopy(BASE_STATE)
+        empty_chat_state["chats"] = []
         with pytest.raises(ValueError):
-            redbook.first_chat_last_message()
+            Redbook(empty_chat_state).first_chat_last_message()
 
     def test_comment_and_diff_helpers(self):
         curr = copy.deepcopy(BASE_STATE)
-        defaults = _load_defaults()
-        target_note_id = str(defaults["sampleNotes"][0]["id"])
+        base_notes = _load_base_notes()
+        target_note_id = str(base_notes[0]["id"])
         _add_comment(curr, target_note_id, "测试评论")
-        another_note_id = str(defaults["sampleNotes"][1]["id"])
-        first_root = curr["entities"]["notesById"][another_note_id]["commentList"][0]["id"]
+        another_note = next(note for note in base_notes if note.get("commentList"))
+        another_note_id = str(another_note["id"])
+        first_root = another_note["commentList"][0]["id"]
         _add_comment(curr, another_note_id, "测试回复", reply_to_id=first_root)
         redbook = Redbook(curr)
         assert redbook.note_has_comment(target_note_id, "测试评论") is True
@@ -526,17 +691,19 @@ class TestRedbookAccessor:
     def test_chat_and_diff_helpers(self):
         curr = copy.deepcopy(BASE_STATE)
         defaults = _load_defaults()
-        followed_user_id = str(defaults["user"]["followings"][0])
+        followed_user_id = str(defaults["user"]["followingIds"][0])
         _append_chat_message(curr, followed_user_id, "你好")
         # follow someone not already followed
-        unfollowed = next(uid for uid in curr["entities"]["usersById"].keys() if uid not in set(curr["user"]["followings"]) and uid != "xiaoming")
+        unfollowed = next(uid for uid in Redbook(curr).users_by_id.keys() if uid not in set(curr["user"]["followingIds"]) and uid != "xiaoming")
         _follow_user(curr, unfollowed)
-        note_id = str(defaults["sampleNotes"][-1]["id"])
+        collected = set(curr["user"]["collectedNotes"])
+        liked = set(curr["user"]["likedNotes"])
+        note_id = next(str(note["id"]) for note in _load_base_notes() if str(note["id"]) not in collected and str(note["id"]) not in liked)
         _collect_note(curr, note_id)
         _like_note(curr, note_id)
         redbook = Redbook(curr, init=copy.deepcopy(BASE_STATE))
         assert redbook.chat_has_message(followed_user_id, "你好") is True
-        assert unfollowed in redbook.added_to_followings()
+        assert unfollowed in redbook.added_to_following_ids()
         assert note_id in redbook.added_to_collected()
         assert note_id in redbook.added_to_liked()
 
@@ -548,11 +715,11 @@ class TestRedbookAccessor:
         # remove collected by overwriting to a subset
         curr["user"]["collectedNotes"] = [str(defaults["user"]["collectedNotes"][-1])]
         # remove one following by overwriting to a subset
-        curr["user"]["followings"] = [str(defaults["user"]["followings"][0])]
+        curr["user"]["followingIds"] = [str(defaults["user"]["followingIds"][0])]
         redbook = Redbook(curr, init=copy.deepcopy(BASE_STATE))
         assert removed_like_id in redbook.removed_from_liked()
         assert str(defaults["user"]["collectedNotes"][0]) in redbook.removed_from_collected()
-        assert str(defaults["user"]["followings"][1]) in redbook.removed_from_followings()
+        assert str(defaults["user"]["followingIds"][1]) in redbook.removed_from_following_ids()
 
     def test_publish_helpers(self):
         curr = copy.deepcopy(BASE_STATE)
@@ -572,7 +739,7 @@ class TestRedbookAccessor:
         )
         assert check_with_named_args["passed"] is True
 
-    def test_check_note_published_named_args_and_legacy_predicate(self):
+    def test_check_note_published_named_args_and_content_predicate(self):
         curr = copy.deepcopy(BASE_STATE)
         _publish_note(curr, "周末徒步", "路线2小时，记得带水")
         redbook = Redbook(curr, init=copy.deepcopy(BASE_STATE))
@@ -629,7 +796,7 @@ def _like_first_feed_positive_case():
     curr = copy.deepcopy(BASE_STATE)
     note_id = Redbook(curr).visible_discover_notes_for_category(task.p.category, limit=40)[0]["id"]
     _like_note(curr, note_id)
-    curr["homeState"]["activeCategory"] = task.p.category
+    curr["_temp"]["activeCategory"] = task.p.category
     return task, _make_task_input(copy.deepcopy(BASE_STATE), curr)
 
 
@@ -643,10 +810,6 @@ def _uncollect_positive_case():
     curr = copy.deepcopy(BASE_STATE)
     target = Redbook(curr).first_collected_note()["id"]
     curr["user"]["collectedNotes"] = [item for item in curr["user"]["collectedNotes"] if item != target]
-    curr["entities"]["notesById"][target]["collections"] = max(
-        0,
-        int(curr["entities"]["notesById"][target]["collections"]) - 1,
-    )
     return task, _make_task_input(copy.deepcopy(BASE_STATE), curr)
 
 
@@ -698,7 +861,7 @@ def _like_feed_report_positive_case():
     _remove_initial_like(init, note_id)
     curr = copy.deepcopy(init)
     _like_note(curr, note_id)
-    likes = curr["entities"]["notesById"][note_id]["likes"]
+    likes = Redbook(curr).view_note(note_id)["likes"]
     return task, _make_task_input(init, curr, answer=f"现在一共有{likes}个赞")
 
 
@@ -721,16 +884,13 @@ def _like_feed_report_negative_state_case():
 
 def _first_chat_positive_case():
     task = _tasks_module.CheckFirstChatLastMessage()
-    seeded = copy.deepcopy(BASE_STATE)
-    _seed_chats(seeded)
-    return _positive_answer_case(task, init_state=seeded, curr_state=seeded)
+    # BASE_STATE 已经从 defaults.json seed 出两条 chat，不再需要 _seed_chats 助手。
+    return _positive_answer_case(task)
 
 
 def _first_chat_negative_case():
     task = _tasks_module.CheckFirstChatLastMessage()
-    seeded = copy.deepcopy(BASE_STATE)
-    _seed_chats(seeded)
-    return _negative_answer_case(task, init_state=seeded, curr_state=seeded)
+    return _negative_answer_case(task)
 def _collect_report_positive_case():
     task = _tasks_module.SearchCollectAndReportAuthor(keyword=_current_uncollected_search_keyword())
     curr = copy.deepcopy(BASE_STATE)

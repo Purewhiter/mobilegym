@@ -2,7 +2,7 @@ import defaults from './defaults.json';
 import { REDBOOK_CONSTANTS } from '../constants';
 import { resolveDataTimestamp } from '../../../os/TimeService';
 import { resolveCdnUrl } from '../../../os/utils/cdn';
-import type { Note, User } from '../types';
+import type { RedBookConfig } from '../types';
 
 const ASSET_EXT_RE = /\.(jpe?g|png|webp|gif|svg|mp4|webm|avif)(\?.*)?$/i;
 
@@ -38,22 +38,33 @@ const ts = (v: unknown) => resolveDataTimestamp(v as string | number);
 function resolveAllTimestamps(data: typeof defaults) {
   return {
     ...data,
-    sampleNotes: data.sampleNotes.map(note => ({
-      ...note,
-      createdAt: ts(note.createdAt),
-      commentList: note.commentList?.map(c => ({ ...c, time: ts(c.time) })),
+    notes: Object.fromEntries(Object.entries((data as any).notes || {}).map(([id, note]) => [
+      id,
+      {
+        ...(note as any),
+        createdAt: ts((note as any).createdAt),
+        commentList: (note as any).commentList?.map((c: any) => ({ ...c, time: ts(c.time) })),
+      },
+    ])),
+    comments: Object.fromEntries(Object.entries((data as any).comments || {}).map(([id, comment]) => [
+      id,
+      { ...(comment as any), time: ts((comment as any).time) },
+    ])),
+    notifications: ((data as any).notifications || []).map((notification: any) => ({
+      ...notification,
+      timestamp: ts(notification.timestamp),
+    })),
+    chats: ((data as any).chats || []).map((chat: any) => ({
+      ...chat,
+      lastTime: ts(chat.lastTime),
+      messages: (chat.messages || []).map((m: any) => ({ ...m, timestamp: ts(m.timestamp) })),
     })),
   };
 }
 
 const resolvedDefaults = resolveAllTimestamps(resolveAssetsDeep(defaults) as typeof defaults);
 
-const users = resolvedDefaults.users as User[];
-const sampleNotes = resolvedDefaults.sampleNotes as Note[];
-
-export const REDBOOK_CONFIG = {
+export const REDBOOK_CONFIG: RedBookConfig & typeof REDBOOK_CONSTANTS = {
   ...REDBOOK_CONSTANTS,
   ...resolvedDefaults,
-  users,
-  sampleNotes,
-};
+} as unknown as RedBookConfig & typeof REDBOOK_CONSTANTS;

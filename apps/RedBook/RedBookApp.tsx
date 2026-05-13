@@ -8,8 +8,7 @@ import { colorStates, colorStatesDark } from './res/colors.states';
 import { dimens } from './res/dimens';
 import { anim } from './res/anim';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
-import { loadEntities } from './data/loader';
-import { useRedBookStore } from './state';
+import { preload } from './data/loader';
 import { RedBookNavigationHandler } from './components/RedBookNavigationHandler';
 import { Layout } from './pages/Layout';
 import { DetailPage } from './pages/DetailPage';
@@ -52,14 +51,14 @@ import { HistoryPage } from './pages/HistoryPage';
 
 export const RedBookApp: React.FC = () => {
   const { isDark } = useDarkMode();
-  const _setEntities = useRedBookStore(s => s._setEntities);
-
-  // 异步加载实体数据（从预处理的 JSON 文件）
+  // base dataset 的加载已经由 OS 的 lazy() + Suspense + AppLaunchSplash 三件套
+  // 在 component mount **之前**完成（见 os/data/appRegistry.tsx 的 lazy 包装）。
+  // 到这里 mount 时 `getBaseDataset()` 必非 null，无需 in-app gate / splash。
+  // 保留 useEffect(preload()) 作幂等兜底：极少数路径（hot reload / 直接 mount）
+  // 可能绕过 OS lazy，preload() 内部有 cache 短路，重复调用零成本。
   useEffect(() => {
-    // 如果 benchmark 已设置过数据，跳过默认数据加载
-    if ((window as any).__SIM__?._benchmarkPatchedApps?.has('redbook')) return;
-    loadEntities().then(loaded => _setEntities(loaded));
-  }, [_setEntities]);
+    void preload();
+  }, []);
 
   const themeColors = isDark
     ? { ...manifest.theme.colors, ...(manifest.theme.colorsDark ?? {}) }
@@ -73,6 +72,7 @@ export const RedBookApp: React.FC = () => {
     ...dimensToCssVars(dimens),
     ...dimensToCssVars(anim, { prefix: '--app-' }),
   };
+
   return (
     <div className="h-full w-full" style={cssVars as React.CSSProperties}>
       <style>{`

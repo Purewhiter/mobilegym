@@ -93,38 +93,43 @@ def _minimal_notes_state(*, content: str = "", updated_at: int = 1) -> dict[str,
 
 
 def _minimal_redbook_user_state() -> dict[str, Any]:
-    user_id = "u_best_worst"
+    user_id = "6wpjwnorl"
     notes = [
         {
-            "id": "note_top_liked",
+            "id": "s9kpjp9mq",
             "authorId": user_id,
             "title": "家人们，这真的不算侵权吗",
-            "likes": 99,
+            "likes": 999,
             "collections": 5,
         },
         {
-            "id": "note_min_collect",
+            "id": "yr5wz1jhz",
             "authorId": user_id,
             "title": "喜欢林娜琏就会和脸脸一样可爱！",
             "likes": 10,
-            "collections": 1,
+            "collections": 0,
         },
     ]
     return {
-        "user": {"id": "me", "likedNotes": [], "collectedNotes": [], "followings": []},
-        "entities": {
-            "usersById": {
-                user_id: {
-                    "id": user_id,
-                    "name": "转场小鹿",
-                    "likesAndCollections": "100",
-                }
-            },
-            "notesById": {str(note["id"]): note for note in notes},
+        "user": {
+            "id": "me",
+            "name": "我",
+            "likedNotes": [],
+            "collectedNotes": [],
+            "followingIds": [],
+            "publishedNoteIds": [],
         },
-        "feedIds": [str(note["id"]) for note in notes],
-        "userIds": [user_id],
+        "users": {
+            user_id: {
+                "id": user_id,
+                "name": "转场小鹿",
+                "likesAndCollections": "100",
+            }
+        },
+        "notes": {str(note["id"]): note for note in notes},
+        "comments": {},
         "history": [],
+        "searchHistory": [],
     }
 
 
@@ -132,7 +137,7 @@ def _minimal_redbook_search_state() -> dict[str, Any]:
     user_id = "u_search_author"
     notes = [
         {
-            "id": "note_search_top",
+            "id": "9e1v6b6le",
             "authorId": user_id,
             "title": "家人们，这真的不算侵权吗",
             "content": "旅行记录",
@@ -141,7 +146,7 @@ def _minimal_redbook_search_state() -> dict[str, Any]:
             "collections": 5,
         },
         {
-            "id": "note_search_second",
+            "id": "7h1bdgkum",
             "authorId": user_id,
             "title": "喜欢林娜琏就会和脸脸一样可爱！",
             "content": "旅行记录",
@@ -150,7 +155,7 @@ def _minimal_redbook_search_state() -> dict[str, Any]:
             "collections": 1,
         },
         {
-            "id": "note_search_other",
+            "id": "c4dwonica",
             "authorId": user_id,
             "title": "普通旅行记录",
             "content": "旅行记录",
@@ -160,20 +165,25 @@ def _minimal_redbook_search_state() -> dict[str, Any]:
         },
     ]
     return {
-        "user": {"id": "me", "likedNotes": [], "collectedNotes": [], "followings": []},
-        "entities": {
-            "usersById": {
-                user_id: {
-                    "id": user_id,
-                    "name": "旅行作者",
-                    "likesAndCollections": "100",
-                }
-            },
-            "notesById": {str(note["id"]): note for note in notes},
+        "user": {
+            "id": "me",
+            "name": "我",
+            "likedNotes": [],
+            "collectedNotes": [],
+            "followingIds": [],
+            "publishedNoteIds": [],
         },
-        "feedIds": [str(note["id"]) for note in notes],
-        "userIds": [user_id],
+        "users": {
+            user_id: {
+                "id": user_id,
+                "name": "旅行作者",
+                "likesAndCollections": "100",
+            }
+        },
+        "notes": {str(note["id"]): note for note in notes},
+        "comments": {},
         "history": [],
+        "searchHistory": [],
     }
 
 

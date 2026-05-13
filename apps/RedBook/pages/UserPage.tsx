@@ -1,7 +1,7 @@
 import { useRedBookStrings } from '../hooks/useRedBookStrings';
 import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { useRedBookStore } from '../state';
-import { useShallow } from 'zustand/react/shallow';
+import { useRedBookView } from '../data/view';
 import { IcHeart, IcNavBack, IcMore, IcShare, IcNavBackArrow, IcSearch, IcScan } from '../res/icons';
 const Heart = IcHeart, ChevronLeft = IcNavBack, MoreHorizontal = IcMore, Share2 = IcShare, ArrowLeft = IcNavBackArrow, Search = IcSearch, ScanLine = IcScan;
 import { useParams, useLocation } from 'react-router-dom';
@@ -10,16 +10,19 @@ import { useRedBookGestures } from '../hooks/useRedBookGestures';
 /** Standalone preview of user page — no router dependency, non-interactive. */
 export const UserPagePreview: React.FC<{ userId: string }> = ({ userId }) => {
   const s = useRedBookStrings();
-  const { entities, feedIds, user: currentUser } = useRedBookStore(useShallow(s => ({
-    entities: s.entities,
-    feedIds: s.feedIds,
-    user: s.user,
-  })));
+  const currentUser = useRedBookStore(s => s.user);
+  const view = useRedBookView();
 
-  const user = userId === currentUser.id ? currentUser : entities.usersById[userId];
+  const user = userId === currentUser.id
+    ? {
+        ...currentUser,
+        following: currentUser.followingIds?.length ?? 0,
+        followers: currentUser.followerIds?.length ?? 0,
+      }
+    : view.usersById[userId];
   if (!user) return <div className="h-full bg-[#1a1a1a]" />;
 
-  const feed = feedIds.map(id => entities.notesById[id]).filter(Boolean);
+  const feed = view.feedIds.map(id => view.notesById[id]).filter(Boolean);
   const userNotes = feed.filter(note => note.authorId === user.id);
 
   return (
@@ -81,7 +84,7 @@ export const UserPagePreview: React.FC<{ userId: string }> = ({ userId }) => {
               {[0, 1].map(colIndex => (
                 <div key={colIndex} className="flex-1 flex flex-col gap-1">
                   {userNotes.filter((_, i) => i % 2 === colIndex).map((note, idx) => {
-                    const noteAuthor = note.authorId === currentUser.id ? currentUser : entities.usersById[note.authorId];
+                    const noteAuthor = note.authorId === currentUser.id ? currentUser : view.usersById[note.authorId];
                     return (
                       <div key={note.id + idx} className="bg-app-surface rounded-[4px] overflow-hidden mb-1">
                         <div className="relative overflow-hidden rounded-[4px] max-h-[220px]">
@@ -130,12 +133,9 @@ export const UserPage: React.FC = () => {
   const fallbackName = searchParams.get('name');
   const fallbackAvatar = searchParams.get('avatar');
 
-  const { followUser, entities, feedIds, user: currentUser } = useRedBookStore(useShallow(s => ({
-    followUser: s.followUser,
-    entities: s.entities,
-    feedIds: s.feedIds,
-    user: s.user,
-  })));
+  const followUser = useRedBookStore(s => s.followUser);
+  const currentUser = useRedBookStore(s => s.user);
+  const view = useRedBookView();
   const { bindTap, bindBack, go } = useRedBookGestures();
   const [activeTab, setActiveTab] = useState<'works' | 'collects'>('works');
   const [isScrolled, setIsScrolled] = useState(false);
@@ -143,7 +143,13 @@ export const UserPage: React.FC = () => {
 
   const user = useMemo(() => {
       const existing = userId
-          ? (userId === currentUser.id ? currentUser : entities.usersById[userId])
+          ? (userId === currentUser.id
+              ? {
+                  ...currentUser,
+                  following: currentUser.followingIds?.length ?? 0,
+                  followers: currentUser.followerIds?.length ?? 0,
+                }
+              : view.usersById[userId])
           : undefined;
       if (existing) return existing;
 
@@ -161,15 +167,15 @@ export const UserPage: React.FC = () => {
           };
       }
       return null;
-  }, [currentUser, entities.usersById, fallbackAvatar, fallbackName, s, userId]);
+  }, [currentUser, view.usersById, fallbackAvatar, fallbackName, s, userId]);
 
-  const feed = useMemo(() => feedIds.map(id => entities.notesById[id]).filter(Boolean), [feedIds, entities.notesById]);
+  const feed = useMemo(() => view.feedIds.map(id => view.notesById[id]).filter(Boolean), [view.feedIds, view.notesById]);
 
   // Check if user is a fallback/mock user (not found in database)
   const isFallbackUser = useMemo(() => {
       if (!user) return false;
-      return user.id !== currentUser.id && !entities.usersById[user.id];
-  }, [currentUser.id, entities.usersById, user]);
+      return user.id !== currentUser.id && !view.usersById[user.id];
+  }, [currentUser.id, view.usersById, user]);
 
   // User's notes or collects
   const displayNotes = useMemo(() => {
@@ -192,14 +198,14 @@ export const UserPage: React.FC = () => {
           // For other users, show empty as we don't have their collect data
           if (user.id === currentUser.id && currentUser.collectedNotes?.length) {
               return currentUser.collectedNotes
-                  .map(noteId => entities.notesById[noteId])
+                  .map(noteId => view.notesById[noteId])
                   .filter(Boolean)
                   .slice(0, 10);
           }
           return [];
       }
       return [];
-  }, [activeTab, feed, user, currentUser, entities.notesById, isFallbackUser]);
+  }, [activeTab, feed, user, currentUser, view.notesById, isFallbackUser]);
 
   const handleScroll = () => {
       if (containerRef.current) {
@@ -223,7 +229,7 @@ export const UserPage: React.FC = () => {
   }
 
   const isMe = user.id === currentUser.id;
-  const isFollowing = (currentUser.followings || []).includes(user.id);
+  const isFollowing = (currentUser.followingIds || []).includes(user.id);
 
   return (
     <div className="h-full relative">
@@ -374,7 +380,7 @@ export const UserPage: React.FC = () => {
                         {[0, 1].map(colIndex => (
                             <div key={colIndex} className="flex-1 flex flex-col gap-1">
                                 {displayNotes.filter((_, i) => i % 2 === colIndex).map((note, idx) => {
-                                    const author = note.authorId === currentUser.id ? currentUser : entities.usersById[note.authorId];
+                                    const author = note.authorId === currentUser.id ? currentUser : view.usersById[note.authorId];
                                     return (
                                     <div
                                         key={note.id + idx}

@@ -3,7 +3,6 @@ import { useRedBookStrings } from '../hooks/useRedBookStrings';
 import React from 'react';
 import { IcCart, IcMore } from '../res/icons';
 const ShoppingCart = IcCart, MoreHorizontal = IcMore;
-import { REDBOOK_CONFIG } from '../data';
 import { strings, type StringKey } from '../res/strings';
 
 // Assets
@@ -19,15 +18,17 @@ import cat5 from '../assets/mall/category/5.png';
 import cat6 from '../assets/mall/category/6.jpg';
 import cat7 from '../assets/mall/category/7.jpg';
 import cat8 from '../assets/mall/category/8.jpg';
-// Reusing product images for the shop
-const products = REDBOOK_CONFIG.sampleNotes.map((note, index) => ({
-  id: `prod_${index}`,
-  title: note.title, // Reusing titles as product names
-  image: note.images[0], // Reusing first image
-  price: (Math.random() * 200 + 50).toFixed(0), // Mock price
-  sold: (Math.random() * 1000).toFixed(0), // Mock sold count
-  isDouble11: Math.random() > 0.5
-}));
+
+const products = [
+  { id: 'prod_beauty_set', title: '水光感护肤礼盒套装', image: cat1, price: '129', sold: '836', isDouble11: true },
+  { id: 'prod_knit_bag', title: '通勤针织托特包', image: cat2, price: '89', sold: '421', isDouble11: false },
+  { id: 'prod_home_lamp', title: '奶油风小夜灯', image: cat3, price: '59', sold: '690', isDouble11: true },
+  { id: 'prod_snack_box', title: '办公室低卡零食盒', image: cat4, price: '39', sold: '978', isDouble11: false },
+  { id: 'prod_kids_cup', title: '儿童防漏吸管杯', image: cat5, price: '45', sold: '312', isDouble11: true },
+  { id: 'prod_sport_towel', title: '速干运动毛巾三件装', image: cat6, price: '49', sold: '556', isDouble11: false },
+  { id: 'prod_earbuds', title: '降噪蓝牙耳机', image: cat7, price: '199', sold: '764', isDouble11: true },
+  { id: 'prod_storage', title: '桌面收纳组合', image: cat8, price: '69', sold: '287', isDouble11: false },
+];
 
 const categories: { name: StringKey, img: string }[] = [
     { name: 'beauty', img: cat1 },

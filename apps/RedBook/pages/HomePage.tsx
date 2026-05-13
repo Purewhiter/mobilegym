@@ -2,6 +2,7 @@ import { useRedBookStrings } from '../hooks/useRedBookStrings';
 import React, { useMemo, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useRedBookStore } from '../state';
+import { useRedBookView, useRedBookAuthor, useIsNoteLiked, useIsFollowingUser } from '../data/view';
 import { useShallow } from 'zustand/react/shallow';
 import { REDBOOK_CONFIG } from '../data';
 import { Note } from '../types';
@@ -10,7 +11,6 @@ const Share2 = IcShare, ScanLine = IcScan, ChevronDown = IcExpand, ChevronUp = I
 import { Drawer } from '../components/Drawer';
 import { useRedBookGestures } from '../hooks/useRedBookGestures';
 import { strings, type StringKey } from '../res/strings';
-import navIcon from '../assets/index/nav.png';
 import { RedBookPlayIcon, RedBookHeartFilledIcon, RedBookHeartOutlineIcon, RedBookHeartIcon, RedBookCommentIcon, RedBookPeopleIcon } from '../res/icons';
 import * as TimeService from '../../../os/TimeService';
 // Helper to parse likes/count string to number
@@ -64,18 +64,14 @@ const getFeedTextCardClass = (text: string) => {
   return 'text-[16px] leading-[1.4]';
 };
 
-export const NoteItem: React.FC<{ note: Note; showTime?: boolean }> = ({ note, showTime }) => {
+const NoteItemImpl: React.FC<{ note: Note; showTime?: boolean }> = ({ note, showTime }) => {
   const { bindTap } = useRedBookGestures();
-  const { usersById, user: currentUser, toggleLike } = useRedBookStore(useShallow(s => ({
-    usersById: s.entities.usersById,
-    user: s.user,
-    toggleLike: s.toggleLike,
-  })));
+  // 细粒度订阅：toggleLike 是稳定 ref，author/isLiked 通过 useRedBookAuthor/useIsNoteLiked
+  // 直接订阅它们对应的字段——避免之前 useRedBookView 让卡片被任何 store change 触发重渲染。
+  const toggleLike = useRedBookStore(s => s.toggleLike);
+  const author = useRedBookAuthor(note.authorId);
+  const isLiked = useIsNoteLiked(note.id);
   const s = useRedBookStrings();
-
-  // Get latest user info
-  const author = note.authorId === currentUser.id ? currentUser : usersById[note.authorId];
-  const isLiked = (currentUser.likedNotes || []).includes(note.id);
   const hasCoverImage = !!(note.images && note.images[0]);
   const showTextCard = !hasCoverImage && !note.video;
   const textCardValue = note.content || note.title || s.write_a_post;
@@ -199,22 +195,22 @@ export const NoteItem: React.FC<{ note: Note; showTime?: boolean }> = ({ note, s
   );
 };
 
-const FollowNoteItem: React.FC<{ note: Note }> = ({ note }) => {
+// memo: feed 卡片随父组件 (HomePage) 频繁重渲染（滚动期间 homeState.displayCount 变化）会导致
+// 全部 sibling NoteItem 跟着重渲染。note 引用在 fast path 下稳定，showTime 是基本类型，
+// memo 直接挡掉 sibling 串扰。NoteItem 自己订阅的 store 字段变化时仍正常 re-render。
+export const NoteItem = React.memo(NoteItemImpl);
+
+const FollowNoteItemImpl: React.FC<{ note: Note }> = ({ note }) => {
     const { bindTap } = useRedBookGestures();
-    const { followUser, usersById, user: currentUser } = useRedBookStore(useShallow(s => ({
-      followUser: s.followUser,
-      usersById: s.entities.usersById,
-      user: s.user,
-    })));
+    const followUser = useRedBookStore(s => s.followUser);
+    const author = useRedBookAuthor(note.authorId);
+    const isFollowing = useIsFollowingUser(note.authorId);
     const s = useRedBookStrings();
     const hasCoverImage = !!(note.images && note.images[0]);
     const showTextCard = !hasCoverImage && !note.video;
     const textCardValue = note.content || note.title || s.write_a_post;
-    
-    // Get latest user info to ensure consistency
-    const author = note.authorId === currentUser.id ? currentUser : usersById[note.authorId];
+
     if (!author) return null;
-    const isFollowing = (currentUser.followings || []).includes(author.id);
 
     return (
         <div className="bg-app-surface mb-2 p-4 border-b border-gray-100" {...bindTap('note.open', { params: { id: note.id } })}>
@@ -280,6 +276,8 @@ const FollowNoteItem: React.FC<{ note: Note }> = ({ note }) => {
     )
 }
 
+const FollowNoteItem = React.memo(FollowNoteItemImpl);
+
 export const DiscoveryFeed: React.FC<{ feed: Note[]; showTime?: boolean }> = ({ feed, showTime }) => {
     const [col1, col2] = useMemo(() => {
         const c1: Note[] = [];
@@ -305,14 +303,15 @@ export const DiscoveryFeed: React.FC<{ feed: Note[]; showTime?: boolean }> = ({ 
 };
 
 const FollowUpdates: React.FC = () => {
-    const { entities, userIds, user: currentUser } = useRedBookStore(useShallow(s => ({ entities: s.entities, userIds: s.userIds, user: s.user })));
+    const currentUser = useRedBookStore(s => s.user);
+    const view = useRedBookView();
     const { bindTap } = useRedBookGestures();
     const s = useRedBookStrings();
     
     const followedUsers = useMemo(() => {
-        const set = new Set(currentUser.followings || []);
-        return userIds.map(id => entities.usersById[id]).filter(Boolean).filter(u => set.has(u.id));
-    }, [entities.usersById, userIds, currentUser.followings]);
+        const set = new Set(currentUser.followingIds || []);
+        return view.userIds.map(id => view.usersById[id]).filter(Boolean).filter(u => set.has(u.id));
+    }, [view.usersById, view.userIds, currentUser.followingIds]);
 
     return (
         <div className="bg-app-surface mb-2 pt-3 pb-3">
@@ -344,7 +343,7 @@ const FollowUpdates: React.FC = () => {
 const FollowFeed: React.FC<{ feed: Note[] }> = ({ feed }) => {
     const { user: currentUser } = useRedBookStore(useShallow(s => ({ user: s.user })));
     const s = useRedBookStrings();
-    const followedUserIds = useMemo(() => currentUser.followings || [], [currentUser.followings]);
+    const followedUserIds = useMemo(() => currentUser.followingIds || [], [currentUser.followingIds]);
     
     const followedNotes = useMemo(() => {
         // Mock: if no followed notes, show some random ones to simulate the screenshot look
@@ -385,15 +384,20 @@ const districts: StringKey[] = ['popular_areas', 'dongcheng', 'chaoyang', 'haidi
 const areas: StringKey[] = ['sanlitun', 'wangjing', 'liyuan', 'yaojiayuan', 'jianwai_ave', 'dawang_rd', 'hongmiao', 'xiyuan'];
 
 export const HomePage: React.FC = () => {
-  const { entities, feedIds, homeState, updateHomeState, user: currentUser } = useRedBookStore(useShallow(s => ({
-    entities: s.entities,
-    feedIds: s.feedIds,
-    homeState: s.homeState,
+  const { tempNav, updateHomeState, user: currentUser } = useRedBookStore(useShallow(s => ({
+    tempNav: s._temp,
     updateHomeState: s.updateHomeState,
     user: s.user,
   })));
-  const { activeCategory, citySubTab, displayCount } = homeState;
-  const feed = useMemo(() => feedIds.map(id => entities.notesById[id]).filter(Boolean), [feedIds, entities.notesById]);
+  const view = useRedBookView();
+  const { activeCategory, citySubTab } = tempNav;
+  // displayCount 是纯 UI 滚动状态（"已展开的卡片数"），不属于 app data：
+  // - 刷新页面后 React tree 重置、用户重新进入 → 列表当然也从首批开始展开，没必要持久化
+  // - 不进 Zustand store 后 bench `__SIM__.getState()` 不再含此字段，任务 diff 不再
+  //   误把"用户滚了几下"当成"用户改了 state"
+  const [displayCount, setDisplayCount] = useState(20);
+  const PAGE_SIZE = 20;
+  const feed = useMemo(() => view.feedIds.map(id => view.notesById[id]).filter(Boolean), [view.feedIds, view.notesById]);
   const s = useRedBookStrings();
 
   // Memoize hot feed to avoid re-sorting on tab switch
@@ -429,8 +433,6 @@ export const HomePage: React.FC = () => {
   // City Dropdown State
   const [showCityDropdown, setShowCityDropdown] = useState(false);
   const [selectedDistrict, setSelectedDistrict] = useState<StringKey>('popular_areas');
-  
-  const PAGE_SIZE = 20;
 
   // Each home tab gets its own scroll container so switching tabs never mutates/clamps scrollTop
   // (single shared container would be clamped when switching to a shorter tab).
@@ -460,56 +462,71 @@ export const HomePage: React.FC = () => {
   // 注意：不要在这里（或任何 effect）主动设置 scrollTop=0。
   // 首页使用 Layout 的常驻挂载模式，应让 DOM 自己维持滚动位置。
 
+  // rAF 节流 + 200ms gate：
+  // - scroll 事件 ~100Hz；rAF 把多次 dispatch 收敛到每帧一次
+  // - 200ms gate 进一步防止"接近底部但分类过滤后已无更多可见 feed 时"持续触发空 dispatch
+  //   （例如 discover 按 category 过滤剩 80 条，displayCount 涨到 80+ 后还会一直触发，
+  //    用 feed.length 当上限挡不住——filtered length 在父组件外推算成本高）
+  const scrollRafRef = React.useRef<number | null>(null);
+  // -Infinity：让首次触底永远满足 `now - last > 200`（初值 0 会在页面 mount 后前 200ms 内
+  // 不可达——理论上 performance.now() 已远大于 200ms，但语义更稳）。
+  const lastLoadMoreAtRef = React.useRef<number>(-Infinity);
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-      const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
-      // Load more when reaching bottom (buffer 800px - Increased buffer for smoother infinite scroll)
-      if (scrollHeight - scrollTop - clientHeight < 800) {
-          updateHomeState({ displayCount: displayCount + PAGE_SIZE });
-      }
-
-      // Preload next batch of images when user stops scrolling
-      // Debounce this? Or just do it.
-      // Simple logic: Preload next 5 notes' images AND comment avatars
-      const nextNotes = feed.slice(displayCount, displayCount + 10); // Increase preload window to 10
-      nextNotes.forEach(n => {
-          // 1. Preload Note Cover
-          if (n.images && n.images[0]) {
-              const img = new Image();
-              img.src = n.images[0];
-          }
-          
-          // Only perform aggressive preloading in Local Mode
-          if ((REDBOOK_CONFIG as any).useLocalData) {
-              // 2. Preload Author Avatar
-              const author = n.authorId
-                ? (n.authorId === currentUser.id ? currentUser : entities.usersById[n.authorId])
-                : undefined;
-              if (author && author.avatar) {
-                  const avatar = new Image();
-                  avatar.src = author.avatar;
-              }
-    
-              // 3. Preload ALL Comment Avatars (as requested)
-              if (n.commentList && n.commentList.length > 0) {
-                  // Use requestIdleCallback to avoid blocking main thread during scroll
-                  const preloadComments = () => {
-                      (n.commentList ?? []).forEach(c => {
-                          if (c.avatar) {
-                              const cAvatar = new Image();
-                              cAvatar.src = c.avatar;
-                          }
-                      });
-                  };
-                  
-                  if ('requestIdleCallback' in window) {
-                      window.requestIdleCallback(preloadComments);
-                  } else {
-                      setTimeout(preloadComments, 0);
-                  }
+      if (scrollRafRef.current != null) return;
+      const el = e.currentTarget;
+      scrollRafRef.current = requestAnimationFrame(() => {
+          scrollRafRef.current = null;
+          const { scrollTop, scrollHeight, clientHeight } = el;
+          if (scrollHeight - scrollTop - clientHeight < 800 && displayCount < feed.length) {
+              const now = performance.now();
+              if (now - lastLoadMoreAtRef.current > 200) {
+                  lastLoadMoreAtRef.current = now;
+                  setDisplayCount(c => Math.min(c + PAGE_SIZE, feed.length));
               }
           }
       });
   };
+  React.useEffect(() => () => {
+      if (scrollRafRef.current != null) cancelAnimationFrame(scrollRafRef.current);
+  }, []);
+
+  // 图片预加载：只在 (displayCount, feed.length) 组合变化时跑一次。
+  // 用组合 key 而不是单 displayCount——首屏 feed 从 [] → N 条时 displayCount 不变，
+  // 但需要触发首批预加载；单 displayCount guard 会漏掉这种情况。
+  const lastPreloadedKeyRef = React.useRef<string>('');
+  React.useEffect(() => {
+      const key = `${displayCount}:${feed.length}`;
+      if (lastPreloadedKeyRef.current === key) return;
+      lastPreloadedKeyRef.current = key;
+      const nextNotes = feed.slice(displayCount, displayCount + 10);
+      const localMode = (REDBOOK_CONFIG as any).useLocalData;
+      for (const n of nextNotes) {
+          if (n.images?.[0]) {
+              const img = new Image();
+              img.src = n.images[0];
+          }
+          if (!localMode) continue;
+          const author = n.authorId
+            ? (n.authorId === currentUser.id ? currentUser : view.usersById[n.authorId])
+            : undefined;
+          if (author?.avatar) {
+              const av = new Image();
+              av.src = author.avatar;
+          }
+          if (n.commentList?.length) {
+              const preloadComments = () => {
+                  (n.commentList ?? []).forEach(c => {
+                      if (c.avatar) {
+                          const cAvatar = new Image();
+                          cAvatar.src = c.avatar;
+                      }
+                  });
+              };
+              if ('requestIdleCallback' in window) window.requestIdleCallback(preloadComments);
+              else setTimeout(preloadComments, 0);
+          }
+      }
+  }, [displayCount, feed, currentUser, view.usersById]);
 
   return (
     <div className="h-full flex flex-col bg-[#f8f8f8] relative">

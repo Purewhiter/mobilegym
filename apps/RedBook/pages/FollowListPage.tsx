@@ -4,6 +4,7 @@ import { useSearchParams } from 'react-router-dom';
 import { IcNavBack } from '../res/icons';
 const ChevronLeft = IcNavBack;
 import { useRedBookStore } from '../state';
+import { useRedBookView } from '../data/view';
 import { useShallow } from 'zustand/react/shallow';
 import { useRedBookGestures } from '../hooks/useRedBookGestures';
 export const FollowListPage: React.FC = () => {
@@ -11,22 +12,22 @@ export const FollowListPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const type = searchParams.get('type'); // 0 = fans, 1 = following
   const title = type === '1' ? s.following : s.followers;
-  const { user, entities, userIds, followUser } = useRedBookStore(useShallow(s => ({ user: s.user, entities: s.entities, userIds: s.userIds, followUser: s.followUser })));
+  const { user, followUser } = useRedBookStore(useShallow(s => ({ user: s.user, followUser: s.followUser })));
+  const view = useRedBookView();
   const { bindTap, bindBack } = useRedBookGestures();
 
   // Filter users based on type
   const userList = useMemo(() => {
-      const users = userIds.map(id => entities.usersById[id]).filter(Boolean);
+      const users = view.userIds.map(id => view.usersById[id]).filter(Boolean);
       if (type === '1') {
-          const set = new Set(user.followings || []);
+          const set = new Set(user.followingIds || []);
           return users.filter(u => set.has(u.id));
       } else {
           // Followers
           const set = new Set(user.followerIds || []);
-          const list = users.filter(u => set.has(u.id));
-          return list.length > 0 ? list : users.slice(0, 3);
+          return users.filter(u => set.has(u.id));
       }
-  }, [type, entities.usersById, userIds, user.followings, user.followerIds]);
+  }, [type, view.usersById, view.userIds, user.followingIds, user.followerIds]);
 
   return (
     <div className="h-full flex flex-col bg-app-surface">
@@ -49,7 +50,7 @@ export const FollowListPage: React.FC = () => {
           {userList.length > 0 ? (
               userList.map((item) => (
                   (() => {
-                    const isFollowing = (user.followings || []).includes(item.id);
+                    const isFollowing = (user.followingIds || []).includes(item.id);
                     return (
                   <div
                     key={item.id}

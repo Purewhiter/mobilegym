@@ -1,15 +1,16 @@
 import { useRedBookStrings } from '../hooks/useRedBookStrings';
 import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { useRedBookStore } from '../state';
-import { useShallow } from 'zustand/react/shallow';
+import { useRedBookView } from '../data/view';
 import { IcSettings, IcMenu, IcShare, IcScan, IcLock, IcContacts, IcClock, IcLightbulb, IcAdd, IcImage, IcSearch } from '../res/icons';
 const Settings = IcSettings, Menu = IcMenu, Share2 = IcShare, ScanLine = IcScan, Lock = IcLock, Users = IcContacts, Clock = IcClock, Lightbulb = IcLightbulb, Plus = IcAdd, ImageIcon = IcImage, Search = IcSearch;
 import { Drawer } from '../components/Drawer';
 import { useLocation } from 'react-router-dom';
 import { useRedBookGestures } from '../hooks/useRedBookGestures';
 export const MePage: React.FC = () => {
-  const { user, entities, feedIds } = useRedBookStore(useShallow(s => ({ user: s.user, entities: s.entities, feedIds: s.feedIds })));
-  const feed = useMemo(() => feedIds.map(id => entities.notesById[id]).filter(Boolean), [feedIds, entities.notesById]);
+  const user = useRedBookStore(s => s.user);
+  const view = useRedBookView();
+  const feed = useMemo(() => view.feedIds.map(id => view.notesById[id]).filter(Boolean), [view.feedIds, view.notesById]);
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const isDrawerOpen = searchParams.get('menu') === 'drawer';
@@ -17,6 +18,8 @@ export const MePage: React.FC = () => {
   const s = useRedBookStrings();
   const [isScrolled, setIsScrolled] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const followingCount = user.followingIds?.length ?? 0;
+  const followerCount = user.followerIds?.length ?? 0;
   const getMeTextCardClass = (text: string) => {
       const len = (text || '').trim().length;
       if (len <= 8) return 'text-[26px] leading-[1.15]';
@@ -47,7 +50,7 @@ export const MePage: React.FC = () => {
           // In a real app, filter by public/private. Here we just show all user's notes for 'public'
           if (noteSubTab === 'public') {
               const ids = user.publishedNoteIds || [];
-              return ids.map(id => entities.notesById[id]).filter(Boolean);
+              return ids.map(id => view.notesById[id]).filter(Boolean);
           }
           return []; // Mock empty for private/collection
       } else if (activeTab === 'collects') {
@@ -58,7 +61,7 @@ export const MePage: React.FC = () => {
           return feed.filter(note => liked.has(note.id));
       }
       return [];
-  }, [activeTab, noteSubTab, feed, user.publishedNoteIds, entities.notesById, user.likedNotes, user.collectedNotes]);
+  }, [activeTab, noteSubTab, feed, user.publishedNoteIds, view.notesById, user.likedNotes, user.collectedNotes]);
 
   const handleScroll = () => {
       if (containerRef.current) {
@@ -149,11 +152,11 @@ export const MePage: React.FC = () => {
             <div className="flex items-center justify-between mb-4 px-1">
                 <div className="flex items-center gap-6">
                     <div className="flex flex-col items-center cursor-pointer" {...bindTap('followList.open', { params: { type: '1' } })}>
-                        <span className="text-[16px] font-bold text-white">{user.following || 0}</span>
+                        <span className="text-[16px] font-bold text-white">{followingCount}</span>
                         <span className="text-[11px] text-gray-400">{s.following}</span>
                     </div>
                     <div className="flex flex-col items-center cursor-pointer" {...bindTap('followList.open', { params: { type: '0' } })}>
-                        <span className="text-[16px] font-bold text-white">{user.followers || 0}</span>
+                        <span className="text-[16px] font-bold text-white">{followerCount}</span>
                         <span className="text-[11px] text-gray-400">{s.followers}</span>
                     </div>
                     <div className="flex flex-col items-center">
