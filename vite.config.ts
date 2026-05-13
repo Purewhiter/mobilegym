@@ -1356,6 +1356,14 @@ export default defineConfig(({ mode }) => {
         '@': path.resolve(__dirname, '.'),
       },
       dedupe: ['react', 'react-dom', 'lucide-react'],
-    }
+    },
+    // @sqlite.org/sqlite-wasm 在内部用 `new URL("sqlite3.wasm", import.meta.url)`
+    // 定位它的 WASM 二进制。Vite 的 dep optimizer 会把包重打包到 .vite/deps/，
+    // 但不会顺带把 sqlite3.wasm 复制过去；导致运行时 import.meta.url 指向 .vite/deps
+    // 时 fetch sqlite3.wasm 拿到 SPA fallback 的 HTML。`exclude` 阻止预打包，
+    // import.meta.url 就回到 node_modules/.../dist/，wasm 能正确就近加载。
+    optimizeDeps: {
+      exclude: ['@sqlite.org/sqlite-wasm'],
+    },
   };
 });
