@@ -1,0 +1,304 @@
+{
+  "user": {
+    "id": "xiaoming",
+    "name": "小明",
+    "avatar": "my/mine_def_touxiang_3x.png",
+    "userCover": "my/mine_bg_3x.png",
+    "likesAndCollections": 326,
+    "intro": "一只野生程序猿存档 🌟\n喜欢摄影 | 旅行 | 美食\n记录生活中的小美好 ✨",
+    "location": "上海",
+    "address": "上海",
+    "gender": "Female",
+    "age": "24",
+    "followingIds": [
+      "x1dubbu13",
+      "rdh0g1uqf",
+      "bosfmbo16",
+      "ng31ly5bk",
+      "1d6oaldda",
+      "r204n7q81",
+      "oiazv5lgz"
+    ],
+    "followerIds": [
+      "bosfmbo16",
+      "ng31ly5bk",
+      "x1dubbu13"
+    ],
+    "likedNotes": [
+      "9ihedac3e",
+      "xpctqzmeh"
+    ],
+    "collectedNotes": [
+      "2kvlyjk5h",
+      "xpctqzmeh"
+    ],
+    "likedCommentsByNote": {
+      "2kvlyjk5h": [
+        "4p46qdh02",
+        "cxqcga932"
+      ],
+      "xpctqzmeh": [
+        "gaw1goyge"
+      ]
+    },
+    "commentIds": [],
+    "publishedNoteIds": [
+      "note_0",
+      "note_1"
+    ]
+  },
+  "notes": {
+    "note_0": {
+      "id": "note_0",
+      "title": "下班后一个人散步｜把焦虑走丢了",
+      "content": "今天加班到很晚，出门的时候风有点冷。\n\n我没急着回家，沿着小区外面的那条路慢慢走。路灯把影子拉得很长，便利店的热豆浆味道也很安心。\n\n有时候不需要“立刻变好”，只要让自己安静下来就行。\n\n拍了几张路边的光影和晚风，送给同样在前行的你。\n\n#夜跑散步 #下班日常 #情绪自救 #上海",
+      "authorId": "xiaoming",
+      "images": [
+        "seed/rednote_note_0_walk_1.jpg",
+        "seed/rednote_note_0_walk_2.jpg"
+      ],
+      "cover": "seed/rednote_note_0_walk_1.jpg",
+      "likes": 368,
+      "collections": 92,
+      "comments": 0,
+      "commentList": [],
+      "createdAt": "-2d6h"
+    },
+    "note_1": {
+      "id": "note_1",
+      "title": "周末做饭实验｜10分钟搞定的番茄鸡蛋面（真香版）",
+      "content": "周末不想点外卖，家里刚好有两颗鸡蛋和一颗番茄，就临时起意煮了碗面。\n\n做下来发现想好吃其实很简单：\n- 番茄一定要炒到出汁，稍微加一点点糖提味\n- 鸡蛋别炒太老，关火前下锅更嫩\n- 最后撒点葱花和黑胡椒，香气一下就出来了\n\n吃完那一刻有点被治愈到，认真对待小事真的会得到回馈。\n\n#一人食 #家常菜 #番茄鸡蛋面 #周末做饭",
+      "authorId": "xiaoming",
+      "images": [
+        "seed/rednote_note_1_food_1.jpg",
+        "seed/rednote_note_1_food_2.jpg"
+      ],
+      "cover": "seed/rednote_note_1_food_1.jpg",
+      "likes": 1240,
+      "collections": 310,
+      "comments": 0,
+      "commentList": [],
+      "createdAt": "-5d2h"
+    }
+  },
+  "comments": {},
+  "users": {},
+  "chats": [
+    {
+      "userId": "x1dubbu13",
+      "username": "海边小橘子",
+      "avatar": "./images/avatars/x1dubbu13.jpg",
+      "lastMessage": "周末要不要一起去逛逛？",
+      "lastTime": "-1m",
+      "unreadCount": 1,
+      "messages": [
+        { "id": "seed_chat_x1dubbu13_1", "senderId": "x1dubbu13", "content": "你最近那篇笔记写得挺真实的", "timestamp": "-3m", "type": "text" },
+        { "id": "seed_chat_x1dubbu13_2", "senderId": "xiaoming", "content": "谢谢呀，被你这么一夸有点不好意思", "timestamp": "-2m", "type": "text" },
+        { "id": "seed_chat_x1dubbu13_3", "senderId": "x1dubbu13", "content": "周末要不要一起去逛逛？", "timestamp": "-1m", "type": "text" }
+      ]
+    },
+    {
+      "userId": "rdh0g1uqf",
+      "username": "西柚慢行",
+      "avatar": "./images/avatars/rdh0g1uqf.jpg",
+      "lastMessage": "你之前那张落日的原图方便发我一下吗",
+      "lastTime": "-1h",
+      "unreadCount": 0,
+      "messages": [
+        { "id": "seed_chat_rdh0g1uqf_1", "senderId": "rdh0g1uqf", "content": "你之前那张落日的原图方便发我一下吗", "timestamp": "-1h", "type": "text" }
+      ]
+    }
+  ],
+  "notifications": [
+    {
+      "id": "n1",
+      "type": "like_note",
+      "userId": "x1dubbu13",
+      "username": "海边小橘子",
+      "userAvatar": "./images/avatars/x1dubbu13.jpg",
+      "noteId": "note_0",
+      "noteCover": "seed/rednote_note_0_walk_1.jpg",
+      "timestamp": "-5m",
+      "isRead": false
+    },
+    {
+      "id": "n2",
+      "type": "comment",
+      "userId": "rdh0g1uqf",
+      "username": "西柚慢行",
+      "userAvatar": "./images/avatars/rdh0g1uqf.jpg",
+      "noteId": "note_0",
+      "noteCover": "seed/rednote_note_0_walk_1.jpg",
+      "content": "这套搭配很好看！爱了爱了❤️",
+      "timestamp": "-10m",
+      "isRead": false
+    },
+    {
+      "id": "n3",
+      "type": "follow",
+      "userId": "bosfmbo16",
+      "username": "安静岛",
+      "userAvatar": "./images/avatars/bosfmbo16.jpg",
+      "timestamp": "-15m",
+      "isRead": false
+    },
+    {
+      "id": "n4",
+      "type": "collect_note",
+      "userId": "ng31ly5bk",
+      "username": "碎光收集者",
+      "userAvatar": "./images/avatars/ng31ly5bk.jpg",
+      "noteId": "note_0",
+      "noteCover": "seed/rednote_note_0_walk_1.jpg",
+      "timestamp": "-20m",
+      "isRead": false
+    },
+    {
+      "id": "n5",
+      "type": "like_comment",
+      "userId": "x1dubbu13",
+      "username": "海边小橘子",
+      "userAvatar": "./images/avatars/x1dubbu13.jpg",
+      "noteId": "note_0",
+      "noteCover": "seed/rednote_note_0_walk_1.jpg",
+      "content": "太赞了！",
+      "timestamp": "-25m",
+      "isRead": false
+    },
+    {
+      "id": "n6",
+      "type": "reply",
+      "userId": "rdh0g1uqf",
+      "username": "西柚慢行",
+      "userAvatar": "./images/avatars/rdh0g1uqf.jpg",
+      "noteId": "note_0",
+      "noteCover": "seed/rednote_note_0_walk_1.jpg",
+      "content": "谢谢分享！",
+      "replyToContent": "这套搭配很好看！爱了爱了❤️",
+      "timestamp": "-30m",
+      "isRead": false
+    }
+  ],
+  "history": [],
+  "searchHistory": [
+    "1231",
+    "歌手2026官宣",
+    "不婚不恋主义",
+    "1231咖啡"
+  ],
+  "hotSearch": [
+    {
+      "keyword": "贺娇龙因意外坠马逝世",
+      "isNew": true,
+      "heat": "939.5万"
+    },
+    {
+      "keyword": "谁抢到了马年纪念币",
+      "isHot": true,
+      "heat": "716.1万"
+    },
+    {
+      "keyword": "面条主理人的吃商觉醒了",
+      "isHot": true,
+      "heat": "547.9万"
+    },
+    {
+      "keyword": "看了好久才反应过来这不是画",
+      "isHot": true,
+      "heat": "491万"
+    },
+    {
+      "keyword": "轧戏有自己的图书馆三十秒",
+      "label": "梗",
+      "heat": "435.8万"
+    },
+    {
+      "keyword": "在玄武湖偶遇烫头鸭",
+      "isHot": true,
+      "heat": "430.3万"
+    },
+    {
+      "keyword": "全国铁路新增243列客车",
+      "isNew": true,
+      "heat": "422.9万"
+    },
+    {
+      "keyword": "国考查分及后续攻略",
+      "heat": "377.5万"
+    },
+    {
+      "keyword": "小城大事张维伊喜剧效果拉满",
+      "isHot": true,
+      "heat": "377.2万"
+    },
+    {
+      "keyword": "马年纪念币开始预约",
+      "isHot": true,
+      "heat": "272.5万"
+    }
+  ],
+  "guessYouLike": [
+    "歌手2026官宣",
+    "马年纪念币开始预约",
+    "不婚不恋主义",
+    "取悦自己的top1消费",
+    "1231咖啡",
+    "赵云龙胆皮肤点券价格"
+  ],
+  "settings": {
+    "general": {
+      "useSystemFont": false,
+      "playAudio": false,
+      "autoRefresh": true,
+      "muteVideo": false,
+      "mobileDownload": false,
+      "videoHDR": false,
+      "imageHDR": true,
+      "mobileNetwork": true,
+      "history": true,
+      "videoInteraction": true,
+      "preUpload": true,
+      "teenMode": false
+    },
+    "notification": {
+      "receiveMsg": false,
+      "likeCollect": false,
+      "newFollow": false,
+      "comment": false,
+      "atMe": false,
+      "storeNotif": false,
+      "privateChat": true,
+      "groupChat": true,
+      "strangers": true,
+      "authorUpdates": "followingUnread",
+      "liveReminder": "off",
+      "contentRecommend": "off",
+      "userRecommend": "off",
+      "otherNotif": "receive",
+      "inAppBanner": "off"
+    },
+    "privacy": {
+      "oneClickProtect": false,
+      "showChatStatus": true,
+      "onlyFollowComment": true,
+      "onlyFollowDanmaku": true,
+      "onlyFollowAt": true,
+      "allowDownload": true,
+      "recommendPeople": true,
+      "onlineStatus": "friends",
+      "messagePermission": "following",
+      "collectVisibility": "private",
+      "commentVisibility": "public"
+    },
+    "language": "zh-CN"
+  },
+  "storage": {
+    "cacheSizeBytes": 5382144
+  },
+  "publishDraft": {
+    "text": "",
+    "templateId": "basic",
+    "title": "",
+    "images": []
+  }
+}
