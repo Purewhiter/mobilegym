@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@googlemaps/js-api-loader": "^2.0.2",
+    "@sqlite.org/sqlite-wasm": "^3.53.0-build1",
     "@tanstack/react-virtual": "^3.13.19",
     "@types/google.maps": "^3.58.1",
     "immer": "^11.1.4",

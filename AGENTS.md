@@ -8,16 +8,6 @@ mobile-gym is a **simulated Android OS environment** built with React + Vite + T
 
 The project is primarily documented in **Chinese (中文)**. Follow existing conventions for labels, descriptions, and comments.
 
-## Build and Dev Commands
-
-```bash
-npm install          # Install dependencies
-npm run dev          # Start Vite dev server (port 3000, host 0.0.0.0)
-npm run preview      # Preview production build
-```
-
-**Do NOT run `npm run build`** 除非显式指出；
-
 ### 类型检查策略
 
 - **小修改**（改几个文件、改样式、加数据等）— **不需要**跑 `tsc --noEmit`，依赖 IDE 实时检查即可
