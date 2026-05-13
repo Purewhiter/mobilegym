@@ -1,142 +1,63 @@
-import { createAppStoreWithActions, memoSelector } from '../../os/createAppStore';
+import { createAppStoreWithActions } from '../../os/createAppStore';
 import { REDBOOK_CONFIG } from './data';
+import { getBaseDataset } from './data/loader';
 import * as TimeService from '../../os/TimeService';
+import {
+  getRedBookFollowingIds,
+  resolveRedBookRuntimeUser,
+  type RedBookRuntimeComment,
+  type RedBookRuntimeCommentTable,
+  type RedBookRuntimeNoteTable,
+  type RedBookRuntimeUserTable,
+} from './utils/runtimeResolvers';
 
-import type { Note, User, Comment } from './types';
+import type {
+  ChatConversation,
+  ChatMessage,
+  Comment,
+  HotSearchItem,
+  Note,
+  Notification,
+  RedBookTempState,
+  RedBookPublishDraft,
+  RedBookSettings,
+  RedBookStorage,
+  User,
+} from './types';
 
-// ── Types ──────────────────────────────────────────────────────────
-
-export interface ChatMessage {
-  id: string;
-  senderId: string;
-  content: string;
-  timestamp: number;
-  type: 'text' | 'image';
-}
-
-export interface ChatConversation {
-  userId: string;
-  username: string;
-  avatar: string;
-  lastMessage?: string;
-  lastTime?: number;
-  unreadCount: number;
-  messages: ChatMessage[];
-}
-
-export interface Notification {
-  id: string;
-  type: 'like_note' | 'collect_note' | 'like_comment' | 'follow' | 'comment' | 'reply';
-  userId: string;
-  username: string;
-  userAvatar: string;
-  noteId?: string;
-  noteCover?: string;
-  content?: string;
-  replyToContent?: string;
-  timestamp: number;
-  isRead: boolean;
-}
-
-export interface RedBookSettings {
-  general: {
-    useSystemFont: boolean;
-    playAudio: boolean;
-    autoRefresh: boolean;
-    muteVideo: boolean;
-    mobileDownload: boolean;
-    videoHDR: boolean;
-    imageHDR: boolean;
-    mobileNetwork: boolean;
-    history: boolean;
-    videoInteraction: boolean;
-    preUpload: boolean;
-    teenMode: boolean;
-  };
-  notification: {
-    receiveMsg: boolean;
-    likeCollect: boolean;
-    newFollow: boolean;
-    comment: boolean;
-    atMe: boolean;
-    storeNotif: boolean;
-    privateChat: boolean;
-    groupChat: boolean;
-    strangers: boolean;
-    authorUpdates: string;
-    liveReminder: string;
-    contentRecommend: string;
-    userRecommend: string;
-    otherNotif: string;
-    inAppBanner: string;
-  };
-  privacy: {
-    oneClickProtect: boolean;
-    showChatStatus: boolean;
-    onlyFollowComment: boolean;
-    onlyFollowDanmaku: boolean;
-    onlyFollowAt: boolean;
-    allowDownload: boolean;
-    recommendPeople: boolean;
-    onlineStatus: string;
-    messagePermission: string;
-    collectVisibility: string;
-    commentVisibility: string;
-  };
-  language: string | null;
-}
-
-interface RedBookEntities {
-  usersById: Record<string, User>;
-  notesById: Record<string, Note>;
-}
-
-// ── Helpers ─────────────────────────────────────────────────────────
-
-const parseCount = (count: number | string | undefined | null): number => {
-  if (count === null || count === undefined) return 0;
-  if (typeof count === 'number') return Number.isFinite(count) ? count : 0;
-  const raw = String(count).replace(/\+/g, '').trim();
-  if (!raw) return 0;
-  if (raw.includes('万')) return (parseFloat(raw.replace('万', '')) || 0) * 10000;
-  if (raw.toLowerCase().includes('w')) return (parseFloat(raw.toLowerCase().replace('w', '')) || 0) * 10000;
-  return parseFloat(raw) || 0;
+export type {
+  ChatConversation,
+  ChatMessage,
+  Notification,
+  RedBookTempState,
+  RedBookPublishDraft,
+  RedBookSettings,
+  RedBookStorage,
 };
 
 // ── State interface ─────────────────────────────────────────────────
 
 export interface RedBookStoreState {
   user: User;
-  entities: RedBookEntities;
-  feedIds: string[];
-  userIds: string[];
+  notes: RedBookRuntimeNoteTable;
+  comments: RedBookRuntimeCommentTable;
+  users: RedBookRuntimeUserTable;
   chats: ChatConversation[];
   notifications: Notification[];
   history: string[];
+  searchHistory: string[];
+  hotSearch: HotSearchItem[];
+  guessYouLike: string[];
   settings: RedBookSettings;
-  storage: {
-    cacheSizeBytes: number;
-  };
-  homeState: {
-    activeCategory: string;
-    citySubTab: string;
-    displayCount: number;
-  };
-  publishDraft: {
-    text: string;
-    templateId: string;
-    // Title entered in the publish confirmation page.
-    // Used for task validation to ensure the agent actually typed the expected title.
-    title: string;
-    // 已烘焙/已选择的发布图片（文字卡在离开 template 页时光栅化；未来照片流也会落到这里）。
-    images: string[];
-  };
+  storage: RedBookStorage;
+  _temp: RedBookTempState;
+  publishDraft: RedBookPublishDraft;
 }
 
 // ── Actions interface ───────────────────────────────────────────────
 
 export interface RedBookActions {
-  updateHomeState: (updates: Partial<RedBookStoreState['homeState']>) => void;
+  updateHomeState: (updates: Partial<RedBookStoreState['_temp']>) => void;
   updatePublishDraft: (updates: Partial<RedBookStoreState['publishDraft']>) => void;
   resetPublishDraft: () => void;
   toggleLike: (noteId: string) => void;
@@ -147,114 +68,49 @@ export interface RedBookActions {
   addNote: (note: Pick<Note, 'title' | 'content' | 'images'>) => void;
   sendMessage: (toUserId: string, content: string) => void;
   logout: () => void;
-  updateUser: (updates: Partial<User>) => void;
+  updateUser: (updates: RedBookUserUpdates) => void;
   markNotificationsAsRead: (type?: Notification['type']) => void;
   addToHistory: (noteId: string) => void;
   clearHistory: () => void;
+  addSearchHistory: (keyword: string) => void;
+  removeSearchHistory: (keyword: string) => void;
+  clearSearchHistory: () => void;
   clearCache: () => void;
   updateSettings: (category: keyof RedBookSettings, updates: Partial<RedBookSettings[keyof RedBookSettings]> | string | null) => void;
-  // Internal: populate entities from loadEntities()
-  _setEntities: (data: { notesById: Record<string, Note>; usersById: Record<string, User>; feedIds: string[]; userIds: string[] }) => void;
 }
+
+type RedBookUserUpdates = Omit<Partial<User>, 'following' | 'followers'>;
+
+const sanitizeUserUpdates = (updates: RedBookUserUpdates): RedBookUserUpdates => {
+  const {
+    following: _following,
+    followers: _followers,
+    ...safeUpdates
+  } = updates as any;
+  return safeUpdates;
+};
+
+const baseUsersById = (): Record<string, User> => getBaseDataset()?.usersById ?? {};
 
 // ── Initial state ───────────────────────────────────────────────────
 
-const now = TimeService.now();
-
-const mockNotifications: Notification[] = [
-  {
-    id: 'n1',
-    type: 'like_note',
-    userId: REDBOOK_CONFIG.users[0]?.id ?? '',
-    username: REDBOOK_CONFIG.users[0]?.name ?? '',
-    userAvatar: REDBOOK_CONFIG.users[0]?.avatar ?? '',
-    noteId: 'note_0',
-    noteCover: REDBOOK_CONFIG.sampleNotes[0]?.images?.[0] ?? '',
-    timestamp: now - 300000,
-    isRead: false,
-  },
-  {
-    id: 'n2',
-    type: 'comment',
-    userId: REDBOOK_CONFIG.users[1]?.id ?? '',
-    username: REDBOOK_CONFIG.users[1]?.name ?? '',
-    userAvatar: REDBOOK_CONFIG.users[1]?.avatar ?? '',
-    noteId: 'note_0',
-    noteCover: REDBOOK_CONFIG.sampleNotes[0]?.images?.[0] ?? '',
-    content: '这套搭配很好看！爱了爱了❤️',
-    timestamp: now - 600000,
-    isRead: false,
-  },
-  {
-    id: 'n3',
-    type: 'follow',
-    userId: REDBOOK_CONFIG.users[2]?.id ?? '',
-    username: REDBOOK_CONFIG.users[2]?.name ?? '',
-    userAvatar: REDBOOK_CONFIG.users[2]?.avatar ?? '',
-    timestamp: now - 900000,
-    isRead: false,
-  },
-  {
-    id: 'n4',
-    type: 'collect_note',
-    userId: REDBOOK_CONFIG.users[3]?.id ?? '',
-    username: REDBOOK_CONFIG.users[3]?.name ?? '',
-    userAvatar: REDBOOK_CONFIG.users[3]?.avatar ?? '',
-    noteId: 'note_0',
-    noteCover: REDBOOK_CONFIG.sampleNotes[0]?.images?.[0] ?? '',
-    timestamp: now - 1200000,
-    isRead: false,
-  },
-  {
-    id: 'n5',
-    type: 'like_comment',
-    userId: REDBOOK_CONFIG.users[0]?.id ?? '',
-    username: REDBOOK_CONFIG.users[0]?.name ?? '',
-    userAvatar: REDBOOK_CONFIG.users[0]?.avatar ?? '',
-    noteId: 'note_0',
-    noteCover: REDBOOK_CONFIG.sampleNotes[0]?.images?.[0] ?? '',
-    content: '太赞了！',
-    timestamp: now - 1500000,
-    isRead: false,
-  },
-  {
-    id: 'n6',
-    type: 'reply',
-    userId: REDBOOK_CONFIG.users[1]?.id ?? '',
-    username: REDBOOK_CONFIG.users[1]?.name ?? '',
-    userAvatar: REDBOOK_CONFIG.users[1]?.avatar ?? '',
-    noteId: 'note_0',
-    noteCover: REDBOOK_CONFIG.sampleNotes[0]?.images?.[0] ?? '',
-    content: '谢谢分享！',
-    replyToContent: '这套搭配很好看！爱了爱了❤️',
-    timestamp: now - 1800000,
-    isRead: false,
-  },
-];
-
 const initialState: RedBookStoreState = {
   user: { ...REDBOOK_CONFIG.user },
-  entities: { usersById: {} as Record<string, User>, notesById: {} as Record<string, Note> },
-  feedIds: [] as string[],
-  userIds: [] as string[],
-  chats: [] as ChatConversation[],
-  notifications: mockNotifications,
-  history: [] as string[],
-  settings: { ...REDBOOK_CONFIG.settings } as RedBookSettings,
-  storage: {
-    cacheSizeBytes: 5382144, // ~5.13 MB
-  },
-  homeState: {
-    activeCategory: 'recommend',
-    citySubTab: 'recommend',
-    displayCount: 20,
-  },
-  publishDraft: {
-    text: '',
-    templateId: 'basic',
-    title: '',
-    images: [],
-  },
+  notes: { ...REDBOOK_CONFIG.notes },
+  comments: { ...REDBOOK_CONFIG.comments },
+  users: { ...REDBOOK_CONFIG.users },
+  chats: [...REDBOOK_CONFIG.chats],
+  notifications: [...REDBOOK_CONFIG.notifications],
+  history: [...REDBOOK_CONFIG.history],
+  searchHistory: [...REDBOOK_CONFIG.searchHistory],
+  hotSearch: [...REDBOOK_CONFIG.hotSearch],
+  guessYouLike: [...REDBOOK_CONFIG.guessYouLike],
+  settings: { ...REDBOOK_CONFIG.settings },
+  storage: { ...REDBOOK_CONFIG.storage },
+  // `_temp` 直接在 TS 里初始化，不进 defaults.json——
+  // 它是 ephemeral 运行时导航状态，不属于"可替换 base data"。
+  _temp: { activeCategory: 'recommend', citySubTab: 'recommend' },
+  publishDraft: { ...REDBOOK_CONFIG.publishDraft },
 };
 
 // ── Store ──────────────────────────────────────────────────────────
@@ -264,9 +120,13 @@ export const useRedBookStore = createAppStoreWithActions<RedBookStoreState, RedB
   initialState,
   (set, get) => ({
 
-    // ── Home state ─────────────────────────────────────────────
+    // ── Home nav state ─────────────────────────────────────────
+    // 名字保留 `updateHomeState` 是为了不破坏 bench live test 的 dispatch 调用
+    // （test_redbook_live.py 按 action 名调）。内部写到 `_temp` 而非历史的 `homeState`：
+    //   - 不持久化（默认 partialize 排除 `_temp`）
+    //   - bench 自动忽略 diff（`apps.*._temp` 在 base.py 白名单里）
     updateHomeState: (updates) => {
-      set({ homeState: { ...get().homeState, ...updates } });
+      set({ _temp: { ...get()._temp, ...updates } });
     },
 
     // ── Publish draft ──────────────────────────────────────────
@@ -283,18 +143,8 @@ export const useRedBookStore = createAppStoreWithActions<RedBookStoreState, RedB
       const likedNotes = s.user.likedNotes || [];
       const wasLiked = likedNotes.includes(noteId);
       const nextLikedNotes = wasLiked ? likedNotes.filter(id => id !== noteId) : [...likedNotes, noteId];
-      const targetNote = s.entities.notesById[noteId];
       set({
         user: { ...s.user, likedNotes: nextLikedNotes },
-        entities: {
-          ...s.entities,
-          notesById: {
-            ...s.entities.notesById,
-            [noteId]: targetNote
-              ? { ...targetNote, likes: Math.max(0, parseCount(targetNote.likes) + (wasLiked ? -1 : 1)) }
-              : targetNote,
-          },
-        },
       });
     },
 
@@ -303,18 +153,8 @@ export const useRedBookStore = createAppStoreWithActions<RedBookStoreState, RedB
       const collectedNotes = s.user.collectedNotes || [];
       const wasCollected = collectedNotes.includes(noteId);
       const nextCollectedNotes = wasCollected ? collectedNotes.filter(id => id !== noteId) : [...collectedNotes, noteId];
-      const targetNote = s.entities.notesById[noteId];
       set({
         user: { ...s.user, collectedNotes: nextCollectedNotes },
-        entities: {
-          ...s.entities,
-          notesById: {
-            ...s.entities.notesById,
-            [noteId]: targetNote
-              ? { ...targetNote, collections: Math.max(0, parseCount(targetNote.collections) + (wasCollected ? -1 : 1)) }
-              : targetNote,
-          },
-        },
       });
     },
 
@@ -333,27 +173,11 @@ export const useRedBookStore = createAppStoreWithActions<RedBookStoreState, RedB
         replyToId: replyToCommentId,
         location: s.user.location || '上海',
       };
-      const nextUserCommentList = [
-        ...(s.user.commentList || []),
-        { noteId, commentId: newComment.id, content, time: nowTs, replyToId: replyToCommentId },
-      ];
-      const targetNote = s.entities.notesById[noteId];
-      const nextNote = targetNote
-        ? {
-          ...targetNote,
-          comments: parseCount(targetNote.comments) + 1,
-          commentList: [newComment, ...(targetNote.commentList || [])],
-        }
-        : targetNote;
+      const runtimeComment: RedBookRuntimeComment = { ...newComment, noteId };
+      const nextUserCommentIds = [...(s.user.commentIds || []), newComment.id];
       set({
-        user: { ...s.user, commentList: nextUserCommentList },
-        entities: {
-          ...s.entities,
-          notesById: {
-            ...s.entities.notesById,
-            [noteId]: nextNote,
-          },
-        },
+        user: { ...s.user, commentIds: nextUserCommentIds },
+        comments: { ...s.comments, [newComment.id]: runtimeComment },
       });
     },
 
@@ -364,52 +188,23 @@ export const useRedBookStore = createAppStoreWithActions<RedBookStoreState, RedB
       const wasLiked = current.includes(commentId);
       const nextForNote = wasLiked ? current.filter(id => id !== commentId) : [...current, commentId];
       const nextLikedByNote = { ...likedByNote, [noteId]: nextForNote };
-      const targetNote = s.entities.notesById[noteId];
-      const nextNote = targetNote
-        ? {
-          ...targetNote,
-          commentList: (targetNote.commentList || []).map(c => {
-            if (c.id !== commentId) return c;
-            const nextLikes = Math.max(0, parseCount(c.likes) + (wasLiked ? -1 : 1));
-            return { ...c, likes: nextLikes };
-          }),
-        }
-        : targetNote;
       set({
         user: { ...s.user, likedCommentsByNote: nextLikedByNote },
-        entities: {
-          ...s.entities,
-          notesById: {
-            ...s.entities.notesById,
-            [noteId]: nextNote,
-          },
-        },
       });
     },
 
     // ── Follow ─────────────────────────────────────────────────
     followUser: (userId) => {
       const s = get();
-      const targetUser = s.entities.usersById[userId];
+      const targetUser = resolveRedBookRuntimeUser(s.users, baseUsersById(), s.user, userId);
       if (!targetUser) return;
-      const followings = s.user.followings || [];
-      const isFollowing = followings.includes(userId);
-      const nextFollowings = isFollowing ? followings.filter(id => id !== userId) : [...followings, userId];
+      const followingIds = getRedBookFollowingIds(s.user);
+      const isFollowing = followingIds.includes(userId);
+      const nextFollowingIds = isFollowing ? followingIds.filter(id => id !== userId) : [...followingIds, userId];
       set({
         user: {
           ...s.user,
-          followings: nextFollowings,
-          following: Math.max(0, parseCount(s.user.following) + (isFollowing ? -1 : 1)),
-        },
-        entities: {
-          ...s.entities,
-          usersById: {
-            ...s.entities.usersById,
-            [userId]: {
-              ...targetUser,
-              followers: Math.max(0, parseCount(targetUser.followers) + (isFollowing ? -1 : 1)),
-            },
-          },
+          followingIds: nextFollowingIds,
         },
       });
     },
@@ -433,11 +228,7 @@ export const useRedBookStore = createAppStoreWithActions<RedBookStoreState, RedB
           ...s.user,
           publishedNoteIds: [newNote.id, ...(s.user.publishedNoteIds || [])],
         },
-        entities: {
-          ...s.entities,
-          notesById: { ...s.entities.notesById, [newNote.id]: newNote },
-        },
-        feedIds: [newNote.id, ...s.feedIds],
+        notes: { ...s.notes, [newNote.id]: newNote },
       });
     },
 
@@ -455,7 +246,7 @@ export const useRedBookStore = createAppStoreWithActions<RedBookStoreState, RedB
         type: 'text',
       };
       if (chatIndex === -1) {
-        const targetUser = (toUserId === s.user.id ? s.user : s.entities.usersById[toUserId]) || { name: 'User ' + toUserId, avatar: '' };
+        const targetUser = resolveRedBookRuntimeUser(s.users, baseUsersById(), s.user, toUserId) || { name: 'User ' + toUserId, avatar: '' };
         chats.unshift({
           userId: toUserId,
           username: targetUser.name,
@@ -483,7 +274,7 @@ export const useRedBookStore = createAppStoreWithActions<RedBookStoreState, RedB
 
     // ── User ───────────────────────────────────────────────────
     updateUser: (updates) => {
-      set({ user: { ...get().user, ...updates } });
+      set({ user: { ...get().user, ...sanitizeUserUpdates(updates) } });
     },
 
     // ── Notifications ──────────────────────────────────────────
@@ -506,6 +297,18 @@ export const useRedBookStore = createAppStoreWithActions<RedBookStoreState, RedB
     },
     clearHistory: () => {
       set({ history: [] });
+    },
+    addSearchHistory: (keyword) => {
+      const trimmed = keyword.trim();
+      if (!trimmed) return;
+      const current = get().searchHistory || [];
+      set({ searchHistory: [trimmed, ...current.filter(item => item !== trimmed)] });
+    },
+    removeSearchHistory: (keyword) => {
+      set({ searchHistory: (get().searchHistory || []).filter(item => item !== keyword) });
+    },
+    clearSearchHistory: () => {
+      set({ searchHistory: [] });
     },
     clearCache: () => {
       set({ storage: { cacheSizeBytes: 0 } });
@@ -530,51 +333,5 @@ export const useRedBookStore = createAppStoreWithActions<RedBookStoreState, RedB
         });
       }
     },
-
-    // ── Internal: populate entities from async loader ──────────
-    _setEntities: ({ notesById, usersById, feedIds, userIds }) => {
-      const s = get();
-      let user = s.user;
-      if (!user.publishedNoteIds) {
-        user = {
-          ...user,
-          publishedNoteIds: Object.values(notesById)
-            .filter(n => n?.authorId === user.id)
-            .sort((a, b) => (b?.createdAt || 0) - (a?.createdAt || 0))
-            .map(n => n.id),
-        };
-      }
-      set({
-        user,
-        entities: { notesById, usersById },
-        feedIds,
-        userIds,
-      });
-    },
   }),
-  {
-    partialize: (state) => {
-      const result: Record<string, any> = {};
-      for (const [k, v] of Object.entries(state)) {
-        if (typeof v === 'function') continue;
-        // Exclude large entities from persistence (loaded async from JSON)
-        if (k === 'entities' || k === 'feedIds' || k === 'userIds') continue;
-        result[k] = v;
-      }
-      return result as Partial<RedBookStoreState>;
-    },
-  },
 );
-
-// ── Memoized selectors ─────────────────────────────────────────────
-
-/** Select a specific note by id — returns stable ref when notesById ref unchanged */
-export const selectNoteById = (noteId: string) =>
-  (state: RedBookStoreState & RedBookActions) => state.entities.notesById[noteId];
-
-/** Resolve user by id from current user + entities map */
-export const resolveRedBookUserById = (state: RedBookStoreState, userId: string): User | undefined => {
-  if (!userId) return undefined;
-  if (userId === state.user.id) return state.user;
-  return state.entities.usersById[userId];
-};

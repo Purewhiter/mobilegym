@@ -27,7 +27,7 @@ export const NewFollowersPage: React.FC = () => {
   }, [markNotificationsAsRead]);
 
   const list = notifications.filter((notification) => notification.type === 'follow');
-  const isFollowed = (userId: string) => (user.followings || []).includes(userId);
+  const isFollowed = (userId: string) => (user.followingIds || []).includes(userId);
 
   return (
     <div className="h-full flex flex-col bg-app-surface">

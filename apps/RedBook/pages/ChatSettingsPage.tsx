@@ -4,6 +4,7 @@ import { useParams } from 'react-router-dom';
 import { IcNavBack, IcNavForward } from '../res/icons';
 const ChevronLeft = IcNavBack, ChevronRight = IcNavForward;
 import { useRedBookStore } from '../state';
+import { useRedBookView } from '../data/view';
 import { useRedBookGestures } from '../hooks/useRedBookGestures';
 interface SwitchProps {
     checked: boolean;
@@ -31,9 +32,9 @@ export const ChatSettingsPage: React.FC = () => {
   const s = useRedBookStrings();
   const { userId } = useParams<{ userId: string }>();
   const me = useRedBookStore(s => s.user);
-  const usersById = useRedBookStore(s => s.entities.usersById);
+  const view = useRedBookView();
   const { bindBack, bindTap } = useRedBookGestures();
-  const user = userId ? (userId === me.id ? me : usersById[userId]) : undefined;
+  const user = userId ? (userId === me.id ? me : view.usersById[userId]) : undefined;
 
   const [isPinned, setIsPinned] = useState(false);
   const [isMuted, setIsMuted] = useState(false);

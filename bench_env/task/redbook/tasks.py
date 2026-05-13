@@ -74,8 +74,12 @@ class CheckMyProfileField(AnswerTask):
             "description": "主页字段",
         },
     }
-    answer = ".user.{field}"
     answer_fields = [{"type": "number", "label": "{field}"}]
+
+    def get_answer(self, input: JudgeInput) -> Any:
+        rb = Redbook(input.apps_init["redbook"])
+        user = rb.view_user(rb.user_id) or {}
+        return user.get(self.p.field)
 
 
 
@@ -151,19 +155,13 @@ class CollectSearchNote(BaseTask):
     def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
         rb = Redbook(input.apps["redbook"], init=input.apps_init["redbook"])
         note_id = str(rb.first_search_note(self.p.keyword)["id"])
-        return [{
-            "field": "collect_search_note",
-            "expected": note_id,
-            "actual": rb.collected_notes,
-            "passed": note_id in rb.added_to_collected(),
-        }]
+        return [rb.check_note_collected(note_id, field="collect_search_note")]
 
     def get_expected_changes(self, input: JudgeInput) -> list[str]:
         rb = Redbook(input.apps["redbook"])
         note_id = str(rb.first_search_note(self.p.keyword)["id"])
         return [
             "user.collectedNotes",
-            f"entities.notesById.{note_id}",
             "searchHistory",
             "history",
         ]
@@ -216,12 +214,7 @@ class LikeFirstFeedNote(BaseTask):
         rb = Redbook(input.apps["redbook"], init=input.apps_init["redbook"])
         notes = rb.visible_discover_notes_for_category(self.p.category, limit=40)
         note_id = str(notes[0]["id"]) if notes else ""
-        return [{
-            "field": "like_first_feed_note",
-            "expected": note_id,
-            "actual": rb.liked_notes,
-            "passed": bool(note_id) and note_id in rb.added_to_liked(),
-        }]
+        return [rb.check_note_liked(note_id, field="like_first_feed_note")]
 
     def get_expected_changes(self, input: JudgeInput) -> list[str]:
         rb = Redbook(input.apps["redbook"])
@@ -229,11 +222,8 @@ class LikeFirstFeedNote(BaseTask):
         note_id = str(notes[0]["id"]) if notes else ""
         return [
             "user.likedNotes",
-            # Switching the discover category updates homeState.activeCategory
-            # (e.g. recommend -> music). This is part of the task behavior,
-            # so it should not be treated as an "unexpected" state diff.
-            "homeState.activeCategory",
-            f"entities.notesById.{note_id}",
+            # category 切换写到 `_temp.activeCategory`，已由 framework 级
+            # `apps.*._temp` 白名单自动忽略，不必再列。
             "history",
         ]
 
@@ -300,19 +290,13 @@ class UncollectFirstCollectedNote(BaseTask):
     def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
         rb = Redbook(input.apps["redbook"], init=input.apps_init["redbook"])
         target = str(rb.init.first_collected_note()["id"])
-        return [{
-            "field": "uncollect_first_collected_note",
-            "expected": target,
-            "actual": rb.collected_notes,
-            "passed": target in rb.removed_from_collected(),
-        }]
+        return [rb.check_note_uncollected(target, field="uncollect_first_collected_note")]
 
     def get_expected_changes(self, input: JudgeInput) -> list[str]:
         rb = Redbook(input.apps["redbook"], init=input.apps_init["redbook"])
         target = str(rb.init.first_collected_note()["id"])
         return [
             "user.collectedNotes",
-            f"entities.notesById.{target}",
             "history",
         ]
 
@@ -346,13 +330,7 @@ class DMFollowedUser(BaseTask):
 
     def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
         rb = Redbook(input.apps["redbook"], init=input.apps_init["redbook"])
-        target_user_id = str(rb.init.require_user_by_name(self.p.username)["id"])
-        return [{
-            "field": "dm_followed_user",
-            "expected": self.p.message,
-            "actual": rb.get_chat(target_user_id),
-            "passed": rb.chat_has_message(target_user_id, self.p.message),
-        }]
+        return [rb.check_chat_exact_message_to(self.p.username, str(self.p.message), field="dm_followed_user")]
 class PublishNoteWithTitleAndContent(BaseTask):
     templates = [
         '发一篇小红书笔记，标题写"{title}"，正文写"{content}"',
@@ -389,9 +367,11 @@ class PublishNoteWithTitleAndContent(BaseTask):
         ]
 
     def get_expected_changes(self, input: JudgeInput) -> list[str]:
+        rb = Redbook(input.apps["redbook"], init=input.apps_init["redbook"])
+        added = rb.list_added("user.publishedNoteIds")
+        note_paths = [f"notes.{nid}" for nid in sorted(added)] or ["notes"]
         return [
-            "entities.notesById",
-            "feedIds",
+            *note_paths,
             "user.publishedNoteIds",
             "publishDraft",
             "history",
@@ -413,8 +393,8 @@ class LikeFeedNoteAndReportLikes(BaseTask):
         "keyword": {
             "type": "string",
             "default": "分享",
-            "sampler": Redbook.sample_feed_title_keyword,
-            "description": "笔记标题关键词",
+            "sampler": Redbook.sample_unliked_feed_title_keyword,
+            "description": "笔记标题关键词（仅采样自当前未点赞笔记，确保任务可解）",
         },
     }
     answer_fields = [{"type": "number", "label": "点赞数"}]
@@ -422,26 +402,17 @@ class LikeFeedNoteAndReportLikes(BaseTask):
     def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
         rb = Redbook(input.apps["redbook"], init=input.apps_init["redbook"])
         kw = str(self.p.keyword or "")
+        # Sampler 保证关键词只命中未点赞笔记；这里 candidates 仍可能多条，挑用户实际点赞的一条
+        # 作为答案 anchor；都没点赞则取第一条用于 expected 显示。
         candidates = [
             n for n in rb.visible_discover_notes_for_category("recommend", limit=40)
             if kw and kw in str(n.get("title") or "")
         ]
-        candidate_ids = [str(n["id"]) for n in candidates]
         liked_added = rb.added_to_liked()
-        liked_ids = [cid for cid in candidate_ids if cid in liked_added]
-        chosen = None
-        for n in candidates:
-            if str(n["id"]) in liked_ids:
-                chosen = n
-                break
-        note_id = str((chosen or (candidates[0] if candidates else {})).get("id") or "")
-        note_likes = (chosen or (candidates[0] if candidates else {})).get("likes") if candidates else None
-        checks = [{
-            "field": "like_feed_note_and_report_likes",
-            "expected": note_id or (candidate_ids[0] if candidate_ids else None),
-            "actual": rb.liked_notes,
-            "passed": bool(liked_ids),
-        }]
+        chosen = next((n for n in candidates if str(n["id"]) in liked_added), candidates[0] if candidates else None)
+        note_id = str((chosen or {}).get("id") or "")
+        note_likes = (chosen or {}).get("likes") if chosen else None
+        checks = [rb.check_note_liked(note_id, field="like_feed_note_and_report_likes")] if note_id else []
         if note_likes is not None:
             checks.extend(build_answer_checks(note_likes, input.answer))
         return checks
@@ -455,7 +426,7 @@ class LikeFeedNoteAndReportLikes(BaseTask):
             if kw and kw in str(n.get("title") or "")
         ]
         chosen = next((cid for cid in candidates if cid in rb.added_to_liked()), candidates[0] if candidates else "")
-        return ["user.likedNotes", f"entities.notesById.{chosen}", "homeState.displayCount", "history"]
+        return ["user.likedNotes",  "history"]
 
 
 class CheckFollowingUserNoteCount(AnswerTask):
@@ -496,27 +467,6 @@ class CheckFirstChatLastMessage(AnswerTask):
     capabilities = ["query"]
     expected_changes = MESSAGE_VIEW_CHANGES
     answer_fields = [{"type": "text", "label": "最后一条消息内容", "hint": "如：谢谢"}]
-
-    async def _prepare(self, env: Any) -> None:
-        state = await env.get_state()
-        redbook_state = state["apps"]["redbook"]
-        if redbook_state["chats"]:
-            return
-        await env.set_state(
-            {
-                "apps": {
-                    "redbook": {
-                        "chats": Redbook.build_seed_chats(
-                            redbook_state["entities"]["usersById"],
-                            redbook_state["user"]["id"],
-                            state["os"]["time"]["timestamp"],
-                        )
-                    }
-                }
-            },
-            deep=True,
-            reload=False,
-        )
 
     def get_answer(self, input: JudgeInput) -> str:
         return Redbook(input.apps_init["redbook"]).first_chat_last_message()
@@ -639,14 +589,7 @@ class SearchCollectAndReportAuthor(BaseTask):
         note = rb.init.first_search_note(self.p.keyword)
         note_id = str(note["id"])
         author = rb.init.note_author(note)
-        checks = [
-            {
-                "field": "collect_note",
-                "expected": f"collect note {note_id}",
-                "actual": rb.collected_notes,
-                "passed": note_id in rb.added_to_collected(),
-            },
-        ]
+        checks = [rb.check_note_collected(note_id, field="collect_note")]
         checks.extend(build_answer_checks(
             {
                 "followers": author["followers"],
@@ -660,7 +603,6 @@ class SearchCollectAndReportAuthor(BaseTask):
         note_id = str(Redbook(input.apps_init["redbook"]).first_search_note(self.p.keyword)["id"])
         return [
             "user.collectedNotes",
-            f"entities.notesById.{note_id}",
             "searchHistory",
             "history",
         ]
@@ -681,8 +623,8 @@ class CollectFeedNoteAndDMAuthor(BaseTask):
         "keyword": {
             "type": "string",
             "default": "分享",
-            "sampler": Redbook.sample_feed_title_keyword,
-            "description": "笔记标题关键词",
+            "sampler": Redbook.sample_uncollected_feed_title_keyword,
+            "description": "笔记标题关键词（仅采样自当前未收藏笔记，确保任务可解）",
         },
         "message": {
             "type": "string",
@@ -698,33 +640,36 @@ class CollectFeedNoteAndDMAuthor(BaseTask):
             n for n in rb.visible_discover_notes_for_category("recommend", limit=40)
             if kw and kw in str(n.get("title") or "")
         ]
-        candidate_ids = [str(n["id"]) for n in candidates]
         collected_added = rb.added_to_collected()
-        collected_ids = [cid for cid in candidate_ids if cid in collected_added]
-        # Pass if any collected candidate also has a DM to its author
-        passed = False
-        chosen_note_id = collected_ids[0] if collected_ids else (candidate_ids[0] if candidate_ids else "")
+        message = str(self.p.message)
+        # Existential pair search: 找一条 (用户收藏 + DM 给该笔记作者) 同时满足的候选。
+        # 这跟旧版语义一致——任务是 deep_dive 复合检查，要求"收藏 X 且给 X 作者发消息"，
+        # 但允许 X 是任一符合关键词的候选（用户可能收藏了 A、B 两条，给 B 作者发消息也算成功）。
+        success = None
         for n in candidates:
             nid = str(n["id"])
             if nid not in collected_added:
                 continue
-            author_id = str(rb.note_author(n).get("id"))
-            if author_id and rb.chat_has_message(author_id, self.p.message):
-                passed = True
-                chosen_note_id = nid
+            author_id = str(rb.note_author(n).get("id") or "")
+            if author_id and rb.chat_has_message(author_id, message):
+                success = n
                 break
+        # 用于显示/失败诊断: 优先 success；否则取第一条 collected；否则第一条 candidate
+        chosen = success or next(
+            (n for n in candidates if str(n["id"]) in collected_added),
+            candidates[0] if candidates else None,
+        )
+        if chosen is None:
+            return [
+                {"field": "collect_feed_note", "expected": None, "actual": "(no candidate)", "passed": False},
+                {"field": "dm_author", "expected": message, "actual": "(no candidate)", "passed": False},
+            ]
+        chosen_id = str(chosen["id"])
+        author_name = str(rb.note_author(chosen).get("name") or "")
         return [
-            {
-                "field": "collect_feed_note",
-                "expected": chosen_note_id or None,
-                "actual": rb.collected_notes,
-                "passed": bool(collected_ids),
-            },
-            {
-                "field": "dm_author",
-                "expected": self.p.message,
-                "actual": " | ".join(collected_ids),
-                "passed": passed,
+            rb.check_note_collected(chosen_id, field="collect_feed_note"),
+            rb.check_chat_exact_message_to(author_name, message, field="dm_author") if author_name else {
+                "field": "dm_author", "expected": message, "actual": "(no author)", "passed": False,
             },
         ]
 
@@ -739,9 +684,8 @@ class CollectFeedNoteAndDMAuthor(BaseTask):
         chosen = next((cid for cid in candidates if cid in rb.added_to_collected()), candidates[0] if candidates else "")
         return [
             "user.collectedNotes",
-            f"entities.notesById.{chosen}",
             "chats",
-            "homeState.displayCount",
+            
             "history",
         ]
 
@@ -772,7 +716,6 @@ class PublishAndShareToFollowing(BaseTask):
 
     def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
         rb = Redbook(input.apps["redbook"], init=input.apps_init["redbook"])
-        target_user = rb.init.require_user_by_name(self.p.username)
         draft = rb.get("publishDraft", {}) or {}
         draft_title = str(draft.get("title") or "")
         title_action_ok = draft_title.strip() == str(self.p.title)
@@ -787,18 +730,15 @@ class PublishAndShareToFollowing(BaseTask):
                 "actual": draft_title,
                 "passed": title_action_ok,
             },
-            {
-                "field": "share_title_to_following",
-                "expected": self.p.title,
-                "actual": rb.get_chat(str(target_user["id"])),
-                "passed": rb.chat_has_message(str(target_user["id"]), self.p.title),
-            },
+            rb.check_chat_exact_message_to(self.p.username, str(self.p.title), field="share_title_to_following"),
         ]
 
     def get_expected_changes(self, input: JudgeInput) -> list[str]:
+        rb = Redbook(input.apps["redbook"], init=input.apps_init["redbook"])
+        added = rb.list_added("user.publishedNoteIds")
+        note_paths = [f"notes.{nid}" for nid in sorted(added)] or ["notes"]
         return [
-            "entities.notesById",
-            "feedIds",
+            *note_paths,
             "user.publishedNoteIds",
             "publishDraft",
             "chats",
@@ -875,9 +815,11 @@ class ReplyToFeedNoteFirstComment(BaseTask):
                 break
         if not chosen_note_id and candidates:
             chosen_note_id = str(candidates[0]["id"])
+        added_comment_ids = rb.list_added("user.commentIds")
+        comment_paths = [f"comments.{cid}" for cid in sorted(added_comment_ids)] or ["comments"]
         return [
-            f"entities.notesById.{chosen_note_id}",
-            "user.commentList",
-            "homeState.displayCount",
+            *comment_paths,
+            "user.commentIds",
+            
             "history",
         ]

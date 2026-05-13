@@ -5,6 +5,7 @@ import { useParams } from 'react-router-dom';
 import { IcNavBack, IcMore, IcRefresh } from '../res/icons';
 const ChevronLeft = IcNavBack, MoreHorizontal = IcMore, RotateCcw = IcRefresh;
 import { useRedBookStore } from '../state';
+import { useRedBookView } from '../data/view';
 import { useShallow } from 'zustand/react/shallow';
 import { useRedBookGestures } from '../hooks/useRedBookGestures';
 import { KeyboardService } from '../../../os/keyboard/KeyboardService';
@@ -14,9 +15,6 @@ import { useLocale } from '@/apps/RedBook/locale';
 import voiceIcon from '../assets/chat/voice.png';
 import emojiIcon from '../assets/chat/emoji.png';
 import moreIcon from '../assets/chat/more.png';
-import pizzaIcon from '../assets/chat/daxiao.png'; // Using daxiao as placeholder for pizza/reaction
-import noteImage from '../assets/product/1.jpg'; // Placeholder for note image
-import authorAvatar from '../assets/chat/Avatar-3.png';// Placeholder for note author avatar
 
 type DisplayMessage = {
   id: string;
@@ -88,14 +86,14 @@ export const ChatPage: React.FC = () => {
   const s = useRedBookStrings();
   const locale = useLocale();
   const { userId } = useParams<{ userId: string }>();
-  const { user, entities, sendMessage, chats } = useRedBookStore(useShallow(s => ({
+  const { user, sendMessage, chats } = useRedBookStore(useShallow(s => ({
     user: s.user,
-    entities: s.entities,
     sendMessage: s.sendMessage,
     chats: s.chats,
   })));
+  const view = useRedBookView();
   const { bindTap, bindBack } = useRedBookGestures();
-  const targetUser = userId ? (userId === user.id ? user : entities.usersById[userId]) : undefined;
+  const targetUser = userId ? (userId === user.id ? user : view.usersById[userId]) : undefined;
   
   // Find existing chat or start empty
   const currentChat = chats.find(c => c.userId === userId);

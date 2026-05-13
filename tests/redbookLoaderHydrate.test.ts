@@ -25,7 +25,6 @@ describe('RedBook data loader hydration', () => {
       value: createLocalStorageMock(),
       configurable: true,
     });
-    vi.stubGlobal('__SIM__', { _benchmarkPatchedApps: new Set<string>() });
     vi.stubGlobal('fetch', vi.fn(async (url: string | URL) => {
       const raw = String(url);
       if (raw.endsWith('/users.json')) {
@@ -63,19 +62,38 @@ describe('RedBook data loader hydration', () => {
     }));
   });
 
-  it('hydrates RedBook store during benchmark data preload', async () => {
+  it('populates the loader-level base dataset cache and notifies subscribers', async () => {
     const loader = await import('../apps/RedBook/data/loader');
 
     expect(loader.hydrateStore).toBeTypeOf('function');
+    expect(loader.getBaseDataset()).toBeNull();
+
+    const notifications: number[] = [];
+    const unsubscribe = loader.subscribeBaseDataset(() => {
+      notifications.push(1);
+    });
 
     await loader.hydrateStore();
 
-    const { useRedBookStore } = await import('../apps/RedBook/state');
-    const state = useRedBookStore.getState();
+    const base = loader.getBaseDataset();
+    expect(base?.usersById.u_loader?.name).toBe('Loader User');
+    expect(base?.notesById.n_loader?.title).toBe('Loader Note');
+    expect(base?.feedIds).toContain('n_loader');
+    expect(base?.userIds).toContain('u_loader');
+    expect(notifications.length).toBe(1);
 
-    expect(state.entities.usersById.u_loader?.name).toBe('Loader User');
-    expect(state.entities.notesById.n_loader?.title).toBe('Loader Note');
-    expect(state.feedIds).toContain('n_loader');
-    expect(state.userIds).toContain('u_loader');
+    unsubscribe();
+  });
+
+  it('does not introduce base dataset fields into the Zustand store state', async () => {
+    const loader = await import('../apps/RedBook/data/loader');
+    await loader.hydrateStore();
+
+    const { useRedBookStore } = await import('../apps/RedBook/state');
+    const state: any = useRedBookStore.getState();
+
+    expect(state.entities).toBeUndefined();
+    expect(state.feedIds).toBeUndefined();
+    expect(state.userIds).toBeUndefined();
   });
 });

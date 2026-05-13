@@ -32,7 +32,6 @@ class RedbookUserTopCollectToWechat(BaseTask):
     }
     expected_changes = [
         "redbook.user.collectedNotes",
-        "redbook.entities",
         "redbook.history",
     ] + WECHAT_SEND_CHANGES
 

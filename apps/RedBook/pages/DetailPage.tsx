@@ -2,6 +2,7 @@ import { useRedBookStrings } from '../hooks/useRedBookStrings';
 import React, { useMemo, useState, useRef } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import { useRedBookStore } from '../state';
+import { useRedBookView } from '../data/view';
 import { useShallow } from 'zustand/react/shallow';
 import { REDBOOK_CONFIG } from '../data';
 import { IcNavBack, IcShare, IcMore, IcMessageCircle, IcStar, IcHeart, IcSend, IcQuote, IcFrown, IcReply, IcAt, IcSmile, IcImage, IcFilter, IcCheck } from '../res/icons';
@@ -17,9 +18,8 @@ export const DetailPage: React.FC = () => {
   const searchParams = new URLSearchParams(location.search);
   const isShareOpen = searchParams.get('modal') === 'share';
   const { bindTap, bindBack, back, go } = useRedBookGestures();
-  const { user, entities, toggleLike, toggleCollect, followUser, addComment, toggleCommentLike, addToHistory } = useRedBookStore(useShallow(s => ({
+  const { user, toggleLike, toggleCollect, followUser, addComment, toggleCommentLike, addToHistory } = useRedBookStore(useShallow(s => ({
     user: s.user,
-    entities: s.entities,
     toggleLike: s.toggleLike,
     toggleCollect: s.toggleCollect,
     followUser: s.followUser,
@@ -27,14 +27,15 @@ export const DetailPage: React.FC = () => {
     toggleCommentLike: s.toggleCommentLike,
     addToHistory: s.addToHistory,
   })));
+  const view = useRedBookView();
 
-  const note = useMemo(() => (id ? entities.notesById[id] : undefined), [entities.notesById, id]);
+  const note = useMemo(() => (id ? view.notesById[id] : undefined), [view.notesById, id]);
   const author = useMemo(() => {
       if (!note) return null;
-      return note.authorId === user.id ? user : entities.usersById[note.authorId];
-  }, [entities.usersById, note, user]);
+      return note.authorId === user.id ? user : view.usersById[note.authorId];
+  }, [view.usersById, note, user]);
 
-  const isFollowingAuthor = !!author && (user.followings || []).includes(author.id);
+  const isFollowingAuthor = !!author && (user.followingIds || []).includes(author.id);
   const cameFromAuthorPage = !!(location.state as any)?.fromAuthorId && (location.state as any).fromAuthorId === author?.id;
   const isLiked = !!note && (user.likedNotes || []).includes(note.id);
   const isCollected = !!note && (user.collectedNotes || []).includes(note.id);

@@ -3,9 +3,8 @@ import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { IcNavBack, IcSearch, IcDelete, IcClose, IcScan, IcCamera, IcSlidersH } from '../res/icons';
 const ChevronLeft = IcNavBack, Search = IcSearch, Trash2 = IcDelete, X = IcClose, ScanLine = IcScan, Camera = IcCamera, SlidersHorizontal = IcSlidersH;
-import { REDBOOK_CONFIG } from '../data';
 import { useRedBookStore } from '../state';
-import { useShallow } from 'zustand/react/shallow';
+import { useRedBookView } from '../data/view';
 import { DiscoveryFeed } from './HomePage';
 import { useRedBookGestures } from '../hooks/useRedBookGestures';
 import { strings, type StringKey } from '../res/strings';
@@ -34,9 +33,15 @@ const getTagText = (item: any): StringKey => {
 
 export const SearchPage: React.FC = () => {
   const [searchParams] = useSearchParams();
-  const { entities, feedIds, userIds } = useRedBookStore(useShallow(s => ({ entities: s.entities, feedIds: s.feedIds, userIds: s.userIds })));
-  const feed = useMemo(() => feedIds.map(id => entities.notesById[id]).filter(Boolean), [feedIds, entities.notesById]);
-  const users = useMemo(() => userIds.map(id => entities.usersById[id]).filter(Boolean), [userIds, entities.usersById]);
+  const view = useRedBookView();
+  const history = useRedBookStore(s => s.searchHistory);
+  const hotSearch = useRedBookStore(s => s.hotSearch);
+  const guessYouLike = useRedBookStore(s => s.guessYouLike);
+  const addSearchHistory = useRedBookStore(s => s.addSearchHistory);
+  const removeSearchHistory = useRedBookStore(s => s.removeSearchHistory);
+  const clearSearchHistory = useRedBookStore(s => s.clearSearchHistory);
+  const feed = useMemo(() => view.feedIds.map(id => view.notesById[id]).filter(Boolean), [view.feedIds, view.notesById]);
+  const users = useMemo(() => view.userIds.map(id => view.usersById[id]).filter(Boolean), [view.userIds, view.usersById]);
   const { bindTap, bindBack, go, back } = useRedBookGestures();
   const s = useRedBookStrings();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -49,7 +54,6 @@ export const SearchPage: React.FC = () => {
   const isSearching = !!keyword;
   
   const [inputValue, setInputValue] = useState(keyword);
-  const [history, setHistory] = useState<string[]>(REDBOOK_CONFIG.searchHistory || []);
   const [showHistoryDelete, setShowHistoryDelete] = useState(false);
   
   // Result Page State
@@ -108,10 +112,7 @@ export const SearchPage: React.FC = () => {
       const transitionId = keyword ? 'search.query.submit.replace' : 'search.query.submit.push';
       go(transitionId, nextParams);
       
-      // Add to history if unique
-      if (!history.includes(key)) {
-          setHistory([key, ...history]);
-      }
+      addSearchHistory(key);
   };
 
   const handleTabChange = (tab: string) => {
@@ -214,7 +215,7 @@ export const SearchPage: React.FC = () => {
                       <div className="min-w-0 flex-1 truncate text-[15px] font-medium text-app-text">{s.recent_searches}</div>
                       {showHistoryDelete ? (
                           <div className="flex flex-shrink-0 items-center gap-4 whitespace-nowrap">
-                               <span className="text-[12px] text-app-text-muted" onClick={() => setHistory([])}>{s.delete_all}</span>
+                               <span className="text-[12px] text-app-text-muted" onClick={clearSearchHistory}>{s.delete_all}</span>
                                <span className="text-[12px] text-app-primary border-l border-[#eee] pl-4" onClick={() => setShowHistoryDelete(false)}>{s.searchpage_done}</span>
                           </div>
                       ) : (
@@ -235,7 +236,7 @@ export const SearchPage: React.FC = () => {
                                       className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-[#ccc] rounded-full flex items-center justify-center text-white text-[10px]"
                                       onClick={(e) => {
                                           e.stopPropagation();
-                                          setHistory(history.filter(h => h !== item));
+                                          removeSearchHistory(item);
                                       }}
                                   >
                                       ×
@@ -255,7 +256,7 @@ export const SearchPage: React.FC = () => {
                   <span className="text-app-text-muted text-lg leading-none pb-2">...</span>
               </div>
               <div className="grid grid-cols-2 gap-x-8 gap-y-4">
-                  {REDBOOK_CONFIG.guessYouLike?.map((item, idx) => (
+                  {guessYouLike?.map((item, idx) => (
                        <span 
                           key={idx}
                           {...bindTap('search.query.submit.push', { params: { q: item, tab: activeTab }, onTrigger: () => handleSearch(item) })}
@@ -275,7 +276,7 @@ export const SearchPage: React.FC = () => {
                   <RedBookFlameIcon className="flex-shrink-0 text-app-primary" />
               </div>
               <div className="flex flex-col gap-4">
-                  {REDBOOK_CONFIG.hotSearch?.map((item: any, idx) => (
+                  {hotSearch?.map((item: any, idx) => (
                       <div 
                           key={idx} 
                           className="flex items-center justify-between active:opacity-70 cursor-pointer"
