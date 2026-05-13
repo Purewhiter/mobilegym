@@ -777,7 +777,7 @@ class CriteriaTask(BaseTask):
 
         criteria = {
             "route": "/search",
-            "redbook:user.following": ["user1"],
+            "redbook:user.followingIds": ["user1"],
             "wechat:chats[0].lastMessage": "xxx",
         }
 
