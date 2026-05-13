@@ -23,7 +23,7 @@ Cross-app Content & Social tasks.
 # [L2] SpotifySaveCurrentSongToNotes        把 Spotify 正在播放的歌名和歌手记到笔记里
 # [L3] WechatReadingShareBookList           把微信读书书架前{n}本书的名字微信发给{contact}
 # [L4] ReadingPlanToNotes                   看看微信读书里我正在读的书，然后在笔记里制定一个本周的阅读计划。
-# [L4] FileManagerSendFileToWechatContact   找出同一张图片在两个目录下的两份不同文件名副本，并把这两个文件名分别发给微信联系人{contact}
+# [L4] FileManagerSendFileToWechatContact   我有一张图片分别在两个目录下各有一张不同名的副本，帮我找出他们，并把这两个文件名发给微信联系人{contact}
 # [L4] NotesToWechatAndRedbook              把包含"{text_keyword}"的内容记到笔记后，再用微信同步发给{contact}，并发布一条对应的小红书笔记。
 # -- End Task Index --
 
@@ -117,7 +117,7 @@ class RedbookSearchTitleToWechat(BaseTask):
     difficulty = "L3"
     capabilities = ["search", "query", "transfer"]
     parameters = {"keyword": REDBOOK_KEYWORD_PARAM, "contact": WECHAT_CONTACT_PARAM}
-    expected_changes = WECHAT_SEND_CHANGES + ["redbook.history"]
+    expected_changes = WECHAT_SEND_CHANGES + ["redbook.searchHistory", "redbook.history"]
 
     def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
         rb = Redbook(input.apps["redbook"], init=input.apps_init["redbook"])
@@ -232,9 +232,8 @@ class RedbookAuthorFollowersToWechat(BaseTask):
     capabilities = ["search", "query", "social", "transfer"]
     parameters = {"keyword": REDBOOK_KEYWORD_PARAM, "contact": WECHAT_CONTACT_PARAM}
     expected_changes = [
-        "redbook.user.followings",
-        "redbook.user.following",
-        "redbook.entities",
+        "redbook.searchHistory",
+        "redbook.user.followingIds",
         "redbook.history",
     ] + WECHAT_SEND_CHANGES
 
@@ -275,8 +274,8 @@ class XLatestPostToReddit_WithTitleFormat(BaseTask):
         },
     }
     expected_changes = [
-        "reddit.userCommentsByPostId", "reddit.createDraft",
-        "reddit.posts", "reddit.userPosts", "reddit.postVotes",
+        "reddit.comments", "reddit.createDraft",
+        "reddit.posts", "reddit.user.postIds", "reddit.user.postVotes", "reddit.user.commentIds",
     ]
 
     def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
@@ -285,18 +284,23 @@ class XLatestPostToReddit_WithTitleFormat(BaseTask):
 
         # 1) 从 X 找到该用户最新推文内容
         user_lower = self.p.user.lower().lstrip("@")
+        if not user_lower:
+            raise RuntimeError("任务设计错误：X user 不能为空")
+
         tweet_content = ""
-        for post in x_app.posts:
+        for post in x_app.view_posts():
             aid = str(post.get("authorId") or "").lower()
             # authorId 格式为 "u_elonmusk"，去掉 "u_" 前缀比较
             if aid.removeprefix("u_") == user_lower or user_lower in aid:
                 tweet_content = str(post.get("content") or "").strip()
                 break
+        if not tweet_content:
+            raise RuntimeError(f"任务设计错误：未找到 X 用户 {self.p.user} 的非空推文")
 
         # 2) 从 Reddit 找用户新发布的内容，验证包含 "{user}:" 前缀和推文内容
         prefix = self.p.user.strip() + ":"
         return [
-            reddit.check_new_post_or_comment_contains(
+            reddit.check_new_content_contains(
                 prefix,
                 tweet_content,
                 subreddit=str(self.p.subreddit).strip(),
@@ -389,7 +393,7 @@ class BilibiliTripleLikeThenMoments(BaseTask):
             bili.check_liked_bvid(bvid, video_title=title, field="liked"),
             bili.check_coined_bvid(bvid, video_title=title, field="coined"),
             bili.check_favored_bvid(bvid, video_title=title, field="favored"),
-            wechat.check_new_moment_with(title, field="moment_share"),
+            wechat.check_new_moment_contains(title, field="moment_share"),
             wechat.check_new_moment_no_images(),
         ]
 class RedbookDmThenWechatReport(BaseTask):
@@ -631,8 +635,8 @@ class FileManagerSendFileToWechatContact(BaseTask):
     - /sdcard/Pictures/downloaded_image_copy.jpg
     """
     templates = [
-        "找出同一张图片在两个目录下的两份不同文件名副本，并把这两个文件名分别发给微信联系人{contact}",
-        "Find two copies of the same image with different filenames in two different directories, and send both filenames to WeChat contact {contact}",
+        "我有一张图片分别在两个目录下各有一张不同名的副本，帮我找出他们，并把这两个文件名发给微信联系人{contact}",
+        "I have two copies of the same image with different filenames in two different directories, and send both filenames to WeChat contact {contact}",
     ]
     apps = ["file_manager", "wechat"]
     scope = "S2"

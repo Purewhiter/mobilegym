@@ -24,6 +24,7 @@ from bench_env.task.sms.app import Sms
 from bench_env.task.spotify.app import Spotify
 from bench_env.task.wechat.app import Wechat
 from bench_env.task.wechat_reading.app import WechatReading
+from bench_env.task.x.app import X
 from bench_env.tests.conftest import make_judge_input
 from bench_env.tests.test_bilibili import BASE_STATE as BILIBILI_BASE_STATE, _sanlian_video
 from bench_env.tests.test_notes import BASE_STATE as NOTES_BASE_STATE, _add_note
@@ -62,7 +63,23 @@ WECHAT_BASE_STATE = _load_json("apps", "Wechat", "data", "defaults.json")
 CONTACTS_PROVIDER_STATE = _load_json("os", "providers", "defaults", "contacts.json")
 X_USERS = _load_json("apps", "X", "data", "users.json")
 EBAY_BASE_STATE = _load_json("apps", "Ebay", "data", "defaults.json")
-REDDIT_BASE_STATE = _load_json("apps", "Reddit", "data", "defaults.json")
+_REDDIT_DEFAULTS = _load_json("apps", "Reddit", "data", "defaults.json")
+REDDIT_BASE_STATE = {
+    "user": {
+        **copy.deepcopy(_REDDIT_DEFAULTS["user"]),
+        "postIds": copy.deepcopy(_REDDIT_DEFAULTS["user"].get("postIds", [])),
+        "commentIds": copy.deepcopy(_REDDIT_DEFAULTS["user"].get("commentIds", [])),
+        "savedPostIds": copy.deepcopy(_REDDIT_DEFAULTS["user"].get("savedPostIds", [])),
+        "joinedCommunityIds": copy.deepcopy(_REDDIT_DEFAULTS["user"].get("joinedCommunityIds", [])),
+        "postVotes": copy.deepcopy(_REDDIT_DEFAULTS["user"].get("postVotes", {})),
+        "commentVotes": copy.deepcopy(_REDDIT_DEFAULTS["user"].get("commentVotes", {})),
+    },
+    "settings": copy.deepcopy(_REDDIT_DEFAULTS["settings"]),
+    "posts": copy.deepcopy(_REDDIT_DEFAULTS.get("posts", {})),
+    "comments": copy.deepcopy(_REDDIT_DEFAULTS.get("comments", {})),
+    "chatThreads": copy.deepcopy(_REDDIT_DEFAULTS["chatThreads"]),
+    "chatReplies": copy.deepcopy(_REDDIT_DEFAULTS["chatReplies"]),
+}
 
 ALL_TASK_CLASSES: list[type[BaseTask]] = [
     obj
@@ -87,13 +104,16 @@ def _base_x_state() -> dict[str, Any]:
             "joinDate": "Fri Jan 01 00:00:00 +0000 2026",
             "following": 0,
             "followers": 0,
+            "postIds": [],
+            "replyIds": [],
+            "followedUserIds": [],
+            "followerUserIds": [],
+            "likedPostIds": [],
+            "retweetedPostIds": [],
+            "bookmarkedPostIds": [],
         },
-        "users": copy.deepcopy(X_USERS),
-        "posts": [],
+        "posts": {},
         "conversations": [],
-        "followedUserIds": [],
-        "followerUserIds": [],
-        "quotedPosts": [],
         "trends": [],
         "notifications": [],
         "searchHistory": [],
@@ -104,18 +124,6 @@ def _base_x_state() -> dict[str, Any]:
 
 def _base_apps() -> dict[str, Any]:
     redbook = copy.deepcopy(REDBOOK_BASE_STATE)
-    redbook["entities"]["usersById"].setdefault(
-        redbook["user"]["id"],
-        {
-            "id": redbook["user"]["id"],
-            "name": redbook["user"]["name"],
-            "avatar": redbook["user"]["avatar"],
-            "followers": redbook["user"]["followers"],
-            "following": redbook["user"]["following"],
-            "likesAndCollections": redbook["user"]["likesAndCollections"],
-            "location": redbook["user"]["location"],
-        },
-    )
     return {
         "spotify": copy.deepcopy(SPOTIFY_BASE_STATE),
         "bilibili": copy.deepcopy(BILIBILI_BASE_STATE),
@@ -228,17 +236,19 @@ def _append_wechat_moment(state: dict[str, Any], content: str, *, images: list[s
 
 
 def _append_x_post(state: dict[str, Any], content: str, *, thread_id: str | None = None) -> None:
-    state.setdefault("posts", [])
-    state["posts"].insert(
-        0,
-        {
-            "id": f"x_post_{len(state['posts']) + 1}",
-            "authorId": state["user"]["id"],
-            "content": content,
-            "threadId": thread_id,
-            "timestamp": TEST_OS_STATE["time"]["timestamp"],
-        },
-    )
+    state.setdefault("posts", {})
+    post_id = f"x_post_{len(state['posts']) + 1}"
+    state["posts"][post_id] = {
+        "id": post_id,
+        "authorId": state["user"]["id"],
+        "content": content,
+        "threadId": thread_id,
+        "timestamp": TEST_OS_STATE["time"]["timestamp"],
+    }
+    if thread_id:
+        state["user"]["replyIds"] = [post_id, *state["user"].get("replyIds", [])]
+    else:
+        state["user"]["postIds"] = [post_id, *state["user"].get("postIds", [])]
 
 
 def _append_reddit_comment(
@@ -247,14 +257,16 @@ def _append_reddit_comment(
     post_id: str,
     body: str,
 ) -> None:
-    state.setdefault("userCommentsByPostId", {})
-    comments = state["userCommentsByPostId"].setdefault(post_id, [])
-    comments.append(
-        {
-            "id": f"reddit_comment_{post_id}_{len(comments) + 1}",
-            "body": body,
-        }
-    )
+    state.setdefault("comments", {})
+    comment_id = f"reddit_comment_{post_id}_{len(state['comments']) + 1}"
+    state["comments"][comment_id] = {
+        "id": comment_id,
+        "postId": post_id,
+        "author": state.get("user", {}).get("username", "me"),
+        "body": body,
+        "score": 1,
+    }
+    state.setdefault("user", {}).setdefault("commentIds", []).append(comment_id)
 
 
 def _append_reddit_post(
@@ -264,15 +276,19 @@ def _append_reddit_post(
     subreddit: str,
     title: str,
 ) -> None:
-    state.setdefault("posts", [])
-    state["posts"].append(
-        {
-            "id": post_id,
-            "subreddit": subreddit,
-            "title": title,
-            "content": title,
-        }
-    )
+    state.setdefault("posts", {})
+    state["posts"][post_id] = {
+        "id": post_id,
+        "subreddit": subreddit,
+        "title": title,
+        "content": title,
+        "author": state.get("user", {}).get("username", "me"),
+        "timeAgo": "now",
+        "upvotes": "1",
+        "comments": "0",
+        "isAd": False,
+    }
+    state.setdefault("user", {}).setdefault("postIds", []).append(post_id)
 
 
 def _set_ebay_search(
@@ -357,8 +373,8 @@ def _build_redbook_author_followers_to_wechat():
     curr_apps = _apps_state()
     rb = Redbook(curr_apps["redbook"])
     author = rb.note_author(rb.first_search_note("数分"))
-    curr_apps["redbook"]["user"]["followings"] = [
-        *curr_apps["redbook"]["user"].get("followings", []),
+    curr_apps["redbook"]["user"]["followingIds"] = [
+        *curr_apps["redbook"]["user"].get("followingIds", []),
         author["id"],
     ]
     _append_wechat_outgoing(curr_apps["wechat"], "陈静", f"{author['name']}有{author['followers']}粉丝，我刚关注了TA")
@@ -369,8 +385,11 @@ def _build_x_latest_post_to_reddit_with_title_format():
     task = _tasks_module.XLatestPostToReddit_WithTitleFormat(user="elonmusk", subreddit="technology")
     init_apps = _apps_state()
     curr_apps = _apps_state()
-    _append_x_post(curr_apps["x"], "Mars base alpha is on schedule.")
-    curr_apps["x"]["posts"][0]["authorId"] = "elonmusk"
+    tweet_content = next(
+        str(post.get("content") or "").strip()
+        for post in X(init_apps["x"]).view_posts()
+        if str(post.get("authorId") or "").lower().removeprefix("u_") == "elonmusk"
+    )
     _append_reddit_post(
         init_apps["reddit"],
         post_id="reddit_post_1",
@@ -381,13 +400,13 @@ def _build_x_latest_post_to_reddit_with_title_format():
     reddit = Reddit(curr_apps["reddit"])
     target_post = next(
         post
-        for post in reddit.posts
+        for post in reddit.view_posts_list()
         if str(post.get("subreddit") or "").strip().removeprefix("r/").lower() == "technology"
     )
     _append_reddit_comment(
         curr_apps["reddit"],
         post_id=str(target_post["id"]),
-        body="elonmusk:Mars base alpha is on schedule.",
+        body=f"elonmusk:{tweet_content}",
     )
     return task, _make_input(init_apps, curr_apps)
 def _build_file_manager_send_file_to_wechat_contact():
@@ -545,6 +564,20 @@ class TestCrossappContentOfflineJudge:
         assert checks, task_id
         assert all(check["passed"] for check in checks), (task_id, checks)
 
+    def test_redbook_search_title_to_wechat_allows_search_history_side_effect(self):
+        task = _tasks_module.RedbookSearchTitleToWechat(keyword="美食", contact="陈静")
+        init_apps = _apps_state()
+        curr_apps = _apps_state()
+        title = Redbook(curr_apps["redbook"]).first_search_note("美食")["title"]
+        history = curr_apps["redbook"].setdefault("searchHistory", [])
+        curr_apps["redbook"]["searchHistory"] = ["美食", *[item for item in history if item != "美食"]]
+        _append_wechat_outgoing(curr_apps["wechat"], "陈静", title)
+
+        result = task.evaluate(_make_input(init_apps, curr_apps))
+
+        assert result.success
+        assert result.clean, result.warnings
+
     def test_spotify_today_nth_play_to_redbook_song_title_in_content_passes(self):
         """歌名出现在正文（非标题）时也应通过——任务模板说"标题或正文"。"""
         task = _tasks_module.SpotifyTodayNthPlayToRedbook(nth=3)
@@ -585,9 +618,9 @@ class TestCrossappContentOfflineJudge:
         curr_apps = _apps_state()
         rb = Redbook(curr_apps["redbook"])
         author = rb.note_author(rb.first_search_note("数分"))
-        curr_apps["redbook"]["user"]["followings"] = [
+        curr_apps["redbook"]["user"]["followingIds"] = [
             item
-            for item in curr_apps["redbook"]["user"].get("followings", [])
+            for item in curr_apps["redbook"]["user"].get("followingIds", [])
             if item != author["id"]
         ]
         _append_wechat_outgoing(curr_apps["wechat"], "陈静", f"{author['name']}有{author['followers']}粉丝")
@@ -600,6 +633,18 @@ class TestCrossappContentOfflineJudge:
     def test_bilibili_triple_like_then_moments_uses_ranking_entry_id_for_duplicate_titles(self):
         task, judge_input = _build_bilibili_triple_like_then_moments_duplicate_title()
         checks = task.check_goals(judge_input)
+        assert all(check["passed"] for check in checks), checks
+
+    def test_bilibili_triple_like_then_moments_allows_normalized_moment_title(self):
+        task = _tasks_module.BilibiliTripleLikeThenMoments(partition="全站", rank=1)
+        init_apps = _apps_state()
+        curr_apps = _apps_state()
+        title = str(Bilibili.ranking_entry("全站", 1)["title"])
+        _sanlian_video(curr_apps["bilibili"], title)
+        _append_wechat_moment(curr_apps["wechat"], f"推荐一个视频：{title.replace(' AI ', 'AI')}")
+
+        checks = task.check_goals(_make_input(init_apps, curr_apps))
+
         assert all(check["passed"] for check in checks), checks
 
     def test_file_manager_send_file_to_wechat_contact_requires_two_distinct_names(self):

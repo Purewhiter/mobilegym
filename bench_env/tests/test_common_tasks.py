@@ -113,7 +113,7 @@ class _MultiAppTask(CriteriaTask):
     }
     criteria = {
         "wechat:contacts[name={contact}].isBlacklisted": True,
-        "redbook:user.following": ["user1"],
+        "redbook:user.followingIds": ["user1"],
     }
 
 
@@ -177,7 +177,7 @@ class TestCriteriaExpectedChangesNormalization:
 
         assert task.get_expected_changes(_dummy_input()) == [
             "apps.wechat.contacts[1].isBlacklisted",
-            "apps.redbook.user.following",
+            "apps.redbook.user.followingIds",
         ]
 
     def test_prefixed_path_also_resolves_only_target_row(self):
