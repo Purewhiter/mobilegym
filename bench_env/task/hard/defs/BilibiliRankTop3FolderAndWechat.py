@@ -21,7 +21,7 @@ class BilibiliRankTop3FolderAndWechat(BaseTask):
     objective = "operate"
     composition = "sequential"
     difficulty = "L4"
-    capabilities = ["query", "reasoning", "create", "social", "transfer"]
+    capabilities = ["extract", "create", "social", "handoff"]
     parameters = {
         "category": {
             "type": "enum",

@@ -55,7 +55,7 @@ class AlipayBalanceToWechat(BaseTask):
     objective = "hybrid"
     composition = "transfer"
     difficulty = "L2"
-    capabilities = ["query", "transfer"]
+    capabilities = ["extract", "handoff"]
     parameters = {"contact": WECHAT_CONTACT_PARAM}
     expected_changes = WECHAT_SEND_CHANGES
 
@@ -88,7 +88,7 @@ class AlipayMonthlySpendToWechat(BaseTask):
     objective = "hybrid"
     composition = "transfer"
     difficulty = "L3"
-    capabilities = ["query", "transfer"]
+    capabilities = ["extract", "handoff"]
     parameters = {"contact": WECHAT_CONTACT_PARAM}
     expected_changes = WECHAT_SEND_CHANGES
 
@@ -120,7 +120,7 @@ class AlipayRecentTransactionsToNotes(BaseTask):
     objective = "operate"
     composition = "transfer"
     difficulty = "L3"
-    capabilities = ["query", "create", "transfer"]
+    capabilities = ["extract", "create", "handoff"]
     expected_changes = NOTES_CREATE_CHANGES
 
     def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
@@ -147,7 +147,7 @@ class EbayLowestPriceToNotes(BaseTask):
     objective = "operate"
     composition = "transfer"
     difficulty = "L3"
-    capabilities = ["search", "create", "transfer"]
+    capabilities = ["search", "create", "handoff"]
     parameters = {"query": EBAY_SEARCH_QUERY_PARAM}
     expected_changes = [
         "ebay.search.current", "ebay.search.history", "ebay.recentSearches",
@@ -176,7 +176,7 @@ class EbayProductShareToWechat(BaseTask):
     objective = "hybrid"
     composition = "transfer"
     difficulty = "L4"
-    capabilities = ["search", "query", "transfer"]
+    capabilities = ["search", "extract", "handoff"]
     parameters = {
         "query": EBAY_SEARCH_QUERY_PARAM,
         "contact": WECHAT_CONTACT_PARAM,
@@ -218,7 +218,7 @@ class AlipayLargestExpenseToNotes(BaseTask):
     objective = "operate"
     composition = "deep_dive"
     difficulty = "L4"
-    capabilities = ["query", "reasoning", "create"]
+    capabilities = ["extract", "reasoning", "create"]
     expected_changes = NOTES_CREATE_CHANGES
 
     def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
@@ -295,7 +295,7 @@ class AlipayLargestExpenseToMoments(BaseTask):
     objective = "hybrid"
     composition = "transfer"
     difficulty = "L4"
-    capabilities = ["query", "social"]
+    capabilities = ["extract", "reasoning", "social", "handoff"]
     expected_changes = WECHAT_MOMENT_CHANGES
 
     def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
@@ -329,7 +329,7 @@ class AlipayMonthlyToNotesAndWechat(BaseTask):
     objective = "operate"
     composition = "transfer"
     difficulty = "L3"
-    capabilities = ["query", "create", "transfer"]
+    capabilities = ["extract", "create", "handoff"]
     parameters = {"contact": WECHAT_CONTACT_PARAM}
     expected_changes = NOTES_CREATE_CHANGES + WECHAT_SEND_CHANGES
 
@@ -369,7 +369,7 @@ class EbayBalanceDiffToNotes(BaseTask):
     objective = "hybrid"
     composition = "deep_dive"
     difficulty = "L4"
-    capabilities = ["search", "query", "reasoning", "create"]
+    capabilities = ["search", "extract", "reasoning", "create"]
     parameters = {"query": EBAY_SEARCH_QUERY_PARAM}
     expected_changes = [
         "ebay.search.current", "ebay.search.history", "ebay.recentSearches",
@@ -412,7 +412,7 @@ class EbayDualItemBalanceToNotes(BaseTask):
     objective = "hybrid"
     composition = "deep_dive"
     difficulty = "L4"
-    capabilities = ["search", "query", "reasoning", "create"]
+    capabilities = ["search", "extract", "reasoning", "create"]
     parameters = {
         "item1": {"type": "string", "default": "电脑", "description": "第一个搜索商品"},
         "item2": {"type": "string", "default": "电视", "description": "第二个搜索商品"},
@@ -459,7 +459,7 @@ class FullShoppingDecisionFlow(BaseTask):
     objective = "hybrid"
     composition = "deep_dive"
     difficulty = "L4"
-    capabilities = ["search", "query", "reasoning", "create", "transfer"]
+    capabilities = ["search", "create", "reasoning", "handoff"]
     parameters = {
         "query": EBAY_SEARCH_QUERY_PARAM,
         "contact": WECHAT_CONTACT_PARAM,
@@ -496,7 +496,7 @@ class AlipayShareBillDetail(BaseTask):
     objective = "operate"
     composition = "transfer"
     difficulty = "L2"
-    capabilities = ["query", "transfer"]
+    capabilities = ["extract", "handoff"]
     parameters = {"contact": WECHAT_CONTACT_PARAM}
     expected_changes = WECHAT_SEND_CHANGES
 
@@ -522,7 +522,7 @@ class FinancialReportToNotes(BaseTask):
     objective = "operate"
     composition = "transfer"
     difficulty = "L4"
-    capabilities = ["query", "finance", "create", "transfer"]
+    capabilities = ["extract", "finance", "create", "handoff"]
     parameters = {}
     expected_changes = NOTES_CREATE_CHANGES
 

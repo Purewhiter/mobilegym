@@ -20,7 +20,7 @@ class BilibiliRankAuthorLastNovToWechat(BaseTask):
     objective = "operate"
     composition = "deep_dive"
     difficulty = "L3"
-    capabilities = ["query", "reasoning", "transfer"]
+    capabilities = ["extract", "reasoning", "handoff"]
     parameters = {
         "category": {
             "type": "enum",

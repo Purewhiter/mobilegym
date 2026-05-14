@@ -20,7 +20,7 @@ class RedbookUserTopCollectToWechat(BaseTask):
     objective = "operate"
     composition = "transfer"
     difficulty = "L3"
-    capabilities = ["search", "query", "social", "transfer"]
+    capabilities = ["search", "extract", "social", "handoff"]
     parameters = {
         "user": {
             "type": "enum",

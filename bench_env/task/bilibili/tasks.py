@@ -86,7 +86,7 @@ class ViewProfileStatTask(AnswerTask):
     objective = "query"
     composition = "sequential"
     difficulty = "L1"
-    capabilities = ["query"]
+    capabilities = ["extract"]
     parameters = {
         "stat": {
             "type": "enum",
@@ -194,7 +194,7 @@ class ViewMyUidTask(AnswerTask):
     objective = "query"
     composition = "sequential"
     difficulty = "L2"
-    capabilities = ["query"]
+    capabilities = ["extract"]
     answer = ".user.uid"
 
 
@@ -217,7 +217,7 @@ class VideoAnswerOnlineTask(AnswerTask):
     objective = "query"
     composition = "sequential"
     difficulty = "L2"
-    capabilities = ["query"]
+    capabilities = ["extract"]
     parameters = {
         "title": {"type": "string", "default": "盘点某国令人啼笑皆非的荒诞瞬间", "description": "视频标题"},
     }
@@ -236,7 +236,7 @@ class VideoAnswerTagsTask(BaseTask):
     objective = "query"
     composition = "sequential"
     difficulty = "L3"
-    capabilities = ["query"]
+    capabilities = ["extract"]
     parameters = {
         "title": {"type": "string", "default": "盘点某国令人啼笑皆非的荒诞瞬间", "description": "视频标题"},
     }
@@ -325,7 +325,7 @@ class ViewFavoritesFolderCountTask(AnswerTask):
     objective = "query"
     composition = "sequential"
     difficulty = "L2"
-    capabilities = ["query"]
+    capabilities = ["extract"]
     answer_fields = [{"type": "number", "label": "收藏夹内容数"}]
     parameters = {
         "folder_title": {
@@ -350,7 +350,7 @@ class SearchUserFollowerCountTask(AnswerTask):
     objective = "query"
     composition = "sequential"
     difficulty = "L2"
-    capabilities = ["search", "query"]
+    capabilities = ["search", "extract"]
     answer_fields = [{"type": "text", "label": "粉丝数", "hint": "如：56.7万"}]
     parameters = {
         "up_name": {
@@ -418,7 +418,7 @@ class FollowRecommendationTask(BaseTask):
     scope = "S1"
     objective = "operate"
     composition = "sequential"
-    difficulty = "L2"
+    difficulty = "L3"
     capabilities = ["social"]
     parameters = {
         "target_up_name": {
@@ -514,7 +514,7 @@ class FavVideoAndCountTask(BaseTask):
     objective = "hybrid"
     composition = "sequential"
     difficulty = "L3"
-    capabilities = ["social", "query"]
+    capabilities = ["social", "extract"]
     parameters = {
         "partition": {
             "type": "enum",
@@ -561,7 +561,7 @@ class VideoCommentContainsAnswerUidTask(AnswerTask):
     objective = "query"
     composition = "deep_dive"
     difficulty = "L2"
-    capabilities = ["query", "reasoning", "explore"]
+    capabilities = ["extract", "reasoning", "explore"]
     parameters = {
         "title": {"type": "string", "default": "盘点某国令人啼笑皆非的荒诞瞬间", "description": "视频标题"},
         "snippet": {"type": "string", "default": "十二小时", "description": "评论内容片段"},
@@ -585,7 +585,7 @@ class VideoCommentContainsAnswerLocationTask(AnswerTask):
     objective = "query"
     composition = "deep_dive"
     difficulty = "L4"
-    capabilities = ["query", "reasoning", "explore"]
+    capabilities = ["extract", "reasoning", "explore"]
     parameters = {
         "title": {"type": "string", "default": "把老式音乐盒改造成 AI 作曲机：从硬件到算法全流程", "description": "视频标题"},
         "snippet": {

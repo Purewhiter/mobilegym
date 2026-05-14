@@ -30,7 +30,7 @@ class RedbookUserBestWorstToNotes(BaseTask):
     objective = "operate"
     composition = "transfer"
     difficulty = "L4"
-    capabilities = ["search", "query", "reasoning", "create"]
+    capabilities = ["search", "reasoning", "create", "handoff"]
     parameters = {
         "user": {
             "type": "enum",

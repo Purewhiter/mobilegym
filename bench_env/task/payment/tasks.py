@@ -109,7 +109,7 @@ class AlipayContinuousPaymentsToContactsRecordBalances(BaseTask):
     objective = "operate"
     composition = "transfer"
     difficulty = "L4"
-    capabilities = ["finance", "transfer", "create", "reasoning"]
+    capabilities = ["finance", "handoff", "create", "reasoning"]
     apps = ["alipay", "notes"]
     expected_changes = [
         "apps.alipay.transferRecords",
@@ -207,7 +207,7 @@ class AlipayBindMultipleCardsTransferAndRecordSuccessfulCards(BaseTask):
     objective = "operate"
     composition = "transfer"
     difficulty = "L4"
-    capabilities = ["finance", "transfer", "create"]
+    capabilities = ["finance", "handoff", "create"]
     apps = ["alipay", "notes"]
     expected_changes = [
         "apps.alipay.transferRecords",
@@ -374,7 +374,7 @@ class TransferToContactWithNote(BaseTask):
     objective = "operate"
     composition = "sequential"
     difficulty = "L3"
-    capabilities = ["finance", "transfer"]
+    capabilities = ["finance", "handoff"]
     apps = ["alipay"]
     expected_changes = [
         "apps.alipay.transferRecords",
@@ -428,7 +428,7 @@ class SubscribeMembershipAutoRenewThenCancelInWechat(BaseTask):
     objective = "operate"
     composition = "transfer"
     difficulty = "L4"
-    capabilities = ["finance", "settings", "transfer"]
+    capabilities = ["finance", "settings", "handoff"]
     apps = ["bilibili", "wechat"]
     expected_changes = ["apps.wechat.subscriptions", "apps.bilibili.user"]
     parameters = {
@@ -467,7 +467,7 @@ class AlipayTransferAndNotify(BaseTask):
     objective = "operate"
     composition = "sequential"
     difficulty = "L3"
-    capabilities = ["finance", "transfer"]
+    capabilities = ["finance", "handoff"]
     expected_changes = [
         "apps.alipay.transferRecords",
         "apps.alipay.balance",
@@ -514,7 +514,7 @@ class WechatExtractAmountTransfer(BaseTask):
     objective = "operate"
     composition = "deep_dive"
     difficulty = "L4"
-    capabilities = ["query", "reasoning", "finance"]
+    capabilities = ["extract", "reasoning", "finance"]
     expected_changes = [
         "apps.alipay.transferRecords",
         "apps.alipay.balance",

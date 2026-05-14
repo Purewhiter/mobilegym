@@ -22,8 +22,8 @@ class RailwayEarliestGTrainToWechat(BaseTask):
     scope = "S2"
     objective = "operate"
     composition = "transfer"
-    difficulty = "L3"
-    capabilities = ["search", "query", "reasoning", "transfer"]
+    difficulty = "L4"
+    capabilities = ["search", "extract", "reasoning", "handoff"]
     parameters = {
         "from_city": {
             "type": "string",

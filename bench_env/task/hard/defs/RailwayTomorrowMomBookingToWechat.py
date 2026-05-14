@@ -25,7 +25,7 @@ class RailwayTomorrowMomBookingToWechat(BaseTask):
     objective = "operate"
     composition = "transfer"
     difficulty = "L3"
-    capabilities = ["search", "query", "reasoning", "transfer"]
+    capabilities = ["search", "extract", "reasoning", "handoff"]
     parameters = {
         "from_city": {
             "type": "string",

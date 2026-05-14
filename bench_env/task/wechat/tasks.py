@@ -429,7 +429,7 @@ class PostMomentsText(CriteriaTask):
     scope = "S1"
     objective = "operate"
     composition = "sequential"
-    difficulty = "L1"
+    difficulty = "L2"
     capabilities = ["create"]
     parameters = {
         "content": {
@@ -460,7 +460,7 @@ class PostMomentsTextWithCity(CriteriaTask):
     scope = "S1"
     objective = "operate"
     composition = "sequential"
-    difficulty = "L1"
+    difficulty = "L2"
     capabilities = ["create"]
     parameters = {
         "content": {
@@ -495,7 +495,7 @@ class ScenicPhotoToMomentsWithPhrase(BaseTask):
     objective = "operate"
     composition = "transfer"
     difficulty = "L3"
-    capabilities = ["social", "transfer"]
+    capabilities = ["social", "handoff"]
     parameters = {
         "time_hint": {"type": "string", "default": "上周"},
         "place_name": {"type": "string", "default": "颐和园万寿山"},
@@ -546,7 +546,7 @@ class ReadMyWxid(AnswerTask):
     objective = "query"
     composition = "atomic"
     difficulty = "L1"
-    capabilities = ["nav", "query"]
+    capabilities = ["nav", "extract"]
     answer_fields = [{"type": "text", "label": "微信号"}]
     optimal_paths = [[
         "tab.me",
@@ -642,7 +642,7 @@ class ReadContactRegion(AnswerTask):
     objective = "query"
     composition = "sequential"
     difficulty = "L1"
-    capabilities = ["nav", "query"]
+    capabilities = ["nav", "extract"]
     answer_fields = [{"type": "text", "label": "地区", "hint": "如：浙江 杭州"}]
     parameters = {
         "contact": {
@@ -703,7 +703,7 @@ class ReadStepsLeaderboardTop(CriteriaTask):
     objective = "hybrid"
     composition = "sequential"
     difficulty = "L3"
-    capabilities = ["nav", "settings", "query"]
+    capabilities = ["nav", "settings", "extract"]
     answer_fields = [{"type": "text", "label": "步数最多的人"}]
     criteria = {"settings.accessibility.wechatSports.enabled": True}
     optimal_paths = [[
@@ -738,7 +738,7 @@ class ConditionalReplyToBoss(BaseTask):
     objective = "operate"
     composition = "deep_dive"
     difficulty = "L2"
-    capabilities = ["query", "reasoning", "edit"]
+    capabilities = ["extract", "reasoning", "edit"]
     parameters = {
         "keyword": {
             "type": "string",
@@ -787,7 +787,7 @@ class PostMomentFromChat(BaseTask):
     objective = "operate"
     composition = "transfer"
     difficulty = "L3"
-    capabilities = ["query", "create"]
+    capabilities = ["extract", "create", "social", "handoff"]
     parameters = {
         "contact": {
             "type": "enum",

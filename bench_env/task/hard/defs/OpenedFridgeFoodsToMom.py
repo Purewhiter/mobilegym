@@ -19,8 +19,8 @@ class OpenedFridgeFoodsToMom(BaseTask):
     scope = "S2"
     objective = "operate"
     composition = "transfer"
-    difficulty = "L3"
-    capabilities = ["image_understanding", "ocr", "comparison", "transfer"]
+    difficulty = "L4"
+    capabilities = ["image", "reasoning", "handoff"]
     expected_changes = ["wechat.chats[user.name=母亲].messages"]
 
     photo_paths = [

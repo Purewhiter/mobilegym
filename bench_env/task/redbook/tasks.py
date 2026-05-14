@@ -61,7 +61,7 @@ class CheckMyProfileField(AnswerTask):
     objective = "query"
     composition = "atomic"
     difficulty = "L1"
-    capabilities = ["query"]
+    capabilities = ["extract"]
     parameters = {
         "field": {
             "type": "enum",
@@ -97,7 +97,7 @@ class CheckSearchNoteField(AnswerTask):
     objective = "query"
     composition = "sequential"
     difficulty = "L2"
-    capabilities = ["search", "query"]
+    capabilities = ["search", "extract"]
     expected_changes = SEARCH_VIEW_CHANGES
     parameters = {
         "keyword": {
@@ -242,7 +242,7 @@ class CheckSearchUserField(AnswerTask):
     objective = "query"
     composition = "sequential"
     difficulty = "L3"
-    capabilities = ["search", "query"]
+    capabilities = ["search", "extract"]
     expected_changes = SEARCH_VIEW_CHANGES
     parameters = {
         "username": {
@@ -387,8 +387,8 @@ class LikeFeedNoteAndReportLikes(BaseTask):
     scope = "S1"
     objective = "hybrid"
     composition = "sequential"
-    difficulty = "L1"
-    capabilities = ["explore", "social", "query"]
+    difficulty = "L2"
+    capabilities = ["explore", "social", "extract"]
     parameters = {
         "keyword": {
             "type": "string",
@@ -439,7 +439,7 @@ class CheckFollowingUserNoteCount(AnswerTask):
     objective = "query"
     composition = "sequential"
     difficulty = "L2"
-    capabilities = ["query"]
+    capabilities = ["extract"]
     expected_changes = ["history"]
     parameters = {
         "username": {
@@ -464,7 +464,7 @@ class CheckFirstChatLastMessage(AnswerTask):
     objective = "query"
     composition = "sequential"
     difficulty = "L2"
-    capabilities = ["query"]
+    capabilities = ["extract"]
     expected_changes = MESSAGE_VIEW_CHANGES
     answer_fields = [{"type": "text", "label": "最后一条消息内容", "hint": "如：谢谢"}]
 
@@ -486,7 +486,7 @@ class CheckFirstCollectedAuthorField(AnswerTask):
     objective = "query"
     composition = "deep_dive"
     difficulty = "L4"
-    capabilities = ["nav", "query"]
+    capabilities = ["nav", "extract"]
     expected_changes = ["history"]
     parameters = {
         "field": {
@@ -522,7 +522,7 @@ class SearchFirstNoteAuthorTopLikedTitle(AnswerTask):
     objective = "query"
     composition = "deep_dive"
     difficulty = "L3"
-    capabilities = ["search", "query", "reasoning"]
+    capabilities = ["search", "extract", "reasoning"]
     parameters = {
         "keyword": {
             "type": "enum",
@@ -570,7 +570,7 @@ class SearchCollectAndReportAuthor(BaseTask):
     objective = "hybrid"
     composition = "deep_dive"
     difficulty = "L4"
-    capabilities = ["search", "social", "query"]
+    capabilities = ["search", "social", "extract"]
     parameters = {
         "keyword": {
             "type": "enum",

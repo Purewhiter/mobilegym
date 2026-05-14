@@ -20,7 +20,7 @@ class OrganizeReimbursementPhotosToWechat(BaseTask):
     objective = "operate"
     composition = "transfer"
     difficulty = "L4"
-    capabilities = ["image_understanding", "file_search", "calculation", "transfer"]
+    capabilities = ["image", "search", "reasoning", "handoff"]
     expected_changes = ["os.fileSystem", "wechat.chats[user.name=Boss].messages"]
 
     source_dir = "/sdcard/DCIM/Camera"

@@ -290,7 +290,7 @@ class Reddit_DeleteSeededOwnComment(BaseTask):
     objective = "operate"
     difficulty = "L3"
     composition = "sequential"
-    capabilities = ["nav", "edit"]
+    capabilities = ["nav", "delete", "social"]
     expected_changes = REDDIT_COMMENT_DELETE_CHANGES
     parameters = {
         # 这里的标题和评论都是 seed post 固定内容，用参数只是为了模板渲染友好。
@@ -369,7 +369,7 @@ class Reddit_DeleteSeededChatMessage(BaseTask):
     objective = "operate"
     difficulty = "L1"
     composition = "sequential"
-    capabilities = ["nav", "edit"]
+    capabilities = ["nav", "delete", "social"]
     expected_changes = REDDIT_CHAT_THREADS_CHANGES
     parameters = {
         "username": {"type": "string", "default": "Objective-Skill-2591"},

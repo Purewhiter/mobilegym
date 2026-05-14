@@ -16,7 +16,7 @@ class RenameEvidenceFilesByDate(BaseTask):
     objective = "operate"
     composition = "deep_dive"
     difficulty = "L4"
-    capabilities = ["file_management", "batch_rename", "ordering"]
+    capabilities = ["edit", "reasoning"]
     expected_changes = ["os.fileSystem"]
 
     rename_map = {

@@ -68,8 +68,8 @@ class CountAlarms(AnswerTask):
     scope = "S1"
     objective = "query"
     composition = "atomic"
-    difficulty = "L2"
-    capabilities = ["query"]
+    difficulty = "L3"
+    capabilities = ["extract"]
     answer = (".alarms", len)
     answer_fields = [{"type": "number", "label": "闹钟数量"}]
 
@@ -222,7 +222,7 @@ class CheckAlarmNote(AnswerTask):
     objective = "query"
     composition = "atomic"
     difficulty = "L2"
-    capabilities = ["query"]
+    capabilities = ["extract"]
     answer_fields = [{"type": "text", "label": "闹钟备注"}]
     parameters = {
         "alarm_id": {"type": "string", "default": "a1", "description": "闹钟 id"},
@@ -301,7 +301,7 @@ class CheckCityTime(AnswerTask):
     objective = "query"
     composition = "sequential"
     difficulty = "L3"
-    capabilities = ["query"]
+    capabilities = ["extract"]
     answer_fields = [{"type": "text", "label": "{city}现在几点", "hint": "如：14:30", "matcher": "time"}]
     parameters = {
         "city": {"type": "string", "default": "巴黎", "description": "城市名称"},
@@ -326,7 +326,7 @@ class CompareCityTimeDiff(AnswerTask):
     objective = "query"
     composition = "deep_dive"
     difficulty = "L2"
-    capabilities = ["query", "reasoning"]
+    capabilities = ["extract", "reasoning"]
     answer_fields = [{"type": "number", "label": "时差（小时）"}]
     parameters = {
         "city1": {"type": "string", "default": "巴黎", "description": "城市 1"},
@@ -348,7 +348,7 @@ class CityLocalTimeDiff(AnswerTask):
     objective = "query"
     composition = "sequential"
     difficulty = "L3"
-    capabilities = ["query", "reasoning"]
+    capabilities = ["extract", "reasoning"]
     answer_fields = [{"type": "text", "label": "{city}与本地时差", "hint": "如：快3小时"}]
     parameters = {
         "city": {"type": "string", "default": "巴黎", "description": "城市名称"},
@@ -385,7 +385,7 @@ class LatestTimezoneCity(AnswerTask):
     objective = "query"
     composition = "deep_dive"
     difficulty = "L3"
-    capabilities = ["query", "reasoning"]
+    capabilities = ["extract", "reasoning"]
     answer_fields = [{"type": "text", "label": "时间最晚的城市", "hint": "如：纽约"}]
 
     def get_answer(self, input: JudgeInput) -> Any:
@@ -409,7 +409,7 @@ class AddCityAndCheckTime(BaseTask):
     objective = "hybrid"
     composition = "sequential"
     difficulty = "L2"
-    capabilities = ["nav", "search", "query"]
+    capabilities = ["nav", "search", "extract"]
     parameters = {
         "city": {"type": "string", "default": "北京", "description": "城市名称"},
         "_city": {
@@ -442,8 +442,8 @@ class AddCityAndCompareTimeDiff(BaseTask):
     scope = "S1"
     objective = "hybrid"
     composition = "deep_dive"
-    difficulty = "L1"
-    capabilities = ["nav", "search", "query", "reasoning"]
+    difficulty = "L2"
+    capabilities = ["nav", "search", "extract", "reasoning"]
     parameters = {
         "new_city": {"type": "string", "default": "北京", "description": "新城市"},
         "existing_city": {"type": "string", "default": "巴黎", "description": "已有城市"},

@@ -23,7 +23,7 @@ class TencentMeetingLongestPlannedToWechat(BaseTask):
     objective = "operate"
     composition = "transfer"
     difficulty = "L4"
-    capabilities = ["query", "reasoning", "transfer"]
+    capabilities = ["extract", "reasoning", "handoff"]
     parameters = {
         "contact": WECHAT_CONTACT_PARAM,
     }

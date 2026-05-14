@@ -18,7 +18,7 @@ class FavoriteWaterSceneryPhotos(BaseTask):
     objective = "operate"
     composition = "transfer"
     difficulty = "L4"
-    capabilities = ["image_understanding", "transfer"]
+    capabilities = ["image", "edit", "handoff"]
     parameters = {"contact": WECHAT_CONTACT_PARAM}
     expected_changes = [
         "os.providers.media.favorites",

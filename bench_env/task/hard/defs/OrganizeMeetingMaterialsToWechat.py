@@ -21,8 +21,8 @@ class OrganizeMeetingMaterialsToWechat(BaseTask):
     scope = "S2"
     objective = "operate"
     composition = "transfer"
-    difficulty = "L3"
-    capabilities = ["calendar_lookup", "file_search", "reasoning", "transfer"]
+    difficulty = "L4"
+    capabilities = ["extract", "search", "reasoning", "handoff"]
     expected_changes = [
         "os.fileSystem",
         "calendar.selectedDateTs",

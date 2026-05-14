@@ -65,7 +65,7 @@ class SetCallPermissionsBundle(CriteriaTask):
     scope = "S1"
     objective = "operate"
     composition = "sequential"
-    difficulty = "L1"
+    difficulty = "L2"
     capabilities = ["nav", "settings"]
 
     async def _post_sample(self, env: Any) -> None:
@@ -266,7 +266,7 @@ class FollowUserAndLikeTheirPost(BaseTask):
     scope = "S1"
     objective = "operate"
     composition = "sequential"
-    difficulty = "L1"
+    difficulty = "L2"
     capabilities = ["social", "search"]
     parameters = {
         "_target_user": {
@@ -382,7 +382,7 @@ class ComplexSettingsChain(CriteriaTask):
     scope = "S1"
     objective = "operate"
     composition = "sequential"
-    difficulty = "L2"
+    difficulty = "L3"
     capabilities = ["nav", "settings", "explore"]
     # 与 SetPushNotificationMix 同一对 ambiguous 字段: prefRecommend 是 criteria 目标,
     # fromXRecommend 进 allowlist (允许用户同时关掉, 不警告)。

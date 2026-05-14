@@ -145,7 +145,7 @@ class ListLibraryArtists(AnswerTask):
     objective = "query"
     composition = "atomic"
     difficulty = "L3"
-    capabilities = ["query", "nav"]
+    capabilities = ["extract", "nav"]
     parameters = {}
     answer_fields = [{"type": "text", "label": "艺人名", "hint": "如：陈奕迅", "repeatable": True, "compare": "set", "matcher": "exact_tc"}]
 
@@ -177,7 +177,7 @@ class FindRecentArtistSongs(AnswerTask):
     objective = "query"
     composition = "atomic"
     difficulty = "L4"
-    capabilities = ["query", "nav"]
+    capabilities = ["extract", "nav"]
     parameters = {
         "artist": {
             "source": "apps.spotify.recentPlays[artist]",
@@ -215,7 +215,7 @@ class PlaySongFromSearch(BaseTask):
     scope = "S1"
     objective = "operate"
     composition = "sequential"
-    difficulty = "L1"
+    difficulty = "L2"
     capabilities = ["search", "nav"]
     parameters = {
         "song": {"type": "string", "default": "青花瓷"},
@@ -263,7 +263,7 @@ class QueueAndLikeSong(BaseTask):
     scope = "S1"
     objective = "operate"
     composition = "sequential"
-    difficulty = "L1"
+    difficulty = "L2"
     capabilities = ["search", "social"]
     parameters = {
         "song": {"type": "string", "default": "青花瓷"},
@@ -342,7 +342,7 @@ class SearchAlbumInfo(AnswerTask):
     objective = "query"
     composition = "sequential"
     difficulty = "L3"
-    capabilities = ["search", "query"]
+    capabilities = ["search", "extract"]
     parameters = {
         "album": {"type": "string", "default": "Thriller"},
     }
@@ -377,8 +377,8 @@ class SearchPlayAndReport(BaseTask):
     scope = "S1"
     objective = "hybrid"
     composition = "sequential"
-    difficulty = "L1"
-    capabilities = ["search", "nav", "query"]
+    difficulty = "L2"
+    capabilities = ["search", "nav", "extract"]
     parameters = {
         "song": {"type": "string", "default": "青花瓷"},
     }
@@ -647,7 +647,7 @@ class MoveArtistToNewPlaylist(BaseTask):
     scope = "S1"
     objective = "operate"
     composition = "deep_dive"
-    difficulty = "L3"
+    difficulty = "L4"
     capabilities = ["nav", "create", "edit"]
     parameters = {
         "playlist": {"type": "string", "default": "华语R&B精选"},
@@ -710,7 +710,7 @@ class DiscoverSaveAndReport(BaseTask):
     objective = "hybrid"
     composition = "deep_dive"
     difficulty = "L2"
-    capabilities = ["search", "social", "query"]
+    capabilities = ["search", "social", "extract"]
     parameters = {
         "artist": {
             "sampler": Spotify.sample_artist_with_search_results,

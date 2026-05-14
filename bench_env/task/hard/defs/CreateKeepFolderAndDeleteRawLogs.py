@@ -15,8 +15,8 @@ class CreateKeepFolderAndDeleteRawLogs(BaseTask):
     scope = "S2"
     objective = "operate"
     composition = "deep_dive"
-    difficulty = "L2"
-    capabilities = ["file_management", "folder_create", "batch_delete"]
+    difficulty = "L4"
+    capabilities = ["create", "delete"]
     expected_changes = ["os.fileSystem"]
 
     keep_folder_path = "/sdcard/Download/日志导出/保留-已汇总"
