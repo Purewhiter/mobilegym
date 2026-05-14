@@ -23,7 +23,7 @@ class TencentMeetingKeywordLongestParticipationToNotes(BaseTask):
     objective = "operate"
     composition = "transfer"
     difficulty = "L4"
-    capabilities = ["query", "reasoning", "create"]
+    capabilities = ["extract", "reasoning", "create", "handoff"]
     parameters = {
         "keyword": {
             "type": "enum",

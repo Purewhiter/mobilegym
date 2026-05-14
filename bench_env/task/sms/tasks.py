@@ -95,7 +95,7 @@ class ReadUnreadConversationCount(AnswerTask):
     objective = "query"
     composition = "atomic"
     difficulty = "L2"
-    capabilities = ["query"]
+    capabilities = ["extract"]
     answer_fields = [{"type": "number", "label": "未读会话数"}]
 
     def get_answer(self, input: JudgeInput) -> Any:
@@ -155,7 +155,7 @@ class ToggleFreeNetworkSetting(CriteriaTask):
     scope = "S1"
     objective = "operate"
     composition = "sequential"
-    difficulty = "L1"
+    difficulty = "L2"
     capabilities = ["settings"]
     parameters = {
         "setting_key": {
@@ -187,7 +187,7 @@ class CompareConversationMessageCount(AnswerTask):
     objective = "query"
     composition = "deep_dive"
     difficulty = "L2"
-    capabilities = ["query", "reasoning"]
+    capabilities = ["extract", "reasoning"]
     expected_changes = ["os.providers.sms.conversations"]
     answer_fields = [{"type": "choice", "label": "消息更多的会话", "options": ["{sender1}", "{sender2}"]}]
     parameters = {
@@ -247,7 +247,7 @@ class ReplyToLatestUnread(BaseTask):
     objective = "operate"
     composition = "deep_dive"
     difficulty = "L4"
-    capabilities = ["query", "create"]
+    capabilities = ["extract", "create"]
     parameters = {
         "content": {
             "type": "string",
@@ -280,7 +280,7 @@ class FindAndReplySendersByKeyword(BaseTask):
     objective = "operate"
     composition = "deep_dive"
     difficulty = "L3"
-    capabilities = ["query", "create"]
+    capabilities = ["extract", "create"]
     parameters = {
         "keyword": {"type": "string", "default": "套餐"},
         "reply": {"type": "string", "default": "拒收"},

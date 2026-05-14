@@ -59,7 +59,7 @@ class CheckCurrentTemp(AnswerTask):
     objective = "query"
     composition = "atomic"
     difficulty = "L1"
-    capabilities = ["query"]
+    capabilities = ["extract"]
     answer_fields = [{"type": "number", "label": "当前温度（°C）"}]
     parameters = {
         "city": {"type": "enum", "values": WEATHER_SAVED_CITIES, "default": "北京"},
@@ -77,7 +77,7 @@ class CheckCurrentWeather(AnswerTask):
     objective = "query"
     composition = "atomic"
     difficulty = "L1"
-    capabilities = ["query"]
+    capabilities = ["extract"]
     answer_fields = [{"type": "text", "label": "天气状况", "hint": "如：阴"}]
     parameters = {
         "city": {"type": "enum", "values": WEATHER_SAVED_CITIES, "default": "上海"},
@@ -156,7 +156,7 @@ class CompareCityTemp(AnswerTask):
     objective = "query"
     composition = "sequential"
     difficulty = "L2"
-    capabilities = ["query", "reasoning"]
+    capabilities = ["extract", "reasoning"]
     parameters = {
         "city1": {"type": "string", "default": "北京", "description": "城市1"},
         "city2": {"type": "string", "default": "上海", "description": "城市2"},
@@ -186,7 +186,7 @@ class CheckDetailCard(AnswerTask):
     objective = "query"
     composition = "sequential"
     difficulty = "L2"
-    capabilities = ["query"]
+    capabilities = ["extract"]
     parameters = {
         "city": {"type": "enum", "values": WEATHER_SAVED_CITIES, "default": "北京"},
         "metric": {
@@ -236,7 +236,7 @@ class OpenDailyForecast(CriteriaTask):
     objective = "hybrid"
     composition = "sequential"
     difficulty = "L2"
-    capabilities = ["query"]
+    capabilities = ["extract"]
     answer_fields = [{"type": "text", "label": "天气状况", "hint": "如：小雨"}]
     parameters = {
         "city": {"type": "enum", "values": WEATHER_SAVED_CITIES, "default": "北京"},
@@ -278,7 +278,7 @@ class CheckAQIPollutant(AnswerTask):
     objective = "query"
     composition = "sequential"
     difficulty = "L2"
-    capabilities = ["query"]
+    capabilities = ["extract"]
     answer_fields = [{"type": "number", "label": "污染物浓度"}]
     parameters = {
         "city": {"type": "enum", "values": WEATHER_SAVED_CITIES, "default": "上海"},
@@ -306,7 +306,7 @@ class CheckLifeIndex(AnswerTask):
     objective = "query"
     composition = "sequential"
     difficulty = "L2"
-    capabilities = ["query"]
+    capabilities = ["extract"]
     answer_fields = [{"type": "text", "label": "指数等级", "hint": "如：一般"}]
     parameters = {
         "city": {"type": "enum", "values": WEATHER_SAVED_CITIES, "default": "杭州"},
@@ -330,7 +330,7 @@ class WarmestDayInWeek(AnswerTask):
     objective = "query"
     composition = "sequential"
     difficulty = "L3"
-    capabilities = ["query", "reasoning"]
+    capabilities = ["extract", "reasoning"]
     answer_fields = [
         {"type": "text", "label": "日期", "hint": "如：3月15日", "matcher": "date"},
         {"type": "number", "label": "最高温（°C）"},
@@ -399,8 +399,8 @@ class SwitchUnitAndReport(CriteriaTask):
     scope = "S1"
     objective = "hybrid"
     composition = "sequential"
-    difficulty = "L1"
-    capabilities = ["settings", "query"]
+    difficulty = "L2"
+    capabilities = ["settings", "extract"]
     criteria = {"settings.tempUnit": "fahrenheit"}
     answer_fields = [{"type": "number", "label": "华氏温度（°F）"}]
     parameters = {
@@ -427,7 +427,7 @@ class FeelsLikeDiff(AnswerTask):
     objective = "query"
     composition = "sequential"
     difficulty = "L3"
-    capabilities = ["query", "reasoning"]
+    capabilities = ["extract", "reasoning"]
     answer_fields = [{"type": "number", "label": "温差（°C）"}]
     parameters = {
         "city": {"type": "enum", "values": WEATHER_SAVED_CITIES, "default": "北京"},
@@ -446,7 +446,7 @@ class CompareTempRange(AnswerTask):
     objective = "query"
     composition = "sequential"
     difficulty = "L3"
-    capabilities = ["query", "reasoning"]
+    capabilities = ["extract", "reasoning"]
     parameters = {
         "city1": {"type": "string", "default": "北京", "description": "城市1"},
         "city2": {"type": "string", "default": "上海", "description": "城市2"},
@@ -495,7 +495,7 @@ class CompareHumidity(AnswerTask):
     objective = "query"
     composition = "sequential"
     difficulty = "L3"
-    capabilities = ["query", "reasoning"]
+    capabilities = ["extract", "reasoning"]
     parameters = {
         "city1": {"type": "string", "default": "北京", "description": "城市1"},
         "city2": {"type": "string", "default": "上海", "description": "城市2"},
@@ -538,7 +538,7 @@ class ColdestDayIn14(CriteriaTask):
     objective = "hybrid"
     composition = "deep_dive"
     difficulty = "L3"
-    capabilities = ["query", "reasoning"]
+    capabilities = ["extract", "reasoning"]
     answer_fields = [
         {"type": "text", "label": "日期", "hint": "如：3月15日", "matcher": "date"},
         {"type": "number", "label": "最低温（°C）"},
@@ -591,7 +591,7 @@ class NightLowTemp(AnswerTask):
     objective = "query"
     composition = "deep_dive"
     difficulty = "L4"
-    capabilities = ["query", "reasoning"]
+    capabilities = ["extract", "reasoning"]
     answer_fields = [{"type": "number", "label": "最低气温（°C）"}]
     parameters = {
         "city": {"type": "enum", "values": WEATHER_SAVED_CITIES, "default": "广州"},
@@ -618,7 +618,7 @@ class AddCityAndFindWarmestDay(BaseTask):
     objective = "hybrid"
     composition = "sequential"
     difficulty = "L2"
-    capabilities = ["search", "query", "reasoning"]
+    capabilities = ["search", "extract", "reasoning"]
     answer_fields = [{"type": "text", "label": "最暖和的日期", "hint": "如：4月10日", "matcher": "date"}]
     parameters = {
         "city": {"type": "enum", "values": WEATHER_NEW_CITIES, "default": "南京"},
@@ -665,7 +665,7 @@ class ThreeCityRainCheck(AnswerTask):
     objective = "query"
     composition = "deep_dive"
     difficulty = "L4"
-    capabilities = ["query", "reasoning"]
+    capabilities = ["extract", "reasoning"]
     parameters = {
         "city1": {"type": "string", "default": "北京", "description": "城市1"},
         "city2": {"type": "string", "default": "上海", "description": "城市2"},
@@ -735,7 +735,7 @@ class ConditionalAction(BaseTask):
     objective = "operate"
     composition = "sequential"
     difficulty = "L4"
-    capabilities = ["query", "settings", "reasoning"]
+    capabilities = ["extract", "settings", "reasoning"]
     parameters = {
         "city": {"type": "enum", "values": WEATHER_SAVED_CITIES, "default": "深圳"},
         "temp": {"type": "enum", "values": [20, 25, 30, 35], "default": 30},
@@ -761,7 +761,7 @@ class AddCityFullReport(BaseTask):
     objective = "hybrid"
     composition = "sequential"
     difficulty = "L2"
-    capabilities = ["search", "query"]
+    capabilities = ["search", "extract"]
     answer_fields = [
         {"type": "number", "label": "温度（°C）"},
         {"type": "number", "label": "湿度（%）"},
@@ -821,7 +821,7 @@ class WeekendTempRange3City(AnswerTask):
     objective = "query"
     composition = "deep_dive"
     difficulty = "L4"
-    capabilities = ["query", "reasoning"]
+    capabilities = ["extract", "reasoning"]
     parameters = {
         "city1": {"type": "string", "default": "北京", "description": "城市1"},
         "city2": {"type": "string", "default": "上海", "description": "城市2"},

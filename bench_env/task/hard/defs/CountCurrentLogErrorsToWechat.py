@@ -18,7 +18,7 @@ class CountCurrentLogErrorsToWechat(BaseTask):
     objective = "operate"
     composition = "transfer"
     difficulty = "L4"
-    capabilities = ["file_reading", "recursive_search", "counting", "transfer"]
+    capabilities = ["extract", "search", "reasoning", "handoff"]
     expected_changes = ["wechat.chats[user.name=Boss].messages"]
 
     seed_dir = "/sdcard/Download/排障包"

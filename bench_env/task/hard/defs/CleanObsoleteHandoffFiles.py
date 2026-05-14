@@ -15,8 +15,8 @@ class CleanObsoleteHandoffFiles(BaseTask):
     scope = "S2"
     objective = "operate"
     composition = "deep_dive"
-    difficulty = "L3"
-    capabilities = ["file_management", "batch_delete", "filtering"]
+    difficulty = "L4"
+    capabilities = ["search", "delete", "reasoning"]
     expected_changes = ["os.fileSystem"]
 
     target_paths = [

@@ -86,7 +86,7 @@ class SearchFirstResult(CriteriaTask):
     objective = "hybrid"
     composition = "sequential"
     difficulty = "L2"
-    capabilities = ["search", "query"]
+    capabilities = ["search", "extract"]
     parameters = {
         "query": EBAY_SEARCH_QUERY_PARAM,
         "metric": {
@@ -136,7 +136,7 @@ class CountSonyHeadphonesEurope(BaseTask):
     objective = "hybrid"
     composition = "sequential"
     difficulty = "L3"
-    capabilities = ["search", "query"]
+    capabilities = ["search", "extract"]
     parameters = {
         "query": {"type": "string", "default": "耳机", "description": "搜索词"},
         "brand": {"type": "string", "default": "Sony", "description": "品牌"},
@@ -181,7 +181,7 @@ class CountNikeSneakersInRange(BaseTask):
     objective = "hybrid"
     composition = "sequential"
     difficulty = "L3"
-    capabilities = ["search", "query"]
+    capabilities = ["search", "extract"]
     parameters = {
         "query": {"type": "string", "default": "运动鞋", "description": "搜索词"},
         "brand": {"type": "string", "default": "Nike", "description": "品牌"},
@@ -231,7 +231,7 @@ class FindCheapestProduct(AnswerTask):
     objective = "query"
     composition = "sequential"
     difficulty = "L4"
-    capabilities = ["search", "query"]
+    capabilities = ["search", "extract"]
     parameters = {
         "query": {"type": "string", "default": "吸尘器", "description": "搜索词"},
         "brand": {"type": "string", "default": "Dyson", "description": "品牌"},
@@ -281,7 +281,7 @@ class CompareTwoProductPrices(BaseTask):
     objective = "hybrid"
     composition = "deep_dive"
     difficulty = "L3"
-    capabilities = ["search", "query", "reasoning"]
+    capabilities = ["search", "extract", "reasoning"]
     parameters = {
         "item1": {"type": "string", "default": "电脑", "description": "第一个商品"},
         "item2": {"type": "string", "default": "电视", "description": "第二个商品"},
@@ -344,7 +344,7 @@ class CompareTwoGroupCounts(BaseTask):
     objective = "hybrid"
     composition = "deep_dive"
     difficulty = "L3"
-    capabilities = ["search", "query", "reasoning"]
+    capabilities = ["search", "extract", "reasoning"]
     parameters = {
         "query1": {"type": "string", "default": "耳机"},
         "brand1": {"type": "string", "default": "Sony"},

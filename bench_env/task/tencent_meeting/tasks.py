@@ -99,7 +99,7 @@ class CheckPersonalRoomId(AnswerTask):
     objective = "query"
     composition = "atomic"
     difficulty = "L1"
-    capabilities = ["query"]
+    capabilities = ["extract"]
     answer_fields = [{"type": "text", "label": "个人会议室号", "hint": "如：987 654 321"}]
 
     def get_answer(self, input: JudgeInput) -> Any:
@@ -118,7 +118,7 @@ class CheckContactCount(AnswerTask):
     objective = "query"
     composition = "atomic"
     difficulty = "L1"
-    capabilities = ["query"]
+    capabilities = ["extract"]
     answer_fields = [{"type": "number", "label": "好友数量"}]
     answer = (".contacts", len)
 
@@ -157,7 +157,7 @@ class FindMeetingHistory(AnswerTask):
     objective = "query"
     composition = "sequential"
     difficulty = "L2"
-    capabilities = ["query"]
+    capabilities = ["extract"]
     answer_fields = [
         {"type": "text", "label": "开始时间", "hint": "如：10:00", "matcher": "time"},
         {"type": "text", "label": "预定的会议时长", "hint": "如：10分钟", "matcher": "duration"},
@@ -365,7 +365,7 @@ class CheckPendingMeetingId(AnswerTask):
     objective = "query"
     composition = "sequential"
     difficulty = "L2"
-    capabilities = ["query"]
+    capabilities = ["extract"]
     answer_fields = [{"type": "text", "label": "会议号", "hint": "如：987 654 321"}]
     # Querying a scheduled meeting may update the "currently selected" meeting in app state.
     expected_changes = ["currentScheduledMeeting"]
@@ -402,7 +402,7 @@ class CheckScheduledMeetingEndTime(AnswerTask):
     objective = "query"
     composition = "sequential"
     difficulty = "L2"
-    capabilities = ["query"]
+    capabilities = ["extract"]
     answer_fields = [{"type": "text", "label": "结束时间", "hint": "如：11:00", "matcher": "time"}]
     expected_changes = ["currentScheduledMeeting"]
     parameters = {
@@ -490,7 +490,7 @@ class ScheduleMeeting(BaseTask):
     objective = "hybrid"
     composition = "sequential"
     difficulty = "L4"
-    capabilities = ["create", "query"]
+    capabilities = ["create", "extract"]
     answer_fields = [{"type": "text", "label": "会议号", "hint": "如：987 654 321"}]
     parameters = {
         "topic": {
@@ -559,7 +559,7 @@ class CountFriendMeetings(AnswerTask):
     objective = "query"
     composition = "deep_dive"
     difficulty = "L3"
-    capabilities = ["query", "reasoning"]
+    capabilities = ["extract", "reasoning"]
     answer_fields = [{"type": "number", "label": "好友发起的会议数"}]
 
     def get_answer(self, input: JudgeInput) -> Any:
@@ -573,7 +573,7 @@ class GetSecondParticipationTime(AnswerTask):
     objective = "query"
     composition = "deep_dive"
     difficulty = "L3"
-    capabilities = ["query", "reasoning"]
+    capabilities = ["extract", "reasoning"]
     answer_fields = [{"type": "text", "label": "第二次加入时间", "hint": "如：10:00", "matcher": "time"}]
     parameters = {
         "topic": {
@@ -595,7 +595,7 @@ class FindLongestMeeting(AnswerTask):
     objective = "query"
     composition = "deep_dive"
     difficulty = "L3"
-    capabilities = ["query", "reasoning"]
+    capabilities = ["extract", "reasoning"]
     answer_fields = [{"type": "text", "label": "最久会议主题"}]
 
     def get_answer(self, input: JudgeInput) -> Any:
@@ -610,7 +610,7 @@ class FindMeetingWithMostParticipants(AnswerTask):
     objective = "query"
     composition = "deep_dive"
     difficulty = "L3"
-    capabilities = ["query", "reasoning"]
+    capabilities = ["extract", "reasoning"]
     answer_fields = [
         {"type": "text", "label": "会议主题"},
         {"type": "number", "label": "参会人数"},
@@ -735,7 +735,7 @@ class CalculateTotalMeetingDuration(AnswerTask):
     objective = "query"
     composition = "deep_dive"
     difficulty = "L2"
-    capabilities = ["query", "reasoning"]
+    capabilities = ["extract", "reasoning"]
     answer_fields = [{"type": "number", "label": "总时长（分钟）"}]
     parameters = {
         "date": {
@@ -758,7 +758,7 @@ class CompareParticipationDurations(AnswerTask):
     objective = "query"
     composition = "deep_dive"
     difficulty = "L4"
-    capabilities = ["query", "reasoning"]
+    capabilities = ["extract", "reasoning"]
     answer_fields = [{"type": "choice", "label": "参加时间更长的会议", "options": ["{topic1}", "{topic2}", "一样长"]}]
     parameters = {
         "topic1": {"type": "string", "default": "小明的快速会议", "description": "会议主题1"},

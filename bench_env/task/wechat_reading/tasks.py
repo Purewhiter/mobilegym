@@ -72,7 +72,7 @@ class CheckCoinBalance(AnswerTask):
     objective = "query"
     composition = "atomic"
     difficulty = "L1"
-    capabilities = ["query"]
+    capabilities = ["extract"]
     answer = ".user.coinBalance"
     answer_fields = [{"type": "number", "label": "书币余额"}]
 
@@ -88,7 +88,7 @@ class CheckHotSearchRank(AnswerTask):
     objective = "query"
     composition = "atomic"
     difficulty = "L3"
-    capabilities = ["query"]
+    capabilities = ["extract"]
     parameters = {
         "rank": {
             "type": "integer",
@@ -112,7 +112,7 @@ class CheckBookRating(AnswerTask):
     objective = "query"
     composition = "sequential"
     difficulty = "L1"
-    capabilities = ["query"]
+    capabilities = ["extract"]
     parameters = {
         "book_title": {
             "type": "string",
@@ -176,7 +176,7 @@ class ManageShelf(BaseTask):
     objective = "operate"
     composition = "sequential"
     difficulty = "L1"
-    capabilities = ["edit"]
+    capabilities = ["delete"]
     parameters = {
         "book_title": {
             "type": "string",
@@ -203,7 +203,7 @@ class SearchBookAuthor(AnswerTask):
     objective = "query"
     composition = "sequential"
     difficulty = "L2"
-    capabilities = ["search", "query"]
+    capabilities = ["search", "extract"]
     parameters = {
         "book_title": {
             "type": "string",
@@ -315,7 +315,7 @@ class FindAudiobookPlays(AnswerTask):
     objective = "query"
     composition = "sequential"
     difficulty = "L2"
-    capabilities = ["search", "query"]
+    capabilities = ["search", "extract"]
     parameters = {
         "book_title": {
             "type": "string",
@@ -350,7 +350,7 @@ class AnalyzeReadingHabit(BaseTask):
     objective = "query"
     composition = "deep_dive"
     difficulty = "L3"
-    capabilities = ["query", "reasoning"]
+    capabilities = ["extract", "reasoning"]
     answer_fields = [{"type": "choice", "label": "阅读时间最长的一天",
                       "options": ["星期一", "星期二", "星期三", "星期四", "星期五", "星期六", "星期日"]}]
 
@@ -384,7 +384,7 @@ class CheckCalendarMonthReading(AnswerTask):
     objective = "query"
     composition = "deep_dive"
     difficulty = "L3"
-    capabilities = ["query", "reasoning"]
+    capabilities = ["extract", "reasoning"]
     parameters = {
         "year": {
             "type": "integer",
@@ -425,7 +425,7 @@ class CompareBookLengths(BaseTask):
     objective = "hybrid"
     composition = "deep_dive"
     difficulty = "L2"
-    capabilities = ["query", "reasoning", "create"]
+    capabilities = ["extract", "reasoning", "create"]
     parameters = {
         "book1": {
             "type": "string",
@@ -471,7 +471,7 @@ class FindHighestRatedBookInCategory(AnswerTask):
     objective = "query"
     composition = "deep_dive"
     difficulty = "L3"
-    capabilities = ["query", "reasoning"]
+    capabilities = ["extract", "reasoning"]
     parameters = {
         "category": {
             "type": "string",
@@ -666,7 +666,7 @@ class OrganizeShelfByRecommendation(BaseTask):
     objective = "operate"
     composition = "deep_dive"
     difficulty = "L4"
-    capabilities = ["edit", "reasoning"]
+    capabilities = ["delete", "reasoning"]
     parameters = {
         "recommendation": {
             "type": "float",

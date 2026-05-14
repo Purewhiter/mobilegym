@@ -19,7 +19,7 @@ class RailwayMyAccountToWechat(BaseTask):
     objective = "operate"
     composition = "transfer"
     difficulty = "L4"
-    capabilities = ["query", "transfer"]
+    capabilities = ["extract", "handoff"]
     parameters = {
         "contact": WECHAT_CONTACT_PARAM,
     }

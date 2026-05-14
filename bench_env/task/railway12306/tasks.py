@@ -96,7 +96,7 @@ class OpenServicePhone(CriteriaTask):
     objective = "hybrid"
     composition = "sequential"
     difficulty = "L2"
-    capabilities = ["nav", "query"]
+    capabilities = ["nav", "extract"]
     parameters = {
         "region": {
             "type": "enum",
@@ -167,8 +167,8 @@ class CheckPassengerCount(AnswerTask):
     scope = "S1"
     objective = "query"
     composition = "atomic"
-    difficulty = "L2"
-    capabilities = ["query"]
+    difficulty = "L3"
+    capabilities = ["extract"]
     answer = (".passengers", len)
     answer_fields = [{"type": "number", "label": "乘车人数量"}]
 
@@ -182,7 +182,7 @@ class CheckDefaultPassengerName(AnswerTask):
     objective = "query"
     composition = "atomic"
     difficulty = "L1"
-    capabilities = ["query"]
+    capabilities = ["extract"]
 
     answer = ".passengers[isDefault=True].name"
     answer_fields = [{"type": "text", "label": "默认乘车人姓名", "hint": "如：李明"}]
@@ -197,7 +197,7 @@ class CheckStudentVerify(CriteriaTask):
     objective = "hybrid"
     composition = "sequential"
     difficulty = "L3"
-    capabilities = ["nav", "query"]
+    capabilities = ["nav", "extract"]
     optimal_paths = [["tab.my", "my.account", "account.studentVerify"]]
     criteria = {}
     answer = {"from": ".studentVerify.from", "to": ".studentVerify.to"}
@@ -216,7 +216,7 @@ class CheckRecentTripCities(AnswerTask):
     objective = "query"
     composition = "sequential"
     difficulty = "L3"
-    capabilities = ["query"]
+    capabilities = ["extract"]
     parameters = {
         "direction": {
             "type": "enum",
@@ -247,7 +247,7 @@ class CheckIdVerificationStatus(BaseTask):
     objective = "hybrid"
     composition = "sequential"
     difficulty = "L3"
-    capabilities = ["nav", "query"]
+    capabilities = ["nav", "extract"]
     optimal_paths = [["tab.my", "my.settings", "settings.idVerify"]]
     answer_fields = [{"type": "choice", "label": "核验结果", "options": ["核验成功", "未通过核验"]}]
 
@@ -323,8 +323,8 @@ class FindTrainByDate(AnswerTask):
     scope = "S1"
     objective = "query"
     composition = "atomic"
-    difficulty = "L1"
-    capabilities = ["query"]
+    difficulty = "L2"
+    capabilities = ["extract"]
     parameters = {
         "date": {
             "type": "string",
@@ -351,7 +351,7 @@ class CheckTicketPriceByDate(AnswerTask):
     objective = "query"
     composition = "atomic"
     difficulty = "L2"
-    capabilities = ["query"]
+    capabilities = ["extract"]
     parameters = {
         "date": {
             "type": "string",
@@ -381,7 +381,7 @@ class QueryAndCheckRoute(AnswerTask):
     objective = "query"
     composition = "sequential"
     difficulty = "L4"
-    capabilities = ["search", "query"]
+    capabilities = ["search", "extract"]
     parameters = {
         "from_station": {"type": "string", "default": "上海", "description": "出发站"},
         "to_station": {"type": "string", "default": "南京", "description": "到达站"},
@@ -645,7 +645,7 @@ class QueryFastestTrainDetails(AnswerTask):
     objective = "query"
     composition = "sequential"
     difficulty = "L4"
-    capabilities = ["search", "query"]
+    capabilities = ["search", "extract"]
     parameters = {
         "from_station": {"type": "string", "default": "上海", "description": "出发站"},
         "to_station": {"type": "string", "default": "南京", "description": "到达站"},

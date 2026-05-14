@@ -19,7 +19,7 @@ class CountOpenWorkOrdersFromPhotosToWechat(BaseTask):
     objective = "operate"
     composition = "transfer"
     difficulty = "L4"
-    capabilities = ["image_understanding", "ocr", "counting", "transfer"]
+    capabilities = ["image", "extract", "reasoning", "handoff"]
     expected_changes = ["wechat.chats[user.name=陈静].messages"]
 
     photo_paths = [

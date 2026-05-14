@@ -15,7 +15,7 @@ class NorthResearchInstituteAnswer(AnswerTask):
     objective = "query"
     composition = "deep_dive"
     difficulty = "L4"
-    capabilities = ["map", "spatial_reasoning", "query"]
+    capabilities = ["search", "extract", "reasoning"]
     expected_changes = MAP_SEARCH_CHANGES
 
     answer_fields = [

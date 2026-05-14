@@ -20,7 +20,7 @@ class RecommendMenuDishesToXiaozhou(BaseTask):
     objective = "operate"
     composition = "transfer"
     difficulty = "L4"
-    capabilities = ["image_understanding", "ocr", "constraint_reasoning", "transfer"]
+    capabilities = ["image", "reasoning", "handoff"]
     expected_changes = ["wechat.chats[user.name=小周].messages"]
 
     photo_paths = [

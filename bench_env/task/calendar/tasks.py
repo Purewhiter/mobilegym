@@ -179,7 +179,7 @@ class SearchEventTitle(AnswerTask):
     objective = "query"
     composition = "sequential"
     difficulty = "L2"
-    capabilities = ["search", "query"]
+    capabilities = ["search", "extract"]
     parameters = {
         "keyword": {
             "type": "enum",
@@ -319,7 +319,7 @@ class DateCalcForward(AnswerTask):
     objective = "query"
     composition = "sequential"
     difficulty = "L2"
-    capabilities = ["query", "reasoning"]
+    capabilities = ["extract", "reasoning"]
     expected_changes = ["selectedDateTs"]
     answer_fields = [{"type": "text", "label": "计算结果日期", "hint": "如：5月10号", "matcher": "date"}]
     parameters = {
@@ -351,7 +351,7 @@ class CalculateDateInterval(AnswerTask):
     objective = "query"
     composition = "sequential"
     difficulty = "L2"
-    capabilities = ["query", "reasoning"]
+    capabilities = ["extract", "reasoning"]
     expected_changes = ["selectedDateTs"]
     answer_fields = [{"type": "number", "label": "间隔天数"}]
     parameters = {
@@ -388,7 +388,7 @@ class QueryHolidayLength(AnswerTask):
     objective = "query"
     composition = "deep_dive"
     difficulty = "L3"
-    capabilities = ["query", "reasoning", "explore"]
+    capabilities = ["extract", "reasoning", "explore"]
     answer_fields = [{"type": "number", "label": "放假天数"}]
     parameters = {
         "holiday": {
@@ -420,7 +420,7 @@ class QueryMakeupWorkday(AnswerTask):
     objective = "query"
     composition = "deep_dive"
     difficulty = "L2"
-    capabilities = ["query", "reasoning", "explore"]
+    capabilities = ["extract", "reasoning", "explore"]
     answer_fields = [{"type": "text", "label": "补班日期", "hint": "如：2月8号", "matcher": "date"}]
     parameters = {
         "holiday": {
@@ -531,7 +531,7 @@ class QueryFirstEventOnDate(AnswerTask):
     objective = "query"
     composition = "deep_dive"
     difficulty = "L3"
-    capabilities = ["query", "reasoning"]
+    capabilities = ["extract", "reasoning"]
     answer_fields = [
         {"type": "text", "label": "最早日程的标题"},
         {"type": "text", "label": "开始时间", "hint": "如：09:00", "matcher": "time"},
@@ -684,7 +684,7 @@ class SearchDeleteAll(BaseTask):
     objective = "hybrid"
     composition = "deep_dive"
     difficulty = "L3"
-    capabilities = ["search", "edit", "reasoning"]
+    capabilities = ["search", "delete", "reasoning", "extract"]
     parameters = {
         "keyword": {
             "type": "enum",
@@ -728,7 +728,7 @@ class CompareScheduleDensity(AnswerTask):
     objective = "query"
     composition = "deep_dive"
     difficulty = "L4"
-    capabilities = ["query", "reasoning"]
+    capabilities = ["extract", "reasoning"]
     parameters = {
         "date1": {"type": "string", "default": default_tomorrow, "display": "date_hao"},
         "date2": {"type": "string", "default": lambda: (datetime.date.today() + datetime.timedelta(days=12)).isoformat(), "display": "date_hao"},

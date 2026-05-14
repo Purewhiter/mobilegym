@@ -1512,14 +1512,16 @@ class MyTask(CriteriaTask):
 | `search`    | 搜索和筛选                   |
 | `create`    | 创建新内容                   |
 | `edit`      | 修改已有内容                 |
+| `delete`    | 删除、清空、注销等破坏性操作 |
 | `social`    | 社交互动（点赞、关注、评论） |
-| `query`     | 信息提取                     |
-| `transfer`  | 跨App信息传递                |
+| `extract`   | 信息提取                     |
+| `handoff`   | 跨 App / 跨上下文信息交接    |
 | `finance`   | 金融操作                     |
 | `reasoning` | 认知推理（比较、计算）       |
 | `explore`   | GUI 探索                     |
+| `image`     | 非 UI 图片/照片内容理解      |
 
-**标注规则**：只标注**核心涉及**的能力，不标导航等必经前置步骤。
+**标注规则**：只标注**核心涉及**的能力，不标导航等必经前置步骤。`extract` 是能力标签，表示任务过程中需要提取信息；`objective = "query"` 是任务目标，表示最终需要回答信息。`handoff` 是能力标签，表示跨 App / 跨上下文交接信息或内容；`composition = "transfer"` 是组合结构，表示前一步输出被后一步直接使用。
 
 ### 10.6 `optimal_paths` 最优路径
 

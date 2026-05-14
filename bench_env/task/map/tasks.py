@@ -75,7 +75,7 @@ class CheckHighestRatedPlace(AnswerTask):
     objective = "query"
     composition = "sequential"
     difficulty = "L2"
-    capabilities = ["search", "query"]
+    capabilities = ["search", "extract"]
     parameters = {"category": CATEGORY_PARAM, "radius": RADIUS_PARAM}
     expected_changes = MAP_SEARCH_CHANGES
     answer_fields = [{"type": "text", "label": "地点名称", "hint": "如：海底捞"}]
@@ -102,8 +102,8 @@ class CheckNearestPlaceAddress(AnswerTask):
     scope = "S1"
     objective = "query"
     composition = "sequential"
-    difficulty = "L2"
-    capabilities = ["search", "query"]
+    difficulty = "L3"
+    capabilities = ["search", "extract"]
     parameters = {"category": CATEGORY_PARAM}
     expected_changes = MAP_SEARCH_CHANGES
     answer_fields = [{"type": "text", "label": "地址", "hint": "如：北京市海淀区学院路28号"}]
@@ -145,7 +145,7 @@ class QueryDrivingDistance(AnswerTask):
     objective = "query"
     composition = "sequential"
     difficulty = "L2"
-    capabilities = ["nav", "query"]
+    capabilities = ["nav", "extract"]
     parameters = {"place": PLACE_PARAM}
     expected_changes = MAP_SEARCH_CHANGES
     answer_fields = [{"type": "text", "label": "驾车距离", "hint": "如：3.7公里"}]
@@ -171,7 +171,7 @@ class CheckRouteSuccess(BaseTask):
     objective = "hybrid"
     composition = "sequential"
     difficulty = "L4"
-    capabilities = ["nav", "query"]
+    capabilities = ["nav", "extract"]
     parameters = {
         "origin": {
             "type": "string",
@@ -218,7 +218,7 @@ class FindBestRatedAndRoute(BaseTask):
     objective = "hybrid"
     composition = "sequential"
     difficulty = "L3"
-    capabilities = ["search", "nav", "query"]
+    capabilities = ["search", "nav", "extract"]
     parameters = {"category": CATEGORY_PARAM, "radius": RADIUS_PARAM}
     expected_changes = MAP_SEARCH_CHANGES
     answer_fields = [
@@ -326,7 +326,7 @@ class FindNearestWithRating(AnswerTask):
     objective = "query"
     composition = "sequential"
     difficulty = "L3"
-    capabilities = ["search", "query"]
+    capabilities = ["search", "extract"]
     parameters = {"category": CATEGORY_PARAM}
     expected_changes = MAP_SEARCH_CHANGES
     answer_fields = [
@@ -371,7 +371,7 @@ class CompareRouteDuration(AnswerTask):
     objective = "query"
     composition = "sequential"
     difficulty = "L2"
-    capabilities = ["query", "reasoning"]
+    capabilities = ["extract", "reasoning"]
     parameters = {"place": PLACE_PARAM}
     expected_changes = MAP_SEARCH_CHANGES
     answer_fields = [
@@ -433,7 +433,7 @@ class EstimateDrivingCost(AnswerTask):
     objective = "query"
     composition = "sequential"
     difficulty = "L2"
-    capabilities = ["nav", "query", "reasoning"]
+    capabilities = ["nav", "extract", "reasoning"]
     parameters = {
         "place": PLACE_PARAM,
         "rate": {
@@ -465,8 +465,8 @@ class NearestInRadiusRatingRank(AnswerTask):
     scope = "S1"
     objective = "query"
     composition = "deep_dive"
-    difficulty = "L2"
-    capabilities = ["search", "query", "reasoning"]
+    difficulty = "L3"
+    capabilities = ["search", "extract", "reasoning"]
     parameters = {
         "category": CATEGORY_PARAM,
         "radius": {
@@ -515,7 +515,7 @@ class BestRatedWithWalkRoute(BaseTask):
     objective = "hybrid"
     composition = "deep_dive"
     difficulty = "L3"
-    capabilities = ["search", "nav", "query"]
+    capabilities = ["search", "nav", "extract"]
     parameters = {"category": CATEGORY_PARAM, "radius": RADIUS_PARAM}
     expected_changes = MAP_SEARCH_CHANGES
     answer_fields = [
@@ -562,7 +562,7 @@ class NearestDetailAndWalkRoute(BaseTask):
     objective = "hybrid"
     composition = "deep_dive"
     difficulty = "L3"
-    capabilities = ["search", "nav", "query"]
+    capabilities = ["search", "nav", "extract"]
     parameters = {"category": CATEGORY_PARAM}
     expected_changes = MAP_SEARCH_CHANGES
     answer_fields = [

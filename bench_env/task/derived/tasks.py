@@ -63,7 +63,7 @@ class MonthCompareThenExplainToNote(BaseTask):
     objective = "operate"
     composition = "deep_dive"
     difficulty = "L4"
-    capabilities = ["query", "reasoning", "create"]
+    capabilities = ["extract", "reasoning", "create"]
     parameters = {
         "month1": {
             "type": "string",
@@ -116,7 +116,7 @@ class BillTypeYearSummaryToWechat(BaseTask):
     objective = "operate"
     composition = "deep_dive"
     difficulty = "L4"
-    capabilities = ["query", "reasoning", "transfer"]
+    capabilities = ["extract", "reasoning", "handoff"]
     parameters = {
         "bill_type": {
             "type": "string",
@@ -168,7 +168,7 @@ class Top3ExpenseSummaryToWechat(BaseTask):
     objective = "hybrid"
     composition = "deep_dive"
     difficulty = "L4"
-    capabilities = ["query", "reasoning", "transfer"]
+    capabilities = ["extract", "reasoning", "handoff"]
     parameters = {"contact": {**WECHAT_CONTACT_PARAM, "default": "黄勇"}}
     expected_changes = WECHAT_SEND_CHANGES
 
@@ -253,7 +253,7 @@ class RealisticTrip001(BaseTask):
     objective = "operate"
     composition = "deep_dive"
     difficulty = "L3"
-    capabilities = ["search", "query", "reasoning", "create", "transfer"]
+    capabilities = ["search", "reasoning", "create", "handoff"]
     parameters = {"contact": WECHAT_CONTACT_PARAM}
     expected_changes = RAIL_QUERY_CHANGES + WEATHER_QUERY_CHANGES + NOTES_CREATE_CHANGES + WECHAT_SEND_CHANGES
 
@@ -307,8 +307,8 @@ class TopRatedNearbyPlaceConditionalWechatOrSmsInvite(BaseTask):
     scope = "S3"
     objective = "operate"
     composition = "deep_dive"
-    difficulty = "L3"
-    capabilities = ["search", "reasoning", "transfer"]
+    difficulty = "L4"
+    capabilities = ["search", "reasoning", "handoff"]
     parameters = {
         "radius": {**RADIUS_PARAM, "default": 3000},
         "category": {**CATEGORY_PARAM, "default": "肯德基"},
@@ -400,7 +400,7 @@ class ScheduleReleaseMeetingAndNotifyViaNotesWechatSms(BaseTask):
     objective = "operate"
     composition = "transfer"
     difficulty = "L4"
-    capabilities = ["create", "transfer"]
+    capabilities = ["create", "handoff"]
     parameters = {
         "contact": WECHAT_CONTACT_PARAM,
         "sms_contact": SMS_RECIPIENT_PARAM,
@@ -459,7 +459,7 @@ class WeeklyReadingAndLikedSpotifySongsToMoment(BaseTask):
     objective = "operate"
     composition = "transfer"
     difficulty = "L4"
-    capabilities = ["query", "reasoning", "social"]
+    capabilities = ["create", "reasoning", "social", "handoff"]
     parameters = {}
     expected_changes = WECHAT_MOMENT_CHANGES + ["apps.spotify"]
 
@@ -505,7 +505,7 @@ class ThirdSpotifyPlayRecommendOnRedbookAndPlaylist(BaseTask):
     objective = "operate"
     composition = "transfer"
     difficulty = "L4"
-    capabilities = ["query", "create", "transfer"]
+    capabilities = ["extract", "create", "handoff"]
     parameters = {
         "playlist": {"type": "string", "default": "今天爱听"},
     }
@@ -546,7 +546,7 @@ class WeekendShanghaiTripIfClearAndFree(BaseTask):
     objective = "operate"
     composition = "deep_dive"
     difficulty = "L4"
-    capabilities = ["search", "query", "reasoning", "create", "transfer"]
+    capabilities = ["search", "reasoning", "create", "handoff"]
     parameters = {"contact": WECHAT_CONTACT_PARAM}
     expected_changes = (
         RAIL_QUERY_CHANGES
@@ -623,7 +623,7 @@ class ChangeWallpaperAndAddWidget(BaseTask):
     scope = "S1"
     objective = "operate"
     composition = "sequential"
-    difficulty = "L2"
+    difficulty = "L3"
     capabilities = ["settings", "nav"]
     parameters = {}
     expected_changes = ["os.launcher"]

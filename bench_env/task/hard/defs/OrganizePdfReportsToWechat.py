@@ -16,8 +16,8 @@ class OrganizePdfReportsToWechat(BaseTask):
     scope = "S2"
     objective = "operate"
     composition = "transfer"
-    difficulty = "L3"
-    capabilities = ["file_management", "recursive_search", "filtering", "transfer"]
+    difficulty = "L4"
+    capabilities = ["search", "reasoning", "handoff"]
     expected_changes = ["os.fileSystem"] + WECHAT_SEND_CHANGES
 
     target_dir = "/sdcard/Documents/final_reports"

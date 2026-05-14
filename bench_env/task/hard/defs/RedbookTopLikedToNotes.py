@@ -23,7 +23,7 @@ class RedbookTopLikedToNotes(BaseTask):
     objective = "operate"
     composition = "transfer"
     difficulty = "L4"
-    capabilities = ["search", "query", "reasoning", "create"]
+    capabilities = ["search", "reasoning", "create", "handoff"]
     parameters = {
         "query": {
             "type": "enum",

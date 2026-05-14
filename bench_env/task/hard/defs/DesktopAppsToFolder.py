@@ -27,7 +27,7 @@ class DesktopAppsToFolder(BaseTask):
     objective = "operate"
     composition = "sequential"
     difficulty = "L4"
-    capabilities = ["launcher", "drag", "organization"]
+    capabilities = ["nav", "create", "edit"]
     expected_changes = ["os.launcher"]
 
     def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:

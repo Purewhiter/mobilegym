@@ -19,8 +19,8 @@ class InspectionReportToWechat(BaseTask):
     scope = "S2"
     objective = "operate"
     composition = "transfer"
-    difficulty = "L3"
-    capabilities = ["file_reading", "reasoning", "transfer"]
+    difficulty = "L4"
+    capabilities = ["extract", "reasoning", "handoff"]
     inspector_by_weekday = {
         0: ("周一", "张伟"),
         1: ("周二", "王芳"),

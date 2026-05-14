@@ -38,7 +38,7 @@ class Railway12306LoginWithAccount(BaseTask):
     objective = "operate"
     composition = "transfer"
     difficulty = "L3"
-    capabilities = ["search", "edit", "transfer"]
+    capabilities = ["search", "edit", "handoff"]
     apps = ["railway12306", "notes"]
     expected_changes = [
         "railway12306.isLoggedIn",
@@ -239,7 +239,7 @@ class WechatAccountCancellation(CriteriaTask):
     objective = "operate"
     composition = "sequential"
     difficulty = "L2"
-    capabilities = ["settings"]
+    capabilities = ["settings", "delete"]
     apps = ["wechat"]
     criteria = {"user.accountStatus": "cancelled"}
     expected_changes = ["user", "auth"]

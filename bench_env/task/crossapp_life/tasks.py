@@ -89,7 +89,7 @@ class MapPlaceToWechat(BaseTask):
     objective = "operate"
     composition = "transfer"
     difficulty = "L3"
-    capabilities = ["search", "transfer"]
+    capabilities = ["search", "handoff"]
     parameters = {"place": PLACE_PARAM, "contact": WECHAT_CONTACT_PARAM}
     expected_changes = MAP_SEARCH_CHANGES + WECHAT_SEND_CHANGES
 
@@ -116,7 +116,7 @@ class WeatherShareMetric(BaseTask):
     objective = "operate"
     composition = "transfer"
     difficulty = "L4"
-    capabilities = ["query", "transfer"]
+    capabilities = ["extract", "handoff"]
     parameters = {
         "city": {"type": "string", "default": "北京"},
         "metric": {
@@ -168,7 +168,7 @@ class WeatherReportToNotes(BaseTask):
     objective = "operate"
     composition = "transfer"
     difficulty = "L4"
-    capabilities = ["query", "create", "transfer"]
+    capabilities = ["extract", "create", "handoff"]
     parameters = {"city": {"type": "string", "default": "北京"}}
     expected_changes = WEATHER_QUERY_CHANGES + NOTES_CREATE_CHANGES
 
@@ -201,7 +201,7 @@ class WeatherFilterNonRainyDays(BaseTask):
     objective = "operate"
     composition = "transfer"
     difficulty = "L2"
-    capabilities = ["query", "create", "transfer"]
+    capabilities = ["extract", "create", "handoff"]
     parameters = {
         "city": {"type": "enum", "values": WEATHER_SAVED_CITIES, "default": "北京"}
     }
@@ -255,7 +255,7 @@ class WeatherRainBranchNotify(BaseTask):
     objective = "operate"
     composition = "deep_dive"
     difficulty = "L3"
-    capabilities = ["query", "reasoning", "transfer"]
+    capabilities = ["extract", "reasoning", "handoff"]
     parameters = {
         "city": {"type": "enum", "values": WEATHER_SAVED_CITIES, "default": "北京"},
         "contact": WECHAT_CONTACT_PARAM,
@@ -301,7 +301,7 @@ class RailwayTrainInfoToWechat(BaseTask):
     objective = "operate"
     composition = "transfer"
     difficulty = "L3"
-    capabilities = ["search", "query", "transfer"]
+    capabilities = ["search", "extract", "handoff"]
     parameters = {
         "from_station": {"type": "string", "default": "上海", "description": "出发站"},
         "to_station": {"type": "string", "default": "南京", "description": "到达站"},
@@ -380,7 +380,7 @@ class RailwayPriceVsBalance(AnswerTask):
     objective = "query"
     composition = "deep_dive"
     difficulty = "L4"
-    capabilities = ["search", "query", "reasoning"]
+    capabilities = ["search", "extract", "reasoning"]
     parameters = {
         "from_station": {"type": "string", "default": "上海", "description": "出发站"},
         "to_station": {"type": "string", "default": "南京", "description": "到达站"},
@@ -471,7 +471,7 @@ class RailwayDestWeatherQuery(AnswerTask):
     objective = "query"
     composition = "transfer"
     difficulty = "L3"
-    capabilities = ["query", "transfer"]
+    capabilities = ["extract", "handoff"]
     parameters = {"city": {"type": "enum", "values": WEATHER_SAVED_CITIES, "default": "上海"}}
     expected_changes = WEATHER_QUERY_CHANGES
     answer_fields = [
@@ -564,7 +564,7 @@ class MapNearbyBestToWechat(BaseTask):
     objective = "operate"
     composition = "transfer"
     difficulty = "L4"
-    capabilities = ["search", "query", "transfer"]
+    capabilities = ["search", "extract", "handoff"]
     parameters = {
         "radius": RADIUS_PARAM,
         "category": CATEGORY_PARAM,
@@ -605,7 +605,7 @@ class CalendarEventToWechat(BaseTask):
     objective = "operate"
     composition = "transfer"
     difficulty = "L3"
-    capabilities = ["query", "transfer"]
+    capabilities = ["extract", "handoff"]
     parameters = {"contact": WECHAT_CONTACT_PARAM}
     expected_changes = CALENDAR_EVENT_CHANGES + WECHAT_SEND_CHANGES
 
@@ -679,7 +679,7 @@ class WeatherFirstNonRainyDayBuyTicket(BaseTask):
     objective = "operate"
     composition = "deep_dive"
     difficulty = "L4"
-    capabilities = ["query", "reasoning", "search"]
+    capabilities = ["extract", "reasoning", "search"]
     parameters = {
         "city": {
             "type": "enum",
@@ -737,7 +737,7 @@ class MapRatingConditionBuyTicket(BaseTask):
     objective = "operate"
     composition = "deep_dive"
     difficulty = "L4"
-    capabilities = ["search", "reasoning", "query"]
+    capabilities = ["search", "reasoning", "extract"]
     parameters = {
         "place": PLACE_PARAM,
         "from_station": {"type": "string", "default": "上海", "description": "出发站"},
@@ -818,7 +818,7 @@ class RailwayWeatherToWechat(BaseTask):
     objective = "operate"
     composition = "transfer"
     difficulty = "L3"
-    capabilities = ["search", "query", "transfer"]
+    capabilities = ["search", "extract", "handoff"]
     parameters = {
         "city": {
             "type": "enum",
@@ -907,7 +907,7 @@ class WeatherFirstSunnyDayCalendarAlarm(BaseTask):
     objective = "operate"
     composition = "deep_dive"
     difficulty = "L4"
-    capabilities = ["query", "reasoning", "create"]
+    capabilities = ["extract", "reasoning", "create"]
     parameters = {
         "city": {"type": "enum", "values": WEATHER_SAVED_CITIES, "default": "北京"}
     }
@@ -941,7 +941,7 @@ class RailwayBalanceConditionalBuyNotify(BaseTask):
     objective = "operate"
     composition = "deep_dive"
     difficulty = "L4"
-    capabilities = ["search", "reasoning", "query", "transfer"]
+    capabilities = ["search", "reasoning", "extract", "handoff"]
     parameters = {
         "city": {
             "type": "enum",
@@ -1048,7 +1048,7 @@ class CalendarFreeWeatherInvite(BaseTask):
     objective = "operate"
     composition = "deep_dive"
     difficulty = "L3"
-    capabilities = ["query", "reasoning", "transfer"]
+    capabilities = ["extract", "reasoning", "handoff"]
     parameters = {
         "city": {"type": "enum", "values": WEATHER_SAVED_CITIES, "default": "北京"},
         "contact": WECHAT_CONTACT_PARAM,
@@ -1132,7 +1132,7 @@ class WechatFoodExtractMapSms(BaseTask):
     objective = "operate"
     composition = "deep_dive"
     difficulty = "L4"
-    capabilities = ["query", "reasoning", "search", "transfer"]
+    capabilities = ["extract", "reasoning", "search", "handoff"]
     parameters = {
         "contact": WECHAT_CONTACT_PARAM,
         "brand": {
@@ -1194,7 +1194,7 @@ class RestaurantRatingInviteCalendar(BaseTask):
     objective = "operate"
     composition = "deep_dive"
     difficulty = "L3"
-    capabilities = ["search", "reasoning", "transfer", "create"]
+    capabilities = ["search", "reasoning", "handoff", "create"]
     parameters = {
         "restaurant": RESTAURANT_PARAM,
         "rating": {
@@ -1255,7 +1255,7 @@ class TripClosedLoopNotify(BaseTask):
     objective = "operate"
     composition = "transfer"
     difficulty = "L4"
-    capabilities = ["search", "create", "transfer"]
+    capabilities = ["search", "create", "handoff"]
     parameters = {
         "from_station": {"type": "string", "default": "上海", "description": "出发站"},
         "to_station": {"type": "string", "default": "南京", "description": "到达站"},
@@ -1355,7 +1355,7 @@ class FullTripPlanWeatherDriven(BaseTask):
     objective = "operate"
     composition = "deep_dive"
     difficulty = "L4"
-    capabilities = ["query", "reasoning", "search", "create"]
+    capabilities = ["extract", "reasoning", "search", "create"]
     parameters = {
         "city": {
             "type": "enum",
@@ -1444,8 +1444,8 @@ class WeekendTripFullPlan(BaseTask):
     scope = "S3"
     objective = "operate"
     composition = "deep_dive"
-    difficulty = "L2"
-    capabilities = ["query", "search", "create", "transfer"]
+    difficulty = "L3"
+    capabilities = ["extract", "search", "create", "handoff"]
     parameters = {
         # 城市固定为北京，用于天气查询。
         "city": {"type": "enum", "values": {"北京": "北京"}, "default": "北京"},
@@ -1511,7 +1511,7 @@ class TripMemoAndNotify(BaseTask):
     objective = "operate"
     composition = "transfer"
     difficulty = "L3"
-    capabilities = ["search", "query", "create", "transfer"]
+    capabilities = ["search", "extract", "create", "handoff"]
     parameters = {
         "city": {
             "type": "enum",
@@ -1606,7 +1606,7 @@ class TravelPlanToWechat(BaseTask):
     objective = "operate"
     composition = "transfer"
     difficulty = "L3"
-    capabilities = ["search", "query", "transfer"]
+    capabilities = ["search", "extract", "handoff"]
     parameters = {
         "dest": {"type": "string", "default": "中国国家博物馆"},
         "contact": WECHAT_CONTACT_PARAM,
@@ -1633,7 +1633,7 @@ class WeatherCalendar_CreateEventIfNotSunny(BaseTask):
     objective = "operate"
     composition = "transfer"
     difficulty = "L3"
-    capabilities = ["query", "create", "transfer"]
+    capabilities = ["extract", "create", "handoff"]
     parameters = {
         "city": {"type": "string", "default": "北京"},
         "event_title": {"type": "string", "default": "带伞"},

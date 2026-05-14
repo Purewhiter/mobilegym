@@ -29,7 +29,7 @@ class AlipayThankTopIncomeTransfer(BaseTask):
     objective = "operate"
     composition = "transfer"
     difficulty = "L4"
-    capabilities = ["query", "reasoning", "create", "transfer"]
+    capabilities = ["extract", "reasoning", "create", "handoff"]
     parameters = {}
     expected_changes = NOTES_CREATE_CHANGES + WECHAT_SEND_CHANGES
 

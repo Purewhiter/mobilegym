@@ -51,7 +51,7 @@ class FindFriend(AnswerTask):
     objective = "query"
     composition = "atomic"
     difficulty = "L3"
-    capabilities = ["nav", "query"]
+    capabilities = ["nav", "extract"]
     parameters = {
         "name": {
             "type": "string",
@@ -88,7 +88,7 @@ class MonthlyIncomeByCounterparty(AnswerTask):
     objective = "query"
     composition = "sequential"
     difficulty = "L2"
-    capabilities = ["query", "reasoning"]
+    capabilities = ["extract", "reasoning"]
     parameters = {
         "month": {
             "type": "string",
@@ -124,7 +124,7 @@ class CheckDailyIncome(AnswerTask):
     objective = "query"
     composition = "atomic"
     difficulty = "L1"
-    capabilities = ["query"]
+    capabilities = ["extract"]
     answer = ".balance.dailyIncome"
     answer_fields = [{"type": "number", "label": "昨日收益"}]
 
@@ -147,7 +147,7 @@ class EnableDarkMode(CriteriaTask):
     objective = "operate"
     composition = "atomic"
     difficulty = "L1"
-    capabilities = ["settings"]
+    capabilities = ["finance", "settings"]
     criteria = {"settings.general.darkMode.mode": "dark"}
 
 
@@ -159,7 +159,7 @@ class CheckLatestMessageContent(AnswerTask):
     objective = "query"
     composition = "sequential"
     difficulty = "L2"
-    capabilities = ["query"]
+    capabilities = ["extract"]
     parameters = {
         "name": {
             "type": "string",
@@ -217,7 +217,7 @@ class AnalyzeSpending(AnswerTask):
     objective = "query"
     composition = "deep_dive"
     difficulty = "L3"
-    capabilities = ["query", "reasoning"]
+    capabilities = ["extract", "reasoning"]
     answer_fields = [{"type": "number", "label": "总支出金额"}]
     
     def get_answer(self, input: JudgeInput) -> str:
@@ -241,7 +241,7 @@ class CountLargeTransferIncomes(AnswerTask):
     objective = "query"
     composition = "deep_dive"
     difficulty = "L3"
-    capabilities = ["query", "reasoning"]
+    capabilities = ["extract", "reasoning"]
     answer_fields = [{"type": "number", "label": "转账收入笔数"}]
     parameters = {
         "amount": {
@@ -270,8 +270,8 @@ class CheckUnreadMessageCount(AnswerTask):
     scope = "S1"
     objective = "query"
     composition = "sequential"
-    difficulty = "L3"
-    capabilities = ["query"]
+    difficulty = "L4"
+    capabilities = ["extract"]
     answer_fields = [{"type": "number", "label": "未读消息数"}]
 
     def get_answer(self, input: JudgeInput) -> int:
@@ -286,7 +286,7 @@ class CheckBalance(AnswerTask):
     objective = "query"
     composition = "atomic"
     difficulty = "L1"
-    capabilities = ["query"]
+    capabilities = ["extract"]
     answer = ".balance.total"
     answer_fields = [{"type": "number", "label": "理财总资产"}]
 
@@ -340,8 +340,8 @@ class SearchTransferRecords(AnswerTask):
     scope = "S1"
     objective = "query"
     composition = "sequential"
-    difficulty = "L3"
-    capabilities = ["search", "query"]
+    difficulty = "L4"
+    capabilities = ["search", "extract"]
     parameters = {
         "keyword": {
             "type": "string",
@@ -469,7 +469,7 @@ class CalculateMonthlyExpenseTrend(AnswerTask):
     objective = "query"
     composition = "deep_dive"
     difficulty = "L4"
-    capabilities = ["query", "reasoning"]
+    capabilities = ["extract", "reasoning"]
     sample_max = 1
     answer_fields = [
         {"type": "choice", "label": "花得更多的月份",
@@ -527,7 +527,7 @@ class FindLargestTransferPartner(AnswerTask):
     objective = "query"
     composition = "deep_dive"
     difficulty = "L3"
-    capabilities = ["query", "reasoning"]
+    capabilities = ["extract", "reasoning"]
     answer_fields = [{"type": "text", "label": "交易对象", "hint": "如：王五"}]
 
     def get_answer(self, input: JudgeInput) -> str:

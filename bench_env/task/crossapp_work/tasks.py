@@ -64,7 +64,7 @@ class ExistingMeetingToCalendar(BaseTask):
     objective = "operate"
     composition = "transfer"
     difficulty = "L4"
-    capabilities = ["query", "create", "transfer"]
+    capabilities = ["extract", "create", "handoff"]
     parameters = {"topic": TENCENT_MEETING_SCHEDULED_TOPIC_PARAM}
     expected_changes = [
         "calendar.events",
@@ -93,7 +93,7 @@ class CalendarEarliestToAlarm(BaseTask):
     objective = "operate"
     composition = "deep_dive"
     difficulty = "L3"
-    capabilities = ["query", "reasoning", "create"]
+    capabilities = ["extract", "reasoning", "create"]
     parameters = {}
     expected_changes = ["calendar.events", "calendar.selectedDateTs", "clock.alarms"]
 
@@ -144,7 +144,7 @@ class MeetingLongestInfoToWechat(BaseTask):
     objective = "operate"
     composition = "deep_dive"
     difficulty = "L2"
-    capabilities = ["query", "reasoning", "transfer"]
+    capabilities = ["extract", "reasoning", "handoff"]
     parameters = {
         "date": {
             "type": "string",
@@ -183,7 +183,7 @@ class MeetingDurationToWechat(BaseTask):
     objective = "operate"
     composition = "deep_dive"
     difficulty = "L3"
-    capabilities = ["query", "reasoning", "transfer"]
+    capabilities = ["extract", "reasoning", "handoff"]
     parameters = {
         "date": {
             "type": "string",
@@ -218,8 +218,8 @@ class WeatherConditionalCancelMeeting(BaseTask):
     scope = "S3"
     objective = "operate"
     composition = "deep_dive"
-    difficulty = "L2"
-    capabilities = ["query", "reasoning", "edit", "create"]
+    difficulty = "L3"
+    capabilities = ["extract", "reasoning", "edit", "create"]
     parameters = {
         "city": {"type": "string", "source": "apps.weather.savedCities[name]", "default": "北京"},
         "topic": TENCENT_MEETING_SCHEDULED_TOPIC_PARAM,
@@ -265,7 +265,7 @@ class MeetingJoinAndNotifySms(BaseTask):
     objective = "operate"
     composition = "transfer"
     difficulty = "L3"
-    capabilities = ["nav", "edit", "transfer"]
+    capabilities = ["nav", "edit", "handoff"]
     parameters = {
         "topic": {
             "type": "enum",
@@ -311,7 +311,7 @@ class MeetingMultiChannelNotify(BaseTask):
     objective = "operate"
     composition = "transfer"
     difficulty = "L4"
-    capabilities = ["create", "transfer"]
+    capabilities = ["create", "handoff"]
     parameters = {
         "contact1": {
             "type": "string",
@@ -370,7 +370,7 @@ class MeetingRouteEtaToWechat(BaseTask):
     objective = "operate"
     composition = "deep_dive"
     difficulty = "L3"
-    capabilities = ["query", "search", "reasoning", "transfer"]
+    capabilities = ["extract", "search", "reasoning", "handoff"]
     parameters = {
         "place": PLACE_PARAM,
         "contact": WECHAT_CONTACT_PARAM,
@@ -411,7 +411,7 @@ class MeetingFullFlowToWechat(BaseTask):
     objective = "operate"
     composition = "transfer"
     difficulty = "L4"
-    capabilities = ["create", "transfer"]
+    capabilities = ["create", "handoff"]
     parameters = {
         "time": {"type": "string", "default": "10:00"},
         "contact": WECHAT_CONTACT_PARAM,
@@ -468,7 +468,7 @@ class FullMeetingConflictCheckBroadcast(BaseTask):
     objective = "operate"
     composition = "deep_dive"
     difficulty = "L4"
-    capabilities = ["query", "reasoning", "create", "transfer"]
+    capabilities = ["extract", "reasoning", "create", "handoff"]
     parameters = {
         "time": {"type": "string", "default": "03:30", "description": "明日检查时刻 HH:MM"},
         "contact": WECHAT_CONTACT_PARAM,
@@ -555,7 +555,7 @@ class MeetingReminderToNotes(BaseTask):
     objective = "operate"
     composition = "transfer"
     difficulty = "L4"
-    capabilities = ["query", "create", "transfer"]
+    capabilities = ["extract", "create", "handoff"]
     parameters = {}
     expected_changes = [
         "tencent_meeting.scheduledMeetings",
@@ -589,7 +589,7 @@ class SmsAndCalendarOnDate(BaseTask):
     objective = "operate"
     composition = "sequential"
     difficulty = "L3"
-    capabilities = ["create", "transfer"]
+    capabilities = ["create", "handoff"]
     parameters = {
         "contact": SMS_RECIPIENT_PARAM,
         "message": {"type": "string", "default": "明天见"},

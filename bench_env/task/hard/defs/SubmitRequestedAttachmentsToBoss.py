@@ -21,7 +21,7 @@ class SubmitRequestedAttachmentsToBoss(BaseTask):
     objective = "operate"
     composition = "transfer"
     difficulty = "L3"
-    capabilities = ["file_search", "metadata_reasoning", "transfer"]
+    capabilities = ["search", "reasoning", "handoff"]
     expected_changes = ["os.fileSystem", "wechat.chats[user.name=Boss].messages"]
 
     source_dir = "/sdcard/Download/待提交"

@@ -62,7 +62,7 @@ class ReadNotesCount(AnswerTask):
     objective = "query"
     composition = "atomic"
     difficulty = "L1"
-    capabilities = ["query"]
+    capabilities = ["extract"]
     answer_fields = [{"type": "number", "label": "便签数量"}]
 
     def get_answer(self, input: JudgeInput) -> Any:
@@ -165,7 +165,7 @@ class PinNote(BaseTask):
     objective = "operate"
     composition = "sequential"
     difficulty = "L2"
-    capabilities = ["manage"]
+    capabilities = ["edit"]
     parameters = {
         "note_title": {
             "type": "string",
@@ -203,7 +203,7 @@ class ReadNoteContent(AnswerTask):
     objective = "query"
     composition = "sequential"
     difficulty = "L2"
-    capabilities = ["query"]
+    capabilities = ["extract"]
     parameters = {
         "note_title": {
             "type": "string",
@@ -264,7 +264,7 @@ class ReadTodoText(AnswerTask):
     objective = "query"
     composition = "atomic"
     difficulty = "L2"
-    capabilities = ["query", "nav"]
+    capabilities = ["extract", "nav"]
     answer_fields = [{"type": "text", "label": "待办事项", "hint": "如：开会", "repeatable": True, "compare": "set"}]
 
     def get_answer(self, input: JudgeInput) -> Any:
@@ -289,7 +289,7 @@ class DeleteTodo(BaseTask):
     objective = "operate"
     composition = "sequential"
     difficulty = "L2"
-    capabilities = ["manage", "nav"]
+    capabilities = ["delete", "nav"]
     parameters = {
         "todo_text": {
             "type": "string",
@@ -318,7 +318,7 @@ class DeleteAllCompletedTodos(BaseTask):
     objective = "operate"
     composition = "sequential"
     difficulty = "L2"
-    capabilities = ["manage", "nav"]
+    capabilities = ["delete", "nav"]
     expected_changes = TODOS_ONLY_CHANGES
 
     def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
@@ -336,7 +336,7 @@ class RestoreFromTrash(BaseTask):
     objective = "operate"
     composition = "sequential"
     difficulty = "L3"
-    capabilities = ["manage", "nav"]
+    capabilities = ["edit", "nav"]
     parameters = {
         "note_title": {
             "type": "string",
@@ -395,7 +395,7 @@ class SearchNoteTitle(AnswerTask):
     objective = "query"
     composition = "deep_dive"
     difficulty = "L3"
-    capabilities = ["search", "query"]
+    capabilities = ["search", "extract"]
     parameters = {
         "keyword": {
             "type": "string",
@@ -428,7 +428,7 @@ class CreateFolderAndMoveNote(BaseTask):
     objective = "operate"
     composition = "sequential"
     difficulty = "L1"
-    capabilities = ["create", "manage", "nav"]
+    capabilities = ["create", "edit", "nav"]
     parameters = {
         "folder_name": {
             "type": "enum",
@@ -475,7 +475,7 @@ class CreateNoteWithReminder(BaseTask):
     objective = "hybrid"
     composition = "sequential"
     difficulty = "L2"
-    capabilities = ["create", "manage", "query"]
+    capabilities = ["create", "edit", "extract"]
     parameters = {
         "title": {
             "type": "enum",
@@ -543,7 +543,7 @@ class PrivateNotesWorkflow(BaseTask):
     objective = "hybrid"
     composition = "deep_dive"
     difficulty = "L4"
-    capabilities = ["manage", "nav", "query"]
+    capabilities = ["edit", "nav", "extract"]
     parameters = {
         "note_title": {
             "type": "string",
@@ -583,7 +583,7 @@ class TodoBatchWorkflow(BaseTask):
     objective = "hybrid"
     composition = "deep_dive"
     difficulty = "L4"
-    capabilities = ["create", "manage", "query"]
+    capabilities = ["create", "edit", "extract"]
     parameters = {
         "new_todo": {
             "type": "enum",

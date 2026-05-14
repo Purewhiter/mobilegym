@@ -65,7 +65,7 @@ class SpotifyNowPlayingToWechat(BaseTask):
     objective = "hybrid"
     composition = "transfer"
     difficulty = "L2"
-    capabilities = ["query", "social", "transfer"]
+    capabilities = ["extract", "social", "handoff"]
     parameters = {"contact": WECHAT_CONTACT_PARAM}
     expected_changes = ["apps.spotify"] + WECHAT_SEND_CHANGES
 
@@ -94,7 +94,7 @@ class BilibiliRankingToWechat(BaseTask):
     objective = "hybrid"
     composition = "transfer"
     difficulty = "L3"
-    capabilities = ["query", "transfer"]
+    capabilities = ["extract", "handoff"]
     parameters = {
         "partition": BILIBILI_PARTITION_PARAM,
         "rank": {"type": "int", "default": 1},
@@ -115,7 +115,7 @@ class RedbookSearchTitleToWechat(BaseTask):
     objective = "hybrid"
     composition = "transfer"
     difficulty = "L3"
-    capabilities = ["search", "query", "transfer"]
+    capabilities = ["search", "extract", "handoff"]
     parameters = {"keyword": REDBOOK_KEYWORD_PARAM, "contact": WECHAT_CONTACT_PARAM}
     expected_changes = WECHAT_SEND_CHANGES + ["redbook.searchHistory", "redbook.history"]
 
@@ -140,7 +140,7 @@ class SpotifyTodayNthPlayToRedbook(BaseTask):
     objective = "operate"
     composition = "transfer"
     difficulty = "L4"
-    capabilities = ["query", "create", "transfer"]
+    capabilities = ["extract", "create", "handoff"]
     parameters = {
         "nth": {
             "type": "enum",
@@ -172,7 +172,7 @@ class WechatReadingBestBookToWechat(BaseTask):
     objective = "hybrid"
     composition = "transfer"
     difficulty = "L3"
-    capabilities = ["search", "query", "transfer"]
+    capabilities = ["search", "extract", "handoff"]
     parameters = {"category": WECHAT_READING_CATEGORY_PARAM, "contact": WECHAT_CONTACT_PARAM}
     expected_changes = WECHAT_SEND_CHANGES
 
@@ -201,7 +201,7 @@ class WechatReadingStatsToWechat(BaseTask):
     objective = "hybrid"
     composition = "transfer"
     difficulty = "L4"
-    capabilities = ["query", "transfer"]
+    capabilities = ["extract", "handoff"]
     parameters = {"contact": WECHAT_CONTACT_PARAM}
     expected_changes = WECHAT_SEND_CHANGES
 
@@ -229,7 +229,7 @@ class RedbookAuthorFollowersToWechat(BaseTask):
     objective = "hybrid"
     composition = "transfer"
     difficulty = "L3"
-    capabilities = ["search", "query", "social", "transfer"]
+    capabilities = ["search", "extract", "social", "handoff"]
     parameters = {"keyword": REDBOOK_KEYWORD_PARAM, "contact": WECHAT_CONTACT_PARAM}
     expected_changes = [
         "redbook.searchHistory",
@@ -264,7 +264,7 @@ class XLatestPostToReddit_WithTitleFormat(BaseTask):
     objective = "operate"
     composition = "transfer"
     difficulty = "L4"
-    capabilities = ["query", "create", "social", "transfer"]
+    capabilities = ["extract", "create", "social", "handoff"]
     parameters = {
         "user": {"type": "string", "default": "elonmusk"},
         "subreddit": {
@@ -320,7 +320,7 @@ class RedbookFollowingNoteCountToSms(BaseTask):
     objective = "hybrid"
     composition = "transfer"
     difficulty = "L4"
-    capabilities = ["query", "transfer"]
+    capabilities = ["extract", "handoff"]
     parameters = {
         "username": REDBOOK_FOLLOWING_USER_PARAM,
         "contact": {
@@ -349,7 +349,7 @@ class SpotifySongFullDetailsToRedbook(BaseTask):
     objective = "operate"
     composition = "transfer"
     difficulty = "L4"
-    capabilities = ["search", "query", "create", "transfer"]
+    capabilities = ["search", "extract", "create", "handoff"]
     parameters = {"song": {"type": "enum", "values": {"搁浅": "搁浅", "修炼爱情": "修炼爱情"}, "default": "搁浅"}}
     expected_changes = REDBOOK_PUBLISH_CHANGES + ["apps.spotify"]
 
@@ -379,7 +379,7 @@ class BilibiliTripleLikeThenMoments(BaseTask):
     objective = "operate"
     composition = "sequential"
     difficulty = "L3"
-    capabilities = ["social", "create", "transfer"]
+    capabilities = ["social", "create", "handoff"]
     parameters = {"partition": BILIBILI_PARTITION_PARAM, "rank": {"type": "int", "default": 1}}
     expected_changes = WECHAT_MOMENT_CHANGES + ["apps.bilibili.activeVideoId", "apps.bilibili.user"]
 
@@ -402,8 +402,8 @@ class RedbookDmThenWechatReport(BaseTask):
     scope = "S2"
     objective = "operate"
     composition = "sequential"
-    difficulty = "L2"
-    capabilities = ["social", "transfer"]
+    difficulty = "L3"
+    capabilities = ["social", "handoff"]
     parameters = {
         "username": REDBOOK_FOLLOWING_USER_PARAM,
         "message": {"type": "string", "default": "你好呀"},
@@ -433,7 +433,7 @@ class NotesContentToRedbookAndX(BaseTask):
     objective = "operate"
     composition = "transfer"
     difficulty = "L2"
-    capabilities = ["create", "transfer"]
+    capabilities = ["create", "handoff"]
     parameters = {"topic": {"type": "string", "default": "AI代理"}}
     expected_changes = NOTES_CREATE_CHANGES + REDBOOK_PUBLISH_CHANGES + X_POST_CHANGES + ["os.clipboard"]
 
@@ -462,7 +462,7 @@ class DailyLogToMoments(BaseTask):
     objective = "operate"
     composition = "transfer"
     difficulty = "L4"
-    capabilities = ["query", "reasoning", "social", "transfer"]
+    capabilities = ["extract", "reasoning", "social", "handoff"]
     parameters = {}
     expected_changes = WECHAT_MOMENT_CHANGES
 
@@ -484,7 +484,7 @@ class CulturalChecklistToRedbook(BaseTask):
     objective = "operate"
     composition = "transfer"
     difficulty = "L4"
-    capabilities = ["query", "create", "transfer"]
+    capabilities = ["extract", "create", "handoff"]
     parameters = {}
     expected_changes = NOTES_CREATE_CHANGES + REDBOOK_PUBLISH_CHANGES + ["apps.spotify"]
 
@@ -512,7 +512,7 @@ class EbayCheapToRedbook(BaseTask):
     objective = "operate"
     composition = "transfer"
     difficulty = "L3"
-    capabilities = ["search", "create", "transfer"]
+    capabilities = ["search", "create", "handoff"]
     parameters = {"product": EBAY_SEARCH_QUERY_PARAM}
     expected_changes = EBAY_SEARCH_CHANGES + REDBOOK_PUBLISH_CHANGES
 
@@ -546,7 +546,7 @@ class SpotifySaveCurrentSongToNotes(BaseTask):
     objective = "operate"
     composition = "transfer"
     difficulty = "L2"
-    capabilities = ["query", "create", "transfer"]
+    capabilities = ["extract", "create", "handoff"]
     expected_changes = NOTES_CREATE_CHANGES + ["apps.spotify"]
 
     def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:
@@ -564,7 +564,7 @@ class WechatReadingShareBookList(BaseTask):
     objective = "operate"
     composition = "deep_dive"
     difficulty = "L3"
-    capabilities = ["query", "transfer", "reasoning"]
+    capabilities = ["extract", "handoff", "reasoning"]
     parameters = {
         "n": {"type": "int", "default": 3},
         "contact": WECHAT_CONTACT_PARAM,
@@ -600,7 +600,7 @@ class ReadingPlanToNotes(BaseTask):
     objective = "operate"
     composition = "transfer"
     difficulty = "L4"
-    capabilities = ["query", "create", "transfer"]
+    capabilities = ["extract", "create", "handoff"]
     parameters = {}
     expected_changes = NOTES_CREATE_CHANGES
 
@@ -643,7 +643,7 @@ class FileManagerSendFileToWechatContact(BaseTask):
     objective = "operate"
     composition = "transfer"
     difficulty = "L4"
-    capabilities = ["query", "social", "transfer"]
+    capabilities = ["extract", "social", "handoff"]
     parameters = {"contact": WECHAT_CONTACT_PARAM}
     expected_changes = WECHAT_SEND_CHANGES
 
@@ -667,7 +667,7 @@ class NotesToWechatAndRedbook(BaseTask):
     objective = "operate"
     composition = "transfer"
     difficulty = "L4"
-    capabilities = ["create", "social", "transfer"]
+    capabilities = ["create", "social", "handoff"]
     parameters = {
         "text_keyword": {"type": "string", "default": "今天心情很好"},
         "contact": {"type": "string", "default": "王芳", "source": "apps.wechat.contacts[name]"},

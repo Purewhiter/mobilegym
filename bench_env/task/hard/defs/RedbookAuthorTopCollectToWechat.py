@@ -23,7 +23,7 @@ class RedbookAuthorTopCollectToWechat(BaseTask):
     objective = "operate"
     composition = "transfer"
     difficulty = "L4"
-    capabilities = ["search", "query", "reasoning", "transfer"]
+    capabilities = ["search", "extract", "reasoning", "handoff"]
     parameters = {
         "query": {
             "type": "enum",

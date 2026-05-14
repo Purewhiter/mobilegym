@@ -20,7 +20,7 @@ class WeatherFirstNonRainyToCalendarAndSms(BaseTask):
     objective = "operate"
     composition = "deep_dive"
     difficulty = "L3"
-    capabilities = ["query", "reasoning", "create", "transfer"]
+    capabilities = ["extract", "reasoning", "create", "handoff"]
     parameters = {
         "city": {
             "type": "enum",
