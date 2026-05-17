@@ -577,8 +577,8 @@ Runner 结束后
 │  - goal_success: 目标是否达成            │
 │  - progress: 目标完成度 (0.0~1.0)        │
 │  - no_unexpected_changes: 无副作用       │
-│  - premature_termination: Agent 提前结束但未完成 │
-│  - overdue_termination: 步数耗尽未结束   │
+│  - false_complete: Agent 声明完成但未 fully successful │
+│  - overdue_termination: 达成目标但未主动结束 │
 │  - steps: 执行步数                       │
 │  - error: 错误信息                       │
 └─────────────────────────────────────────┘
@@ -588,9 +588,9 @@ Runner 结束后
    print_summary() 输出统计：
      - Success Rate (SR)
      - Progress Rate (PR)
-     - Premature Termination Rate (PTR)
-     - Overdue Termination Rate (OTR)
-     - Unexpected Side Effects
+     - False Complete (FC)
+     - Overdue Termination (OT)
+     - Unexpected Side Effects (USE)
      - Avg Steps (success / all)
      - 按 suite 分组的 SR/PR 表格
 ```

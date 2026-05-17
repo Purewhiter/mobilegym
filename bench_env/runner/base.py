@@ -444,7 +444,7 @@ class EpisodeResult:
     - Execution (trace, steps, runtime)
     - Judge (success, progress, issues, warnings)
     - Trial Info (trial_id for pass@k evaluation)
-    - Termination analysis (premature / overdue)
+    - Termination analysis (false complete / overdue)
     """
     task_id: str
     task_name: str
@@ -517,9 +517,14 @@ class EpisodeResult:
         return None
 
     @property
-    def premature_termination(self) -> bool:
-        """Agent declared FINISH but the goal was not achieved (excludes error episodes)."""
-        return self.execution.finished and not self.goal_success and not self.error
+    def false_complete(self) -> bool:
+        """Agent declared FINISH but the episode is not fully successful.
+
+        Paper definition (FC): the agent issued COMPLETE but the run does not
+        count as a full success — either the goal was not reached or there were
+        unexpected side effects. Equivalent to `COMPLETE AND NOT is_success`.
+        """
+        return self.execution.stop_reason == ActionType.COMPLETE and not self.success and not self.error
 
     @property
     def overdue_termination(self) -> bool:
@@ -551,7 +556,7 @@ class EpisodeResult:
             "is_success": self.success,
             "is_error": self.error is not None,
             "progress": self.progress,
-            "premature_termination": self.premature_termination,
+            "false_complete": self.false_complete,
             "overdue_termination": self.overdue_termination,
         }
         # Task taxonomy (omit empty)
@@ -684,9 +689,9 @@ class BaseRunner(ABC):
         finished = [r for r in valid if r.execution.finished]
         truncated = [r for r in valid if r.execution.truncated]
 
-        premature = sum(1 for r in valid if r.premature_termination)
+        false_complete = sum(1 for r in valid if r.false_complete)
         overdue = sum(1 for r in valid if r.overdue_termination)
-        ptr = premature / total
+        fc_rate = false_complete / total
         otr = overdue / total
 
         successful_steps = [r.steps for r in valid if r.success]
@@ -701,9 +706,9 @@ class BaseRunner(ABC):
         logger.info(f"{'='*60}")
         logger.info(f"  Success Rate (SR):              {success_count}/{valid_count} = {sr:.1%}")
         logger.info(f"  Progress Rate (PR):             {pr:.1%}")
-        logger.info(f"  Premature Termination (PTR):    {premature}/{total} = {ptr:.1%}")
-        logger.info(f"  Overdue Termination (OTR):      {overdue}/{total} = {otr:.1%}")
-        logger.info(f"  Unexpected Side Effects:        {dirty}/{total} = {dirty_rate:.1%}")
+        logger.info(f"  False Complete (FC):            {false_complete}/{total} = {fc_rate:.1%}")
+        logger.info(f"  Overdue Termination (OT):       {overdue}/{total} = {otr:.1%}")
+        logger.info(f"  Unexpected Side Effects (USE):  {dirty}/{total} = {dirty_rate:.1%}")
         logger.info(f"  Avg Steps (success):            {avg_steps_success:.1f}")
         logger.info(f"  Avg Steps (all):                {avg_steps_all:.1f}")
         logger.info(f"  Errors:                         {error_count}")

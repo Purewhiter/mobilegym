@@ -32,7 +32,7 @@ function extractFunctionSource(name: string): string {
 }
 
 function loadGetTaskIndicators(result: unknown) {
-  const helperSources = ['isErrorEpisode']
+  const helperSources = ['isErrorEpisode', 'isRealSuccess']
     .filter(name => runExplorerHtml.includes(`function ${name}(`))
     .map(extractFunctionSource)
     .join('\n');
@@ -47,13 +47,14 @@ function loadGetTaskIndicators(result: unknown) {
   return context.__fn as (task: unknown) => string[];
 }
 
-describe('run_explorer premature indicator alignment', () => {
-  it('does not tag premature for error episodes', () => {
+describe('run_explorer falseComplete indicator alignment', () => {
+  it('does not tag falseComplete for error episodes', () => {
     const getTaskIndicators = loadGetTaskIndicators({
       is_error: true,
       execution: {
         finished: true,
         truncated: false,
+        stop_reason: 'COMPLETE',
       },
       judge: {
         success: false,
@@ -61,15 +62,16 @@ describe('run_explorer premature indicator alignment', () => {
       },
     });
 
-    expect(getTaskIndicators({})).not.toContain('premature');
+    expect(getTaskIndicators({})).not.toContain('falseComplete');
   });
 
-  it('tags premature for finished non-error failures', () => {
+  it('tags falseComplete when agent declared COMPLETE but episode is not fully successful', () => {
     const getTaskIndicators = loadGetTaskIndicators({
       is_error: false,
       execution: {
         finished: true,
         truncated: false,
+        stop_reason: 'COMPLETE',
       },
       judge: {
         success: false,
@@ -77,6 +79,6 @@ describe('run_explorer premature indicator alignment', () => {
       },
     });
 
-    expect(getTaskIndicators({})).toContain('premature');
+    expect(getTaskIndicators({})).toContain('falseComplete');
   });
 });

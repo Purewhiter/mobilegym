@@ -125,15 +125,18 @@ def apply_judge_result(record: dict[str, Any], judge: JudgeResult) -> dict[str, 
     judge_error = bool(judge_dict.get("judge_error"))
     is_error = execution_error or judge_error
     stop_reason = str(execution.get("stop_reason") or "")
-    finished = bool(execution.get("finished")) or stop_reason == "COMPLETE"
     truncated = bool(execution.get("truncated"))
     goal_success = bool(judge.success)
 
     updated["judge"] = judge_dict
-    updated["is_success"] = (not is_error) and stop_reason == "COMPLETE" and bool(judge.passed)
+    is_success = (not is_error) and stop_reason == "COMPLETE" and bool(judge.passed)
+    updated["is_success"] = is_success
     updated["is_error"] = is_error
     updated["progress"] = float(judge.progress or 0.0)
-    updated["premature_termination"] = finished and not goal_success and not is_error
+    updated.pop("premature_termination", None)
+    # FC (论文 §3.5): agent 声明完成但 episode 未 fully successful
+    # (COMPLETE AND NOT is_success)；覆盖「goal 达成但有副作用」一类。
+    updated["false_complete"] = stop_reason == "COMPLETE" and (not is_success) and (not is_error)
     updated["overdue_termination"] = truncated and goal_success and not is_error
     return updated
 
