@@ -9,6 +9,6 @@ account.Railway12306RegisterThenLogin
 account.Railway12306ChangePassword
 account.Railway12306ForgotPasswordReset
 account.WechatAccountCancellation
-hard.AlipayThankTopIncomeTransfer
+crossapp_commerce.AlipayThankTopIncomeTransfer
 notes.DeleteAllCompletedTodos
 reddit.Reddit_DeleteSeededChatMessage
