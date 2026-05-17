@@ -78,7 +78,7 @@ def test_finish_run_summary_matches_memory_logic() -> None:
                 "is_success": success,
                 "is_error": err,
                 "progress": 1.0,
-                "premature_termination": False,
+                "false_complete": False,
                 "overdue_termination": False,
             }
 

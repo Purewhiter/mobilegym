@@ -441,12 +441,12 @@
       border-color: #7c3aed;
     }
 
-    .chip.premature {
+    .chip.falseComplete {
       background: #fce7f3;
       color: #be185d;
     }
 
-    .chip.premature.active {
+    .chip.falseComplete.active {
       border-color: #be185d;
     }
     
@@ -2121,11 +2121,11 @@
             <label class="chip sideEffect" title="勾选后仅显示带副作用的 trial（USE: judge.clean=false）">
               <input type="checkbox" id="fSideEffect"> 🔧 副作用
             </label>
-            <label class="chip overdue" title="勾选后仅显示超步数的 trial（OTR: truncated=true）">
+            <label class="chip overdue" title="勾选后仅显示超步数的 trial（OT: truncated=true 且 judge.success=true）">
               <input type="checkbox" id="fOverdue"> ⏱ 超步数
             </label>
-            <label class="chip premature" title="勾选后仅显示早终止的 trial（PTR: finished=true 且目标未达成）">
-              <input type="checkbox" id="fPremature"> 🚫 早终止
+            <label class="chip falseComplete" title="勾选后仅显示 false-complete 的 trial（FC: stop_reason=COMPLETE 但 is_success=false）">
+              <input type="checkbox" id="fFalseComplete"> 🚫 错误完成
             </label>
           </div>
         </div>
@@ -2934,10 +2934,10 @@
         </div>
       `;
       
-      // v2 评估协议多维指标（PR / PTR / OTR / USE）
+      // 论文 §3.5 评估指标（PR / FC / OT / USE）
       if (preTrialStats) {
         const pr = (preTrialStats.progressRate * 100).toFixed(1);
-        const ptr = (preTrialStats.prematureRate * 100).toFixed(1);
+        const fc = (preTrialStats.falseCompleteRate * 100).toFixed(1);
         const otr = (preTrialStats.overdueRate * 100).toFixed(1);
         const use = (preTrialStats.sideEffectRate * 100).toFixed(1);
         
@@ -2946,7 +2946,7 @@
             <div class="card-title">
               <div class="icon purple">📐</div>
               多维评估指标
-              <span style="font-size: 11px; font-weight: 400; color: var(--text-muted); margin-left: auto;">参考 SPA-Bench 7-metric 体系</span>
+              <span style="font-size: 11px; font-weight: 400; color: var(--text-muted); margin-left: auto;">论文 §3.5 评估协议</span>
             </div>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 16px;">
               <div style="padding: 16px; border-radius: var(--radius-sm); text-align: center; background: linear-gradient(135deg, var(--primary-light) 0%, var(--purple-light) 100%); border: 1px solid var(--border);">
@@ -2954,15 +2954,15 @@
                 <div style="font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-top: 4px;">Progress Rate</div>
                 <div style="font-size: 10px; color: var(--text-muted);">平均目标完成进度</div>
               </div>
-              <div style="padding: 16px; border-radius: var(--radius-sm); text-align: center; background: ${preTrialStats.prematureCount > 0 ? 'var(--error-light)' : 'var(--success-light)'}; border: 1px solid var(--border);">
-                <div style="font-size: 24px; font-weight: 800; color: ${preTrialStats.prematureCount > 0 ? 'var(--error)' : 'var(--success)'};">${ptr}%</div>
-                <div style="font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-top: 4px;">Premature Term.</div>
-                <div style="font-size: 10px; color: var(--text-muted);">声称完成但未达标 (${preTrialStats.prematureCount})</div>
+              <div style="padding: 16px; border-radius: var(--radius-sm); text-align: center; background: ${preTrialStats.falseCompleteCount > 0 ? 'var(--error-light)' : 'var(--success-light)'}; border: 1px solid var(--border);">
+                <div style="font-size: 24px; font-weight: 800; color: ${preTrialStats.falseCompleteCount > 0 ? 'var(--error)' : 'var(--success)'};">${fc}%</div>
+                <div style="font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-top: 4px;">False Complete</div>
+                <div style="font-size: 10px; color: var(--text-muted);">声称完成但未真正成功 (${preTrialStats.falseCompleteCount})</div>
               </div>
               <div style="padding: 16px; border-radius: var(--radius-sm); text-align: center; background: ${preTrialStats.overdueCount > 0 ? 'var(--warning-light)' : 'var(--success-light)'}; border: 1px solid var(--border);">
                 <div style="font-size: 24px; font-weight: 800; color: ${preTrialStats.overdueCount > 0 ? 'var(--warning)' : 'var(--success)'};">${otr}%</div>
                 <div style="font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-top: 4px;">Overdue Term.</div>
-                <div style="font-size: 10px; color: var(--text-muted);">达到步数上限 (${preTrialStats.overdueCount})</div>
+                <div style="font-size: 10px; color: var(--text-muted);">达成目标却未主动结束 (${preTrialStats.overdueCount})</div>
               </div>
               <div style="padding: 16px; border-radius: var(--radius-sm); text-align: center; background: ${preTrialStats.uncleanCount > 0 ? '#fff7ed' : 'var(--success-light)'}; border: 1px solid var(--border);">
                 <div style="font-size: 24px; font-weight: 800; color: ${preTrialStats.uncleanCount > 0 ? '#f97316' : 'var(--success)'};">${use}%</div>
@@ -2971,12 +2971,12 @@
               </div>
             </div>
             <div style="padding: 12px 16px; background: var(--bg); border-radius: var(--radius-sm); font-size: 12px; color: var(--text-secondary);">
-              <div style="margin-bottom: 6px;"><strong style="color: var(--text);">📌 指标定义：</strong></div>
+              <div style="margin-bottom: 6px;"><strong style="color: var(--text);">📌 指标定义（论文 §3.5）：</strong></div>
               <div style="display: grid; gap: 3px;">
                 <div><strong>PR (Progress Rate)</strong>：平均 check_goals 完成进度，mean(passed_checks / total_checks)</div>
-                <div><strong>PTR (Premature Termination)</strong>：Agent 声称完成但目标未达成 (finished=true, success=false)</div>
-                <div><strong>OTR (Overdue Termination)</strong>：达到 max_steps 仍未主动终止 (truncated=true)</div>
-                <div><strong>USE (Side Effects)</strong>：产生非预期状态变更 (judge.clean=false)</div>
+                <div><strong>FC (False Complete)</strong>：Agent 声明完成但 episode 未 fully successful (stop_reason=COMPLETE 且 is_success=false)</div>
+                <div><strong>OT (Overdue Termination)</strong>：达成 goal state 但未主动 COMPLETE，被 step budget / loop detection 截断 (truncated=true 且 judge.success=true)</div>
+                <div><strong>USE (Side Effects)</strong>：产生非预期状态变更 (judge.clean=false)，分母为全体 episode，与 SR/FC/OT 互不互斥</div>
               </div>
             </div>
           </div>
@@ -3721,21 +3721,30 @@
               stepsArr: [],
               actionCounts: {},
               progressSum: 0,
-              prematureCount: 0,
+              falseCompleteCount: 0,
               overdueCount: 0,
             };
           }
           const td = perTaskData[taskId];
           td.total++;
-          if (isRealSuccess(r)) td.success++;
+          const realSuccess = isRealSuccess(r);
+          if (realSuccess) td.success++;
           const goalOk = r.judge?.success === true;
           if (goalOk) td.goalSuccess++;
           td.progressSum += (r.progress ?? r.judge?.progress ?? (goalOk ? 1.0 : 0.0));
           const isErr = r.is_error || r.execution?.error || r.judge?.judge_error
             || r.judge?.issues?.some(i => 'error' in i);
           if (isErr) td.errorCount++;
-          if (!isErr && (r.premature_termination === true || (r.execution?.finished === true && !goalOk))) td.prematureCount++;
-          if (r.overdue_termination === true || r.execution?.truncated === true) td.overdueCount++;
+          // FC: stop_reason=COMPLETE 且 episode 未 fully successful (论文 §3.5)。
+          // 新字段 false_complete 存在时优先使用；历史 run 没有该字段时按 raw fields 重算，
+          // 避免旧 premature_termination 口径漏掉「goal 达成但有副作用」一类。
+          const fcFromRaw = (r.execution?.stop_reason === 'COMPLETE' && !realSuccess);
+          const fcFlag = r.false_complete === undefined ? fcFromRaw : r.false_complete === true;
+          if (!isErr && fcFlag) td.falseCompleteCount++;
+          // OT: 统一按 raw fields 重算 (truncated && goal_success)，与 overview /
+          // getTaskIndicators / METRICS_RECALC_NOTES 对齐。旧 run 中 overdue_termination
+          // 字段曾表示「所有 truncated」，不可信，必须忽略。
+          if (r.execution?.truncated === true && goalOk) td.overdueCount++;
           if (typeof steps === 'number') {
             td.stepsArr.push(steps);
           }
@@ -3770,7 +3779,7 @@
           successRate: validCount > 0 ? data.success / validCount : 0,
           goalSuccessRate: validCount > 0 ? data.goalSuccess / validCount : 0,
           progressRate: data.total > 0 ? data.progressSum / data.total : 0,
-          prematureRate: data.total > 0 ? data.prematureCount / data.total : 0,
+          falseCompleteRate: data.total > 0 ? data.falseCompleteCount / data.total : 0,
           overdueRate: data.total > 0 ? data.overdueCount / data.total : 0,
           avgSteps,
           topActions
@@ -3995,18 +4004,19 @@
       // 旧的 passed 统计 (基于 judge.passed = success AND clean)，保留用于兼容
       let totalPassed = 0;
       
-      // v2 评估协议聚合指标
+      // 论文 §3.5 聚合指标
       let progressSum = 0;         // 用于计算 Progress Rate (PR)
-      let prematureCount = 0;      // Premature Termination: finished=true 但 goal 未达成
-      let overdueCount = 0;        // Overdue Termination: truncated=true（达到 max_steps）
-      let uncleanCount = 0;        // Unexpected Side Effects: judge.clean=false
+      let falseCompleteCount = 0;  // FC: stop_reason=COMPLETE 但 episode 未 fully successful
+      let overdueCount = 0;        // OT: truncated=true 且 goal_success（达成目标却未主动结束）
+      let uncleanCount = 0;        // USE: judge.clean=false（独立诊断，与 SR/FC/OT 不互斥）
       let errorCount = 0;          // Judge/Exec errors (not agent's fault)
-      
+
       for (const r of resultsToAnalyze) {
         const success = r.judge?.success === true;
         const clean = r.judge?.clean === true;
         const finished = r.execution?.finished === true;
         const isCompleted = r.execution?.stop_reason === 'COMPLETE';
+        const realSuccess = isRealSuccess(r);
 
         if (success) {
           totalGoalSuccess++;
@@ -4035,17 +4045,22 @@
           || r.judge?.issues?.some(i => 'error' in i);
         if (isError) errorCount++;
         
-        // PTR: Agent 声称完成但目标未达成（排除 error episodes）
-        if (!isError && (r.premature_termination === true || (finished && !success))) {
-          prematureCount++;
+        // FC (论文 §3.5): stop_reason=COMPLETE 但 episode 未 fully successful。
+        // 新字段 false_complete 存在时优先使用；历史 run 没有该字段时按 raw fields 重算。
+        const fcFromRaw = isCompleted && !realSuccess;
+        const fcFlag = r.false_complete === undefined ? fcFromRaw : r.false_complete === true;
+        if (!isError && fcFlag) {
+          falseCompleteCount++;
         }
-        
-        // OTR: 达到 max_steps（truncated）仍未主动终止
-        if (r.overdue_termination === true || r.execution?.truncated === true) {
+
+        // OT (论文 §3.5): 达成 goal 但未主动 COMPLETE，被 step budget / loop 截断。
+        // NOTES 提示老 run 的 overdue_termination 字段语义曾经是「所有 truncation」，
+        // 不可信，统一按 raw fields 重算 (truncated=true 且 judge.success=true)。
+        if (r.execution?.truncated === true && success) {
           overdueCount++;
         }
-        
-        // USE: 有意外副作用
+
+        // USE: 有意外副作用（分母为全体 episode，与 SR/FC/OT 不互斥）
         if (!clean && r.judge != null) {
           uncleanCount++;
         }
@@ -4058,9 +4073,9 @@
       // 旧的 passed 率 (基于 judge.passed = success AND clean)，保留用于兼容
       const passedRate = validResults > 0 ? totalPassed / validResults : 0;
       
-      // v2 聚合指标
+      // 论文 §3.5 聚合指标
       const progressRate = totalResults > 0 ? progressSum / totalResults : 0;
-      const prematureRate = totalResults > 0 ? prematureCount / totalResults : 0;
+      const falseCompleteRate = totalResults > 0 ? falseCompleteCount / totalResults : 0;
       const overdueRate = totalResults > 0 ? overdueCount / totalResults : 0;
       const sideEffectRate = totalResults > 0 ? uncleanCount / totalResults : 0;
       
@@ -4088,8 +4103,8 @@
         perfectSuccess, passedButUnaware, sideEffectFinished, sideEffectUnaware,
         // 旧的 passed 统计
         totalPassed, totalResults, passedRate, passAtKPassed, passAtKSuccess,
-        // v2 评估协议聚合指标
-        progressRate, prematureRate, prematureCount, overdueRate, overdueCount, sideEffectRate, uncleanCount,
+        // 论文 §3.5 聚合指标
+        progressRate, falseCompleteRate, falseCompleteCount, overdueRate, overdueCount, sideEffectRate, uncleanCount,
         errorCount, validResults,
       };
     }
@@ -4161,7 +4176,7 @@
       const showError = el('fError').checked;
       const filterSideEffect = el('fSideEffect').checked;
       const filterOverdue = el('fOverdue').checked;
-      const filterPremature = el('fPremature').checked;
+      const filterFalseComplete = el('fFalseComplete').checked;
 
       // Update chip active states
       document.querySelectorAll('.chip').forEach(chip => {
@@ -4183,7 +4198,7 @@
         const selectedIssueTags = [];
         if (filterSideEffect) selectedIssueTags.push('sideEffect');
         if (filterOverdue) selectedIssueTags.push('overdue');
-        if (filterPremature) selectedIssueTags.push('premature');
+        if (filterFalseComplete) selectedIssueTags.push('falseComplete');
         if (selectedIssueTags.length > 0 && !selectedIssueTags.some(tag => tags.includes(tag))) {
           return false;
         }
@@ -4390,8 +4405,8 @@
     }
     
     // Get task primary outcome for a specific trial.
-    // 三类互斥：success（完美成功）/ error（系统/判定异常）/ failed（其余一切，含副作用、超步数、早终止、ABORT 等）。
-    // 副作用、超步数、早终止 等正交细节由 getTaskIndicators 返回。
+    // 三类互斥：success（完美成功）/ error（系统/判定异常）/ failed（其余一切，含副作用、超步数、错误完成、ABORT 等）。
+    // 副作用、超步数、错误完成 等正交细节由 getTaskIndicators 返回。
     function getTaskStatusForTrial(task) {
       const r = getResultForTask(task);
       if (!r) return 'unknown';
@@ -4408,7 +4423,7 @@
       return 'failed';
     }
 
-    // 任务的正交问题指标，与 overview 三指标 (PTR/OTR/USE) 对齐
+    // 任务的正交问题指标，与 overview 三指标 (FC / OT / USE) 对齐（论文 §3.5）。
     function getTaskIndicators(task) {
       const r = getResultForTask(task);
       if (!r) return [];
@@ -4416,11 +4431,16 @@
       const hasSysError = r.execution?.error || r.is_error || r.judge?.judge_error
           || r.judge?.issues?.some(i => 'error' in i);
       if (r.judge?.clean === false) tags.push('sideEffect');
-      if (r.overdue_termination === true || r.execution?.truncated === true) tags.push('overdue');
-      const finished = r.execution?.finished === true;
+      // OT: 重算 (truncated && goal_success)，避免老 run 中 overdue_termination 字段语义漂移。
       const goalSuccess = r.judge?.success === true;
-      if (!hasSysError && (r.premature_termination === true || (finished && !goalSuccess))) {
-        tags.push('premature');
+      if (r.execution?.truncated === true && goalSuccess) tags.push('overdue');
+      // FC: stop_reason=COMPLETE 且 episode 未 fully successful。
+      // 新字段 false_complete 存在时优先使用；历史 run 没有该字段时按 raw fields 重算。
+      const realSuccess = isRealSuccess(r);
+      const fcFromRaw = r.execution?.stop_reason === 'COMPLETE' && !realSuccess;
+      const fcFlag = r.false_complete === undefined ? fcFromRaw : r.false_complete === true;
+      if (!hasSysError && fcFlag) {
+        tags.push('falseComplete');
       }
       return tags;
     }
@@ -4428,7 +4448,7 @@
     const INDICATOR_LABELS = {
       sideEffect: { icon: '🔧', text: '副作用' },
       overdue: { icon: '⏱', text: '超步数' },
-      premature: { icon: '🚫', text: '早终止' },
+      falseComplete: { icon: '🚫', text: '错误完成' },
     };
     
     // Get result for a specific task/trial
@@ -4597,7 +4617,7 @@
                   <span style="width: 10px; height: 10px; background: var(--warning); border-radius: 2px;"></span>
                   错误
                 </span>
-                <span style="color: var(--text-muted);">指标：🔧 副作用 / ⏱ 超步数 / 🚫 早终止</span>
+                <span style="color: var(--text-muted);">指标：🔧 副作用 / ⏱ 超步数 / 🚫 错误完成</span>
               </div>
               <div class="trial-grid">
                 ${taskGroup.map((t, idx) => {
@@ -4785,8 +4805,17 @@
                 ['停止原因', ex.stop_reason],
                 ['提交答案', ex.agent_answer ? '✓ 已提交' : null],
                 ['运行时间', ex.runtime_s?.toFixed(2) + 's'],
-                ['提前终止', r.premature_termination === true ? '⚠ 是（Agent 声称完成但目标未达成）' : null],
-                ['超时终止', r.overdue_termination === true ? '⚠ 是（达到 max_steps 仍未完成）' : null],
+                ['False Complete', (() => {
+                  const hasSysError = r.execution?.error || r.is_error || r.judge?.judge_error
+                    || r.judge?.issues?.some(i => 'error' in i);
+                  // 新字段优先；缺失时按 raw fields 重算（论文 §3.5）。
+                  const fcFromRaw = ex.stop_reason === 'COMPLETE' && !isRealSuccess(r) && !hasSysError;
+                  const fc = r.false_complete === undefined ? fcFromRaw : r.false_complete === true;
+                  return fc ? '⚠ 是（Agent 声称完成但未 fully successful）' : null;
+                })()],
+                ['Overdue Termination', (r.execution?.truncated === true && r.judge?.success === true)
+                  ? '⚠ 是（达成目标却被 step budget / loop 截断）'
+                  : null],
                 ['开始时间', formatTime(r.start_time)],
                 ['结束时间', formatTime(r.end_time)],
               ].filter(([k, v]) => v != null && v !== '').map(([k, v]) => `
@@ -5487,7 +5516,7 @@
     });
     
     el('taskFilter').addEventListener('input', debounce(() => renderTaskList()));
-    ['fSuccess', 'fFailed', 'fError', 'fSideEffect', 'fOverdue', 'fPremature'].forEach(id => {
+    ['fSuccess', 'fFailed', 'fError', 'fSideEffect', 'fOverdue', 'fFalseComplete'].forEach(id => {
       el(id).addEventListener('change', () => renderTaskList());
     });
     

@@ -599,7 +599,7 @@ class MultiProcessRunner(BaseRunner):
             "is_success": False,
             "is_error": True,
             "progress": 0.0,
-            "premature_termination": False,
+            "false_complete": False,
             "overdue_termination": False,
             "max_steps": self.config.get_max_steps(task),
             "start_time": now,

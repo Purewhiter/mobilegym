@@ -45,7 +45,7 @@ type FilterState = {
   error?: boolean;
   sideEffect?: boolean;
   overdue?: boolean;
-  premature?: boolean;
+  falseComplete?: boolean;
 };
 
 type RenderOptions = {
@@ -65,7 +65,7 @@ function renderWithFilters(tasks: TaskStub[], filters: FilterState, options: Ren
     fError: { checked: filters.error ?? false },
     fSideEffect: { checked: filters.sideEffect ?? false },
     fOverdue: { checked: filters.overdue ?? false },
-    fPremature: { checked: filters.premature ?? false },
+    fFalseComplete: { checked: filters.falseComplete ?? false },
   };
 
   const chips = Object.values(inputs).map(input => ({
@@ -106,7 +106,7 @@ function renderWithFilters(tasks: TaskStub[], filters: FilterState, options: Ren
     INDICATOR_LABELS: {
       sideEffect: { icon: '🔧', text: '副作用' },
       overdue: { icon: '⏱', text: '超步数' },
-      premature: { icon: '🚫', text: '早终止' },
+      falseComplete: { icon: '🚫', text: '错误完成' },
     },
     console,
   };

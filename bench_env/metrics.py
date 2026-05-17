@@ -120,12 +120,6 @@ def _result_progress(result: Any) -> float:
     return float(getattr(result, "progress", 0.0) or 0.0)
 
 
-def _result_premature(result: Any) -> bool:
-    if isinstance(result, dict):
-        return bool(result.get("premature_termination"))
-    return bool(getattr(result, "premature_termination", False))
-
-
 def _result_overdue(result: Any) -> bool:
     if isinstance(result, dict):
         return bool(result.get("overdue_termination"))
@@ -363,18 +357,19 @@ def _compute_multidim_metrics(results: list["EpisodeResult"]) -> dict[str, float
     # PR — average progress across all episodes
     pr = sum(r.progress for r in valid) / n
 
-    # PTR — fraction of episodes where agent declared finish but didn't succeed
-    ptr = sum(1 for r in valid if r.premature_termination) / n
+    # FC — fraction of episodes where agent declared COMPLETE but the episode is
+    # not fully successful (paper §3.5: agent issued COMPLETE but the run is
+    # not a full success). Equivalent to `COMPLETE AND NOT is_success`.
+    fc = sum(1 for r in valid if r.false_complete) / n
 
-    # OTR — fraction of episodes that exhausted max_steps
+    # OT — fraction of episodes that reached the goal but never declared FINISH
+    # (truncated by step budget or loop detection).
     otr = sum(1 for r in valid if r.overdue_termination) / n
 
-    # USE — fraction of successful episodes with unexpected side effects
-    successful = [r for r in valid if r.goal_success]
-    use = (
-        sum(1 for r in successful if not r.no_unexpected_changes) / len(successful)
-        if successful else 0.0
-    )
+    # USE — fraction of episodes that introduce non-expected state changes.
+    # Paper §3.5: denominator is all episodes, independent of SR/FC/OT
+    # (mean(!clean), see runs/METRICS_RECALC_NOTES.md).
+    use = sum(1 for r in valid if r.judge and not r.no_unexpected_changes) / n
 
     # SER — step efficiency for successful episodes
     # golden_steps = min(len(p) for p in optimal_paths) if optimal_paths, else None
@@ -394,7 +389,7 @@ def _compute_multidim_metrics(results: list["EpisodeResult"]) -> dict[str, float
 
     out: dict[str, float] = {
         "progress_rate": pr,
-        "premature_termination_rate": ptr,
+        "false_complete_rate": fc,
         "overdue_termination_rate": otr,
         "unexpected_side_effects_rate": use,
     }

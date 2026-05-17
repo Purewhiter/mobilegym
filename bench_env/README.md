@@ -851,7 +851,7 @@ print(result.success)           # execution.finished AND stop_reason != ABORT AN
 print(result.goal_success)      # judge.success（仅看目标是否达成，不要求 Agent 主动 COMPLETE）
 print(result.progress)          # judge.progress
 print(result.steps)             # 等同于 result.execution.steps
-print(result.premature_termination)  # Agent 声明完成但目标未达成
+print(result.false_complete)    # Agent 声明完成但 episode 未 fully successful
 ```
 
 ## 实现新 Agent

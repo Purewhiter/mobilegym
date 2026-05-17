@@ -74,7 +74,7 @@ SPA-Bench 的独特贡献有二：
 
 **贡献 2：7 指标评估体系**：
 
-- 完成指标：Success Signal、Step Ratio（衡量步数效率）、Termination Reason、Premature Termination、Overdue Termination
+- 完成指标：Success Signal、Step Ratio（衡量步数效率）、Termination Reason、False Complete、Overdue Termination
 - 消耗指标：Time Spent、API Cost
 
 注：SPA-Bench 的 Step Ratio 定义为 actual/golden（>1 表示冗余步骤），我们在 Part 6 中采用倒数形式 golden/actual（≤1，越接近 1 越高效），语义等价但方向相反。
@@ -829,8 +829,8 @@ class FilterHeadphonesJapanCount(CriteriaTask):
 | -------------------------------- | -------------------------------- | ------------------------------------------------ |
 | Success Rate (SR)                | 任务成功的比例                   | 主指标                                           |
 | Progress Rate (PR)               | 平均任务完成进度                 | 部分奖励：`mean(passed_checks / total_checks)` |
-| Premature Termination Rate (PTR) | agent 认为完成但实际未完成的比例 | 衡量 agent 的自知能力                            |
-| Overdue Termination Rate (OTR)   | 已完成但 agent 未停止的比例      | 衡量 agent 的停止判断能力                        |
+| False Complete (FC)              | agent 声明完成但 episode 未 fully successful 的比例 | 衡量 agent 的完成判断能力        |
+| Overdue Termination (OT)         | 已完成但 agent 未停止的比例      | 衡量 agent 的停止判断能力                        |
 
 **效率指标：**
 
