@@ -115,7 +115,7 @@ On a 59-task signal-bucket subset, **10 GRPO steps on one node** lift Qwen3-VL-4
 
 ```bash
 # Frontend (the simulator itself)
-git clone https://github.com/<YOUR_ORG>/mobilegym.git
+git clone https://github.com/Purewhiter/mobilegym.git
 cd mobilegym
 npm install
 
@@ -460,6 +460,6 @@ If MobileGym helps your research, please cite us:
 
 **Built for agents that learn by doing — and verified to transfer to the real world.** 🪐
 
-[🌐 Website](https://mobilegym.dev) · [📄 Paper](https://arxiv.org/abs/XXXX.XXXXX) · [🐛 Issues](https://github.com/<YOUR_ORG>/mobilegym/issues) · [💬 Discussions](https://github.com/<YOUR_ORG>/mobilegym/discussions)
+[🌐 Website](https://mobilegym.dev) · [📄 Paper](https://arxiv.org/abs/XXXX.XXXXX) · [🐛 Issues](https://github.com/Purewhiter/mobilegym/issues) · [💬 Discussions](https://github.com/Purewhiter/mobilegym/discussions)
 
 </div>
