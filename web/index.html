@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>MobileGym: A Verifiable and Scalable Simulation Environment for Mobile GUI Agent Research</title>
-<meta name="description" content="MobileGym is a verifiable and scalable simulation environment for mobile GUI agent research — code-level state verification, structured state snapshots, identical-state replication, and scalable online RL across 28 mobile apps." />
+<meta name="description" content="MobileGym is a verifiable and scalable simulation environment for mobile GUI agent research — programmatic state verification, structured state snapshots, identical-state replication, and scalable online RL across 28 mobile apps." />
 <link rel="canonical" href="https://mobilegym.dev/paper/" />
 <meta property="og:title" content="MobileGym: A Verifiable and Scalable Simulation Environment for Mobile GUI Agent Research" />
 <meta property="og:description" content="Structured environment state enables verifiable evaluation (vs. 10.2% VLM-judge misjudgment) and scalable online training (single-machine batch-parallel GRPO). 28 apps, 416 parameterized task templates, +40.7 pt Sim-to-Real." />
@@ -13,10 +13,10 @@
 <meta property="og:image" content="https://mobilegym.dev/paper/figures/figure1.jpg" />
 <meta property="og:image:width" content="2400" />
 <meta property="og:image:height" content="1367" />
-<meta property="og:image:alt" content="MobileGym poster: a verifiable and scalable simulation environment for mobile GUI agents — 28 apps, 416 parameterized task templates, code-level judge, parallel rollouts, easy extension, safe sandbox; 9 agents on 256 tasks (best SR 58.8% / best L4 SR 25.4%); Qwen3-VL-4B + GRPO gains +12.8 pt in simulation; 95.1% of simulation training gain retained on real devices." />
+<meta property="og:image:alt" content="MobileGym poster: a verifiable and scalable simulation environment for mobile GUI agents — 28 apps, 416 parameterized task templates, programmatic judge, parallel rollouts, easy extension, safe sandbox; 9 agents on 256 tasks (best SR 58.8% / best L4 SR 21.9%); Qwen3-VL-4B + GRPO gains +12.8 pt in simulation; 95.1% of simulation training gain retained on real devices." />
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="MobileGym: A Verifiable and Scalable Simulation Environment for Mobile GUI Agent Research" />
-<meta name="twitter:description" content="28 apps, 416 parameterized task templates, code-level state verification, scalable online RL, +40.7 pt Sim-to-Real." />
+<meta name="twitter:description" content="28 apps, 416 parameterized task templates, programmatic state verification, scalable online RL, +40.7 pt Sim-to-Real." />
 <meta name="twitter:image" content="https://mobilegym.dev/paper/figures/figure1.jpg" />
 
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%B1%3C/text%3E%3C/svg%3E" />
@@ -645,7 +645,7 @@
   <div class="relative rounded-2xl border border-blue-200/60 bg-gradient-to-br from-blue-50/70 via-white to-emerald-50/30 p-7 md:p-8 mb-12 shadow-sm">
     <span class="absolute -top-2.5 left-6 px-2 bg-white text-[10px] ui font-bold uppercase tracking-[0.22em] text-brand-os">TL;DR</span>
     <p class="text-lg leading-relaxed text-stone-800">
-      MobileGym is a verifiable and scalable simulation environment for mobile GUI agent research — the first to make <span class="font-semibold text-stone-900">online RL training and deterministic evaluation feasible on commercial apps</span>, long a structural blind spot of real-device pipelines. It covers <span class="font-semibold text-stone-900">28 mobile apps (12 commercial + 16 system)</span> in the browser. Across the released validation suite, <span class="font-semibold text-stone-900">code-level state judges</span> show no false accept/reject cases over 416 parameterized task templates (vs. 10.2% misjudgment when the same real-device trajectories are scored by a VLM), giving a clean RL reward signal; <span class="font-semibold text-stone-900">structured state replication</span> (∼400 MB per browser instance) makes single-machine batch-parallel GRPO cheap. <span class="font-semibold text-emerald-700">Sim-to-Real</span>: GRPO fine-tuning of Qwen3-VL-4B lifts simulation SR by +42.8 pt; on a 59-task real-device-runnable subset, the gain is preserved at <span class="font-semibold text-stone-900">+40.7&nbsp;pt</span> — 95% retention.
+      MobileGym is a verifiable and scalable simulation environment for mobile GUI agent research — the first to make <span class="font-semibold text-stone-900">online RL training and deterministic evaluation feasible on real-world daily apps</span>, long a structural blind spot of real-device pipelines. It covers <span class="font-semibold text-stone-900">28 mobile apps (12 daily + 16 system)</span> in the browser. Across the released validation suite, <span class="font-semibold text-stone-900">programmatic state judges</span> show no false accept/reject cases over 416 parameterized task templates (vs. 10.2% misjudgment when the same real-device trajectories are scored by a VLM), giving a clean RL reward signal; <span class="font-semibold text-stone-900">structured state replication</span> (∼400 MB per browser instance) makes single-machine batch-parallel GRPO cheap. <span class="font-semibold text-emerald-700">Sim-to-Real</span>: GRPO fine-tuning of Qwen3-VL-4B lifts overall simulation SR by <span class="font-semibold text-stone-900">+12.8&nbsp;pt</span> (9.4%→22.2%); on the 59-task real-device-runnable signal-bucket subset, the <span class="font-semibold text-stone-900">+42.8&nbsp;pt</span> simulation gain is preserved as <span class="font-semibold text-stone-900">+40.7&nbsp;pt</span> on the real device — <span class="font-semibold text-stone-900">95.1% retention</span>.
     </p>
   </div>
 
@@ -656,7 +656,7 @@
         <line x1="12" y1="18" x2="12.01" y2="18"/>
       </svg>
       <div class="stat-num text-4xl font-bold text-brand-os">28</div>
-      <div class="text-xs uppercase tracking-wider text-stone-500 mt-1">Apps simulated<br/><span class="normal-case tracking-normal text-stone-400">12 commercial + 16 system</span></div>
+      <div class="text-xs uppercase tracking-wider text-stone-500 mt-1">Apps simulated<br/><span class="normal-case tracking-normal text-stone-400">12 daily + 16 system</span></div>
     </div>
     <div>
       <svg class="w-5 h-5 mb-2 text-brand-app" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -690,7 +690,7 @@
 <!-- OVERVIEW FIGURE                                              -->
 <!-- ============================================================ -->
 <section class="container-narrow mx-auto px-6 py-10 border-t border-stone-200">
-  <img src="figures/figure1.jpg" alt="MobileGym poster: a verifiable and scalable simulation environment for mobile GUI agents — 28 apps, 416 parameterized task templates, code-level judge, parallel rollouts, easy extension, safe sandbox; 9 agents on 256 tasks (best SR 58.8% / best L4 SR 25.4%); Qwen3-VL-4B + GRPO gains +12.8 pt in simulation; 95.1% of simulation training gain retained on real devices."
+  <img src="figures/figure1.jpg" alt="MobileGym poster: a verifiable and scalable simulation environment for mobile GUI agents — 28 apps, 416 parameterized task templates, programmatic judge, parallel rollouts, easy extension, safe sandbox; 9 agents on 256 tasks (best SR 58.8% / best L4 SR 21.9%); Qwen3-VL-4B + GRPO gains +12.8 pt in simulation; 95.1% of simulation training gain retained on real devices."
        class="w-full rounded-lg border border-stone-200 shadow-sm" />
 </section>
 
@@ -712,7 +712,7 @@
   <div class="apps-marquee-row">
     <div class="apps-marquee-meta">
       <span class="bar" style="background:#10B981"></span>
-      <span class="apps-marquee-meta-label">Commercial</span>
+      <span class="apps-marquee-meta-label">Daily</span>
       <span class="apps-marquee-meta-count">12</span>
     </div>
     <div class="apps-marquee">
@@ -972,7 +972,7 @@
   </div>
 
   <p class="ui text-xs text-stone-500 mt-8 text-center leading-relaxed">
-    All registered via <code class="mono text-stone-700 bg-stone-100 px-1.5 py-0.5 rounded">manifest auto-discovery</code> — adding a new app needs zero changes to the OS or benchmark layer. <span class="text-stone-400">~3–4 person-days per commercial app, &lt;1 day per system app.</span>
+    All registered via <code class="mono text-stone-700 bg-stone-100 px-1.5 py-0.5 rounded">manifest auto-discovery</code> — adding a new app needs zero changes to the OS or benchmark layer. <span class="text-stone-400">~3–4 person-days per daily app, &lt;1 day per system app.</span>
   </p>
 </section>
 
@@ -982,7 +982,7 @@
 <section class="container-narrow mx-auto px-6 py-12 border-t border-stone-200">
   <h2 class="ui text-2xl font-bold mb-5 text-stone-900">What's Missing: Verification and Training at Scale</h2>
   <p class="text-stone-700 leading-relaxed mb-4">
-    Trustworthy evaluation and scalable online training both require uniform state programmability — yet existing real-device and emulator-based pipelines provide it only partially. We identify three gaps that affect all mobile GUI tasks but are most acute on <em>account-bound, backend-dependent, and high-consequence commercial-app tasks</em>.
+    Trustworthy evaluation and scalable online training both require uniform state programmability — yet existing real-device and emulator-based pipelines provide it only partially. We identify three gaps that affect all mobile GUI tasks but are most acute on <em>account-bound, backend-dependent, and high-consequence daily-app tasks</em>.
   </p>
   <div class="grid md:grid-cols-3 gap-4 my-6 ui">
     <div class="border border-stone-200 rounded-lg p-5 bg-white">
@@ -1002,7 +1002,7 @@
     </div>
   </div>
   <p class="text-stone-700 leading-relaxed">
-    MobileGym addresses all three gaps with a single mechanism — <strong>explicit, structured environment state</strong>. The same controllability that makes outcomes verifiable (code-level state judges replace VLM-as-judge) also makes online RL feasible (state snapshot/restore + multi-instance launch from the same environment data). Categories like payment, ticketing, and account management — long set aside by real-device pipelines — become accessible to programmatic evaluation and large-scale online RL.
+    MobileGym addresses all three gaps with a single mechanism — <strong>explicit, structured environment state</strong>. The same controllability that makes outcomes verifiable (programmatic state judges replace VLM-as-judge) also makes online RL feasible (state snapshot/restore + multi-instance launch from the same environment data). Categories like payment, ticketing, and account management — long set aside by real-device pipelines — become accessible to programmatic evaluation and large-scale online RL.
   </p>
 </section>
 
@@ -1033,7 +1033,7 @@
     <div>
       <h3 class="ui text-lg font-semibold mb-3 text-stone-900">Leaderboard on MobileGym-Bench (test set, 256 tasks)</h3>
       <p class="text-stone-700 leading-relaxed mb-4">
-        We evaluate 9 representative agents on the test set. <strong>L1-L4</strong> are PR-calibrated diagnostic strata; L1 is relatively saturated, while L4 captures frontier-level tasks. <strong>SR</strong> is overall Success Rate.
+        We evaluate 9 representative agents on the test set. <strong>L1-L4</strong> are diagnostic strata calibrated jointly on the reference panel's mean SR and PR; L1 is relatively saturated, while L4 captures frontier-level tasks. <strong>SR</strong> is overall Success Rate.
       </p>
 
       <div class="overflow-x-auto ui">
@@ -1041,100 +1041,100 @@
           <thead>
             <tr class="border-b-2 border-stone-300 text-left">
               <th class="py-2 pr-4">Model</th>
-              <th class="py-2 px-2 text-right">L1<br/><span class="font-normal text-xs text-stone-400">(32)</span></th>
-              <th class="py-2 px-2 text-right">L2<br/><span class="font-normal text-xs text-stone-400">(72)</span></th>
+              <th class="py-2 px-2 text-right">L1<br/><span class="font-normal text-xs text-stone-400">(20)</span></th>
+              <th class="py-2 px-2 text-right">L2<br/><span class="font-normal text-xs text-stone-400">(73)</span></th>
               <th class="py-2 px-2 text-right">L3<br/><span class="font-normal text-xs text-stone-400">(83)</span></th>
-              <th class="py-2 px-2 text-right">L4<br/><span class="font-normal text-xs text-stone-400">(69)</span></th>
+              <th class="py-2 px-2 text-right">L4<br/><span class="font-normal text-xs text-stone-400">(80)</span></th>
               <th class="py-2 pl-4 pr-1 text-right border-l border-stone-200">SR</th>
             </tr>
           </thead>
           <tbody class="text-stone-700">
             <tr class="bg-stone-50">
-              <td class="py-1.5 pr-4 text-xs uppercase tracking-wider text-stone-500" colspan="6">Closed-source flagship</td>
+              <td class="py-1.5 pr-4 text-xs uppercase tracking-wider text-stone-500" colspan="6">Proprietary models</td>
             </tr>
             <tr class="border-b border-stone-100">
               <td class="py-2 pr-4 font-medium">Gemini 3.1 Pro</td>
-              <td class="py-2 px-2 text-right stat-num">96.9</td>
-              <td class="py-2 px-2 text-right stat-num">75.0</td>
-              <td class="py-2 px-2 text-right stat-num">57.8</td>
-              <td class="py-2 px-2 text-right stat-num">25.4</td>
+              <td class="py-2 px-2 text-right stat-num">97.5</td>
+              <td class="py-2 px-2 text-right stat-num">83.6</td>
+              <td class="py-2 px-2 text-right stat-num">63.3</td>
+              <td class="py-2 px-2 text-right stat-num">21.9</td>
               <td class="py-2 pl-4 pr-1 text-right stat-num font-semibold border-l border-stone-200 relative"><div class="absolute top-1.5 bottom-1.5 left-1 bg-blue-100/70 rounded-sm" style="width: 58.8%;"></div><span class="relative">58.8</span></td>
             </tr>
             <tr class="border-b border-stone-100">
               <td class="py-2 pr-4 font-medium">Doubao-Seed-2.0-Pro</td>
-              <td class="py-2 px-2 text-right stat-num">93.8</td>
-              <td class="py-2 px-2 text-right stat-num">83.3</td>
-              <td class="py-2 px-2 text-right stat-num">45.8</td>
-              <td class="py-2 px-2 text-right stat-num">7.2</td>
+              <td class="py-2 px-2 text-right stat-num">100.0</td>
+              <td class="py-2 px-2 text-right stat-num">93.2</td>
+              <td class="py-2 px-2 text-right stat-num">48.2</td>
+              <td class="py-2 px-2 text-right stat-num">6.2</td>
               <td class="py-2 pl-4 pr-1 text-right stat-num font-semibold border-l border-stone-200 relative"><div class="absolute top-1.5 bottom-1.5 left-1 bg-blue-100/70 rounded-sm" style="width: 52.0%;"></div><span class="relative">52.0</span></td>
             </tr>
             <tr class="border-b border-stone-100">
               <td class="py-2 pr-4 font-medium">Qwen3.6-Plus</td>
-              <td class="py-2 px-2 text-right stat-num">96.9</td>
-              <td class="py-2 px-2 text-right stat-num">63.9</td>
+              <td class="py-2 px-2 text-right stat-num">100.0</td>
+              <td class="py-2 px-2 text-right stat-num">78.1</td>
               <td class="py-2 px-2 text-right stat-num">44.6</td>
-              <td class="py-2 px-2 text-right stat-num">4.3</td>
+              <td class="py-2 px-2 text-right stat-num">3.8</td>
               <td class="py-2 pl-4 pr-1 text-right stat-num font-semibold border-l border-stone-200 relative"><div class="absolute top-1.5 bottom-1.5 left-1 bg-blue-100/70 rounded-sm" style="width: 45.7%;"></div><span class="relative">45.7</span></td>
             </tr>
             <tr class="bg-stone-50">
-              <td class="py-1.5 pr-4 text-xs uppercase tracking-wider text-stone-500" colspan="6">Open-source GUI agents</td>
+              <td class="py-1.5 pr-4 text-xs uppercase tracking-wider text-stone-500" colspan="6">Open-source GUI-specialized models</td>
             </tr>
             <tr class="border-b border-stone-100">
               <td class="py-2 pr-4 font-medium">AutoGLM-Phone-9B</td>
-              <td class="py-2 px-2 text-right stat-num">75.0</td>
-              <td class="py-2 px-2 text-right stat-num">26.7</td>
-              <td class="py-2 px-2 text-right stat-num">7.8</td>
-              <td class="py-2 px-2 text-right stat-num">2.2</td>
+              <td class="py-2 px-2 text-right stat-num">86.2</td>
+              <td class="py-2 px-2 text-right stat-num">33.6</td>
+              <td class="py-2 px-2 text-right stat-num">9.6</td>
+              <td class="py-2 px-2 text-right stat-num">1.9</td>
               <td class="py-2 pl-4 pr-1 text-right stat-num font-semibold border-l border-stone-200 relative"><div class="absolute top-1.5 bottom-1.5 left-1 bg-emerald-100/70 rounded-sm" style="width: 20.0%;"></div><span class="relative">20.0</span></td>
             </tr>
             <tr class="border-b border-stone-100">
               <td class="py-2 pr-4 font-medium">UI-TARS-1.5-8B</td>
-              <td class="py-2 px-2 text-right stat-num">60.2</td>
-              <td class="py-2 px-2 text-right stat-num">18.4</td>
-              <td class="py-2 px-2 text-right stat-num">1.8</td>
-              <td class="py-2 px-2 text-right stat-num">1.8</td>
+              <td class="py-2 px-2 text-right stat-num">77.5</td>
+              <td class="py-2 px-2 text-right stat-num">21.9</td>
+              <td class="py-2 px-2 text-right stat-num">3.0</td>
+              <td class="py-2 px-2 text-right stat-num">1.6</td>
               <td class="py-2 pl-4 pr-1 text-right stat-num font-semibold border-l border-stone-200 relative"><div class="absolute top-1.5 bottom-1.5 left-1 bg-emerald-100/70 rounded-sm" style="width: 13.8%;"></div><span class="relative">13.8</span></td>
             </tr>
             <tr class="border-b border-stone-100">
               <td class="py-2 pr-4 font-medium">UI-Venus-1.5-8B</td>
-              <td class="py-2 px-2 text-right stat-num">62.5</td>
-              <td class="py-2 px-2 text-right stat-num">19.4</td>
-              <td class="py-2 px-2 text-right stat-num">4.8</td>
-              <td class="py-2 px-2 text-right stat-num">2.2</td>
+              <td class="py-2 px-2 text-right stat-num">85.0</td>
+              <td class="py-2 px-2 text-right stat-num">21.9</td>
+              <td class="py-2 px-2 text-right stat-num">6.0</td>
+              <td class="py-2 px-2 text-right stat-num">1.9</td>
               <td class="py-2 pl-4 pr-1 text-right stat-num font-semibold border-l border-stone-200 relative"><div class="absolute top-1.5 bottom-1.5 left-1 bg-emerald-100/70 rounded-sm" style="width: 15.4%;"></div><span class="relative">15.4</span></td>
             </tr>
             <tr class="border-b border-stone-100">
               <td class="py-2 pr-4 font-medium">GUI-Owl-1.5-8B-Think</td>
-              <td class="py-2 px-2 text-right stat-num">61.7</td>
-              <td class="py-2 px-2 text-right stat-num">20.5</td>
-              <td class="py-2 px-2 text-right stat-num">3.9</td>
-              <td class="py-2 px-2 text-right stat-num">1.4</td>
+              <td class="py-2 px-2 text-right stat-num">76.2</td>
+              <td class="py-2 px-2 text-right stat-num">26.0</td>
+              <td class="py-2 px-2 text-right stat-num">4.2</td>
+              <td class="py-2 px-2 text-right stat-num">1.2</td>
               <td class="py-2 pl-4 pr-1 text-right stat-num font-semibold border-l border-stone-200 relative"><div class="absolute top-1.5 bottom-1.5 left-1 bg-emerald-100/70 rounded-sm" style="width: 15.1%;"></div><span class="relative">15.1</span></td>
             </tr>
             <tr class="border-b border-stone-100">
               <td class="py-2 pr-4 font-medium">Step-GUI-4B</td>
-              <td class="py-2 px-2 text-right stat-num">64.8</td>
-              <td class="py-2 px-2 text-right stat-num">12.5</td>
+              <td class="py-2 px-2 text-right stat-num">83.8</td>
+              <td class="py-2 px-2 text-right stat-num">17.8</td>
               <td class="py-2 px-2 text-right stat-num">2.4</td>
-              <td class="py-2 px-2 text-right stat-num">1.8</td>
+              <td class="py-2 px-2 text-right stat-num">1.6</td>
               <td class="py-2 pl-4 pr-1 text-right stat-num font-semibold border-l border-stone-200 relative"><div class="absolute top-1.5 bottom-1.5 left-1 bg-emerald-100/70 rounded-sm" style="width: 12.9%;"></div><span class="relative">12.9</span></td>
             </tr>
             <tr class="bg-stone-50">
-              <td class="py-1.5 pr-4 text-xs uppercase tracking-wider text-stone-500" colspan="6">General-purpose VLM</td>
+              <td class="py-1.5 pr-4 text-xs uppercase tracking-wider text-stone-500" colspan="6">Open-source generalist models</td>
             </tr>
             <tr class="border-b border-stone-100">
               <td class="py-2 pr-4 font-medium">Qwen3-VL-4B</td>
-              <td class="py-2 px-2 text-right stat-num">50.8</td>
-              <td class="py-2 px-2 text-right stat-num">10.1</td>
+              <td class="py-2 px-2 text-right stat-num">71.2</td>
+              <td class="py-2 px-2 text-right stat-num">12.3</td>
+              <td class="py-2 px-2 text-right stat-num">0.6</td>
               <td class="py-2 px-2 text-right stat-num">0.3</td>
-              <td class="py-2 px-2 text-right stat-num">0.4</td>
-              <td class="py-2 pl-4 pr-1 text-right stat-num font-semibold border-l border-stone-200 relative"><div class="absolute top-1.5 bottom-1.5 left-1 bg-stone-200/70 rounded-sm" style="width: 10.7%;"></div><span class="relative">10.7</span></td>
+              <td class="py-2 pl-4 pr-1 text-right stat-num font-semibold border-l border-stone-200 relative"><div class="absolute top-1.5 bottom-1.5 left-1 bg-stone-200/70 rounded-sm" style="width: 9.4%;"></div><span class="relative">9.4</span></td>
             </tr>
           </tbody>
         </table>
       </div>
       <p class="text-xs text-stone-500 ui mt-3">
-        Even Gemini 3.1 Pro reaches only <strong>25.4</strong> on L4, indicating substantial remaining headroom for future mobile GUI agents. Difficulty bins are PR-calibrated against the 8-model reference panel; calibration excludes Qwen3-VL-4B and its fine-tuned variants.
+        Even Gemini 3.1 Pro reaches only <strong>21.9</strong> on L4, indicating substantial remaining headroom for future mobile GUI agents. Difficulty bins are calibrated jointly on the reference panel's mean SR and PR; calibration excludes Qwen3-VL-4B and its fine-tuned variants.
       </p>
     </div>
 
@@ -1142,7 +1142,7 @@
     <div>
       <h3 class="ui text-lg font-semibold mb-3 text-stone-900">Sim-to-Real Transfer: +42.8 pt → +40.7 pt</h3>
       <p class="text-stone-700 leading-relaxed mb-4">
-        Reinforcement-fine-tuning Qwen3-VL-4B with GRPO on a single 3×RTX Pro 6000 node (∼3 hours, 96-way concurrent rollouts) lifts simulation SR from 9.4% → 22.2% (+12.8 pt). On a 59-task real-device subset, the training gain transfers consistently from simulation to the device:
+        Reinforcement-fine-tuning Qwen3-VL-4B with GRPO on a single 3×RTX Pro 6000 node (10 training steps, 96 parallel browser instances) lifts overall simulation SR from 9.4% → 22.2% (+12.8 pt). On the 59-task real-device-runnable signal-bucket subset, simulation SR rises from 33.9% → 76.7% (+42.8 pt) and the real-device pass rate rises from 32.2% → 72.9% (+40.7 pt) — a 95.1% retention of the simulation gain:
       </p>
 
       <div class="overflow-x-auto ui">
@@ -1165,7 +1165,7 @@
             <tr class="border-b border-stone-100">
               <td class="py-2 pr-4">Uplift</td>
               <td class="py-2 px-3 text-right stat-num text-stone-500">23</td>
-              <td class="py-2 px-3 text-right stat-num text-stone-500">2.3%</td>
+              <td class="py-2 px-3 text-right stat-num text-stone-500">2.2%</td>
               <td class="py-2 px-3 text-right stat-num text-stone-500">17.4%</td>
               <td class="py-2 px-3 text-right stat-num font-semibold bg-blue-50/60">80.7%</td>
               <td class="py-2 px-3 text-right stat-num font-semibold bg-blue-50/60">73.9%</td>
@@ -1181,7 +1181,7 @@
             <tr class="border-b border-stone-100">
               <td class="py-2 pr-4">Mid</td>
               <td class="py-2 px-3 text-right stat-num text-stone-500">18</td>
-              <td class="py-2 px-3 text-right stat-num text-stone-500">11.8%</td>
+              <td class="py-2 px-3 text-right stat-num text-stone-500">12.5%</td>
               <td class="py-2 px-3 text-right stat-num text-stone-500">22.2%</td>
               <td class="py-2 px-3 text-right stat-num font-semibold bg-blue-50/60">52.6%</td>
               <td class="py-2 px-3 text-right stat-num font-semibold bg-blue-50/60">50.0%</td>
