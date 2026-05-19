@@ -6,8 +6,8 @@ Grounded 评测通过 `AnswerSheet` APP，将 Agent 的答案提交转化为**�
 
 **两种评测模式并行**：
 
-- **text 模式**（默认）：Agent 通过 `ANSWER` action 的文本进行模糊匹配（`match_value`）
-- **grounded 模式**（`--eval-mode grounded`）：Agent 在 AnswerSheet 表单中填写答案，框架读取 UI 状态进行判定
+- **grounded 模式**（默认，`--eval-mode grounded`）：Agent 在 AnswerSheet 表单中填写答案，框架读取 UI 状态进行判定
+- **text 模式**（`--eval-mode text`）：Agent 通过 `ANSWER` action 的文本进行模糊匹配（`match_value`）
 
 ---
 

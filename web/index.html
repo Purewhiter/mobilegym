@@ -1057,30 +1057,85 @@
 <!-- THE GAP                                                      -->
 <!-- ============================================================ -->
 <section class="container-narrow mx-auto px-6 py-12 border-t border-stone-200">
-  <h2 class="ui text-2xl font-bold mb-5 text-stone-900">What's Missing: Verification and Training at Scale</h2>
-  <p class="text-stone-700 leading-relaxed mb-4">
-    Trustworthy evaluation and scalable online training both require uniform state programmability — yet existing real-device and emulator-based pipelines provide it only partially. We identify three gaps that affect all mobile GUI tasks but are most acute on <em>account-bound, backend-dependent, and high-consequence daily-app tasks</em>.
+  <div class="ui text-[11px] font-semibold uppercase tracking-[0.22em] text-stone-500 mb-3">Why daily apps stay out of reach</div>
+  <h2 class="ui text-2xl md:text-[28px] font-bold text-stone-900 mb-4 leading-tight">
+    Real-world apps are
+    <span class="text-rose-600">unreadable</span>,
+    <span class="text-rose-600">unresettable</span>,
+    and <span class="text-rose-600">unforgiving</span>.
+  </h2>
+  <p class="text-stone-700 leading-relaxed mb-8 md:text-lg">
+    That's why benchmarks quietly avoid WeChat, Alipay, and 12306 — and why online RL on the apps users actually live in has barely been attempted at scale. Three structural walls in the real-device pipeline:
   </p>
-  <div class="grid md:grid-cols-3 gap-4 my-6 ui">
-    <div class="border border-stone-200 rounded-lg p-5 bg-white">
-      <div class="text-xs uppercase tracking-wider text-stone-500 mb-2">Gap 1</div>
-      <div class="font-semibold text-stone-900 mb-2">State programmability is not uniform</div>
-      <div class="text-sm text-stone-600">State access relies on heterogeneous mechanisms (adb, uiautomator, accessibility tree, screenshot parsing) whose availability varies across apps. This often forces benchmarks to fall back to VLM-as-judge, where we measure 10.2% misjudgment.</div>
+
+  <div class="grid md:grid-cols-3 gap-4 mb-8 ui">
+    <!-- Card 1: read -->
+    <div class="relative rounded-xl border border-stone-200 bg-white p-6 overflow-hidden shadow-sm">
+      <span class="stat-num absolute -top-3 -right-1 text-[88px] font-bold text-stone-100 select-none leading-none pointer-events-none">01</span>
+      <div class="relative">
+        <div class="text-[11px] uppercase tracking-[0.18em] text-rose-600 font-semibold mb-2">Can't read it</div>
+        <h3 class="text-base font-semibold text-stone-900 mb-2 leading-snug">The screen is a summary, not the record</h3>
+        <p class="text-sm text-stone-600 leading-relaxed mb-4">
+          Did the transfer go to the right "Mom" — or the other contact with the same nickname? Did the cart settle on the SKU the user wanted, or the lookalike variant? Is the post actually live on the server, or stuck as a local draft? <code class="mono text-[12px] bg-stone-100 px-1 py-0.5 rounded">adb</code> and the accessibility tree see what's on screen — never the encrypted DBs, in-memory caches, or server records behind it.
+        </p>
+        <div class="flex items-center gap-1.5 text-[11px]">
+          <span class="inline-flex items-center px-2 py-0.5 rounded-md bg-rose-50 text-rose-700 font-semibold whitespace-nowrap">VLM fallback</span>
+          <span class="text-stone-500"><span class="stat-num font-semibold text-rose-700">10.2%</span> misjudgment</span>
+        </div>
+      </div>
     </div>
-    <div class="border border-stone-200 rounded-lg p-5 bg-white">
-      <div class="text-xs uppercase tracking-wider text-stone-500 mb-2">Gap 2</div>
-      <div class="font-semibold text-stone-900 mb-2">Hard to clone initial states at scale</div>
-      <div class="text-sm text-stone-600">GRPO requires multiple rollouts from <em>identical</em> initial states. Real-device state spans app-local data, system settings, account-server state, and cross-app context — bit-identical, isolated copies are at best engineering-intensive.</div>
+    <!-- Card 2: write -->
+    <div class="relative rounded-xl border border-stone-200 bg-white p-6 overflow-hidden shadow-sm">
+      <span class="stat-num absolute -top-3 -right-1 text-[88px] font-bold text-stone-100 select-none leading-none pointer-events-none">02</span>
+      <div class="relative">
+        <div class="text-[11px] uppercase tracking-[0.18em] text-rose-600 font-semibold mb-2">Can't reset it</div>
+        <h3 class="text-base font-semibold text-stone-900 mb-2 leading-snug">No way back to step zero</h3>
+        <p class="text-sm text-stone-600 leading-relaxed mb-4">
+          Task state lives in encrypted local DBs, in-memory caches, and the cloud. AVD file snapshots reach <em>none</em> of it. GRPO needs N rollouts from one identical state — impossible if you can't restore it even once.
+        </p>
+        <div class="flex items-center gap-1.5 text-[11px]">
+          <span class="inline-flex items-center px-2 py-0.5 rounded-md bg-rose-50 text-rose-700 font-semibold whitespace-nowrap">No parallel rollouts</span>
+        </div>
+      </div>
     </div>
-    <div class="border border-stone-200 rounded-lg p-5 bg-white">
-      <div class="text-xs uppercase tracking-wider text-stone-500 mb-2">Gap 3</div>
-      <div class="font-semibold text-stone-900 mb-2">Interactions pollute state — and some are irreversible</div>
-      <div class="text-sm text-stone-600">Every interaction modifies the environment; emulator file-snapshot reset costs seconds and often can't reach app internals. Money transfers, account deactivation, and ticket purchases carry real-world consequences and cannot be safely explored on a real device.</div>
+    <!-- Card 3: consequence -->
+    <div class="relative rounded-xl border border-stone-200 bg-white p-6 overflow-hidden shadow-sm">
+      <span class="stat-num absolute -top-3 -right-1 text-[88px] font-bold text-stone-100 select-none leading-none pointer-events-none">03</span>
+      <div class="relative">
+        <div class="text-[11px] uppercase tracking-[0.18em] text-rose-600 font-semibold mb-2">Can't undo it</div>
+        <h3 class="text-base font-semibold text-stone-900 mb-2 leading-snug">Actions touch the real world</h3>
+        <p class="text-sm text-stone-600 leading-relaxed mb-4">
+          A transfer moves real money. Account deletion is permanent. A "test" message reaches a real friend. You can't roll a real device through millions of training trajectories — at any price.
+        </p>
+        <div class="flex items-center gap-1.5 text-[11px]">
+          <span class="inline-flex items-center px-2 py-0.5 rounded-md bg-rose-50 text-rose-700 font-semibold whitespace-nowrap">Payment · ticketing skipped</span>
+        </div>
+      </div>
     </div>
   </div>
-  <p class="text-stone-700 leading-relaxed">
-    MobileGym addresses all three gaps with a single mechanism — <strong>explicit, structured environment state</strong>. The same controllability that makes outcomes verifiable (programmatic state judges replace VLM-as-judge) also makes online RL feasible (state snapshot/restore + multi-instance launch from the same environment data). Categories like payment, ticketing, and account management — long set aside by real-device pipelines — become accessible to programmatic evaluation and large-scale online RL.
-  </p>
+
+  <!-- "And it gets worse" — discrete-screenshot twist, transitions rose → emerald -->
+  <div class="mb-8 flex items-start gap-3 px-4 py-3 rounded-lg bg-rose-50/50 border-l-[3px] border-rose-300/80">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="text-rose-600 shrink-0 mt-0.5" aria-hidden="true">
+      <circle cx="12" cy="12" r="10"/>
+      <line x1="12" y1="8" x2="12" y2="12"/>
+      <line x1="12" y1="16" x2="12.01" y2="16"/>
+    </svg>
+    <p class="text-sm text-stone-700 leading-relaxed">
+      <span class="font-semibold text-stone-900">And it gets worse.</span> GUI agents — and the VLM judges that grade them — observe the world as <em>discrete screenshots</em> sampled at intervals, not continuous video. A success toast captured at exactly the wrong frame turns a failed transfer into a passing test; a half-rendered loading spinner can swing the verdict either way. The screen isn't just a summary — it's an <em>unreliable witness</em>.
+    </p>
+  </div>
+
+  <!-- "One mechanism, three answers" — turn-of-the-story panel -->
+  <div class="relative rounded-2xl border border-emerald-200/70 bg-gradient-to-br from-emerald-50/70 via-white to-blue-50/40 p-6 md:p-8 shadow-sm">
+    <span class="absolute -top-2.5 left-6 px-2 bg-white text-[10px] ui font-bold uppercase tracking-[0.22em] text-emerald-700">One Mechanism, Three Answers</span>
+    <p class="text-stone-800 leading-relaxed md:text-[17px]">
+      MobileGym answers all three with the same primitive: <span class="font-semibold text-stone-900">the entire environment is structured JSON</span>. State is
+      <span class="font-semibold text-emerald-700">readable</span> (judges inspect the structure directly — no VLM, no screenshots),
+      <span class="font-semibold text-emerald-700">writable</span> (snapshot, fork, and restore in milliseconds; hundreds of identical rollouts on one machine), and
+      <span class="font-semibold text-emerald-700">consequence-free</span> (every transfer, deletion, and purchase lives in a sandbox). Payment, ticketing, and account management — long skipped by real-device pipelines — become benchmarkable <em>and</em> trainable.
+    </p>
+  </div>
 </section>
 
 <!-- ============================================================ -->

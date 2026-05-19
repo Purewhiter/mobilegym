@@ -263,8 +263,8 @@ def create_parser() -> argparse.ArgumentParser:
     p.add_argument(
         "--eval-mode",
         choices=["text", "grounded"],
-        default="text",
-        help="Answer evaluation mode: text (legacy match_value), grounded (answer_sheet UI). Default: text",
+        default="grounded",
+        help="Answer evaluation mode: text (legacy match_value), grounded (answer_sheet UI). Default: grounded",
     )
     p.add_argument(
         "--judge-model",

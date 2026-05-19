@@ -77,7 +77,7 @@ Source: `bench_env/config.py`. Internal-only fields (`split_task_ids` / `run_dir
 | `judge_model` | same as `model_name` | VLM evaluation model |
 | `judge_base_url` | same as `model_base_url` | VLM API URL |
 | `judge_api_key` | same as `model_api_key` | VLM API key |
-| `eval_mode` | `text` | `text` / `grounded` (enables AnswerSheet UI) |
+| `eval_mode` | `grounded` | `text` / `grounded` (enables AnswerSheet UI) |
 
 ### Output
 

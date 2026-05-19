@@ -84,7 +84,7 @@ class RunnerConfig:
     judge_api_key: Optional[str] = None  # VLM API key (default: same as agent)
 
     # Grounded evaluation
-    eval_mode: str = "text"  # "text" | "grounded"
+    eval_mode: str = "grounded"  # "text" | "grounded"
     
     # Output
     runs_dir: Path = Path("runs")
@@ -251,7 +251,7 @@ class RunnerConfig:
             judge_base_url=get("judge_base_url"),
             judge_api_key=get("judge_api_key"),
 
-            eval_mode=get("eval_mode", "text"),
+            eval_mode=get("eval_mode", "grounded"),
             
             runs_dir=Path(get("runs_dir") or "runs"),
             no_save_trajectory=get("no_save_trajectory", False),
