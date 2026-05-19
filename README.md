@@ -13,7 +13,7 @@
 [![Python](https://img.shields.io/badge/python-%E2%89%A53.10-3776ab.svg)](https://www.python.org/)
 
 <p align="center">
-  <img src="assets/teaser.png" width="100%" alt="MobileGym poster — a verifiable and scalable simulation environment for mobile GUI agents: 28 apps, 416 parameterized task templates, code-level judge, parallel rollouts, easy extension, safe sandbox, and +40.7 pt sim-to-real transfer."/>
+  <img src="assets/teaser.jpg" width="100%" alt="MobileGym poster — a verifiable and scalable simulation environment for mobile GUI agents: 28 apps, 416 parameterized task templates, code-level judge, parallel rollouts, easy extension, safe sandbox, and +40.7 pt sim-to-real transfer."/>
 </p>
 
 </div>
