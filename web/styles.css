@@ -348,11 +348,17 @@ body.hero-scrolled .hero-demo-foot {
   .state-dock-tab[data-state-dock-tab="session"]::before,
   .state-dock-hint,
   .state-drawer,
+  .gesture-guide,
+  .gesture-guide-icon .gesture-trail,
   .hero-demo-foot,
   .hero-demo-scroll-hint,
   .hero-demo-scroll-hint svg {
     transition: none !important;
     animation: none !important;
+  }
+  .gesture-guide-icon .gesture-trail {
+    stroke-dashoffset: 0 !important;
+    opacity: 1 !important;
   }
 }
 
@@ -695,6 +701,198 @@ body[data-state-drawer-open="true"] .state-dock-hint {
   0%, 100% { transform: translateY(0); }
   50%      { transform: translateY(-3px); }
 }
+
+/* ============================================================ */
+/* Gesture Guide — left-side companion to .state-dock. Static    */
+/* legend explaining the three full-screen gestures the          */
+/* simulator listens for (edge-swipe back / swipe-up home /      */
+/* swipe-up-and-hold recents). Same glass-morphism + fade-in     */
+/* timing as the dock so they read as a matched pair.            */
+/* ============================================================ */
+.gesture-guide {
+  position: absolute;
+  /* Mirror of .state-dock: 14px outside the phone's left edge. */
+  right: calc(100% + 14px);
+  top: 50%;
+  transform: translateY(-50%);
+  width: 168px;
+  padding: 14px 14px 13px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.74);
+  border: 1px solid rgba(28, 25, 23, 0.08);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.7) inset,
+    0 12px 32px -10px rgba(15, 23, 42, 0.18),
+    0 4px 12px -6px rgba(15, 23, 42, 0.08);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  z-index: 4;
+  opacity: 0;
+  /* Buttons inside (.gesture-guide-icon) need clicks. The container
+     starts hidden pre-boot — pointer-events is gated by .is-booted
+     below so the buttons don't catch ghost clicks while invisible. */
+  pointer-events: none;
+  transition:
+    opacity 540ms cubic-bezier(0.4, 0, 0.2, 1) 320ms,
+    transform 540ms cubic-bezier(0.4, 0, 0.2, 1) 320ms;
+}
+.hero-demo.is-booted .gesture-guide {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(-50%);
+}
+
+.gesture-guide-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 2px 9px;
+  border-bottom: 1px solid rgba(28, 25, 23, 0.07);
+  margin-bottom: 9px;
+}
+.gesture-guide-eyebrow {
+  font: 700 9.5px/1 'Inter', system-ui, sans-serif;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: #1c1917;
+}
+.gesture-guide-meta {
+  font: 600 8.5px/1 'Inter', system-ui, sans-serif;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #2563eb;
+}
+
+.gesture-guide-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.gesture-guide-list > li { display: block; }
+
+/* Each row is now a real <button> — clicking anywhere on the row
+   (icon + label) fires the corresponding hardware-key action via
+   scripts/boot-hero.js. Reset native chrome, lay out like a flex
+   row with the icon on the left. */
+.gesture-guide-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 5px 6px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  -webkit-appearance: none;
+  appearance: none;
+  transition:
+    background-color 160ms ease,
+    transform 120ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.gesture-guide-item:hover {
+  background: rgba(28, 25, 23, 0.06);
+}
+.gesture-guide-item:hover .gesture-guide-icon {
+  border-color: rgba(28, 25, 23, 0.28);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    0 2px 6px rgba(15, 23, 42, 0.1);
+}
+.gesture-guide-item:hover .gesture-guide-label {
+  color: #1c1917;
+}
+.gesture-guide-item:active {
+  background: rgba(28, 25, 23, 0.12);
+  transform: scale(0.98);
+  transition-duration: 60ms;
+}
+.gesture-guide-item:active .gesture-guide-icon {
+  background: #1c1917;
+  color: #ffffff;
+  border-color: #1c1917;
+  box-shadow:
+    inset 0 1px 2px rgba(0, 0, 0, 0.45),
+    0 0 0 transparent;
+}
+.gesture-guide-item:focus-visible {
+  outline: 2px solid rgba(37, 99, 235, 0.55);
+  outline-offset: 1px;
+}
+
+.gesture-guide-icon {
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9px;
+  /* Solid fill + 1px stone border + soft top highlight reads as a
+     physical key, not a tag/badge. Matches the existing app icons in
+     the simulator below. */
+  background: #ffffff;
+  border: 1px solid rgba(28, 25, 23, 0.14);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    0 1px 2px rgba(15, 23, 42, 0.06);
+  color: #1c1917;
+  transition: background-color 160ms ease, color 160ms ease,
+    border-color 160ms ease, box-shadow 160ms ease;
+}
+.gesture-guide-icon svg {
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+.gesture-guide-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+.gesture-guide-label {
+  font: 600 11.5px/1.2 'Inter', system-ui, sans-serif;
+  color: #1c1917;
+  transition: color 160ms ease;
+}
+.gesture-guide-desc {
+  font: 400 10.5px/1.35 'Inter', system-ui, sans-serif;
+  color: #78716c;
+}
+
+/* Stroke trails inside each gesture icon — repeatedly "draw" the
+   swipe path so the SVG reads as motion, not a static glyph. The
+   three items are staggered so the page doesn't pulse in unison. */
+.gesture-guide-icon .gesture-trail {
+  stroke-dasharray: 22;
+  stroke-dashoffset: 22;
+  animation: gesture-trail 2.6s cubic-bezier(0.55, 0, 0.25, 1) infinite;
+}
+.gesture-guide-item:nth-child(1) .gesture-trail { animation-delay: 0ms; }
+.gesture-guide-item:nth-child(2) .gesture-trail { animation-delay: 700ms; }
+.gesture-guide-item:nth-child(3) .gesture-trail { animation-delay: 1400ms; }
+@keyframes gesture-trail {
+  0%   { stroke-dashoffset: 22; opacity: 0; }
+  18%  { opacity: 1; }
+  55%  { stroke-dashoffset: 0;  opacity: 1; }
+  80%  { stroke-dashoffset: 0;  opacity: 0.95; }
+  100% { stroke-dashoffset: 0;  opacity: 0; }
+}
+
+/* Narrow-viewport responsive rules for .gesture-guide are appended
+   AFTER the existing .state-dock @media block further down — see
+   the trailing @media block at the bottom of this file. CSS cascade
+   only honors the last matching rule, and the dock block re-sets
+   .state-dock { top: ... } in narrow mode, so the gesture-guide
+   override that pushes the dock down has to live after it. */
 
 /* ============================================================ */
 /* State Popover — anchored card to the right of the dock. No   */
@@ -1357,5 +1555,63 @@ textarea.studio-input {
   .apps-marquee-track {
     animation: none !important;
     transform: none !important;
+  }
+}
+
+/* ============================================================ */
+/* Gesture Guide — narrow-viewport collapse.                     */
+/* Placed at end-of-file so it cascades AFTER the .state-dock    */
+/* @media block above (which re-sets dock/hint positions). On    */
+/* narrow viewports the left-side legend collapses into an       */
+/* icon-only horizontal pill directly under the phone — Android  */
+/* soft-key bar — and pushes State Dock + hint further down.    */
+/* ============================================================ */
+@media (max-width: 1279px) {
+  .gesture-guide {
+    position: absolute;
+    left: 50%;
+    right: auto;
+    top: calc(100% + 14px);
+    transform: translate(-50%, 0);
+    width: auto;
+    padding: 6px 12px;
+    border-radius: 999px;
+  }
+  .hero-demo.is-booted .gesture-guide {
+    transform: translate(-50%, 0);
+  }
+  /* Drop all explanatory text — only the three keys remain visible. */
+  .gesture-guide-head,
+  .gesture-guide-text {
+    display: none;
+  }
+  .gesture-guide-list {
+    flex-direction: row;
+    gap: 6px;
+  }
+  .gesture-guide-item {
+    padding: 2px;
+    border-radius: 999px;
+  }
+  /* Row-level hover/active background made sense when the row also
+     held a text label; in icon-only mode the key itself carries all
+     the affordance, so the surrounding pill stays transparent. */
+  .gesture-guide-item:hover,
+  .gesture-guide-item:active {
+    background: transparent;
+  }
+
+  /* Push the State Dock and its "Patch state" hint below the new
+     gesture-key row so they don't collide. Phone wrap reserves the
+     combined height — without it the popover (which renders in
+     column flow below) would overlap the dock. */
+  .state-dock {
+    top: calc(100% + 76px);
+  }
+  .state-dock-hint {
+    top: calc(100% + 138px);
+  }
+  .demo-phone-wrap {
+    padding-bottom: 152px;
   }
 }
