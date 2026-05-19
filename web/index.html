@@ -137,6 +137,83 @@
           </button>
         </aside>
         <span class="state-dock-hint" aria-hidden="true">Patch state</span>
+
+        <!-- ============================================================ -->
+        <!-- Gesture Guide — 左侧"软键盘 + 图例"二合一卡片，与右侧 State    -->
+        <!-- Dock 对称。每个图标既是手势示意（SVG 内 .gesture-trail 用      -->
+        <!-- stroke-dasharray 动画反复"划出"轨迹），也是可点的硬键          -->
+        <!-- (data-gesture-action)，点击直接调用 iframe 内的                -->
+        <!-- __OS__.handleBack / goHome / showRecents。绑定见               -->
+        <!-- scripts/boot-hero.js 的委托。                                  -->
+        <!-- ============================================================ -->
+        <aside class="gesture-guide ui" aria-label="Phone gesture controls">
+          <div class="gesture-guide-head">
+            <span class="gesture-guide-eyebrow">Gestures</span>
+            <span class="gesture-guide-meta">or click</span>
+          </div>
+          <ul class="gesture-guide-list" role="list">
+            <li>
+              <button type="button" class="gesture-guide-item" data-gesture-action="back" aria-label="Back — same as edge-swipe">
+                <span class="gesture-guide-icon" aria-hidden="true">
+                  <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <!-- phone left edge -->
+                    <line x1="6" y1="5" x2="6" y2="27"/>
+                    <!-- finger contact dot -->
+                    <circle cx="6" cy="16" r="1.6" fill="currentColor" stroke="none"/>
+                    <!-- swipe trail rightward -->
+                    <path class="gesture-trail" d="M7.5 16 L 22 16"/>
+                    <polyline class="gesture-trail" points="18.5 12, 22 16, 18.5 20"/>
+                  </svg>
+                </span>
+                <span class="gesture-guide-text">
+                  <span class="gesture-guide-label">Back</span>
+                  <span class="gesture-guide-desc">Swipe in from left or right edge</span>
+                </span>
+              </button>
+            </li>
+            <li>
+              <button type="button" class="gesture-guide-item" data-gesture-action="home" aria-label="Home — same as swipe-up from bottom">
+                <span class="gesture-guide-icon" aria-hidden="true">
+                  <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <!-- home indicator bar at bottom -->
+                    <line x1="11" y1="27" x2="21" y2="27" stroke-width="2"/>
+                    <!-- finger contact dot -->
+                    <circle cx="16" cy="24" r="1.6" fill="currentColor" stroke="none"/>
+                    <!-- upward swipe trail -->
+                    <path class="gesture-trail" d="M16 22 L 16 8"/>
+                    <polyline class="gesture-trail" points="12 11.5, 16 8, 20 11.5"/>
+                  </svg>
+                </span>
+                <span class="gesture-guide-text">
+                  <span class="gesture-guide-label">Home</span>
+                  <span class="gesture-guide-desc">Swipe up from bottom edge</span>
+                </span>
+              </button>
+            </li>
+            <li>
+              <button type="button" class="gesture-guide-item" data-gesture-action="recents" aria-label="Recents — same as swipe-up and hold">
+                <span class="gesture-guide-icon" aria-hidden="true">
+                  <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <!-- stacked recents preview cards -->
+                    <rect x="8.5" y="5" width="15" height="8.5" rx="1.6"/>
+                    <line x1="11.5" y1="3" x2="20.5" y2="3" opacity="0.55"/>
+                    <!-- home indicator -->
+                    <line x1="11" y1="27" x2="21" y2="27" stroke-width="2"/>
+                    <!-- finger contact dot -->
+                    <circle cx="16" cy="24" r="1.6" fill="currentColor" stroke="none"/>
+                    <!-- short upward swipe + pause -->
+                    <path class="gesture-trail" d="M16 22 L 16 17"/>
+                    <polyline class="gesture-trail" points="13 19.5, 16 17, 19 19.5"/>
+                  </svg>
+                </span>
+                <span class="gesture-guide-text">
+                  <span class="gesture-guide-label">Recents</span>
+                  <span class="gesture-guide-desc">Swipe up &amp; hold mid-screen</span>
+                </span>
+              </button>
+            </li>
+          </ul>
+        </aside>
       </div>
     </div>
 
