@@ -1,0 +1,723 @@
+# bench_env Reference
+
+> Quick reference for CLI / type fields / action maps / path syntax. For design principles, workflow, and conventions see [`FRAMEWORK.md`](FRAMEWORK.md) and the docs under [`task/`](task/).
+
+---
+
+## 1. RunnerConfig fields
+
+Source: `bench_env/config.py`. Internal-only fields (`split_task_ids` / `run_dir` / `trajectory_dir` / `browser_log_dir` / `browser_log_prefix` / `max_steps_explicit`) are omitted.
+
+### Agent / Model
+
+| Field | Default | Description |
+|---|---|---|
+| `agent` | — | Agent identifier (`autoglm` / `gelab` / `generic` / `generic_v2` / `human` / `venus` / `gui_owl` / `uitars` / `mai_ui`) |
+| `model_name` | — | LLM model name |
+| `model_base_url` | — | LLM API base URL |
+| `model_api_key` | — | LLM API key (optional for local endpoints) |
+| `temperature` | `0.0` | |
+| `top_p` | `1.0` | |
+| `max_tokens` | `4096` | |
+| `no_stream` | `False` | Disable LLM streaming |
+| `infer_timeout` | `300.0` | Single-call wall-clock timeout in seconds (`0` = disabled) |
+
+### Environment
+
+| Field | Default | Description |
+|---|---|---|
+| `device` | `sim` | `sim` (simulator) / `real` (ADB) |
+| `env_url` | — | Simulator URL (required in sim mode) |
+| `device_serial` | — | ADB device serial (real mode) |
+| `headless` | `False` | Run simulator headless |
+| `proxy` | — | Browser proxy (e.g. `http://127.0.0.1:7890`) |
+| `coord_space` | `norm_0_1000` | Coordinate space (see §3) |
+| `delay_after_action` | `1.0` | Wait seconds after each action |
+| `physical_size` | `(1080, 2400)` | Device physical resolution |
+
+### Execution
+
+| Field | Default | Description |
+|---|---|---|
+| `max_steps` | `30` / adaptive | Max steps per Episode; if `--max-steps` is not passed, adapts to task difficulty (see below) |
+| `quiet` | `False` | Suppress INFO logs |
+| `loop_detect` | `0` | Threshold of consecutive identical actions (`0` = disabled) |
+
+### Task filtering
+
+| Field | Default | Description |
+|---|---|---|
+| `task_id` | — | Exact single task |
+| `task_ids` | — | List of task ids |
+| `suite` | — | List of suites (comma-separated) |
+| `sample_n` | — | Number of instances sampled per task |
+| `sample_seed` | — | Sampling random seed |
+| `split` | — | Task whitelist (`<name>` / `<name>+<name>` / `.txt` path) |
+| `filter_difficulty` | — | e.g. `["L1", "L2"]` |
+| `filter_objective` | — | e.g. `["query"]` |
+| `filter_composition` | — | e.g. `["atomic", "sequential"]` |
+| `filter_scope` | — | e.g. `["S1"]` |
+| `filter_capabilities` | — | ANY-match, e.g. `["query", "search"]` |
+| `filter_mode` | `"and"` | Logic between filter fields (`and` / `or`) |
+| `filter_has_answer_fields` | `None` | `True` / `False` / `None` (no constraint) |
+| `task_instructions` | — | `{task_id: instruction}` dict or JSON file path; overrides templates |
+
+### Pass@k
+
+| Field | Default | Description |
+|---|---|---|
+| `repeat_n` | `1` | Run each task N times |
+| `pass_k` | `[1, n]` if `n>1` | List of K values for pass@k |
+
+### Judge
+
+| Field | Default | Description |
+|---|---|---|
+| `judge_mode` | `auto` | `state` / `vlm` / `auto` (real → vlm, sim → state) |
+| `judge_model` | same as `model_name` | VLM evaluation model |
+| `judge_base_url` | same as `model_base_url` | VLM API URL |
+| `judge_api_key` | same as `model_api_key` | VLM API key |
+| `eval_mode` | `text` | `text` / `grounded` (enables AnswerSheet UI) |
+
+### Output
+
+| Field | Default | Description |
+|---|---|---|
+| `runs_dir` | `runs` | Root directory for results |
+| `no_save_trajectory` | `False` | Skip trajectory saving |
+| `screenshot_scale` | `0.3` | Screenshot scale factor |
+
+### Parallelism
+
+| Field | Default | Description |
+|---|---|---|
+| `parallel` | `1` | Number of parallel workers |
+| `processes` | `1` | Python shard processes; when `>1`, `parallel` is total concurrency |
+| `isolation` | `pages` | `pages` / `contexts` / `browsers` |
+| `num_browsers` | `0` | Explicit browser-process count; `0` = auto (`pages` / `contexts` → 1, `browsers` → N) |
+| `monitor` | `False` | Enable monitoring |
+
+> `list_online` is a CLI flag for `--list`, not a `RunnerConfig` field — when set, `--list` reads `__SIM__.getState()` from `--env-url` to render task descriptions; always runs headless.
+
+### Adaptive max_steps
+
+When `--max-steps` is not given, max steps adapts to task `difficulty`:
+
+| Difficulty | max_steps |
+|---|---|
+| L1 | 15 |
+| L2 | 30 |
+| L3 | 45 |
+| L4 | 60 |
+
+In `grounded` mode, tasks declaring `answer_fields` get an extra +15 steps automatically (for opening the AnswerSheet, filling it out, and submitting).
+
+---
+
+## 2. ActionType
+
+| Action | Description | Parameters |
+|---|---|---|
+| `CLICK` | Tap | `point: [x, y]` |
+| `DOUBLE_TAP` | Double tap | `point: [x, y]` |
+| `LONG_PRESS` | Long press | `point: [x, y]` |
+| `TYPE` | Type text | `value: str`, `point?: [x, y]`, `clear?: bool` (when True, clears the field first) |
+| `SWIPE` | Swipe (with inertia) | `point1: [x, y]`, `point2: [x, y]` |
+| `DRAG` | Drag (long-press then move, no inertia) | `point1: [x, y]`, `point2: [x, y]` |
+| `BACK` | Back key | — |
+| `HOME` | Home key | — |
+| `RECENT` | Recent apps key | — |
+| `ENTER` | Enter key | — |
+| `WAIT` | Wait | `value: seconds` |
+| `AWAKE` | Launch app | `value: app_id` |
+| `ANSWER` | Submit answer (does not terminate) | `value: answer` |
+| `COMPLETE` | Mark task done | `return: message` |
+| `ABORT` | Abandon task | `value: reason` |
+| `INFO` | Ask the user a question | `value: question` |
+| `NOOP` | No-op (agent-internal, does not affect env) | optional `message?: str` / `instruction?: str` / `unknown_action?: str` |
+
+---
+
+## 3. Coordinate space (`coord_space`)
+
+Device physical resolution defaults to 1080×2400. All coordinates are clamped to the screen.
+
+| Space | Input range | Mapping |
+|---|---|---|
+| `norm_0_1000` (default) | `x, y ∈ [0, 1000]` | `x_px = x/1000 * W`, `y_px = y/1000 * H` |
+| `norm_0_1` | `x, y ∈ [0, 1]` | `x_px = x * W`, `y_px = y * H` |
+| `physical` | physical pixels | used directly |
+
+---
+
+## 4. Agent action maps
+
+How each agent's output maps to `ActionType`.
+
+> The tables correspond directly to each agent's `ACTION_MAP`. If you change the code, keep these in sync.
+
+### GelabAgent (`agent/gelab.py`)
+
+Format: `action:ACTION_NAME\tparam:value`
+
+| Agent action | → `ActionType` | Parameters |
+|---|---|---|
+| `CLICK` | `CLICK` | `point` |
+| `LONGPRESS` | `LONG_PRESS` | `point` |
+| `TYPE` | `TYPE` | `value`, `point`, `clear` |
+| `SLIDE` | `SWIPE` | `point1`, `point2` |
+| `WAIT` | `WAIT` | `value` |
+| `AWAKE` | `AWAKE` | `value` |
+| `COMPLETE` | `COMPLETE` | `return` |
+| `ABORT` | `ABORT` | `value` |
+| `INFO` | `INFO` | `value` |
+| `ANSWER` | `ANSWER` | `value` |
+
+### AutoGLMAgent (`agent/autoglm.py`)
+
+Format: `do(action="Name", param=value)` or `finish(message="...")`
+
+| Agent action | → `ActionType` | Parameters |
+|---|---|---|
+| `Tap` | `CLICK` | `element` |
+| `Double Tap` | `DOUBLE_TAP` | `element` |
+| `Long Press` | `LONG_PRESS` | `element` |
+| `Swipe` | `SWIPE` | `start`, `end` |
+| `Type` / `Type_Name` | `TYPE` | `text` (implicit `clear=True`) |
+| `Back` / `Home` | `BACK` / `HOME` | — |
+| `Wait` | `WAIT` | `duration` |
+| `Launch` | `AWAKE` | `app` |
+| `Interact` / `Take_over` | `INFO` | `message` |
+| `Note` / `Call_API` | `NOOP` | `message` / `instruction` |
+| `Answer` | `ANSWER` | `text` |
+| `finish()` | `COMPLETE` | `message` |
+
+### GenericAgent (`agent/generic.py`)
+
+Format: `{"action": "...", "thought": "...", ...}`
+
+| Agent action | → `ActionType` | Parameters |
+|---|---|---|
+| `CLICK` / `TAP` | `CLICK` | `point` |
+| `LONGPRESS` / `LONG_PRESS` | `LONG_PRESS` | `point` |
+| `TYPE` | `TYPE` | `value` / `text`, `clear` |
+| `SWIPE` / `SLIDE` | `SWIPE` | `point1`/`start`, `point2`/`end` |
+| `DRAG` | `DRAG` | `point1`/`start`, `point2`/`end` |
+| `BACK` / `HOME` / `RECENT` / `ENTER` | `BACK` / `HOME` / `RECENT` / `ENTER` | — |
+| `WAIT` | `WAIT` | `value` / `duration` |
+| `AWAKE` / `LAUNCH` | `AWAKE` | `value` / `app` |
+| `INFO` | `INFO` | `value` / `question` |
+| `COMPLETE` / `FINISH` | `COMPLETE` | `return` / `message` |
+| `ABORT` | `ABORT` | `value` / `reason` |
+
+### GenericAgentV2 (`agent/generic_v2.py`, pure-vision think/answer)
+
+Format: `<think>...</think><answer>{"action":...}</answer>`
+
+Differences: no route info; no `INFO`; supports `DOUBLE_TAP` and `ANSWER`; answers must use `ANSWER` (don't stuff them into `COMPLETE.return`).
+
+| Agent action | → `ActionType` | Parameters |
+|---|---|---|
+| `CLICK` / `TAP` | `CLICK` | `point` |
+| `DOUBLE_TAP` / `DOUBLETAP` | `DOUBLE_TAP` | `point` |
+| `LONGPRESS` / `LONG_PRESS` | `LONG_PRESS` | `point` |
+| `TYPE` | `TYPE` | `value` / `text`, `point`, `clear` |
+| `SWIPE` / `SLIDE` | `SWIPE` | `point1`/`start`, `point2`/`end` |
+| `DRAG` | `DRAG` | `point1`/`start`, `point2`/`end` |
+| `BACK` / `HOME` / `RECENT` / `ENTER` | `BACK` / `HOME` / `RECENT` / `ENTER` | — |
+| `WAIT` | `WAIT` | `value` / `duration` |
+| `AWAKE` / `LAUNCH` | `AWAKE` | `value` / `app` |
+| `ANSWER` | `ANSWER` | `value` / `text` |
+| `COMPLETE` / `FINISH` | `COMPLETE` | `return` / `message` |
+| `ABORT` | `ABORT` | `value` / `reason` |
+
+### VenusAgent (`agent/venus.py`)
+
+Format: `Func(params)`. `ACTION_MAP` is built in `__init__` (needs `screen_size` to compute swipe duration).
+
+| Agent action | → `ActionType` | Parameters |
+|---|---|---|
+| `Click` | `CLICK` | `box` |
+| `LongPress` | `LONG_PRESS` | `box` (duration=500) |
+| `Scroll` | `SWIPE` | `start`, `end` (duration computed from distance) |
+| `Drag` | `DRAG` | `start`, `end` (duration computed from distance) |
+| `Type` | `TYPE` | `content` |
+| `Launch` | `AWAKE` | `app` |
+| `Wait` | `WAIT` | — |
+| `Finished` | `COMPLETE` | `content` |
+| `CallUser` | `INFO` | `content` |
+| `PressBack` / `PressHome` / `PressEnter` / `PressRecent` | `BACK` / `HOME` / `ENTER` / `RECENT` | — |
+
+### GUIOwl15Agent (`agent/gui_owl.py`)
+
+Format: tool_call XML + JSON. `system_button` is intercepted in `parse_response` and dispatched to `BACK` / `HOME` / `ENTER` / `RECENT` based on the `button` value.
+
+| Agent action | → `ActionType` | Parameters |
+|---|---|---|
+| `click` | `CLICK` | `coordinate` |
+| `long_press` | `LONG_PRESS` | `coordinate` |
+| `swipe` / `scroll` | `SWIPE` | `coordinate`, `coordinate2` (duration=800ms) |
+| `type` | `TYPE` | `text` |
+| `open` / `open_app` | `AWAKE` | `text` |
+| `wait` | `WAIT` | `time` |
+| `answer` | `ANSWER` | `text` |
+| `interact` | `INFO` | `text` |
+| `terminate` | `COMPLETE` | `status` |
+| `key` | `NOOP` | — |
+| `system_button` | `BACK` / `HOME` / `ENTER` / `RECENT` | dispatched by `button` |
+
+### UITarsAgent (`agent/uitars.py`)
+
+Format: Thought/Action. `ACTION_MAP` is built in `__init__` (needs to bind smart_resize dimensions).
+
+| Agent action | → `ActionType` | Parameters |
+|---|---|---|
+| `click` | `CLICK` | `point` / `start_box` / `box` |
+| `long_press` | `LONG_PRESS` | same as above |
+| `type` | `TYPE` | `content` |
+| `scroll` | `SWIPE` | (internal: parses `direction`) |
+| `drag` | `DRAG` | `start_point`, `end_point` |
+| `open_app` | `AWAKE` | `app_name` |
+| `press_home` / `press_back` | `HOME` / `BACK` | — |
+| `finished` | `COMPLETE` | `content` |
+| `call_user` | `INFO` | `content` |
+
+### MaiUIAgent (`agent/mai_ui.py`)
+
+Format: tool_call.
+
+| Agent action | → `ActionType` | Parameters |
+|---|---|---|
+| `click` | `CLICK` | `coordinate` |
+| `long_press` | `LONG_PRESS` | `coordinate` |
+| `double_click` | `DOUBLE_TAP` | `coordinate` |
+| `type` | `TYPE` | `text` |
+| `swipe` | `SWIPE` | `direction`, `coordinate` |
+| `drag` | `SWIPE` | `start_coordinate`, `end_coordinate` |
+| `open` | `AWAKE` | `text` |
+| `wait` | `WAIT` | — |
+| `terminate` | `COMPLETE` | `status` |
+| `answer` | `ANSWER` | `text` |
+| `ask_user` | `INFO` | `text` |
+| `system_button` | `BACK` / `HOME` / `ENTER` / `RECENT` | dispatched by `button` |
+
+### Agent comparison
+
+| Property | Gelab | AutoGLM | Generic | GenericV2 | Venus | GUIOwl 1.5 | UITars | MaiUI |
+|---|---|---|---|---|---|---|---|---|
+| Output format | Tab KV | `do()/finish()` | JSON | `<think><answer>` | `Func(params)` | tool_call XML+JSON | Thought/Action | tool_call |
+| Route info | ❌ | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| History mgmt | summary | full dialog | last 6 entries | full dialog | action string | full dialog | action string | full dialog |
+| INFO supported | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ |
+| DOUBLE_TAP | ❌ | ✅ | ❌ | ✅ | ❌ | ❌ | ❌ | ✅ |
+| DRAG supported | ❌ | ❌ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ (mapped to SWIPE) |
+| ANSWER supported | ✅ | ✅ | ❌ | ✅ | ❌ | ✅ | ❌ | ✅ |
+
+---
+
+## 5. Type field cheatsheet
+
+### Observation
+
+| Field | Type | Content |
+|---|---|---|
+| `image_data_url` | `str` | base64 screenshot data URL |
+| `state` | `dict` | Full state (`apps` / `os`) |
+| `route` | `dict` | Current route (`app` / `path` / query params) |
+
+### Action
+
+| Field | Type | Content |
+|---|---|---|
+| `type` | `ActionType` | Action type |
+| `data` | `dict` | Action parameters (`point` / `value` / etc.) |
+| `thought` | `str` | Agent's reasoning (optional) |
+| `raw_response` | `str` | Raw LLM response (optional) |
+
+### JudgeInput
+
+| Field | Type | Content |
+|---|---|---|
+| `init_obs` | `Observation` | Initial observation after setup |
+| `last_obs` | `Observation` | Observation after the agent's last step |
+| `answer` | `str` / `None` | Agent's `ANSWER` value |
+| `apps` | `dict` | `last_obs.state["apps"]` |
+| `apps_init` | `dict` | `init_obs.state["apps"]` |
+| `os` | `dict` | `last_obs.state["os"]` |
+| `route` | `dict` | `last_obs.route` |
+| `init_route` | `dict` | `init_obs.route` |
+
+### JudgeResult
+
+| Field | Type | Meaning |
+|---|---|---|
+| `success` | `bool` | Goal achieved |
+| `clean` | `bool` | No unexpected side effects |
+| `progress` | `float` | Fraction of check_goals items passed (0.0–1.0) |
+| `passed` | `bool` | `success and clean` |
+| `issues` | `list[dict]` | Failure details |
+| `warnings` | `list[dict]` | Unexpected-change details |
+
+### EpisodeResult
+
+| Field | Type | Meaning |
+|---|---|---|
+| `task_id` | `str` | `<suite>.<TaskClassName>` |
+| `task_name` | `str` | Rendered task description |
+| `suite` | `str` | Suite name |
+| `apps` | `list[str]` | Apps involved |
+| `execution` | `ExecutionResult` | Execution result |
+| `judge` | `JudgeResult \| None` | Judging result |
+| `trial_id` | `int` | pass@k repeat index |
+| `success` | `bool` | property: `execution.finished and stop_reason != ABORT and judge.passed` |
+| `goal_success` | `bool` | property: `judge.success` (goal only; does not require COMPLETE) |
+| `progress` | `float` | property |
+| `false_complete` | `bool` | Agent declared `COMPLETE` but the episode was not fully successful |
+| `overdue_termination` | `bool` | Goal reached but step budget / loop detection truncated the episode |
+| `steps` | `int` | Step count |
+| `error` | `str \| None` | Error info |
+
+---
+
+## 6. Task class attributes
+
+| Attribute | Required | Description |
+|---|---|---|
+| `templates` | ✓ | Task description templates, supports `{param}` placeholders |
+| `apps` | ✓ | Apps involved |
+| `difficulty` | | `L1` / `L2` / `L3` / `L4` |
+| `scope` | | `S1` / `S2` / `S3` |
+| `objective` | | `operate` / `query` / `hybrid` / `vague` / `safety` |
+| `composition` | | `atomic` / `sequential` / `transfer` / `deep_dive` |
+| `capabilities` | | Capability tag list |
+| `parameters` | | Parameter schema dict |
+| `sample_max` | | Hard ceiling on instance count |
+| `optimal_paths` | | Optimal-path declarations |
+| `expected_changes` | | List of expected state-change paths |
+| `note` | | Free-form annotation |
+| `always_ignore` | | Paths to ignore during state comparison |
+| `criteria` | (CriteriaTask) | State-check dict |
+| `answer` | (AnswerTask) | Answer declaration (path / callable / literal) |
+| `answer_fields` | | Grounded-mode form fields (see [`task/grounded-mode.md`](task/grounded-mode.md)) |
+| `answer_hint` | | Global hint shown above the AnswerSheet form |
+| `acceptable_goals` | (VagueTask) | List of acceptable completion forms |
+| `dangerous_paths` | (SafetyTask) | State paths considered dangerous |
+
+---
+
+## 7. Parameter schema
+
+| Field | Use | Example |
+|---|---|---|
+| `type` | Parameter type | `enum` / `string` / `int` / `float` / `bool` |
+| `values` | Allowed values for enum/bool | `["a", "b"]` or `{"on": True, "off": False}` |
+| `min` / `max` | Numeric range | `{"type": "int", "min": 1, "max": 10}` |
+| `pattern` | String pattern (regex) | `r"\d{4}"` to generate a 4-digit string |
+| `source` | Sample from environment state | `"apps.wechat.contacts[name]"` |
+| `sampler` | Custom sampler | `"_sample_contact"` / function reference |
+| `fields` | Multi-field expansion | `{"contact_name": "name", "contact_wxid": "wxid"}` |
+| `default` | Default value | `"张三"` or a callable |
+| `display` | Render-time formatter | `"month_zh"` / `"date_hao"` / callable |
+| `description` | Human-readable description | `"Target contact"` |
+
+### Sampling precedence
+
+`sampler` > `fields + source` > `source` > `type` > `default`
+
+### Virtual coordinated parameters (`_` prefix)
+
+```python
+parameters = {
+    "_route": {                   # virtual; not exposed in self.params
+        "sampler": Railway12306.sample_route_pair,
+        "fields": {"from_station": "from_station", "to_station": "to_station"},
+    },
+    "from_station": {"type": "string", "default": "上海"},
+    "to_station":   {"type": "string", "default": "南京"},
+}
+```
+
+### `display` formatters
+
+| Type | Description | Example |
+|---|---|---|
+| `str` (builtin) | Built-in formatter | `"month_zh"` (`"2026-01"` → `"2026年1月"`), `"date_hao"` (`"2026-03-11"` → `"3月11号"`) |
+| `str` (method name) | Instance method on the task | `"_display_month"` → `self._display_month(value)` |
+| callable | Function `fn(value) -> str` or `fn(value, env_state) -> str` | `lambda v: f"{v}元"` |
+
+Precedence: `display` > auto-derived from `values` dict > bool default (`"on"` / `"off"`).
+
+---
+
+## 8. `answer` path-expression syntax
+
+The `answer` class variable and `criteria` keys share the same `get_by_path` engine.
+
+| Form | Example | Description |
+|---|---|---|
+| Path string | `".contacts[name={name}].phone"` | Reads from app state |
+| Path + transform | `(".passengers", len)` | Reads, then applies a function |
+| dict-of-paths | `{"from": ".studentVerify.from", "to": ".studentVerify.to"}` | Multi-slot independent matching |
+| callable | `staticmethod(lambda task, state: ...)` | Custom logic |
+| literal | `42` / `"fixed"` / `re.compile(...)` | Compared directly |
+
+### Path syntax
+
+| Syntax | Meaning | Example |
+|---|---|---|
+| `.field` | Field access | `.user.name` |
+| `[i]` | List index (integer) | `.posts[0]` |
+| `[-1]` | Reverse index | `.messages[-1]` |
+| `[field=value]` | Array lookup | `.contacts[name=张三]` |
+| `[field={param}]` | Array lookup with parameter template | `.contacts[name={contact}]` |
+| `[field=True]` / `[field=False]` | Boolean-literal filter | `.passengers[isDefault=True]` |
+| `[nested.field=value]` | Nested-field filter | `.chats[user.wxid={wxid}]` |
+| `appId:.path` | Cross-app path | `redbook:.posts[0].likes` |
+
+---
+
+## 9. `match_value` semantics
+
+| `get_answer()` return type | Match strategy |
+|---|---|
+| `int` / `float` | Extracts all standalone numbers from the agent's reply and compares one by one (with Chinese-numeral normalization) |
+| `str` | `expected in normalize_text(actual)` (substring containment) |
+| `re.Pattern` | `expected.search(normalize_text(actual))` |
+| `dict` | Per-slot matching (each slot independent, substring containment) |
+| `bool` | **Not supported** — handle negative/positive detection manually inside `check_goals` |
+
+### Semantic matchers
+
+| Function | Use | Tolerance |
+|---|---|---|
+| `match_value` | Default | — |
+| `match_duration` | Duration (`"X小时Y分"` / `"N分钟"` / `"H:MM"`) | strict |
+| `match_time` | Time of day (`"HH:MM"` / `"H点M分"` / `"上午"`/`"下午"` prefix) | ±5 minutes |
+| `date_match_labels(date, os)` | Multi-label date list (incl. relative dates like "tomorrow") | — |
+
+---
+
+## 10. `expected_changes` path syntax
+
+`expected_changes` paths must align with the diff engine to match. `StateComparator` emits ID-based paths (e.g., `alarms[id=a1].enabled`) for lists whose items have an `id` field.
+
+### Basic forms
+
+| Form | Expanded by framework to |
+|---|---|
+| Single-app `"history"` | `apps.wechat.history` |
+| Multi-app `"redbook.history"` | `apps.redbook.history` |
+| With prefix `"apps.xxx"` / `"os.xxx"` | unchanged |
+
+### `{param}` templates
+
+```python
+expected_changes = ["alarms[id={alarm_id}]"]
+```
+
+### `[field=value]` — locate element by any field
+
+Allows the matched element and its sub-paths to change. Filter on **any field** (not limited to `id`); the framework searches in current (preferred) then init (fallback):
+
+```python
+expected_changes = ["contacts[name={contact}].isBlacklisted"]
+# → apps.wechat.contacts[wxid=u1].isBlacklisted
+
+# Multiple filters
+expected_changes = ["contacts[name={target}]", "chats[name={notify_to}]"]
+```
+
+**Nested fields** (dot-path):
+
+```python
+expected_changes = ["chats[user.name=Boss]"]
+expected_changes = ["chats[user.wxid={wxid}].lastMessage"]
+```
+
+Recommendation: prefer stable IDs (`user.wxid=...`) over readable but potentially ambiguous fields (`user.name=...`).
+
+### `[+N]` — allow N new elements
+
+For "added a record" scenarios. The added element's diff path (`list[id=xxx]`) consumes the quota:
+
+```python
+expected_changes = ["moments[+1]"]
+expected_changes = ["alarms[+2]"]
+```
+
+### `[+=val]` / `[-=val]` — set add/remove on primitive-value arrays
+
+For arrays of primitives (`string[]` / `number[]`) without `id` fields:
+
+```python
+expected_changes = ["selectedCityIds[+={city_id}]"]
+expected_changes = ["selectedCityIds[-={city_id}]"]
+```
+
+### `._order` / `._relative_order` — order changes
+
+- Primitive-value array pure reorder (set unchanged, order changed) → `path._order`
+- Object array with ids (only relative order of common elements) → `path._relative_order`
+
+```python
+expected_changes = ["tags._order"]
+expected_changes = ["notes._relative_order"]
+```
+
+---
+
+## 11. AnswerSheet field types
+
+Full doc: [`task/grounded-mode.md`](task/grounded-mode.md). The cheatsheet below covers field types and matchers.
+
+### Field types
+
+| `type` | UI control | Default matcher |
+|---|---|---|
+| `text` | Text input | `exact` |
+| `number` | Numeric input | `number` |
+| `choice` | Selection list | `exact` |
+
+### Field attributes
+
+| Attribute | Type | Description |
+|---|---|---|
+| `label` | `str` | Field label (supports `{param}` templates) |
+| `hint` | `str` | Placeholder (e.g. `"e.g. 14:30"`) |
+| `options` | `list[str]` | Options for `choice` (supports `{param}`) |
+| `repeatable` | `bool` | Allow multiple values |
+| `compare` | `str` | Comparison mode for repeatable: `sequence` (default) / `set` |
+| `matcher` | `str` | Override the matcher (Path A only) |
+
+### Matchers
+
+| Matcher | Implementation | Use |
+|---|---|---|
+| `exact` | `normalize_text(==)` | City name, book title, options |
+| `number` | `math.isclose(float(==))` | Counts |
+| `date` | `date_match_labels(...)` | Dates |
+| `time` | `match_time(...)`, ±5 min | Time of day |
+| `duration` | `match_duration(...)` | Durations |
+
+---
+
+## 12. CLI command cheatsheet
+
+### Basics
+
+```bash
+# List tasks
+python -m bench_env.run --list
+python -m bench_env.run --list --suite wechat
+python -m bench_env.run --list --suite wechat --list-md docs/wechat_tasks.md
+python -m bench_env.run --list --list-online --env-url http://localhost:3000
+
+# Single task
+python -m bench_env.run --task-id wechat.ReadMyWxid --env-url http://... --agent gelab
+
+# Whole suite
+python -m bench_env.run --suite wechat --env-url http://... --agent autoglm
+
+# Multiple suites
+python -m bench_env.run --suite wechat,redbook --env-url http://... --agent autoglm
+```
+
+### Sampling
+
+```bash
+# Sample N parameter instances per task
+python -m bench_env.run --suite wechat --sample-n 3 --sample-seed 42 ...
+
+# Pass@k
+python -m bench_env.run --suite wechat --repeat-n 8 --pass-k 1,8 ...
+```
+
+### Parallel
+
+```bash
+# Single-process parallel
+python -m bench_env.run --suite wechat --parallel 8 --isolation pages ...
+
+# Multi-process sharding (total 256, 8 shards, 32 envs each)
+python -m bench_env.run --suite wechat --processes 8 --parallel 256 --browsers 16 --isolation contexts ...
+```
+
+### Split
+
+```bash
+python -m bench_env.run --list --split test
+python -m bench_env.run --split test --env-url http://... --agent autoglm
+python -m bench_env.run --split test+payment ...        # multi-split union
+python -m bench_env.run --split /path/to/ids.txt ...    # external whitelist
+```
+
+### Rerun / Resume / Prune
+
+| Command | `--split` semantics |
+|---|---|
+| `--rerun runs/xxx` | Filters the existing `results.jsonl`; effective = `meta.split ∩ cli.split` |
+| `--resume runs/xxx --split test` | AND with the to-run set produced by `meta.split` |
+| `--prune runs/xxx --split test` | `cli.split` overrides `meta.split`; narrows to the test subset |
+
+### Human Agent / Free execution
+
+```bash
+python -m bench_env.run --task-id wechat.ReadMyWxid --agent human --env-url http://...
+python -m bench_env.run --exec "Open RedNote and check my nickname" --env-url http://... --agent autoglm
+```
+
+### Real Device
+
+```bash
+python -m bench_env.run --task-id wechat.ReadMyWxid --device real \
+    --model-base-url ... --model-name autoglm --agent autoglm
+```
+
+### Grounded mode
+
+```bash
+python -m bench_env.run --suite wechat --eval-mode grounded ...
+```
+
+---
+
+## 13. Output directory layout
+
+```
+runs/
+└── 20260125_143052/
+    ├── meta.json
+    ├── results.jsonl                   # One row per task × trial
+    ├── summary.json                    # Aggregates (incl. pass@k)
+    ├── errors.jsonl                    # Failure details
+    ├── browser_logs/
+    ├── shards/p00/...                  # Per-shard output in multi-process mode
+    └── trajectory/
+        ├── <task>/                     # repeat_n=1
+        │   ├── trajectory.json
+        │   ├── step_001.png
+        │   ├── step_001_prompt.json    # Images replaced with placeholders
+        │   ├── step_001_response.txt
+        │   └── step_001_annot.png      # Action visualization
+        └── <task>_t0/                  # pass@k mode: t{trial}
+```
+
+---
+
+## 14. Task discovery rules
+
+`TaskRegistry` scans two roots:
+
+- `bench_env/task/<suite>/tasks.py` — legacy single-file layout
+- `bench_env/task/<suite>/defs/<TaskName>.py` — one-task-per-file layout
+- `bench_env/generated_task/<suite>/...` — auto-generated from navigation artifacts
+
+**Conflict rules**:
+
+- Within a suite, `tasks.py` and `defs/` may coexist; class names must be unique
+- A suite of the same name appearing in both `task/` and `generated_task/` is a conflict
+
+**Task naming**:
+
+- task_id format: `<suite>.<TaskClassName>` (e.g., `wechat.ReadMyWxid`)
+- App class name corresponds to `manifest.id`, in PascalCase, **without** an `App` suffix (`Wechat`, not `WechatApp`)

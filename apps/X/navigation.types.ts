@@ -48,7 +48,7 @@ export interface NavigationDeclaration {
  * 描述页面上不引起导航（不改变 URL/route）的可执行动作。
  * actionId 在 app 内全局唯一，并用于 UI 上的 data-action 打标。
  *
- * 设计文档：docs/navigation/ACTIONS_DECLARATION_PROPOSAL.md
+ * 设计文档：docs/platform/declarative-navigation.md ("Actions" 章节)
  */
 export interface ActionDeclaration {
   /** app 内唯一的动作标识，用于 data-action 打标 */

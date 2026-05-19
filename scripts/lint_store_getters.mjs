@@ -10,7 +10,7 @@
  *   Pass 1 — Store definitions: finds query-like methods in *Actions interfaces
  *   Pass 2 — Consumer subscriptions: finds useXxxStore(s => s.<getter>) in .tsx files
  *
- * See docs/specs/APP_STATE_DATA_SPEC.md §5.3
+ * See docs/platform/state-model.md "Store actions: no query-style getters"
  *
  * Usage:
  *   node scripts/lint_store_getters.mjs              # scan all apps
@@ -186,7 +186,7 @@ function run() {
     }
   }
 
-  console.log(`Found ${totalIssues} issue(s). See docs/specs/APP_STATE_DATA_SPEC.md §5.3`);
+  console.log(`Found ${totalIssues} issue(s). See docs/platform/state-model.md "Store actions: no query-style getters"`);
   process.exit(1);
 }
 

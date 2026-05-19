@@ -4,7 +4,7 @@ crossapp_work task correctness tests.
 This suite has no dedicated app accessor (`bench_env/task/crossapp_work/app.py`),
 so we cover:
 1. task definition validation
-2. cross-app metadata sanity checks from TASK_DESIGN_SPEC
+2. cross-app metadata sanity checks from bench_env/docs/task/CONVENTIONS.md
 3. offline judge positive/negative matrix
 4. extra branch cases for conditional tasks
 """

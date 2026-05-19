@@ -47,9 +47,9 @@ description: 面向 mobile-gym 的多文件变更设计与分步实施技能。�
 
 只读和本次改动直接相关的规范：
 
-- 导航或 OS 生命周期：`CLAUDE.md`、`docs/specs/PROJECT_SPEC_V2.md`
-- 状态、设置、数据分层：`CLAUDE.md`、`docs/specs/APP_STATE_DATA_SPEC.md`
-- 资源、图标、尺寸、字符串：`CLAUDE.md`、`docs/specs/APP_DESIGN_SPEC.md`
+- 导航或 OS 生命周期：`CLAUDE.md`、`docs/platform/declarative-navigation.md`、`docs/platform/os-layer.md`、`docs/platform/intent-system.md`
+- 状态、设置、数据分层：`CLAUDE.md`、`docs/platform/state-model.md`
+- 资源、图标、尺寸、字符串：`CLAUDE.md`、`docs/platform/app-module-contract.md`
 - App 具体实现：目标 App 的 `manifest.ts`、`<AppName>App.tsx`、`navigation.declaration.ts`、`navigation.ts`、`state.ts`、`data/index.ts`、`data/defaults.json`
 
 只要这次改动会碰契约或文件职责，就不要只靠记忆。

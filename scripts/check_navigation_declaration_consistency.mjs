@@ -718,7 +718,7 @@ function buildReport({ nav, usages }) {
   }
 
   // Base uiState naming: if uiState.search is {} (no discrete keys), id must end with ".base"
-  // Ref: docs/navigation/NAVIGATION_DECLARATION_PROPOSAL.md, docs/navigation/ACTIONS_DECLARATION_PROPOSAL.md
+  // Ref: docs/platform/declarative-navigation.md ("Routes" / "Actions" sections)
   /** @type {Array<{routePath:string, uiStateId:string, message:string}>} */
   const invalidBaseStateIds = [];
   /** @type {Array<{routePath:string, baseStateIds:string[]}>} */

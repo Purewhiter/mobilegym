@@ -4,9 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-mobile-gym is a **simulated Android OS environment** built with React + Vite + TypeScript + Tailwind CSS v4. It serves as a training and benchmarking platform for **pure-vision** mobile phone operation Agents (VLM agents that control phone UIs via screenshots only). The simulator runs in a browser and exposes JavaScript APIs (`__SIM__`, `__OS__`, `__SIM_INPUT__`, `__SIM_QUERY__`) for **task management, trajectory data synthesis, and benchmark orchestration** — these are NOT part of the Agent's observation space; the Agent only sees screenshots.
+mobile-gym is a **simulated Android OS environment** built with React + Vite + TypeScript + Tailwind CSS v4. It serves as a training and benchmarking platform for **pure-vision** mobile phone operation Agents (VLM agents that control phone UIs via screenshots only). The simulator runs in a browser and exposes JavaScript APIs (`__SIM__`, `__OS__`, `__SIM_INPUT__`, `__SIM_QUERY__`, `__SIM_TIME__`, `__SIM_LOCATION__`, `__SIM_FS__`) for **task management, trajectory data synthesis, and benchmark orchestration** — these are NOT part of the Agent's observation space; the Agent only sees screenshots.
 
-The project is primarily documented in **Chinese (中文)**. Follow existing conventions for labels, descriptions, and comments.
+User-facing documentation under `docs/` and `bench_env/docs/` is in **English**. App code, UI labels, and inline comments inside `apps/` / `system/` follow existing project conventions — that's mostly **Chinese** for the consumer-app modules (WeChat, Alipay, etc.) and English for the OS layer and benchmark framework.
 
 ### 类型检查策略
 
@@ -72,11 +72,11 @@ The simulated Android system:
 - **`types/manifest.ts`** — `AppManifest` type definition (id, packageName, displayName, displayNameEn, aliases, version, icon, theme, etc.)
 - **`data/appRegistry.tsx`** — App registry: auto-discovers manifests (`apps/*/manifest.ts`, `system/*/manifest.ts`) and entry components (`apps/*/*App.tsx`, `system/*/*App.tsx`) via `import.meta.glob`. **New apps do NOT need to register here**
 - **`hooks/useTriggerGestures.ts`** — Unified gesture hook producing `data-trigger-*` / `data-action-*` DOM attributes for task definition, trajectory synthesis, and navigation graph generation (NOT for Agent observation — Agent is pure-vision, screenshot only). **Globally intercepts `system.back`** triggers and routes them to `window.__OS__?.handleBack()` — individual app gesture hooks must NOT handle `system.back` themselves
-- **`hooks/useAppNavigationHandler.ts`** — 统一App导航注册hook（替代旧 `__APP_ROUTE__`等）。向 `AppNavigatorRegistry`/`BackDispatcher`/`AppLifecycle`注册；同步影子 `HistoryTracker`支持 `popTo`。`openApp`：新Task传 `replace=true`，已有Task传 `replace=false`（MemoryRouter push）。`startActivity({newTask:true})`在OS层push新Activity（独立 `activityId`，可独立 `finishActivity()`）。**外来Task隔离**：`task.rootAppId !== appId`时跳过app级注册，仅用activity级navigator
+- **`hooks/useAppNavigationHandler.ts`** — 统一App导航注册hook。向 `AppNavigatorRegistry`/`BackDispatcher`/`AppLifecycle`注册；同步影子 `HistoryTracker`支持 `popTo`。`openApp`：新Task传 `replace=true`，已有Task传 `replace=false`（MemoryRouter push）。`startActivity({newTask:true})`在OS层push新Activity（独立 `activityId`，可独立 `finishActivity()`）。**外来Task隔离**：`task.rootAppId !== appId`时跳过app级注册，仅用activity级navigator
 - **`utils/memoryHistory{Tracker,PopTo}.ts`** — 影子history栈（react-router-dom@7 MemoryHistory不暴露entries）。`HistoryTracker`同步MemoryRouter location变化；`findPopToDelta()`返回 `go(-delta)`步数；`popTo()`调用 `navigator.go(-delta)`回退，调用方再 `navigate(url)`完成push/replace（对应Android `popUpTo`）
 - **`createOsStore.ts`** — OS 层 Zustand store 工厂。提供 `createOsStore`（持久化）和 `createVolatileOsStore`（非持久化）两个工厂函数，内置 store registry（`resetAllOsStores()` / `snapshotOsStores()`），供 `__SIM__.reset()` 和 `__SIM__.getState()` 使用。通过 `registerToServiceRegistry: false` 可选退出注册（如 OsStateStore、Providers）
 - **`OsStateStore.ts`** — 统一的 Android 数据模型 store，持有 `settings`（global/system/secure/app-specific）、`hardware`（battery/wifi/cellular/sensors）、`permissions`、`preferences`。持久化到 `os_state` localStorage key。`build` 和 `telephony` 信息通过 `managers/registry.ts` 的 override 机制管理（支持 bench_env 场景注入）
-- **Managers (`os/managers/`)** — `ConnectivityManager`、`BatteryManager`、`AudioManager`、`DisplayManager` 是 OsStateStore 特定域的写入 facade，封装约束逻辑（如飞行模式级联关闭 WiFi/BT/蜂窝、音量 clamp、亮度范围）和副作用（broadcast 通知）。取代了已删除的 `DeviceService`。`managers/registry.ts` 管理 preference key → Manager 路由、build/telephony overrides
+- **Managers (`os/managers/`)** — `ConnectivityManager`、`BatteryManager`、`AudioManager`、`DisplayManager` 是 OsStateStore 特定域的写入 facade，封装约束逻辑（如飞行模式级联关闭 WiFi/BT/蜂窝、音量 clamp、亮度范围）和副作用（broadcast 通知）。`managers/registry.ts` 管理 preference key → Manager 路由、build/telephony overrides
 - **System Services** — **持久化原则：数据持久化，UI/运行态不持久化（刷新=重启）**。App必须用OS服务替代原生API：`Date.now()`→`TimeService`；`navigator.geolocation`→`LocationService`；`fetch`→`NetworkService`（`netJson`/`netFetch`）。服务通过 `window.__OS__`子属性访问（如 `__OS__.notifications`、`__OS__.keyboard`）。`ClipboardService`持久化；`NotificationService`/`KeyboardService`/`PermissionService`等volatile
 - **System Providers** — 联系人/短信/媒体等共享数据位于 `os/providers/*Provider.ts`，使用 `createOsStore` 独立持久化（`registerToServiceRegistry: false`，不进入 `os.services` 快照）；App 通过 `ContentResolver.query/insert/update/delete` 访问。`__SIM__.getState()` 在 `os.providers.*` 显式暴露 Provider 快照
 
@@ -103,7 +103,7 @@ Each app follows a standard structure:
 
 Python-based evaluation framework using Playwright. Tasks are defined per-app with state-based judging, VLM evaluation, parameter sampling, and Pass@k statistics.
 
-**编写或修改任务前，必须先阅读 `bench_env/docs/TASK_DESIGN_SPEC.md`（任务设计规范）、`bench_env/docs/TASK_TEST_SPEC.md`（测试规范）和 `bench_env/README.md`。**
+**编写或修改任务前,必须先阅读 `bench_env/docs/task/CONVENTIONS.md`(任务设计约定)、`bench_env/docs/task/IMPLEMENTATION.md`(实现指南 / CRUD 判题模式)、`bench_env/docs/task/TESTING.md`(离线测试规范)和 `bench_env/README.md`。`bench_env/docs/REFERENCE.md` 提供 CLI 标志位和 `JudgeInput`/`JudgeResult` 字段的正式查找表。**
 
 ### Scripts (`scripts/`)
 
@@ -117,7 +117,7 @@ Python-based evaluation framework using Playwright. Tasks are defined per-app wi
 
 ## Key Development Rules
 
-**`docs/specs/PROJECT_SPEC_V2.md` is the authoritative specification.** When conflicts arise, flag them rather than silently overriding. Before navigation/actions/condition changes, review the relevant proposal docs in `docs/`.
+**The authoritative platform references live under `docs/platform/`** (`app-module-contract.md`, `state-model.md`, `declarative-navigation.md`, `os-layer.md`, `intent-system.md`, `os-services.md`, `android-mapping.md`). When conflicts arise, flag them rather than silently overriding. Before navigation/actions/condition changes, review `docs/platform/declarative-navigation.md`.
 
 ### Navigation
 
@@ -159,7 +159,7 @@ Python-based evaluation framework using Playwright. Tasks are defined per-app wi
 
 ### State and Data
 
-> **完整状态与数据层规范见 `docs/specs/APP_STATE_DATA_SPEC.md`**（settings 命名、嵌套结构、数据分层判断标准、Store action 模式、bench_env 路径约定均在其中）。
+> **完整状态与数据层规范见 [`docs/platform/state-model.md`](docs/platform/state-model.md)**(settings 命名、嵌套结构、数据分层判断标准、Store action 模式、bench_env 路径约定均在其中)。
 
 - Config-first: constants in `constants.ts`, default data in `data/defaults.json`, unified export via `data/index.ts` as `<APPNAME>_CONFIG`
 - localStorage key must exactly match `manifest.id`（即 `appId`）
@@ -271,4 +271,4 @@ If the output has `ERROR` or `WARN`, include the specific IDs and file locations
 | 数据驱动（来自 map/JSON） | `<IconRenderer name={item.icon} size={22} />` |
 | 数据文件中的图标名        | `"IcCard"`（必须 Ic* 前缀）                   |
 
-> **完整资源规范见 `docs/specs/APP_DESIGN_SPEC.md`**。
+> **完整 App 模块契约(包括资源规范、图标、主题、cross-cutting 规则)见 [`docs/platform/app-module-contract.md`](docs/platform/app-module-contract.md)**。

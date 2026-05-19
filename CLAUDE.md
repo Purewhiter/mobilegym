@@ -108,7 +108,7 @@ Each app follows a standard structure:
 
 Python-based evaluation framework using Playwright. Tasks are defined per-app with state-based judging, VLM evaluation, parameter sampling, and Pass@k statistics.
 
-**编写或修改任务前，必须先阅读 `bench_env/docs/TASK_DESIGN_SPEC.md`（任务设计规范）、`bench_env/docs/TASK_TEST_SPEC.md`（测试规范）和 `bench_env/README.md`。**
+**编写或修改任务前，必须先阅读 `bench_env/docs/task/CONVENTIONS.md`（任务设计约定）、`bench_env/docs/task/IMPLEMENTATION.md`（实现指南 / CRUD 判题模式）、`bench_env/docs/task/TESTING.md`（离线测试规范）和 `bench_env/README.md`。`bench_env/docs/REFERENCE.md` 提供 CLI 标志位与 `JudgeInput`/`JudgeResult` 字段的正式查找表。**
 
 ### Scripts (`scripts/`)
 
@@ -122,7 +122,7 @@ Python-based evaluation framework using Playwright. Tasks are defined per-app wi
 
 ## Key Development Rules
 
-**`docs/specs/PROJECT_SPEC_V2.md` is the authoritative specification.** When conflicts arise, flag them rather than silently overriding. Before navigation/actions/condition changes, review the relevant proposal docs in `docs/navigation/`.
+**The authoritative platform references live under `docs/platform/`** — `app-module-contract.md`, `state-model.md`, `declarative-navigation.md`, `os-layer.md`, `intent-system.md`, `os-services.md`, `android-mapping.md`. When conflicts arise, flag them rather than silently overriding. Before navigation/actions/condition changes, review `docs/platform/declarative-navigation.md`.
 
 ### Navigation
 
@@ -164,7 +164,7 @@ Python-based evaluation framework using Playwright. Tasks are defined per-app wi
 
 ### State and Data
 
-> **完整状态与数据层规范见 `docs/specs/APP_STATE_DATA_SPEC.md`**（settings 命名、嵌套结构、数据分层判断标准、Store action 模式、bench_env 路径约定均在其中）。
+> **完整状态与数据层规范见 [`docs/platform/state-model.md`](docs/platform/state-model.md)**（settings 命名、嵌套结构、数据分层判断标准、entity-isomorphism / view-accessor 规则、Store action 模式、`loader.ts` 模式、bench_env 路径约定均在其中）。
 
 - Config-first: constants in `constants.ts`, default data in `data/defaults.json`, unified export via `data/index.ts` as `<APPNAME>_CONFIG`
 - localStorage key must exactly match `manifest.id`（即 `appId`）
@@ -276,4 +276,4 @@ If the output has `ERROR` or `WARN`, include the specific IDs and file locations
 | 数据驱动（来自 map/JSON） | `<IconRenderer name={item.icon} size={22} />` |
 | 数据文件中的图标名        | `"IcCard"`（必须 Ic* 前缀）                   |
 
-> **完整资源规范见 `docs/specs/APP_DESIGN_SPEC.md`**。
+> **完整资源/设计规范见 [`docs/platform/app-module-contract.md`](docs/platform/app-module-contract.md)**（manifest 主题色、`res/*` 文件职责、图标/尺寸/字符串规则均在其中）。

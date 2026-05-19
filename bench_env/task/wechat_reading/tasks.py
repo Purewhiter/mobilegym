@@ -1,7 +1,7 @@
 """
 微信读书（wechat_reading）bench 任务定义。
 
-各 Task 类 docstring 遵循 TASK_DESIGN_SPEC §18：第一段概括验证目标；第二段「判定」说明
+各 Task 类 docstring 遵循 bench_env/docs/task/CONVENTIONS.md §12：第一段概括验证目标；第二段「判定」说明
 ground truth 来源、check 结构与匹配方式；第三段「注意」仅在边界非显然时补充。
 实现仍须与 docstring 一致；代码是最终依据。
 """
