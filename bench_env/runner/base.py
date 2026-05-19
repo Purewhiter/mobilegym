@@ -27,7 +27,7 @@ class Evaluator:
     """Evaluates task success and side effects."""
 
     def __init__(self, judge_mode: str = "state", vlm_judge: Optional["VLMJudge"] = None,
-                 eval_mode: str = "text"):
+                 eval_mode: str = "grounded"):
         """
         Args:
             judge_mode: "state" | "vlm" | "auto"
@@ -177,7 +177,7 @@ class Controller:
 
 
     @staticmethod
-    async def setup(env, task, eval_mode: str = "text") -> tuple[Any, dict]:
+    async def setup(env, task, eval_mode: str = "grounded") -> tuple[Any, dict]:
         """
         Execute task setup only, return initial observation and sampled params.
 
@@ -220,7 +220,7 @@ class Controller:
     @staticmethod
     async def run(
         env, agent, task, initial_obs, max_steps=20, recorder=None, trial_id: int = 0,
-        eval_mode: str = "text",
+        eval_mode: str = "grounded",
         loop_threshold: int = 0,
     ) -> tuple[ExecutionResult, Any, Any, Any, Any]:
         """
@@ -382,7 +382,7 @@ class Controller:
     
     @staticmethod
     async def run_loop(env, agent, task, max_steps=20, recorder=None, trial_id: int = 0,
-                       eval_mode: str = "text",
+                       eval_mode: str = "grounded",
                        loop_threshold: int = 0) -> tuple[ExecutionResult, Any, Any, Any, Any]:
         """
         Run the full interaction loop (setup + run).
@@ -605,7 +605,7 @@ class BaseRunner(ABC):
             evaluator = Evaluator()
         
         # 1. Control Phase (Interaction)
-        eval_mode = getattr(evaluator, "eval_mode", "text")
+        eval_mode = getattr(evaluator, "eval_mode", "grounded")
         exec_result, init_obs, last_obs, episode, task = await Controller.run_loop(
             env, agent, task, max_steps, recorder, trial_id=trial_id, eval_mode=eval_mode,
             loop_threshold=loop_threshold,

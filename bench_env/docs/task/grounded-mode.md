@@ -8,8 +8,8 @@ Grounded evaluation uses the `AnswerSheet` app to turn the Agent's answer submis
 
 **Two evaluation modes coexist**:
 
-- **text mode** (default): the Agent calls `ANSWER` and its text is fuzzy-matched (`match_value`)
-- **grounded mode** (`--eval-mode grounded`): the Agent fills out a form in the AnswerSheet app; the framework reads UI state to judge
+- **grounded mode** (default, `--eval-mode grounded`): the Agent fills out a form in the AnswerSheet app; the framework reads UI state to judge
+- **text mode** (`--eval-mode text`): the Agent calls `ANSWER` and its text is fuzzy-matched (`match_value`)
 
 ---
 

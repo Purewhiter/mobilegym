@@ -309,7 +309,7 @@ def create_evaluator(config: ConfigType, default_llm: Any = None) -> Any:
     
     if not needs_vlm:
         # State-based evaluation only
-        return Evaluator(judge_mode=judge_mode, eval_mode=getattr(config, "eval_mode", "text"))
+        return Evaluator(judge_mode=judge_mode, eval_mode=getattr(config, "eval_mode", "grounded"))
     
     # Create VLM judge for VLM evaluation
     from bench_env.task.vlm_judge import VLMJudge
@@ -330,4 +330,4 @@ def create_evaluator(config: ConfigType, default_llm: Any = None) -> Any:
         vlm_judge = VLMJudge(llm=default_llm)
     
     return Evaluator(judge_mode=judge_mode, vlm_judge=vlm_judge,
-                     eval_mode=getattr(config, "eval_mode", "text"))
+                     eval_mode=getattr(config, "eval_mode", "grounded"))

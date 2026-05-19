@@ -294,7 +294,7 @@ class ParallelRunner(BaseRunner):
                         
                         # Step 1: Setup only (sample params)
                         try:
-                            eval_mode = getattr(self.evaluator, "eval_mode", "text")
+                            eval_mode = getattr(self.evaluator, "eval_mode", "grounded")
                             initial_obs, params = await Controller.setup(env, task, eval_mode=eval_mode)
                         except Exception as e:
                             # Setup failed - ensure teardown is called
@@ -352,7 +352,7 @@ class ParallelRunner(BaseRunner):
                     else:
                         # ========== Trial 1~N-1: Full execution ==========
                         task_ms = self.config.get_max_steps(task)
-                        eval_mode = getattr(self.evaluator, "eval_mode", "text")
+                        eval_mode = getattr(self.evaluator, "eval_mode", "grounded")
                         if self.verbose:
                             logger.info(f"[W{wid+1}] {task.id} (trial {trial_id+1}/{repeat_n})")
 
