@@ -116,7 +116,7 @@
 
 ```bash
 # 前端(模拟器本体)
-git clone https://github.com/<YOUR_ORG>/mobilegym.git
+git clone https://github.com/Purewhiter/mobilegym.git
 cd mobilegym
 npm install
 
@@ -464,6 +464,6 @@ MobileGym 采用**双 license** 设计——再分发前请同时阅读两份。
 
 **为"在交互中学习的 Agent"而生——并已验证能迁移到真实世界。** 🪐
 
-[🌐 项目网站](https://mobilegym.dev) · [📄 论文](https://arxiv.org/abs/XXXX.XXXXX) · [🐛 Issues](https://github.com/<YOUR_ORG>/mobilegym/issues) · [💬 讨论](https://github.com/<YOUR_ORG>/mobilegym/discussions)
+[🌐 项目网站](https://mobilegym.dev) · [📄 论文](https://arxiv.org/abs/XXXX.XXXXX) · [🐛 Issues](https://github.com/Purewhiter/mobilegym/issues) · [💬 讨论](https://github.com/Purewhiter/mobilegym/discussions)
 
 </div>
