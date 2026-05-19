@@ -14,7 +14,7 @@
 [![English](https://img.shields.io/badge/lang-English-blue.svg)](README.md)
 
 <p align="center">
-  <img src="assets/teaser.png" width="100%" alt="MobileGym teaser — 一份结构化 JSON 状态驱动任务实例化、并行采样、状态对比与 RL 奖励生成"/>
+  <img src="assets/teaser.png" width="100%" alt="MobileGym 海报——面向移动 GUI Agent 的可验证、可扩展模拟环境:28 个 App、416 个参数化任务模板、代码级判题、并行采样、便于扩展、安全沙盒,+40.7 pt 模拟到真机迁移"/>
 </p>
 
 </div>
