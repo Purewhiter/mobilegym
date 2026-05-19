@@ -14,9 +14,10 @@ Treat the goal as root-cause analysis, not pass-rate maximization. Always determ
 Read the repository and task context before running anything:
 
 - `CLAUDE.md`
-- `bench_env/docs/TASK_DESIGN_GUIDE.md`
-- `bench_env/docs/TASK_DESIGN_SPEC.md`
-- `bench_env/docs/TASK_TEST_SPEC.md`
+- `bench_env/docs/task/CONVENTIONS.md`
+- `bench_env/docs/task/IMPLEMENTATION.md`
+- `bench_env/docs/task/TESTING.md`
+- `bench_env/docs/REFERENCE.md` (CLI flags / `JudgeInput` / `JudgeResult` lookup)
 - The target suite file, usually `bench_env/task/<suite>/tasks.py`
 - Any existing `runs/<timestamp>/results.jsonl` or trajectory folders relevant to the current investigation
 

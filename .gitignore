@@ -6,6 +6,7 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+.env
 
 __pycache__/
 /runs
@@ -47,3 +48,6 @@ tsconfig.tsbuildinfo
 .serve_api.pid
 
 mobilegym-data
+
+# Local paper checkout (separate git repo; not part of this codebase)
+/paper

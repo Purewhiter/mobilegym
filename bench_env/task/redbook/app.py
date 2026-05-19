@@ -1478,7 +1478,7 @@ class Redbook(BaseApp):
         if not self.has_init:
             raise ValueError(
                 "Redbook.check_note_collected requires an init state — Create/Delete "
-                "judgments must be done via diff (see JUDGE_DESIGN_PRINCIPLES §Create)"
+                "judgments must be done via diff (see bench_env/docs/task/IMPLEMENTATION.md §2.5)"
             )
         note_id_str = str(note_id)
         assert not self.init.has_collected(note_id_str), (

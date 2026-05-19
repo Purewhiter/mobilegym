@@ -404,7 +404,7 @@ class BaseTask(ABC):
                     raise ValueError(
                         f"{self.__class__.__name__}.check_goals() returned check "
                         f"'{check.get('field', '?')}' without required 'passed' field. "
-                        f"See TASK_DESIGN_SPEC §5.1."
+                        f"See bench_env/docs/task/CONVENTIONS.md §8."
                     )
                 if not check["passed"]:
                     return False
@@ -496,7 +496,7 @@ class BaseTask(ABC):
         - field: What was checked (e.g., "route", "user.pat")
         - expected: Expected value
         - actual: Actual value
-        - passed: Whether this check passed (required, see TASK_DESIGN_SPEC §5.1)
+        - passed: Whether this check passed (required, see bench_env/docs/task/CONVENTIONS.md §8)
         
         Example:
             def check_goals(self, input: JudgeInput) -> list[dict]:
@@ -700,7 +700,7 @@ class BaseTask(ABC):
                     raise ValueError(
                         f"{self.__class__.__name__}.check_goals() returned check "
                         f"'{check.get('field', '?')}' without required 'passed' field. "
-                        f"See TASK_DESIGN_SPEC §5.1."
+                        f"See bench_env/docs/task/CONVENTIONS.md §8."
                     )
 
                 if "error" in check:
