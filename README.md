@@ -6,7 +6,7 @@
 
 [![Paper](https://img.shields.io/badge/arXiv-XXXX.XXXXX-b31b1b.svg)](https://arxiv.org/abs/XXXX.XXXXX)
 [![Project](https://img.shields.io/badge/Project-mobilegym.dev-1f6feb.svg)](https://mobilegym.dev/paper)
-[![Demo](https://img.shields.io/badge/Live%20Demo-Try%20it%20now-22c55e.svg)](https://mobilegym.dev)
+[![Demo](https://img.shields.io/badge/Live%20Demo-Try%20it%20now-22c55e.svg)](https://mobilegym.dev/paper)
 [![Code License](https://img.shields.io/badge/Code-Apache%202.0-blue.svg)](LICENSE)
 [![Data License](https://img.shields.io/badge/Data-CC%20BY--NC%204.0-orange.svg)](LICENSE-DATA)
 [![Node](https://img.shields.io/badge/node-%E2%89%A518-339933.svg)](https://nodejs.org/)
@@ -18,19 +18,19 @@
 
 </div>
 
-> **TL;DR** — MobileGym is a browser-hosted Android simulator with **fully programmable JSON state**. It ships **28 simulated apps** and **416 task templates** with **deterministic, sub-millisecond judges**, runs **256 parallel instances on one server** (≈400 MB RAM, ≈3 s cold-start each), and has been **Sim-to-Real validated**: a GRPO run on Qwen3-VL-4B gains **+42.8 pt in simulation** and retains **95.1 %** of that gain on a real device (**+40.7 pt**). 🎯
+> **TL;DR** — MobileGym is a browser-hosted mobile simulation environment with **fully programmable state**. It ships **28 simulated apps** and **416 task templates** with **deterministic, sub-millisecond judges**, runs **256 parallel instances on one server** (≈400 MB RAM per instance, ≈3 s cold-start each), and has been **Sim-to-Real validated**: a GRPO run on Qwen3-VL-4B gains **+42.8 pt in simulation** and retains **95.1 %** of that gain on a real device (**+40.7 pt**). 🎯
 
 <br/>
 
 ## 🧭 Why MobileGym?
 
-Real-device and emulator benchmarks for mobile GUI agents have hit three walls — and the daily apps people actually use are mostly on the *other* side of those walls.
+Current real-device and emulator environment for mobile GUI agents have hit three walls — and the daily apps people actually use are mostly on the *other* side of those walls.
 
-| Wall | What goes wrong on real devices | What MobileGym does |
-| :--- | :--- | :--- |
-| 🙈 **Unreadable state** | `adb` and accessibility trees expose UI but not balances, orders, chat history — so verification falls back on stochastic VLM judges (we measure **10.2 % misjudgment**). | The entire environment is a **structured JSON snapshot**. Judges read state directly. |
-| 🧊 **Unwritable state** | Daily-app state hides in encrypted DBs and server backends. You can't reset it, you can't clone it, and group-RL like GRPO needs both. | Reset, inject, snapshot and **clone state into hundreds of parallel instances in milliseconds**. |
-| 💥 **Irreversible side effects** | Transfers move real money. Deactivation is permanent. Real-RL is mostly a fantasy. | Sandboxed and consequence-free. Roll back anything, run a million episodes. |
+| Wall                                  | What goes wrong on real devices                                                                                                                                                    | What MobileGym does                                                                        |
+| :------------------------------------ | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------- |
+| 🙈**Unreadable state**          | `adb` and accessibility trees expose UI but not balances, orders, chat history — so verification falls back on stochastic VLM judges (we measure **10.2 % misjudgment**). | The entire environment is a**structured JSON snapshot**. Judges read state directly. |
+| 🧊**Unwritable state**          | Daily-app state hides in encrypted DBs and server backends. You can't reset it, you can't clone it, and group-RL like GRPO needs both.                                             | Reset, inject, snapshot and**clone state into hundreds of parallel instances**.      |
+| 💥**Irreversible side effects** | Transfers move real money. Deactivation is permanent. Real-RL is mostly a fantasy.                                                                                                 | Sandboxed and consequence-free. Roll back anything, run a million episodes.                |
 
 The result is **one environment** that powers both **trustworthy evaluation** and **scalable online RL** — for the account-bound, backend-dependent, high-stakes apps that prior benchmarks largely had to skip.
 
@@ -60,7 +60,7 @@ The result is **one environment** that powers both **trustworthy evaluation** an
 
 ## 🎬 Demo
 
-▶ **Try it live:** [mobilegym.dev](https://mobilegym.dev) — runs entirely in the browser, no install. Open the developer console and call `__SIM__.getState()` to see the JSON soul of the device.
+▶ **Try it live:** [here](https://mobilegym.dev/paper)— runs entirely in the browser, no install. Open the developer console and call `__SIM__.getState()` to see the JSON soul of the device.
 
 <br/>
 
@@ -68,21 +68,21 @@ The result is **one environment** that powers both **trustworthy evaluation** an
 
 <div align="center">
 
-| Model | Overall SR | PR | L1 (n=20) | L2 (n=73) | L3 (n=83) | L4 (n=80) | FC | USE |
-| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| ***Proprietary*** | | | | | | | | |
-| Gemini 3.1 Pro | **58.8 ± 1.4** | **72.1** | 97.5 | 83.6 | 63.3 | **21.9** | 34.0 | 5.5 |
-| Doubao-Seed-2.0-Pro | 52.0 | 63.6 | 100.0 | 93.2 | 48.2 | 6.2 | 33.6 | 4.7 |
-| Qwen3.6-Plus | 45.7 | 59.2 | 100.0 | 78.1 | 44.6 | 3.8 | 34.0 | 14.5 |
-| ***Open-source GUI specialists*** | | | | | | | | |
-| AutoGLM-Phone-9B | 20.0 ± 1.3 | 35.3 | 86.2 | 33.6 | 9.6 | 1.9 | 39.6 | 12.6 |
-| UI-Venus-1.5-8B | 15.4 ± 2.4 | 28.3 | 85.0 | 21.9 | 6.0 | 1.9 | 22.9 | 7.7 |
-| GUI-Owl-1.5-8B-Think | 15.1 ± 0.9 | 28.8 | 76.2 | 26.0 | 4.2 | 1.2 | 30.4 | 14.1 |
-| UI-TARS-1.5-8B | 13.8 ± 1.7 | 26.3 | 77.5 | 21.9 | 3.0 | 1.6 | 38.6 | 11.0 |
-| Step-GUI-4B | 12.9 ± 1.1 | 25.7 | 83.8 | 17.8 | 2.4 | 1.6 | 37.0 | 7.6 |
-| ***Open-source generalist (base for our RL run)*** | | | | | | | | |
-| Qwen3-VL-4B | 9.4 ± 0.6 | 20.1 | 71.2 | 12.3 | 0.6 | 0.3 | 15.9 | 10.0 |
-| **Qwen3-VL-4B + GRPO** 🚀 | **22.2** | — | **92.5** | **37.7** | **11.7** | **1.2** | — | — |
+| Model                                                      |      Overall SR      |       PR       |   L1 (n=20)   |   L2 (n=73)   |   L3 (n=83)   |   L4 (n=80)   |  FC  | USE |
+| :--------------------------------------------------------- | :-------------------: | :------------: | :------------: | :------------: | :------------: | :------------: | :--: | :--: |
+| ***Proprietary***                                  |                      |                |                |                |                |                |      |      |
+| Gemini 3.1 Pro                                             | **58.8 ± 1.4** | **72.1** |      97.5      |      83.6      |      63.3      | **21.9** | 34.0 | 5.5 |
+| Doubao-Seed-2.0-Pro                                        |         52.0         |      63.6      |     100.0     |      93.2      |      48.2      |      6.2      | 33.6 | 4.7 |
+| Qwen3.6-Plus                                               |         45.7         |      59.2      |     100.0     |      78.1      |      44.6      |      3.8      | 34.0 | 14.5 |
+| ***Open-source GUI specialists***                  |                      |                |                |                |                |                |      |      |
+| AutoGLM-Phone-9B                                           |      20.0 ± 1.3      |      35.3      |      86.2      |      33.6      |      9.6      |      1.9      | 39.6 | 12.6 |
+| UI-Venus-1.5-8B                                            |      15.4 ± 2.4      |      28.3      |      85.0      |      21.9      |      6.0      |      1.9      | 22.9 | 7.7 |
+| GUI-Owl-1.5-8B-Think                                       |      15.1 ± 0.9      |      28.8      |      76.2      |      26.0      |      4.2      |      1.2      | 30.4 | 14.1 |
+| UI-TARS-1.5-8B                                             |      13.8 ± 1.7      |      26.3      |      77.5      |      21.9      |      3.0      |      1.6      | 38.6 | 11.0 |
+| Step-GUI-4B                                                |      12.9 ± 1.1      |      25.7      |      83.8      |      17.8      |      2.4      |      1.6      | 37.0 | 7.6 |
+| ***Open-source generalist (base for our RL run)*** |                      |                |                |                |                |                |      |      |
+| Qwen3-VL-4B                                                |      9.4 ± 0.6      |      20.1      |      71.2      |      12.3      |      0.6      |      0.3      | 15.9 | 10.0 |
+| **Qwen3-VL-4B + GRPO** 🚀                            |    **22.2**    |       —       | **92.5** | **37.7** | **11.7** | **1.2** |  —  |  —  |
 
 </div>
 
@@ -96,11 +96,11 @@ On a 59-task signal-bucket subset, **10 GRPO steps on one node** lift Qwen3-VL-4
 
 <div align="center">
 
-| Bucket | n | Sim Base | Real Base | Sim Train | Real Train |
-| :--- | :---: | :---: | :---: | :---: | :---: |
-| Uplift | 23 | 2.2 % | 17.4 % | 80.7 % | 73.9 % |
-| Stable-pass | 18 | 95.8 % | 61.1 % | 95.8 % | 94.4 % |
-| Mid | 18 | 12.5 % | 22.2 % | 52.6 % | 50.0 % |
+| Bucket                 |      n      |     Sim Base     |    Real Base    |    Sim Train    |    Real Train    |
+| :--------------------- | :----------: | :--------------: | :--------------: | :--------------: | :--------------: |
+| Uplift                 |      23      |      2.2 %      |      17.4 %      |      80.7 %      |      73.9 %      |
+| Stable-pass            |      18      |      95.8 %      |      61.1 %      |      95.8 %      |      94.4 %      |
+| Mid                    |      18      |      12.5 %      |      22.2 %      |      52.6 %      |      50.0 %      |
 | **Signal Total** | **59** | **33.9 %** | **32.2 %** | **76.7 %** | **72.9 %** |
 
 </div>
@@ -124,12 +124,12 @@ pip install -r bench_env/requirements.txt
 playwright install chromium
 ```
 
-> Requires **Node ≥ 18** and **Python ≥ 3.10**. Conda env recommended.
+> Requires **Node ≥ 20** and **Python ≥ 3.11**. Conda env recommended.
 
 ### 2. Boot the simulator
 
 ```bash
-npm run dev          # → http://localhost:5173
+npm run dev          # → http://localhost:3000
 ```
 
 Open the URL in any modern browser. That's it — you're staring at a fully simulated Android phone with 28 apps preinstalled. 📱
@@ -139,7 +139,7 @@ Open the URL in any modern browser. That's it — you're staring at a fully simu
 ```bash
 python -m bench_env.run \
   --exec "Open WeChat and add 'Bob' as a friend" \
-  --env-url http://localhost:5173 \
+  --env-url http://localhost:3000 \
   --agent autoglm \
   --model-base-url http://localhost:8001/v1 \
   --model-name autoglm-phone-9b
@@ -153,17 +153,17 @@ python -m bench_env.run --list
 
 # Evaluate a single task
 python -m bench_env.run --task-id wechat.ReadMyWxid \
-  --env-url http://localhost:5173 \
+  --env-url http://localhost:3000 \
   --agent autoglm --model-name autoglm-phone-9b
 
 # Evaluate one app, 4 parallel workers
 python -m bench_env.run --suite wechat --parallel 4 \
-  --env-url http://localhost:5173 \
+  --env-url http://localhost:3000 \
   --agent autoglm --model-name autoglm-phone-9b
 
 # Run the full test split with VLM-judge as a sanity check (paper §6.5)
 python -m bench_env.run --split test --parallel 8 \
-  --env-url http://localhost:5173 \
+  --env-url http://localhost:3000 \
   --judge-mode auto \
   --agent autoglm --model-name autoglm-phone-9b
 ```
@@ -196,12 +196,12 @@ python -m bench_env.run --split test --parallel 16 \
 
 ### Daily apps — simulated for research, not connected to any real service
 
-| 💬 Social & Messaging | 💰 Finance & Commerce | 📺 Media & Reading | 🚆 Travel & Local |
-| :--- | :--- | :--- | :--- |
-| WeChat (微信)        | Alipay (支付宝)       | Bilibili (哔哩哔哩)  | 12306 (铁路 12306) |
-| RedNote (小红书)     | eBay                  | Spotify              | Maps |
-| X (Twitter)          |                       | WeChat Reading (微信读书) | Weather |
-| Reddit               |                       |                      | Tencent Meeting (腾讯会议) |
+| 💬 Social & Messaging | 💰 Finance & Commerce | 📺 Media & Reading        | 🚆 Travel & Local          |
+| :-------------------- | :-------------------- | :------------------------ | :------------------------- |
+| WeChat (微信)         | Alipay (支付宝)       | Bilibili (哔哩哔哩)       | 12306 (铁路 12306)         |
+| RedNote (小红书)      | eBay                  | Spotify                   | Maps                       |
+| X (Twitter)           |                       | WeChat Reading (微信读书) | Weather                    |
+| Reddit                |                       |                           | Tencent Meeting (腾讯会议) |
 
 ### System apps
 
@@ -251,17 +251,17 @@ MobileGym is a three-layer stack — and each layer has a clean contract with th
 
 Plug in any model that speaks one of these schemas — or write your own adapter in **~100 lines**.
 
-| Adapter | Prompt style | Notes |
-| :--- | :--- | :--- |
-| `autoglm` | Open-AutoGLM (zh) | Tested against AutoGLM-Phone-9B |
-| `uitars` | UI-TARS | UI-TARS-1.5-8B |
-| `venus` | UI-Venus | UI-Venus-1.5-8B |
-| `gui_owl` | GUI-Owl-1.5-Think | thinking-style outputs |
-| `gelab` | Gelab-Zero |  |
-| `generic` | Unified JSON | model-agnostic |
-| `generic_v2` | `<think>` + `<answer>` | trained checkpoints, RL outputs |
-| `mai_ui` | MAI-UI style | MAI-UI / multimodal-action interface checkpoints |
-| `human` | manual | for debugging |
+| Adapter        | Prompt style               | Notes                                            |
+| :------------- | :------------------------- | :----------------------------------------------- |
+| `autoglm`    | Open-AutoGLM (zh)          | Tested against AutoGLM-Phone-9B                  |
+| `uitars`     | UI-TARS                    | UI-TARS-1.5-8B                                   |
+| `venus`      | UI-Venus                   | UI-Venus-1.5-8B                                  |
+| `gui_owl`    | GUI-Owl-1.5-Think          | thinking-style outputs                           |
+| `gelab`      | Gelab-Zero                 |                                                  |
+| `generic`    | Unified JSON               | model-agnostic                                   |
+| `generic_v2` | `<think>` + `<answer>` | trained checkpoints, RL outputs                  |
+| `mai_ui`     | MAI-UI style               | MAI-UI / multimodal-action interface checkpoints |
+| `human`      | manual                     | for debugging                                    |
 
 ```bash
 python -m bench_env.run --agent <name> --model-name <id> --model-base-url <url> ...
@@ -308,25 +308,25 @@ After touching `navigation.declaration.ts`, always rebuild the analysis artifact
 
 ```bash
 node scripts/build_nav_artifacts.mjs <AppName>
-# → consistency check + nav graph + action tasks, in one shot
+# → consistency check + nav graph + action tasks, in one shot![1779161741524](image/README/1779161741524.png)
 ```
 
-Visualise the graph at `http://localhost:5173/nav_graph_viewer.html` (Cytoscape.js).
+Visualise the graph at `http://localhost:3000/nav_graph_viewer.html` (Cytoscape.js).
 
 <br/>
 
 ## 📚 Documentation Map
 
-| What you want | Where to look |
-| :--- | :--- |
-| Platform spec (the bible) | [docs/platform/app-module-contract.md](docs/platform/app-module-contract.md) |
-| State & data model | [docs/platform/state-model.md](docs/platform/state-model.md) |
-| App design guide | [docs/platform/app-module-contract.md](docs/platform/app-module-contract.md) |
-| Task authoring | [bench_env/docs/task/IMPLEMENTATION.md](bench_env/docs/task/IMPLEMENTATION.md) |
-| Test the judge you wrote | [bench_env/docs/task/TESTING.md](bench_env/docs/task/TESTING.md) |
-| Live debug APIs (`__SIM__`, `__OS__`, …) | [docs/api/runtime-api.md](docs/api/runtime-api.md) |
-| Per-App generated state schema | [docs/os-services/APP_STATE_API.md](docs/os-services/APP_STATE_API.md) |
-| Run benchmarks end-to-end | [bench_env/README.md](bench_env/README.md) |
+| What you want                                 | Where to look                                                               |
+| :-------------------------------------------- | :-------------------------------------------------------------------------- |
+| Platform spec (the bible)                     | [docs/platform/app-module-contract.md](docs/platform/app-module-contract.md)   |
+| State & data model                            | [docs/platform/state-model.md](docs/platform/state-model.md)                   |
+| App design guide                              | [docs/platform/app-module-contract.md](docs/platform/app-module-contract.md)   |
+| Task authoring                                | [bench_env/docs/task/IMPLEMENTATION.md](bench_env/docs/task/IMPLEMENTATION.md) |
+| Test the judge you wrote                      | [bench_env/docs/task/TESTING.md](bench_env/docs/task/TESTING.md)               |
+| Live debug APIs (`__SIM__`, `__OS__`, …) | [docs/api/runtime-api.md](docs/api/runtime-api.md)                             |
+| Per-App generated state schema                | [docs/os-services/APP_STATE_API.md](docs/os-services/APP_STATE_API.md)         |
+| Run benchmarks end-to-end                     | [bench_env/README.md](bench_env/README.md)                                     |
 
 > 🧑‍💻 If you're an AI coding assistant, start with [AGENTS.md](AGENTS.md) and `.cursor/rules/`.
 
@@ -352,7 +352,7 @@ python3 scripts/nav_path_finder.py --graph public/<app>_nav_graph.json --from A 
 python scripts/dev/dump_app_state_schema.py --out docs/os-services/APP_STATE_API.md
 
 # ⚡ Resource diagnostics
-python -m bench_env.diagnose_perf --env-url http://localhost:5173 --apps wechat,redbook
+python -m bench_env.diagnose_perf --env-url http://localhost:3000 --apps wechat,redbook
 ```
 
 <br/>
