@@ -16,7 +16,7 @@ RuntimeError: [WN][page#1] _wait_ready phase=__SIM__ timeout:
 - **CPU 利用率 ~10%**(`load1` 远低于核数)
 - **Playwright Node 主进程 CPU < 20%**
 - **每个 chromium 子进程 CPU ~10%**(都在等什么,不是被 CPU 卡住)
-- **mihomo / nginx / vLLM 各自 CPU 都 < 10%**
+- **上游服务(nginx / vLLM / 任何代理)各自 CPU 都 < 10%**
 - **关掉 `--proxy` 直连 nginx 仍然炸**
 - **`fast-reset` 过的 envs 不够 60s mount 完成**
 - **`_wait_ready` 卡在第一阶段**(等 `window.__SIM__` 和 `__SIM__.getState`)
@@ -70,8 +70,8 @@ find /proc/*/fd -lname 'anon_inode:inotify' 2>/dev/null | wc -l
 
 | host | `max_user_instances` | 结果 |
 |---|---|---|
-| `hr-RTX6000-132`(本机) | 128 | 大量 timeout 失败 |
-| 其他服务器 | 8192 | 跑通 |
+| host A(低默认值) | 128 | 大量 timeout 失败 |
+| host B(已 bump) | 8192 | 跑通 |
 
 确认是 sysctl 差异导致。
 
@@ -131,13 +131,13 @@ debug 这个 case 的过程中先后试过下面这些,**都不解决问题但�
 
 - **TMPDIR 重定向到用户 cache 目录**(`bench_env/env/pool.py`)— 怀疑 `/tmp` 空间不足导致 IDB 写慢,实测无效。chromium user-data-dir 现在在用户 cache 下的 `mobile-gym/playwright_tmp/`
 - **Worker 错峰启动**(`bench_env/runner/parallel.py`)— `await asyncio.sleep(wid * 0.05)`,把首次 reset 摊到 12.8s 窗口。无效但保留以防真有 asyncio 同步 fan-out 问题
-- 其他打过脸的猜测(都不是因):Playwright Node 单进程瓶颈、nginx accept queue、mihomo proxy 拥塞、per-browser network process serialize、孤儿 chromium 累积
+- 其他打过脸的猜测(都不是因):Playwright Node 单进程瓶颈、nginx accept queue、上游代理拥塞、per-browser network process serialize、孤儿 chromium 累积
 
 诊断这条 case 花了大半个工作流。下次遇到完全一样的症状直接来这里。
 
 ## 相关
 
-- [bench_env/docs/BENCH_ENV_PERFORMANCE.md](../../bench_env/docs/BENCH_ENV_PERFORMANCE.md) — bench 整体性能基准
+- [bench_env/docs/performance.md](../../bench_env/docs/performance.md) — bench 整体性能基准与已知瓶颈
 - [bench_env/env/pool.py](../../bench_env/env/pool.py) — chromium 启动 + TMPDIR 设置
 - [bench_env/runner/parallel.py](../../bench_env/runner/parallel.py) — worker 错峰逻辑
 - [bench_env/env/mobile_gym.py:1255](../../bench_env/env/mobile_gym.py#L1255) — `_wait_ready` 的 60s timeout
