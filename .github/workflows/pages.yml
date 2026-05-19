@@ -32,20 +32,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       # 缓存编译后的 dist：源码 hash 不变就跳过 npm install + vite build
       # workflow 文件也算入 key —— 改 env var 时也要重 build
       - name: Cache built dist
         id: cache-dist
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: dist
-          key: dist-v2-${{ hashFiles('apps/**', 'os/**', 'system/**', 'public/**', 'index.html', 'main.tsx', 'vite.config.ts', 'package.json', 'package-lock.json', 'scripts/dev/clean_dist_for_pages.mjs', '.github/workflows/pages.yml') }}
+          key: dist-v3-${{ hashFiles('apps/**', 'os/**', 'system/**', 'public/**', 'index.html', 'main.tsx', 'vite.config.ts', 'package.json', 'package-lock.json', 'scripts/dev/clean_dist_for_pages.mjs', '.github/workflows/pages.yml') }}
 
       - name: Setup Node
         if: steps.cache-dist.outputs.cache-hit != 'true'
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '22'
           cache: 'npm'
@@ -86,7 +86,7 @@ jobs:
           du -sh _site/* | sort -hr | head -10
 
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: ./_site
 
@@ -99,4 +99,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
