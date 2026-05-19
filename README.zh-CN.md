@@ -9,8 +9,8 @@
 [![Demo](https://img.shields.io/badge/在线体验-点击进入-22c55e.svg)](https://mobilegym.dev)
 [![Code License](https://img.shields.io/badge/Code-Apache%202.0-blue.svg)](LICENSE)
 [![Data License](https://img.shields.io/badge/Data-CC%20BY--NC%204.0-orange.svg)](LICENSE-DATA)
-[![Node](https://img.shields.io/badge/node-%E2%89%A518-339933.svg)](https://nodejs.org/)
-[![Python](https://img.shields.io/badge/python-%E2%89%A53.10-3776ab.svg)](https://www.python.org/)
+[![Node](https://img.shields.io/badge/node-%E2%89%A522-339933.svg)](https://nodejs.org/)
+[![Python](https://img.shields.io/badge/python-%E2%89%A53.11-3776ab.svg)](https://www.python.org/)
 [![English](https://img.shields.io/badge/lang-English-blue.svg)](README.md)
 
 <p align="center">
@@ -125,7 +125,7 @@ pip install -r bench_env/requirements.txt
 playwright install chromium
 ```
 
-> 需要 **Node ≥ 18** 和 **Python ≥ 3.10**。推荐用 conda 环境。
+> 需要 **Node ≥ 22** 和 **Python ≥ 3.11**。推荐用 conda 环境。
 
 ### 2. 启动模拟器
 

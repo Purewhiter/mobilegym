@@ -9,8 +9,8 @@
 [![Demo](https://img.shields.io/badge/Live%20Demo-Try%20it%20now-22c55e.svg)](https://mobilegym.dev/paper)
 [![Code License](https://img.shields.io/badge/Code-Apache%202.0-blue.svg)](LICENSE)
 [![Data License](https://img.shields.io/badge/Data-CC%20BY--NC%204.0-orange.svg)](LICENSE-DATA)
-[![Node](https://img.shields.io/badge/node-%E2%89%A518-339933.svg)](https://nodejs.org/)
-[![Python](https://img.shields.io/badge/python-%E2%89%A53.10-3776ab.svg)](https://www.python.org/)
+[![Node](https://img.shields.io/badge/node-%E2%89%A522-339933.svg)](https://nodejs.org/)
+[![Python](https://img.shields.io/badge/python-%E2%89%A53.11-3776ab.svg)](https://www.python.org/)
 
 <p align="center">
   <img src="assets/teaser.jpg" width="100%" alt="MobileGym poster — a verifiable and scalable simulation environment for mobile GUI agents: 28 apps, 416 parameterized task templates, code-level judge, parallel rollouts, easy extension, safe sandbox, and +40.7 pt sim-to-real transfer."/>
@@ -124,7 +124,7 @@ pip install -r bench_env/requirements.txt
 playwright install chromium
 ```
 
-> Requires **Node ≥ 20** and **Python ≥ 3.11**. Conda env recommended.
+> Requires **Node ≥ 22** and **Python ≥ 3.11**. Conda env recommended.
 
 ### 2. Boot the simulator
 
