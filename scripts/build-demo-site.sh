@@ -15,7 +15,6 @@ cd "$(dirname "$0")/.."
 
 SIM_BASE="${SIM_BASE:-/sim/}"           # 须以 / 开头和结尾
 SITE_DIR="${SITE_DIR:-_site}"
-SIM_HOST="${SIM_HOST:-https://mobilegym.dev}"
 
 echo "==> Building simulator with base=${SIM_BASE}"
 VITE_BASE="${SIM_BASE}" \
@@ -39,8 +38,6 @@ cp -r dist/* "${SITE_DIR}/${SIM_DIR}/"
 echo "==> Rewriting landing for root deploy"
 # iframe 默认指向 /sim/（源码默认 '/'，本地 dev 不受影响）
 perl -0pi -e "s#</head>#<script>window.__MG_SIM_SRC__='${SIM_BASE}';</script></head>#" "${SITE_DIR}/index.html"
-# canonical / og:url / og:image / twitter:image: /paper/ -> /（landing 现在在根）
-perl -0pi -e "s#\Q${SIM_HOST}\E/paper/#${SIM_HOST}/#g" "${SITE_DIR}/index.html"
 # avatar 选择器的静态 <img src="/@app-assets/..."> 指向 sim base 下的实际资源
 perl -0pi -e "s#/\@app-assets/#${SIM_BASE}\@app-assets/#g" "${SITE_DIR}/index.html"
 
