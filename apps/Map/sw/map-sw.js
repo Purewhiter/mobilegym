@@ -11,8 +11,10 @@
  */
 
 const CACHE_NAME = 'map-cache-786a79e6b3e1';
-const MANIFEST_URL = '/map-cache/manifest.json';
-const FILES_BASE = '/map-cache/files/';
+// 从 SW 自身 URL 推导部署 base（'/' 或 '/sim/'），使 /map-cache 路径在子路径部署下也正确。
+const SW_BASE = new URL('.', self.location.href).href;
+const MANIFEST_URL = SW_BASE + 'map-cache/manifest.json';
+const FILES_BASE = SW_BASE + 'map-cache/files/';
 
 const INTERCEPT_HOSTS = new Set([
   'maps.googleapis.com',

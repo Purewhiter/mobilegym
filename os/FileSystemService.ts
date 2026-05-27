@@ -112,7 +112,7 @@ async function scanSdcard(): Promise<ScanResult | null> {
 
   // 2. Fallback: static manifest emitted during `npm run build`
   try {
-    const response = await fetch('/sdcard/manifest.json');
+    const response = await fetch(`${import.meta.env.BASE_URL}sdcard/manifest.json`);
     if (response.ok) {
       const result = await response.json();
       console.log(`[FileSystem] Loaded ${result.totalFiles} files from static .manifest.json`);
@@ -337,6 +337,16 @@ export function exists(path: string): boolean {
 const blobUrlCache = new Map<string, string>();
 
 /**
+ * 把存储的根绝对路径（如 /sdcard/DCIM/...）转成可 fetch 的 URL，带上部署 base。
+ * public/sdcard/* 在 build 时被发布到 <BASE_URL>sdcard/*；根部署 base='/' 时原样返回，
+ * demo 分支 /sim/ 子路径部署时变成 /sim/sdcard/...。非根绝对路径（http/blob/相对）原样放过。
+ */
+function presetAssetUrl(p: string): string {
+  if (!p.startsWith('/')) return p;
+  return import.meta.env.BASE_URL + p.slice(1);
+}
+
+/**
  * Get the URI for displaying a file (sync version)
  * For preset files, returns the public path
  * For IndexedDB files, returns cached blob URL or null
@@ -347,7 +357,7 @@ export function getFileUri(path: string): string | null {
   
   // Legacy compatibility: old DB may still contain preset nodes.
   // In Vite dev/build, public/sdcard/* is served at /sdcard/* so node.path is fetchable.
-  if (node.storage === 'preset') return node.path;
+  if (node.storage === 'preset') return presetAssetUrl(node.path);
   
   // For IndexedDB files, check cache
   if (blobUrlCache.has(node.id)) {
@@ -403,7 +413,7 @@ export async function readFile(path: string): Promise<Blob | null> {
   
   if (node.storage === 'preset') {
     try {
-      const response = await fetch(node.path);
+      const response = await fetch(presetAssetUrl(node.path));
       return await response.blob();
     } catch (error) {
       console.error('[FileSystem] Failed to fetch preset file:', error);
@@ -924,7 +934,7 @@ async function seedImportFromPublicSdcard(): Promise<void> {
     for (let i = 0; i < fetchItems.length; i += SEED_FETCH_BATCH) {
       const batch = fetchItems.slice(i, i + SEED_FETCH_BATCH);
       const results = await Promise.all(batch.map(({ id, uri, node }) =>
-        fetch(uri).then(async (resp) => {
+        fetch(presetAssetUrl(uri)).then(async (resp) => {
           if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
           const blob = await resp.blob();
           node.size = blob.size;
@@ -1007,7 +1017,7 @@ async function importPresetFileFromConfig(preset: PresetFile): Promise<void> {
   state.pathIndex.set(node.path, node.id);
 
   try {
-    const resp = await fetch(preset.uri);
+    const resp = await fetch(presetAssetUrl(preset.uri));
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
     const blob = await resp.blob();
     node.size = blob.size;

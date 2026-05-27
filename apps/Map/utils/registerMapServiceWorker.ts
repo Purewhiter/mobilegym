@@ -7,7 +7,7 @@ export function registerMapServiceWorker(): Promise<ServiceWorkerRegistration | 
   if (registrationPromise) return registrationPromise;
 
   registrationPromise = navigator.serviceWorker
-    .register('/map-sw.js', { scope: '/' })
+    .register(`${import.meta.env.BASE_URL}map-sw.js`, { scope: import.meta.env.BASE_URL })
     .then((registration) => {
       console.log('[Map] Service Worker 已注册');
       return registration;

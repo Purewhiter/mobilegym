@@ -36,8 +36,13 @@
 
   function wechatAsset(value) {
     const path = cleanText(value, 'avatars/avatar_default.jpg', 120);
-    if (path.startsWith('http') || path.startsWith('/@app-assets/')) return path;
-    return `/@app-assets/Wechat/${path.replace(/^\/+/, '')}`;
+    if (path.startsWith('http')) return path;
+    // 模拟器资源挂载在 sim 部署 base 下：根部署/dev 为 '/'、demo 子路径部署为 '/sim/'
+    // （assemble 时注入 window.__MG_SIM_SRC__）。注入进 iframe 的 avatar 由模拟器原样
+    // 渲染（ChatList 直接用 chat.user.avatar），所以这里必须拼成最终可访问的绝对 URL。
+    const simBase = window.__MG_SIM_SRC__ || '/';
+    const rel = path.replace(/^\/+/, '').replace(/^@app-assets\/Wechat\//, '');
+    return `${simBase}@app-assets/Wechat/${rel}`;
   }
 
   function money(value, fallback) {
@@ -982,7 +987,9 @@
   function powerOn() {
     // 本地预览支持：?sim=http://localhost:3000 指向独立 vite。注意 iframe 与父页必须同源，
     // 否则 patch 装不上、滚动会冒泡到父页面。推荐 dev 直接访问 vite 提供的 /web/index.html。
-    const simSrc = new URLSearchParams(location.search).get('sim') || '/';
+    // 默认 '/'（本地 dev + 同源根部署）；demo 分支的 /sim 子路径部署在 assemble
+    // 时注入 window.__MG_SIM_SRC__='/sim/' 覆盖。?sim= 仍可手动指定本地独立 vite。
+    const simSrc = new URLSearchParams(location.search).get('sim') || window.__MG_SIM_SRC__ || '/';
     frame.innerHTML = '';
     const iframe = document.createElement('iframe');
     iframe.src = simSrc;

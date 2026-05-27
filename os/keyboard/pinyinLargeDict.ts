@@ -23,7 +23,7 @@ export function loadPinyinDict(): Promise<PinyinDictJson | null> {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000);
 
-      const res = await fetch('/ime/pinyin_dict.json', {
+      const res = await fetch(`${import.meta.env.BASE_URL}ime/pinyin_dict.json`, {
         cache: 'force-cache' as RequestCache,
         signal: controller.signal,
       });

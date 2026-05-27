@@ -1,8 +1,11 @@
 name: Deploy GitHub Pages
 
+# 部署只在 demo 分支进行（main 已不再部署网站）。
+# demo 把 landing 放在根（mobilegym.dev/）、模拟器放在 /sim/，
+# 使 landing 能同源嵌入交互 demo，且根路径成为可索引的 SEO 主页。
 on:
   push:
-    branches: [dev, main]
+    branches: [demo]
     paths:
       - 'web/**'
       - 'apps/**'
@@ -14,6 +17,7 @@ on:
       - 'vite.config.ts'
       - 'package.json'
       - 'package-lock.json'
+      - 'scripts/build-demo-site.sh'
       - '.github/workflows/pages.yml'
   workflow_dispatch:  # 允许在 GitHub UI 上手动触发
 
@@ -33,52 +37,26 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      # 缓存编译后的 dist：源码 hash 不变就跳过 npm install + vite build
-      # workflow 文件也算入 key —— 改 env var 时也要重 build
-      - name: Cache built dist
-        id: cache-dist
-        uses: actions/cache@v5
-        with:
-          path: dist
-          key: dist-v3-${{ hashFiles('apps/**', 'os/**', 'system/**', 'public/**', 'index.html', 'main.tsx', 'vite.config.ts', 'package.json', 'package-lock.json', '.github/workflows/pages.yml') }}
-
       - name: Setup Node
-        if: steps.cache-dist.outputs.cache-hit != 'true'
         uses: actions/setup-node@v6
         with:
           node-version: '22'
           cache: 'npm'
 
       - name: Install deps
-        if: steps.cache-dist.outputs.cache-hit != 'true'
         run: npm ci
 
-      - name: Build simulator
-        if: steps.cache-dist.outputs.cache-hit != 'true'
-        # 自定义域名根路径部署，base 用默认 '/'，所有绝对路径自动正常
-        # VITE_CDN_BASE: 各 app 通过 os/utils/cdn 的 cdn() helper 构造 CDN URL，
-        #                生产指向 R2 镜像（cdn.mobilegym.dev），dev 时 fallback /cdn
+      # 单一脚本：build(base=/sim/) + assemble(_site) + landing 重写。
+      # 与本地 `scripts/build-demo-site.sh` 完全一致，保证本地验证 == 线上行为。
+      - name: Build demo site
         env:
           VITE_CDN_BASE: https://cdn.mobilegym.dev
           VITE_AI_BASE_URL: https://api.mobilegym.dev/ai/v1
           VITE_AI_MODEL: qwen-flash
           VITE_GOOGLE_MAPS_API_KEY: ${{ secrets.VITE_GOOGLE_MAPS_API_KEY }}
-        run: npm run build
-
-      - name: Assemble site
         run: |
-          mkdir -p _site
-          # simulator 部署在根（mobilegym.dev/）
-          cp -r dist/* _site/
-          # landing 页部署在 /paper/（含 figures/ 等论文配图）
-          mkdir -p _site/paper
-          cp -r web/* _site/paper/
-          # 自定义域名
-          echo "mobilegym.dev" > _site/CNAME
-          # 防 Jekyll 预处理
-          touch _site/.nojekyll
-          echo "_site assembled:"
-          du -sh _site/* | sort -hr | head -10
+          chmod +x scripts/build-demo-site.sh
+          scripts/build-demo-site.sh
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v5

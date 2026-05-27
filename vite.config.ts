@@ -488,6 +488,7 @@ function serveAppAssetsPlugin() {
   };
 
   const PREFIX = '/@app-assets/';
+  let resolvedBase = '/';
 
   function walkDir(dir: string, base: string, cb: (filePath: string, relPath: string) => void) {
     for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -511,6 +512,10 @@ function serveAppAssetsPlugin() {
 
   return {
     name: 'serve-app-assets',
+
+    configResolved(config: { base: string }) {
+      resolvedBase = config.base || '/';
+    },
 
     // ── Dev: 中间件伺服 ──
     configureServer(server) {
@@ -541,7 +546,21 @@ function serveAppAssetsPlugin() {
     },
 
     // ── Build: 拷贝到 dist ──
-    generateBundle() {
+    generateBundle(_options: unknown, bundle: Record<string, any>) {
+      // 子路径部署（base=/sim/）时，代码里硬编码的 `/@app-assets/` 绝对前缀
+      // 取不到（实际在 <base>@app-assets/）。base !== '/' 时把产物里的该前缀
+      // 统一改写为带 base 的版本（base='/' 为 no-op，根部署/dev 行为不变）。
+      if (resolvedBase !== '/') {
+        const want = `${resolvedBase}@app-assets/`;
+        for (const file of Object.values(bundle)) {
+          if (file.type === 'chunk' && typeof file.code === 'string') {
+            file.code = file.code.split(PREFIX).join(want);
+          } else if (file.type === 'asset' && typeof file.source === 'string') {
+            file.source = file.source.split(PREFIX).join(want);
+          }
+        }
+      }
+
       for (const base of ['apps', 'system']) {
         const baseDir = path.join(__dirname, base);
         if (!fs.existsSync(baseDir)) continue;
@@ -1410,6 +1429,10 @@ function generateLabel(filename, type) {
 
 export default defineConfig(({ mode }) => {
   return {
+    // 默认根路径部署（mobilegym.dev/、本地 dev、bench_env 都用 '/'）。
+    // demo 分支的 GitHub Pages 部署把模拟器放在 /sim/ 子路径，通过
+    // VITE_BASE=/sim/ 覆盖，使打包出的资源 URL 自动带前缀。
+    base: process.env.VITE_BASE || '/',
     server: {
       port: 3000,
       host: '0.0.0.0',
