@@ -28,10 +28,6 @@ export const formatGmtLabel = (offsetMinutes: number) => {
 export const getNextTrigger = (alarm: Alarm, baseDate: Date) => {
   const next = TimeService.fromTimestamp(baseDate.getTime());
   next.setHours(alarm.hour, alarm.minute, 0, 0);
-  if (next.getTime() > baseDate.getTime()) {
-    return next.getTime();
-  }
-
   const moveToNextDay = () => {
     next.setDate(next.getDate() + 1);
   };
@@ -39,13 +35,17 @@ export const getNextTrigger = (alarm: Alarm, baseDate: Date) => {
   if (alarm.repeat === 'weekday' || alarm.repeat === 'workday' || alarm.repeat === 'holiday') {
     let guard = 0;
     while (guard < 14) {
-      moveToNextDay();
       const day = next.getDay();
       const isWeekday = day >= 1 && day <= 5;
-      if (alarm.repeat === 'holiday' && !isWeekday) break;
-      if ((alarm.repeat === 'weekday' || alarm.repeat === 'workday') && isWeekday) break;
+      const isRepeatDay = alarm.repeat === 'holiday' ? !isWeekday : isWeekday;
+      if (isRepeatDay && next.getTime() > baseDate.getTime()) break;
+      moveToNextDay();
       guard += 1;
     }
+    return next.getTime();
+  }
+
+  if (next.getTime() > baseDate.getTime()) {
     return next.getTime();
   }
 

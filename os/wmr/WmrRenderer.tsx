@@ -8,6 +8,7 @@ import type { WmrDocument, WmrNode } from './engine/types';
 import * as TimeService from '../TimeService';
 import BroadcastBus from '../BroadcastBus';
 import QuickSettingsService from '../QuickSettingsService';
+import { useLocale } from '../locale';
 import {
   loadWmrBundle,
   type WmrBundleAnalysis,
@@ -85,6 +86,7 @@ export const WmrRenderer: React.FC<WmrRendererProps> = ({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [ready, setReady] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const locale = useLocale();
 
   const docRef = useRef<WmrDocument | null>(null);
   const varsRef = useRef<VarContext | null>(null);
@@ -133,7 +135,7 @@ export const WmrRenderer: React.FC<WmrRendererProps> = ({
     (async () => {
       const stopInit = beginWmrPerf('widget.init', sourceKey);
       try {
-        const bundle = await loadWmrBundle(bundleSource ?? xmlBaseUrl!);
+        const bundle = await loadWmrBundle(bundleSource ?? xmlBaseUrl!, locale);
         if (cancelled) return;
         const { xml, doc, resourceStrings, analysis, assetUrlResolver } = bundle;
         docRef.current = doc;
@@ -234,7 +236,7 @@ export const WmrRenderer: React.FC<WmrRendererProps> = ({
     // preferredAspectRatio / spanX / spanY 只用于 init 时的 viewport 初值；
     // 它们变化时由下一个 useEffect（viewport 更新）走轻量路径，不应触发整体 init 重建。
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bundleSource, initialVariables, persistNamespace, reportError, shouldInit, sourceKey, xmlBaseUrl]);
+  }, [bundleSource, initialVariables, locale, persistNamespace, reportError, shouldInit, sourceKey, xmlBaseUrl]);
 
   useEffect(() => {
     const doc = docRef.current;

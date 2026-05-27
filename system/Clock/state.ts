@@ -1,6 +1,17 @@
+import AlarmManagerService, {
+  type AlarmClockInfo,
+  type AlarmRepeatMode,
+} from '../../os/AlarmManagerService';
+import BroadcastBus, {
+  ACTION_BOOT_COMPLETED,
+  ACTION_TIME_SET,
+  ACTION_TIME_TICK,
+} from '../../os/BroadcastBus';
 import { createAppStoreWithActions, memoSelector, registerStateAdapter } from '../../os/createAppStore';
+import * as TimeService from '../../os/TimeService';
 import { CLOCK_CONFIG } from './data';
 import type { Alarm, WorldCity } from './types';
+import { getNextTrigger } from './utils';
 
 // ---- Types ----
 
@@ -97,6 +108,78 @@ export const selectSelectedCities = memoSelector(
   (s: ClockStore) => s.selectedCityIds,
   (ids: string[]): WorldCity[] => CLOCK_CONFIG.cities.filter(city => ids.includes(city.id)),
 );
+
+// ---- AlarmManagerService publisher ─────────────────────────────────
+// Real Android: Clock publishes alarms to AlarmManager via setAlarmClock();
+// any consumer (lockscreen / status bar / MAML widget) reads next-alarm via
+// getNextAlarmClock() — system never knows which app set it. mobile-gym
+// mirrors this in os/AlarmManagerService so the widget ambient adapter is
+// decoupled from this app's private store.
+
+const CLOCK_PACKAGE_NAME = 'com.android.deskclock';
+
+function alarmRepeatToMode(repeat: Alarm['repeat']): AlarmRepeatMode {
+  switch (repeat) {
+    case 'daily':
+    case 'workday':
+    case 'weekday':
+    case 'holiday':
+    case 'once':
+      return repeat;
+    default:
+      return 'custom';
+  }
+}
+
+function alarmToAlarmClockInfo(alarm: Alarm): AlarmClockInfo {
+  return {
+    id: alarm.id,
+    ownerPackage: CLOCK_PACKAGE_NAME,
+    hour: alarm.hour,
+    minute: alarm.minute,
+    label: alarm.note ?? '',
+    repeat: alarmRepeatToMode(alarm.repeat),
+    triggerAtMs: getNextTrigger(alarm, TimeService.getDate()),
+  };
+}
+
+function publishAlarmsToManager(alarms: Alarm[]): void {
+  const enabled = alarms.filter((a) => a.enabled);
+  AlarmManagerService.setAlarmClocksFor(
+    CLOCK_PACKAGE_NAME,
+    enabled.map(alarmToAlarmClockInfo),
+  );
+}
+
+function republishCurrentAlarms(): void {
+  publishAlarmsToManager(useClockStore.getState().alarms);
+}
+
+// Initial publish on module load (covers cold-start when defaults already
+// have enabled alarms).
+republishCurrentAlarms();
+
+useClockStore.subscribe((state, prev) => {
+  if (state.alarms === prev.alarms) return;
+  publishAlarmsToManager(state.alarms);
+});
+
+// triggerAtMs is computed relative to "now", so it goes stale as wall-clock
+// time advances or jumps. Re-publish (recomputing every alarm's next trigger
+// against the current TimeService time) whenever time moves so the widget's
+// next_alarm_time / clock_alarmtime never serve expired data:
+//   - TIME_TICK fires each minute while simulated time flows (covers an alarm
+//     time passing during normal playback). setAlarmClocksFor dedups, so ticks
+//     that don't cross a trigger boundary are no-ops.
+//   - TIME_SET fires on __SIM_TIME__.setSimulatedTime() jumps.
+BroadcastBus.registerReceiver(ACTION_TIME_TICK, republishCurrentAlarms);
+BroadcastBus.registerReceiver(ACTION_TIME_SET, republishCurrentAlarms);
+
+// __SIM__.resetState() (no page reload) wipes the volatile AlarmManager store
+// AFTER app stores re-init, leaving the manager empty until the next alarm
+// change. OSContext re-emits BOOT_COMPLETED at the end of the reset so derived
+// volatile services (this + MediaSession) re-publish from the restored store.
+BroadcastBus.registerReceiver(ACTION_BOOT_COMPLETED, republishCurrentAlarms);
 
 // ---- State Adapter (bench_env) ----
 // 补齐旧 API 暴露的 alarms / selectedCities（App 未挂载时从 CONFIG 默认值计算）

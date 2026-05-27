@@ -1,4 +1,6 @@
+import BroadcastBus, { ACTION_BOOT_COMPLETED } from '../../os/BroadcastBus';
 import { createAppStoreWithActions, memoSelector } from '../../os/createAppStore';
+import MediaSessionService, { type ActiveMediaSession } from '../../os/MediaSessionService';
 import { SPOTIFY_CONFIG } from './data';
 import type { SpotifyTrack, SpotifyPlaylist, SpotifyArtist, PlaySource, PlayHistoryEntry, SearchHistoryEntry } from './types';
 import * as TimeService from '../../os/TimeService';
@@ -476,3 +478,56 @@ export const selectRecentPlays = memoSelector(
   (s: SpotifyState & SpotifyActions) => s.recentPlays,
   (recentPlays) => recentPlays,
 );
+
+// ── MediaSession publisher ─────────────────────────────────────────
+// Real Android: Spotify keeps an active MediaSession that lockscreen / widget
+// / Bluetooth controls listen to via MediaSessionManager. mobile-gym mirrors
+// this via os/MediaSessionService — subscribers consume "now playing" without
+// importing Spotify code. Push on every change so the music widget stays
+// in sync.
+
+function parseTrackDurationMs(value: unknown): number {
+  if (typeof value !== 'string') return 0;
+  const parts = value.split(':').map((part) => parseInt(part, 10));
+  if (parts.some((part) => !Number.isFinite(part))) return 0;
+  if (parts.length === 2) return (parts[0] * 60 + parts[1]) * 1000;
+  if (parts.length === 3) return (parts[0] * 3600 + parts[1] * 60 + parts[2]) * 1000;
+  return 0;
+}
+
+function publishMediaSession(state: SpotifyState & SpotifyActions): void {
+  const track = state.currentTrack;
+  if (!track) {
+    MediaSessionService.clearActiveSession();
+    return;
+  }
+  const session: ActiveMediaSession = {
+    title: track.title ?? '',
+    artist: track.artist ?? '',
+    durationMs: Math.max(1, parseTrackDurationMs(track.duration)),
+    positionMs: 0,
+    isPlaying: Boolean(state.isPlaying),
+    packageName: 'com.spotify.music',
+    activityClass: 'com.spotify.music.MainActivity',
+  };
+  MediaSessionService.setActiveSession(session);
+}
+
+// Publish the initial session on module load (covers cold-start with a
+// non-null currentTrack from SPOTIFY_CONFIG.recentPlays).
+publishMediaSession(useSpotifyStore.getState());
+
+useSpotifyStore.subscribe((state, prev) => {
+  if (state.currentTrack === prev.currentTrack && state.isPlaying === prev.isPlaying) {
+    return;
+  }
+  publishMediaSession(state);
+});
+
+// __SIM__.resetState() (no page reload) wipes the volatile MediaSession store
+// after app stores re-init, so the music widget would read nothing until the
+// next play-state change. OSContext re-emits BOOT_COMPLETED at the end of the
+// reset; re-publish the (restored) now-playing state in response.
+BroadcastBus.registerReceiver(ACTION_BOOT_COMPLETED, () => {
+  publishMediaSession(useSpotifyStore.getState());
+});

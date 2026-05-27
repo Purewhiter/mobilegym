@@ -1,5 +1,4 @@
 import type { WmrInlineBundleSource } from '@/os/wmr/WmrBundleCache';
-import { buildWmrResourceStrings } from '@/os/wmr/engine/resourceStrings';
 
 import manifestXml from './weather-app-bg/manifest.xml?raw';
 import previewUrl from './weather-app-bg/preview/widget_4x2.png';
@@ -28,7 +27,7 @@ function resolveWeatherBackgroundAssetUrl(src: string): string {
 export const WEATHER_BACKGROUND_WMR_BUNDLE: WmrInlineBundleSource = {
   cacheKey: import.meta.url,
   xml: manifestXml,
-  resourceStrings: buildWmrResourceStrings(stringFileMap),
+  resourceStringFiles: stringFileMap,
   assetUrlResolver: resolveWeatherBackgroundAssetUrl,
 };
 

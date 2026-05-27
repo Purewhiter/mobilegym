@@ -128,7 +128,12 @@ export const ContentResolver = {
   },
 };
 
-// Auto-load optional app-owned provider registration modules.
-import.meta.glob(['../apps/*/providers/*.ts', '../system/*/providers/*.ts'], { eager: true });
+// App-owned provider modules (`apps/<app>/providers/*.ts`,
+// `system/<app>/providers/*.ts`) are eagerly loaded from
+// `os/providers/appProvidersBootstrap.ts`, NOT from here. The glob lives
+// downstream so that ContentResolver is fully initialized by the time those
+// modules run their top-level `ContentResolver.registerProvider(...)` calls
+// (Vite hoists eager-glob imports above any `const ContentResolver = {...}`
+// declaration, producing a TDZ if the glob fires before the const binds).
 
 export default ContentResolver;

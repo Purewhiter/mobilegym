@@ -654,6 +654,18 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
       // Second sweep: 关闭 clearFileSystemDB await 窗口期内任何新的 persist 排队。
       cancelAllPendingPersistWrites();
       localStorage.clear();
+
+      // resetAllOsStores() wiped the volatile derived services (AlarmManager /
+      // MediaSession) AFTER resetAllAppStores() re-published into them, leaving
+      // them empty. Re-emit BOOT_COMPLETED (as a soft reboot would) so the app
+      // publishers re-publish from their now-default stores. Mirrors how
+      // Android apps re-register alarms / sessions on BOOT_COMPLETED. The
+      // reload() variant gets a fresh BOOT_COMPLETED from the mount effect, so
+      // this only matters for the no-reload resetState() path.
+      BroadcastBus.sendBroadcast({
+        action: ACTION_BOOT_COMPLETED,
+        extras: { now: now() },
+      });
     };
     window.__SIM__ = {
       /** Clear all state WITHOUT reloading. Use with Playwright page.reload(). */

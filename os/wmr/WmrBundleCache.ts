@@ -6,7 +6,8 @@ import {
   loadImage,
   type AssetUrlResolver,
 } from './engine/imageCache';
-import { loadWmrResourceStrings } from './engine/resourceStrings';
+import { buildWmrResourceStrings, loadWmrResourceStrings } from './engine/resourceStrings';
+import localeApi, { type Locale } from '../locale';
 import type {
   WmrContentProviderBinder,
   WmrDocument,
@@ -40,9 +41,16 @@ export interface WmrInlineBundleSource {
   cacheKey: string;
   xml: string;
   resourceStrings?: Record<string, VarValue>;
+  resourceStringFiles?: Record<string, string>;
   assetUrlResolver: AssetUrlResolver;
 }
 
+// Cache is keyed by `${baseSourceKey}#locale=${locale}` so resource strings
+// for different locales don't clobber each other. We deliberately keep all
+// entries for the process lifetime: only a tiny finite set of (bundle, locale)
+// pairs ever exist (typically zh + en for the handful of bundles that ship
+// with the app), so unbounded growth is bounded in practice. If we ever ship
+// per-user locales or hundreds of bundles, revisit with an LRU.
 const bundleCache = new Map<string, Promise<WmrBundle>>();
 const indexedWarmupKeys = new Set<string>();
 
@@ -55,8 +63,10 @@ const MEASURE_PROP_PATTERN = /\.(?:bmp|text)_(?:width|height)\b/;
 
 export async function loadWmrBundle(
   source: string | WmrInlineBundleSource,
+  locale: Locale = localeApi.getLocale(),
 ): Promise<WmrBundle> {
-  const sourceKey = typeof source === 'string' ? source : source.cacheKey;
+  const baseSourceKey = typeof source === 'string' ? source : source.cacheKey;
+  const sourceKey = `${baseSourceKey}#locale=${locale}`;
   let pending = bundleCache.get(sourceKey);
   if (pending) return pending;
 
@@ -77,10 +87,12 @@ export async function loadWmrBundle(
         xml = await resp.text();
         stopFetch();
         assetUrlResolver = createPrefixedAssetUrlResolver(source);
-        resourceStrings = await loadWmrResourceStrings(source);
+        resourceStrings = await loadWmrResourceStrings(source, locale);
       } else {
         xml = source.xml;
-        resourceStrings = source.resourceStrings ?? {};
+        resourceStrings = source.resourceStringFiles
+          ? buildWmrResourceStrings(source.resourceStringFiles, locale)
+          : (source.resourceStrings ?? {});
         assetUrlResolver = source.assetUrlResolver;
       }
 
