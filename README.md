@@ -9,13 +9,13 @@
 # MobileGym: A Verifiable and Highly Parallel Simulation Platform for Mobile GUI Agent Research
 
 [![Paper](https://img.shields.io/badge/arXiv-2605.26114-b31b1b.svg)](https://arxiv.org/abs/2605.26114)
-[![Project](https://img.shields.io/badge/Project-mobilegym.dev-1f6feb.svg)](https://mobilegym.dev/paper)
+[![Project](https://img.shields.io/badge/Project-mobilegym.dev-1f6feb.svg)](https://mobilegym.dev)
 [![Code License](https://img.shields.io/badge/Code-Apache%202.0-blue.svg)](LICENSE)
 [![Data License](https://img.shields.io/badge/Data-CC%20BY--NC%204.0-orange.svg)](LICENSE-DATA)
 [![Node](https://img.shields.io/badge/node-%E2%89%A522-339933.svg)](https://nodejs.org/)
 [![Python](https://img.shields.io/badge/python-%E2%89%A53.11-3776ab.svg)](https://www.python.org/)
 
-[![Try the Live Demo](https://img.shields.io/badge/%F0%9F%9A%80_Try_the_Live_Demo_%E2%86%92-22c55e?style=for-the-badge)](https://mobilegym.dev/paper)
+[![Try the Live Demo](https://img.shields.io/badge/%F0%9F%9A%80_Try_the_Live_Demo_%E2%86%92-22c55e?style=for-the-badge)](https://mobilegym.dev)
 
 **English** | [中文](README_zh.md)
 
@@ -62,7 +62,7 @@ Current real-device and emulator environment for mobile GUI agents have hit thre
 
 The result is **one environment** that powers both **trustworthy evaluation** and **scalable online RL** — for the account-bound, backend-dependent, high-stakes apps that prior benchmarks largely had to skip.
 
-▶ **Try it live in your browser — no install:** [click here](https://mobilegym.dev/paper)
+▶ **Try it live in your browser — no install:** [click here](https://mobilegym.dev)
 
 <br/>
 

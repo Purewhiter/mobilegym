@@ -5,8 +5,8 @@
 # MobileGym：面向手机 GUI Agent 研究的可验证、高度并行的仿真平台
 
 [![Paper](https://img.shields.io/badge/arXiv-2605.26114-b31b1b.svg)](https://arxiv.org/abs/2605.26114)
-[![Project](https://img.shields.io/badge/Project-mobilegym.dev-1f6feb.svg)](https://mobilegym.dev/paper)
-[![Demo](https://img.shields.io/badge/在线体验-点击进入-22c55e.svg)](https://mobilegym.dev/paper)
+[![Project](https://img.shields.io/badge/Project-mobilegym.dev-1f6feb.svg)](https://mobilegym.dev)
+[![Demo](https://img.shields.io/badge/在线体验-点击进入-22c55e.svg)](https://mobilegym.dev)
 
 [![Code License](https://img.shields.io/badge/Code-Apache%202.0-blue.svg)](LICENSE)
 [![Data License](https://img.shields.io/badge/Data-CC%20BY--NC%204.0-orange.svg)](LICENSE-DATA)
@@ -56,7 +56,7 @@
 
 最终交付的是**一个环境同时支撑两件事**：**可信的评测**与**可扩展的在线 RL** —— 而且面向的恰好是过去 benchmark 不得不绕开的那一类应用：绑账号、依赖后端、操作有真实后果的日常 App。
 
-▶ **打开浏览器即玩，无需安装：** [点这里](https://mobilegym.dev/paper)
+▶ **打开浏览器即玩，无需安装：** [点这里](https://mobilegym.dev)
 
 <br/>
 
