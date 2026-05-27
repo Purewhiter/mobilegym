@@ -364,7 +364,7 @@ Tasks live next to their app under `bench_env/task/<app>/`. Each task is a Pytho
 | Per-App generated state schema                                       | [docs/api/app-state-schema.md](docs/api/app-state-schema.md)                               |
 | Run benchmarks end-to-end                                            | [bench_env/README.md](bench_env/README.md)                                                 |
 
-> 🧑‍💻 If you're an AI coding assistant, start with [AGENTS.md](AGENTS.md) and `.cursor/rules/`.
+> 🧑‍💻 If you're an AI coding assistant, start with [AGENTS.md](AGENTS.md).
 
 <br/>
 
