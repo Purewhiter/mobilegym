@@ -41,6 +41,22 @@ perl -0pi -e "s#</head>#<script>window.__MG_SIM_SRC__='${SIM_BASE}';</script></h
 # avatar 选择器的静态 <img src="/@app-assets/..."> 指向 sim base 下的实际资源
 perl -0pi -e "s#/\@app-assets/#${SIM_BASE}\@app-assets/#g" "${SITE_DIR}/index.html"
 
+echo "==> Backwards-compat redirect /paper/ -> / (old shared links)"
+mkdir -p "${SITE_DIR}/paper"
+cat > "${SITE_DIR}/paper/index.html" <<'HTML'
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<title>Redirecting to mobilegym.dev</title>
+<link rel="canonical" href="https://mobilegym.dev/">
+<meta http-equiv="refresh" content="0; url=/">
+<meta name="robots" content="noindex">
+</head><body>
+<p>This page has moved to <a href="/">mobilegym.dev</a>.</p>
+<script>location.replace('/' + location.search + location.hash);</script>
+</body></html>
+HTML
+
 echo "==> Custom domain + Jekyll opt-out"
 echo "mobilegym.dev" > "${SITE_DIR}/CNAME"
 touch "${SITE_DIR}/.nojekyll"
