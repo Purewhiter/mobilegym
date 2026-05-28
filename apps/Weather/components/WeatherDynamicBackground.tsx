@@ -39,10 +39,12 @@ export const WeatherDynamicBackground: React.FC<WeatherDynamicBackgroundProps> =
       className={`pointer-events-none absolute inset-0 z-0 overflow-hidden ${className}`.trim()}
     >
       <WmrRenderer
+        key={resolvedCityId}
         bundleSource={WEATHER_BACKGROUND_WMR_BUNDLE}
         previewUrl={WEATHER_BACKGROUND_WMR_PREVIEW_URL}
         preferredAspectRatio={9 / 19.5}
         className="h-full w-full pointer-events-none [&>canvas]:!rounded-none [&>div]:!rounded-none"
+        persistNamespace={`weather-background:${resolvedCityId}`}
         active
         shouldLoad
         initialVariables={initialVariables}
