@@ -170,8 +170,22 @@ function analyzeWmrDocument(doc: WmrDocument): WmrBundleAnalysis {
     needsMeasurePass: hasInteractiveNodes || MEASURE_PROP_PATTERN.test(joined),
     binders,
     providerDependencies,
-    inferredFrameRate: doc.frameRate > 0 ? doc.frameRate : (hasAnimations ? 15 : 0),
+    inferredFrameRate: inferWmrDefaultFrameRate(doc, hasAnimations),
   };
+}
+
+export function inferWmrDefaultFrameRate(
+  doc: Pick<WmrDocument, 'frameRate' | 'root'>,
+  hasAnimations: boolean,
+): number {
+  if (doc.frameRate > 0) return doc.frameRate;
+
+  // An explicit root frameRate="0" means the widget expects animation
+  // controllers to wake rendering only while they are active. Falling back to
+  // a synthetic default here keeps large canvas widgets repainting forever.
+  if (doc.root.attrs.frameRate !== undefined) return 0;
+
+  return hasAnimations ? 15 : 0;
 }
 
 function hasNodeAnimations(node: WmrNode): boolean {

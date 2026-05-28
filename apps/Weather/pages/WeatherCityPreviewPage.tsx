@@ -202,105 +202,107 @@ const WeatherCityPreviewPage: React.FC = () => {
   const cityName = getLocalizedWeatherCityName(cityDef, s);
 
   return (
-    <div className="w-full h-full relative overflow-y-auto no-scrollbar">
+    <div className="w-full h-full relative overflow-hidden">
       <WeatherDynamicBackground cityId={cityDef.id} />
 
-      <div className="relative z-10 flex flex-col min-h-full">
-        <div className="flex items-center justify-between px-3 pt-12 pb-2">
-          <button
-            type="button"
-            {...bindBack<HTMLButtonElement>()}
-            className="h-[36px] px-5 rounded-full backdrop-blur-md text-white text-[16px] font-medium active:bg-white/25 transition-colors"
-            style={{ backgroundColor: colors.pill_bg_action }}
-          >
-            {s.cancel}
-          </button>
-          <button
-            type="button"
-            {...bindTap<HTMLButtonElement>('home.open', { onTrigger: handleAdd })}
-            disabled={adding || loading}
-            className="h-[36px] px-5 rounded-full backdrop-blur-md text-white text-[16px] font-medium active:bg-white/25 transition-colors disabled:opacity-50"
-            style={{ backgroundColor: colors.pill_bg_action }}
-          >
-            {s.add}
-          </button>
-        </div>
+      <div className="relative z-10 h-full overflow-y-auto no-scrollbar">
+        <div className="flex flex-col min-h-full">
+          <div className="flex items-center justify-between px-3 pt-12 pb-2">
+            <button
+              type="button"
+              {...bindBack<HTMLButtonElement>()}
+              className="h-[36px] px-5 rounded-full backdrop-blur-md text-white text-[16px] font-medium active:bg-white/25 transition-colors"
+              style={{ backgroundColor: colors.pill_bg_action }}
+            >
+              {s.cancel}
+            </button>
+            <button
+              type="button"
+              {...bindTap<HTMLButtonElement>('home.open', { onTrigger: handleAdd })}
+              disabled={adding || loading}
+              className="h-[36px] px-5 rounded-full backdrop-blur-md text-white text-[16px] font-medium active:bg-white/25 transition-colors disabled:opacity-50"
+              style={{ backgroundColor: colors.pill_bg_action }}
+            >
+              {s.add}
+            </button>
+          </div>
 
-        {loading ? (
-          <div className="flex-1 flex items-center justify-center text-white/60">{s.loading}</div>
-        ) : (
-          <>
-            <div className="px-8 pt-6">
-              <div className="text-white text-[16px] font-normal tracking-wide">{cityName}</div>
-            </div>
-
-            <div className="px-8 pt-1">
-              <div className="flex items-start">
-                <span className="text-[130px] leading-none font-extralight tracking-tighter text-white font-sans">
-                  {now?.temp ? convertTemp(now.temp, tempUnit) : '--'}
-                </span>
-                <span className="text-[72px] leading-none font-extralight text-white mt-[14px]">{'\u00B0'}</span>
+          {loading ? (
+            <div className="flex-1 flex items-center justify-center text-white/60">{s.loading}</div>
+          ) : (
+            <>
+              <div className="px-8 pt-6">
+                <div className="text-white text-[16px] font-normal tracking-wide">{cityName}</div>
               </div>
-            </div>
 
-            <div className="px-8 mt-2">
-              <div className="text-white text-[18px] font-medium opacity-90">
-                <span>{weatherText}</span>
-                {day0 && (
-                  <span className="ml-2">
-                    {s.temp_high}{convertTemp(day0.tempMax, tempUnit)}{'\u00B0'} {s.temp_low}{convertTemp(day0.tempMin, tempUnit)}{'\u00B0'}
+              <div className="px-8 pt-1">
+                <div className="flex items-start">
+                  <span className="text-[130px] leading-none font-extralight tracking-tighter text-white font-sans">
+                    {now?.temp ? convertTemp(now.temp, tempUnit) : '--'}
                   </span>
-                )}
+                  <span className="text-[72px] leading-none font-extralight text-white mt-[14px]">{'\u00B0'}</span>
+                </div>
               </div>
-            </div>
 
-            <div className="px-8 mt-3 flex items-center gap-2">
-              {airQuality && (
+              <div className="px-8 mt-2">
+                <div className="text-white text-[18px] font-medium opacity-90">
+                  <span>{weatherText}</span>
+                  {day0 && (
+                    <span className="ml-2">
+                      {s.temp_high}{convertTemp(day0.tempMax, tempUnit)}{'\u00B0'} {s.temp_low}{convertTemp(day0.tempMin, tempUnit)}{'\u00B0'}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div className="px-8 mt-3 flex items-center gap-2">
+                {airQuality && (
+                  <div
+                    className="flex items-center h-[30px] backdrop-blur-md rounded-full px-2 text-white text-[16px] font-medium"
+                    style={{ backgroundColor: colors.pill_bg_main }}
+                  >
+                    <IcLeaf size={14} className="mr-1 opacity-80" />
+                    <span>{s.air_quality_prefix} {getAqiLevelLabel(airQualityLevel, s)} {airQuality.aqi}</span>
+                  </div>
+                )}
                 <div
                   className="flex items-center h-[30px] backdrop-blur-md rounded-full px-2 text-white text-[16px] font-medium"
                   style={{ backgroundColor: colors.pill_bg_main }}
                 >
-                  <IcLeaf size={14} className="mr-1 opacity-80" />
-                  <span>{s.air_quality_prefix} {getAqiLevelLabel(airQualityLevel, s)} {airQuality.aqi}</span>
-                </div>
-              )}
-              <div
-                className="flex items-center h-[30px] backdrop-blur-md rounded-full px-2 text-white text-[16px] font-medium"
-                style={{ backgroundColor: colors.pill_bg_main }}
-              >
-                <div
-                  className="w-4 h-4 rounded-full flex items-center justify-center mr-1"
-                  style={{ backgroundColor: colors.forecast_play_icon_bg }}
-                >
-                  <IcPlay size={8} fill={colors.forecast_play_icon} className="ml-0.5" style={{ color: colors.forecast_play_icon }} />
-                </div>
-                <span>{s.weather_forecast_pill}</span>
-              </div>
-            </div>
-
-            <div className="flex-1 min-h-[80px]" />
-
-            <div className="px-3 pb-4">
-              <div
-                className="backdrop-blur-xl rounded-[24px] border overflow-hidden pt-2 pb-4"
-                style={{ backgroundColor: colors.card_surface_light, borderColor: colors.card_border }}
-              >
-                <DailyRows daily={daily} />
-
-                <div className="px-5 mt-2">
-                  <button
-                    type="button"
-                    {...bindTap<HTMLButtonElement>('forecast.daily.open', { params: { cityId: cityDef.id } })}
-                    className="w-full h-[47px] rounded-[16px] text-white text-[20px] font-medium active:bg-white/[0.12] transition-colors"
-                    style={{ backgroundColor: colors.card_action_surface }}
+                  <div
+                    className="w-4 h-4 rounded-full flex items-center justify-center mr-1"
+                    style={{ backgroundColor: colors.forecast_play_icon_bg }}
                   >
-                    {s.view_15day_forecast}
-                  </button>
+                    <IcPlay size={8} fill={colors.forecast_play_icon} className="ml-0.5" style={{ color: colors.forecast_play_icon }} />
+                  </div>
+                  <span>{s.weather_forecast_pill}</span>
                 </div>
               </div>
-            </div>
-          </>
-        )}
+
+              <div className="flex-1 min-h-[80px]" />
+
+              <div className="px-3 pb-4">
+                <div
+                  className="backdrop-blur-xl rounded-[24px] border overflow-hidden pt-2 pb-4"
+                  style={{ backgroundColor: colors.card_surface_light, borderColor: colors.card_border }}
+                >
+                  <DailyRows daily={daily} />
+
+                  <div className="px-5 mt-2">
+                    <button
+                      type="button"
+                      {...bindTap<HTMLButtonElement>('forecast.daily.open', { params: { cityId: cityDef.id } })}
+                      className="w-full h-[47px] rounded-[16px] text-white text-[20px] font-medium active:bg-white/[0.12] transition-colors"
+                      style={{ backgroundColor: colors.card_action_surface }}
+                    >
+                      {s.view_15day_forecast}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );

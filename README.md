@@ -1,7 +1,3 @@
-
-
-
-
 <div align="center">
 
 <img src="assets/mobilegym-banner.png" width="60%" alt="MobileGym — Program Mobile Worlds. Train GUI Agents. Verify by State. A verifiable and highly parallel simulation platform for mobile GUI agent research."/>
@@ -230,6 +226,8 @@ python -m bench_env.run --split test \
 > ⚠️ At `--parallel ≥ 192`, raise `fs.inotify.max_user_instances ≥ 8192` first (Linux only). Scaling rules and known issues: [`bench_env/docs/KNOWN_ISSUES.md`](bench_env/docs/KNOWN_ISSUES.md).
 >
 > 💡 **Also size to your inference backend.** `--parallel` is the env-side concurrency; the model server (vLLM, etc.) has its own ceiling. If `--parallel` exceeds what the backend can batch, per-step latency rises and total throughput drops. Quick check on vLLM: `curl :PORT/metrics | grep -E 'num_requests_(running|waiting)|num_preemptions_total'` — sustained `waiting > 0` or growing preemptions means lower `--parallel`, raise tensor-parallel, or cap `--max-num-seqs`.
+>
+> 🔭 **Explore your runs in a browser** — once a run finishes, start `npm run dev` and open [`http://localhost:3000/run_explorer.html`](http://localhost:3000/run_explorer.html) for per-step screenshots, action annotations, prompts, and model responses. Dev server only (the API isn't wired into `npm run preview`). Details: [`bench_env/README.md`](bench_env/README.md).
 
 <br/>
 
@@ -318,7 +316,7 @@ python -m bench_env.run --agent <name> --model-name <id> --model-base-url <url> 
 
 ### 🆕 Add a new app
 
-Just drop a folder under `apps/` (or `system/` for system apps). The OS auto-discovers it via `import.meta.glob` — **no registry edits, no OS-layer code changes**.
+Point your coding agent at this repo — [AGENTS.md](AGENTS.md) already explains the app module conventions, and the auto-discovery means everything lives in a single folder under `apps/` (or `system/` for system apps):
 
 ```
 apps/MyApp/
@@ -333,19 +331,17 @@ apps/MyApp/
     └── defaults.json              # replaceable initial data
 ```
 
-📘 Full walkthrough: [docs/platform/app/module-contract.md](docs/platform/app/module-contract.md).
+📘 Underlying contract (manifest schema, theme tiers, resource layout): [docs/platform/app/module-contract.md](docs/platform/app/module-contract.md).
 
 ### 🧪 Add a new task
 
-Tasks live next to their app under `bench_env/task/<app>/`. Each task is a Python class with:
+Point your coding agent at this repo — [AGENTS.md](AGENTS.md) already mandates reading the task-authoring docs before writing one. Tasks live under `bench_env/task/<suite>/`, where a suite is one App (`wechat/`, `alipay/`), a cross-app workflow (`crossapp_commerce/`), or a functional category (`payment/`, `launcher/`). Each task is a Python class with:
 
 - `description` — natural-language goal (templated with slots)
 - `setup` — JSON state injection
 - `check_goals()` / `get_answer()` — deterministic judge
 
-📘 Authoring: [bench_env/docs/task/TASK_AUTHORING_GUIDE.md](bench_env/docs/task/TASK_AUTHORING_GUIDE.md) · Code spec: [bench_env/docs/task/TASK_CODE_SPEC.md](bench_env/docs/task/TASK_CODE_SPEC.md) · Testing: [bench_env/docs/task/TASK_TESTING_GUIDE.md](bench_env/docs/task/TASK_TESTING_GUIDE.md).
-
-> After touching `navigation.declaration.ts`, run `node scripts/build_nav_artifacts.mjs <AppName>` to rebuild the analysis artifacts. Details in [docs/platform/navigation/declaration.md](docs/platform/navigation/declaration.md).
+📘 Underlying specs: [TASK_AUTHORING_GUIDE.md](bench_env/docs/task/TASK_AUTHORING_GUIDE.md) · [TASK_CODE_SPEC.md](bench_env/docs/task/TASK_CODE_SPEC.md) · [TASK_TESTING_GUIDE.md](bench_env/docs/task/TASK_TESTING_GUIDE.md).
 
 <br/>
 
@@ -376,7 +372,7 @@ mobilegym/
 ├── apps/               # User-facing daily apps (WeChat, Alipay, Bilibili, …)
 ├── system/             # System apps (Settings, Contacts, AnswerSheet, …)
 ├── bench_env/          # Benchmark & RL environment (Python + Playwright)
-│   ├── task/           # task templates, organized per-app
+│   ├── task/           # task templates, organized by suite
 │   ├── agent/          # Adapters: autoglm, uitars, venus, gui_owl, generic, …
 │   ├── env/            # Environment lifecycle + state APIs
 │   ├── runner/         # Eval orchestration (parallel, pass@k, retries)
@@ -466,4 +462,3 @@ If MobileGym helps your research, please cite us:
 [🌐 Website](https://mobilegym.dev) · [📄 Paper](https://arxiv.org/abs/2605.26114) · [🐛 Issues](https://github.com/Purewhiter/mobilegym/issues) · [💬 Discussions](https://github.com/Purewhiter/mobilegym/discussions)
 
 </div>
-

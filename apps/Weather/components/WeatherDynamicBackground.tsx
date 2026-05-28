@@ -36,8 +36,7 @@ export const WeatherDynamicBackground: React.FC<WeatherDynamicBackgroundProps> =
   return (
     <div
       aria-hidden="true"
-      className={`pointer-events-none sticky top-0 z-0 overflow-hidden ${className}`.trim()}
-      style={{ height: '100svh', marginBottom: '-100svh' }}
+      className={`pointer-events-none absolute inset-0 z-0 overflow-hidden ${className}`.trim()}
     >
       <WmrRenderer
         bundleSource={WEATHER_BACKGROUND_WMR_BUNDLE}

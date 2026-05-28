@@ -291,3 +291,17 @@ runs/20260125_143052/
 **Console summary metrics** — `SR` (success rate) · `PR` (mean progress) · `FC` (false complete) · `OT` (overdue termination) · `USE` (unexpected side effects) · average steps · per-suite SR-PR table.
 
 **Persisted `summary.json` fields** — success / failed / error counts, `success_rate`, `avg_steps`, `avg_runtime_s`, task lists, and pass@k fields when `--repeat-n > 1`.
+
+### 🔭 Run Explorer — browser viewer
+
+For an interactive walk-through of a finished run (per-step screenshots, action annotations, prompts, model responses, success indicators, filters), open the bundled **Run Explorer**:
+
+```bash
+# from repo root
+npm run dev                  # dev server on :3000
+
+# then open in your browser
+http://localhost:3000/run_explorer.html
+```
+
+It reads `runs/` through the `/api/runs` endpoint that `runsExplorerPlugin` registers in [`vite.config.ts`](../vite.config.ts). **Dev server only** — `npm run preview` (port 4173) does not register the API, so the page will load but show no runs. Run the dev server in a separate terminal alongside `npm run preview` if you also need the production-style simulator.

@@ -1,0 +1,96 @@
+name: Sync main into demo
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: sync-main-into-demo
+  cancel-in-progress: true
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Prepare sync branch
+        id: merge
+        run: |
+          set -euo pipefail
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git fetch origin main demo
+          git fetch origin sync-main-into-demo || true
+          git checkout -B sync-main-into-demo origin/demo
+
+          # If this merge conflicts, the job fails and demo is left untouched.
+          git merge --no-ff origin/main -m "merge main into demo"
+
+          if git diff --quiet origin/demo...HEAD; then
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_changes=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Setup Node
+        if: steps.merge.outputs.has_changes == 'true'
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install deps
+        if: steps.merge.outputs.has_changes == 'true'
+        run: npm ci
+
+      - name: Build demo site
+        if: steps.merge.outputs.has_changes == 'true'
+        env:
+          VITE_CDN_BASE: https://cdn.mobilegym.dev
+          VITE_AI_BASE_URL: https://api.mobilegym.dev/ai/v1
+          VITE_AI_MODEL: qwen-flash
+          VITE_GOOGLE_MAPS_API_KEY: ${{ secrets.VITE_GOOGLE_MAPS_API_KEY }}
+        run: |
+          chmod +x scripts/build-demo-site.sh
+          scripts/build-demo-site.sh
+
+      - name: Push sync branch
+        if: steps.merge.outputs.has_changes == 'true'
+        run: git push origin sync-main-into-demo --force-with-lease
+
+      - name: Create or update PR
+        if: steps.merge.outputs.has_changes == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          existing_pr="$(gh pr list \
+            --base demo \
+            --head sync-main-into-demo \
+            --state open \
+            --json number \
+            --jq '.[0].number // empty')"
+
+          if [ -n "$existing_pr" ]; then
+            gh pr edit "$existing_pr" \
+              --title "sync: merge main into demo" \
+              --body "Automated main -> demo sync. Merge conflicts or demo build failures stop this workflow before demo is touched."
+          else
+            gh pr create \
+              --base demo \
+              --head sync-main-into-demo \
+              --title "sync: merge main into demo" \
+              --body "Automated main -> demo sync. Merge conflicts or demo build failures stop this workflow before demo is touched."
+          fi
