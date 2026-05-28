@@ -1400,6 +1400,7 @@ export class VarContext implements WmrVarContext {
     for (const [name, controller] of this.framerateControllers.entries()) {
       const state = this.framerateStates.get(name);
       if (!state) continue;
+      if (!state.playing) continue;
       const currentTime = state.currentTime;
       let currentRate = controller.controlPoints[controller.controlPoints.length - 1]?.frameRate ?? defaultRate;
       for (const point of controller.controlPoints) {

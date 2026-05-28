@@ -233,6 +233,8 @@ python -m bench_env.run --split test \
 > ⚠️ `--parallel ≥ 192` 时需要先把 `fs.inotify.max_user_instances` 调到 ≥ 8192（仅 Linux）。扩容规则与已知问题见 [`bench_env/docs/KNOWN_ISSUES.md`](bench_env/docs/KNOWN_ISSUES.md)。
 >
 > 💡 **并发数也要匹配推理后端容量。** `--parallel` 只是 env 侧的并发，模型服务（vLLM 等）自己也有上限。如果 `--parallel` 超过后端能 batch 的上限，单步推理变慢、整体反而更慢。vLLM 一行诊断：`curl :端口/metrics | grep -E 'num_requests_(running|waiting)|num_preemptions_total'` —— `waiting` 持续 > 0 或 preemption 持续增长，就该降 `--parallel`、加 tensor-parallel，或者限 `--max-num-seqs`。
+>
+> 🔭 **在浏览器里查看 run 结果** —— 跑完一次评测后，`npm run dev` 起 dev server，打开 [`http://localhost:3000/run_explorer.html`](http://localhost:3000/run_explorer.html) 即可逐步查看截图、action 标注、prompt 与模型响应。仅 dev server 支持（`npm run preview` 不会注册对应 API）。详见 [`bench_env/README.md`](bench_env/README.md)。
 
 <br/>
 
@@ -321,7 +323,7 @@ python -m bench_env.run --agent <name> --model-name <id> --model-base-url <url> 
 
 ### 🆕 新增一个 App
 
-在 `apps/`（系统应用放 `system/`）下新建一个文件夹即可 —— OS 通过 `import.meta.glob` 自动发现，**不需要改任何注册表，也不需要改 OS 层代码**。
+把这个仓库交给你的 coding agent —— [AGENTS.md](AGENTS.md) 已经把 App 模块约定写清楚了，配合自动发现机制，所有文件都集中在 `apps/`（系统应用放 `system/`）下一个目录里：
 
 ```
 apps/MyApp/
@@ -336,19 +338,17 @@ apps/MyApp/
     └── defaults.json              # 可替换的初始数据
 ```
 
-📘 完整教程：[docs/platform/app/module-contract.md](docs/platform/app/module-contract.md)。
+📘 底层契约（manifest schema、主题层级、资源布局）见 [docs/platform/app/module-contract.md](docs/platform/app/module-contract.md)。
 
 ### 🧪 新增一个任务
 
-任务和 App 同源组织，放在 `bench_env/task/<app>/` 下。每个任务是一个 Python 类：
+把这个仓库交给你的 coding agent —— [AGENTS.md](AGENTS.md) 已经强制要求在编写任务前先阅读 task 相关文档。任务按 suite 组织在 `bench_env/task/<suite>/` 下 —— 一个 suite 可以是单个 App（`wechat/`、`alipay/`）、跨 App 工作流（`crossapp_commerce/`）或功能类别（`payment/`、`launcher/`）。每个任务是一个 Python 类：
 
 - `description` —— 自然语言目标（带参数槽）
 - `setup` —— JSON 状态注入
 - `check_goals()` / `get_answer()` —— 确定性判题
 
-📘 编写：[bench_env/docs/task/TASK_AUTHORING_GUIDE.md](bench_env/docs/task/TASK_AUTHORING_GUIDE.md) · 代码规范：[bench_env/docs/task/TASK_CODE_SPEC.md](bench_env/docs/task/TASK_CODE_SPEC.md) · 测试：[bench_env/docs/task/TASK_TESTING_GUIDE.md](bench_env/docs/task/TASK_TESTING_GUIDE.md)。
-
-> 修改了 `navigation.declaration.ts` 之后，跑一遍 `node scripts/build_nav_artifacts.mjs <AppName>` 重建分析产物。详见 [docs/platform/navigation/declaration.md](docs/platform/navigation/declaration.md)。
+📘 底层规范：[TASK_AUTHORING_GUIDE.md](bench_env/docs/task/TASK_AUTHORING_GUIDE.md) · [TASK_CODE_SPEC.md](bench_env/docs/task/TASK_CODE_SPEC.md) · [TASK_TESTING_GUIDE.md](bench_env/docs/task/TASK_TESTING_GUIDE.md)。
 
 <br/>
 
@@ -379,7 +379,7 @@ mobilegym/
 ├── apps/               # 用户向日常 App（微信、支付宝、Bilibili、…）
 ├── system/             # 系统 App（设置、通讯录、答题卡、…）
 ├── bench_env/          # 评测与 RL 环境（Python + Playwright）
-│   ├── task/           # 任务模板，按 App 组织
+│   ├── task/           # 任务模板，按 suite 组织
 │   ├── agent/          # Adapter：autoglm / uitars / venus / gui_owl / generic / …
 │   ├── env/            # 环境生命周期 + 状态 API
 │   ├── runner/         # 评测编排（并行、pass@k、重试）

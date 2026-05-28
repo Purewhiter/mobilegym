@@ -255,6 +255,43 @@ export const WmrRenderer: React.FC<WmrRendererProps> = ({
   }, [active, errorMessage, preferredAspectRatio, ready, spanX, spanY]);
 
   useEffect(() => {
+    if (!ready || errorMessage || !active) return;
+
+    let rafId: number | null = null;
+    const renderOnResize = () => {
+      if (rafId != null) cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(() => {
+        rafId = null;
+        const canvas = canvasRef.current;
+        const doc = docRef.current;
+        const renderer = rendererRef.current;
+        if (!canvas || !doc || !renderer) return;
+
+        try {
+          renderer.render(canvas, doc.root.children);
+        } catch (err) {
+          reportError('resizeRender', err);
+        }
+      });
+    };
+
+    const resizeObserver = typeof ResizeObserver !== 'undefined'
+      ? new ResizeObserver(renderOnResize)
+      : null;
+    if (resizeObserver && containerRef.current) resizeObserver.observe(containerRef.current);
+    if (resizeObserver && canvasRef.current) resizeObserver.observe(canvasRef.current);
+    window.addEventListener('resize', renderOnResize);
+    window.visualViewport?.addEventListener('resize', renderOnResize);
+
+    return () => {
+      if (rafId != null) cancelAnimationFrame(rafId);
+      resizeObserver?.disconnect();
+      window.removeEventListener('resize', renderOnResize);
+      window.visualViewport?.removeEventListener('resize', renderOnResize);
+    };
+  }, [active, ready, errorMessage, reportError]);
+
+  useEffect(() => {
     if (!ready || errorMessage) return;
     const canvas = canvasRef.current;
     const doc = docRef.current;

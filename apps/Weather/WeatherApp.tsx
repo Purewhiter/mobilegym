@@ -715,11 +715,11 @@ const WeatherContent: React.FC = () => {
         {Array.from({ length: Math.max(0, totalPages - 1) }).map((_, i) => {
           const pageIdx = i + 1; // 1..N
           return (
-          <div
-            key={pageIdx}
-            className="w-[5px] h-[5px] rounded-full transition-colors"
-            style={{ backgroundColor: pageIdx === currentIndex ? '#ffffff' : colors.indicator_inactive }}
-          />
+            <div
+              key={pageIdx}
+              className="w-[5px] h-[5px] rounded-full transition-colors"
+              style={{ backgroundColor: pageIdx === currentIndex ? '#ffffff' : colors.indicator_inactive }}
+            />
           );
         })}
       </div>
@@ -727,55 +727,55 @@ const WeatherContent: React.FC = () => {
   );
 
   return (
-    <div className="w-full h-full relative" data-navigation-bar-foreground="light">
-    <div
-      ref={mainContainerRef}
-      className="w-full h-full overflow-y-auto bg-app-bg relative no-scrollbar"
-      onScroll={handleVerticalScroll}
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
-      onTouchCancel={handleTouchEnd}
-    >
+    <div className="w-full h-full relative overflow-hidden" data-navigation-bar-foreground="light">
       <WeatherDynamicBackground cityId={currentCityId} />
 
-      {/* ===== 主标题栏（对齐真机 main_title_bar_layout / bg_blur）===== */}
       <div
-        ref={titleBarRef}
-        className="sticky top-0 z-30"
-        style={{ touchAction: 'pan-y', height: `${TITLE_BAR_HEIGHT}px` }}
+        ref={mainContainerRef}
+        className="w-full h-full overflow-y-auto relative z-10 no-scrollbar"
+        onScroll={handleVerticalScroll}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onTouchCancel={handleTouchEnd}
       >
-        {/* 真机：main_title_bar_layout 位于 statusBar 下方 */}
+        {/* ===== 主标题栏（对齐真机 main_title_bar_layout / bg_blur）===== */}
         <div
-          id="main_title_bar_layout"
-          className="absolute left-0 right-0"
-          style={{ top: `${statusBarH}px`, height: `${TITLE_ROW_HEIGHT}px` }}
+          ref={titleBarRef}
+          className="sticky top-0 z-30"
+          style={{ touchAction: 'pan-y', height: `${TITLE_BAR_HEIGHT}px` }}
         >
+          {/* 真机：main_title_bar_layout 位于 statusBar 下方 */}
           <div
-            id="bg_blur"
-            className="absolute inset-x-0 top-0 backdrop-blur-2xl pointer-events-none"
-            style={{
-              // 用同一层模糊覆盖“状态栏 + topbar”，避免两段模糊不一致/叠加产生分层
-              top: -statusBarH,
-              height: statusBarH + TITLE_ROW_HEIGHT + 40,
-              opacity: 0.32 + collapseProgress * 0.6,
-              background: colors.overlay_titlebar_blur,
-              maskImage: 'linear-gradient(to bottom, black 0%, black 70%, transparent 100%)',
-              WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 70%, transparent 100%)',
-            }}
-          />
-          {/* 叠一层很淡的渐变，打散“分层感” */}
-          <div
-            className="absolute inset-x-0 top-0 pointer-events-none"
-            style={{
-              top: -statusBarH,
-              height: statusBarH + TITLE_ROW_HEIGHT + 40,
-              opacity: 0.22 + collapseProgress * 0.32,
-              background: `linear-gradient(to bottom, ${colors.overlay_bg_gradient_mid}, ${colors.overlay_bg_gradient_end} 65%, rgba(0,0,0,0))`,
-              maskImage: 'linear-gradient(to bottom, black 0%, black 70%, transparent 100%)',
-              WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 70%, transparent 100%)',
-            }}
-          />
+            id="main_title_bar_layout"
+            className="absolute left-0 right-0"
+            style={{ top: `${statusBarH}px`, height: `${TITLE_ROW_HEIGHT}px` }}
+          >
+            <div
+              id="bg_blur"
+              className="absolute inset-x-0 top-0 backdrop-blur-2xl pointer-events-none"
+              style={{
+                // 用同一层模糊覆盖“状态栏 + topbar”，避免两段模糊不一致/叠加产生分层
+                top: -statusBarH,
+                height: statusBarH + TITLE_ROW_HEIGHT + 40,
+                opacity: 0.32 + collapseProgress * 0.6,
+                background: colors.overlay_titlebar_blur,
+                maskImage: 'linear-gradient(to bottom, black 0%, black 70%, transparent 100%)',
+                WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 70%, transparent 100%)',
+              }}
+            />
+            {/* 叠一层很淡的渐变，打散“分层感” */}
+            <div
+              className="absolute inset-x-0 top-0 pointer-events-none"
+              style={{
+                top: -statusBarH,
+                height: statusBarH + TITLE_ROW_HEIGHT + 40,
+                opacity: 0.22 + collapseProgress * 0.32,
+                background: `linear-gradient(to bottom, ${colors.overlay_bg_gradient_mid}, ${colors.overlay_bg_gradient_end} 65%, rgba(0,0,0,0))`,
+                maskImage: 'linear-gradient(to bottom, black 0%, black 70%, transparent 100%)',
+                WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 70%, transparent 100%)',
+              }}
+            />
 
           {/* 折叠后固定在 topbar 的位置信息 */}
           <div

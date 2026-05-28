@@ -2,6 +2,8 @@
 
 This page focuses on Tasks, Activities, Back fallback, and lifetime rules. For cross-app launch traces, see [cross-app-launch.md](cross-app-launch.md). For the broader OS layer, see [overview.md](overview.md).
 
+> **Which "task"?** "Task" throughout this document means the Android-aligned OS construct — an Activity stack belonging to one running app, mirroring Android's Task / back-stack model. This is **unrelated** to the benchmark evaluation tasks under `bench_env/task/<suite>/` (parameterised Python classes with `setup` + judge), which happen to share the name.
+
 ## Model
 
 ```ts
