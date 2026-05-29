@@ -460,12 +460,16 @@ MobileGym 采用**双 license** 设计 —— 再分发前请同时阅读两份�
 }
 ```
 
+## Star 增长曲线
+
+[![Star History Chart](https://api.star-history.com/svg?repos=Purewhiter/mobilegym&type=Date)](https://star-history.com/#Purewhiter/mobilegym&Date)
+
 <br/>
 
 <div align="center">
 
 **为「在交互中学习的 Agent」而生 —— 并已验证能迁移到真实世界。** 🪐
 
-[🌐 项目网站](https://mobilegym.dev) · [📄 论文](https://arxiv.org/abs/2605.26114) · [🐛 Issues](https://github.com/Purewhiter/mobilegym/issues) · [💬 讨论](https://github.com/Purewhiter/mobilegym/discussions)
+[🌐 项目网站](https://mobilegym.dev) · [📄 论文](https://arxiv.org/abs/2605.26114) · [🐛 Issues](https://github.com/Purewhiter/mobilegym/issues) · [💬 讨论](https://github.com/Purewhiter/mobilegym/discussions) · [🐧 LINUX DO 社区](https://linux.do/)
 
 </div>

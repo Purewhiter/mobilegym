@@ -124,7 +124,7 @@ const BottomTabBar: React.FC = () => {
           strokeWidth={location.pathname === '/' ? 0 : dimens.icStrokeWidth}
           color={location.pathname === '/' ? 'white' : '#b3b3b3'}
         />
-        <span className={`text-sm font-medium ${location.pathname === '/' ? 'text-white' : 'text-app-text-muted'}`}>
+        <span className={`text-sm font-medium w-full text-center truncate ${location.pathname === '/' ? 'text-white' : 'text-app-text-muted'}`}>
           {s.tab_home}
         </span>
       </button>
@@ -134,7 +134,7 @@ const BottomTabBar: React.FC = () => {
         className="flex flex-col items-center gap-1.5 w-16 group transition-colors"
       >
         <IcTabSearch size={32} strokeWidth={dimens.icStrokeWidth} color={isSearchRoute ? 'white' : '#b3b3b3'} />
-        <span className={`text-sm font-medium ${isSearchRoute ? 'text-white' : 'text-app-text-muted'}`}>
+        <span className={`text-sm font-medium w-full text-center truncate ${isSearchRoute ? 'text-white' : 'text-app-text-muted'}`}>
           {s.tab_search}
         </span>
       </button>
@@ -144,7 +144,7 @@ const BottomTabBar: React.FC = () => {
         className="flex flex-col items-center gap-1.5 w-16 group transition-colors"
       >
         <IcTabLibrary size={32} strokeWidth={dimens.icStrokeWidth} color={location.pathname === '/library' ? 'white' : '#b3b3b3'} />
-        <span className={`text-sm font-medium ${location.pathname === '/library' ? 'text-white' : 'text-app-text-muted'}`}>
+        <span className={`text-sm font-medium w-full text-center truncate ${location.pathname === '/library' ? 'text-white' : 'text-app-text-muted'}`}>
           {s.tab_library}
         </span>
       </button>
@@ -154,7 +154,7 @@ const BottomTabBar: React.FC = () => {
         className="flex flex-col items-center gap-1.5 w-16 group transition-colors"
       >
         <SpotifyLogoIcon size={32} fill={location.pathname === '/premium' ? 'white' : '#b3b3b3'} />
-        <span className={`text-sm font-medium ${location.pathname === '/premium' ? 'text-white' : 'text-app-text-muted'}`}>
+        <span className={`text-sm font-medium w-full text-center truncate ${location.pathname === '/premium' ? 'text-white' : 'text-app-text-muted'}`}>
           {s.tab_premium}
         </span>
       </button>
@@ -170,7 +170,7 @@ const BottomTabBar: React.FC = () => {
         ) : (
           <>
             <IcTabCreate size={32} strokeWidth={dimens.icStrokeWidth} color="#b3b3b3" />
-            <span className="text-sm font-medium text-app-text-muted mt-1.5">
+            <span className="text-sm font-medium text-app-text-muted mt-1.5 w-full text-center truncate">
               {s.tab_create}
             </span>
           </>
