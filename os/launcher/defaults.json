@@ -40,7 +40,7 @@
     }
   ],
   "hotseatApps": [
-    "phone",
+    "contacts",
     "sms",
     "browser",
     "wechat"
@@ -60,6 +60,16 @@
         "variant": "widget_2x2",
         "previewUrl": "/themes/b8006e83-c497-4642-9815-f674b82842b0/preview/widget_2x2.png",
         "cellX": 0,
+        "cellY": 2,
+        "spanX": 2,
+        "spanY": 2
+      },
+      {
+        "widgetType": "wmr",
+        "widgetId": "5a6b76c4-cefa-45d7-8f2d-e39d3c4639f5",
+        "variant": "widget_2x2",
+        "previewUrl": "/themes/5a6b76c4-cefa-45d7-8f2d-e39d3c4639f5/preview/widget_2x2.png",
+        "cellX": 2,
         "cellY": 2,
         "spanX": 2,
         "spanY": 2
