@@ -243,6 +243,32 @@ body { font-family: 'Charter', 'Georgia', serif; -webkit-font-smoothing: antiali
   background: rgba(179, 27, 27, 0.06);
 }
 
+/* Star button — GitHub octocat + "Star" label + live star count pill.
+   Count is populated by scripts/github-stars.js; if the fetch fails the
+   pill stays [hidden] and this degrades to a plain octocat + "Star" link. */
+.hero-demo-action-star {
+  gap: 6px;
+}
+.hero-demo-star-label {
+  font: 600 12.5px/1 'Inter', system-ui, sans-serif;
+  letter-spacing: -0.01em;
+}
+.hero-demo-star-count {
+  font: 700 12px/1 'Inter', system-ui, sans-serif;
+  letter-spacing: -0.01em;
+  padding: 2px 6px;
+  border-radius: 999px;
+  color: #1c1917;
+  background: rgba(28, 25, 23, 0.06);
+  transition: background 200ms ease;
+}
+.hero-demo-action-star:hover .hero-demo-star-count {
+  background: rgba(28, 25, 23, 0.10);
+}
+.hero-demo-star-count[hidden] {
+  display: none;
+}
+
 /* Power off — same row as Paper/Code, but lighter (no pill outline),
    to keep it as a tertiary action. state-builder.js toggles .hidden /
    .inline-flex on click. */
@@ -267,6 +293,33 @@ body { font-family: 'Charter', 'Georgia', serif; -webkit-font-smoothing: antiali
 }
 .hero-demo-poweroff svg { opacity: 0.75; transition: opacity 200ms ease; }
 .hero-demo-poweroff:hover svg { opacity: 1; }
+
+@media (max-width: 420px) {
+  .hero-demo-poweroff {
+    gap: 0;
+  }
+  .hero-demo-poweroff span {
+    display: none;
+  }
+}
+
+@media (max-width: 380px) {
+  .hero-demo-brand {
+    left: 20px;
+  }
+  .hero-demo-actions {
+    right: 16px;
+    gap: 4px;
+  }
+  .hero-demo-action,
+  .hero-demo-poweroff {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+  .hero-demo-poweroff {
+    gap: 0;
+  }
+}
 
 /* Hero footer — fixed at viewport bottom. Contains the first-load note
    and the SCROLL hint, stacked. Only fades in after power-on. */
