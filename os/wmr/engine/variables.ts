@@ -270,6 +270,11 @@ function getCycleIndex(value: number, size: number): number {
 }
 
 const PERSIST_STORAGE_PREFIX = 'wmr_persist_v1:';
+const ACTIVE_ANIMATION_FRAME_RATE = 30;
+
+type VarContextOptions = {
+  onAsyncCommand?: () => void;
+};
 
 export class VarContext implements WmrVarContext {
   private vars = new Map<string, VarValue>();
@@ -299,9 +304,11 @@ export class VarContext implements WmrVarContext {
   private frameRateOverride = 0;
   private defaultFrameRate = 0;
   private persistStorageKey: string;
+  private onAsyncCommand?: () => void;
 
-  constructor(namespace = 'global') {
+  constructor(namespace = 'global', options: VarContextOptions = {}) {
     this.persistStorageKey = `${PERSIST_STORAGE_PREFIX}${namespace}`;
+    this.onAsyncCommand = options.onAsyncCommand;
     this.restorePersistedVars();
     this.vars.set('touch_begin_x', 0);
     this.vars.set('touch_begin_y', 0);
@@ -764,7 +771,13 @@ export class VarContext implements WmrVarContext {
       if (command.type !== 'if' && !this.evalCondition(command.condition)) continue;
       const delay = 'delay' in command ? command.delay : undefined;
       if (delay && delay > 0 && typeof window !== 'undefined') {
-        window.setTimeout(() => this.executeCommands([{ ...command, delay: undefined } as WmrCommand]), delay);
+        window.setTimeout(() => {
+          try {
+            this.executeCommands([{ ...command, delay: undefined } as WmrCommand]);
+          } finally {
+            this.onAsyncCommand?.();
+          }
+        }, delay);
         continue;
       }
 
@@ -1411,11 +1424,24 @@ export class VarContext implements WmrVarContext {
       }
       result = Math.max(result, currentRate);
     }
+    if (this.hasActiveTimelineAnimations()) {
+      result = Math.max(result, defaultRate > 0 ? defaultRate : ACTIVE_ANIMATION_FRAME_RATE);
+    }
     if (this.folmeTransitions.size > 0) {
       result = Math.max(result, 60);
     }
     this.vars.set('frame_rate', result);
     return result;
+  }
+
+  private hasActiveTimelineAnimations(): boolean {
+    for (const registered of this.variableAnimations.values()) {
+      if (registered.state.playing) return true;
+    }
+    for (const registered of this.propertyAnimations.values()) {
+      if (registered.state.playing) return true;
+    }
+    return false;
   }
 
   private maybeFireAnimationEnd(triggers: WmrTrigger[] | undefined, state: TimelineState): void {

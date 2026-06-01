@@ -105,7 +105,6 @@ const ChatList: React.FC = () => {
             <div className="flex justify-between items-center">
               <p className="text-(--app-settings-group-title-size) text-(--app-c-tw-text-gray-400) truncate pr-4">{getChatPreview(chat)}</p>
               <div className="flex items-center gap-1">
-                {chat.isAlert && <div className="w-2 h-2 rounded-full bg-red-500 mr-1" />}
                 {chat.isMuted && <IcBellOff size={dimens.icSizeXs} className="text-(--app-c-tw-text-gray-300) flex-shrink-0" />}
               </div>
             </div>
