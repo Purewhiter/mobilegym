@@ -12,6 +12,7 @@
 [![Python](https://img.shields.io/badge/python-%E2%89%A53.11-3776ab.svg)](https://www.python.org/)
 
 [![Try the Live Demo](https://img.shields.io/badge/%F0%9F%9A%80_Try_the_Live_Demo_%E2%86%92-22c55e?style=for-the-badge)](https://mobilegym.dev)
+[![Star this project](https://img.shields.io/github/stars/Purewhiter/mobilegym?style=for-the-badge&logo=github&logoColor=white&label=%E2%AD%90%20Star%20if%20you%20like%20it&color=ffb400)](https://github.com/Purewhiter/mobilegym)
 
 **English** | [中文](README_zh.md)
 
@@ -456,10 +457,15 @@ If MobileGym helps your research, please cite us:
       url={https://arxiv.org/abs/2605.26114}
 }
 ```
-
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=Purewhiter/mobilegym&type=Date)](https://star-history.com/#Purewhiter/mobilegym&Date)
+<a href="https://www.star-history.com/?repos=Purewhiter%2Fmobilegym&type=date&legend=top-left">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=Purewhiter/mobilegym&type=date&theme=dark&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=Purewhiter/mobilegym&type=date&legend=top-left" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=Purewhiter/mobilegym&type=date&legend=top-left" />
+ </picture>
+</a>
 
 <br/>
 
@@ -467,6 +473,6 @@ If MobileGym helps your research, please cite us:
 
 **Built for agents that learn by doing — and verified to transfer to the real world.** 🪐
 
-[🌐 Website](https://mobilegym.dev) · [📄 Paper](https://arxiv.org/abs/2605.26114) · [🐛 Issues](https://github.com/Purewhiter/mobilegym/issues) · [💬 Discussions](https://github.com/Purewhiter/mobilegym/discussions) · [🐧 LINUX DO](https://linux.do/)
+[🌐 Website](https://mobilegym.dev) · [📄 Paper](https://arxiv.org/abs/2605.26114) · [🐛 Issues](https://github.com/Purewhiter/mobilegym/issues) · [💬 Discussions](https://github.com/Purewhiter/mobilegym/discussions)
 
 </div>

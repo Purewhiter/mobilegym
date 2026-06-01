@@ -93,6 +93,7 @@ export const WmrRenderer: React.FC<WmrRendererProps> = ({
   const rendererRef = useRef<WmrCanvasRenderer | null>(null);
   const bundleAnalysisRef = useRef<WmrBundleAnalysis | null>(null);
   const hasMarqueeRef = useRef(false);
+  const wakeRenderLoopRef = useRef<(() => void) | null>(null);
 
   // Long-press state
   const timerRef = useRef<number | null>(null);
@@ -111,6 +112,26 @@ export const WmrRenderer: React.FC<WmrRendererProps> = ({
     setReady(false);
     setErrorMessage(message);
   }, [sourceKey]);
+
+  const renderNow = useCallback((stage: string) => {
+    if (!ready || errorMessage || !active) return;
+    const canvas = canvasRef.current;
+    const doc = docRef.current;
+    const vars = varsRef.current;
+    const renderer = rendererRef.current;
+    if (!canvas || !doc || !vars || !renderer) return;
+
+    try {
+      vars.reevaluateVars(doc.root.children, { includeAnimations: true, includeBinders: false });
+      renderer.render(canvas, doc.root.children);
+    } catch (err) {
+      reportError(stage, err);
+    }
+  }, [active, errorMessage, ready, reportError]);
+
+  const wakeRenderLoop = useCallback(() => {
+    wakeRenderLoopRef.current?.();
+  }, []);
 
   const shouldInit = shouldLoad || ready || !!docRef.current;
 
@@ -143,7 +164,7 @@ export const WmrRenderer: React.FC<WmrRendererProps> = ({
         hasMarqueeRef.current = analysis.hasMarquee;
 
         // Init variables
-        const vars = new VarContext(persistNamespace ?? sourceKey);
+        const vars = new VarContext(persistNamespace ?? sourceKey, { onAsyncCommand: wakeRenderLoop });
         vars.setDefaultFrameRate(analysis.inferredFrameRate);
         vars.refreshBuiltins();
         vars.setProviderData(resourceStrings);
@@ -356,24 +377,45 @@ export const WmrRenderer: React.FC<WmrRendererProps> = ({
     const renderer = rendererRef.current;
     const analysis = bundleAnalysisRef.current;
     if (!doc || !vars || !renderer || !analysis) return;
+    const activeCanvas = canvas;
+    const activeDoc = doc;
+    const activeVars = vars;
+    const activeRenderer = renderer;
+    const activeAnalysis = analysis;
 
     let rafId: number | null = null;
     let timerId: number | null = null;
     let lastRender = 0;
     let lastDataRefresh = 0;
+    const cancelScheduled = () => {
+      if (rafId != null) {
+        cancelAnimationFrame(rafId);
+        rafId = null;
+      }
+      if (timerId != null) {
+        window.clearTimeout(timerId);
+        timerId = null;
+      }
+    };
     const scheduleNext = (delayMs: number) => {
+      cancelScheduled();
       if (delayMs <= 34) {
         rafId = requestAnimationFrame(frame);
         return;
       }
       timerId = window.setTimeout(frame, delayMs);
     };
-    const frame = () => {
+    const wake = () => scheduleNext(0);
+    wakeRenderLoopRef.current = wake;
+
+    function frame() {
+      rafId = null;
+      timerId = null;
       try {
         const now = TimeService.realNow();
-        const currentFrameRate = vars.getRecommendedFrameRate(analysis.inferredFrameRate);
+        const currentFrameRate = activeVars.getRecommendedFrameRate(activeAnalysis.inferredFrameRate);
         const hasMarquee = hasMarqueeRef.current;
-        const dataRefreshInterval = getPassiveDataUpdateDelayMs(doc.useVariableUpdater);
+        const dataRefreshInterval = getPassiveDataUpdateDelayMs(activeDoc.useVariableUpdater);
         const renderInterval = currentFrameRate > 0
           ? Math.max(16, Math.round(1000 / currentFrameRate))
           : hasMarquee ? 50 : dataRefreshInterval;
@@ -382,12 +424,12 @@ export const WmrRenderer: React.FC<WmrRendererProps> = ({
         if (shouldRefreshData) {
           lastDataRefresh = now;
           const stopRefresh = beginWmrPerf('widget.dataRefresh', sourceKey);
-          vars.refreshBuiltins();
-          injectProviderData(vars, {
-            binders: analysis.binders,
-            dependencies: analysis.providerDependencies,
+          activeVars.refreshBuiltins();
+          injectProviderData(activeVars, {
+            binders: activeAnalysis.binders,
+            dependencies: activeAnalysis.providerDependencies,
           });
-          vars.reevaluateVars(doc.root.children, { includeAnimations: currentFrameRate <= 0, includeBinders: true });
+          activeVars.reevaluateVars(activeDoc.root.children, { includeAnimations: currentFrameRate <= 0, includeBinders: true });
           stopRefresh();
         }
 
@@ -395,11 +437,11 @@ export const WmrRenderer: React.FC<WmrRendererProps> = ({
           lastRender = now;
           if (currentFrameRate > 0) {
             const stopAnim = beginWmrPerf('widget.animationRefresh', sourceKey);
-            vars.reevaluateVars(doc.root.children, { includeAnimations: true, includeBinders: false });
+            activeVars.reevaluateVars(activeDoc.root.children, { includeAnimations: true, includeBinders: false });
             stopAnim();
           }
           const stopRender = beginWmrPerf('widget.render', sourceKey);
-          renderer.render(canvas, doc.root.children);
+          activeRenderer.render(activeCanvas, activeDoc.root.children);
           stopRender();
         }
         const nowAfterWork = TimeService.realNow();
@@ -409,12 +451,12 @@ export const WmrRenderer: React.FC<WmrRendererProps> = ({
       } catch (err) {
         reportError('render', err);
       }
-    };
+    }
     scheduleNext(0);
     return () => {
-      try { vars.executeTriggerList(doc.root.externalTriggers, 'pause'); } catch { /* ignore */ }
-      if (rafId != null) cancelAnimationFrame(rafId);
-      if (timerId != null) window.clearTimeout(timerId);
+      if (wakeRenderLoopRef.current === wake) wakeRenderLoopRef.current = null;
+      try { activeVars.executeTriggerList(activeDoc.root.externalTriggers, 'pause'); } catch { /* ignore */ }
+      cancelScheduled();
     };
   }, [active, ready, errorMessage, reportError, sourceKey]);
 
@@ -425,6 +467,8 @@ export const WmrRenderer: React.FC<WmrRendererProps> = ({
     clearTimer();
     if (canvasRef.current && rendererRef.current) {
       rendererRef.current.handlePointerEvent(canvasRef.current, 'down', e.clientX, e.clientY);
+      renderNow('pointerDown');
+      wakeRenderLoop();
     }
     if (onLongPress) {
       timerRef.current = window.setTimeout(() => {
@@ -433,17 +477,18 @@ export const WmrRenderer: React.FC<WmrRendererProps> = ({
         if (containerRef.current) onLongPress(containerRef.current);
       }, 420);
     }
-  }, [onLongPress, clearTimer]);
+  }, [onLongPress, clearTimer, renderNow, wakeRenderLoop]);
 
   const handlePointerMove = useCallback((e: React.PointerEvent) => {
     e.stopPropagation();
     const sp = startPosRef.current;
+    if (!sp) return;
     if (canvasRef.current && rendererRef.current) {
       rendererRef.current.handlePointerEvent(canvasRef.current, 'move', e.clientX, e.clientY);
+      renderNow('pointerMove');
     }
-    if (!sp) return;
     if (Math.abs(e.clientX - sp.x) > 8 || Math.abs(e.clientY - sp.y) > 8) clearTimer();
-  }, [clearTimer]);
+  }, [clearTimer, renderNow]);
 
   const handlePointerUp = useCallback((e: React.PointerEvent) => {
     e.stopPropagation();
@@ -454,25 +499,34 @@ export const WmrRenderer: React.FC<WmrRendererProps> = ({
         const consumed = rendererRef.current.handlePointerEvent(canvasRef.current, 'up', e.clientX, e.clientY);
         if (consumed) suppressClickRef.current = true;
       }
+      renderNow('pointerUp');
+      wakeRenderLoop();
     }
     clearTimer();
     startPosRef.current = null;
-  }, [clearTimer]);
+  }, [clearTimer, renderNow, wakeRenderLoop]);
 
   const handlePointerCancel = useCallback((e: React.PointerEvent) => {
     e.stopPropagation();
     if (canvasRef.current && rendererRef.current) {
       rendererRef.current.handlePointerEvent(canvasRef.current, 'cancel', e.clientX, e.clientY);
+      renderNow('pointerCancel');
+      wakeRenderLoop();
     }
     clearTimer();
     startPosRef.current = null;
-  }, [clearTimer]);
+  }, [clearTimer, renderNow, wakeRenderLoop]);
 
   const handlePointerLeave = useCallback((e: React.PointerEvent) => {
     e.stopPropagation();
+    if (startPosRef.current && canvasRef.current && rendererRef.current) {
+      rendererRef.current.handlePointerEvent(canvasRef.current, 'cancel', e.clientX, e.clientY);
+      renderNow('pointerLeave');
+      wakeRenderLoop();
+    }
     clearTimer();
     startPosRef.current = null;
-  }, [clearTimer]);
+  }, [clearTimer, renderNow, wakeRenderLoop]);
 
   const handleClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
