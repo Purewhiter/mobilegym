@@ -172,6 +172,7 @@ const WeatherDailyForecastPage: React.FC = () => {
           dailysteps: 15,
           hourlysteps: 24,
           alert: true,
+          cityId: cityDef.id,
         });
         if (cancelled) return;
         useWeatherStore.setState((prev) => setStoredBundle(prev, cityDef.id, {
@@ -196,7 +197,7 @@ const WeatherDailyForecastPage: React.FC = () => {
     let cancelled = false;
     (async () => {
       try {
-        const result = await getAirQualityDailyForecast(lonLat);
+        const result = await getAirQualityDailyForecast(lonLat, activeCityId);
         if (!cancelled) setAirForecastDays(result);
       } catch (error) {
         console.error('Failed to fetch daily air quality forecast', error);
@@ -207,7 +208,7 @@ const WeatherDailyForecastPage: React.FC = () => {
     return () => {
       cancelled = true;
     };
-  }, [lonLat]);
+  }, [activeCityId, lonLat]);
 
   useEffect(() => {
     if (!lonLat || !storedEntry || historicalYesterday !== undefined) return;
@@ -219,7 +220,7 @@ const WeatherDailyForecastPage: React.FC = () => {
 
     (async () => {
       try {
-        const result = await getHistoricalWeatherDay(lonLat, yesterday);
+        const result = await getHistoricalWeatherDay(lonLat, yesterday, activeCityId);
         if (cancelled) return;
         useWeatherStore.setState((prev) => setHistoricalYesterday(prev, activeCityId, result), true);
       } catch (error) {

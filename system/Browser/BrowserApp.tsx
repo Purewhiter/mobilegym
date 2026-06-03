@@ -137,7 +137,8 @@ const BrowserView: React.FC<{ url: string }> = ({ url }) => {
                         className="w-full h-full border-none"
                         onLoad={() => setIsLoading(false)}
                         title="browser-active-content"
-                        sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-modals"
+                        sandbox="allow-same-origin allow-scripts allow-forms"
+                        allow="autoplay; encrypted-media"
                     />
                 ) : null}
                 {isLoading && (

@@ -12,7 +12,7 @@
 [![Python](https://img.shields.io/badge/python-%E2%89%A53.11-3776ab.svg)](https://www.python.org/)
 
 [![Try the Live Demo](https://img.shields.io/badge/%F0%9F%9A%80_Try_the_Live_Demo_%E2%86%92-22c55e?style=for-the-badge)](https://mobilegym.dev)
-[![Star this project](https://img.shields.io/github/stars/Purewhiter/mobilegym?style=for-the-badge&logo=github&logoColor=white&label=%E2%AD%90%20Star%20if%20you%20like%20it&color=ffb400)](https://github.com/Purewhiter/mobilegym)
+[![Star this project](https://img.shields.io/badge/%E2%AD%90%20Star%20if%20you%20like%20it-555?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Purewhiter/mobilegym)
 
 **English** | [中文](README_zh.md)
 

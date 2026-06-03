@@ -6492,8 +6492,8 @@
     ]
   },
   "nanjing": {
-    "lonLat": "118.7975,32.0871",
-    "locationName": "玄武区 红山街道",
+    "lonLat": "118.7969,32.0603",
+    "locationName": "玄武区 玄武门街道",
     "bundle": {
       "now": {
         "obsTime": "2026-03-26T12:42+08:00",
@@ -7574,8 +7574,8 @@
     ]
   },
   "wuhan": {
-    "lonLat": "114.4243,30.6067",
-    "locationName": "洪山区 和平街道",
+    "lonLat": "114.3055,30.5928",
+    "locationName": "江岸区 一元街道",
     "bundle": {
       "now": {
         "obsTime": "2026-03-26T12:42+08:00",
@@ -8656,8 +8656,8 @@
     ]
   },
   "sanya": {
-    "lonLat": "109.4089,18.3091",
-    "locationName": "天涯区 天涯区直辖",
+    "lonLat": "109.5119,18.2528",
+    "locationName": "吉阳区 吉阳区直辖",
     "bundle": {
       "now": {
         "obsTime": "2026-03-26T12:42+08:00",

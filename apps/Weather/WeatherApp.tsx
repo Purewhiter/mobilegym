@@ -357,10 +357,16 @@ const WeatherContent: React.FC = () => {
   const fetchCityWeather = useCallback(async (
     lon: number,
     lat: number,
-    cityName?: string
+    cityName?: string,
+    cityId?: string,
   ): Promise<{ lonLat: string; bundle: WeatherBundle; data: Partial<CityWeatherData> }> => {
     const lonLat = `${lon},${lat}`;
-    const bundle = await getWeatherBundle(lonLat, { dailysteps: 15, hourlysteps: 24, alert: true });
+    const bundle = await getWeatherBundle(lonLat, {
+      dailysteps: 15,
+      hourlysteps: 24,
+      alert: true,
+      cityId,
+    });
 
     let locationName = cityName || '';
 
@@ -514,7 +520,7 @@ const WeatherContent: React.FC = () => {
     // 永久卡在 loadingCityIds 集合里。这与原版（未引入 cancellation）行为一致。
     (async () => {
       try {
-        const res = await fetchCityWeather(city.lon, city.lat, city.name);
+        const res = await fetchCityWeather(city.lon, city.lat, city.name, city.id);
         setWeatherState(prev => setStoredBundle(prev, city.id, { lonLat: res.lonLat, bundle: res.bundle }));
       } catch (error) {
         console.error(`Failed to fetch weather for ${city.name}`, error);

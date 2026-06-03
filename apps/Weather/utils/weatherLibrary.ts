@@ -104,15 +104,44 @@ function coordsClose(a: string, b: string): boolean {
   return Math.abs(aLon - bLon) < 0.01 && Math.abs(aLat - bLat) < 0.01;
 }
 
-function findRawEntry(
+function normalizeLibraryCityId(cityId?: string): string | undefined {
+  const id = String(cityId ?? '').trim();
+  return id && id !== 'located' ? id : undefined;
+}
+
+type EntryPredicate = (entry: WeatherLibraryEntry) => boolean;
+
+function findCoordinateKey(
+  library: Record<string, WeatherLibraryEntry>,
   lonLat: string,
-): { key: string; entry: WeatherLibraryEntry } | null {
-  const library = useWeatherStore.getState().weatherLibrary ?? {};
+  predicate?: EntryPredicate,
+): string | null {
   for (const [key, entry] of Object.entries(library)) {
-    if (entry.lonLat === lonLat || coordsClose(entry.lonLat, lonLat)) {
-      return { key, entry };
+    if (
+      (entry.lonLat === lonLat || coordsClose(entry.lonLat, lonLat)) &&
+      (!predicate || predicate(entry))
+    ) {
+      return key;
     }
   }
+  return null;
+}
+
+function findRawEntry(
+  lonLat: string,
+  cityId?: string,
+  predicate?: EntryPredicate,
+): { key: string; entry: WeatherLibraryEntry } | null {
+  const library = useWeatherStore.getState().weatherLibrary ?? {};
+  const normalizedCityId = normalizeLibraryCityId(cityId);
+  if (normalizedCityId) {
+    const entry = library[normalizedCityId];
+    if (entry && (!predicate || predicate(entry))) {
+      return { key: normalizedCityId, entry };
+    }
+  }
+  const key = findCoordinateKey(library, lonLat, predicate);
+  if (key) return { key, entry: library[key] };
   return null;
 }
 
@@ -120,20 +149,21 @@ function findRawEntry(
 // Public read API — returns materialised (date-filled) data
 // ---------------------------------------------------------------------------
 
-export function findLibraryBundle(lonLat: string): WeatherBundle | null {
-  const found = findRawEntry(lonLat);
+export function findLibraryBundle(lonLat: string, cityId?: string): WeatherBundle | null {
+  const found = findRawEntry(lonLat, cityId, (entry) => !!entry.bundle);
   return found?.entry.bundle ? materializeBundle(found.entry.bundle) : null;
 }
 
-export function findLibraryHistorical(lonLat: string): WeatherDaily | null {
-  const found = findRawEntry(lonLat);
+export function findLibraryHistorical(lonLat: string, cityId?: string): WeatherDaily | null {
+  const found = findRawEntry(lonLat, cityId, (entry) => entry.historicalYesterday !== undefined);
   return found ? materializeHistorical(found.entry.historicalYesterday) : null;
 }
 
 export function findLibraryAirForecast(
   lonLat: string,
+  cityId?: string,
 ): AirQualityForecastDay[] | null {
-  const found = findRawEntry(lonLat);
+  const found = findRawEntry(lonLat, cityId, (entry) => !!entry.airQualityForecast);
   return found?.entry.airQualityForecast
     ? materializeAirForecast(found.entry.airQualityForecast)
     : null;
@@ -151,23 +181,17 @@ export function findLibraryLocationName(lonLat: string): string | null {
 export function saveToLibrary(
   lonLat: string,
   data: Partial<Omit<WeatherLibraryEntry, 'lonLat'>>,
+  cityId?: string,
 ): void {
   useWeatherStore.setState((prev) => {
     const library = prev.weatherLibrary ?? {};
-    let key: string | null = null;
-    for (const [k, entry] of Object.entries(library)) {
-      if (entry.lonLat === lonLat || coordsClose(entry.lonLat, lonLat)) {
-        key = k;
-        break;
-      }
-    }
-    if (!key) key = lonLat;
+    const key = normalizeLibraryCityId(cityId) ?? findCoordinateKey(library, lonLat) ?? lonLat;
     const existing = library[key] ?? { lonLat };
     return {
       ...prev,
       weatherLibrary: {
         ...library,
-        [key]: { ...existing, ...data },
+        [key]: { ...existing, lonLat, ...data },
       },
     };
   }, true);
