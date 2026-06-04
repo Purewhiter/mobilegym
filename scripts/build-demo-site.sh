@@ -15,6 +15,7 @@ cd "$(dirname "$0")/.."
 
 SIM_BASE="${SIM_BASE:-/sim/}"           # 须以 / 开头和结尾
 SITE_DIR="${SITE_DIR:-_site}"
+ASSET_VERSION="${ASSET_VERSION:-$(git rev-parse --short HEAD 2>/dev/null || date +%s)}"
 
 echo "==> Building simulator with base=${SIM_BASE}"
 VITE_BASE="${SIM_BASE}" \
@@ -40,6 +41,9 @@ echo "==> Rewriting landing for root deploy"
 perl -0pi -e "s#</head>#<script>window.__MG_SIM_SRC__='${SIM_BASE}';</script></head>#" "${SITE_DIR}/index.html"
 # avatar 选择器的静态 <img src="/@app-assets/..."> 指向 sim base 下的实际资源
 perl -0pi -e "s#/\@app-assets/#${SIM_BASE}\@app-assets/#g" "${SITE_DIR}/index.html"
+# GitHub Pages / Cloudflare cache CSS and JS longer than HTML. Version the
+# root landing assets so a new HTML deploy cannot pair with stale styles/scripts.
+perl -0pi -e "s#(href=\"(?:tailwind|styles)\\.css)(\")#\$1?v=${ASSET_VERSION}\$2#g; s#(src=\"scripts/[^\"]+\\.js)(\")#\$1?v=${ASSET_VERSION}\$2#g" "${SITE_DIR}/index.html"
 
 echo "==> Backwards-compat redirect /paper/ -> / (old shared links)"
 mkdir -p "${SITE_DIR}/paper"
