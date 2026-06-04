@@ -23,9 +23,11 @@
 
 <link rel="stylesheet" href="tailwind.css" />
 <link rel="stylesheet" href="styles.css" />
+<script defer src="scripts/i18n.js"></script>
 <script defer src="scripts/state-builder.js"></script>
 <script defer src="scripts/boot-hero.js"></script>
 <script defer src="scripts/trace-viewer.js"></script>
+<script type="module" src="scripts/agent/ui.js"></script>
 <script defer src="scripts/bibtex-copy.js"></script>
 <script defer src="scripts/github-stars.js"></script>
 </head>
@@ -37,9 +39,13 @@
 <section id="demo" class="hero-demo scroll-mt-8" aria-label="MobileGym live simulator">
   <div class="hero-demo-brand">
     <span class="hero-demo-brand-name">MobileGym</span>
-    <span class="hero-demo-brand-meta">Live demo</span>
+    <span class="hero-demo-brand-meta" data-i18n="hero.liveDemo">Live demo</span>
   </div>
   <div class="hero-demo-actions">
+    <button type="button" id="lang-toggle" class="hero-demo-action hero-demo-lang" data-i18n-aria="lang.label" aria-label="Switch language">
+      <svg class="hero-demo-lang-globe" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10Z"/></svg>
+      <span class="hero-demo-lang-current" data-lang-current>EN</span>
+    </button>
     <a href="https://arxiv.org/abs/2605.26114" target="_blank" rel="noopener"
        class="hero-demo-action hero-demo-action-arxiv" aria-label="Read paper on arXiv">
       <span class="hero-demo-arxiv-mark">arXiv</span>
@@ -47,12 +53,12 @@
     <a href="https://github.com/Purewhiter/mobilegym" target="_blank" rel="noopener"
        class="hero-demo-action hero-demo-action-star" aria-label="Star MobileGym on GitHub">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.4 3-.405 1.02.005 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
-      <span class="hero-demo-star-label">Star</span>
+      <span class="hero-demo-star-label" data-i18n="hero.star">Star</span>
       <span class="hero-demo-star-count" id="gh-star-count" hidden></span>
     </a>
     <button type="button" id="demo-poweroff-btn" class="hero-demo-poweroff hidden">
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v10"/><path d="M18.4 6.6a9 9 0 1 1-12.77.04"/></svg>
-      <span>Power off</span>
+      <span data-i18n="hero.powerOff">Power off</span>
     </button>
   </div>
   <div class="demo-layout ui">
@@ -86,7 +92,7 @@
             <span class="w-[72px] h-[72px] rounded-full border-2 border-stone-600 flex items-center justify-center mb-5 group-hover:border-stone-300 group-hover:scale-105 transition">
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v10"/><path d="M18.4 6.6a9 9 0 1 1-12.77.04"/></svg>
             </span>
-            <span class="hero-boot-label">Click to start</span>
+            <span class="hero-boot-label" data-i18n="hero.clickToStart">Click to start</span>
           </button>
         </div>
 
@@ -95,7 +101,7 @@
         <!-- 每个 .state-dock-tab 同时带 data-studio-tab，复用现有 JS。     -->
         <!-- ============================================================ -->
         <aside class="state-dock ui" aria-label="State Builder dock" role="toolbar">
-          <span class="state-dock-eyebrow" aria-hidden="true">State Builder</span>
+          <span class="state-dock-eyebrow" aria-hidden="true" data-i18n="dock.eyebrow">State Builder</span>
           <span class="state-dock-divider" aria-hidden="true"></span>
           <button type="button" class="state-dock-tab" data-studio-tab="session" data-state-dock-tab="session" aria-selected="true" aria-label="Session snapshots">
             <span class="state-dock-tab-icon">
@@ -139,7 +145,7 @@
             </span>
           </button>
         </aside>
-        <span class="state-dock-hint" aria-hidden="true">Patch state</span>
+        <span class="state-dock-hint" aria-hidden="true" data-i18n="dock.hint">Patch state</span>
 
         <!-- ============================================================ -->
         <!-- Gesture Guide — 左侧"软键盘 + 图例"二合一卡片，与右侧 State    -->
@@ -150,98 +156,110 @@
         <!-- scripts/boot-hero.js 的委托。                                  -->
         <!-- ============================================================ -->
         <aside class="gesture-guide ui" aria-label="Phone gesture controls">
-          <div class="gesture-guide-head">
-            <span class="gesture-guide-eyebrow">Gestures</span>
-            <span class="gesture-guide-meta">or click</span>
+          <!-- ============================================================ -->
+          <!-- Slim vertical key rail — mirror of the right-edge State Dock.  -->
+          <!-- Back / Home / Recents are live hardware buttons                -->
+          <!-- (data-gesture-action -> boot-hero.js delegation -> __OS__).    -->
+          <!-- Hovering / focusing the rail reveals the legend popover to its -->
+          <!-- left (swipe equivalents + the non-clickable "Switch pages"     -->
+          <!-- hint). Icon SVGs keep .gesture-guide-icon / .gesture-trail so  -->
+          <!-- the reduced-motion + during-run hide rules still match.        -->
+          <!-- ============================================================ -->
+          <div class="gesture-rail" role="toolbar" aria-label="Phone hardware keys">
+            <button type="button" class="gesture-key" data-gesture-action="back" aria-label="Back — same as edge-swipe">
+              <span class="gesture-guide-icon" aria-hidden="true">
+                <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="6" y1="5" x2="6" y2="27"/>
+                  <circle cx="6" cy="16" r="1.6" fill="currentColor" stroke="none"/>
+                  <path class="gesture-trail" d="M7.5 16 L 22 16"/>
+                  <polyline class="gesture-trail" points="18.5 12, 22 16, 18.5 20"/>
+                </svg>
+              </span>
+            </button>
+            <button type="button" class="gesture-key" data-gesture-action="home" aria-label="Home — same as swipe-up from bottom">
+              <span class="gesture-guide-icon" aria-hidden="true">
+                <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="11" y1="27" x2="21" y2="27" stroke-width="2"/>
+                  <circle cx="16" cy="24" r="1.6" fill="currentColor" stroke="none"/>
+                  <path class="gesture-trail" d="M16 22 L 16 8"/>
+                  <polyline class="gesture-trail" points="12 11.5, 16 8, 20 11.5"/>
+                </svg>
+              </span>
+            </button>
+            <button type="button" class="gesture-key" data-gesture-action="recents" aria-label="Recents — same as swipe-up and hold">
+              <span class="gesture-guide-icon" aria-hidden="true">
+                <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="8.5" y="5" width="15" height="8.5" rx="1.6"/>
+                  <line x1="11.5" y1="3" x2="20.5" y2="3" opacity="0.55"/>
+                  <line x1="11" y1="27" x2="21" y2="27" stroke-width="2"/>
+                  <circle cx="16" cy="24" r="1.6" fill="currentColor" stroke="none"/>
+                  <path class="gesture-trail" d="M16 22 L 16 17"/>
+                  <polyline class="gesture-trail" points="13 19.5, 16 17, 19 19.5"/>
+                </svg>
+              </span>
+            </button>
+            <span class="gesture-rail-div" aria-hidden="true"></span>
+            <button type="button" class="gesture-help" aria-label="How to control the phone">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="9"/>
+                <path d="M9.6 9.2a2.4 2.4 0 1 1 3.3 2.2c-.7.4-1.1.9-1.1 1.8"/>
+                <circle cx="11.9" cy="16.6" r="0.6" fill="currentColor" stroke="none"/>
+              </svg>
+            </button>
           </div>
-          <ul class="gesture-guide-list" role="list">
-            <li>
-              <button type="button" class="gesture-guide-item" data-gesture-action="back" aria-label="Back — same as edge-swipe">
-                <span class="gesture-guide-icon" aria-hidden="true">
-                  <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-                    <!-- phone left edge -->
-                    <line x1="6" y1="5" x2="6" y2="27"/>
-                    <!-- finger contact dot -->
-                    <circle cx="6" cy="16" r="1.6" fill="currentColor" stroke="none"/>
-                    <!-- swipe trail rightward -->
-                    <path class="gesture-trail" d="M7.5 16 L 22 16"/>
-                    <polyline class="gesture-trail" points="18.5 12, 22 16, 18.5 20"/>
-                  </svg>
-                </span>
-                <span class="gesture-guide-text">
-                  <span class="gesture-guide-label">Back</span>
-                  <span class="gesture-guide-desc">Swipe in from left or right edge</span>
-                </span>
-              </button>
-            </li>
-            <li>
-              <button type="button" class="gesture-guide-item" data-gesture-action="home" aria-label="Home — same as swipe-up from bottom">
-                <span class="gesture-guide-icon" aria-hidden="true">
-                  <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-                    <!-- home indicator bar at bottom -->
-                    <line x1="11" y1="27" x2="21" y2="27" stroke-width="2"/>
-                    <!-- finger contact dot -->
-                    <circle cx="16" cy="24" r="1.6" fill="currentColor" stroke="none"/>
-                    <!-- upward swipe trail -->
-                    <path class="gesture-trail" d="M16 22 L 16 8"/>
-                    <polyline class="gesture-trail" points="12 11.5, 16 8, 20 11.5"/>
-                  </svg>
-                </span>
-                <span class="gesture-guide-text">
-                  <span class="gesture-guide-label">Home</span>
-                  <span class="gesture-guide-desc">Swipe up from bottom edge</span>
-                </span>
-              </button>
-            </li>
-            <li>
-              <button type="button" class="gesture-guide-item" data-gesture-action="recents" aria-label="Recents — same as swipe-up and hold">
-                <span class="gesture-guide-icon" aria-hidden="true">
-                  <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-                    <!-- stacked recents preview cards -->
-                    <rect x="8.5" y="5" width="15" height="8.5" rx="1.6"/>
-                    <line x1="11.5" y1="3" x2="20.5" y2="3" opacity="0.55"/>
-                    <!-- home indicator -->
-                    <line x1="11" y1="27" x2="21" y2="27" stroke-width="2"/>
-                    <!-- finger contact dot -->
-                    <circle cx="16" cy="24" r="1.6" fill="currentColor" stroke="none"/>
-                    <!-- short upward swipe + pause -->
-                    <path class="gesture-trail" d="M16 22 L 16 17"/>
-                    <polyline class="gesture-trail" points="13 19.5, 16 17, 19 19.5"/>
-                  </svg>
-                </span>
-                <span class="gesture-guide-text">
-                  <span class="gesture-guide-label">Recents</span>
-                  <span class="gesture-guide-desc">Swipe up &amp; hold mid-screen</span>
-                </span>
-              </button>
-            </li>
-            <li>
-              <!-- Hint-only row: switching home-screen pages happens on the
-                   desktop itself (workspace pager) — there's no single
-                   __OS__ action to trigger from a button, so this is a
-                   static <div> with the .gesture-guide-item--hint modifier
-                   suppressing hover/active affordances. -->
-              <div class="gesture-guide-item gesture-guide-item--hint" role="note" aria-label="Switch home-screen pages by swiping or dragging horizontally">
-                <span class="gesture-guide-icon" aria-hidden="true">
-                  <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-                    <!-- page indicator dots at top, middle one active -->
-                    <circle cx="13" cy="7" r="0.9" fill="currentColor" stroke="none" opacity="0.4"/>
-                    <circle cx="16" cy="7" r="1.2" fill="currentColor" stroke="none"/>
-                    <circle cx="19" cy="7" r="0.9" fill="currentColor" stroke="none" opacity="0.4"/>
-                    <!-- finger contact dot on the right -->
-                    <circle cx="22" cy="18" r="1.6" fill="currentColor" stroke="none"/>
-                    <!-- horizontal swipe trail leftward across the page -->
-                    <path class="gesture-trail" d="M20.5 18 L 8 18"/>
-                    <polyline class="gesture-trail" points="11.5 14.5, 8 18, 11.5 21.5"/>
-                  </svg>
-                </span>
-                <span class="gesture-guide-text">
-                  <span class="gesture-guide-label">Switch pages</span>
-                  <span class="gesture-guide-desc">Swipe or drag horizontally on the desktop</span>
-                </span>
-              </div>
-            </li>
-          </ul>
+
+          <!-- Legend popover — explanation only (incl. the non-clickable
+               "Switch pages" desktop-pager hint). Revealed on rail hover /
+               focus-within; read-only, so it never needs pointer focus. -->
+          <div class="gesture-pop" role="note">
+            <div class="gesture-pop-head">
+              <span class="gesture-guide-eyebrow" data-i18n="gesture.eyebrow">Gestures</span>
+              <span class="gesture-guide-meta" data-i18n="gesture.orClick">or click</span>
+            </div>
+            <ul class="gesture-pop-list" role="list">
+              <li><span class="gesture-pop-k" data-i18n="gesture.back">Back</span><span class="gesture-pop-d" data-i18n="gesture.backDesc">Swipe in from left or right edge</span></li>
+              <li><span class="gesture-pop-k" data-i18n="gesture.home">Home</span><span class="gesture-pop-d" data-i18n="gesture.homeDesc">Swipe up from bottom edge</span></li>
+              <li><span class="gesture-pop-k" data-i18n="gesture.recents">Recents</span><span class="gesture-pop-d" data-i18n="gesture.recentsDesc">Swipe up &amp; hold mid-screen</span></li>
+              <li><span class="gesture-pop-k" data-i18n="gesture.switch">Switch pages</span><span class="gesture-pop-d" data-i18n="gesture.switchDesc">Swipe or drag horizontally on the desktop</span></li>
+            </ul>
+          </div>
+        </aside>
+
+        <!-- ============================================================ -->
+        <!-- Live Agent overlay — pointer cursor / tap ripples / swipe     -->
+        <!-- trails drawn on the phone screen during a run. Mounted on      -->
+        <!-- .phone-rig (persistent) rather than #demo-frame, whose         -->
+        <!-- innerHTML state-builder swaps on every power cycle. The 360×800 -->
+        <!-- box = native sim viewport, so action coords map 1:1.           -->
+        <!-- ============================================================ -->
+        <div id="agent-overlay" class="mg-ov" data-active="false" aria-hidden="true"></div>
+
+        <!-- Status HUD pill floating over the top of the phone. -->
+        <div id="agent-hud" class="mg-hud" data-kind="idle" aria-hidden="true">
+          <span class="mg-hud-dot" aria-hidden="true"></span>
+          <span id="agent-hud-text" class="mg-hud-text"></span>
+        </div>
+
+        <!-- Live narration card — floats off the phone's right edge during  -->
+        <!-- a run (mirrors the State Dock anchor; both retreat for each      -->
+        <!-- other). Counter-scaled so text stays readable as the phone       -->
+        <!-- shrinks on short viewports.                                      -->
+        <aside id="agent-narration" class="mg-narr" aria-live="polite" aria-label="Agent reasoning">
+          <div id="agent-answer" class="mg-narr-answer" hidden></div>
+          <div class="mg-narr-head">
+            <span id="agent-narr-step" class="mg-narr-step">Step 0</span>
+            <span id="agent-narr-action" class="mg-narr-action" data-type="">idle</span>
+            <button type="button" id="agent-narr-dismiss" class="mg-narr-dismiss" aria-label="Dismiss and restore phone tools">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+            </button>
+          </div>
+          <p id="agent-narr-think" class="mg-narr-think"></p>
+          <button type="button" id="agent-narr-timeline-toggle" class="mg-narr-tl-toggle" aria-expanded="false" aria-controls="agent-narr-timeline">
+            <span id="agent-narr-count" class="mg-narr-count">0 steps</span>
+            <span id="agent-narr-ticks" class="mg-narr-ticks" aria-hidden="true"></span>
+            <svg class="mg-narr-tl-chev" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <div id="agent-narr-timeline" class="mg-narr-tl" hidden></div>
         </aside>
       </div>
     </div>
@@ -689,7 +707,7 @@
   </div>
   <div class="hero-demo-foot">
     <div class="hero-demo-scroll-hint" aria-hidden="true">
-      <span>Scroll to read paper</span>
+      <span data-i18n="hero.scrollHint">Scroll to read paper</span>
       <svg width="11" height="14" viewBox="0 0 11 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
         <path d="M5.5 1v11"/>
         <path d="M2 8.5l3.5 3.5L9 8.5"/>
@@ -697,6 +715,82 @@
     </div>
   </div>
 </section>
+
+<!-- ============================================================ -->
+<!-- AGENT CONSOLE — fixed, first-screen command bar that drives   -->
+<!-- the simulator iframe above. Logic in scripts/agent/*.         -->
+<!-- ============================================================ -->
+<div id="agent-console" class="mg-console ui" data-run-state="idle" data-collapsed="true" aria-label="Agent console">
+  <div class="mg-console-bar">
+    <div class="mg-console-meta">
+      <span class="mg-console-eyebrow"><span class="mg-console-eyebrow-dot" aria-hidden="true"></span><span data-i18n="console.eyebrow">Live Agent</span></span>
+      <span class="mg-console-status" id="agent-status" data-kind="idle" role="status" aria-live="polite" data-i18n="console.statusIdle">Type a task, then Run.</span>
+      <button type="button" id="agent-collapse" class="mg-console-collapse" data-i18n-aria="console.expandAria" aria-label="Expand task bar" aria-expanded="false">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+    </div>
+    <div class="mg-console-row">
+      <input id="agent-instruction" class="mg-console-input" type="text" autocomplete="off"
+             data-i18n-ph="console.placeholder" placeholder="Tell the agent what to do…" />
+      <button type="button" id="agent-run" class="mg-agent-btn mg-agent-btn-run" data-i18n="console.run">Run</button>
+      <button type="button" id="agent-stop" class="mg-agent-btn mg-agent-btn-stop" hidden data-i18n="console.stop">Stop</button>
+      <button type="button" id="agent-settings-open" class="mg-console-iconbtn" aria-haspopup="dialog" aria-controls="agent-settings" data-i18n-aria="console.settingsAria" aria-label="Model &amp; agent settings">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+    </div>
+    <div class="mg-console-chips" data-i18n-aria="console.examplesAria" aria-label="Example tasks">
+      <button type="button" class="mg-agent-chip" data-i18n="chip.example1.label" data-i18n-prompt="chip.example1.prompt" data-prompt="Open WeChat and message Boss: I quit">WeChat · Boss</button>
+      <button type="button" class="mg-agent-chip" data-i18n="chip.example2.label" data-i18n-prompt="chip.example2.prompt" data-prompt="Open bilibili, and like the first video">Bilibili · Like Video</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- ============================================================ -->
+<!-- Model & agent settings — slide-over sheet (right drawer on      -->
+<!-- desktop, bottom sheet on mobile). Lives at BODY level, not       -->
+<!-- inside #agent-console: the console carries a CSS transform, and  -->
+<!-- a position:fixed descendant of a transformed ancestor is trapped -->
+<!-- to that ancestor's box instead of the viewport. Reuses the same  -->
+<!-- control IDs the config layer reads, so config.js is unchanged.   -->
+<!-- ============================================================ -->
+<div id="agent-settings" class="mg-sheet" data-open="false" hidden>
+  <div class="mg-sheet-backdrop" id="agent-settings-backdrop"></div>
+  <div class="mg-sheet-panel" role="dialog" aria-modal="true" aria-label="Model and agent settings">
+    <span class="mg-sheet-grab" aria-hidden="true"></span>
+    <div class="mg-sheet-head">
+      <div class="mg-sheet-head-text">
+        <h3 class="mg-sheet-title" data-i18n="settings.title">Model &amp; agent</h3>
+        <p class="mg-sheet-sub" data-i18n="settings.sub">Use the built-in demo model, or connect your own OpenAI-compatible vision endpoint.</p>
+      </div>
+      <button type="button" id="agent-settings-close" class="mg-console-close" data-i18n-aria="settings.closeAria" aria-label="Close settings">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div class="mg-sheet-body">
+      <div class="mg-field-group">
+        <span class="mg-field-label" data-i18n="settings.agent">Agent</span>
+        <select id="agent-cfg-agent" class="mg-field-select"></select>
+        <p class="mg-agent-blurb" id="agent-blurb"></p>
+      </div>
+      <div class="mg-field-group">
+        <span class="mg-field-label" data-i18n="settings.endpoint">Endpoint</span>
+        <label class="mg-agent-field"><span data-i18n="settings.baseUrl">Base URL</span><input id="agent-cfg-baseurl" type="text" autocomplete="off" spellcheck="false" placeholder="https://api.openai.com/v1" /></label>
+        <label class="mg-agent-field"><span data-i18n="settings.model">Model</span><input id="agent-cfg-model" type="text" autocomplete="off" spellcheck="false" placeholder="e.g. gpt-4o / autoglm-phone" /></label>
+        <label class="mg-agent-field"><span data-i18n="settings.apiKey">API key</span><input id="agent-cfg-key" type="password" autocomplete="off" placeholder="sk-…" /></label>
+      </div>
+      <div class="mg-field-group">
+        <span class="mg-field-label" data-i18n="settings.parameters">Parameters</span>
+        <div class="mg-agent-args" id="agent-cfg-args" aria-label="Model parameters"></div>
+      </div>
+    </div>
+    <div class="mg-sheet-foot">
+      <button type="button" id="agent-cfg-save" class="mg-agent-btn mg-agent-btn-sm" data-i18n="settings.save">Save</button>
+      <button type="button" id="agent-cfg-clear" class="mg-agent-btn mg-agent-btn-sm mg-agent-btn-ghost" data-i18n="settings.reset">Reset</button>
+      <span id="agent-cfg-status" class="mg-agent-cfg-status" role="status" aria-live="polite"></span>
+    </div>
+  </div>
+</div>
 
 <!-- ============================================================ -->
 <!-- HEADER                                                       -->

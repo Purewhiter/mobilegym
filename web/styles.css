@@ -76,8 +76,10 @@ body { font-family: 'Charter', 'Georgia', serif; -webkit-font-smoothing: antiali
        SCROLL hint at the viewport bottom gains room.
      • clamp(0.7, …, 1) — scale never above 1 (no upscaling on tall
        monitors) and never below 0.7 (phone stays readable)
-   Formula: (100vh - 200px) / 800px, where 200px is the buffer for brand
-   above and SCROLL hint below. */
+   Reserve is scoped: narrow screens keep the command bar pinned to the
+   bottom, so they reserve ~200px so the phone never sits under it; wide
+   screens (≥1180px) move the command bar to the LEFT flank, freeing the
+   bottom — there the phone gets a bigger 120px reserve override below. */
 .hero-demo .demo-phone-wrap {
   --phone-scale: clamp(0.7, calc((100vh - 100px) / 800px), 1);
   transform-origin: center top;
@@ -208,6 +210,26 @@ body { font-family: 'Charter', 'Georgia', serif; -webkit-font-smoothing: antiali
   display: flex;
   align-items: center;
   gap: 8px;
+}
+/* Language switch — a flat globe + current-language label that shares the
+   borderless weight of the arXiv / Star / Power-off actions (it reuses
+   .hero-demo-action). One click cycles between English and 中文; i18n.js
+   swaps the label text. */
+.hero-demo-lang {
+  gap: 5px;
+}
+.hero-demo-lang-globe {
+  opacity: 0.7;
+  transition: opacity 200ms ease;
+}
+.hero-demo-lang:hover .hero-demo-lang-globe {
+  opacity: 1;
+}
+.hero-demo-lang-current {
+  font: 600 12.5px/1 'Inter', system-ui, sans-serif;
+  letter-spacing: -0.01em;
+  min-width: 16px;
+  text-align: center;
 }
 /* Top-right utility buttons — arXiv wordmark, GitHub mark, Power off.
    All borderless to match the same low-key visual weight; brand identity
@@ -762,28 +784,22 @@ body[data-state-drawer-open="true"] .state-dock-hint {
 /* swipe-up-and-hold recents). Same glass-morphism + fade-in     */
 /* timing as the dock so they read as a matched pair.            */
 /* ============================================================ */
+/* ============================================================ */
+/* Gesture rail — slim vertical key dock on the phone's LEFT     */
+/* edge, mirroring the right-side .state-dock. Collapsed = three  */
+/* live hardware keys (Back / Home / Recents) + a "?" help key;   */
+/* hovering or focusing the rail reveals the legend popover.      */
+/* ============================================================ */
 .gesture-guide {
   position: absolute;
   /* Mirror of .state-dock: 14px outside the phone's left edge. */
   right: calc(100% + 14px);
   top: 50%;
   transform: translateY(-50%);
-  width: 168px;
-  padding: 14px 14px 13px;
-  border-radius: 20px;
-  background: rgba(255, 255, 255, 0.74);
-  border: 1px solid rgba(28, 25, 23, 0.08);
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.7) inset,
-    0 12px 32px -10px rgba(15, 23, 42, 0.18),
-    0 4px 12px -6px rgba(15, 23, 42, 0.08);
-  backdrop-filter: blur(18px) saturate(140%);
-  -webkit-backdrop-filter: blur(18px) saturate(140%);
   z-index: 4;
+  /* Pre-boot: hidden alongside the rest of the chrome. The rail's
+     buttons need clicks, so pointer-events is gated by .is-booted. */
   opacity: 0;
-  /* Buttons inside (.gesture-guide-icon) need clicks. The container
-     starts hidden pre-boot — pointer-events is gated by .is-booted
-     below so the buttons don't catch ghost clicks while invisible. */
   pointer-events: none;
   transition:
     opacity 540ms cubic-bezier(0.4, 0, 0.2, 1) 320ms,
@@ -795,12 +811,141 @@ body[data-state-drawer-open="true"] .state-dock-hint {
   transform: translateY(-50%);
 }
 
-.gesture-guide-head {
+/* Slim glass pill — identical chrome to .state-dock for symmetry. */
+.gesture-rail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 7px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.74);
+  border: 1px solid rgba(28, 25, 23, 0.08);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.7) inset,
+    0 12px 32px -10px rgba(15, 23, 42, 0.18),
+    0 4px 12px -6px rgba(15, 23, 42, 0.08);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+}
+
+/* Each key shares the .state-dock-tab footprint. */
+.gesture-key {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: #57534e;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  transition:
+    background-color 180ms ease,
+    color 180ms ease,
+    transform 180ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.gesture-key:hover {
+  background: rgba(28, 25, 23, 0.05);
+  color: #1c1917;
+  transform: scale(1.05);
+}
+.gesture-key:active {
+  background: #1c1917;
+  color: #ffffff;
+  transform: scale(0.96);
+  transition-duration: 60ms;
+}
+.gesture-key:focus-visible {
+  outline: 2px solid rgba(37, 99, 235, 0.55);
+  outline-offset: 2px;
+}
+
+/* Icon wrapper kept as .gesture-guide-icon so the reduced-motion +
+   .gesture-trail animation rules continue to match. */
+.gesture-guide-icon {
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: inherit;
+}
+.gesture-guide-icon svg { width: 24px; height: 24px; display: block; }
+
+.gesture-rail-div {
+  width: 18px;
+  height: 1px;
+  background: rgba(28, 25, 23, 0.12);
+  margin: 1px 0;
+}
+
+/* "?" help key — reveals the legend. cursor:help signals "hover me". */
+.gesture-help {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: rgba(28, 25, 23, 0.42);
+  cursor: help;
+  -webkit-appearance: none;
+  appearance: none;
+  transition: background-color 180ms ease, color 180ms ease;
+}
+.gesture-help svg { width: 17px; height: 17px; display: block; }
+.gesture-guide:hover .gesture-help,
+.gesture-guide:focus-within .gesture-help {
+  background: rgba(28, 25, 23, 0.06);
+  color: #1c1917;
+}
+
+/* Legend popover — opens to the LEFT of the rail (into the gutter).
+   Read-only: stays pointer-events:none so the hover gap between rail
+   and card never matters (you read it, you don't reach into it). */
+.gesture-pop {
+  position: absolute;
+  right: calc(100% + 10px);
+  top: 50%;
+  width: 188px;
+  transform: translate(8px, -50%);
+  padding: 13px 14px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(28, 25, 23, 0.08);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.7) inset,
+    0 16px 40px -12px rgba(15, 23, 42, 0.22),
+    0 4px 12px -6px rgba(15, 23, 42, 0.08);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 200ms ease,
+    transform 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 5;
+}
+.gesture-guide:hover .gesture-pop,
+.gesture-guide:focus-within .gesture-pop {
+  opacity: 1;
+  transform: translate(0, -50%);
+}
+.gesture-pop-head {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   gap: 8px;
-  padding: 0 2px 9px;
+  padding: 0 1px 9px;
   border-bottom: 1px solid rgba(28, 25, 23, 0.07);
   margin-bottom: 9px;
 }
@@ -816,148 +961,38 @@ body[data-state-drawer-open="true"] .state-dock-hint {
   text-transform: uppercase;
   color: #2563eb;
 }
-
-.gesture-guide-list {
+.gesture-pop-list {
   list-style: none;
   margin: 0;
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 8px;
 }
-.gesture-guide-list > li { display: block; }
-
-/* Each row is now a real <button> — clicking anywhere on the row
-   (icon + label) fires the corresponding hardware-key action via
-   scripts/boot-hero.js. Reset native chrome, lay out like a flex
-   row with the icon on the left. */
-.gesture-guide-item {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  width: 100%;
-  padding: 5px 6px;
-  border: 0;
-  border-radius: 10px;
-  background: transparent;
-  color: inherit;
-  cursor: pointer;
-  text-align: left;
-  font: inherit;
-  -webkit-appearance: none;
-  appearance: none;
-  transition:
-    background-color 160ms ease,
-    transform 120ms cubic-bezier(0.4, 0, 0.2, 1);
-}
-.gesture-guide-item:hover {
-  background: rgba(28, 25, 23, 0.06);
-}
-.gesture-guide-item:hover .gesture-guide-icon {
-  border-color: rgba(28, 25, 23, 0.28);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.95),
-    0 2px 6px rgba(15, 23, 42, 0.1);
-}
-.gesture-guide-item:hover .gesture-guide-label {
-  color: #1c1917;
-}
-.gesture-guide-item:active {
-  background: rgba(28, 25, 23, 0.12);
-  transform: scale(0.98);
-  transition-duration: 60ms;
-}
-.gesture-guide-item:active .gesture-guide-icon {
-  background: #1c1917;
-  color: #ffffff;
-  border-color: #1c1917;
-  box-shadow:
-    inset 0 1px 2px rgba(0, 0, 0, 0.45),
-    0 0 0 transparent;
-}
-.gesture-guide-item:focus-visible {
-  outline: 2px solid rgba(37, 99, 235, 0.55);
-  outline-offset: 1px;
-}
-
-/* Hint-only variant: not a hardware-key button, just a visual reminder
-   that the desktop pager responds to horizontal swipe/drag. Suppress
-   pointer-affordances (cursor, hover/active background) so it reads as
-   informational text rather than an interactive control. */
-.gesture-guide-item--hint {
-  cursor: default;
-}
-.gesture-guide-item--hint:hover,
-.gesture-guide-item--hint:active {
-  background: transparent;
-  transform: none;
-}
-.gesture-guide-item--hint:hover .gesture-guide-icon,
-.gesture-guide-item--hint:active .gesture-guide-icon {
-  background: #ffffff;
-  color: #1c1917;
-  border-color: rgba(28, 25, 23, 0.14);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.95),
-    0 1px 2px rgba(15, 23, 42, 0.06);
-}
-.gesture-guide-item--hint:hover .gesture-guide-label {
-  color: #1c1917;
-}
-
-.gesture-guide-icon {
-  flex: 0 0 auto;
-  width: 34px;
-  height: 34px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 9px;
-  /* Solid fill + 1px stone border + soft top highlight reads as a
-     physical key, not a tag/badge. Matches the existing app icons in
-     the simulator below. */
-  background: #ffffff;
-  border: 1px solid rgba(28, 25, 23, 0.14);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.95),
-    0 1px 2px rgba(15, 23, 42, 0.06);
-  color: #1c1917;
-  transition: background-color 160ms ease, color 160ms ease,
-    border-color 160ms ease, box-shadow 160ms ease;
-}
-.gesture-guide-icon svg {
-  width: 24px;
-  height: 24px;
-  display: block;
-}
-.gesture-guide-text {
+.gesture-pop-list > li {
   display: flex;
   flex-direction: column;
   gap: 1px;
-  min-width: 0;
 }
-.gesture-guide-label {
+.gesture-pop-k {
   font: 600 11.5px/1.2 'Inter', system-ui, sans-serif;
   color: #1c1917;
-  transition: color 160ms ease;
 }
-.gesture-guide-desc {
+.gesture-pop-d {
   font: 400 10.5px/1.35 'Inter', system-ui, sans-serif;
   color: #78716c;
 }
 
-/* Stroke trails inside each gesture icon — repeatedly "draw" the
-   swipe path so the SVG reads as motion, not a static glyph. The
-   three items are staggered so the page doesn't pulse in unison. */
+/* Stroke trails inside each gesture icon — "draw" the swipe path so
+   the keys read as motion. Staggered so they don't pulse in unison. */
 .gesture-guide-icon .gesture-trail {
   stroke-dasharray: 22;
   stroke-dashoffset: 22;
   animation: gesture-trail 2.6s cubic-bezier(0.55, 0, 0.25, 1) infinite;
 }
-.gesture-guide-item:nth-child(1) .gesture-trail { animation-delay: 0ms; }
-.gesture-guide-item:nth-child(2) .gesture-trail { animation-delay: 700ms; }
-.gesture-guide-item:nth-child(3) .gesture-trail { animation-delay: 1400ms; }
-.gesture-guide-item:nth-child(4) .gesture-trail { animation-delay: 2100ms; }
+.gesture-key:nth-child(1) .gesture-trail { animation-delay: 0ms; }
+.gesture-key:nth-child(2) .gesture-trail { animation-delay: 700ms; }
+.gesture-key:nth-child(3) .gesture-trail { animation-delay: 1400ms; }
 @keyframes gesture-trail {
   0%   { stroke-dashoffset: 22; opacity: 0; }
   18%  { opacity: 1; }
@@ -1647,37 +1682,36 @@ textarea.studio-input {
 /* ============================================================ */
 @media (max-width: 1279px) {
   .gesture-guide {
-    position: absolute;
     left: 50%;
     right: auto;
     top: calc(100% + 14px);
     transform: translate(-50%, 0);
-    width: auto;
-    padding: 6px 12px;
-    border-radius: 999px;
   }
   .hero-demo.is-booted .gesture-guide {
     transform: translate(-50%, 0);
   }
-  /* Drop all explanatory text — only the three keys remain visible. */
-  .gesture-guide-head,
-  .gesture-guide-text {
-    display: none;
-  }
-  .gesture-guide-list {
+  /* Rail lies flat as a horizontal pill under the phone. */
+  .gesture-rail {
     flex-direction: row;
     gap: 6px;
+    padding: 6px 10px;
   }
-  .gesture-guide-item {
-    padding: 2px;
-    border-radius: 999px;
+  .gesture-rail-div {
+    width: 1px;
+    height: 18px;
+    margin: 0 2px;
   }
-  /* Row-level hover/active background made sense when the row also
-     held a text label; in icon-only mode the key itself carries all
-     the affordance, so the surrounding pill stays transparent. */
-  .gesture-guide-item:hover,
-  .gesture-guide-item:active {
-    background: transparent;
+  /* Popover opens upward, centered above the pill. */
+  .gesture-pop {
+    right: auto;
+    left: 50%;
+    top: auto;
+    bottom: calc(100% + 10px);
+    transform: translate(-50%, 8px);
+  }
+  .gesture-guide:hover .gesture-pop,
+  .gesture-guide:focus-within .gesture-pop {
+    transform: translate(-50%, 0);
   }
 
   /* Push the State Dock and its "Patch state" hint below the new
@@ -1693,4 +1727,464 @@ textarea.studio-input {
   .demo-phone-wrap {
     padding-bottom: 152px;
   }
+}
+
+/* ============================================================ */
+
+/* ============================================================ */
+/* In-browser demo agent console (scripts/agent/*). Fixed bottom   */
+/* command bar; live run state draws on the phone (overlay/HUD) +  */
+/* a right-side narration card.                                    */
+/* ============================================================ */
+
+.mg-console {
+  position: fixed;
+  left: 50%;
+  bottom: max(env(safe-area-inset-bottom), 16px);
+  transform: translateX(-50%);
+  width: min(680px, calc(100vw - 32px));
+  z-index: 70;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-family: 'Inter', system-ui, sans-serif;
+  /* Hidden until the phone is booted; fades/slides in on boot. */
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 16px);
+  transition: opacity 480ms cubic-bezier(0.4,0,0.2,1) 420ms,
+              transform 480ms cubic-bezier(0.4,0,0.2,1) 420ms;
+}
+#demo.is-booted ~ .mg-console {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(-50%, 0);
+}
+/* Hide while the visitor scrolls down to read the paper, unless a run is
+   active or the panel is open. */
+body.hero-scrolled .mg-console {
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 16px);
+}
+body.hero-scrolled .mg-console[data-run-state="running"],
+body.hero-scrolled .mg-console[data-run-state="done"] {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(-50%, 0);
+}
+
+/* Wide screens: dock the task bar to the bottom-RIGHT corner so the
+   bottom-center stays free for the "scroll to read paper" hint. It rests as a
+   compact pill and expands upward into the full card. */
+@media (min-width: 900px) {
+  .mg-console {
+    left: auto;
+    right: clamp(16px, 2.4vw, 40px);
+    bottom: clamp(18px, 3vh, 40px);
+    width: 300px;
+    transform: translateY(14px);
+  }
+  .mg-console[data-collapsed="true"] { width: auto; }
+  #demo.is-booted ~ .mg-console { transform: translateY(0); }
+  body.hero-scrolled .mg-console { transform: translateY(14px); }
+  body.hero-scrolled .mg-console[data-run-state="running"],
+  body.hero-scrolled .mg-console[data-run-state="done"] { transform: translateY(0); }
+
+  /* Two rows in the narrow corner card: the input gets its own full-width
+     row, with Run/Stop + gear on the row beneath — no more squeeze. The
+     `.mg-console` prefix keeps these winning over the base bar rules that
+     come later in the file. */
+  .mg-console .mg-console-row { flex-wrap: wrap; }
+  .mg-console .mg-console-input { flex: 1 1 100%; }
+  .mg-console .mg-agent-btn-run,
+  .mg-console .mg-agent-btn-stop { flex: 1 1 auto; }
+  .mg-console .mg-console-iconbtn { flex: 0 0 auto; }
+}
+
+/* ---- command bar ---- */
+.mg-console-bar {
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid #e7e5e4;
+  border-radius: 16px;
+  box-shadow: 0 12px 30px -12px rgba(0,0,0,0.22), 0 4px 10px -6px rgba(0,0,0,0.12);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.mg-console-meta { display: flex; align-items: center; gap: 8px; }
+/* Collapse toggle: folds the input + chips away, leaving the slim status
+   header so the bar stops covering the phone. */
+.mg-console-collapse {
+  flex: 0 0 auto; width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center;
+  border: none; background: none; color: #a8a29e; cursor: pointer; border-radius: 7px;
+  transition: background 0.15s, color 0.15s;
+}
+.mg-console-collapse:hover { background: #f5f5f4; color: #1c1917; }
+.mg-console-collapse svg { transition: transform 0.2s ease; }
+.mg-console[data-collapsed="true"] .mg-console-collapse svg { transform: rotate(180deg); }
+.mg-console[data-collapsed="true"] .mg-console-row,
+.mg-console[data-collapsed="true"] .mg-console-chips { display: none; }
+.mg-console-eyebrow {
+  font-size: 0.62rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  color: #16a34a; flex: 0 0 auto; display: inline-flex; align-items: center; gap: 5px;
+}
+.mg-console-eyebrow-dot {
+  width: 6px; height: 6px; border-radius: 999px; background: #d6d3d1; flex: 0 0 auto;
+}
+.mg-console[data-run-state="running"] .mg-console-eyebrow-dot {
+  background: #22c55e; animation: mg-eyebrow-pulse 1.5s ease-out infinite;
+}
+.mg-console[data-run-state="done"] .mg-console-eyebrow-dot { background: #16a34a; }
+@keyframes mg-eyebrow-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(34,197,94,0.45); }
+  70% { box-shadow: 0 0 0 5px rgba(34,197,94,0); }
+  100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); }
+}
+.mg-console-status {
+  font-size: 0.78rem; color: #57534e; flex: 1; min-width: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.mg-console-status[data-kind="running"] { color: #166534; }
+.mg-console-status[data-kind="ok"] { color: #166534; }
+.mg-console-status[data-kind="warn"] { color: #b45309; }
+.mg-console-status[data-kind="error"] { color: #b91c1c; }
+
+.mg-console-row { display: flex; align-items: center; gap: 8px; }
+.mg-console-input {
+  flex: 1; min-width: 0; height: 40px; padding: 0 12px;
+  border: 1px solid #d6d3d1; border-radius: 10px; background: #fff;
+  font-size: 0.9rem; color: #1c1917; font-family: inherit;
+}
+.mg-console-input:focus { outline: none; border-color: #22c55e; box-shadow: 0 0 0 3px rgba(34,197,94,0.15); }
+.mg-console-input:disabled { background: #f5f5f4; color: #78716c; }
+
+.mg-console-iconbtn {
+  flex: 0 0 auto; width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid #d6d3d1; border-radius: 10px; background: #fff; color: #57534e; cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.mg-console-iconbtn:hover { background: #f5f5f4; color: #1c1917; }
+
+.mg-console-chips {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  max-height: 64px; opacity: 1; overflow: hidden;
+  transition: max-height 260ms cubic-bezier(0.4,0,0.2,1), opacity 180ms ease, margin-top 220ms ease;
+}
+/* Collapse the example chips once the user has typed something or a run is
+   active — discovery affordances, not permanent chrome. */
+.mg-console[data-empty="false"] .mg-console-chips,
+.mg-console[data-run-state="running"] .mg-console-chips {
+  max-height: 0; opacity: 0; margin-top: -8px; pointer-events: none;
+}
+.mg-agent-chip {
+  font-family: inherit; font-size: 0.72rem; color: #44403c;
+  background: #f5f5f4; border: 1px solid #e7e5e4; border-radius: 999px;
+  padding: 3px 10px; cursor: pointer; transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.mg-agent-chip:hover:not(:disabled) { background: #ecfdf5; border-color: #86efac; color: #166534; }
+.mg-agent-chip:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ---- shared buttons ---- */
+.mg-agent-btn {
+  font-family: inherit; font-weight: 600; font-size: 0.88rem; white-space: nowrap;
+  border-radius: 10px; padding: 0 18px; height: 40px; border: 1px solid transparent; cursor: pointer;
+  transition: background 0.15s, opacity 0.15s;
+}
+.mg-agent-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.mg-agent-btn-run { background: #16a34a; color: #fff; }
+.mg-agent-btn-run:hover:not(:disabled) { background: #15803d; }
+.mg-agent-btn-stop { background: #dc2626; color: #fff; }
+.mg-agent-btn-stop:hover:not(:disabled) { background: #b91c1c; }
+.mg-agent-btn-sm { height: 32px; padding: 0 14px; font-size: 0.8rem; background: #292524; color: #fff; }
+.mg-agent-btn-sm:hover:not(:disabled) { background: #1c1917; }
+.mg-agent-btn-ghost { background: transparent; color: #57534e; border-color: #d6d3d1; }
+.mg-agent-btn-ghost:hover:not(:disabled) { background: #f5f5f4; }
+
+/* ---- close button (shared by the settings sheet head) ---- */
+.mg-console-close {
+  width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center;
+  border: none; background: none; color: #a8a29e; cursor: pointer; border-radius: 8px;
+}
+.mg-console-close:hover { background: #f5f5f4; color: #1c1917; }
+
+/* ============================================================ */
+/* Phone-attached live-run chrome. The phone is the star; these  */
+/* elements mount on .phone-rig (persistent across power cycles) */
+/* and are driven by body[data-agent-run="idle|running|done"].   */
+/* ============================================================ */
+
+/* While a run is live or its result is on screen, the side docks retreat so
+   the narration card + on-glass marks own the stage (the narration card shares
+   the dock's right-edge anchor). Out-specifies `.hero-demo.is-booted
+   .state-dock` via :is(). Restored once the narration is dismissed (idle). */
+body:is([data-agent-run="running"], [data-agent-run="done"]) .hero-demo.is-booted
+  :is(.state-dock, .gesture-guide, .state-dock-hint) {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 280ms ease;
+}
+
+/* ---- on-glass action overlay (cursor / ripple / swipe trail) ---- */
+.mg-ov {
+  position: absolute; inset: 0; z-index: 5;
+  border-radius: 44px; overflow: hidden; pointer-events: none;
+}
+.mg-ov-cursor {
+  position: absolute; left: 0; top: 0; width: 28px; height: 28px; border-radius: 999px;
+  background: radial-gradient(circle at 50% 50%, rgba(34,197,94,0.32), rgba(34,197,94,0.04) 70%);
+  border: 1.5px solid rgba(22,163,74,0.9);
+  box-shadow: 0 0 0 4px rgba(34,197,94,0.12), 0 4px 12px -2px rgba(0,0,0,0.28);
+  transition: transform 380ms cubic-bezier(0.33, 0, 0.2, 1);
+  will-change: transform;
+}
+.mg-ov-cursor.is-gone { opacity: 0; transition: opacity 380ms ease; }
+.mg-ov-ripple {
+  position: absolute; width: 20px; height: 20px; margin: -10px 0 0 -10px; border-radius: 999px;
+  border: 2px solid rgba(22,163,74,0.92); background: rgba(34,197,94,0.18);
+  animation: mg-ov-ripple 680ms cubic-bezier(0.2, 0.6, 0.2, 1) forwards;
+}
+.mg-ov-ripple[data-kind="long"] { animation-duration: 920ms; }
+@keyframes mg-ov-ripple {
+  0% { transform: scale(0.4); opacity: 0.9; }
+  100% { transform: scale(3.6); opacity: 0; }
+}
+.mg-ov-trail { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.mg-ov-line {
+  fill: none; stroke: rgba(22,163,74,0.92); stroke-width: 3; stroke-linecap: round;
+  stroke-dasharray: 1; stroke-dashoffset: 1; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
+  animation: mg-ov-draw 460ms ease forwards;
+}
+@keyframes mg-ov-draw { to { stroke-dashoffset: 0; } }
+.mg-ov-trail-head {
+  fill: none; stroke: rgba(22,163,74,0.95); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round;
+  opacity: 0; animation: mg-ov-head-in 200ms ease 380ms forwards;
+}
+@keyframes mg-ov-head-in { to { opacity: 1; } }
+
+/* ---- HUD status pill on the phone ---- */
+.mg-hud {
+  position: absolute; top: 12px; left: 50%; z-index: 7;
+  display: flex; align-items: center; gap: 7px; max-width: 280px; white-space: nowrap;
+  padding: 5px 12px 5px 10px; border-radius: 999px; pointer-events: none;
+  background: rgba(24,24,27,0.82); color: #fff;
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 6px 18px -6px rgba(0,0,0,0.42);
+  font: 600 11px/1.1 'Inter', system-ui, sans-serif; letter-spacing: 0.01em;
+  opacity: 0; transform: translateX(-50%) translateY(-6px);
+  transition: opacity 260ms ease, transform 260ms ease;
+}
+body[data-agent-run="running"] .mg-hud,
+body[data-agent-run="done"] .mg-hud {
+  opacity: 1; transform: translateX(-50%) translateY(0);
+}
+.mg-hud-text { overflow: hidden; text-overflow: ellipsis; }
+.mg-hud-dot {
+  width: 7px; height: 7px; border-radius: 999px; background: #22c55e; flex: 0 0 auto;
+  animation: mg-hud-pulse 1.6s ease-out infinite;
+}
+.mg-hud[data-kind="warn"] .mg-hud-dot { background: #f59e0b; }
+.mg-hud[data-kind="error"] .mg-hud-dot { background: #ef4444; animation: none; }
+.mg-hud[data-kind="ok"] .mg-hud-dot { background: #22c55e; animation: none; }
+.mg-hud[data-kind="idle"] .mg-hud-dot { background: #a1a1aa; animation: none; }
+@keyframes mg-hud-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(34,197,94,0.5); }
+  70% { box-shadow: 0 0 0 6px rgba(34,197,94,0); }
+  100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); }
+}
+
+/* ---- live narration card (floats off the phone's right edge) ---- */
+.mg-narr {
+  position: absolute; left: calc(100% + 18px); top: 0; width: 300px; z-index: 6;
+  transform-origin: top left;
+  transform: scale(calc(1 / var(--phone-scale, 1))) translateX(10px);
+  display: flex; flex-direction: column; gap: 10px;
+  padding: 14px 14px 10px;
+  background: rgba(255,255,255,0.9);
+  backdrop-filter: blur(16px) saturate(140%); -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border: 1px solid rgba(28,25,23,0.10); border-radius: 16px;
+  box-shadow: 0 18px 40px -16px rgba(15,23,42,0.22), 0 6px 14px -8px rgba(15,23,42,0.12);
+  font-family: 'Inter', system-ui, sans-serif;
+  opacity: 0; pointer-events: none;
+  transition: opacity 320ms ease, transform 360ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+body[data-agent-run="running"] .mg-narr,
+body[data-agent-run="done"] .mg-narr {
+  opacity: 1; pointer-events: auto;
+  transform: scale(calc(1 / var(--phone-scale, 1))) translateX(0);
+}
+.mg-narr-answer {
+  font-size: 0.84rem; font-weight: 600; color: #14532d; line-height: 1.45;
+  padding: 9px 11px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px;
+}
+.mg-narr-head { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.mg-narr-step {
+  flex: 0 0 auto; font: 700 0.72rem/1 'Inter', system-ui, sans-serif; color: #fff;
+  background: #1c1917; border-radius: 999px; padding: 4px 9px; letter-spacing: 0.02em;
+}
+.mg-narr-action {
+  flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-family: 'JetBrains Mono','SF Mono',monospace; font-size: 0.72rem; color: #1c1917;
+  background: #f5f5f4; border: 1px solid #e7e5e4; border-radius: 6px; padding: 2px 8px;
+}
+.mg-narr-action[data-type="COMPLETE"] { color: #166534; background: #f0fdf4; border-color: #86efac; }
+.mg-narr-action[data-type="ABORT"],
+.mg-narr-action[data-type="NOOP"] { color: #b91c1c; background: #fef2f2; border-color: #fecaca; }
+.mg-narr-action[data-type="ANSWER"] { color: #1e40af; background: #eff6ff; border-color: #bfdbfe; }
+.mg-narr-dismiss {
+  flex: 0 0 auto; width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center;
+  border: none; background: none; color: #a8a29e; cursor: pointer; border-radius: 7px;
+  transition: background 0.15s, color 0.15s;
+}
+.mg-narr-dismiss:hover { background: #f5f5f4; color: #1c1917; }
+.mg-narr-think {
+  margin: 0; font-size: 0.82rem; line-height: 1.55; color: #44403c; white-space: pre-wrap;
+  min-height: 1.55em; transition: opacity 140ms ease;
+  max-height: 10.85em; overflow-y: auto; padding-right: 4px; scrollbar-width: thin;
+}
+.mg-narr-think::-webkit-scrollbar { width: 6px; }
+.mg-narr-think::-webkit-scrollbar-thumb { background: #d6d3d1; border-radius: 999px; }
+.mg-narr-think.is-fading { opacity: 0; }
+.mg-narr-tl-toggle {
+  display: flex; align-items: center; gap: 8px; width: 100%; cursor: pointer;
+  background: none; border: none; border-top: 1px solid #f0efed; margin-top: 2px; padding: 9px 0 3px;
+  font: 600 0.7rem/1 'Inter', system-ui, sans-serif; color: #78716c;
+}
+.mg-narr-count { flex: 0 0 auto; }
+.mg-narr-ticks { display: flex; flex-wrap: wrap; gap: 3px; flex: 1 1 auto; min-width: 0; }
+.mg-narr-tick { width: 6px; height: 6px; border-radius: 2px; background: #d6d3d1; }
+.mg-narr-tick[data-type="COMPLETE"] { background: #22c55e; }
+.mg-narr-tick[data-type="ANSWER"] { background: #3b82f6; }
+.mg-narr-tick[data-type="ABORT"],
+.mg-narr-tick[data-type="NOOP"] { background: #ef4444; }
+.mg-narr-tl-chev { flex: 0 0 auto; color: #a8a29e; transition: transform 200ms ease; }
+.mg-narr-tl-toggle[aria-expanded="true"] .mg-narr-tl-chev { transform: rotate(180deg); }
+.mg-narr-tl { display: flex; gap: 6px; overflow-x: auto; padding: 8px 0 2px; scrollbar-width: thin; }
+.mg-narr-frame {
+  position: relative; flex: 0 0 auto; width: 46px; height: 102px; padding: 0; cursor: pointer;
+  border: 1px solid #e7e5e4; border-radius: 7px; overflow: hidden; background: #000;
+}
+.mg-narr-frame img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.mg-narr-frame.is-active { border-color: #16a34a; box-shadow: 0 0 0 2px rgba(34,197,94,0.3); }
+.mg-narr-frame-num {
+  position: absolute; left: 3px; top: 3px; font: 700 9px/1 'Inter', system-ui, sans-serif;
+  color: #fff; background: rgba(0,0,0,0.55); border-radius: 4px; padding: 2px 4px;
+}
+
+/* ---- settings sheet (desktop right drawer / mobile bottom sheet) ----
+   Lives at body level so it isn't trapped by #agent-console's transform. */
+.mg-sheet { position: fixed; inset: 0; z-index: 95; }
+.mg-sheet[hidden] { display: none; }
+.mg-sheet-backdrop {
+  position: absolute; inset: 0; background: rgba(15,23,42,0.32);
+  backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);
+  opacity: 0; transition: opacity 240ms ease;
+}
+.mg-sheet[data-open="true"] .mg-sheet-backdrop { opacity: 1; }
+.mg-sheet-panel {
+  position: absolute; top: 0; right: 0; height: 100%; width: min(400px, 92vw);
+  display: flex; flex-direction: column; background: #fff;
+  box-shadow: -24px 0 60px -24px rgba(15,23,42,0.4);
+  transform: translateX(100%);
+  transition: transform 300ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+.mg-sheet[data-open="true"] .mg-sheet-panel { transform: translateX(0); }
+.mg-sheet-grab { display: none; }
+.mg-sheet-head {
+  flex: 0 0 auto; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+  padding: 20px 20px 14px; border-bottom: 1px solid #f0efed;
+}
+.mg-sheet-title { margin: 0; font: 700 1rem/1.2 'Inter', system-ui, sans-serif; color: #1c1917; }
+.mg-sheet-sub { margin: 4px 0 0; font: 400 0.74rem/1.4 'Inter', system-ui, sans-serif; color: #a8a29e; }
+.mg-sheet-body {
+  flex: 1 1 auto; overflow-y: auto; padding: 18px 20px;
+  display: flex; flex-direction: column; gap: 18px;
+}
+.mg-sheet-foot {
+  flex: 0 0 auto; display: flex; align-items: center; gap: 10px;
+  padding: 13px 20px; border-top: 1px solid #f0efed; background: #fafaf9;
+}
+.mg-field-group { display: flex; flex-direction: column; gap: 7px; }
+.mg-field-label {
+  font: 700 0.64rem/1 'Inter', system-ui, sans-serif; letter-spacing: 0.1em;
+  text-transform: uppercase; color: #a8a29e;
+}
+.mg-field-select {
+  width: 100%; padding: 9px 10px; border: 1px solid #d6d3d1; border-radius: 9px;
+  font: 0.86rem/1.2 'Inter', system-ui, sans-serif; color: #1c1917; background: #fff;
+}
+.mg-field-select:focus { outline: none; border-color: #22c55e; box-shadow: 0 0 0 3px rgba(34,197,94,0.15); }
+/* tighten the reused field rows inside the grouped sheet body */
+.mg-sheet-body .mg-agent-field { margin-bottom: 0; gap: 5px; }
+.mg-sheet-body .mg-agent-blurb { margin: 0; }
+.mg-sheet-body .mg-agent-args { margin-bottom: 0; }
+.mg-sheet-body .mg-agent-foot { margin: 0; }
+
+/* Narrow viewports: no room for a side card (and .hero-demo clips overflow) —
+   dock the narration over the phone's lower screen as a compact translucent
+   card, at native (un-counter-scaled) size. */
+@media (max-width: 1024px) {
+  .mg-narr {
+    left: 10px; right: 10px; top: auto; bottom: 70px; width: auto;
+    transform: none !important; max-height: 46%; overflow-y: auto;
+    background: rgba(255,255,255,0.95);
+  }
+  .mg-narr-think { max-height: 7.75em; }
+}
+
+/* Phones: the settings drawer becomes a bottom sheet with a grab handle. */
+@media (max-width: 640px) {
+  .mg-sheet-panel {
+    top: auto; right: 0; bottom: 0; left: 0; width: auto; height: auto; max-height: 88vh;
+    border-radius: 18px 18px 0 0;
+    transform: translateY(100%);
+    box-shadow: 0 -22px 55px -22px rgba(15,23,42,0.45);
+  }
+  .mg-sheet[data-open="true"] .mg-sheet-panel { transform: translateY(0); }
+  .mg-sheet-grab {
+    display: block; flex: 0 0 auto; width: 38px; height: 4px; border-radius: 999px;
+    background: #d6d3d1; margin: 9px auto 0;
+  }
+  .mg-sheet-head { padding-top: 12px; }
+  /* keep the narration clear of the on-screen keyboard / short phones */
+  .mg-narr { bottom: 64px; max-height: 40%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mg-ov-cursor { transition: none; }
+  .mg-ov-ripple { animation-duration: 300ms; }
+  .mg-ov-line { animation-duration: 1ms; }
+  .mg-ov-trail-head { animation-delay: 0ms; }
+  .mg-hud-dot { animation: none; }
+  .mg-console-eyebrow-dot { animation: none !important; }
+}
+
+/* ---- model settings ---- */
+.mg-agent-note { font-size: 0.78rem; color: #78716c; line-height: 1.5; margin: 0 0 10px; }
+.mg-agent-field { display: flex; flex-direction: column; gap: 4px; font-size: 0.78rem; color: #44403c; margin-bottom: 10px; }
+.mg-agent-field input, .mg-agent-field select {
+  padding: 7px 9px; border: 1px solid #d6d3d1; border-radius: 8px; font-size: 0.84rem; color: #1c1917;
+  font-family: 'JetBrains Mono','SF Mono',monospace; background: #fff;
+}
+.mg-agent-field select { font-family: 'Inter', system-ui, sans-serif; }
+.mg-agent-field input:focus, .mg-agent-field select:focus { outline: none; border-color: #22c55e; box-shadow: 0 0 0 3px rgba(34,197,94,0.15); }
+.mg-agent-blurb,
+.mg-agent-fwblurb { font-size: 0.72rem; color: #a8a29e; margin: -4px 0 10px; font-family: 'JetBrains Mono','SF Mono',monospace; }
+.mg-agent-args { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 10px; margin-bottom: 12px; }
+.mg-agent-arg { display: flex; flex-direction: column; gap: 4px; font-size: 0.74rem; color: #57534e; }
+.mg-agent-arg input {
+  padding: 6px 8px; border: 1px solid #d6d3d1; border-radius: 8px; font-size: 0.82rem;
+  font-family: 'JetBrains Mono','SF Mono',monospace; color: #1c1917;
+}
+.mg-agent-arg input:focus { outline: none; border-color: #22c55e; box-shadow: 0 0 0 3px rgba(34,197,94,0.15); }
+.mg-agent-settings-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.mg-agent-cfg-status { font-size: 0.76rem; color: #57534e; }
+.mg-agent-foot { font-size: 0.72rem; color: #a8a29e; line-height: 1.5; margin: 10px 0 0; }
+
+@media (max-width: 520px) {
+  .mg-agent-args { grid-template-columns: 1fr; }
+  .mg-console-eyebrow { display: none; }
 }
