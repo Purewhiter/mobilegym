@@ -15,6 +15,16 @@ function resolveUrl(baseUrl) {
   return /\/chat\/completions$/.test(base) ? base : `${base}/chat/completions`;
 }
 
+function isManagedMobileGymProxy(url) {
+  try {
+    const base = globalThis.location?.href || 'https://mobilegym.dev/';
+    const u = new URL(url, base);
+    return u.hostname === 'api.mobilegym.dev' && u.pathname.startsWith('/ai/v1/');
+  } catch {
+    return false;
+  }
+}
+
 function mergeReasoningIntoContent(content, reasoning) {
   const base = String(content || '');
   const r = String(reasoning || '');
@@ -122,7 +132,9 @@ export async function chat(cfg, messages, opts = {}) {
   const stream = Boolean(body.stream);
 
   const headers = { 'Content-Type': 'application/json' };
-  if (cfg.apiKey) headers.Authorization = `Bearer ${cfg.apiKey}`;
+  if (cfg.apiKey && !isManagedMobileGymProxy(url)) {
+    headers.Authorization = `Bearer ${cfg.apiKey}`;
+  }
 
   const bodyText = JSON.stringify(body);
   const bodyBytes = new TextEncoder().encode(bodyText).byteLength;
