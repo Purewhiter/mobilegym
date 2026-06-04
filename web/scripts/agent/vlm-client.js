@@ -112,6 +112,34 @@ function formatBytes(bytes) {
   return `${(n / 1024 / 1024).toFixed(2)} MB`;
 }
 
+function parseJsonText(text) {
+  if (!text) return null;
+  try {
+    const parsed = JSON.parse(text);
+    return parsed && typeof parsed === 'object' ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+function t(key, params, fallback) {
+  return globalThis.I18N?.t ? globalThis.I18N.t(key, params) : fallback;
+}
+
+function formatRetryAfter(seconds) {
+  const zh = globalThis.I18N?.lang === 'zh';
+  const n = Number(seconds);
+  if (!Number.isFinite(n) || n <= 0) return zh ? '几分钟' : 'a few minutes';
+  if (n < 60) {
+    const secondsRounded = Math.ceil(n);
+    return zh ? `${secondsRounded}秒` : `${secondsRounded} second${secondsRounded === 1 ? '' : 's'}`;
+  }
+  const minutes = Math.ceil(n / 60);
+  if (minutes < 60) return zh ? `${minutes}分钟` : `${minutes} minute${minutes === 1 ? '' : 's'}`;
+  const hours = Math.ceil(minutes / 60);
+  return zh ? `${hours}小时` : `${hours} hour${hours === 1 ? '' : 's'}`;
+}
+
 /**
  * @param {{baseUrl:string, model:string, apiKey:string}} cfg
  * @param {Array} messages OpenAI-format messages (content may be string or parts[])
@@ -161,6 +189,7 @@ export async function chat(cfg, messages, opts = {}) {
     try {
       detail = await resp.text();
     } catch { /* ignore */ }
+    const errorBody = parseJsonText(detail);
     try {
       console.error('[agent-vlm] request failed', {
         status: resp.status,
@@ -174,6 +203,15 @@ export async function chat(cfg, messages, opts = {}) {
         detail,
       });
     } catch { /* ignore */ }
+    if (resp.status === 429) {
+      const retryAfter = errorBody?.retry_after ?? resp.headers.get('Retry-After');
+      const wait = formatRetryAfter(retryAfter);
+      throw new Error(t(
+        'error.rateLimit',
+        { wait },
+        `Public demo agent limit reached. Please wait about ${wait} and try again, or switch to your own model endpoint/API key in Settings.`,
+      ));
+    }
     const hint = resp.status === 404
       ? ` — the path doesn't exist at this base. Check the URL (it should resolve to ${url}).`
       : '';

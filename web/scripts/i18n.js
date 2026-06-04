@@ -70,6 +70,7 @@
       'runner.connecting': 'Connecting to the phone…',
       'runner.thinking': 'Step {n} · thinking…',
       'runner.notReady': 'Simulator is not ready. Power on the phone and try again.',
+      'error.rateLimit': 'Public demo agent limit reached. Please wait about {wait} and try again, or switch to your own model endpoint/API key in Settings.',
 
       // HUD action verbs
       'verb.CLICK': 'tap',
@@ -173,6 +174,7 @@
       'runner.connecting': '正在连接手机…',
       'runner.thinking': '第 {n} 步 · 思考中…',
       'runner.notReady': '模拟器未就绪，请先开机后重试。',
+      'error.rateLimit': '公共 Demo Agent 已达到使用限制。请等待约{wait}后再试，或在设置中切换到你自己的模型接口/API key。',
 
       'verb.CLICK': '点击',
       'verb.DOUBLE_TAP': '双击',
