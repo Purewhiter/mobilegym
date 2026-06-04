@@ -22,8 +22,8 @@ export const MAJOR_CITIES: WeatherCityDefinition[] = [
   { id: 'taiyuan', name: '\u592a\u539f\u5e02', lon: 112.5492, lat: 37.857 },
   { id: 'shijiazhuang', name: '\u77f3\u5bb6\u5e84\u5e02', lon: 114.5149, lat: 38.0428 },
   { id: 'shenyang', name: '\u6c88\u9633\u5e02', lon: 123.4315, lat: 41.8057 },
-  { id: 'chongqing', name: '\u91cd\u5e86\u5e02', lon: 106.5516, lat: 29.563 },
-  { id: 'tianjin', name: '\u5929\u6d25\u5e02', lon: 117.2, lat: 39.0842 },
+  { id: 'chongqing', name: '\u91cd\u5e86\u5e02', lon: 106.5518, lat: 29.5627 },
+  { id: 'tianjin', name: '\u5929\u6d25\u5e02', lon: 117.2015, lat: 39.0853 },
 ];
 
 export const WEATHER_CONSTANTS = {

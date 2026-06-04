@@ -137,11 +137,23 @@ type QWeatherHistoricalWeatherResponse = {
 
 export type { WeatherBundle, AirQualityForecastDay } from '../types';
 
+type WeatherLookupOptions = {
+  dailysteps?: number;
+  hourlysteps?: number;
+  alert?: boolean;
+  cityId?: string;
+};
+
 const makeRequestKey = (lonLat: string, opts: { dailysteps?: number; hourlysteps?: number; alert?: boolean }) => {
   const d = opts.dailysteps ?? 15;
   const h = opts.hourlysteps ?? 24;
   const a = opts.alert ?? true;
   return `${lonLat}|d=${d}|h=${h}|a=${a ? 1 : 0}`;
+};
+
+const normalizeLibraryCityId = (cityId?: string): string | undefined => {
+  const id = String(cityId ?? '').trim();
+  return id && id !== 'located' ? id : undefined;
 };
 
 const splitLonLat = (lonLat: string): { lon: string; lat: string } => {
@@ -382,14 +394,19 @@ const qw = {
 
 export const getWeatherBundle = async (
   lonLat: string,
-  opts: { dailysteps?: number; hourlysteps?: number; alert?: boolean } = {}
+  opts: WeatherLookupOptions = {}
 ): Promise<WeatherBundle> => {
-  const cached = findLibraryBundle(lonLat);
+  const libraryCityId = normalizeLibraryCityId(opts.cityId);
+  const cached = findLibraryBundle(lonLat, libraryCityId);
   if (cached) return cached;
 
   const requestKey = makeRequestKey(lonLat, opts);
   const inflight = BUNDLE_INFLIGHT.get(requestKey);
-  if (inflight) return inflight;
+  if (inflight) {
+    const bundle = await inflight;
+    if (libraryCityId) saveToLibrary(lonLat, { bundle }, libraryCityId);
+    return bundle;
+  }
 
   const task = (async () => {
     const { lon, lat } = splitLonLat(lonLat);
@@ -415,7 +432,7 @@ export const getWeatherBundle = async (
     }
 
     const bundle: WeatherBundle = { now, daily, hourly, indices, warnings, airQuality, minutely };
-    saveToLibrary(lonLat, { bundle });
+    saveToLibrary(lonLat, { bundle }, libraryCityId);
     return bundle;
   })();
 
@@ -427,8 +444,12 @@ export const getWeatherBundle = async (
   }
 };
 
-export const getAirQualityDailyForecast = async (lonLat: string): Promise<AirQualityForecastDay[]> => {
-  const cached = findLibraryAirForecast(lonLat);
+export const getAirQualityDailyForecast = async (
+  lonLat: string,
+  cityId?: string,
+): Promise<AirQualityForecastDay[]> => {
+  const libraryCityId = normalizeLibraryCityId(cityId);
+  const cached = findLibraryAirForecast(lonLat, libraryCityId);
   if (cached) return cached;
 
   const { lon, lat } = splitLonLat(lonLat);
@@ -444,15 +465,17 @@ export const getAirQualityDailyForecast = async (lonLat: string): Promise<AirQua
       primaryPollutant: summary.primaryPollutant,
     };
   }).filter((day) => day.category || day.aqi);
-  saveToLibrary(lonLat, { airQualityForecast: result });
+  saveToLibrary(lonLat, { airQualityForecast: result }, libraryCityId);
   return result;
 };
 
 export const getHistoricalWeatherDay = async (
   lonLat: string,
   date: Date,
+  cityId?: string,
 ): Promise<WeatherDaily | null> => {
-  const cached = findLibraryHistorical(lonLat);
+  const libraryCityId = normalizeLibraryCityId(cityId);
+  const cached = findLibraryHistorical(lonLat, libraryCityId);
   if (cached) return cached;
 
   const locationId = await resolveLocationIdFromLonLat(lonLat);
@@ -461,7 +484,7 @@ export const getHistoricalWeatherDay = async (
     date: formatDateParam(date),
   });
   const result = normalizeHistoricalDaily(data);
-  saveToLibrary(lonLat, { historicalYesterday: result });
+  saveToLibrary(lonLat, { historicalYesterday: result }, libraryCityId);
   return result;
 };
 

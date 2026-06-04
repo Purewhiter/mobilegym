@@ -15,10 +15,13 @@
  *   const url = `${REDBOOK_CDN}/avatars/foo.jpg`;
  */
 
-const CDN_BASE = (
-  (import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env?.VITE_CDN_BASE
-  ?? '/cdn'
-).replace(/\/+$/, '');
+export function resolveCdnBase(raw: string | undefined): string {
+  return (raw?.trim() || '/cdn').replace(/\/+$/, '');
+}
+
+const CDN_BASE = resolveCdnBase(
+  (import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env?.VITE_CDN_BASE,
+);
 
 export function cdn(subpath: string = ''): string {
   const cleaned = subpath.replace(/^\/+/, '').replace(/\/+$/, '');

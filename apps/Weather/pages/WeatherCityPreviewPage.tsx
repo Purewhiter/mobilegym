@@ -134,7 +134,12 @@ const WeatherCityPreviewPage: React.FC = () => {
     (async () => {
       try {
         const lonLat = `${cityDef.lon},${cityDef.lat}`;
-        const result = await getWeatherBundle(lonLat, { dailysteps: 15, hourlysteps: 24, alert: true });
+        const result = await getWeatherBundle(lonLat, {
+          dailysteps: 15,
+          hourlysteps: 24,
+          alert: true,
+          cityId: cityDef.id,
+        });
         if (!cancelled) setBundle(result);
       } catch (error) {
         console.error('Failed to fetch preview weather', error);

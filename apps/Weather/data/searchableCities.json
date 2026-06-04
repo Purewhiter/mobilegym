@@ -365,8 +365,8 @@
     "adm1": "重庆",
     "adm2": "重庆市",
     "pinyin": "chongqing",
-    "lon": 106.546,
-    "lat": 29.5489
+    "lon": 106.5518,
+    "lat": 29.5627
   },
   {
     "id": "chongqingjiaoxian",
@@ -374,8 +374,8 @@
     "adm1": "重庆",
     "adm2": "重庆郊县",
     "pinyin": "chongqingjiaoxian",
-    "lon": 106.546,
-    "lat": 29.5489
+    "lon": 106.5518,
+    "lat": 29.5627
   },
   {
     "id": "chongzuo",
@@ -1517,8 +1517,8 @@
     "adm1": "江苏",
     "adm2": "南京市",
     "pinyin": "nanjing",
-    "lon": 118.7975,
-    "lat": 32.0871
+    "lon": 118.7969,
+    "lat": 32.0603
   },
   {
     "id": "nanning",
@@ -1805,8 +1805,8 @@
     "adm1": "海南",
     "adm2": "三亚市",
     "pinyin": "sanya",
-    "lon": 109.4089,
-    "lat": 18.3091
+    "lon": 109.5119,
+    "lat": 18.2528
   },
   {
     "id": "shanghai",
@@ -2093,8 +2093,8 @@
     "adm1": "天津",
     "adm2": "天津市",
     "pinyin": "tianjin",
-    "lon": 117.2101,
-    "lat": 39.136
+    "lon": 117.2015,
+    "lat": 39.0853
   },
   {
     "id": "tianmen",
@@ -2246,8 +2246,8 @@
     "adm1": "湖北",
     "adm2": "武汉市",
     "pinyin": "wuhan",
-    "lon": 114.4243,
-    "lat": 30.6067
+    "lon": 114.3055,
+    "lat": 30.5928
   },
   {
     "id": "wuhu",
