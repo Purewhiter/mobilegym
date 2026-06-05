@@ -4,6 +4,10 @@
 // own AIService uses. Messages may contain multimodal content parts
 // ({type:'image_url', image_url:{url: <dataURL>}}), so the configured endpoint
 // must be a vision model.
+const TRANSIENT_ATTEMPTS = 3;
+const TRANSIENT_RETRY_DELAYS_MS = [650, 1500];
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 function resolveUrl(baseUrl) {
   const base = String(baseUrl || '').trim().replace(/\/+$/, '');
@@ -140,10 +144,14 @@ function formatRetryAfter(seconds) {
   return zh ? `${hours}小时` : `${hours} hour${hours === 1 ? '' : 's'}`;
 }
 
+function isTransientHttpStatus(status) {
+  return status === 502 || status === 503 || status === 504;
+}
+
 /**
  * @param {{baseUrl:string, model:string, apiKey:string}} cfg
  * @param {Array} messages OpenAI-format messages (content may be string or parts[])
- * @param {object} [opts] { args?: object, signal?: AbortSignal, onDelta?: Function }
+ * @param {object} [opts] { args?: object, signal?: AbortSignal, onDelta?: Function, onRetry?: Function }
  * @returns {Promise<string>} assistant message content
  */
 export async function chat(cfg, messages, opts = {}) {
@@ -168,20 +176,66 @@ export async function chat(cfg, messages, opts = {}) {
   const bodyBytes = new TextEncoder().encode(bodyText).byteLength;
 
   let resp;
-  try {
-    resp = await fetch(url, {
-      method: 'POST',
-      headers,
-      body: bodyText,
-      signal: opts.signal,
-    });
-  } catch (err) {
-    if (err && err.name === 'AbortError') throw err;
-    const detail = err && err.message ? err.message : String(err);
-    const hint = /Failed to fetch/i.test(detail)
-      ? ` No HTTP response was received; request size was ${formatBytes(bodyBytes)}. This is usually a browser/network/CORS rejection or a dropped oversized request, not a model quota error.`
-      : '';
-    throw new Error(`Network error reaching ${url}: ${detail}.${hint}`.trim());
+  for (let attempt = 1; attempt <= TRANSIENT_ATTEMPTS; attempt += 1) {
+    try {
+      resp = await fetch(url, {
+        method: 'POST',
+        headers,
+        body: bodyText,
+        signal: opts.signal,
+      });
+    } catch (err) {
+      if (err && err.name === 'AbortError') throw err;
+      const detail = err && err.message ? err.message : String(err);
+      const failedToFetch = /Failed to fetch/i.test(detail);
+      if (failedToFetch && attempt < TRANSIENT_ATTEMPTS) {
+        const delayMs = TRANSIENT_RETRY_DELAYS_MS[attempt - 1] || 1500;
+        opts.onRetry?.({
+          attempt,
+          nextAttempt: attempt + 1,
+          maxAttempts: TRANSIENT_ATTEMPTS,
+          reason: 'network',
+          delayMs,
+        });
+        await sleep(delayMs);
+        continue;
+      }
+      if (failedToFetch && isManagedMobileGymProxy(url)) {
+        throw new Error(t(
+          'error.managedProxyNetwork',
+          { attempts: TRANSIENT_ATTEMPTS },
+          `The public demo agent endpoint could not be reached after ${TRANSIENT_ATTEMPTS} attempts. It may be temporarily rate-limited or blocked by the network/CDN. Please wait a few minutes and try again, or switch to your own model endpoint/API key in Settings.`,
+        ));
+      }
+      const hint = failedToFetch
+        ? ` No HTTP response was received; request size was ${formatBytes(bodyBytes)}. This is usually a browser/network/CORS rejection or a dropped oversized request, not a model quota error.`
+        : '';
+      throw new Error(`Network error reaching ${url}: ${detail}.${hint}`.trim());
+    }
+
+    if (!resp.ok && isTransientHttpStatus(resp.status) && attempt < TRANSIENT_ATTEMPTS) {
+      const delayMs = TRANSIENT_RETRY_DELAYS_MS[attempt - 1] || 1500;
+      try {
+        console.warn('[agent-vlm] transient response; retrying', {
+          status: resp.status,
+          statusText: resp.statusText,
+          url,
+          attempt,
+          maxAttempts: TRANSIENT_ATTEMPTS,
+        });
+      } catch { /* ignore */ }
+      opts.onRetry?.({
+        attempt,
+        nextAttempt: attempt + 1,
+        maxAttempts: TRANSIENT_ATTEMPTS,
+        reason: 'http',
+        status: resp.status,
+        delayMs,
+      });
+      await sleep(delayMs);
+      continue;
+    }
+    break;
   }
 
   if (!resp.ok) {

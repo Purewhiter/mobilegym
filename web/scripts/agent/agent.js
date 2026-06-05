@@ -103,9 +103,9 @@ export class BaseAgent {
   }
 
   /** One step: { image, app, today } in -> { thought, action, raw } out. */
-  async act({ image, app, today }, { signal, onDelta } = {}) {
+  async act({ image, app, today }, { signal, onDelta, onRetry } = {}) {
     const messages = this.buildMessages({ image, app, today });
-    const content = await chat(this.cfg, messages, { args: this.args, signal, onDelta });
+    const content = await chat(this.cfg, messages, { args: this.args, signal, onDelta, onRetry });
     const { thought, action } = this.parseResponse(content);
     this.history.push({ raw: content, app, image, userComment: this.pendingComment });
     this.evictOldRecords();

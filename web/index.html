@@ -145,8 +145,6 @@
             </span>
           </button>
         </aside>
-        <span class="state-dock-hint" aria-hidden="true" data-i18n="dock.hint">Patch state</span>
-
         <!-- ============================================================ -->
         <!-- Gesture Guide — 左侧"软键盘 + 图例"二合一卡片，与右侧 State    -->
         <!-- Dock 对称。每个图标既是手势示意（SVG 内 .gesture-trail 用      -->
@@ -254,6 +252,7 @@
             </button>
           </div>
           <p id="agent-narr-think" class="mg-narr-think"></p>
+          <button type="button" id="agent-retry" class="mg-narr-retry" hidden data-i18n="console.retry">Retry</button>
           <button type="button" id="agent-narr-timeline-toggle" class="mg-narr-tl-toggle" aria-expanded="false" aria-controls="agent-narr-timeline">
             <span id="agent-narr-count" class="mg-narr-count">0 steps</span>
             <span id="agent-narr-ticks" class="mg-narr-ticks" aria-hidden="true"></span>
@@ -720,12 +719,12 @@
 <!-- AGENT CONSOLE — fixed, first-screen command bar that drives   -->
 <!-- the simulator iframe above. Logic in scripts/agent/*.         -->
 <!-- ============================================================ -->
-<div id="agent-console" class="mg-console ui" data-run-state="idle" data-collapsed="true" aria-label="Agent console">
+<div id="agent-console" class="mg-console ui" data-run-state="idle" data-collapsed="false" aria-label="Agent console">
   <div class="mg-console-bar">
     <div class="mg-console-meta">
-      <span class="mg-console-eyebrow"><span class="mg-console-eyebrow-dot" aria-hidden="true"></span><span data-i18n="console.eyebrow">Live Agent</span></span>
+      <span class="mg-console-eyebrow"><span class="mg-console-eyebrow-dot" aria-hidden="true"></span><span class="mg-console-eyebrow-text" data-i18n="console.eyebrow">Live Agent</span><span class="mg-console-compact-text" data-i18n="console.compactLabel">AI Agent</span></span>
       <span class="mg-console-status" id="agent-status" data-kind="idle" role="status" aria-live="polite" data-i18n="console.statusIdle">Type a task, then Run.</span>
-      <button type="button" id="agent-collapse" class="mg-console-collapse" data-i18n-aria="console.expandAria" aria-label="Expand task bar" aria-expanded="false">
+      <button type="button" id="agent-collapse" class="mg-console-collapse" data-i18n-aria="console.collapseAria" aria-label="Collapse task bar" aria-expanded="true">
         <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
       </button>
     </div>

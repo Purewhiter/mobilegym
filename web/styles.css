@@ -369,7 +369,7 @@ body { font-family: 'Charter', 'Georgia', serif; -webkit-font-smoothing: antiali
 }
 .hero-demo.is-booted .hero-demo-foot {
   opacity: 1;
-  transform: translate(-50%, 0);
+  transform: translate(-50%, 12px);
 }
 
 
@@ -421,7 +421,6 @@ body.hero-scrolled .hero-demo-foot {
   .hero-demo #demo-boot-btn > span:first-child::after,
   .hero-demo .state-dock,
   .state-dock-tab[data-state-dock-tab="session"]::before,
-  .state-dock-hint,
   .state-drawer,
   .gesture-guide,
   .gesture-guide-icon .gesture-trail,
@@ -735,46 +734,6 @@ body[data-state-dock-touched="true"] .state-dock-tab[data-state-dock-tab="sessio
   20%  { opacity: 0.85; }
   80%  { transform: scale(1.45); opacity: 0; }
   100% { transform: scale(1.45); opacity: 0; }
-}
-
-/* Callout below the dock pointing UP at it — only visible until
-   first interaction. Reinforces "this is clickable" without
-   relying solely on the pulse. */
-.state-dock-hint {
-  position: absolute;
-  /* Anchor under the phone right edge, slightly indented so it
-     reads as belonging to the dock column. */
-  left: calc(100% + 6px);
-  top: calc(100% + 6px);
-  width: 80px;
-  text-align: left;
-  font: 600 10.5px/1.3 'Inter', system-ui, sans-serif;
-  letter-spacing: 0.04em;
-  color: rgba(37, 99, 235, 0.82);
-  white-space: normal;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 540ms ease 700ms;
-  animation: state-dock-hint-bob 2.4s ease-in-out 1.6s infinite;
-}
-.state-dock-hint::before {
-  content: '↑';
-  display: inline-block;
-  margin-right: 4px;
-  font-size: 12px;
-  vertical-align: -1px;
-}
-.hero-demo.is-booted .state-dock-hint {
-  opacity: 1;
-}
-body[data-state-dock-touched="true"] .state-dock-hint,
-body[data-state-drawer-open="true"] .state-dock-hint {
-  opacity: 0;
-  animation: none;
-}
-@keyframes state-dock-hint-bob {
-  0%, 100% { transform: translateY(0); }
-  50%      { transform: translateY(-3px); }
 }
 
 /* ============================================================ */
@@ -1189,19 +1148,6 @@ body[data-state-drawer-open="true"] .state-dock-hint {
   }
   .state-dock-tab-icon { width: 20px; height: 20px; }
   .state-dock-tab-icon svg { width: 16px; height: 16px; }
-  .state-dock-hint {
-    /* Sits to the right of the horizontal dock, slightly below to
-       avoid optical collision with the eyebrow text. */
-    left: 50%;
-    top: calc(100% + 76px);
-    transform: translate(-50%, 0);
-    width: auto;
-    text-align: center;
-  }
-  .state-dock-hint::before {
-    /* Arrow now points up at the dock above */
-    content: '↑';
-  }
 }
 
 /* ----- Capability board (collapsed state) ----- */
@@ -1714,15 +1660,12 @@ textarea.studio-input {
     transform: translate(-50%, 0);
   }
 
-  /* Push the State Dock and its "Patch state" hint below the new
+  /* Push the State Dock below the new
      gesture-key row so they don't collide. Phone wrap reserves the
      combined height — without it the popover (which renders in
      column flow below) would overlap the dock. */
   .state-dock {
     top: calc(100% + 76px);
-  }
-  .state-dock-hint {
-    top: calc(100% + 138px);
   }
   .demo-phone-wrap {
     padding-bottom: 152px;
@@ -1774,13 +1717,13 @@ body.hero-scrolled .mg-console[data-run-state="done"] {
   transform: translate(-50%, 0);
 }
 
-/* Wide screens: dock the task bar to the bottom-RIGHT corner so the
-   bottom-center stays free for the "scroll to read paper" hint. It rests as a
-   compact pill and expands upward into the full card. */
+/* Wide screens: dock the task bar near the phone's right flank instead of the
+   viewport corner. On narrower laptops it clamps back to a 16px right gutter
+   so the card never overflows. */
 @media (min-width: 900px) {
   .mg-console {
-    left: auto;
-    right: clamp(16px, 2.4vw, 40px);
+    left: min(calc(100vw - 316px), calc(50% + 272px));
+    right: auto;
     bottom: clamp(18px, 3vh, 40px);
     width: 300px;
     transform: translateY(14px);
@@ -1800,6 +1743,24 @@ body.hero-scrolled .mg-console[data-run-state="done"] {
   .mg-console .mg-agent-btn-run,
   .mg-console .mg-agent-btn-stop { flex: 1 1 auto; }
   .mg-console .mg-console-iconbtn { flex: 0 0 auto; }
+}
+
+@media (max-width: 720px) {
+  .mg-console {
+    bottom: max(env(safe-area-inset-bottom), 14px);
+    width: min(560px, calc(100vw - 24px));
+  }
+  .mg-console[data-collapsed="true"] {
+    left: auto;
+    right: max(env(safe-area-inset-right), 14px);
+    bottom: calc(max(env(safe-area-inset-bottom), 14px) + 78px);
+    transform: translate(0, 12px) !important;
+  }
+  #demo.is-booted ~ .mg-console[data-collapsed="true"],
+  body.hero-scrolled .mg-console[data-collapsed="true"][data-run-state="running"],
+  body.hero-scrolled .mg-console[data-collapsed="true"][data-run-state="done"] {
+    transform: translate(0, 0) !important;
+  }
 }
 
 /* ---- command bar ---- */
@@ -1828,10 +1789,70 @@ body.hero-scrolled .mg-console[data-run-state="done"] {
 .mg-console[data-collapsed="true"] .mg-console-collapse svg { transform: rotate(180deg); }
 .mg-console[data-collapsed="true"] .mg-console-row,
 .mg-console[data-collapsed="true"] .mg-console-chips { display: none; }
+.mg-console[data-collapsed="true"] {
+  width: 104px;
+}
+.mg-console[data-collapsed="true"] .mg-console-bar {
+  width: 104px;
+  height: var(--mg-compact-height, 39px);
+  padding: 0 6px 0 11px;
+  border-radius: 999px;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+}
+.mg-console[data-collapsed="true"] .mg-console-meta {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+.mg-console[data-collapsed="true"] .mg-console-status { display: none; }
+.mg-console[data-collapsed="true"] .mg-console-eyebrow {
+  display: inline-flex;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 0.6rem;
+  letter-spacing: 0.09em;
+  white-space: nowrap;
+}
+.mg-console[data-collapsed="true"] .mg-console-eyebrow-text { display: none; }
+.mg-console[data-collapsed="true"] .mg-console-compact-text { display: inline; }
+.mg-console[data-collapsed="true"] .mg-console-collapse {
+  flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  color: #16a34a;
+}
+.mg-console[data-collapsed="true"] .mg-console-collapse svg {
+  width: 15px;
+  height: 15px;
+}
+
+@media (min-width: 721px) and (max-width: 1279px) {
+  .mg-console[data-collapsed="true"] {
+    left: var(--mg-compact-left, calc(50% + 140px));
+    top: var(--mg-compact-top, calc(100vh - 127px));
+    right: auto;
+    bottom: auto;
+    transform: none !important;
+  }
+  .mg-console[data-collapsed="true"] .mg-console-collapse {
+    width: 22px;
+    height: 22px;
+  }
+  .mg-console[data-collapsed="true"] .mg-console-collapse svg {
+    width: 14px;
+    height: 14px;
+  }
+}
 .mg-console-eyebrow {
   font-size: 0.62rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
   color: #16a34a; flex: 0 0 auto; display: inline-flex; align-items: center; gap: 5px;
 }
+.mg-console-compact-text { display: none; }
 .mg-console-eyebrow-dot {
   width: 6px; height: 6px; border-radius: 999px; background: #d6d3d1; flex: 0 0 auto;
 }
@@ -1922,7 +1943,7 @@ body.hero-scrolled .mg-console[data-run-state="done"] {
    the dock's right-edge anchor). Out-specifies `.hero-demo.is-booted
    .state-dock` via :is(). Restored once the narration is dismissed (idle). */
 body:is([data-agent-run="running"], [data-agent-run="done"]) .hero-demo.is-booted
-  :is(.state-dock, .gesture-guide, .state-dock-hint) {
+  :is(.state-dock, .gesture-guide) {
   opacity: 0;
   pointer-events: none;
   transition: opacity 280ms ease;
@@ -1967,7 +1988,7 @@ body:is([data-agent-run="running"], [data-agent-run="done"]) .hero-demo.is-boote
 
 /* ---- HUD status pill on the phone ---- */
 .mg-hud {
-  position: absolute; top: 12px; left: 50%; z-index: 7;
+  position: absolute; top: 8px; left: 50%; z-index: 7;
   display: flex; align-items: center; gap: 7px; max-width: 280px; white-space: nowrap;
   padding: 5px 12px 5px 10px; border-radius: 999px; pointer-events: none;
   background: rgba(24,24,27,0.82); color: #fff;
@@ -2048,6 +2069,15 @@ body[data-agent-run="done"] .mg-narr {
 .mg-narr-think::-webkit-scrollbar { width: 6px; }
 .mg-narr-think::-webkit-scrollbar-thumb { background: #d6d3d1; border-radius: 999px; }
 .mg-narr-think.is-fading { opacity: 0; }
+.mg-narr-retry {
+  align-self: flex-start; display: inline-flex; align-items: center; justify-content: center;
+  min-height: 30px; padding: 0 11px; border-radius: 999px;
+  border: 1px solid #fecaca; background: #fff7f7; color: #b91c1c;
+  font: 700 0.72rem/1 'Inter', system-ui, sans-serif; cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.15s;
+}
+.mg-narr-retry:hover { background: #fee2e2; border-color: #fca5a5; transform: translateY(-1px); }
+.mg-narr-retry[hidden] { display: none; }
 .mg-narr-tl-toggle {
   display: flex; align-items: center; gap: 8px; width: 100%; cursor: pointer;
   background: none; border: none; border-top: 1px solid #f0efed; margin-top: 2px; padding: 9px 0 3px;

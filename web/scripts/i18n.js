@@ -26,10 +26,12 @@
 
       // agent console
       'console.eyebrow': 'Live Agent',
+      'console.compactLabel': 'Agent',
       'console.statusIdle': 'Type a task, then Run.',
       'console.placeholder': 'Tell the agent what to do…',
       'console.run': 'Run',
       'console.stop': 'Stop',
+      'console.retry': 'Retry',
       'console.settingsAria': 'Model & agent settings',
       'console.collapseAria': 'Collapse task bar',
       'console.expandAria': 'Expand task bar',
@@ -69,8 +71,10 @@
       // runner
       'runner.connecting': 'Connecting to the phone…',
       'runner.thinking': 'Step {n} · thinking…',
+      'runner.retrying': 'Connection hiccup · retrying {n}/{total}',
       'runner.notReady': 'Simulator is not ready. Power on the phone and try again.',
       'error.rateLimit': 'Public demo agent limit reached. Please wait about {wait} and try again, or switch to your own model endpoint/API key in Settings.',
+      'error.managedProxyNetwork': 'The public demo agent endpoint could not be reached after {attempts} attempts. It may be temporarily rate-limited or blocked by the network/CDN. Please wait a few minutes and try again, or switch to your own model endpoint/API key in Settings.',
 
       // HUD action verbs
       'verb.CLICK': 'tap',
@@ -121,7 +125,6 @@
 
       // state dock
       'dock.eyebrow': 'State Builder',
-      'dock.hint': 'Patch state',
     },
 
     zh: {
@@ -133,10 +136,12 @@
       'lang.label': '切换语言',
 
       'console.eyebrow': 'Live Agent',
+      'console.compactLabel': 'Agent',
       'console.statusIdle': '输入任务，点运行。',
       'console.placeholder': '告诉 Agent 要做什么…',
       'console.run': '运行',
       'console.stop': '停止',
+      'console.retry': '重试',
       'console.settingsAria': '模型与 Agent 设置',
       'console.collapseAria': '收起任务栏',
       'console.expandAria': '展开任务栏',
@@ -173,8 +178,10 @@
 
       'runner.connecting': '正在连接手机…',
       'runner.thinking': '第 {n} 步 · 思考中…',
+      'runner.retrying': '连接不稳定 · 正在重试 {n}/{total}',
       'runner.notReady': '模拟器未就绪，请先开机后重试。',
       'error.rateLimit': '公共 Demo Agent 已达到使用限制。请等待约{wait}后再试，或在设置中切换到你自己的模型接口/API key。',
+      'error.managedProxyNetwork': '公共 Demo Agent 接口连续 {attempts} 次无法访问，可能是临时限流或被网络/CDN 拦截。请等待几分钟后再试，或在设置中切换到你自己的模型接口/API key。',
 
       'verb.CLICK': '点击',
       'verb.DOUBLE_TAP': '双击',
@@ -221,7 +228,6 @@
       'gesture.switchDesc': '在桌面上左右滑动或拖拽',
 
       'dock.eyebrow': 'State Builder',
-      'dock.hint': '注入状态',
     },
   };
 

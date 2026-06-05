@@ -28,8 +28,14 @@ function init() {
   const instruction = $('agent-instruction');
   const runBtn = $('agent-run');
   const stopBtn = $('agent-stop');
+  const retryBtn = $('agent-retry');
   const statusEl = $('agent-status');
   if (!console_ || !instruction || !runBtn) return;
+  const narrowConsoleMq = window.matchMedia('(max-width: 720px)');
+  const mediumCompactMq = window.matchMedia('(min-width: 721px) and (max-width: 1279px)');
+  const horizontalGestureMq = window.matchMedia('(max-width: 1279px)');
+  let consoleCollapseTouched = false;
+  let compactSyncRaf = 0;
 
   // Narration card + on-phone HUD
   const narrStep = $('agent-narr-step');
@@ -73,6 +79,66 @@ function init() {
     console_.dataset.empty = instruction.value.trim() ? 'false' : 'true';
   }
   syncEmpty();
+
+  function setConsoleCollapsed(collapsed) {
+    console_.dataset.collapsed = collapsed ? 'true' : 'false';
+    const collapseBtn = $('agent-collapse');
+    if (collapseBtn) {
+      collapseBtn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+      const ariaKey = collapsed ? 'console.expandAria' : 'console.collapseAria';
+      collapseBtn.setAttribute('data-i18n-aria', ariaKey);
+      collapseBtn.setAttribute('aria-label', t(ariaKey));
+    }
+    syncCompactConsolePosition();
+  }
+
+  function clearCompactConsolePosition() {
+    console_.style.removeProperty('--mg-compact-left');
+    console_.style.removeProperty('--mg-compact-top');
+    console_.style.removeProperty('--mg-compact-height');
+  }
+
+  function syncCompactConsolePosition() {
+    if (compactSyncRaf) cancelAnimationFrame(compactSyncRaf);
+    compactSyncRaf = requestAnimationFrame(() => {
+      compactSyncRaf = 0;
+      if (console_.dataset.collapsed !== 'true') {
+        clearCompactConsolePosition();
+        return;
+      }
+      const rail = document.querySelector('.gesture-rail');
+      const bar = console_.querySelector('.mg-console-bar');
+      if (!rail || !bar || !horizontalGestureMq.matches) {
+        clearCompactConsolePosition();
+        return;
+      }
+      const railRect = rail.getBoundingClientRect();
+      const barRect = bar.getBoundingClientRect();
+      console_.style.setProperty('--mg-compact-height', `${Math.round(railRect.height)}px`);
+      if (!mediumCompactMq.matches) {
+        console_.style.removeProperty('--mg-compact-left');
+        console_.style.removeProperty('--mg-compact-top');
+        return;
+      }
+      const gap = 12;
+      const margin = 14;
+      const width = Math.round(barRect.width || 104);
+      const left = Math.min(
+        window.innerWidth - margin - width,
+        Math.round(railRect.right + gap),
+      );
+      console_.style.setProperty('--mg-compact-left', `${Math.max(margin, left)}px`);
+      console_.style.setProperty('--mg-compact-top', `${Math.round(railRect.top)}px`);
+    });
+  }
+
+  setConsoleCollapsed(narrowConsoleMq.matches);
+  narrowConsoleMq.addEventListener?.('change', (event) => {
+    if (!consoleCollapseTouched) setConsoleCollapsed(event.matches);
+  });
+  mediumCompactMq.addEventListener?.('change', syncCompactConsolePosition);
+  horizontalGestureMq.addEventListener?.('change', syncCompactConsolePosition);
+  window.addEventListener('resize', syncCompactConsolePosition);
 
   // ---- status (bottom bar) + HUD (on phone) -----------------------------
   function setStatus(text, kind = 'idle') {
@@ -166,6 +232,7 @@ function init() {
     narrThink.classList.remove('is-fading');
     narrThink.textContent = '';
     narrThink.scrollTop = 0;
+    if (retryBtn) retryBtn.hidden = true;
     answerEl.hidden = true;
     answerEl.textContent = '';
     tlCount.textContent = t('narr.steps', { n: 0 });
@@ -249,6 +316,11 @@ function init() {
       onStepDelta: ({ step, thought }) => {
         if (following && step === liveStep) showThinkingStep({ step, thought });
       },
+      onTransientRetry: ({ nextAttempt, maxAttempts }) => {
+        const text = t('runner.retrying', { n: nextAttempt, total: maxAttempts });
+        setHud(text, 'warn');
+        setStatus(text, 'warn');
+      },
       onStep: (payload) => {
         const preview = overlay.play(payload.action);
         appendStep(payload);
@@ -263,10 +335,11 @@ function init() {
         answerEl.hidden = false;
         answerEl.textContent = t('narr.answer', { v: value });
       },
-      onDone: ({ reason, message }) => {
+      onDone: ({ reason, message, retryable }) => {
         setRunning(false);
         overlay.end();
         setRunState('done');
+        if (retryBtn) retryBtn.hidden = !retryable;
         if ((reason === 'error' || reason === 'format_error') && message) appendError(message);
         // The full completion text is the answer — surface it in the narration
         // card (it wraps + scrolls), never in the one-line bar status.
@@ -314,14 +387,33 @@ function init() {
     runner.start(task);
   }
 
+  function onRetry() {
+    if (!runner.canRetry) return;
+    following = true;
+    tlBox.hidden = true;
+    tlToggle.setAttribute('aria-expanded', 'false');
+    tlBox.querySelectorAll('.mg-narr-frame').forEach((f) => {
+      f.classList.remove('is-active');
+    });
+    if (retryBtn) retryBtn.hidden = true;
+    overlay.begin();
+    setRunning(true);
+    setRunState('running');
+    setStatus(t('status.running'), 'running');
+    setHud(t('status.preparing'), 'running');
+    runner.retry();
+  }
+
   function abortToIdle() {
     runner.stop();
     overlay.end();
     setRunning(false);
     setRunState('idle');
+    if (retryBtn) retryBtn.hidden = true;
   }
 
   runBtn.addEventListener('click', onRun);
+  retryBtn?.addEventListener('click', onRetry);
   stopBtn.addEventListener('click', () => runner.stop());
   instruction.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') { e.preventDefault(); onRun(); }
@@ -338,12 +430,8 @@ function init() {
   const collapseBtn = $('agent-collapse');
   collapseBtn?.addEventListener('click', () => {
     const collapsed = console_.dataset.collapsed === 'true';
-    const next = collapsed ? 'false' : 'true';
-    console_.dataset.collapsed = next;
-    collapseBtn.setAttribute('aria-expanded', collapsed ? 'true' : 'false');
-    const ariaKey = next === 'true' ? 'console.expandAria' : 'console.collapseAria';
-    collapseBtn.setAttribute('data-i18n-aria', ariaKey);
-    collapseBtn.setAttribute('aria-label', t(ariaKey));
+    consoleCollapseTouched = true;
+    setConsoleCollapsed(!collapsed);
   });
 
   // Power-off mid-run: stop the agent and clear the overlay back to idle.

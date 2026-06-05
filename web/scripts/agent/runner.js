@@ -54,6 +54,10 @@ export class Runner {
     this.appResolver = appResolver;
     this.state = 'idle';
     this.abortCtl = null;
+    this.task = '';
+    this.agent = null;
+    this.nextStep = 0;
+    this.canRetry = false;
   }
 
   get running() {
@@ -62,6 +66,11 @@ export class Runner {
 
   stop() {
     if (this.state === 'running' && this.abortCtl) this.abortCtl.abort();
+  }
+
+  retry() {
+    if (this.state === 'running' || !this.canRetry || !this.agent || !this.task) return;
+    return this._runLoop({ reuseAgent: true });
   }
 
   async _emit(name, payload) {
@@ -127,16 +136,27 @@ export class Runner {
   async start(task) {
     if (this.state === 'running') return;
 
+    this.task = task;
+    this.agent = null;
+    this.nextStep = 0;
+    this.canRetry = false;
+    return this._runLoop({ reuseAgent: false });
+  }
+
+  async _runLoop({ reuseAgent = false } = {}) {
     this.abortCtl = new AbortController();
     this.state = 'running';
     this._emit('onStatus', { state: 'running', text: T('runner.connecting') });
 
     try {
       const win = await this._waitForSim();
-      const agent = this.makeAgent();
-      agent.reset(task);
+      const agent = reuseAgent && this.agent ? this.agent : this.makeAgent();
+      if (!reuseAgent) agent.reset(this.task);
+      this.agent = agent;
+      this.canRetry = false;
 
-      for (let step = 0; step < this.maxSteps; step += 1) {
+      for (let step = this.nextStep; step < this.maxSteps; step += 1) {
+        this.nextStep = step;
         if (this._aborted()) break;
 
         const shot = await this.captureProvider.grab({ win });
@@ -151,6 +171,9 @@ export class Runner {
             onDelta: (delta) => {
               const thoughtText = extractStreamingThought(delta);
               if (thoughtText) this._emit('onStepDelta', { step, thought: thoughtText });
+            },
+            onRetry: (retry) => {
+              this._emit('onTransientRetry', { step, ...retry });
             },
           },
         );
@@ -187,18 +210,25 @@ export class Runner {
         }
 
         await sleep(this.settleMs);
+        this.nextStep = step + 1;
       }
 
       this._finish(this._aborted() ? 'stopped' : 'maxsteps');
     } catch (err) {
       if (err && err.name === 'AbortError') this._finish('stopped');
-      else this._finish('error', err && err.message ? err.message : String(err));
+      else this._finish('error', err && err.message ? err.message : String(err), { retryable: Boolean(this.agent && this.task) });
     }
   }
 
-  _finish(reason, message = '') {
+  _finish(reason, message = '', { retryable = false } = {}) {
     this.state = 'idle';
     this.abortCtl = null;
-    this._emit('onDone', { reason, message });
+    this.canRetry = retryable;
+    if (!retryable && (reason === 'complete' || reason === 'abort' || reason === 'maxsteps')) {
+      this.agent = null;
+      this.task = '';
+      this.nextStep = 0;
+    }
+    this._emit('onDone', { reason, message, retryable: this.canRetry });
   }
 }
