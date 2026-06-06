@@ -19,7 +19,7 @@ ASSET_VERSION="${ASSET_VERSION:-$(git rev-parse --short HEAD 2>/dev/null || date
 
 echo "==> Building simulator with base=${SIM_BASE}"
 VITE_BASE="${SIM_BASE}" \
-VITE_CDN_BASE="${VITE_CDN_BASE:-https://cdn.mobilegym.dev}" \
+VITE_CDN_BASE="${VITE_CDN_BASE:-/cdn}" \
 VITE_AI_BASE_URL="${VITE_AI_BASE_URL:-https://api.mobilegym.dev/ai/v1}" \
 VITE_AI_MODEL="${VITE_AI_MODEL:-qwen-flash}" \
 VITE_GOOGLE_MAPS_API_KEY="${VITE_GOOGLE_MAPS_API_KEY:-}" \

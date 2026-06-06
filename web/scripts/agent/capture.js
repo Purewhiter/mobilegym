@@ -36,9 +36,15 @@ export async function grab({ win }) {
     quality: 0.82,
   };
 
-  const result = typeof snapdom.toJpg === 'function'
-    ? await snapdom.toJpg(target, captureOptions)
-    : await snapdom.toPng(target, { ...captureOptions, backgroundColor: 'transparent' });
+  const restoreScrollOffsets = await materializeScrollOffsets(win, target);
+  let result;
+  try {
+    result = typeof snapdom.toJpg === 'function'
+      ? await snapdom.toJpg(target, captureOptions)
+      : await snapdom.toPng(target, { ...captureOptions, backgroundColor: 'transparent' });
+  } finally {
+    restoreScrollOffsets();
+  }
 
   const dataUrl = typeof result === 'string' ? result : result?.src;
   if (!dataUrl || !dataUrl.startsWith('data:image/')) {
@@ -62,6 +68,53 @@ async function ensureSnapdom(win) {
 
   rendererPromises.set(win, promise);
   return promise;
+}
+
+async function materializeScrollOffsets(win, target) {
+  const restores = [];
+  const elements = [
+    target,
+    ...Array.from(target.querySelectorAll?.('*') || []),
+  ];
+
+  for (const el of elements) {
+    if (!el || !el.children?.length) continue;
+    const left = el.scrollLeft || 0;
+    const top = el.scrollTop || 0;
+    if (!left && !top) continue;
+
+    const childStates = Array.from(el.children).map((child) => ({
+      child,
+      transform: child.style.transform,
+    }));
+
+    restores.push(() => {
+      for (const state of childStates) {
+        state.child.style.transform = state.transform;
+      }
+      el.scrollLeft = left;
+      el.scrollTop = top;
+    });
+
+    const offset = `translate(${-left}px, ${-top}px)`;
+    for (const child of el.children) {
+      const existing = child.style.transform;
+      child.style.transform = existing ? `${offset} ${existing}` : offset;
+    }
+    el.scrollLeft = 0;
+    el.scrollTop = 0;
+  }
+
+  if (restores.length) await nextFrame(win);
+  return () => {
+    for (let i = restores.length - 1; i >= 0; i -= 1) restores[i]();
+  };
+}
+
+function nextFrame(win) {
+  return new Promise((resolve) => {
+    win.requestAnimationFrame(() => win.requestAnimationFrame(resolve));
+  });
 }
 
 export function stop() {

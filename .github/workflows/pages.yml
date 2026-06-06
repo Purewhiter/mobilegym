@@ -50,7 +50,7 @@ jobs:
       # 与本地 `scripts/build-demo-site.sh` 完全一致，保证本地验证 == 线上行为。
       - name: Build demo site
         env:
-          VITE_CDN_BASE: https://cdn.mobilegym.dev
+          VITE_CDN_BASE: /cdn
           VITE_AI_BASE_URL: https://api.mobilegym.dev/ai/v1
           VITE_AI_MODEL: qwen-flash
           VITE_GOOGLE_MAPS_API_KEY: ${{ secrets.VITE_GOOGLE_MAPS_API_KEY }}

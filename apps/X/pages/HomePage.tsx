@@ -167,7 +167,7 @@ export const HomePage: React.FC<{ isActive?: boolean }> = ({ isActive = true }) 
                   headerRight={
                     activeTab === 'foryou' && !isFollowing(sourceAuthorId) && sourceAuthorId !== user.id ? (
                       <button
-                        className="text-blue-400 text-xs font-bold px-2 py-1 rounded-full hover:bg-blue-500/10 transition-colors relative z-10 shrink-0"
+                        className="relative z-10 shrink-0 min-w-max whitespace-nowrap rounded-full px-2 py-1 text-xs font-bold text-blue-400 transition-colors hover:bg-blue-500/10"
                         {...bindTap(
                           { kind: 'action', id: 'home.foryou.user.follow' },
                           {

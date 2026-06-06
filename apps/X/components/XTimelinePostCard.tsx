@@ -72,9 +72,9 @@ export const XTimelinePostCard: React.FC<XTimelinePostCardProps> = ({
           )}
         </div>
 
-        <div className="flex-1">
+        <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center text-gray-500 text-sm flex-wrap">
+            <div className="flex flex-1 min-w-0 items-center text-gray-500 text-sm flex-wrap">
               <span className="font-bold text-app-text mr-1">{authorName}</span>
               {post.author?.verified ? <span className="text-blue-400 mr-1">✓</span> : null}
               <span className="mr-1">{authorHandle}</span>
@@ -140,4 +140,3 @@ export const XTimelinePostCard: React.FC<XTimelinePostCardProps> = ({
     </div>
   );
 };
-
