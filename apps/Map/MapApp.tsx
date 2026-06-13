@@ -33,7 +33,7 @@ import { colorStates, colorStatesDark } from './res/colors.states';
 import { dimens } from './res/dimens';
 import { anim } from './res/anim';
 import { dispatchMapBackHandlers } from './hooks/useMapBackHandler';
-import { getGoogleMapsApiKey } from './utils/googleMapsConfig';
+import { OFFLINE_GOOGLE_MAPS_API_KEY, getGoogleMapsApiKey } from './utils/googleMapsConfig';
 import { ensureMapServiceWorkerControlling, registerMapServiceWorker } from './utils/registerMapServiceWorker';
 
 // 使用 @googlemaps/js-api-loader v2 的 setOptions + importLibrary
@@ -291,7 +291,7 @@ export const MapApp: React.FC = () => {
   // 直接打 Google → 用 placeholder key 被拒 → 拿回 HTML 错误页 → JS 解析失败。
   useEffect(() => {
     const realKey = getGoogleMapsApiKey();
-    const apiKey = realKey || 'OFFLINE_NO_KEY';
+    const apiKey = realKey || OFFLINE_GOOGLE_MAPS_API_KEY;
     if (realKey) {
       console.log('[Map] 检测到 Google Maps key，开始加载 Google Maps JS SDK');
     } else {
@@ -300,6 +300,10 @@ export const MapApp: React.FC = () => {
     let cancelled = false;
     void (async () => {
       await ensureMapServiceWorkerControlling();
+      navigator.serviceWorker?.controller?.postMessage({
+        type: 'MAP_GOOGLE_NETWORK_MODE',
+        offlineOnly: !realKey,
+      });
       if (cancelled) return;
       initGoogleMaps(apiKey, locale)
         .then((g) => {

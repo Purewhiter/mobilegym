@@ -181,9 +181,11 @@ export function getPlaceTypeLabel(
 }
 
 /**
- * 矢量地图 Map ID，启用 AdvancedMarkerElement 所必需。
- * 在 Google Cloud Console 创建 Map（JavaScript 类型）后，可通过 VITE_GOOGLE_MAP_ID 覆盖；
- * 未配置时使用官方文档中的 DEMO_MAP_ID 便于本地调试。
+ * 矢量地图 Map ID，可通过 VITE_GOOGLE_MAP_ID 配置。
+ * 有真实 API key 时不要默认使用 DEMO_MAP_ID，否则 Google 会按项目归属报
+ * ApiProjectMapError。
  */
 export const GOOGLE_MAP_VECTOR_MAP_ID =
-  (import.meta.env.VITE_GOOGLE_MAP_ID as string | undefined) || 'DEMO_MAP_ID';
+  (import.meta.env.VITE_GOOGLE_MAP_ID as string | undefined) || undefined;
+
+export const OFFLINE_GOOGLE_MAP_VECTOR_MAP_ID = 'DEMO_MAP_ID';

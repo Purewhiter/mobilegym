@@ -11,6 +11,7 @@ import {
   placeSearchResultToShoppingItem,
   searchPlacesByText,
 } from '../utils/placeSearch';
+import { hasGoogleMapsApiKey } from '../utils/googleMapsConfig';
 
 export interface MapSearchPrediction {
   kind: 'place' | 'query';
@@ -78,7 +79,7 @@ export function useMapSearch(
     const run = async () => {
       setPreviewMarkers([]);
       const top = predictions.filter((p) => p.kind === 'place').slice(0, 4);
-      if (!top.length || !googleNs) return;
+      if (!top.length || !googleNs || !hasGoogleMapsApiKey()) return;
 
       const { Place } = (await googleNs.maps.importLibrary('places')) as google.maps.PlacesLibrary;
       if (!Place) return;
@@ -86,35 +87,39 @@ export function useMapSearch(
       type PreviewMarker = { id: string; name: string; lat: number; lng: number };
       const parts = await Promise.all(
         top.map(async (p): Promise<PreviewMarker | null> => {
-          if (cancelled || reqId !== previewReqIdRef.current) return null;
-          if (locationCacheRef.current.has(p.place_id)) {
-            const cached = locationCacheRef.current.get(p.place_id)!;
+          try {
+            if (cancelled || reqId !== previewReqIdRef.current) return null;
+            if (locationCacheRef.current.has(p.place_id)) {
+              const cached = locationCacheRef.current.get(p.place_id)!;
+              return {
+                id: p.place_id,
+                name: p.main_text || p.description,
+                lat: cached.lat,
+                lng: cached.lng,
+              };
+            }
+
+            const placeInstance = new Place({ id: p.place_id });
+            await placeInstance.fetchFields({
+              fields: ['displayName', 'location'],
+            });
+
+            const loc = placeInstance.location;
+            if (!loc || typeof loc.lat !== 'function') return null;
+            const lat = loc.lat();
+            const lng = loc.lng();
+            if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+            if (cancelled || reqId !== previewReqIdRef.current) return null;
+            locationCacheRef.current.set(p.place_id, { lat, lng });
             return {
               id: p.place_id,
-              name: p.main_text || p.description,
-              lat: cached.lat,
-              lng: cached.lng,
+              name: placeInstance.displayName || p.main_text || p.description,
+              lat,
+              lng,
             };
+          } catch {
+            return null;
           }
-
-          const placeInstance = new Place({ id: p.place_id });
-          await placeInstance.fetchFields({
-            fields: ['displayName', 'location'],
-          });
-
-          const loc = placeInstance.location;
-          if (!loc || typeof loc.lat !== 'function') return null;
-          const lat = loc.lat();
-          const lng = loc.lng();
-          if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
-          if (cancelled || reqId !== previewReqIdRef.current) return null;
-          locationCacheRef.current.set(p.place_id, { lat, lng });
-          return {
-            id: p.place_id,
-            name: placeInstance.displayName || p.main_text || p.description,
-            lat,
-            lng,
-          };
         }),
       );
 
@@ -123,7 +128,11 @@ export function useMapSearch(
       setPreviewMarkers(parts.filter((m): m is PreviewMarker => m !== null));
     };
 
-    const t = window.setTimeout(run, 120);
+    const t = window.setTimeout(() => {
+      void run().catch(() => {
+        if (!cancelled && reqId === previewReqIdRef.current) setPreviewMarkers([]);
+      });
+    }, 120);
     return () => {
       cancelled = true;
       window.clearTimeout(t);
