@@ -13,8 +13,8 @@
  *   fetch    → INTERCEPT_HOSTS 域名走 CacheStorage / manifest 文件优先；其他域名透传
  */
 
-const VECTOR_CACHE_NAME = 'map-vector-cache-57ee9905a655';
-const RASTER_CACHE_NAME = 'map-cache-786a79e6b3e1';
+const VECTOR_CACHE_NAME = 'map-vector-cache-57ee9905a655-swiftshader-v2';
+const RASTER_CACHE_NAME = 'map-cache-786a79e6b3e1-vtcanon-v2';
 const SW_BASE = new URL('.', self.location.href).href;
 const CDN_BASE = resolveCdnBase();
 const VECTOR_CACHE_SOURCES = [
@@ -26,9 +26,11 @@ const RASTER_CACHE_SOURCES = [
   { manifestUrl: SW_BASE + 'map-cache/manifest.json', filesBase: SW_BASE + 'map-cache/files/' },
 ];
 const OFFLINE_GOOGLE_MAPS_API_KEY = 'AIzaSyOfflineMapCacheOnly00000000000000';
+const CACHE_MISS_LOG_LIMIT = 40;
 let googleNetworkOfflineOnly = false;
 let vectorManifestIndexPromise = null;
 let rasterManifestIndexPromise = null;
+let cacheMissLogCount = 0;
 
 const INTERCEPT_HOSTS = new Set([
   'maps.googleapis.com',
@@ -109,7 +111,7 @@ function canonicalUrl(rawUrl) {
     const u = new URL(rawUrl);
     u.searchParams.delete('key');
     u.searchParams.delete('token');
-    if (isGoogleMapsJsonpPath(u.pathname)) {
+    if (isGoogleMapsJsonpRequestUrl(u)) {
       u.searchParams.delete('callback');
     }
     if (u.pathname === '/maps/vt' && u.searchParams.has('pb')) {
@@ -128,11 +130,22 @@ function canonicalUrl(rawUrl) {
 function normalizeTilePb(value) {
   return value
     .replace(/(!2sm!3i)\d+/g, '$1E')
-    .replace(/(!28i)\d+/g, '$1E');
+    .replace(/(!28i)\d+/g, '$1E')
+    .replace(/!5m2!1e3!5f\d+/g, '!5m1!1e3');
 }
 
 function isGoogleMapsJsonpPath(pathname) {
   return pathname.startsWith('/maps/api/js/jsonp/');
+}
+
+function isGoogleMapsVtJsonpUrl(url) {
+  return url.pathname === '/maps/vt'
+    && url.searchParams.has('pb')
+    && url.searchParams.has('callback');
+}
+
+function isGoogleMapsJsonpRequestUrl(url) {
+  return isGoogleMapsJsonpPath(url.pathname) || isGoogleMapsVtJsonpUrl(url);
 }
 
 function resolveCdnBase() {
@@ -192,7 +205,17 @@ async function loadManifestIndex(sources) {
 async function matchManifestBackedCache(cacheName, loadIndex, cacheKey) {
   const cache = await caches.open(cacheName);
   const cached = await cache.match(cacheKey);
-  if (cached) return cached;
+  if (cached) {
+    const patchedCached = await patchCachedGoogleMapsWebglIfNeeded(cacheKey, cached);
+    if (patchedCached !== cached) {
+      try {
+        await cache.put(cacheKey, patchedCached.clone());
+      } catch {
+        // CacheStorage quota failure should not block serving the resource.
+      }
+    }
+    return patchedCached;
+  }
 
   let index;
   try {
@@ -213,6 +236,24 @@ async function matchManifestBackedCache(cacheName, loadIndex, cacheKey) {
   return response;
 }
 
+async function patchCachedGoogleMapsWebglIfNeeded(cacheKey, response) {
+  if (!shouldPatchGoogleMapsWebglUrl(cacheKey)) return response;
+  try {
+    const text = await response.clone().text();
+    const patched = patchGoogleMapsWebglForOfflineSwiftShader(text);
+    if (patched === text) return response;
+    const headers = new Headers(response.headers);
+    headers.set('Access-Control-Allow-Origin', '*');
+    return new Response(patched, {
+      status: response.status,
+      statusText: response.statusText,
+      headers,
+    });
+  } catch {
+    return response;
+  }
+}
+
 async function responseFromManifestEntry(entry) {
   if (!entry || !entry.file || !entry.filesBase) return null;
   try {
@@ -223,15 +264,41 @@ async function responseFromManifestEntry(entry) {
     const fetchedCT = (fileRes.headers.get('content-type') || '').toLowerCase();
     const expectedCT = (entry.contentType || '').toLowerCase();
     if (fetchedCT.startsWith('text/html') && !expectedCT.startsWith('text/html')) return null;
-    const body = await fileRes.arrayBuffer();
     const headers = new Headers();
     if (entry.contentType) headers.set('Content-Type', entry.contentType);
     if (entry.cacheControl) headers.set('Cache-Control', entry.cacheControl);
     headers.set('Access-Control-Allow-Origin', '*');
+    if (shouldPatchGoogleMapsWebglForOfflineSwiftShader(entry)) {
+      const text = await fileRes.text();
+      return new Response(patchGoogleMapsWebglForOfflineSwiftShader(text), {
+        status: entry.status || 200,
+        headers,
+      });
+    }
+    const body = await fileRes.arrayBuffer();
     return new Response(body, { status: entry.status || 200, headers });
   } catch {
     return null;
   }
+}
+
+function shouldPatchGoogleMapsWebglForOfflineSwiftShader(entry) {
+  return shouldPatchGoogleMapsWebglUrl(entry.url);
+}
+
+function shouldPatchGoogleMapsWebglUrl(rawUrl) {
+  try {
+    const u = new URL(rawUrl);
+    return u.pathname.endsWith('/webgl.js');
+  } catch {
+    return false;
+  }
+}
+
+function patchGoogleMapsWebglForOfflineSwiftShader(text) {
+  // Google Maps vector maps reject SwiftShader with WebGL error code 5. Bench
+  // browsers run headless on servers, so SwiftShader is the normal offline path.
+  return text.replace(/="swiftshader;/, '="');
 }
 
 async function handleRequest(request) {
@@ -246,10 +313,9 @@ async function handleRequest(request) {
     try {
       return await fetch(request);
     } catch (err) {
-      return new Response(
-        `Live vector tile request failed: ${err && err.message ? err.message : 'unknown'}`,
-        { status: 504, headers: { 'Content-Type': 'text/plain' } },
-      );
+      const reason = `Live vector tile request failed: ${err && err.message ? err.message : 'unknown'}`;
+      reportCacheMiss(request.url, cacheKey, reason);
+      return new Response(reason, { status: 504, headers: { 'Content-Type': 'text/plain' } });
     }
   }
 
@@ -280,6 +346,7 @@ async function handleRequest(request) {
   }
 
   if (googleNetworkOfflineOnly || placeholderKeyRequest) {
+    reportCacheMiss(request.url, cacheKey, 'offline-only cache miss');
     return new Response(
       `Map cache miss while Google network is disabled: ${cacheKey}`,
       { status: 504, headers: { 'Content-Type': 'text/plain' } },
@@ -290,10 +357,9 @@ async function handleRequest(request) {
     return await fetch(request);
   } catch (err) {
     if (optionalMapImageRequest) return transparentPngResponse();
-    return new Response(
-      `Map cache miss and network failed: ${err && err.message ? err.message : 'unknown'}`,
-      { status: 504, headers: { 'Content-Type': 'text/plain' } },
-    );
+    const reason = `Map cache miss and network failed: ${err && err.message ? err.message : 'unknown'}`;
+    reportCacheMiss(request.url, cacheKey, reason);
+    return new Response(reason, { status: 504, headers: { 'Content-Type': 'text/plain' } });
   }
 }
 
@@ -314,9 +380,12 @@ function isVectorTilePayloadRequest(rawUrl) {
 function isCallbackJsonpRequest(rawUrl) {
   try {
     const u = new URL(rawUrl);
-    return isGoogleMapsJsonpPath(u.pathname) && u.searchParams.has('callback');
+    return isGoogleMapsJsonpRequestUrl(u) && u.searchParams.has('callback');
   } catch {
-    return rawUrl.includes('/maps/api/js/jsonp/') && rawUrl.includes('callback=');
+    return (
+      rawUrl.includes('/maps/api/js/jsonp/')
+      || (rawUrl.includes('/maps/vt?') && rawUrl.includes('pb='))
+    ) && rawUrl.includes('callback=');
   }
 }
 
@@ -351,11 +420,25 @@ async function matchManifestBackedJsonp(loadIndex, cacheKey, rawUrl) {
   if (!callback) return response;
 
   const text = await response.text();
-  const rewritten = text.replace(/^[\w.$]+(?=\()/, callback);
+  const rewritten = rewriteJsonpCallback(text, callback);
   const headers = new Headers(response.headers);
   headers.set('Content-Type', headers.get('Content-Type') || 'application/javascript');
   headers.set('Access-Control-Allow-Origin', '*');
   return new Response(rewritten, { status: response.status, headers });
+}
+
+function rewriteJsonpCallback(text, callback) {
+  if (!/^[\w.$]+$/.test(callback)) return text;
+  const jsIdent = '[A-Za-z_$][\\w$]*';
+  const dottedCallback = `${jsIdent}(?:\\.${jsIdent})*`;
+  const guardedCall = new RegExp(`(${dottedCallback})\\s*&&\\s*\\1\\s*\\(`);
+  if (guardedCall.test(text)) {
+    return text.replace(guardedCall, `${callback} && ${callback}(`);
+  }
+  return text.replace(
+    /^(\s*(?:\/\*[\s\S]*?\*\/\s*)?)([\w.$]+)(?=\s*\()/,
+    `$1${callback}`,
+  );
 }
 
 function emptyJsonpResponse(rawUrl) {
@@ -426,4 +509,23 @@ function transparentPngResponse() {
       'Access-Control-Allow-Origin': '*',
     },
   });
+}
+
+function reportCacheMiss(rawUrl, cacheKey, reason) {
+  if (cacheMissLogCount >= CACHE_MISS_LOG_LIMIT) return;
+  cacheMissLogCount += 1;
+  const message = {
+    type: 'MAP_GOOGLE_CACHE_MISS',
+    reason,
+    url: rawUrl,
+    cacheKey,
+  };
+  console.warn('[map-sw] cache miss', reason, cacheKey);
+  self.clients.matchAll({ type: 'window', includeUncontrolled: true })
+    .then((clients) => {
+      for (const client of clients) client.postMessage(message);
+    })
+    .catch(() => {
+      // Diagnostics should never block map resource handling.
+    });
 }

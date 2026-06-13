@@ -283,6 +283,16 @@ export const MapApp: React.FC = () => {
     void registerMapServiceWorker();
   }, []);
 
+  useEffect(() => {
+    if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) return;
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data?.type !== 'MAP_GOOGLE_CACHE_MISS') return;
+      console.warn('[Map][离线缓存未命中]', event.data.reason, event.data.cacheKey);
+    };
+    navigator.serviceWorker.addEventListener('message', handleMessage);
+    return () => navigator.serviceWorker.removeEventListener('message', handleMessage);
+  }, []);
+
   // Load Google Maps API using @googlemaps/js-api-loader
   // 没真 key 时也尝试加载：Service Worker 会用 placeholder key 命中 canonical 缓存。
   // 既无 key 又无缓存又无网络时，loader 会失败，落到 catch 显示 placeholder。
