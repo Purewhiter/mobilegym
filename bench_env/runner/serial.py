@@ -36,7 +36,7 @@ class SerialRunner(BaseRunner):
         from bench_env import factory
 
         recorder = factory.create_recorder(config)
-        llm = factory.create_llm(config) if config.agent != "human" else None
+        llm = factory.create_llm(config) if factory.agent_requires_llm(config) else None
         agent = factory.create_agent(config, llm)
         env = await factory.create_env(config)
         tasks = factory.load_tasks(config)

@@ -102,6 +102,9 @@ class BaseAgent(ABC):
     DEFAULT_MODEL_ARGS: ClassVar[dict[str, Any]] = {}
     """默认模型参数"""
 
+    REQUIRES_LLM: ClassVar[bool] = True
+    """Whether this agent needs an LLM client constructed by the runner."""
+
     def __init__(self, config: Optional[AgentConfig] = None):
         """
         Initialize agent.
@@ -183,6 +186,16 @@ class BaseAgent(ABC):
 
     # ==================== 通用属性和方法 ====================
     
+    def set_task_context(self, task: Any) -> None:
+        """Optional hook: receive the full Task object before ``reset()``.
+
+        The runner calls this (when present) just before ``reset(task.description)``,
+        so agents that need more than the rendered instruction — e.g. ``task.id``
+        or raw ``task.params`` — can capture it. Default is a no-op; LLM agents
+        ignore it.
+        """
+        pass
+
     @property
     def task(self) -> str:
         """Current task description."""

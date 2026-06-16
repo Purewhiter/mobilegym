@@ -16,6 +16,14 @@ python -m bench_env.run \
   --env-url http://localhost:3000 \
   --agent human
 
+# Scripted validation run: replay a per-task plan through the real GUI and let
+# the judge grade the result. No LLM needed. Plans live under
+# bench_env/tests/<suite>/scripted_plans.py (PLANS keyed by task id).
+python -m bench_env.run \
+  --suite spotify \
+  --env-url http://localhost:3000 \
+  --agent scripted
+
 # Model run against a local OpenAI-compatible endpoint.
 python -m bench_env.run \
   --task-id clock.CountAlarms \

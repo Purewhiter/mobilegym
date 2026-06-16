@@ -256,6 +256,11 @@ class Controller:
                 )
 
             logger.info(f"Instruction: {task.description}")
+            # Optional hook (BaseAgent provides a no-op default; agents are a
+            # loose protocol, so tolerate doubles that don't define it).
+            set_task_context = getattr(agent, "set_task_context", None)
+            if callable(set_task_context):
+                set_task_context(task)
             agent.reset(task.description)
             done, truncated, stop_reason = False, False, None
 

@@ -53,11 +53,12 @@ class ParallelRunner(BaseRunner):
         tasks = factory.load_tasks(config)
         recorder = factory.create_recorder(config)
 
-        llm = factory.create_llm(config)
+        llm = factory.create_llm(config) if factory.agent_requires_llm(config) else None
 
         def agent_factory():
             parallel_config = dataclasses.replace(config, quiet=True, no_stream=True)
-            return factory.create_agent(parallel_config, factory.create_llm(config))
+            worker_llm = factory.create_llm(config) if factory.agent_requires_llm(config) else None
+            return factory.create_agent(parallel_config, worker_llm)
 
         evaluator = factory.create_evaluator(config, llm)
 

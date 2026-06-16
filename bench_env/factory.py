@@ -42,6 +42,14 @@ def create_llm(config: ConfigType) -> Any:
     )
 
 
+def agent_requires_llm(config: ConfigType) -> bool:
+    """Return whether the configured agent needs an LLM client."""
+    from bench_env.agent import get_agent_class, HumanAgent
+    config = _as_runner_config(config)
+    agent_cls = get_agent_class(getattr(config, "agent", "unknown"))
+    return agent_cls is not HumanAgent and getattr(agent_cls, "REQUIRES_LLM", True) is not False
+
+
 def create_agent(config: ConfigType, llm: Any = None) -> Any:
     """Create agent instance."""
     from bench_env.agent import get_agent_class, AgentConfig, HumanAgent
@@ -54,8 +62,8 @@ def create_agent(config: ConfigType, llm: Any = None) -> Any:
     
     agent_cls = get_agent_class(agent_name)
 
-    # Human agent 不需要 LLM
-    if agent_cls is HumanAgent:
+    # Human / scripted validation agents do not need an LLM.
+    if agent_cls is HumanAgent or getattr(agent_cls, "REQUIRES_LLM", True) is False:
         return agent_cls(AgentConfig(verbose=verbose))
 
     if llm is None:

@@ -29,6 +29,8 @@ class HumanAgent(BaseAgent):
     - Type 'a <text>' or 'answer <text>': Submit ANSWER without ending task
     """
 
+    REQUIRES_LLM = False
+
     def __init__(self, config: AgentConfig | None = None):
         super().__init__(config)
         self._step_count = 0

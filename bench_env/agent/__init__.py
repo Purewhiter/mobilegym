@@ -10,6 +10,7 @@ from bench_env.agent.venus import VenusAgent
 from bench_env.agent.gui_owl import GUIOwl15Agent
 from bench_env.agent.uitars import UITarsAgent
 from bench_env.agent.mai_ui import MAIUIAgent
+from bench_env.agent.scripted import ScriptedAgent
 
 # Agent 注册表
 AGENT_REGISTRY: dict[str, type[BaseAgent]] = {
@@ -22,6 +23,7 @@ AGENT_REGISTRY: dict[str, type[BaseAgent]] = {
     "gui_owl": GUIOwl15Agent,
     "uitars": UITarsAgent,
     "mai_ui": MAIUIAgent,
+    "scripted": ScriptedAgent,
 }
 
 
@@ -54,6 +56,7 @@ __all__ = [
     "GUIOwl15Agent",
     "UITarsAgent",
     "MAIUIAgent",
+    "ScriptedAgent",
     "AGENT_REGISTRY",
     "register_agent",
     "get_agent_class",

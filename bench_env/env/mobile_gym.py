@@ -9,6 +9,7 @@ import base64
 import gzip
 import json as json_mod
 import logging
+import os
 import random
 from pathlib import Path
 from typing import Any, Optional, Tuple
@@ -515,12 +516,19 @@ class MobileGymEnv(BaseMobileEnv):
         """
         launch_args: dict[str, Any] = {"headless": headless}
         if browser_type == "chromium":
-            launch_args["args"] = [
+            args = [
                 "--ignore-certificate-errors",
                 # Google Maps vector rendering needs WebGL in headless runs.
                 # Recent Chromium requires an explicit opt-in for SwiftShader.
                 "--enable-unsafe-swiftshader",
             ]
+            # Escape hatch for restricted runtimes (e.g. an agent sandbox where
+            # Chromium's setuid sandbox / Crashpad can't write under ~/Library):
+            # MOBILE_GYM_CHROMIUM_FLAGS="--no-sandbox --disable-crash-reporter ..."
+            # Default empty → no behaviour change for normal benchmark runs.
+            extra = os.environ.get("MOBILE_GYM_CHROMIUM_FLAGS", "").split()
+            args.extend(extra)
+            launch_args["args"] = args
         if proxy:
             launch_args["proxy"] = {"server": proxy}
         return launch_args
@@ -816,6 +824,7 @@ class MobileGymEnv(BaseMobileEnv):
         handler = self._handlers.get(action.action_type)
         if handler:
             with sw.phase("action"):
+                await self._resolve_action_selectors(action)
                 result = await handler.execute(action)
             if result is not None:
                 # Control action - return immediately without delay
@@ -1031,6 +1040,74 @@ class MobileGymEnv(BaseMobileEnv):
         x = max(0.0, min(float(self.physical_width - 1), x))
         y = max(0.0, min(float(self.physical_height - 1), y))
         return x, y
+
+    # Pointer actions whose target may be addressed by a CSS selector instead of
+    # a coordinate. Used only by scripted/replay agents (see agent/scripted.py);
+    # model agents never emit a "selector", so this path is inert for them.
+    _SELECTOR_RESOLVABLE = frozenset(
+        {ActionType.CLICK, ActionType.DOUBLE_TAP, ActionType.LONG_PRESS, ActionType.TYPE}
+    )
+
+    def _css_center_to_coord(self, cx: float, cy: float) -> list[float]:
+        """Convert a CSS-viewport center (px) into this env's ``coord_space``."""
+        vw, vh = self._viewport_size
+        if self.coord_space == "norm_0_1000":
+            return [round(cx / vw * 1000), round(cy / vh * 1000)]
+        if self.coord_space == "norm_0_1":
+            return [cx / vw, cy / vh]
+        # "physical": map CSS px back to physical px
+        return [round(cx / vw * self.physical_width), round(cy / vh * self.physical_height)]
+
+    async def _resolve_selector_point(self, selector: str) -> list[float]:
+        """Resolve a CSS selector to a tap point in this env's ``coord_space``.
+
+        Apps rendered with ``designViewportWidth`` sit under a CSS ``zoom`` on an
+        ancestor; ``getBoundingClientRect()`` / Playwright report pre-zoom layout
+        coordinates, but taps (``__SIM_INPUT__.tap``) and the screenshot use the
+        post-zoom *visual* viewport. So compute the center in-page, multiply by
+        the cumulative ancestor zoom, and hit-test the result with
+        ``elementFromPoint`` to confirm the tap will land on the element.
+        """
+        loc = self.page.locator(selector).first
+        await loc.wait_for(state="visible", timeout=8000)
+        center = await loc.evaluate(
+            """el => {
+                const r = el.getBoundingClientRect();
+                let z = 1, n = el;
+                while (n && n.nodeType === 1) {
+                    const cz = parseFloat(getComputedStyle(n).zoom);
+                    if (cz && cz !== 1) z *= cz;
+                    n = n.parentElement;
+                }
+                const cands = [
+                    [(r.left + r.width / 2) * z, (r.top + r.height / 2) * z],
+                    [r.left + r.width / 2, r.top + r.height / 2],
+                ];
+                for (const [x, y] of cands) {
+                    const hit = document.elementFromPoint(x, y);
+                    if (hit && (hit === el || el.contains(hit) || hit.contains(el))) return [x, y];
+                }
+                return cands[0];
+            }"""
+        )
+        if not center:
+            raise RuntimeError(f"selector could not be resolved to a point: {selector!r}")
+        return self._css_center_to_coord(float(center[0]), float(center[1]))
+
+    async def _resolve_action_selectors(self, action: Action) -> None:
+        """If a pointer action carries a ``selector`` but no ``point``, resolve it.
+
+        Resolution mutates ``action.data`` in place (adding ``point``), so the
+        recorded trajectory shows the concrete coordinate that was tapped.
+        """
+        if action.action_type not in self._SELECTOR_RESOLVABLE:
+            return
+        data = action.data
+        if data.get("point") is not None or not data.get("selector"):
+            return
+        data["point"] = await self._resolve_selector_point(str(data["selector"]))
+        if self.verbose:
+            _log_env_info(self, f"SELECTOR {data['selector']} -> {data['point']}")
 
     def _p2c(self, x: float, y: float) -> Tuple[float, float]:
         # Map "physical" coordinate space to CSS viewport precisely, even when

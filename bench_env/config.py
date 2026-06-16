@@ -227,7 +227,7 @@ class RunnerConfig:
             max_tokens=get("max_tokens", 4096),
             no_stream=get("no_stream", False),
             infer_timeout=get("infer_timeout", 300.0),
-            
+
             device=get("device", "sim"),
             env_url=get("env_url"),
             device_serial=get("device_serial"),
