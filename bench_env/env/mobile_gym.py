@@ -111,9 +111,19 @@ class SwipeHandler(ActionHandler):
         x1, y1 = self.env._parse_point(action.data.get("point1"))
         x2, y2 = self.env._parse_point(action.data.get("point2"))
         duration = int(action.data.get("duration", 400))
+        inertia = action.data.get("inertia")
+        inertia_ms = action.data.get("inertia_ms")
+        inertia_decay = action.data.get("inertia_decay")
         if self.env.verbose:
             _log_env_info(self.env, f"SWIPE: ({x1:.0f}, {y1:.0f}) -> ({x2:.0f}, {y2:.0f}), duration={duration}ms")
-        await self.env._swipe((x1, y1), (x2, y2), duration=duration)
+        await self.env._swipe(
+            (x1, y1),
+            (x2, y2),
+            duration=duration,
+            inertia=None if inertia is None else bool(inertia),
+            inertia_ms=None if inertia_ms is None else int(inertia_ms),
+            inertia_decay=None if inertia_decay is None else float(inertia_decay),
+        )
         return None
 
 
@@ -1041,11 +1051,11 @@ class MobileGymEnv(BaseMobileEnv):
         y = max(0.0, min(float(self.physical_height - 1), y))
         return x, y
 
-    # Pointer actions whose target may be addressed by a CSS selector instead of
-    # a coordinate. Used only by scripted/replay agents (see agent/scripted.py);
-    # model agents never emit a "selector", so this path is inert for them.
+    # Scripted/replay agents may emit a CSS ``selector`` instead of ``point``.
+    # ``step()`` resolves it to ``point`` (and drops ``selector``) before handlers
+    # run, so every agent shares the same coordinate tap path as model agents.
     _SELECTOR_RESOLVABLE = frozenset(
-        {ActionType.CLICK, ActionType.DOUBLE_TAP, ActionType.LONG_PRESS, ActionType.TYPE}
+        {ActionType.CLICK, ActionType.DOUBLE_TAP, ActionType.LONG_PRESS, ActionType.TYPE, ActionType.DRAG, ActionType.SWIPE}
     )
 
     def _css_center_to_coord(self, cx: float, cy: float) -> list[float]:
@@ -1061,6 +1071,10 @@ class MobileGymEnv(BaseMobileEnv):
     async def _resolve_selector_point(self, selector: str) -> list[float]:
         """Resolve a CSS selector to a tap point in this env's ``coord_space``.
 
+        This must not scroll the page implicitly. Scripted trajectories are
+        ground-truth action traces, so any needed scroll has to be an explicit
+        SWIPE/DRAG step that appears in the recorded trajectory.
+
         Apps rendered with ``designViewportWidth`` sit under a CSS ``zoom`` on an
         ancestor; ``getBoundingClientRect()`` / Playwright report pre-zoom layout
         coordinates, but taps (``__SIM_INPUT__.tap``) and the screenshot use the
@@ -1068,9 +1082,10 @@ class MobileGymEnv(BaseMobileEnv):
         the cumulative ancestor zoom, and hit-test the result with
         ``elementFromPoint`` to confirm the tap will land on the element.
         """
-        loc = self.page.locator(selector).first
-        await loc.wait_for(state="visible", timeout=8000)
-        center = await loc.evaluate(
+        loc = self.page.locator(selector)
+        await loc.first.wait_for(state="visible", timeout=8000)
+        count = await loc.count()
+        probe = (
             """el => {
                 const r = el.getBoundingClientRect();
                 let z = 1, n = el;
@@ -1079,35 +1094,145 @@ class MobileGymEnv(BaseMobileEnv):
                     if (cz && cz !== 1) z *= cz;
                     n = n.parentElement;
                 }
-                const cands = [
-                    [(r.left + r.width / 2) * z, (r.top + r.height / 2) * z],
-                    [r.left + r.width / 2, r.top + r.height / 2],
+                const fractions = [
+                    [0.5, 0.5],
+                    [0.5, 0.2],
+                    [0.5, 0.1],
+                    [0.25, 0.2],
+                    [0.75, 0.2],
+                    [0.5, 0.8],
+                    [0.25, 0.5],
+                    [0.75, 0.5],
                 ];
+                const cands = [];
+                for (const [fx, fy] of fractions) {
+                    const x = r.left + r.width * fx;
+                    const y = r.top + r.height * fy;
+                    cands.push([x * z, y * z]);
+                    cands.push([x, y]);
+                }
                 for (const [x, y] of cands) {
+                    if (x < 0 || y < 0 || x >= window.innerWidth || y >= window.innerHeight) continue;
                     const hit = document.elementFromPoint(x, y);
                     if (hit && (hit === el || el.contains(hit) || hit.contains(el))) return [x, y];
                 }
-                return cands[0];
+                return null;
             }"""
         )
-        if not center:
-            raise RuntimeError(f"selector could not be resolved to a point: {selector!r}")
-        return self._css_center_to_coord(float(center[0]), float(center[1]))
+        # Playwright's ``:visible`` includes elements outside the visual
+        # viewport. If a selector has multiple matches, skip offscreen/covered
+        # matches and use the first one that can actually receive the tap.
+        for idx in range(min(count, 100)):
+            center = await loc.nth(idx).evaluate(probe)
+            if center:
+                return self._css_center_to_coord(float(center[0]), float(center[1]))
+        raise RuntimeError(
+            f"selector resolved to a point that would not receive the tap: {selector!r}"
+        )
+
+    async def _resolve_selector_drag_points(
+        self,
+        selector: str,
+        *,
+        start_fraction: float,
+        end_fraction: float,
+        y_fraction: float,
+        start_y_fraction: float | None = None,
+        end_y_fraction: float | None = None,
+        end_space: str = "visual",
+    ) -> tuple[list[float], list[float]]:
+        """Resolve a CSS selector plus relative fractions to drag endpoints."""
+
+        def clamp01(value: float) -> float:
+            return max(0.0, min(1.0, value))
+
+        sf = clamp01(float(start_fraction))
+        ef = clamp01(float(end_fraction))
+        yf = clamp01(float(y_fraction))
+        syf = clamp01(float(start_y_fraction if start_y_fraction is not None else yf))
+        eyf = clamp01(float(end_y_fraction if end_y_fraction is not None else yf))
+        loc = self.page.locator(selector).first
+        await loc.wait_for(state="visible", timeout=8000)
+        points = await loc.evaluate(
+            """(el, opts) => {
+                const r = el.getBoundingClientRect();
+                let z = 1, n = el;
+                while (n && n.nodeType === 1) {
+                    const cz = parseFloat(getComputedStyle(n).zoom);
+                    if (cz && cz !== 1) z *= cz;
+                    n = n.parentElement;
+                }
+                const variants = [
+                    { left: r.left * z, top: r.top * z, width: r.width * z, height: r.height * z },
+                    { left: r.left, top: r.top, width: r.width, height: r.height },
+                ];
+                const layout = { left: r.left, top: r.top, width: r.width, height: r.height };
+                const receives = hit => hit && (hit === el || el.contains(hit) || hit.contains(el));
+                for (const v of variants) {
+                    const sx = v.left + v.width * opts.sf;
+                    const sy = v.top + v.height * opts.syf;
+                    const endRect = opts.endSpace === 'layout' ? layout : v;
+                    const ex = endRect.left + endRect.width * opts.ef;
+                    const ey = endRect.top + endRect.height * opts.eyf;
+                    if (receives(document.elementFromPoint(sx, sy))) {
+                        return [[sx, sy], [ex, ey]];
+                    }
+                }
+                return null;
+            }""",
+            {"sf": sf, "ef": ef, "syf": syf, "eyf": eyf, "endSpace": end_space},
+        )
+        if not points:
+            raise RuntimeError(
+                f"selector resolved to drag points that would not receive the gesture: {selector!r}"
+            )
+        start, end = points
+        return (
+            self._css_center_to_coord(float(start[0]), float(start[1])),
+            self._css_center_to_coord(float(end[0]), float(end[1])),
+        )
 
     async def _resolve_action_selectors(self, action: Action) -> None:
-        """If a pointer action carries a ``selector`` but no ``point``, resolve it.
+        """Normalize scripted selector addressing to coordinate-only ``point``.
 
-        Resolution mutates ``action.data`` in place (adding ``point``), so the
-        recorded trajectory shows the concrete coordinate that was tapped.
+        Runs at the start of ``step()`` before physical handlers. If ``selector``
+        is present and coordinates are missing, resolve the element center or
+        relative drag endpoints to this env's ``coord_space``. The ``selector``
+        key is always removed so handlers and recorded trajectories match
+        model-agent coordinate actions.
         """
         if action.action_type not in self._SELECTOR_RESOLVABLE:
             return
         data = action.data
-        if data.get("point") is not None or not data.get("selector"):
+        selector = data.get("selector")
+        if not selector:
             return
-        data["point"] = await self._resolve_selector_point(str(data["selector"]))
-        if self.verbose:
-            _log_env_info(self, f"SELECTOR {data['selector']} -> {data['point']}")
+        if action.action_type in {ActionType.DRAG, ActionType.SWIPE}:
+            if data.get("point1") is None or data.get("point2") is None:
+                start_fraction = float(data.pop("start_fraction", 0.02))
+                end_fraction = float(data.pop("end_fraction", data.pop("to_fraction", 0.98)))
+                y_fraction = float(data.pop("y_fraction", 0.5))
+                start_y_fraction = data.pop("start_y_fraction", None)
+                end_y_fraction = data.pop("end_y_fraction", None)
+                end_space = str(data.pop("end_space", "visual"))
+                point1, point2 = await self._resolve_selector_drag_points(
+                    str(selector),
+                    start_fraction=start_fraction,
+                    end_fraction=end_fraction,
+                    y_fraction=y_fraction,
+                    start_y_fraction=None if start_y_fraction is None else float(start_y_fraction),
+                    end_y_fraction=None if end_y_fraction is None else float(end_y_fraction),
+                    end_space=end_space,
+                )
+                data["point1"] = point1
+                data["point2"] = point2
+                if self.verbose:
+                    _log_env_info(self, f"SELECTOR {selector!r} -> {data['point1']} -> {data['point2']}")
+        elif data.get("point") is None:
+            data["point"] = await self._resolve_selector_point(str(selector))
+            if self.verbose:
+                _log_env_info(self, f"SELECTOR {selector!r} -> {data['point']}")
+        del data["selector"]
 
     def _p2c(self, x: float, y: float) -> Tuple[float, float]:
         # Map "physical" coordinate space to CSS viewport precisely, even when
@@ -1183,16 +1308,32 @@ class MobileGymEnv(BaseMobileEnv):
                 await self.page.keyboard.press("Backspace")
             await self.page.keyboard.type(text, delay=0)
 
-    async def _swipe(self, start: Tuple[float, float], end: Tuple[float, float], duration: int = 400) -> None:
+    async def _swipe(
+        self,
+        start: Tuple[float, float],
+        end: Tuple[float, float],
+        duration: int = 400,
+        *,
+        inertia: bool | None = None,
+        inertia_ms: int | None = None,
+        inertia_decay: float | None = None,
+    ) -> None:
         x1, y1 = start
         x2, y2 = end
+        opts: dict[str, Any] = {"ms": duration}
+        if inertia is not None:
+            opts["inertia"] = inertia
+        if inertia_ms is not None:
+            opts["inertiaMs"] = inertia_ms
+        if inertia_decay is not None:
+            opts["inertiaDecay"] = inertia_decay
         try:
             used = await self.page.evaluate(
-                """async ({sx,sy,ex,ey,d}) => {
-                    if (window.__SIM_INPUT__?.swipe) { await window.__SIM_INPUT__.swipe({x:sx,y:sy},{x:ex,y:ey},{ms:d}); return true; }
+                """async ({sx,sy,ex,ey,opts}) => {
+                    if (window.__SIM_INPUT__?.swipe) { await window.__SIM_INPUT__.swipe({x:sx,y:sy},{x:ex,y:ey},opts); return true; }
                     return false;
                 }""",
-                {"sx": x1/self.dpr, "sy": y1/self.dpr, "ex": x2/self.dpr, "ey": y2/self.dpr, "d": duration},
+                {"sx": x1/self.dpr, "sy": y1/self.dpr, "ex": x2/self.dpr, "ey": y2/self.dpr, "opts": opts},
             )
             if used:
                 return
