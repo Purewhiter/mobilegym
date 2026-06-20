@@ -1,10 +1,9 @@
 """Live scripted-plan verification for the Spotify suite.
 
-Each ``SCRIPTED_CASES`` entry instantiates a task with concrete params; the
-matching plan in ``scripted_plans.py`` (keyed by ``task.id``) is replayed through
-the real GUI by ``ScriptedAgent`` and graded by the task judge. The plan's
-``{param}`` placeholders render from the same task params, so factory and plan
-stay in sync automatically.
+Each plan is replayed through ``ScriptedAgent`` via the same
+``BaseRunner.run_episode`` path as ``bench_env.run --agent scripted`` (grounded
+AnswerSheet, ``COMPLETE``, ``EpisodeResult.success`` = goal + clean diff).
+``{param}`` placeholders in plans render from the matching ``SCRIPTED_CASES`` params.
 
 Run against the gateway:
     pytest bench_env/tests/spotify/test_scripted.py --sim-url https://localhost:4180
@@ -20,7 +19,7 @@ from bench_env.env.mobile_gym import MobileGymEnv
 from bench_env.task.base import BaseTask
 from bench_env.task.spotify import tasks as spotify_tasks
 from bench_env.tests.scripted_support import (
-    format_result,
+    format_episode_result,
     run_scripted,
     suite_task_class_names,
 )
@@ -98,5 +97,5 @@ def test_scripted_cases_cover_every_task() -> None:
 async def test_spotify_scripted_passes_judge(
     env: MobileGymEnv, name: str, make_task: Callable[[], BaseTask]
 ) -> None:
-    res = await run_scripted(env, make_task(), suite=SUITE, max_steps=90)
-    assert res.success, f"{name}: judge rejected scripted run:\n{format_result(res)}"
+    res = await run_scripted(env, make_task(), suite=SUITE)
+    assert res.success, f"{name}: scripted episode must pass (COMPLETE + judge.passed):\n{format_episode_result(res)}"

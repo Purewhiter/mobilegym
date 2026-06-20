@@ -1,8 +1,8 @@
 """Offline unit tests for the scripted replay agent (no browser).
 
 Verify that plan steps compile to the right Actions and that plan discovery /
-strict param rendering behave. Live, per-suite verification lives in each
-suite's ``test_scripted.py`` and uses ``scripted_support.run_scripted``.
+strict param rendering behave. Live, per-suite verification uses
+``scripted_support.run_scripted`` (full ``run_episode``, grounded mode).
 """
 
 from __future__ import annotations
@@ -75,6 +75,11 @@ def test_missing_plan_yields_abort():
     agent.reset("desc")
     action = agent.act(_obs())
     assert action.action_type == ActionType.ABORT
+
+
+def test_home_compiles_to_home_action():
+    action = ScriptedAgent()._compile_step({"op": "home", "summary": "home"})
+    assert action.action_type == ActionType.HOME
 
 
 def test_unknown_suite_yields_none():

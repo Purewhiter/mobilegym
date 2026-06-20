@@ -1,10 +1,9 @@
 """Shared scripted-plan live verification helper.
 
-Every suite verifies identically: ``ScriptedAgent`` reads the suite's ``PLANS``
-(``bench_env/tests/<suite>/scripted_plans.py``), replays them through the real
-GUI, and the task judge grades the resulting state. Suites supply only task
-factories + plans; this drive loop is fixed here so no suite can get it subtly
-wrong.
+Every suite replays ``PLANS`` through ``ScriptedAgent`` using the same
+``BaseRunner.run_episode`` path as ``bench_env.run --agent scripted``:
+grounded evaluation, ``COMPLETE`` termination, and ``EpisodeResult.success``
+(``judge.passed`` = goal achieved with a clean diff).
 """
 
 from __future__ import annotations
@@ -13,16 +12,20 @@ import json
 from typing import Callable
 
 from bench_env.agent.scripted import ScriptedAgent
-from bench_env.env.base import ActionType, Observation
+from bench_env.config import RunnerConfig
 from bench_env.env.mobile_gym import MobileGymEnv
+from bench_env.runner.base import BaseRunner, EpisodeResult, Evaluator
 from bench_env.task.base import BaseTask
-from bench_env.task.judge import JudgeInput, JudgeResult
+from bench_env.task.registry import TaskRegistry, suite_name_from_tasks_module
 
 TaskFactory = Callable[[], BaseTask]
 
 
 def suite_task_class_names(tasks_module) -> set[str]:
     """Every concrete ``BaseTask`` subclass declared in a suite's tasks module."""
+    suite = suite_name_from_tasks_module(tasks_module)
+    if suite:
+        return set(TaskRegistry().list_tasks(suite))
     return {
         cls.__name__
         for cls in tasks_module.__dict__.values()
@@ -33,40 +36,39 @@ def suite_task_class_names(tasks_module) -> set[str]:
     }
 
 
-def format_result(res: JudgeResult) -> str:
-    return json.dumps(res.to_dict(), ensure_ascii=False, indent=2)
+def format_episode_result(result: EpisodeResult) -> str:
+    payload = result.to_dict()
+    return json.dumps(payload, ensure_ascii=False, indent=2, default=str)
 
 
-async def run_scripted(env: MobileGymEnv, task: BaseTask, *, suite: str, max_steps: int = 40) -> JudgeResult:
-    """Drive ``task`` through the GUI via ScriptedAgent and return the judge result.
+def grounded_max_steps(task: BaseTask, *, explicit: int | None = None) -> int:
+    """Step budget aligned with ``RunnerConfig.get_max_steps`` in grounded mode."""
+    if explicit is not None:
+        return explicit
+    cfg = RunnerConfig(agent="scripted", model_name="scripted", eval_mode="grounded")
+    return cfg.get_max_steps(task)
 
-    Raises ``AssertionError`` if the plan aborts or never terminates — those are
-    plan bugs, distinct from a judge rejection (which comes back as
-    ``res.success is False``).
+
+async def run_scripted(
+    env: MobileGymEnv,
+    task: BaseTask,
+    *,
+    suite: str,
+    max_steps: int | None = None,
+) -> EpisodeResult:
+    """Run ``task`` through the full bench episode loop with ``ScriptedAgent``.
+
+    Uses grounded evaluation (AnswerSheet UI) and returns the same
+    ``EpisodeResult`` as ``bench_env.run --agent scripted``.
     """
-    task._suite = suite  # so task.id == "<suite>.<ClassName>"
-    init_obs = await task.setup(env)
-
+    task._suite = suite
     agent = ScriptedAgent()
-    agent.set_task_context(task)
-    agent.reset(task.description)
-
-    obs = init_obs
-    answer: str | None = None
-    for _ in range(max_steps):
-        action = agent.act(obs)
-        at = action.action_type
-        if at == ActionType.ANSWER:
-            answer = str(action.data.get("value", ""))
-            continue
-        if at == ActionType.COMPLETE:
-            break
-        if at == ActionType.ABORT:
-            raise AssertionError(f"[{task.id}] plan aborted: {action.summary}")
-        obs = (await env.step(action)).observation
-    else:
-        raise AssertionError(f"[{task.id}] plan did not terminate within {max_steps} steps")
-
-    curr_state = await env.get_state(required_apps=task.apps or None)
-    curr_obs = Observation(state=curr_state, route=obs.route, step_idx=1)
-    return task.evaluate(JudgeInput(init_obs=init_obs, last_obs=curr_obs, answer=answer))
+    evaluator = Evaluator(eval_mode="grounded")
+    budget = grounded_max_steps(task, explicit=max_steps)
+    return await BaseRunner.run_episode(
+        env,
+        agent,
+        task,
+        max_steps=budget,
+        evaluator=evaluator,
+    )
