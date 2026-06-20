@@ -548,17 +548,29 @@ export const SearchInputPage: React.FC = () => {
                                 <IcMoreVertical size={22} />
                               </button>
                               <button
-                                onClick={(event) => {
-                                  event.stopPropagation();
-                                  const normalizedTrack: SpotifyTrack =
-                                    track.source === 'local' && track._track ? track._track : toTrackFromItunes(track);
-                                  const alreadyLiked = isLiked(normalizedTrack.id, normalizedTrack);
-                                  if (alreadyLiked) {
-                                    openSaveLocation(normalizedTrack, setSearchParams);
-                                    return;
-                                  }
-                                  toggleLike(normalizedTrack);
-                                }}
+                                {...bindTap(
+                                  { kind: 'action', id: 'track.like.toggle' },
+                                  {
+                                    params: {
+                                      trackId: String(track.trackId || track.id),
+                                      to: !isLiked(String(track.trackId || track.id), {
+                                        title: String(track.trackName || track.title || ''),
+                                        artist: String(track.artistName || track.artist || ''),
+                                      }),
+                                    },
+                                    stopPropagation: true,
+                                    onTrigger: () => {
+                                      const normalizedTrack: SpotifyTrack =
+                                        track.source === 'local' && track._track ? track._track : toTrackFromItunes(track);
+                                      const alreadyLiked = isLiked(normalizedTrack.id, normalizedTrack);
+                                      if (alreadyLiked) {
+                                        openSaveLocation(normalizedTrack, setSearchParams);
+                                        return;
+                                      }
+                                      toggleLike(normalizedTrack);
+                                    },
+                                  },
+                                )}
                                 className="hover:text-white"
                               >
                                 {isLiked(String(track.trackId || track.id), {
