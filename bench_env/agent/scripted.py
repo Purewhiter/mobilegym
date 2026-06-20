@@ -2,16 +2,27 @@
 
 A deterministic, LLM-free agent that replays a per-task plan through the
 *standard* GUI action space — the same ``env.step(Action(...))`` path every
-other agent uses. Plans address controls by their stable ``data-trigger`` /
-``data-action`` attributes (or by explicit normalized points); the environment
-resolves a selector to a coordinate at ``step()`` time, so this agent stays a
-plain synchronous "emit one Action per step" agent. It differs from a model
-agent only in that ``act()`` reads the next scripted step instead of calling an
-LLM.
+other agent uses.
+
+- **Control actions** (``HOME``, ``BACK``, ``AWAKE``, ``WAIT``, …) are emitted
+  as-is — e.g. cross-app flows use ``AWAKE`` / ``home()`` like model agents that
+  output ``Launch`` / ``AWAKE``, not desktop icon coordinates.
+- **In-app pointer actions** use ``data-trigger`` / ``data-action``, explicit
+  ``point``, or a ``selector`` locator; ``MobileGymEnv.step()`` resolves any
+  ``selector`` to a ``point`` and executes via ``__SIM_INPUT__.tap`` (never
+  Playwright DOM click), matching the coordinate path a vision agent takes.
+
+This agent stays a plain synchronous "emit one Action per step" agent; it
+differs from a model agent only in that ``act()`` reads the next scripted step
+instead of calling an LLM.
 
 Use it to prove a task is end-to-end solvable through the real GUI and that its
 judge accepts the resulting state — complementary to store-level live tests
 which bypass the UI.
+
+In **grounded mode** (the default for bench and for ``test_scripted.py``), plans
+must submit answers through the AnswerSheet app UI via ``grounded_answer`` /
+``grounded_answer_repeatable`` — not the legacy ``ANSWER`` action.
 
 Plans currently live as test assets under
 ``bench_env/tests/<suite>/scripted_plans.py`` (a module-level ``PLANS`` dict
@@ -44,6 +55,30 @@ def tap_action(action_id: str, *, summary: str | None = None) -> Step:
     return {"op": "tap_action", "id": action_id, "summary": summary or f"tap action {action_id}"}
 
 
+def keypad_text(
+    value: str,
+    *,
+    press_action: str,
+    param: str = "digit",
+    input_selector: str | None = None,
+    toggle_action: str | None = None,
+    summary: str | None = None,
+) -> Step:
+    """Enter a rendered value through an on-screen keypad action, one key at a time."""
+    step: Step = {
+        "op": "keypad_text",
+        "value": value,
+        "press_action": press_action,
+        "param": param,
+        "summary": summary or f"enter keypad text {value!r}",
+    }
+    if input_selector is not None:
+        step["input_selector"] = input_selector
+    if toggle_action is not None:
+        step["toggle_action"] = toggle_action
+    return step
+
+
 def tap(point: Point, *, summary: str | None = None) -> Step:
     return {"op": "click", "point": point, "summary": summary or f"tap {point}"}
 
@@ -72,12 +107,124 @@ def back(*, summary: str | None = None) -> Step:
     return {"op": "back", "summary": summary or "back"}
 
 
+def enter(*, summary: str | None = None) -> Step:
+    """Dispatch Enter to the focused element (commits inputs with onKeyDown=Enter)."""
+    return {"op": "enter", "summary": summary or "press enter"}
+
+
+def home(*, summary: str | None = None) -> Step:
+    return {"op": "home", "summary": summary or "home"}
+
+
+def awake(app: str, *, summary: str | None = None) -> Step:
+    """Launch an app by name/id — standard ``AWAKE`` action (same as model ``Launch``)."""
+    return {"op": "awake", "app": app, "summary": summary or f"open {app}"}
+
+
 def wait(seconds: float, *, summary: str | None = None) -> Step:
     return {"op": "wait", "seconds": seconds, "summary": summary or f"wait {seconds}s"}
 
 
-def answer(value: str, *, summary: str | None = None) -> Step:
-    return {"op": "answer", "value": value, "summary": summary or "answer"}
+def tap_at(selector: str, *, summary: str) -> Step:
+    """Locate a visible component by selector; env resolves to a coordinate CLICK."""
+    return {"op": "click", "selector": selector, "summary": summary}
+
+
+# Back-compat alias used by suite plans.
+click_selector = tap_at
+
+
+def long_press_at(selector: str, *, summary: str, duration_ms: int = 800) -> Step:
+    """Locate a visible component by selector; env resolves to a coordinate LONG_PRESS."""
+    return {"op": "long_press", "selector": selector, "duration_ms": duration_ms, "summary": summary}
+
+
+def swipe_up(*, x: int = 500, from_y: int = 750, to_y: int = 250, summary: str = "swipe up") -> Step:
+    return swipe([x, from_y], [x, to_y], summary=summary)
+
+
+def swipe_feed(*, times: int = 1, summary_prefix: str = "scroll discover feed") -> list[Step]:
+    """Vertical swipes on the home discover feed (norm_0_1000 coordinates)."""
+    return [swipe_up(summary=f"{summary_prefix} {i + 1}/{times}") for i in range(times)]
+
+
+def tap_at_after_scroll(selector: str, *, swipes: int = 0, summary: str) -> list[Step]:
+    """Optional feed scroll, then tap_at — same locate→coordinate path as a vision agent."""
+    steps: list[Step] = swipe_feed(times=swipes) if swipes > 0 else []
+    steps.append(tap_at(selector, summary=summary))
+    return steps
+
+
+def _answer_sheet_input(index: int) -> str:
+    """One input per non-repeatable field block (Playwright resolves .first itself)."""
+    return f'[data-scroll-container="sheet-form"] div.space-y-5 > div:nth-child({index + 1}) input'
+
+
+def _answer_sheet_repeatable_input(row: int) -> str:
+    """Input inside the first (repeatable) field block; ``row`` is 0-based."""
+    return (
+        f'[data-scroll-container="sheet-form"] div.space-y-5 > div:nth-child(1) '
+        f'div.flex.items-center:nth-child({row + 1}) input'
+    )
+
+
+def open_answer_sheet() -> list[Step]:
+    """Open AnswerSheet via standard ``AWAKE`` (grounded mode)."""
+    return [
+        home(summary="return to launcher"),
+        awake("答题卡", summary="open AnswerSheet app"),
+        wait(0.8, summary="wait for answer sheet UI"),
+    ]
+
+
+def submit_answer_sheet(*, summary: str | None = None) -> Step:
+    return tap_at(
+        'div[data-hide-on-keyboard] button.w-full.bg-blue-500:visible',
+        summary=summary or "submit answer sheet",
+    )
+
+
+def _dismiss_answer_sheet_keyboard() -> Step:
+    """System back dismisses the keyboard (BackDispatcher priority 700) without leaving the app."""
+    return back(summary="dismiss keyboard to show submit bar")
+
+
+def grounded_answer(*values: str, summary: str | None = None) -> list[Step]:
+    """Fill one or more AnswerSheet fields and submit (grounded mode)."""
+    steps = open_answer_sheet()
+    for index, value in enumerate(values):
+        steps.append(
+            type_text(
+                value,
+                selector=_answer_sheet_input(index),
+                clear=True,
+                summary=f"fill answer field {index}: {value!r}",
+            )
+        )
+    steps.append(_dismiss_answer_sheet_keyboard())
+    steps.append(submit_answer_sheet(summary=summary))
+    return steps
+
+
+def grounded_answer_repeatable(*values: str, summary: str | None = None) -> list[Step]:
+    """Fill a repeatable AnswerSheet field (one row per value) and submit."""
+    add_row = 'button.border-dashed.border-slate-300:visible'
+    steps = open_answer_sheet()
+    for index, value in enumerate(values):
+        # Repeatable fields start empty — each row must be created via "Add item".
+        steps.append(tap_at(add_row, summary=f"add answer sheet row {index}"))
+        steps.append(wait(0.2, summary="wait for repeatable row"))
+        steps.append(
+            type_text(
+                value,
+                selector=_answer_sheet_repeatable_input(index),
+                clear=True,
+                summary=f"fill repeatable answer row {index}: {value!r}",
+            )
+        )
+    steps.append(_dismiss_answer_sheet_keyboard())
+    steps.append(submit_answer_sheet(summary=summary))
+    return steps
 
 
 def complete(message: str = "scripted task complete") -> Step:
@@ -137,6 +284,127 @@ def _render(value: Any, params: dict[str, Any]) -> Any:
     return value
 
 
+def _with_derived_params(task_id: str, params: dict[str, Any]) -> dict[str, Any]:
+    """Add small UI-label aliases used by static scripted plans."""
+    if not task_id.startswith("calendar."):
+        return params
+    try:
+        from bench_env.task.calendar.app import (
+            CALENDAR_ALLDAY_REMINDER_VALUES,
+            CALENDAR_DEFAULT_REMINDER_VALUES,
+            CALENDAR_EVENT_REMINDER_VALUES,
+            CALENDAR_LATER_REMINDER_VALUES,
+        )
+    except Exception:
+        return params
+
+    derived = dict(params)
+
+    def add_label(source: str, target: str, mapping: dict[str, Any]) -> None:
+        if target in derived or source not in derived:
+            return
+        wanted = derived[source]
+        for label, value in mapping.items():
+            if value == wanted:
+                derived[target] = label
+                return
+
+    add_label("reminder", "reminderLabel", CALENDAR_DEFAULT_REMINDER_VALUES)
+    add_label("reminder", "reminderChoice", CALENDAR_EVENT_REMINDER_VALUES)
+    add_label("r1", "r1Label", CALENDAR_DEFAULT_REMINDER_VALUES)
+    add_label("r2", "r2Label", CALENDAR_ALLDAY_REMINDER_VALUES)
+    add_label("r3", "r3Label", CALENDAR_LATER_REMINDER_VALUES)
+    return derived
+
+
+def _expand_step_macros(steps: list[Step]) -> list[Step]:
+    expanded: list[Step] = []
+    for step in steps:
+        if step.get("op") == "wheel_scroll":
+            current = int(step.get("current", 0))
+            target = int(step.get("target", current))
+            modulo = int(step.get("modulo", 0))
+            selector = str(step["selector"])
+            if modulo <= 0:
+                delta = target - current
+            else:
+                delta = (target - current) % modulo
+                if delta > modulo / 2 or (delta == modulo / 2 and step.get("prefer_reverse_half")):
+                    delta -= modulo
+            if delta == 0:
+                continue
+            start_y = float(step.get("start_y_fraction", 0.55))
+            end_y = float(step.get("end_y_fraction", 0.416))
+            reverse_start_y = float(step.get("reverse_start_y_fraction", 0.45))
+            reverse_end_y = float(step.get("reverse_end_y_fraction", 0.584))
+            max_delta_per_swipe = max(1, int(step.get("max_delta_per_swipe", 1)))
+            delta_y_fraction = float(step.get("delta_y_fraction", abs(start_y - end_y)))
+            remaining = abs(delta)
+            index = 0
+            while remaining > 0:
+                chunk = min(max_delta_per_swipe, remaining)
+                if delta > 0:
+                    syf = start_y
+                    eyf = max(0.02, start_y - delta_y_fraction * chunk)
+                else:
+                    syf = reverse_start_y
+                    eyf = min(0.98, reverse_start_y + delta_y_fraction * chunk)
+                expanded.append(
+                    {
+                        "op": "swipe",
+                        "selector": selector,
+                        "start_fraction": float(step.get("x_fraction", 0.5)),
+                        "end_fraction": float(step.get("x_fraction", 0.5)),
+                        "start_y_fraction": syf,
+                        "end_y_fraction": eyf,
+                        "duration_ms": int(step.get("duration_ms", 260)),
+                        "inertia": bool(step.get("inertia", False)),
+                        "summary": (
+                            f"{step.get('summary') or 'scroll wheel'} "
+                            f"{index + 1}/{abs(delta)}"
+                        ),
+                    }
+                )
+                index += chunk
+                remaining -= chunk
+            continue
+
+        if step.get("op") != "keypad_text":
+            expanded.append(step)
+            continue
+
+        value = str(step.get("value", ""))
+        press_action = str(step["press_action"])
+        param = str(step.get("param") or "digit")
+        input_selector = step.get("input_selector")
+        if input_selector:
+            expanded.append(
+                {
+                    "op": "click",
+                    "selector": str(input_selector),
+                    "summary": step.get("focus_summary") or "focus keypad input",
+                }
+            )
+        for index, char in enumerate(value, start=1):
+            expanded.append(
+                {
+                    "op": "click",
+                    "selector": f'[data-action="{press_action}"][data-action-params*=\'"{param}":"{char}"\']:visible',
+                    "summary": f"{step.get('summary') or 'enter keypad text'} key {index}: {char}",
+                }
+            )
+        toggle_action = step.get("toggle_action")
+        if toggle_action:
+            expanded.append(
+                {
+                    "op": "tap_action",
+                    "id": str(toggle_action),
+                    "summary": step.get("toggle_summary") or "hide keypad",
+                }
+            )
+    return expanded
+
+
 # ---------------------------------------------------------------------------
 # Agent
 # ---------------------------------------------------------------------------
@@ -159,7 +427,7 @@ class ScriptedAgent(BaseAgent):
 
     def set_task_context(self, task: Any) -> None:
         self._task_id = str(getattr(task, "id", "") or "")
-        self._task_params = dict(getattr(task, "params", {}) or {})
+        self._task_params = _with_derived_params(self._task_id, dict(getattr(task, "params", {}) or {}))
 
     def reset(self, task: str) -> None:
         self._task = task
@@ -170,7 +438,8 @@ class ScriptedAgent(BaseAgent):
         if raw is None:
             self._steps = [abort(f"No scripted plan for task id={self._task_id!r}: {task}")]
             return
-        self._steps = [_render(dict(step), self._task_params) for step in raw if isinstance(step, dict)]
+        rendered_steps = [_render(dict(step), self._task_params) for step in raw if isinstance(step, dict)]
+        self._steps = _expand_step_macros(rendered_steps)
 
     def build_messages(self, obs: Observation) -> list[dict]:
         return []  # No LLM prompt.
@@ -189,20 +458,59 @@ class ScriptedAgent(BaseAgent):
             action = Action(ActionType.CLICK, {"selector": f'[data-action="{step["id"]}"]', "semantic": semantic})
         elif op in {"click", "tap"}:
             action = Action(ActionType.CLICK, {**_addressing(step), "semantic": semantic})
+        elif op == "long_press":
+            action = Action(
+                ActionType.LONG_PRESS,
+                {**_addressing(step), "duration": int(step.get("duration_ms", 800)), "semantic": semantic},
+            )
         elif op == "type":
             data = {"value": str(step.get("value", "")), "clear": bool(step.get("clear", False)), "semantic": semantic}
             data.update(_addressing(step))
             action = Action(ActionType.TYPE, data)
         elif op == "swipe":
-            action = Action(ActionType.SWIPE, {"point1": step.get("point1"), "point2": step.get("point2"), "semantic": semantic})
+            data = {"point1": step.get("point1"), "point2": step.get("point2"), "semantic": semantic}
+            if step.get("selector"):
+                data["selector"] = str(step["selector"])
+            for key in ("start_fraction", "end_fraction", "to_fraction", "y_fraction", "start_y_fraction", "end_y_fraction"):
+                if step.get(key) is not None:
+                    data[key] = float(step[key])
+            if step.get("end_space") is not None:
+                data["end_space"] = str(step["end_space"])
+            if step.get("duration_ms") is not None:
+                data["duration"] = int(step["duration_ms"])
+            elif step.get("duration") is not None:
+                data["duration"] = int(step["duration"])
+            if step.get("inertia") is not None:
+                data["inertia"] = bool(step["inertia"])
+            if step.get("inertia_ms") is not None:
+                data["inertia_ms"] = int(step["inertia_ms"])
+            if step.get("inertia_decay") is not None:
+                data["inertia_decay"] = float(step["inertia_decay"])
+            action = Action(ActionType.SWIPE, data)
         elif op == "drag":
-            action = Action(ActionType.DRAG, {"point1": step.get("point1"), "point2": step.get("point2"), "semantic": semantic})
+            data = {"point1": step.get("point1"), "point2": step.get("point2"), "semantic": semantic}
+            if step.get("selector"):
+                data["selector"] = str(step["selector"])
+            for key in ("start_fraction", "end_fraction", "to_fraction", "y_fraction", "start_y_fraction", "end_y_fraction"):
+                if step.get(key) is not None:
+                    data[key] = float(step[key])
+            if step.get("end_space") is not None:
+                data["end_space"] = str(step["end_space"])
+            if step.get("duration_ms") is not None:
+                data["duration"] = int(step["duration_ms"])
+            elif step.get("duration") is not None:
+                data["duration"] = int(step["duration"])
+            action = Action(ActionType.DRAG, data)
         elif op == "wait":
             action = Action.wait(float(step.get("seconds", 1.0)))
         elif op == "back":
             action = Action.back()
-        elif op == "answer":
-            action = Action.answer(str(step.get("value", "")))
+        elif op == "enter":
+            action = Action(ActionType.ENTER, {"semantic": semantic})
+        elif op == "home":
+            action = Action.home()
+        elif op == "awake":
+            action = Action(ActionType.AWAKE, {"value": str(step.get("app", "")), "semantic": semantic})
         elif op == "complete":
             action = Action.complete(str(step.get("message", "scripted task complete")))
         elif op == "abort":

@@ -140,6 +140,15 @@ def _all_suite_names() -> list[str]:
     return sorted(set(_SUITE_MODULES) | set(_SUITE_DEFS))
 
 
+def suite_name_from_tasks_module(module: Any) -> str | None:
+    """Return the task suite name for a ``bench_env.task.<suite>.tasks`` module."""
+    module_name = getattr(module, "__name__", "")
+    parts = module_name.split(".")
+    if len(parts) >= 4 and parts[0:2] == ["bench_env", "task"] and parts[-1] == "tasks":
+        return parts[2]
+    return None
+
+
 class TaskRegistry:
     """
     Registry for task classes.
