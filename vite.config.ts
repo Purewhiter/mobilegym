@@ -634,12 +634,13 @@ function serveCdnPlugin() {
 
 /**
  * 把 apps/Map/sw/ 暴露到根路径：
- *   /map-sw.js         → apps/Map/sw/map-sw.js
- *   /map-cache/<file>  → apps/Map/sw/<file>
+ *   /map-sw.js                → apps/Map/sw/map-sw.js
+ *   /map-cache/<file>         → apps/Map/sw/<file>（legacy dev fallback）
+ *   /map-vector-cache/<file>  → apps/Map/sw/vector/<file>（legacy dev fallback）
  * Service Worker 注册要求 SW 文件能拿到根 scope，所以这两个路径必须在站点根。
- * 文件源码留在 Map App 内部，避免污染 public/。
+ * 大型地图缓存走 /cdn/map/...（mobilegym-data 或生产 CDN），不要打进 App 源码/构建产物。
  *
- * 生产 build 时把整目录复制到 dist/，preview/线上行为与 dev 一致。
+ * 生产 build 只把 SW 文件和小 bootstrap manifest 复制到 dist；地图缓存由 CDN 提供。
  */
 function mapServiceWorkerPlugin() {
   const SW_ROOT = path.resolve(__dirname, 'apps/Map/sw');
@@ -672,12 +673,12 @@ function mapServiceWorkerPlugin() {
     next();
   };
 
-  const cacheMiddleware = (req: any, res: any, next: any) => {
+  const makeCacheMiddleware = (prefix: string, root: string) => (req: any, res: any, next: any) => {
     const url = req.url || '/';
-    const rel = decodeURIComponent(url.split('?')[0]).replace(/^\/map-cache\//, '');
+    const rel = decodeURIComponent(url.split('?')[0]).replace(new RegExp(`^${prefix}`), '');
     if (!rel || rel.includes('..')) return next();
-    const filePath = path.join(SW_ROOT, rel);
-    if (!filePath.startsWith(SW_ROOT) || !fs.existsSync(filePath) || !fs.statSync(filePath).isFile()) {
+    const filePath = path.join(root, rel);
+    if (!filePath.startsWith(root) || !fs.existsSync(filePath) || !fs.statSync(filePath).isFile()) {
       // 显式 404，避免落到 Vite 的 SPA fallback 把 index.html 当成缓存文件返回
       res.statusCode = 404;
       res.setHeader('Content-Type', 'text/plain');
@@ -686,41 +687,33 @@ function mapServiceWorkerPlugin() {
     }
     sendFile(res, filePath);
   };
-
-  function copyDirRecursive(src: string, dst: string) {
-    if (!fs.existsSync(src)) return;
-    fs.mkdirSync(dst, { recursive: true });
-    for (const name of fs.readdirSync(src)) {
-      const s = path.join(src, name);
-      const d = path.join(dst, name);
-      const stat = fs.statSync(s);
-      if (stat.isDirectory()) copyDirRecursive(s, d);
-      else fs.copyFileSync(s, d);
-    }
-  }
+  const rasterCacheMiddleware = makeCacheMiddleware('/map-cache/', SW_ROOT);
+  const vectorCacheMiddleware = makeCacheMiddleware('/map-vector-cache/', path.join(SW_ROOT, 'vector'));
 
   return {
     name: 'map-service-worker',
     configureServer(server: any) {
       server.middlewares.use(swMiddleware);
-      server.middlewares.use('/map-cache/', cacheMiddleware);
+      server.middlewares.use('/map-cache/', rasterCacheMiddleware);
+      server.middlewares.use('/map-vector-cache/', vectorCacheMiddleware);
     },
     configurePreviewServer(server: any) {
       server.middlewares.use(swMiddleware);
-      server.middlewares.use('/map-cache/', cacheMiddleware);
+      server.middlewares.use('/map-cache/', rasterCacheMiddleware);
+      server.middlewares.use('/map-vector-cache/', vectorCacheMiddleware);
     },
     closeBundle() {
-      // 生产 build：把 SW 文件复制到 dist 根
+      // 生产 build：只复制 SW 和小 bootstrap manifest，缓存资产走 /cdn/map/...
       const outDir = path.resolve(__dirname, 'dist');
       if (!fs.existsSync(outDir)) return;
       const swSrc = path.join(SW_ROOT, 'map-sw.js');
       if (fs.existsSync(swSrc)) fs.copyFileSync(swSrc, path.join(outDir, 'map-sw.js'));
-      const manifestSrc = path.join(SW_ROOT, 'manifest.json');
-      const filesSrc = path.join(SW_ROOT, 'files');
-      const cacheDst = path.join(outDir, 'map-cache');
-      fs.mkdirSync(cacheDst, { recursive: true });
-      if (fs.existsSync(manifestSrc)) fs.copyFileSync(manifestSrc, path.join(cacheDst, 'manifest.json'));
-      if (fs.existsSync(filesSrc)) copyDirRecursive(filesSrc, path.join(cacheDst, 'files'));
+      const bootstrapSrc = path.join(SW_ROOT, 'vector', 'bootstrap-manifest.json');
+      if (fs.existsSync(bootstrapSrc)) {
+        const bootstrapOutDir = path.join(outDir, 'map-vector-cache');
+        fs.mkdirSync(bootstrapOutDir, { recursive: true });
+        fs.copyFileSync(bootstrapSrc, path.join(bootstrapOutDir, 'bootstrap-manifest.json'));
+      }
     },
   };
 }

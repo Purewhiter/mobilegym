@@ -469,10 +469,15 @@ def load_tasks(
     task_classes = sorted(task_classes, key=lambda c: (getattr(c, '_suite', ''), c.__name__))
 
     if sample_n is None:
-        # Template sampling still needs the seeded path so each class picks a
-        # variant from ``cls.templates`` deterministically.
-        if sample_templates:
-            return _instantiate(task_classes, 1, seed or 0, sample_templates=True)
+        # A provided seed must still reach single-instance tasks so their
+        # parameter sampler can be reproduced from meta.json.
+        if seed is not None or sample_templates:
+            return _instantiate(
+                task_classes,
+                1,
+                seed if seed is not None else 0,
+                sample_templates=sample_templates,
+            )
         return [cls() for cls in task_classes]
 
     if sample_n <= 0:

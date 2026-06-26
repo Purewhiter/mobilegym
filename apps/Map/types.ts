@@ -19,6 +19,20 @@ export interface ShoppingItem {
   lng: number;
 }
 
+export type PlaceSelectionFallback = {
+  name?: string;
+  formattedAddress?: string;
+  location?: { lat: number; lng: number };
+  types?: string[];
+};
+
+export type PendingPlaceSelection = {
+  requestId: number;
+  placeId: string;
+  mode?: 'origin' | 'destination';
+  fallback?: PlaceSelectionFallback;
+};
+
 /** Google Places（旧 PlaceResult / 新 Place.fetchFields）里可能出现的联系信息字段 */
 export type GooglePlaceContactFields = {
   formatted_phone_number?: string;
@@ -62,4 +76,3 @@ export function pickFormattedPhoneNumber(place: GooglePlaceContactFields): strin
 export function pickPlaceWebsite(place: GooglePlaceContactFields): string | undefined {
   return place.websiteURI || place.websiteUri || place.website_uri || place.website || undefined;
 }
-

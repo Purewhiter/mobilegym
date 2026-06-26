@@ -1,3 +1,5 @@
+import { CDN_ROOT } from '@/os/utils/cdn';
+
 let registrationPromise: Promise<ServiceWorkerRegistration | null> | null = null;
 
 export function registerMapServiceWorker(): Promise<ServiceWorkerRegistration | null> {
@@ -6,8 +8,11 @@ export function registerMapServiceWorker(): Promise<ServiceWorkerRegistration | 
   }
   if (registrationPromise) return registrationPromise;
 
+  const swUrl = new URL(`${import.meta.env.BASE_URL}map-sw.js`, window.location.href);
+  swUrl.searchParams.set('cdnBase', CDN_ROOT);
+
   registrationPromise = navigator.serviceWorker
-    .register(`${import.meta.env.BASE_URL}map-sw.js`, { scope: import.meta.env.BASE_URL })
+    .register(swUrl.toString(), { scope: import.meta.env.BASE_URL })
     .then((registration) => {
       console.log('[Map] Service Worker 已注册');
       return registration;

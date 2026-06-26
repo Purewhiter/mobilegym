@@ -1,11 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useLocale } from '@/os/locale';
 import { IcNavBackArrow, IcPlay, IcPause, IcAddCircle, IcCheckCircle, IcMoreVertical, IcCheck } from '../res/icons';
 import { useSpotifyStore, selectLikedSongIds } from '../state';
 import { useShallow } from 'zustand/react/shallow';
 import { useSpotifyGestures } from '../hooks/useSpotifyGestures';
-import * as TimeService from '../../../os/TimeService';
-import { setJsonpCallback, removeJsonpCallback, type ITunesResponse } from '../utils/jsonp';
 import { useSpotifyStrings } from '../hooks/useSpotifyStrings';
 import { useSearchParams } from 'react-router-dom';
 import { localizeSpotifyText } from '../utils/localizeSpotifyText';
@@ -18,7 +16,8 @@ const NEW_RELEASES = [
         title: '點亮亮點2026',
         artist: '王錚亮',
         type: '单曲',
-        cover: 'https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/ff/e4/16/ffe4161b-8f19-3f04-8742-8321d23f5b72/cover.jpg/600x600bb.jpg',
+        cover: '/cdn/spotify/images/artists/c3bf8ff998066b75.jpg',
+        coverLarge: '/cdn/spotify/images/tracks/2eaf98d871e232c1.jpg',
         trackId: 't1' // should map to a real track if possible or mock play
     },
     {
@@ -27,7 +26,8 @@ const NEW_RELEASES = [
         title: '垃圾别烦我',
         artist: '周深',
         type: '单曲',
-        cover: 'https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/ce/27/98/ce2798e1-512c-4734-6c3e-001007469614/artwork.jpg/600x600bb.jpg',
+        cover: '/cdn/spotify/images/artists/a526975805839c04.jpg',
+        coverLarge: '/cdn/spotify/images/tracks/cd0f56d240376385.jpg',
         trackId: 't2'
     },
     {
@@ -36,7 +36,8 @@ const NEW_RELEASES = [
         title: '万里晴空',
         artist: '张杰',
         type: '单曲', // Screenshot says single for most
-        cover: 'https://is1-ssl.mzstatic.com/image/thumb/Music122/v4/ed/48/20/ed48206d-4e92-ae31-e408-59caba159151/197187423859.jpg/600x600bb.jpg',
+        cover: '/cdn/spotify/images/artists/e00ceda949dcac14.jpg',
+        coverLarge: '/cdn/spotify/images/tracks/82a469fed484412f.jpg',
         trackId: 't3'
     },
 ];
@@ -53,44 +54,15 @@ const NewItem: React.FC<{ item: typeof NEW_RELEASES[0] }> = ({ item }) => {
     const toggleLike = useSpotifyStore(s => s.toggleLike);
     const likedSongIds = useSpotifyStore(selectLikedSongIds);
     const isLiked = (trackId: string, track?: { title: string; artist: string }) => likedSongIds.has(trackId, track);
-    const [artwork, setArtwork] = useState<string>(item.cover);
-
-    useEffect(() => {
-        // Fetch high-res artwork from iTunes
-        const fetchCover = () => {
-            const callbackName = `itunes_cb_${item.id}_${TimeService.now()}`;
-            // Sanitize title: remove dots, tildes, dashes which break iTunes search often
-            const cleanTitle = item.title.replace(/[·~-]/g, ' ').trim();
-            const query = `${cleanTitle} ${item.artist}`;
-            const script = document.createElement('script');
-            script.src = `https://itunes.apple.com/search?term=${encodeURIComponent(query)}&entity=song&limit=1&callback=${callbackName}`;
-
-            setJsonpCallback<ITunesResponse>(callbackName, (data) => {
-                if (data.results?.length > 0) {
-                    const highRes = data.results[0].artworkUrl100.replace('100x100', '600x600');
-                    setArtwork(highRes);
-                }
-                removeJsonpCallback(callbackName);
-                document.body.removeChild(script);
-            });
-
-            script.onerror = () => {
-                removeJsonpCallback(callbackName);
-                if (script.parentNode) document.body.removeChild(script);
-            };
-
-            document.body.appendChild(script);
-        };
-
-        fetchCover();
-    }, [item]);
+    const artwork = item.coverLarge || item.cover;
 
     // Mock track object for playback context
     const track = {
         id: item.id,
         title: item.title,
         artist: item.artist,
-        cover: artwork,
+        cover: item.cover,
+        coverLarge: artwork,
         duration: '3:30' // Mock
     };
 
@@ -133,7 +105,7 @@ const NewItem: React.FC<{ item: typeof NEW_RELEASES[0] }> = ({ item }) => {
                     className="w-32 h-32 rounded-md bg-[#333] object-cover flex-shrink-0"
                     style={{ transition: 'opacity var(--app-duration-medium) var(--app-easing-standard)' }}
                     onError={(e) => {
-                        e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(item.title)}&background=random&size=200`;
+                        e.currentTarget.src = '/cdn/spotify/images/artists/c3bf8ff998066b75.jpg';
                     }}
                 />
                 <div className="flex flex-col pt-1 min-w-0">

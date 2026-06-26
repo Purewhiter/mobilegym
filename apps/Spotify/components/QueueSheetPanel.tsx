@@ -6,6 +6,7 @@ import { useSpotifyGestures } from '../hooks/useSpotifyGestures';
 import { useShallow } from 'zustand/react/shallow';
 import { IcPlay, IcPause, IcMic, IcMore, IcShuffle, IcRepeat, IcTimer } from '../res/icons';
 import { localizeSpotifyText } from '../utils/localizeSpotifyText';
+import { getTrackCoverLarge } from '../utils/artwork';
 
 const DISMISS_THRESHOLD = 80;
 const SNAP_THRESHOLD = 50;
@@ -179,7 +180,7 @@ export const QueueSheetPanel: React.FC<QueueSheetPanelProps> = ({
 
   const currentIdx = queue.findIndex(t => t.id === currentTrack.id);
   const nextTracks = queue.slice(currentIdx + 1);
-  const coverSrc = coverOverride || currentTrack.cover;
+  const coverSrc = coverOverride || getTrackCoverLarge(currentTrack);
 
   const baseHeight = expanded ? expandedHeight : collapsedHeight;
   const currentHeight = collapsedHeight > 0

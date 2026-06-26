@@ -1,0 +1,73 @@
+# Megatron configuration for agent PPO training
+# This config extends agent_ppo_trainer with Megatron-specific settings
+
+hydra:
+  searchpath:
+    - pkg://verl.trainer.config
+
+defaults:
+  - ppo_megatron_trainer  # Load base ppo_megatron_trainer which has proper megatron configs
+  - _self_
+
+actor_rollout_ref:
+  rollout:
+    mode: async # only async is supported
+    agent:
+      num_workers: 0 # we bypass the agent loop
+    val_kwargs:
+      do_sample: True # if do_sample is False, temperature is overridden to 0.0
+
+data:
+  gen_batch_size: ${mul:${data.train_batch_size},${rllm.rejection_sample.multiplier}}
+
+rllm:
+  agent:
+    name: math_agent
+    max_steps: 20
+    trajectory_timeout: null
+    overlong_filter: False
+    agent_args: {}
+    engine_args: {}
+  env:
+    name: custom
+    env_args: {}
+  workflow:
+    use_workflow: False
+    name: single_turn_workflow
+    workflow_args:
+      max_prompt_length: ${data.max_prompt_length}
+      max_response_length: ${data.max_response_length}
+      timeout: 1e6
+      gamma: 0.0 # no discounting
+      reward_bonus_coeff: 0.0 # no reward shaping
+      accumulate_response_length: null # defaults to not rllm.stepwise_advantage.enable
+    n_parallel_tasks: 256
+    retry_limit: 3
+  disable_thinking: False
+  accumulate_reasoning: False
+  mask_truncated_samples: False
+  stepwise_advantage:
+    enable: False
+    mode: broadcast # [broadcast, per_step]
+    normalize_by_steps: False
+  compact_filtering:
+    enable: False
+    mask_max_prompt_length_exceeded: True
+    mask_max_response_length_exceeded: True
+    mask_max_turns_exceeded: True
+    mask_timeout: True
+  rejection_sample:
+    enable: False
+    multiplier: 1
+  distill:
+    enable: False
+    shared_tokenizer: False
+    teacher_rollout_args:
+      model: "default"
+      base_url: "http://localhost:8000/v1"
+      api_key: "EMPTY"
+      max_prompt_length: 32768
+
+trainer:
+  log_episodes: false
+  episode_log_dir: logs/${trainer.project_name}/${trainer.experiment_name}

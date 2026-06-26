@@ -1,7 +1,9 @@
 # bench_env dependencies
 
 # Required
-openai>=1.0.0
+# Cap: 2.24.x verified OK; newer (e.g. 2.43) rejects the empty api_key that
+# LLMClient passes for local/gateway endpoints -> OpenAIError: Missing credentials.
+openai>=1.0.0,<2.25
 playwright>=1.40.0
 pytest-xdist>=3.8.0
 

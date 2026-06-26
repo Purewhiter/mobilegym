@@ -1,4 +1,5 @@
 import type { SpotifyTrack } from '../types';
+import { resolveSpotifyAssetsDeep } from './assets';
 
 export type CategoryDataMap = Record<string, any>;
 export type PlaylistTracksMap = Record<string, SpotifyTrack[]>;
@@ -36,7 +37,7 @@ export async function loadCategories(): Promise<CategoryDataMap> {
     const url = new URL('./categories.json', import.meta.url).href;
     const res = await fetch(url);
     if (!res.ok) throw new Error(`[Spotify] 加载 categories.json 失败：${res.status} ${res.statusText}`);
-    const json = (await res.json()) as CategoryDataMap;
+    const json = resolveSpotifyAssetsDeep((await res.json()) as CategoryDataMap);
     categoryCache = json;
     return json;
   })().catch(err => { categoryInflight = null; throw err; });
@@ -56,7 +57,7 @@ export async function loadPlaylistTracks(): Promise<PlaylistTracksMap> {
     const url = new URL('./playlistTracks.json', import.meta.url).href;
     const res = await fetch(url);
     if (!res.ok) throw new Error(`[Spotify] 加载 playlistTracks.json 失败：${res.status} ${res.statusText}`);
-    const json = (await res.json()) as PlaylistTracksMap;
+    const json = resolveSpotifyAssetsDeep((await res.json()) as PlaylistTracksMap);
     playlistTracksCache = json;
     return json;
   })().catch(err => { playlistTracksInflight = null; throw err; });
@@ -93,7 +94,7 @@ export async function loadArtistTracks(): Promise<ArtistTracksMap> {
     const url = new URL('./artistTracks.json', import.meta.url).href;
     const res = await fetch(url);
     if (!res.ok) throw new Error(`[Spotify] 加载 artistTracks.json 失败：${res.status}`);
-    artistTracksCache = await res.json() as ArtistTracksMap;
+    artistTracksCache = resolveSpotifyAssetsDeep(await res.json() as ArtistTracksMap);
     return artistTracksCache;
   })().catch(err => { artistTracksInflight = null; throw err; });
   return artistTracksInflight;
@@ -109,7 +110,7 @@ export async function loadSearchResults(): Promise<SearchResultsMap> {
     const url = new URL('./searchResults.json', import.meta.url).href;
     const res = await fetch(url);
     if (!res.ok) throw new Error(`[Spotify] 加载 searchResults.json 失败：${res.status}`);
-    searchResultsCache = await res.json() as SearchResultsMap;
+    searchResultsCache = resolveSpotifyAssetsDeep(await res.json() as SearchResultsMap);
     return searchResultsCache;
   })().catch(err => { searchResultsInflight = null; throw err; });
   return searchResultsInflight;
@@ -125,7 +126,7 @@ export async function loadAlbumTracks(): Promise<AlbumTracksMap> {
     const url = new URL('./albumTracks.json', import.meta.url).href;
     const res = await fetch(url);
     if (!res.ok) throw new Error(`[Spotify] 加载 albumTracks.json 失败：${res.status}`);
-    albumTracksCache = await res.json() as AlbumTracksMap;
+    albumTracksCache = resolveSpotifyAssetsDeep(await res.json() as AlbumTracksMap);
     return albumTracksCache;
   })().catch(err => { albumTracksInflight = null; throw err; });
   return albumTracksInflight;

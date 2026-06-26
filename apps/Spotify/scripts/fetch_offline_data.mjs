@@ -110,6 +110,13 @@ function saveJson(filename, data) {
 // ─── iTunes API 工具 ───────────────────────────────────────────────────────────
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
+const appleArtworkSizeRe = /\/(\d+)x(\d+)(bb)?(?=\.[a-z0-9]+(?:\?|$))/i;
+
+function inferLargeArtworkUrl(raw) {
+  if (!raw) return '';
+  const resized = raw.replace(appleArtworkSizeRe, '/1000x1000$3');
+  return resized === raw ? '' : resized;
+}
 
 async function itunesSearch(term, entity = 'song', limit = 10) {
   const url = `https://itunes.apple.com/search?term=${encodeURIComponent(term)}&entity=${entity}&media=music&limit=${limit}&country=TW`;
@@ -139,6 +146,7 @@ function rawToArtistTrack(r) {
     artist: r.artistName || '',
     album: r.collectionName || '',
     cover: r.artworkUrl100 || '',
+    coverLarge: inferLargeArtworkUrl(r.artworkUrl100 || ''),
     duration: fmtDuration(r.trackTimeMillis ?? 0),
   };
 }
@@ -149,6 +157,7 @@ function rawToSearchSong(r) {
     title: r.trackName || '',
     artist: r.artistName || '',
     cover: r.artworkUrl100 || '',
+    coverLarge: inferLargeArtworkUrl(r.artworkUrl100 || ''),
     duration: fmtDuration(r.trackTimeMillis ?? 0),
   };
 }
@@ -240,12 +249,14 @@ async function runAlbums(albumTracks, albumIdsToFetch) {
         title: collection.collectionName,
         subtitle: `${collection.artistName} • ${collection.copyright || ''}`,
         cover: collection.artworkUrl100?.replace('100x100bb', '600x600bb') || '',
+        coverLarge: inferLargeArtworkUrl(collection.artworkUrl100 || ''),
         type: collection.collectionType || 'Album',
       } : {
         id: albumId,
         title: songs[0]?.collectionName || '',
         subtitle: songs[0]?.artistName || '',
         cover: songs[0]?.artworkUrl100?.replace('100x100bb', '600x600bb') || '',
+        coverLarge: inferLargeArtworkUrl(songs[0]?.artworkUrl100 || ''),
         type: 'Album',
       };
 
@@ -256,6 +267,7 @@ async function runAlbums(albumTracks, albumIdsToFetch) {
           title: t.trackName,
           artist: t.artistName,
           cover: t.artworkUrl100 || '',
+          coverLarge: inferLargeArtworkUrl(t.artworkUrl100 || ''),
           duration: fmtDuration(t.trackTimeMillis ?? 0),
         })),
         albumInfo: {

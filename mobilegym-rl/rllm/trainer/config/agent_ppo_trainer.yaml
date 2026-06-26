@@ -1,0 +1,93 @@
+hydra:
+  searchpath:
+    - pkg://verl.trainer.config
+
+defaults:
+  - ppo_trainer
+  - _self_
+
+actor_rollout_ref:
+  rollout:
+    mode: async
+    agent:
+      num_workers: 0
+    val_kwargs:
+      do_sample: True
+
+data:
+  gen_batch_size: ${mul:${data.train_batch_size},${rllm.rejection_sample.multiplier}}
+  return_multi_modal_inputs: False
+
+rllm:
+  agent:
+    name: math_agent
+    max_steps: 20
+    trajectory_timeout: null
+    overlong_filter: False
+    agent_args: {}
+    engine_args: {}
+  env:
+    name: custom
+    env_args: {}
+  workflow:
+    use_workflow: False
+    name: single_turn_workflow
+    workflow_args:
+      agent_cls: null
+      agent_args: {}
+      env_cls: null
+      env_args: {}
+      timeout: 1e6
+      gamma: 0.0 # no discounting
+      reward_bonus_coeff: 0.0 # no reward shaping
+    n_parallel_tasks: 256
+    retry_limit: 3
+  disable_thinking: False
+  accumulate_reasoning: False
+  mask_truncated_samples: False
+  filter_token_mismatch: True
+  stepwise_advantage:
+    enable: False
+    mode: broadcast # [broadcast, per_step]
+    normalize_by_steps: False
+  compact_filtering:
+    enable: False
+    mask_max_prompt_length_exceeded: True
+    mask_max_response_length_exceeded: True
+    mask_env_done: False
+    mask_max_turns_exceeded: True
+    mask_timeout: True
+    mask_unknown: False
+    mask_error: True
+  rejection_sample:
+    enable: False
+    multiplier: 1
+  distill:
+    enable: False
+    shared_tokenizer: False
+    teacher_rollout_args:
+      model: "default"
+      base_url: "http://localhost:8000/v1"
+      api_key: "EMPTY"
+      max_prompt_length: 32768
+  sdk:
+    store:
+      path: ~/.rllm/traces.db
+    processing:
+      groupby_key: null
+      traj_name_key: null
+    proxy:
+      host: 127.0.0.1
+      port: 4000
+      mode: subprocess  # external | subprocess
+      admin_token: my-shared-secret
+
+fireworks:
+  deployment_id: null
+  model_id_prefix: test-model
+  concurrency: 32
+  return_token_ids: True
+
+trainer:
+  log_episodes: false
+  episode_log_dir: logs/${trainer.project_name}/${trainer.experiment_name}

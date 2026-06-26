@@ -1,9 +1,7 @@
-import React, { useEffect, useRef, useState, useMemo } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useMapStore, selectIsLoaded, selectLoadError, selectGoogle } from '../state';
-import { manifest } from '../manifest';
-import { GOOGLE_MAP_VECTOR_MAP_ID } from '../constants';
-import { SIMULATOR_CONFIG } from '@/os/data';
-const { viewportWidth } = SIMULATOR_CONFIG.framework;
+import { GOOGLE_MAP_VECTOR_MAP_ID, OFFLINE_GOOGLE_MAP_VECTOR_MAP_ID } from '../constants';
+import { hasGoogleMapsApiKey } from '../utils/googleMapsConfig';
 
 interface GoogleMapProps {
   center: { lat: number; lng: number };
@@ -16,21 +14,102 @@ interface GoogleMapProps {
   options?: google.maps.MapOptions;
 }
 
-/**
- * Compute inverse zoom to cancel out the OS-level design viewport zoom.
- * Google Maps manages its own coordinate system and doesn't handle
- * ancestor CSS zoom correctly, causing click position offsets.
- */
-function useDesignZoomCompensation() {
-  return useMemo(() => {
-    const dvw = manifest.designViewportWidth;
-    const vw = viewportWidth ?? 360;
-    if (!dvw || dvw <= 0 || dvw === vw) return null;
-    const designZoom = vw / dvw; // what OS applies (e.g. 360/412 ≈ 0.874)
-    return {
-      inverseZoom: 1 / designZoom, // e.g. 412/360 ≈ 1.144
-    };
-  }, []);
+const GOOGLE_MAP_ERROR_TEXTS = [
+  '糟糕！出了点问题。',
+  '此页面未能正确加载 Google 地图',
+  '您是否拥有此网站',
+  "This page can't load Google Maps correctly",
+  'Do you own this website',
+];
+const GOOGLE_MAP_DEV_WATERMARK_TEXT = 'For development purposes only';
+
+function suppressOfflineGoogleErrorOverlay(root: HTMLElement) {
+  root.dataset.mapOfflineGoogleOverlaySuppressed = 'true';
+  const style = document.createElement('style');
+  style.textContent = `
+    [data-map-offline-google-overlay-suppressed="true"] .gm-err-container,
+    [data-map-offline-google-overlay-suppressed="true"] .gm-err-autocomplete {
+      display: none !important;
+    }
+  `;
+  root.appendChild(style);
+
+  const hideElement = (el: HTMLElement) => {
+    el.style.display = 'none';
+    el.setAttribute('aria-hidden', 'true');
+  };
+
+  const hideOverlay = () => {
+    root
+      .querySelectorAll<HTMLElement>('.gm-err-container, .gm-err-autocomplete')
+      .forEach(hideElement);
+
+    const rootRect = root.getBoundingClientRect();
+
+    root.querySelectorAll<HTMLElement>('div, button').forEach((el) => {
+      const text = el.textContent || '';
+      if (GOOGLE_MAP_ERROR_TEXTS.some((item) => text.includes(item))) {
+        hideElement(el);
+        return;
+      }
+
+      const computed = window.getComputedStyle(el);
+      const bg = computed.backgroundColor.replace(/\s+/g, '');
+      const zIndex = Number.parseInt(computed.zIndex || '0', 10);
+      const rect = el.getBoundingClientRect();
+      const coversMap =
+        rootRect.width > 0 &&
+        rootRect.height > 0 &&
+        rect.width >= rootRect.width * 0.8 &&
+        rect.height >= rootRect.height * 0.8;
+      const isDevDimmer =
+        computed.position === 'absolute' &&
+        coversMap &&
+        Number.isFinite(zIndex) &&
+        zIndex >= 10 &&
+        bg.startsWith('rgba(0,0,0,') &&
+        bg !== 'rgba(0,0,0,0)';
+      if (isDevDimmer) {
+        hideElement(el);
+      }
+    });
+
+    root.querySelectorAll<HTMLElement>('span, div').forEach((el) => {
+      if ((el.textContent || '').trim() !== GOOGLE_MAP_DEV_WATERMARK_TEXT) return;
+      hideElement(el);
+    });
+  };
+
+  hideOverlay();
+  const observer = new MutationObserver(hideOverlay);
+  observer.observe(root, { childList: true, subtree: true, characterData: true });
+  return () => {
+    observer.disconnect();
+    style.remove();
+    delete root.dataset.mapOfflineGoogleOverlaySuppressed;
+  };
+}
+
+function readCssZoom(el: Element): number {
+  const raw = window.getComputedStyle(el).zoom;
+  if (!raw || raw === 'normal') return 1;
+  const value = Number.parseFloat(raw);
+  return Number.isFinite(value) && value > 0 ? value : 1;
+}
+
+function getAncestorVisualScale(el: HTMLElement): number {
+  let scale = 1;
+  for (let cur = el.parentElement; cur && cur !== document.body; cur = cur.parentElement) {
+    scale *= readCssZoom(cur);
+  }
+
+  const simScaleRaw = document.documentElement.style.getPropertyValue('--sim-scale');
+  const simScale = Number.parseFloat(simScaleRaw || '1');
+  if (Number.isFinite(simScale) && simScale > 0) {
+    scale *= simScale;
+  }
+
+  return Number.isFinite(scale) && scale > 0 ? scale : 1;
 }
 
 export const GoogleMap: React.FC<GoogleMapProps> = ({
@@ -46,11 +125,11 @@ export const GoogleMap: React.FC<GoogleMapProps> = ({
   const isLoaded = useMapStore(selectIsLoaded);
   const loadError = useMapStore(selectLoadError);
   const google = useMapStore(selectGoogle);
+  const wrapperRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<HTMLDivElement>(null);
   const [mapInstance, setMapInstance] = useState<google.maps.Map | null>(null);
   const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
   const isDraggingRef = useRef(false);
-  const zoomComp = useDesignZoomCompensation();
   const onClickRef = useRef(onClick);
   const onLongPressRef = useRef(onLongPress);
   const onIdleRef = useRef(onIdle);
@@ -61,18 +140,76 @@ export const GoogleMap: React.FC<GoogleMapProps> = ({
     onIdleRef.current = onIdle;
   }, [onClick, onLongPress, onIdle]);
 
+  const applyMapVisualSize = useCallback(() => {
+    const wrapper = wrapperRef.current;
+    const mapDiv = mapRef.current;
+    if (!wrapper || !mapDiv) return false;
+
+    const layoutWidth = wrapper.clientWidth;
+    const layoutHeight = wrapper.clientHeight;
+    if (layoutWidth <= 0 || layoutHeight <= 0) return false;
+
+    const scale = getAncestorVisualScale(wrapper);
+    mapDiv.style.width = `${Math.max(1, layoutWidth * scale)}px`;
+    mapDiv.style.height = `${Math.max(1, layoutHeight * scale)}px`;
+    if (scale > 0 && Math.abs(scale - 1) > 0.001) {
+      mapDiv.style.setProperty('zoom', String(1 / scale));
+    } else {
+      mapDiv.style.removeProperty('zoom');
+    }
+
+    return true;
+  }, []);
+
+  useLayoutEffect(() => {
+    const wrapper = wrapperRef.current;
+    if (!wrapper) return undefined;
+
+    let frame = 0;
+    const updateSize = () => {
+      frame = 0;
+      const changed = applyMapVisualSize();
+      if (changed && mapInstance && google) {
+        google.maps.event.trigger(mapInstance, 'resize');
+      }
+    };
+
+    const scheduleUpdate = () => {
+      if (frame) return;
+      frame = window.requestAnimationFrame(updateSize);
+    };
+
+    updateSize();
+    const observer = typeof ResizeObserver !== 'undefined'
+      ? new ResizeObserver(scheduleUpdate)
+      : null;
+    observer?.observe(wrapper);
+    window.addEventListener('resize', scheduleUpdate);
+
+    return () => {
+      if (frame) window.cancelAnimationFrame(frame);
+      observer?.disconnect();
+      window.removeEventListener('resize', scheduleUpdate);
+    };
+  }, [applyMapVisualSize, google, mapInstance]);
+
   // Initialize Map
   useEffect(() => {
     if (isLoaded && google && mapRef.current && !mapInstance) {
       try {
+        applyMapVisualSize();
+        const hasRealApiKey = hasGoogleMapsApiKey();
+        const mapId = options?.mapId
+          ?? (hasRealApiKey ? GOOGLE_MAP_VECTOR_MAP_ID : OFFLINE_GOOGLE_MAP_VECTOR_MAP_ID);
         const map = new google.maps.Map(mapRef.current, {
           center,
           zoom,
           disableDefaultUI: true, // Clean mobile look
-          clickableIcons: false, // Handle clicks manually
+          clickableIcons: true,
           gestureHandling: 'greedy', // Standard mobile gesture handling
           ...options,
-          mapId: options?.mapId ?? GOOGLE_MAP_VECTOR_MAP_ID,
+          ...(mapId ? { mapId } : {}),
+          renderingType: google.maps.RenderingType.VECTOR,
         });
 
         setMapInstance(map);
@@ -141,7 +278,18 @@ export const GoogleMap: React.FC<GoogleMapProps> = ({
         console.error("Error initializing map", e);
       }
     }
-  }, [isLoaded, google, mapRef, mapInstance, onMapLoad, options, center, zoom]);
+  }, [isLoaded, google, mapRef, mapInstance, onMapLoad, options, center, zoom, applyMapVisualSize]);
+
+  useEffect(() => {
+    if (!mapInstance || !google) return;
+    applyMapVisualSize();
+    google.maps.event.trigger(mapInstance, 'resize');
+  }, [mapInstance, google, applyMapVisualSize]);
+
+  useEffect(() => {
+    if (!isLoaded || !google || !mapRef.current || hasGoogleMapsApiKey()) return;
+    return suppressOfflineGoogleErrorOverlay(mapRef.current);
+  }, [isLoaded, google]);
 
   const prevPropsRef = useRef({ center, zoom });
 
@@ -184,22 +332,9 @@ export const GoogleMap: React.FC<GoogleMapProps> = ({
     );
   }
 
-  if (zoomComp) {
-    return (
-      <div className={className} style={{ overflow: 'hidden' }}>
-        <div
-          ref={mapRef}
-          style={{
-            zoom: zoomComp.inverseZoom,
-            // Keep full-size layout box; do not apply percentage shrink.
-            // A prior width/height compensation caused right/bottom blank areas.
-            width: '100%',
-            height: '100%',
-          }}
-        />
-      </div>
-    );
-  }
-
-  return <div ref={mapRef} className={className} />;
+  return (
+    <div ref={wrapperRef} className={className} style={{ overflow: 'hidden' }}>
+      <div ref={mapRef} style={{ width: '100%', height: '100%' }} />
+    </div>
+  );
 };

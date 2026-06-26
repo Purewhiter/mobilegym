@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import dataclasses
+import secrets
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Optional
@@ -54,6 +55,7 @@ class RunnerConfig:
     suite: Optional[list[str]] = None
     sample_n: Optional[int] = None
     sample_seed: Optional[int] = None
+    sample_seed_source: Optional[str] = None  # "cli" | "auto" for new CLI runs
     # When True, each task instance picks a template from ``cls.templates``
     # based on its seed instead of always using templates[0]. Default off
     # preserves existing instructions verbatim.
@@ -207,6 +209,14 @@ class RunnerConfig:
                 out[str(k)] = v
             return out or None
 
+        raw_sample_seed = get("sample_seed")
+        if raw_sample_seed is None:
+            sample_seed = secrets.randbits(32)
+            sample_seed_source = "auto"
+        else:
+            sample_seed = raw_sample_seed
+            sample_seed_source = "cli"
+
         return cls(
             agent=get("agent", "unknown"),
             model_name=get("model_name", "unknown"),
@@ -234,7 +244,8 @@ class RunnerConfig:
             task_ids=parse_task_ids(get("task_ids")),
             suite=parse_suite(get("suite")),
             sample_n=get("sample_n"),
-            sample_seed=get("sample_seed"),
+            sample_seed=sample_seed,
+            sample_seed_source=sample_seed_source,
             sample_templates=get("sample_templates", False),
 
             split=get("split"),

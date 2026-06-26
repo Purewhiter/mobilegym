@@ -1,0 +1,179 @@
+# Common, backend-agnostic configuration for rLLM
+# Agent Configuration
+agent:
+  name: math_agent
+  max_steps: 20
+  trajectory_timeout: null
+  overlong_filter: False
+  agent_args: {}
+  engine_args: {}
+
+# Environment Configuration
+env:
+  name: custom
+  env_args: {}
+
+# Workflow Configuration
+workflow:
+  use_workflow: False
+  name: single_turn_workflow
+  workflow_args:
+    agent_cls: null
+    agent_args: {}
+    env_cls: null
+    env_args: {}
+    timeout: 1e6
+    gamma: 0.0 # no discounting
+    reward_bonus_coeff: 0.0 # no reward shaping
+  n_parallel_tasks: 256
+  retry_limit: 3
+  raise_on_error: true
+
+# Rollout Configuration (note: this is just for logging purpose, the actual rollout configs are backend-specific)
+rollout:
+  n: 8
+  n_val: 1  # number of validation samples per prompt
+
+# Trainer Configuration
+trainer:
+  total_epochs: 10
+  total_batches: -1
+  logger: ['console']  # Options: 'console', 'wandb', 'tensorboard'
+  project_name: 'rllm-training'
+  experiment_name: 'default'
+  test_freq: 5
+  save_freq: 20
+  val_before_train: false
+  val_only: false
+
+# Algorithm Configuration
+algorithm:
+  adv_estimator: grpo # [grpo, reinforce, reinforce_plus_plus_baseline, rloo, gae]
+  gamma: 1.0
+  lam: 0.95
+  norm_adv_by_std_in_grpo: true
+  use_rllm: false
+  # When true, always use pre-computed step.advantage from the workflow (e.g. distillation)
+  # and skip advantage computation (GRPO/REINFORCE). Missing advantages default to 0.
+  use_precomputed_advantage: false
+  loss_fn: null           # [null, importance_sampling, ppo, cispo, dro, cross_entropy]
+  loss_agg_mode: null     # [null, token-mean, seq-mean-token-sum, seq-mean-token-mean]
+  kl_beta: 0.0            # KL penalty coefficient
+  eps_clip: 0.2           # PPO clip epsilon
+  eps_clip_high: null     # Asymmetric upper clip bound (null = symmetric)
+  router_replay: false    # Router Replay (R3): replay MoE expert routing from inference during training
+  rollout_correction:
+    bypass_mode: true     # true = use rollout logprobs as pi_old (2-policy), false = proximal forward (3-policy)
+    tis_mode: null        # null = disabled, "token" or "sequence" = TIS importance sampling level
+    tis_cap: 5.0          # Upper clamp on TIS importance weight
+
+# Stepwise advantage
+# TODO(listar2000): deprecate the `per_step` mode and refactor this config.
+stepwise_advantage:
+  enable: False
+  mode: broadcast # support `broadcast` only now
+  normalize_by_steps: False
+
+# Disable thinking
+disable_thinking: False
+
+# Accumulate reasoning
+accumulate_reasoning: False
+
+# Mask truncated samples
+mask_truncated_samples: False
+filter_token_mismatch: True
+
+# Compact filtering
+compact_filtering:
+  enable: False
+  mask_max_prompt_length_exceeded: True
+  mask_max_response_length_exceeded: True
+  mask_env_done: False
+  mask_max_turns_exceeded: True
+  mask_timeout: True
+  mask_unknown: False
+  mask_error: True
+
+# Rejection sampling
+rejection_sample:
+  enable: False
+  multiplier: 1
+  min_partial_solve_tasks: 1
+  min_trajs_per_group: 2
+  filter_uniform_groups: false
+
+# SDK Configuration
+# DEPRECATED: This section is only kept for backward compatibility with
+# standalone SDK usage (rllm/sdk/). The unified trainer no longer uses the
+# SDK/agent_run_func path — use AgentFlow + Evaluator instead.
+sdk:
+  store:
+    path: ~/.rllm/traces.db
+  processing:
+    groupby_key: null
+    traj_name_key: null
+  proxy:
+    host: 127.0.0.1
+    port: 4000
+    mode: subprocess  # external | subprocess
+    admin_token: my-shared-secret
+  sandbox:
+    enabled: false
+    backend: local  # local | docker | modal | agentcore
+    agent_dir: ""
+    agent_module: agent
+    agent_func: rollout
+    image: "python:3.11-slim"
+    dockerfile: ""
+    requirements_file: ""
+    install_rllm_sdk: true
+    pool_mode: persistent  # persistent | per_task
+    num_workers: 8
+    worker_port: 8100
+    max_concurrent: 32
+    task_setup_commands: []
+    task_setup_timeout: 300
+    teardown_on_complete: true
+    execution_timeout: 600.0
+    setup_commands: []
+    # Backend-specific configuration.
+    # For agentcore backend:
+    #   agent_runtime_arn: ARN of the AgentCore runtime (required)
+    #   base_url: Reachable proxy URL for the ACR container, e.g. http://<host-ip>:4000/v1
+    #             Required unless the proxy is publicly reachable at its default address.
+    #   tps_limit: Max concurrent invocations (default: 25)
+    #   max_retry_attempts: boto3 adaptive retry attempts (default: 5)
+    extra: {}
+
+# Remote Runtime Configuration (for agent-in-container runtimes like AgentCore)
+remote_runtime:
+  enabled: false
+  backend: agentcore
+  backend_config:
+    agent_runtime_arn: ""
+    s3_bucket: ""
+    tps_limit: 25
+  session_timeout: 300.0
+
+# Gateway Configuration (model gateway for AgentFlow-based training)
+gateway:
+  port: 9090
+  host: null          # Auto-detects routable IP; set explicitly to override
+  db_path: null       # Defaults to temp file
+
+# Async Training Configuration
+async_training:
+  enable: false
+  mini_batch_size: 1
+  fwd_bwd_group_size: null  # task batches per forward-backward pass (default: mini_batch_size)
+  staleness_threshold: 0.0
+  trigger_parameter_sync_step: 1
+  partial_rollout: true
+  episode_offload_dir: null       # NVMe offload dir for pending episodes (null = disabled)
+  trajectory_group_offload_dir: null  # NVMe offload dir for queued task batches (null = disabled)
+
+# Episode Logging Configuration
+episode_logging:
+  log_episodes: false
+  episode_log_dir: logs/${rllm.trainer.project_name}/${rllm.trainer.experiment_name}
