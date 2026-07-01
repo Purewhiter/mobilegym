@@ -1,0 +1,555 @@
+{
+  "version": 1,
+  "source": "mobilegym-data/map/vector/manifest.json",
+  "sourceCacheName": "map-vector-cache-57ee9905a655",
+  "cacheName": "map-bootstrap-cache-21bf79feb021",
+  "filter": "all vector manifest entries except maps.googleapis.com/maps/vt tile payloads",
+  "entries": [
+    {
+      "url": "https://fonts.googleapis.com/css?family=Google+Sans+Text%3A400&text=%E2%86%90%E2%86%92%E2%86%91%E2%86%93&lang=zh",
+      "file": "110b3cc2951f80bb.css",
+      "contentType": "text/css; charset=utf-8",
+      "cacheControl": "private, max-age=86400, stale-while-revalidate=604800",
+      "status": 200,
+      "size": 272,
+      "bodyHash": "a30c845a4f83d3c0e5e5984cc53a049123e617bc"
+    },
+    {
+      "url": "https://fonts.googleapis.com/css?family=Roboto%3A300%2C400%2C500%2C700%7CGoogle+Sans%3A400%2C500%2C700%7CGoogle+Sans+Text%3A400%2C500%2C700&lang=zh",
+      "file": "d9154cd59f8b0884.css",
+      "contentType": "text/css; charset=utf-8",
+      "cacheControl": "private, max-age=86400, stale-while-revalidate=604800",
+      "status": 200,
+      "size": 83777,
+      "bodyHash": "8907ba4e9ef5440e1439ccd29ef744a03f742011"
+    },
+    {
+      "url": "https://fonts.gstatic.com/s/roboto/v51/KFO7CnqEu92Fr1ME7kSn66aGLdTylUAMa3yUBHMdazQ.woff2",
+      "file": "973a21a59f772a9f.woff2",
+      "contentType": "font/woff2",
+      "cacheControl": "public, max-age=31536000",
+      "status": 200,
+      "size": 37520,
+      "bodyHash": "75be45f9d2d223ca9db09fc4fb29a14470f55f5d"
+    },
+    {
+      "url": "https://maps.googleapis.com/$rpc/google.internal.maps.mapsjs.v1.MapsJsInternalService/GetViewportInfo",
+      "file": "7ffdc24997f7cf76.json",
+      "contentType": "application/json+protobuf; charset=UTF-8",
+      "status": 200,
+      "size": 37482,
+      "bodyHash": "447d479c1fcf84eddd262bd298387cc45a9b144d"
+    },
+    {
+      "url": "https://maps.googleapis.com/maps-api-v3/api/js/65/3b/intl/zh_cn/common.js",
+      "file": "b11dd4094597771c.js",
+      "contentType": "text/javascript",
+      "cacheControl": "public, max-age=31536000",
+      "status": 200,
+      "size": 128271,
+      "bodyHash": "cf8de20afceac737cddc06c45f9fd62d57d9f6af"
+    },
+    {
+      "url": "https://maps.googleapis.com/maps-api-v3/api/js/65/3b/intl/zh_cn/controls.js",
+      "file": "987f60ed227d55c4.js",
+      "contentType": "text/javascript",
+      "cacheControl": "public, max-age=31536000",
+      "status": 200,
+      "size": 103337,
+      "bodyHash": "f127b2f24c91f7d447cf8bd1eb8280a0ba1fa1f3"
+    },
+    {
+      "url": "https://maps.googleapis.com/maps-api-v3/api/js/65/3b/intl/zh_cn/geometry.js",
+      "file": "eb4e2cd69266828b.js",
+      "contentType": "text/javascript",
+      "cacheControl": "public, max-age=31536000",
+      "status": 200,
+      "size": 6968,
+      "bodyHash": "4486fbc5e5fd1a70680af979343c5e806e8ee714"
+    },
+    {
+      "url": "https://maps.googleapis.com/maps-api-v3/api/js/65/3b/intl/zh_cn/infowindow.js",
+      "file": "39a6744448cb865e.js",
+      "contentType": "text/javascript",
+      "cacheControl": "public, max-age=31536000",
+      "status": 200,
+      "size": 9917,
+      "bodyHash": "b6fb6bf5766c7376e49178d8d3423c5c5b896173"
+    },
+    {
+      "url": "https://maps.googleapis.com/maps-api-v3/api/js/65/3b/intl/zh_cn/labeler_wrapper.js",
+      "file": "be63d64e6beb06de.js",
+      "contentType": "text/javascript",
+      "cacheControl": "public, max-age=31536000",
+      "status": 200,
+      "size": 30550,
+      "bodyHash": "e9a848d7b667d3e78b6470309394218b297eb9f3"
+    },
+    {
+      "url": "https://maps.googleapis.com/maps-api-v3/api/js/65/3b/intl/zh_cn/labeler_wrapper.wasm",
+      "file": "1e56fa3d2398bbd7.bin",
+      "contentType": "application/wasm",
+      "cacheControl": "public, max-age=31536000",
+      "status": 200,
+      "size": 2457937,
+      "bodyHash": "4086a3b7364678d94db8ebbe7f709c7bb90abba0"
+    },
+    {
+      "url": "https://maps.googleapis.com/maps-api-v3/api/js/65/3b/intl/zh_cn/layers.js",
+      "file": "3e64b41e793ca548.js",
+      "contentType": "text/javascript",
+      "cacheControl": "public, max-age=31536000",
+      "status": 200,
+      "size": 2465,
+      "bodyHash": "299f214f4704775ce663bd09ffe44914eb87b177"
+    },
+    {
+      "url": "https://maps.googleapis.com/maps-api-v3/api/js/65/3b/intl/zh_cn/log.js",
+      "file": "60a5307fca20dcbb.js",
+      "contentType": "text/javascript",
+      "cacheControl": "public, max-age=31536000",
+      "status": 200,
+      "size": 28413,
+      "bodyHash": "795b39c27de8263afb10bd17e514b19fc37ecb1d"
+    },
+    {
+      "url": "https://maps.googleapis.com/maps-api-v3/api/js/65/3b/intl/zh_cn/main.js",
+      "file": "7fea433b02689e8d.js",
+      "contentType": "text/javascript",
+      "cacheControl": "public, max-age=31536000",
+      "status": 200,
+      "size": 295773,
+      "bodyHash": "30334fd426381a7cecd1c0f6fdfcdef423a9f669"
+    },
+    {
+      "url": "https://maps.googleapis.com/maps-api-v3/api/js/65/3b/intl/zh_cn/map.js",
+      "file": "01f688eacbcad1d6.js",
+      "contentType": "text/javascript",
+      "cacheControl": "public, max-age=31536000",
+      "status": 200,
+      "size": 81705,
+      "bodyHash": "9b3e2198e40f70b68d2f88923c3cc70dd1cec890"
+    },
+    {
+      "url": "https://maps.googleapis.com/maps-api-v3/api/js/65/3b/intl/zh_cn/marker.js",
+      "file": "9395e11815517853.js",
+      "contentType": "text/javascript",
+      "cacheControl": "public, max-age=31536000",
+      "status": 200,
+      "size": 67685,
+      "bodyHash": "d04c2b3ee3653a1dbc93bc86fa26071b8ec70521"
+    },
+    {
+      "url": "https://maps.googleapis.com/maps-api-v3/api/js/65/3b/intl/zh_cn/onion.js",
+      "file": "9950e17ea48eb33d.js",
+      "contentType": "text/javascript",
+      "cacheControl": "public, max-age=31536000",
+      "status": 200,
+      "size": 30975,
+      "bodyHash": "bcd9b619456baac2aeb4a826a68515de764801af"
+    },
+    {
+      "url": "https://maps.googleapis.com/maps-api-v3/api/js/65/3b/intl/zh_cn/places_impl.js",
+      "file": "af6151bad4261fbd.js",
+      "contentType": "text/javascript",
+      "cacheControl": "public, max-age=31536000",
+      "status": 200,
+      "size": 10727,
+      "bodyHash": "89582b7cdb0acc3ed17a84b43570528b10af2b71"
+    },
+    {
+      "url": "https://maps.googleapis.com/maps-api-v3/api/js/65/3b/intl/zh_cn/places.js",
+      "file": "733674b5e53e0543.js",
+      "contentType": "text/javascript",
+      "cacheControl": "public, max-age=31536000",
+      "status": 200,
+      "size": 430071,
+      "bodyHash": "7ef6c87e70ef8642a5f6f199e4b942d0829cca06"
+    },
+    {
+      "url": "https://maps.googleapis.com/maps-api-v3/api/js/65/3b/intl/zh_cn/poly.js",
+      "file": "a4d094bc6d18a864.js",
+      "contentType": "text/javascript",
+      "cacheControl": "public, max-age=31536000",
+      "status": 200,
+      "size": 54344,
+      "bodyHash": "9b44bae3ea2afdf8cc25aa1a98e6698e971f90bd"
+    },
+    {
+      "url": "https://maps.googleapis.com/maps-api-v3/api/js/65/3b/intl/zh_cn/routes.js",
+      "file": "d9a4177a2cd73c0a.js",
+      "contentType": "text/javascript",
+      "cacheControl": "public, max-age=31536000",
+      "status": 200,
+      "size": 62037,
+      "bodyHash": "2ebf2667a4052146d3ffd48613c7d38d78275872"
+    },
+    {
+      "url": "https://maps.googleapis.com/maps-api-v3/api/js/65/3b/intl/zh_cn/shared-label-worker.js",
+      "file": "c1261765683df54b.js",
+      "contentType": "text/javascript",
+      "cacheControl": "public, max-age=31536000",
+      "status": 200,
+      "size": 66516,
+      "bodyHash": "aebcd08135ea99939cc42af61335d08c16990938"
+    },
+    {
+      "url": "https://maps.googleapis.com/maps-api-v3/api/js/65/3b/intl/zh_cn/util.js",
+      "file": "aacd1bc1c391b31a.js",
+      "contentType": "text/javascript",
+      "cacheControl": "public, max-age=31536000",
+      "status": 200,
+      "size": 317201,
+      "bodyHash": "bdbef9b4e3a5438d0afbd31b36b8f2da44bf08f4"
+    },
+    {
+      "url": "https://maps.googleapis.com/maps-api-v3/api/js/65/3b/intl/zh_cn/vectortown-worker.js",
+      "file": "1b25ebce6aea5597.js",
+      "contentType": "text/javascript",
+      "cacheControl": "public, max-age=31536000",
+      "status": 200,
+      "size": 86984,
+      "bodyHash": "b8aa48a96391a1ebc11c2668f3b0eeb9fa1647fe"
+    },
+    {
+      "url": "https://maps.googleapis.com/maps-api-v3/api/js/65/3b/intl/zh_cn/webgl.js",
+      "file": "f7872d14c50f4eda.js",
+      "contentType": "text/javascript",
+      "cacheControl": "public, max-age=31536000",
+      "status": 200,
+      "size": 643713,
+      "bodyHash": "4bb3f888569f833b84be1aa926412cd87f5250a9"
+    },
+    {
+      "url": "https://maps.googleapis.com/maps/api/js?libraries=maps%2Cplaces%2Cgeometry%2Cmarker%2Croutes&v=weekly&language=zh-CN&region=CN&callback=google.maps.__ib__",
+      "file": "4273f089f2a57d62.js",
+      "contentType": "text/javascript; charset=UTF-8",
+      "cacheControl": "public, max-age=1800, stale-while-revalidate=12600",
+      "status": 200,
+      "size": 13854,
+      "bodyHash": "52ac14a9ec6d22efac046fb14631de617d05369b"
+    },
+    {
+      "url": "https://maps.googleapis.com/maps/api/js/jsonp/ApplicationService.GetEntityDetails?pb=!1m2!1m1!1s0x35f053f8c33b6fa5:0xfbb2f8601a207f5f!2m2!1szh-CN!2sCN!6e1&callback=_xdc_._offlinePhysics",
+      "file": "ab48c3aff7021b79.js",
+      "contentType": "text/javascript; charset=UTF-8",
+      "cacheControl": "no-cache, must-revalidate",
+      "status": 200,
+      "size": 1612,
+      "bodyHash": "a067b6bed3c277a0c080b31bb74a310d57ef9827"
+    },
+    {
+      "url": "https://maps.googleapis.com/maps/api/js/jsonp/ApplicationService.GetEntityDetails?pb=!1m2!1m1!1s0x35f053f91dc360cb:0xec1a2393d9af7d4d!2m2!1szh-CN!2sCN!6e1&callback=_xdc_._offlineHotel",
+      "file": "a2752174b9817bcc.js",
+      "contentType": "text/javascript; charset=UTF-8",
+      "cacheControl": "no-cache, must-revalidate",
+      "status": 200,
+      "size": 1357,
+      "bodyHash": "8c020f530f1cefa584a649ace80ca97030ccc25b"
+    },
+    {
+      "url": "https://maps.googleapis.com/maps/api/js/jsonp/ApplicationService.GetEntityDetails?pb=!1m2!1m1!1s0x35f053f920668395:0x22a7d5f4f91970a1!2m2!1szh-CN!2sCN!6e1&callback=_xdc_._offlineNoodle",
+      "file": "63d35043310fc9c7.js",
+      "contentType": "text/javascript; charset=UTF-8",
+      "cacheControl": "no-cache, must-revalidate",
+      "status": 200,
+      "size": 1308,
+      "bodyHash": "9c16aab505ade239c0fcfee66a61e621f3a91acb"
+    },
+    {
+      "url": "https://maps.googleapis.com/maps/api/js/jsonp/ApplicationService.GetEntityDetails?pb=!1m2!1m1!1s0x35f053f96fb615e7:0xee62bb83e28020e4!2m2!1szh-CN!2sCN!6e1&callback=_xdc_._offlineAuto",
+      "file": "175964d8f30df94d.js",
+      "contentType": "text/javascript; charset=UTF-8",
+      "cacheControl": "no-cache, must-revalidate",
+      "status": 200,
+      "size": 1709,
+      "bodyHash": "739237744998d96c5afe344080ebf23e1b19049f"
+    },
+    {
+      "url": "https://maps.googleapis.com/maps/api/js/StaticMapService.GetMapImage?10b1=&12b1=&14i47083502=&1e0=&1i27620001=&1m2=&1u360=&2e1=&2i12705133=&2u747=&3u17=&4m2=&5m6=&5szh-CN=&6scn=&8e1=",
+      "file": "9cb2b99d5987afe7.png",
+      "contentType": "image/png",
+      "cacheControl": "public, max-age=86400",
+      "status": 200,
+      "size": 30352,
+      "bodyHash": "b6230720975389b7ee0db7403285a4da297cea97"
+    },
+    {
+      "url": "https://maps.googleapis.com/maps/api/mapsjs/gen_204?csp_test=true",
+      "file": "402bae4d36af3df3.json",
+      "contentType": "application/json; charset=UTF-8",
+      "status": 200,
+      "size": 3,
+      "bodyHash": "5f36b2ea290645ee34d943220a14b54ee5ea5be5"
+    },
+    {
+      "url": "https://maps.googleapis.com/maps/api/mapsjs/mapConfigs:batchGet?language=zh-CN&region=CN&alt=protojson&major_version=65&minor_version=3b&map_ids=DEMO_MAP_ID&map_type=1",
+      "file": "0ac7e70634a562f4.json",
+      "contentType": "application/json+protobuf; charset=UTF-8",
+      "status": 200,
+      "size": 9621,
+      "bodyHash": "b7ccfc3e707e40d0a18290ebe2c7560bca0bb03d"
+    },
+    {
+      "url": "https://maps.googleapis.com/maps/vt/icon/name=assets/icons/poi/quantum/modern_pinlet/atm_pinlet_v2-2-medium.png&scale=4",
+      "file": "49796406b88c2080.png",
+      "contentType": "image/png",
+      "cacheControl": "public, max-age=22222222",
+      "status": 200,
+      "size": 210,
+      "bodyHash": "71a6129f3c68bb312efd94c53083972581017849"
+    },
+    {
+      "url": "https://maps.googleapis.com/maps/vt/icon/name=assets/icons/poi/quantum/modern_pinlet/bank_rmb_pinlet-2-medium.png&scale=4",
+      "file": "992ceacbca6bddf8.png",
+      "contentType": "image/png",
+      "cacheControl": "public, max-age=22222222",
+      "status": 200,
+      "size": 489,
+      "bodyHash": "42bd4ca2d4aee6d0b19f7f1708b39047381e9725"
+    },
+    {
+      "url": "https://maps.googleapis.com/maps/vt/icon/name=assets/icons/poi/quantum/modern_pinlet/bar_pinlet-2-medium.png&scale=4",
+      "file": "50c682f7aab92dfa.png",
+      "contentType": "image/png",
+      "cacheControl": "public, max-age=22222222",
+      "status": 200,
+      "size": 406,
+      "bodyHash": "64bffc8c0fd1473999e4a705da169ec26495b4d5"
+    },
+    {
+      "url": "https://maps.googleapis.com/maps/vt/icon/name=assets/icons/poi/quantum/modern_pinlet/cafe_pinlet_v3-2-medium.png&scale=4",
+      "file": "ab1b1f24e7a04157.png",
+      "contentType": "image/png",
+      "cacheControl": "public, max-age=22222222",
+      "status": 200,
+      "size": 422,
+      "bodyHash": "0aa42fe50bda2dfae3d1059d1b4ca75a0ccd6adb"
+    },
+    {
+      "url": "https://maps.googleapis.com/maps/vt/icon/name=assets/icons/poi/quantum/modern_pinlet/dot_pinlet-2-medium.png&scale=4",
+      "file": "3a375b19b743627f.png",
+      "contentType": "image/png",
+      "cacheControl": "public, max-age=22222222",
+      "status": 200,
+      "size": 341,
+      "bodyHash": "884a518de33550d1ef423a25a42df434787b3c32"
+    },
+    {
+      "url": "https://maps.googleapis.com/maps/vt/icon/name=assets/icons/poi/quantum/modern_pinlet/gas_pinlet-2-medium.png&scale=4",
+      "file": "d875f10fef535a7d.png",
+      "contentType": "image/png",
+      "cacheControl": "public, max-age=22222222",
+      "status": 200,
+      "size": 352,
+      "bodyHash": "b1d02221ddfebeae73855034196771c4e22f2448"
+    },
+    {
+      "url": "https://maps.googleapis.com/maps/vt/icon/name=assets/icons/poi/quantum/modern_pinlet/hospital_H_pinlet-2-medium.png&scale=4",
+      "file": "20a971621394dc74.png",
+      "contentType": "image/png",
+      "cacheControl": "public, max-age=22222222",
+      "status": 200,
+      "size": 120,
+      "bodyHash": "e43cfc3b5bd7d3ca75888ff4c18c44fe18023a28"
+    },
+    {
+      "url": "https://maps.googleapis.com/maps/vt/icon/name=assets/icons/poi/quantum/modern_pinlet/library_pinlet-2-medium.png&scale=4",
+      "file": "4fd52781af9fa405.png",
+      "contentType": "image/png",
+      "cacheControl": "public, max-age=22222222",
+      "status": 200,
+      "size": 369,
+      "bodyHash": "029be49018a338e62e2545b95cdda2f6cef4f591"
+    },
+    {
+      "url": "https://maps.googleapis.com/maps/vt/icon/name=assets/icons/poi/quantum/modern_pinlet/lodging_pinlet-2-medium.png&scale=4",
+      "file": "d10d03620dc80a9a.png",
+      "contentType": "image/png",
+      "cacheControl": "public, max-age=22222222",
+      "status": 200,
+      "size": 358,
+      "bodyHash": "a82457f0a1101e3a35252c5e6d5192519a009e0a"
+    },
+    {
+      "url": "https://maps.googleapis.com/maps/vt/icon/name=assets/icons/poi/quantum/modern_pinlet/movie_pinlet-2-medium.png&scale=4",
+      "file": "96ef8934b33e793c.png",
+      "contentType": "image/png",
+      "cacheControl": "public, max-age=22222222",
+      "status": 200,
+      "size": 153,
+      "bodyHash": "78cde08333e4dc4b4105065945e8999f4812e702"
+    },
+    {
+      "url": "https://maps.googleapis.com/maps/vt/icon/name=assets/icons/poi/quantum/modern_pinlet/museum_pinlet-2-medium.png&scale=4",
+      "file": "2509627ca723f9e2.png",
+      "contentType": "image/png",
+      "cacheControl": "public, max-age=22222222",
+      "status": 200,
+      "size": 384,
+      "bodyHash": "1bf6e59317cbb810ebbf2b0aae22ec12733b2697"
+    },
+    {
+      "url": "https://maps.googleapis.com/maps/vt/icon/name=assets/icons/poi/quantum/modern_pinlet/parking_pinlet-2-medium.png&scale=4",
+      "file": "267b9b32559c7227.png",
+      "contentType": "image/png",
+      "cacheControl": "public, max-age=22222222",
+      "status": 200,
+      "size": 426,
+      "bodyHash": "e5e9eec91f3be9e85b4ae40944ca9cebe915888d"
+    },
+    {
+      "url": "https://maps.googleapis.com/maps/vt/icon/name=assets/icons/poi/quantum/modern_pinlet/pharmacy_pinlet-2-medium.png&scale=4",
+      "file": "46f7fe232d1b1980.png",
+      "contentType": "image/png",
+      "cacheControl": "public, max-age=22222222",
+      "status": 200,
+      "size": 456,
+      "bodyHash": "19dab8520549bfe5290397a4bb93c600e36b08eb"
+    },
+    {
+      "url": "https://maps.googleapis.com/maps/vt/icon/name=assets/icons/poi/quantum/modern_pinlet/restaurant_pinlet_v4-2-medium.png&scale=4",
+      "file": "6194dea72a205745.png",
+      "contentType": "image/png",
+      "cacheControl": "public, max-age=22222222",
+      "status": 200,
+      "size": 427,
+      "bodyHash": "b264afb46a95064175590178c794581ca9210046"
+    },
+    {
+      "url": "https://maps.googleapis.com/maps/vt/icon/name=assets/icons/poi/quantum/modern_pinlet/school_pinlet-2-medium.png&scale=4",
+      "file": "260abffea7b554d5.png",
+      "contentType": "image/png",
+      "cacheControl": "public, max-age=22222222",
+      "status": 200,
+      "size": 605,
+      "bodyHash": "763964fd6181d62818686f2ea6e7dfedde87fe00"
+    },
+    {
+      "url": "https://maps.googleapis.com/maps/vt/icon/name=assets/icons/poi/quantum/modern_pinlet/shoppingbag_pinlet-2-medium.png&scale=4",
+      "file": "beb88c322bd7c7c7.png",
+      "contentType": "image/png",
+      "cacheControl": "public, max-age=22222222",
+      "status": 200,
+      "size": 641,
+      "bodyHash": "406c8aa35d0a9e18f393167128d0879a87dff17a"
+    },
+    {
+      "url": "https://maps.googleapis.com/maps/vt/icon/name=assets/icons/poi/quantum/modern_pinlet/theater_pinlet-2-medium.png&scale=4",
+      "file": "02f07c7f7cf1ea4c.png",
+      "contentType": "image/png",
+      "cacheControl": "public, max-age=22222222",
+      "status": 200,
+      "size": 440,
+      "bodyHash": "b50e84354d6b429861f753a9d8952e90e93d8469"
+    },
+    {
+      "url": "https://maps.googleapis.com/maps/vt/icon/name=assets/icons/poi/tactile/forage_outline_v1-2-medium.png&scale=4",
+      "file": "8c1cbd6ea73ef93b.png",
+      "contentType": "image/png",
+      "cacheControl": "public, max-age=22222222",
+      "status": 200,
+      "size": 660,
+      "bodyHash": "66b8f877c1bada2d4d7c4d3429615a5e8faee170"
+    },
+    {
+      "url": "https://maps.googleapis.com/maps/vt/icon/name=assets/icons/poi/tactile/forage_shadow_v3-2-medium.png&scale=4",
+      "file": "6807457c9691af14.png",
+      "contentType": "image/png",
+      "cacheControl": "public, max-age=22222222",
+      "status": 200,
+      "size": 3277,
+      "bodyHash": "52719c7c83a9f2c94201c5cddd782a43ce214258"
+    },
+    {
+      "url": "https://maps.googleapis.com/maps/vt/icon/name=assets/icons/poi/tactile/forage_window_v1-2-medium.png&scale=4",
+      "file": "d2cea18530181114.png",
+      "contentType": "image/png",
+      "cacheControl": "public, max-age=22222222",
+      "status": 200,
+      "size": 577,
+      "bodyHash": "06f29b39a7ad6ae1bbe6651401444b30ee085da9"
+    },
+    {
+      "url": "https://maps.googleapis.com/maps/vt/icon/name=assets/icons/road/arrow-opaque-2-medium.png&scale=4",
+      "file": "e9e941166493b391.png",
+      "contentType": "image/png",
+      "cacheControl": "public, max-age=22222222",
+      "status": 200,
+      "size": 148,
+      "bodyHash": "9c9aec8acc4b4232a45acd91f714c6cf41008a05"
+    },
+    {
+      "url": "https://maps.googleapis.com/maps/vt/icon/name=assets/icons/transit/quantum_v2/bus-0-tiny.png&scale=4",
+      "file": "ba9a1fb19ed5f28e.png",
+      "contentType": "image/png",
+      "cacheControl": "public, max-age=22222222",
+      "status": 200,
+      "size": 516,
+      "bodyHash": "2a257e1a2c983a176189f5144fe4f72304a9491d"
+    },
+    {
+      "url": "https://maps.googleapis.com/maps/vt/icon/name=assets/icons/transit/quantum_v2/transit-round-container_v3-0-tiny.png&scale=4",
+      "file": "5ded150766ce1f86.png",
+      "contentType": "image/png",
+      "cacheControl": "public, max-age=22222222",
+      "status": 200,
+      "size": 385,
+      "bodyHash": "723cc6e49316d2da30988a32e66fcfb89133837d"
+    },
+    {
+      "url": "https://maps.googleapis.com/maps/vt/icon/name=assets/icons/transit/quantum_v2/transit-round-container-outline_v3-0-tiny.png&scale=4",
+      "file": "a01af73b109f7d8f.png",
+      "contentType": "image/png",
+      "cacheControl": "public, max-age=22222222",
+      "status": 200,
+      "size": 426,
+      "bodyHash": "3310a9d36c0e91cece8618dcd82dd889808406a5"
+    },
+    {
+      "url": "https://maps.googleapis.com/maps/vt/icon/name=assets/icons/transit/quantum_v2/transit-round-container-shadow_v4-0-tiny.png&scale=4",
+      "file": "834e8bb3661987e6.png",
+      "contentType": "image/png",
+      "cacheControl": "public, max-age=22222222",
+      "status": 200,
+      "size": 1928,
+      "bodyHash": "d1dfbf81a89dea463ee9d76707f00d52a50d5386"
+    },
+    {
+      "url": "https://maps.gstatic.com/mapfiles/openhand_8_8.cur",
+      "file": "acda200be65bb1e3.bin",
+      "contentType": "image/bmp",
+      "cacheControl": "private, max-age=31536000",
+      "status": 200,
+      "size": 326,
+      "bodyHash": "0d0a08cf25a258511957f357b89d3908f3c5e6e3"
+    },
+    {
+      "url": "https://maps.gstatic.com/mapfiles/transparent.png",
+      "file": "258170409530af52.png",
+      "contentType": "image/png",
+      "cacheControl": "private, max-age=31536000",
+      "status": 200,
+      "size": 68,
+      "bodyHash": "a812c79b0d125e4946b33446eae0353f518627e2"
+    },
+    {
+      "url": "https://maps.gstatic.com/mapfiles/undo_poly.png",
+      "file": "eb6428b87a515567.png",
+      "contentType": "image/png",
+      "cacheControl": "private, max-age=31536000",
+      "status": 200,
+      "size": 1804,
+      "bodyHash": "ea89cd4bd22c7210609dd81ab7b950c54e610b4f"
+    },
+    {
+      "url": "https://www.gstatic.com/maps/res/CompactLegendSdk-Roadmap-FetchableStyleSetSdk-8b7b5b266623fc843fdc16982460eba6",
+      "file": "a2a76ca7422edf18.bin",
+      "contentType": "application/vnd.google.octet-stream-compressible",
+      "cacheControl": "public, max-age=31536000",
+      "status": 200,
+      "size": 851450,
+      "bodyHash": "3d73b3cf010b124b35fae40be65f33de2574df24"
+    }
+  ]
+}

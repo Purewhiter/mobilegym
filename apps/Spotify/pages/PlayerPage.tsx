@@ -6,8 +6,6 @@ import { useSpotifyStore, selectLikedSongIds } from '../state';
 import { useShallow } from 'zustand/react/shallow';
 import { PlayingIndicator } from '../components/PlayingIndicator';
 import { useSpotifyGestures } from '../hooks/useSpotifyGestures';
-import * as TimeService from '../../../os/TimeService';
-import { setJsonpCallback, removeJsonpCallback, type ITunesResponse } from '../utils/jsonp';
 import { TrackMenuSheet } from '../components/TrackMenuSheet';
 import { AddToPlaylistSheet } from '../components/AddToPlaylistSheet';
 import { QueueSheetPanel } from '../components/QueueSheetPanel';
@@ -15,6 +13,7 @@ import { SleepTimerSheet } from '../components/SleepTimerSheet';
 import { useSpotifyStrings } from '../hooks/useSpotifyStrings';
 import { localizeSpotifyText } from '../utils/localizeSpotifyText';
 import { openSaveLocation } from '../components/LikedToast';
+import { getTrackCover, getTrackCoverLarge } from '../utils/artwork';
 export const PlayerPage: React.FC = () => {
     const locale = useLocale();
     const isEnglish = locale === 'en';
@@ -33,7 +32,6 @@ export const PlayerPage: React.FC = () => {
     const toggleLike = useSpotifyStore(s => s.toggleLike);
     const likedSongIds = useSpotifyStore(selectLikedSongIds);
     const isLiked = (trackId: string, track?: { title: string; artist: string }) => likedSongIds.has(trackId, track);
-    const updateTrackCover = useSpotifyStore(s => s.updateTrackCover);
     const addTrackToPlaylist = useSpotifyStore(s => s.addTrackToPlaylist);
     const removeTrackFromPlaylist = useSpotifyStore(s => s.removeTrackFromPlaylist);
     const showQueue = searchParams.get('sheet') === 'queue';
@@ -57,59 +55,15 @@ export const PlayerPage: React.FC = () => {
     };
     const duration = currentTrack ? parseDuration(currentTrack.duration) : 180;
 
-    // Effect: Update cover when track changes using caching strategy
+    // Effect: use cached high-res artwork when the track data provides it.
     useEffect(() => {
         if (!currentTrack) return;
-
-        // 1. Check if we already have the High Res version in the track data
-        //    (Persisted from previous fetch)
-        const isAlreadyHighRes = currentTrack.cover && currentTrack.cover.includes('1000x1000');
-
-        if (isAlreadyHighRes) {
-            setHighResCover(currentTrack.cover);
-            setImageLoaded(true); // Instant load, no blur transition needed
-            return;
-        }
-
-        // 2. If not high res, reset state for transition (Fade In)
-        setHighResCover(null);
-        setImageLoaded(false);
-
-        const fetchCoverJSONP = () => {
-            if (!currentTrack.title) return;
-
-            const callbackName = `itunes_cb_${TimeService.now()}_${Math.floor(Math.random() * 10000)}`;
-            const query = `${currentTrack.title} ${currentTrack.artist || ''}`;
-
-            const script = document.createElement('script');
-            script.src = `https://itunes.apple.com/search?term=${encodeURIComponent(query)}&entity=song&limit=5&callback=${callbackName}`;
-
-            setJsonpCallback<ITunesResponse>(callbackName, (data) => {
-                if (data.results?.length > 0) {
-                    const match = data.results.find((item) =>
-                        item.trackName.toLowerCase().includes(currentTrack.title.toLowerCase()) ||
-                        currentTrack.title.toLowerCase().includes(item.trackName.toLowerCase())
-                    ) || data.results[0];
-
-                    const highRes = match.artworkUrl100.replace('100x100', '1000x1000');
-                    setHighResCover(highRes);
-                    updateTrackCover(currentTrack.id, highRes);
-                }
-                if (script.parentNode) document.body.removeChild(script);
-                removeJsonpCallback(callbackName);
-            });
-
-            script.onerror = () => {
-                if (script.parentNode) document.body.removeChild(script);
-                removeJsonpCallback(callbackName);
-            };
-
-            document.body.appendChild(script);
-        };
-
-        fetchCoverJSONP();
-
-    }, [currentTrack]);
+        const cachedLargeCover = currentTrack.coverLarge && currentTrack.coverLarge !== currentTrack.cover
+            ? currentTrack.coverLarge
+            : null;
+        setHighResCover(cachedLargeCover);
+        setImageLoaded(!cachedLargeCover);
+    }, [currentTrack?.id, currentTrack?.cover, currentTrack?.coverLarge]);
 
     // Effect: Progress Timer
     useEffect(() => {
@@ -140,6 +94,7 @@ export const PlayerPage: React.FC = () => {
     };
 
     const isLikedTrack = isLiked(currentTrack.id, currentTrack);
+    const showBaseCover = !highResCover || !imageLoaded;
 
     return (
         <div className="flex flex-col h-full bg-gradient-to-b from-[#775544] to-app-surface relative overflow-hidden text-white font-sans">
@@ -169,8 +124,8 @@ export const PlayerPage: React.FC = () => {
                     <div className="w-full aspect-square shadow-2xl rounded-md overflow-hidden bg-gray-800 relative">
                         {/* 1. Low Res Base Layer (Visible until High Res loads) */}
                         <img
-                            src={currentTrack.cover}
-                            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${imageLoaded ? 'opacity-0' : 'opacity-100'}`}
+                            src={getTrackCover(currentTrack)}
+                            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${showBaseCover ? 'opacity-100' : 'opacity-0'}`}
                         />
 
                         {/* 2. High Res Layer (Fade In) */}
@@ -181,7 +136,7 @@ export const PlayerPage: React.FC = () => {
                                 onLoad={() => setImageLoaded(true)}
                             />
                         )}
-                        {!currentTrack.cover && !highResCover && (
+                        {!getTrackCover(currentTrack) && !highResCover && (
                             <div className="w-full h-full flex items-center justify-center bg-gray-700"><IcMic size={48} className="text-gray-500" /></div>
                         )}
                     </div>
@@ -309,7 +264,7 @@ export const PlayerPage: React.FC = () => {
                 <QueueSheetPanel
                     backdropProps={bindBack({ stopPropagation: true })}
                     onClose={() => back()}
-                    coverOverride={highResCover || undefined}
+                    coverOverride={highResCover || getTrackCoverLarge(currentTrack) || undefined}
                 />
             )}
             

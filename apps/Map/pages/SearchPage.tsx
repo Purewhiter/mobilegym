@@ -21,8 +21,10 @@ import { formatDistanceLabelMeters } from '../utils/placeUtils';
 import { applySearchResultsViewport } from '../utils/mapViewport';
 import { applyPlaceResultsDisplay } from '../utils/placeResultsFilters';
 import { getAutocompleteOffline } from '../utils/offlinePlaceStore';
+import { hasGoogleMapsApiKey } from '../utils/googleMapsConfig';
 import type { ShoppingItem } from '../types';
 import { useMapStrings } from '../hooks/useMapStrings';
+import type { PlaceSelectionFallback } from '../types';
 
 const AUTOCOMPLETE_DEBOUNCE_MS = 280;
 
@@ -42,6 +44,7 @@ export const SearchPage: React.FC = () => {
   const searchHistory = useMapStore(selectSearchHistory);
   const addSearchHistory = useMapStore((s) => s.addSearchHistory);
   const setAutocomplete = useMapStore((s) => s.setAutocomplete);
+  const setPendingPlaceSelection = useMapStore((s) => s.setPendingPlaceSelection);
   const location = useLocation();
   const { go, bindBack } = useMapGestures();
   const initialQuery = location.state?.initialQuery || '';
@@ -118,6 +121,16 @@ export const SearchPage: React.FC = () => {
   const searchHasMore = visibleCount < processedSearchItems.length;
   const [searchLoadingMore, setSearchLoadingMore] = useState(false);
 
+  const buildPlaceFallbackState = useCallback((item: ShoppingItem): PlaceSelectionFallback | undefined => {
+    if (!Number.isFinite(item.lat) || !Number.isFinite(item.lng)) return undefined;
+    return {
+      name: item.name,
+      formattedAddress: item.address,
+      location: { lat: item.lat, lng: item.lng },
+      types: item.types,
+    };
+  }, []);
+
   const handleSearchLoadMore = useCallback(() => {
     if (searchLoadingMore || !searchHasMore) return;
     setSearchLoadingMore(true);
@@ -191,7 +204,7 @@ export const SearchPage: React.FC = () => {
         return;
       }
 
-      if (!google) {
+      if (!google || !hasGoogleMapsApiKey()) {
         const fallback = await getAutocompleteOffline({
           input: trimmedQuery,
           locale,
@@ -202,14 +215,14 @@ export const SearchPage: React.FC = () => {
           const queryCount = fallback.predictions.filter((item) => item.kind === 'query').length;
           const placeCount = fallback.predictions.length - queryCount;
           console.log(
-            `[Map][离线未命中] 搜索提示: "${trimmedQuery}" 没有 autocomplete_index，Google SDK 不可用，使用 search_index 兜底 -> ${fallback.predictions.length} 条 (${queryCount} 搜索词, ${placeCount} 地点)`,
+            `[Map][离线未命中] 搜索提示: "${trimmedQuery}" 没有 autocomplete_index，Google key 不可用，使用 search_index 兜底 -> ${fallback.predictions.length} 条 (${queryCount} 搜索词, ${placeCount} 地点)`,
           );
           setPredictions(fallback.predictions);
           setAutocomplete(debouncedQuery, fallback.predictions);
           setSuggestionsLoading(false);
           return;
         }
-        console.log(`[Map][离线未命中] 搜索提示: "${trimmedQuery}" 未命中 autocomplete_index/search_index，Google SDK 不可用，使用本地搜索词兜底`);
+        console.log(`[Map][离线未命中] 搜索提示: "${trimmedQuery}" 未命中 autocomplete_index/search_index，Google key 不可用，使用本地搜索词兜底`);
         const offlineQueryPredictions: MapSearchPrediction[] = [
           {
             kind: 'query',
@@ -326,18 +339,29 @@ export const SearchPage: React.FC = () => {
     };
   }, [debouncedQuery, google, currentLocation, setAutocomplete, locale]);
 
-  const handleResultClick = (placeId: string, titleText: string, subtitle?: string) => {
+  const handleResultClick = (
+    placeId: string,
+    titleText: string,
+    subtitle?: string,
+    fallback?: PlaceSelectionFallback,
+  ) => {
     addSearchHistory({
       kind: 'place',
       text: titleText,
       placeId,
       ...(subtitle ? { subtitle } : {}),
     });
-    if (mode) {
-      go('tab.explore', {}, { state: { selectedPlaceId: placeId, mode }, mode: 'replace' });
-      return;
-    }
-    go('tab.explore', {}, { state: { selectedPlaceId: placeId }, mode: 'replace' });
+    setPendingPlaceSelection({
+      placeId,
+      ...(mode ? { mode } : {}),
+      ...(fallback ? { fallback } : {}),
+    });
+    const nextRouteState = {
+      ...((location.state || {}) as Record<string, unknown>),
+    };
+    delete nextRouteState.selectedPlaceId;
+    delete nextRouteState.placeFallback;
+    go('tab.explore', {}, { state: nextRouteState, mode: 'replace' });
   };
 
   const sheetTitle = useMemo(() => {
@@ -352,11 +376,7 @@ export const SearchPage: React.FC = () => {
     if (item.kind === 'place' && item.placeId) {
       KeyboardService.hide();
       inputRef.current?.blur();
-      if (mode) {
-        go('tab.explore', {}, { state: { selectedPlaceId: item.placeId, mode }, mode: 'replace' });
-      } else {
-        go('tab.explore', {}, { state: { selectedPlaceId: item.placeId }, mode: 'replace' });
-      }
+      handleResultClick(item.placeId, item.text, item.subtitle);
       return;
     }
     invalidatePendingSearch();
@@ -428,7 +448,7 @@ export const SearchPage: React.FC = () => {
                   position={{ lat, lng }}
                   title={item.name}
                   zIndex={10}
-                  onClick={() => handleResultClick(item.id, item.name)}
+                  onClick={() => handleResultClick(item.id, item.name, undefined, buildPlaceFallbackState(item))}
                 />
               );
             })}
@@ -641,7 +661,7 @@ export const SearchPage: React.FC = () => {
             invalidatePendingSearch();
             setHasSubmitted(false);
           }}
-          onItemClick={(item) => handleResultClick(item.id, item.name)}
+          onItemClick={(item) => handleResultClick(item.id, item.name, undefined, buildPlaceFallbackState(item))}
           onSortChange={handlePlaceResultsSortChange}
           onFilterChange={handlePlaceResultsFilterChange}
           onNavigate={(item) => {

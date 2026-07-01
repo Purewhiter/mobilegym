@@ -88,7 +88,10 @@ class SerialRunner(BaseRunner):
                             if trial == 0:
                                 current_task = task
                             else:
-                                current_task = task.__class__(**sampled_params)
+                                current_task = task.__class__(
+                                    _seed=getattr(task, "_seed", None),
+                                    **sampled_params,
+                                )
                                 if hasattr(task, '_instance_id'):
                                     current_task._instance_id = task._instance_id
                                 if hasattr(task, '_template_index'):

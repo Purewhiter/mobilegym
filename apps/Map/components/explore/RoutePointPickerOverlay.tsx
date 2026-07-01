@@ -20,6 +20,7 @@ import {
 } from '../../state';
 import { formatDistanceLabelMeters } from '../../utils/placeUtils';
 import { getAutocompleteOffline } from '../../utils/offlinePlaceStore';
+import { hasGoogleMapsApiKey } from '../../utils/googleMapsConfig';
 import { KeyboardService } from '@/os/keyboard';
 
 type RouteSide = 'origin' | 'destination';
@@ -116,7 +117,7 @@ export const RoutePointPickerOverlay: React.FC<{
         return;
       }
 
-      if (!google) {
+      if (!google || !hasGoogleMapsApiKey()) {
         const fallback = await getAutocompleteOffline({
           input: trimmedQuery,
           locale,
@@ -125,7 +126,7 @@ export const RoutePointPickerOverlay: React.FC<{
         });
         if (cancelled) return;
         if (fallback.predictions.length > 0) {
-          console.log(`[Map][离线未命中] 路线选点提示: "${trimmedQuery}" 没有 autocomplete_index，Google SDK 不可用，使用 search_index 兜底 -> ${fallback.predictions.length} 个地点`);
+          console.log(`[Map][离线未命中] 路线选点提示: "${trimmedQuery}" 没有 autocomplete_index，Google key 不可用，使用 search_index 兜底 -> ${fallback.predictions.length} 个地点`);
           setPredictions(
             fallback.predictions.map((item) => ({
               placeId: item.place_id,
@@ -137,7 +138,7 @@ export const RoutePointPickerOverlay: React.FC<{
           setSuggestionsLoading(false);
           return;
         }
-        console.log(`[Map][离线未命中] 路线选点提示: "${trimmedQuery}" 未命中 autocomplete_index/search_index，Google SDK 不可用`);
+        console.log(`[Map][离线未命中] 路线选点提示: "${trimmedQuery}" 未命中 autocomplete_index/search_index，Google key 不可用`);
         setPredictions([]);
         setSuggestionsLoading(false);
         return;

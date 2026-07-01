@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
+import React, { useEffect, useState, useRef, useCallback, useMemo, useLayoutEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { IcClose } from '../res/icons';
 import { EXPLORE_CATEGORIES } from '../constants';
@@ -12,6 +12,7 @@ import {
   selectLocationLoading,
   selectGoogle,
   selectSearchHistory,
+  selectPendingPlaceSelection,
 } from '../state';
 import { GoogleMap } from '../components/GoogleMap';
 import { MapMarker } from '../components/MapMarker';
@@ -26,9 +27,12 @@ import { fetchPlaceDetailWithOfflineFirst, getLatLngFromPlaceDetailResult } from
 import { useDraggableSheet } from '../hooks/useDraggableSheet';
 import { computeExplorePulseSheetSnaps } from '../utils/mapSheetSnaps';
 import {
+  clientPointToLatLng,
+  getMapVisibleRectAboveBottomSheet,
   isClickOccludedBySheet,
   isLatLngOccludedBySheet,
   panLatLngToVisibleCenter,
+  panLatLngToVisibleRectCenter,
   panScreenPointToVisibleCenter,
 } from '../utils/mapViewport';
 import { applyPlaceResultsDisplay } from '../utils/placeResultsFilters';
@@ -52,6 +56,7 @@ import { RouteSetupOverlay } from '../components/explore/RouteSetupOverlay';
 import { RoutePointPickerOverlay } from '../components/explore/RoutePointPickerOverlay';
 import { useMapStrings } from '../hooks/useMapStrings';
 import { useLocale } from '../locale';
+import type { PlaceSelectionFallback } from '../types';
 
 const PLACE_RESULTS_SHEET_CATEGORIES = [
   'shopping_mall',
@@ -76,9 +81,11 @@ export const ExplorePage: React.FC = () => {
   const locationLoading = useMapStore(selectLocationLoading);
   const google = useMapStore(selectGoogle);
   const searchHistory = useMapStore(selectSearchHistory);
+  const pendingPlaceSelection = useMapStore(selectPendingPlaceSelection);
   const setSearchResults = useMapStore((s) => s.setSearchResults);
   const setActivePoi = useMapStore((s) => s.setActivePoi);
   const setRouteSetupOpen = useMapStore((s) => s.setRouteSetupOpen);
+  const clearPendingPlaceSelection = useMapStore((s) => s.clearPendingPlaceSelection);
 
   const [mapInstance, setMapInstance] = useState<google.maps.Map | null>(null);
   const [initialCenter, setInitialCenter] = useState<{ lat: number; lng: number } | null>(null);
@@ -185,12 +192,20 @@ export const ExplorePage: React.FC = () => {
   const pendingSelectedPlaceRequestRef = useRef<string | null>(null);
   const latestRouteStateRef = useRef(location.state);
   latestRouteStateRef.current = location.state;
-  const selectedPlaceIdFromState =
+  const selectedPlaceIdFromRouteState =
     typeof location.state?.selectedPlaceId === 'string' ? location.state.selectedPlaceId : undefined;
-  const selectedPlaceModeFromState =
+  const selectedPlaceModeFromRouteState =
     location.state?.mode === 'origin' || location.state?.mode === 'destination'
       ? location.state.mode
       : undefined;
+  const selectedPlaceFallbackFromRouteState =
+    location.state?.placeFallback && typeof location.state.placeFallback === 'object'
+      ? (location.state.placeFallback as PlaceSelectionFallback)
+      : undefined;
+  const selectedPlaceIdFromState = pendingPlaceSelection?.placeId ?? selectedPlaceIdFromRouteState;
+  const selectedPlaceModeFromState = pendingPlaceSelection?.mode ?? selectedPlaceModeFromRouteState;
+  const selectedPlaceFallbackFromState = pendingPlaceSelection?.fallback ?? selectedPlaceFallbackFromRouteState;
+  const pendingPlaceSelectionRequestId = pendingPlaceSelection?.requestId;
 
   // Calculate distance to selected place
   useEffect(() => {
@@ -252,17 +267,25 @@ export const ExplorePage: React.FC = () => {
       return;
     }
 
-    const requestKey = `${selectedPlaceIdFromState}:${selectedPlaceModeFromState ?? 'detail'}`;
+    const requestKey = pendingPlaceSelectionRequestId != null
+      ? `pending:${pendingPlaceSelectionRequestId}`
+      : `route:${selectedPlaceIdFromState}:${selectedPlaceModeFromState ?? 'detail'}`;
     if (pendingSelectedPlaceRequestRef.current === requestKey) return;
     pendingSelectedPlaceRequestRef.current = requestKey;
 
     const placeId = selectedPlaceIdFromState;
     const mode = selectedPlaceModeFromState;
+    const fallback = selectedPlaceFallbackFromState;
+    const selectionRequestId = pendingPlaceSelectionRequestId;
+    if (selectionRequestId != null) {
+      clearPendingPlaceSelection(selectionRequestId);
+    }
 
     const snapshotRouteStateWithoutSelection = () => {
       const snapshot = { ...((latestRouteStateRef.current || {}) as Record<string, unknown>) };
       delete snapshot.selectedPlaceId;
       delete snapshot.mode;
+      delete snapshot.placeFallback;
       return snapshot;
     };
 
@@ -275,7 +298,11 @@ export const ExplorePage: React.FC = () => {
             types: [],
           } as google.maps.places.PlaceResult);
         }
-        const result = await fetchPlaceDetailWithOfflineFirst({ placeId, google });
+        const result = await fetchPlaceDetailWithOfflineFirst({
+          placeId,
+          google,
+          fallback,
+        });
         const latLng = getLatLngFromPlaceDetailResult(result);
 
         if (mode === 'origin') {
@@ -307,10 +334,10 @@ export const ExplorePage: React.FC = () => {
           setSelectedPlace(result as google.maps.places.PlaceResult);
           if (latLng && mapInstance) {
             mapInstance.setZoom(17);
+            mapInstance.panTo(latLng);
             setViewState({ center: latLng, zoom: 17 });
-
-            const sheetRatio = snapPoints.half / (containerRef.current?.clientHeight || 1);
-            panLatLngToVisibleCenter(mapInstance, latLng, sheetRatio);
+          } else if (latLng) {
+            setViewState({ center: latLng, zoom: 17 });
           }
           replaceState(snapshotRouteStateWithoutSelection());
         }
@@ -334,6 +361,9 @@ export const ExplorePage: React.FC = () => {
     s.place_detail_title,
     selectedPlaceIdFromState,
     selectedPlaceModeFromState,
+    selectedPlaceFallbackFromState,
+    pendingPlaceSelectionRequestId,
+    clearPendingPlaceSelection,
     setOrigin,
     setSelectedPlace,
     showSelectedPlaceLoading,
@@ -415,6 +445,63 @@ export const ExplorePage: React.FC = () => {
     return c ? s[c.labelKey] : fallback;
   };
 
+  const buildClickFallback = (
+    placeId: string | null | undefined,
+    clickLatLng: google.maps.LatLngLiteral | null,
+  ): { placeId: string; fallback: PlaceSelectionFallback } | null => {
+    const resolvedPlaceId = placeId?.trim() || '';
+    if (!resolvedPlaceId) return null;
+    return {
+      placeId: resolvedPlaceId,
+      fallback: {
+        name: s.place_detail_title,
+        ...(clickLatLng ? { location: clickLatLng } : {}),
+        types: [],
+      },
+    };
+  };
+
+  const openResolvedMapPlace = async (
+    resolved: { placeId: string; fallback: PlaceSelectionFallback },
+    clickX?: number,
+    clickY?: number,
+  ) => {
+    const cRect = containerRef.current?.getBoundingClientRect();
+    const sheetRatio = snapPoints.half / (containerRef.current?.clientHeight || 1);
+    const willBeOccluded = clickY != null && cRect
+      ? isClickOccludedBySheet(clickY, cRect, sheetRatio)
+      : false;
+
+    showSelectedPlaceLoading({
+      place_id: resolved.placeId,
+      name: resolved.fallback.name || s.place_detail_title,
+      formatted_address: resolved.fallback.formattedAddress,
+      geometry: resolved.fallback.location ? { location: resolved.fallback.location } : undefined,
+      types: resolved.fallback.types || [],
+    } as google.maps.places.PlaceResult);
+
+    if (
+      willBeOccluded &&
+      mapInstance &&
+      clickX != null &&
+      clickY != null &&
+      cRect
+    ) {
+      panScreenPointToVisibleCenter(mapInstance, clickX, clickY, cRect, sheetRatio);
+    }
+
+    try {
+      const result = await fetchPlaceDetailWithOfflineFirst({
+        placeId: resolved.placeId,
+        google,
+        fallback: resolved.fallback,
+      });
+      setSelectedPlace(result as google.maps.places.PlaceResult);
+    } catch (error) {
+      console.warn('Failed to fetch place details on click', error);
+      setIsSelectedPlaceLoading(false);
+    }
+  };
 
   // Handle Map Click
   const handleMapClick = async (e: google.maps.MapMouseEvent) => {
@@ -426,50 +513,17 @@ export const ExplorePage: React.FC = () => {
     if (!google) return;
 
     const placeId = (e as google.maps.MapMouseEvent & { placeId?: string }).placeId;
-    if (placeId) {
-       e.stop(); 
+    const domEvent = (e as unknown as { domEvent?: MouseEvent }).domEvent;
+    const clickX = domEvent?.clientX;
+    const clickY = domEvent?.clientY;
+    const clickLatLng = mapInstance && clickX != null && clickY != null
+      ? clientPointToLatLng(mapInstance, clickX, clickY)
+      : readLatLngLike(e.latLng);
+    const resolved = buildClickFallback(placeId, clickLatLng);
 
-      // 用屏幕坐标做遮挡检测/单次平移（与 CSS zoom 无关）
-      const clickX = (e as unknown as { domEvent?: MouseEvent }).domEvent?.clientX;
-       const clickY = (e as unknown as { domEvent?: MouseEvent }).domEvent?.clientY;
-       const cRect = containerRef.current?.getBoundingClientRect();
-       const sheetRatio = snapPoints.half / (containerRef.current?.clientHeight || 1);
-       const willBeOccluded = clickY != null && cRect
-         ? isClickOccludedBySheet(clickY, cRect, sheetRatio)
-         : false;
-
-      showSelectedPlaceLoading({
-        place_id: placeId,
-        name: s.place_detail_title,
-        geometry: e.latLng ? { location: e.latLng } : undefined,
-        types: [],
-      } as google.maps.places.PlaceResult);
-
-      if (
-        willBeOccluded &&
-        mapInstance &&
-        clickX != null &&
-        clickY != null &&
-        cRect
-      ) {
-        panScreenPointToVisibleCenter(mapInstance, clickX, clickY, cRect, sheetRatio);
-      }
-
-       try {
-         const result = await fetchPlaceDetailWithOfflineFirst({
-           placeId,
-           google,
-           fallback: {
-             name: s.place_detail_title,
-             location: e.latLng ?? null,
-             types: [],
-           },
-         });
-         setSelectedPlace(result as google.maps.places.PlaceResult);
-       } catch (error) {
-         console.warn('Failed to fetch place details on click', error);
-        setIsSelectedPlaceLoading(false);
-       }
+    if (resolved) {
+      e.stop();
+      await openResolvedMapPlace(resolved, clickX, clickY);
     } else {
       setSelectedPlace(null); // Deselect if clicking empty space
     }
@@ -588,13 +642,46 @@ export const ExplorePage: React.FC = () => {
     maxHeight: snapPoints.full,
   });
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (selectedPlace) {
       setSheetHeight(snapPoints.half);
     }
   }, [selectedPlace, snapPoints.half, setSheetHeight]);
 
+  useLayoutEffect(() => {
+    if (!selectedPlace || !mapInstance || destination) return undefined;
 
+    const latLng = readLatLngLike(selectedPlace.geometry?.location);
+    if (!latLng) return undefined;
+
+    let frame = 0;
+    const timers: number[] = [];
+    let idleListener: google.maps.MapsEventListener | null = null;
+
+    const syncSelectedPlaceViewport = () => {
+      const visibleRect = getMapVisibleRectAboveBottomSheet(
+        mapInstance,
+        sheetRef.current,
+        sheetHeight,
+      );
+      if (!visibleRect) return;
+
+      const center = panLatLngToVisibleRectCenter(mapInstance, latLng, visibleRect);
+      setViewState({ center, zoom: mapInstance.getZoom() ?? 17 });
+    };
+
+    frame = window.requestAnimationFrame(syncSelectedPlaceViewport);
+    [80, 180, 360, 520].forEach((delay) => {
+      timers.push(window.setTimeout(syncSelectedPlaceViewport, delay));
+    });
+    idleListener = google?.maps.event.addListenerOnce(mapInstance, 'idle', syncSelectedPlaceViewport) ?? null;
+
+    return () => {
+      if (frame) window.cancelAnimationFrame(frame);
+      timers.forEach((timer) => window.clearTimeout(timer));
+      idleListener?.remove();
+    };
+  }, [selectedPlace, mapInstance, destination, sheetHeight, google]);
 
   // Route Setup Overlay (after second FAB)
   const [showRouteSetup, setShowRouteSetup] = useState(false);

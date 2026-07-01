@@ -17,22 +17,22 @@ export const ShortVideoPage: React.FC = () => {
         author: 'Evelyn Xu',
         fans: '8K',
         tags: ['#Mandopop', '#mood', '#TaiwanPop'],
-        bg: 'https://images.unsplash.com/photo-1516280440614-6697288d5d38?w=800&q=80',
+        bg: '/cdn/spotify/images/categories/db0f8223bb3c6ad1.jpg',
         track: {
           title: 'Across the Remembered Sea',
           artist: 'Evelyn Xu',
-          cover: 'https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=200&q=80',
+          cover: '/cdn/spotify/images/ui/53464691c42129a1.jpg',
         },
       }
     : {
         author: '徐隐翎',
         fans: '8K',
         tags: ['#华语流行音乐', '#情绪', '#台湾流行音乐'],
-        bg: 'https://images.unsplash.com/photo-1516280440614-6697288d5d38?w=800&q=80',
+        bg: '/cdn/spotify/images/categories/db0f8223bb3c6ad1.jpg',
         track: {
           title: '记忆之后海',
           artist: '徐隐翎',
-          cover: 'https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=200&q=80',
+          cover: '/cdn/spotify/images/ui/53464691c42129a1.jpg',
         },
       };
 
@@ -68,7 +68,7 @@ export const ShortVideoPage: React.FC = () => {
       <div className="absolute bottom-8 left-4 right-16 z-20">
         <div className="flex items-center gap-3 mb-4">
           <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden">
-            <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&q=80" alt="avatar" className="w-full h-full object-cover" />
+            <img src="/cdn/spotify/images/ui/fec8f6af3455b429.jpg" alt="avatar" className="w-full h-full object-cover" />
           </div>
           <div>
             <div className="font-bold flex items-center gap-2">

@@ -13,11 +13,12 @@ from __future__ import annotations
 
 import sys
 import textwrap
+import zlib
 from pathlib import Path
 
 import pytest
 
-from bench_env.task.registry import TaskRegistry, _discover_suite_modules
+from bench_env.task.registry import TaskRegistry, _discover_suite_modules, load_tasks
 
 
 _LEGACY_TASKS_PY = textwrap.dedent(
@@ -65,6 +66,25 @@ _DEFS_TASK_PY = textwrap.dedent(
         difficulty = "L1"
         capabilities = ["nav"]
         criteria = {"x": 3}
+    '''
+)
+
+_PARAM_TASKS_PY = textwrap.dedent(
+    '''
+    """Suite with parameterized task."""
+    from bench_env.task.common_tasks import CriteriaTask
+
+
+    class ParamTask(CriteriaTask):
+        apps = ["fake"]
+        templates = ["param {value}"]
+        scope = "S1"
+        objective = "operate"
+        composition = "atomic"
+        difficulty = "L1"
+        capabilities = ["query"]
+        parameters = {"value": {"type": "int", "min": 1, "max": 10}}
+        criteria = {"x": 1}
     '''
 )
 
@@ -276,6 +296,29 @@ class TestLoading:
         reg = _registry_for(prefix, root)
         with pytest.raises(ValueError, match="Unknown task suite 'no_such'"):
             reg._load_suite_tasks("no_such")
+
+    def test_seed_reaches_single_instance_tasks_without_sample_n(self, synthetic_root):
+        prefix, root = synthetic_root
+        _make_suite(root, "param_suite", tasks_py=_PARAM_TASKS_PY)
+
+        reg = _registry_for(prefix, root)
+        tasks = load_tasks("param_suite", registry=reg, sample_n=None, seed=123)
+
+        assert len(tasks) == 1
+        assert tasks[0].id == "param_suite.ParamTask"
+        assert not hasattr(tasks[0], "_instance_id")
+        expected_seed = (123 ^ zlib.crc32(b"param_suite.ParamTask:0")) & 0xFFFFFFFF
+        assert tasks[0]._seed == expected_seed
+
+    def test_missing_seed_keeps_legacy_single_instance_behavior(self, synthetic_root):
+        prefix, root = synthetic_root
+        _make_suite(root, "param_suite", tasks_py=_PARAM_TASKS_PY)
+
+        reg = _registry_for(prefix, root)
+        tasks = load_tasks("param_suite", registry=reg, sample_n=None, seed=None)
+
+        assert len(tasks) == 1
+        assert tasks[0]._seed is None
 
 
 class TestRealWorldSuiteStillLoads:

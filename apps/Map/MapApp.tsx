@@ -33,7 +33,7 @@ import { colorStates, colorStatesDark } from './res/colors.states';
 import { dimens } from './res/dimens';
 import { anim } from './res/anim';
 import { dispatchMapBackHandlers } from './hooks/useMapBackHandler';
-import { getGoogleMapsApiKey } from './utils/googleMapsConfig';
+import { OFFLINE_GOOGLE_MAPS_API_KEY, getGoogleMapsApiKey } from './utils/googleMapsConfig';
 import { ensureMapServiceWorkerControlling, registerMapServiceWorker } from './utils/registerMapServiceWorker';
 
 // 使用 @googlemaps/js-api-loader v2 的 setOptions + importLibrary
@@ -283,6 +283,16 @@ export const MapApp: React.FC = () => {
     void registerMapServiceWorker();
   }, []);
 
+  useEffect(() => {
+    if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) return;
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data?.type !== 'MAP_GOOGLE_CACHE_MISS') return;
+      console.warn('[Map][离线缓存未命中]', event.data.reason, event.data.cacheKey);
+    };
+    navigator.serviceWorker.addEventListener('message', handleMessage);
+    return () => navigator.serviceWorker.removeEventListener('message', handleMessage);
+  }, []);
+
   // Load Google Maps API using @googlemaps/js-api-loader
   // 没真 key 时也尝试加载：Service Worker 会用 placeholder key 命中 canonical 缓存。
   // 既无 key 又无缓存又无网络时，loader 会失败，落到 catch 显示 placeholder。
@@ -291,7 +301,7 @@ export const MapApp: React.FC = () => {
   // 直接打 Google → 用 placeholder key 被拒 → 拿回 HTML 错误页 → JS 解析失败。
   useEffect(() => {
     const realKey = getGoogleMapsApiKey();
-    const apiKey = realKey || 'OFFLINE_NO_KEY';
+    const apiKey = realKey || OFFLINE_GOOGLE_MAPS_API_KEY;
     if (realKey) {
       console.log('[Map] 检测到 Google Maps key，开始加载 Google Maps JS SDK');
     } else {
@@ -300,6 +310,10 @@ export const MapApp: React.FC = () => {
     let cancelled = false;
     void (async () => {
       await ensureMapServiceWorkerControlling();
+      navigator.serviceWorker?.controller?.postMessage({
+        type: 'MAP_GOOGLE_NETWORK_MODE',
+        offlineOnly: !realKey,
+      });
       if (cancelled) return;
       initGoogleMaps(apiKey, locale)
         .then((g) => {

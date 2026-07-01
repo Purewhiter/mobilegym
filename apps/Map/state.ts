@@ -2,6 +2,7 @@ import { createAppStoreWithActions, registerStateAdapter } from '../../os/create
 import { MAP_CONFIG } from './data';
 import * as LocationService from '../../os/LocationService';
 import { now as timeNow } from '../../os/TimeService';
+import type { PendingPlaceSelection } from './types';
 
 
 // ── Types ──────────────────────────────────────────────────────────
@@ -132,6 +133,7 @@ interface MapState {
     isLoaded: boolean;
     loadError: Error | undefined;
     google: typeof google | undefined;
+    pendingPlaceSelection: PendingPlaceSelection | null;
   };
 }
 
@@ -154,6 +156,8 @@ interface MapActions {
   setActiveRoute: (route: Record<string, any> | null) => void;
   setRouteModes: (routeModes: Record<string, any>) => void;
   setAutocomplete: (query: string, suggestions: Record<string, any>[]) => void;
+  setPendingPlaceSelection: (selection: Omit<PendingPlaceSelection, 'requestId'>) => void;
+  clearPendingPlaceSelection: (requestId?: number) => void;
   setPlaceResultsSheetOpen: (open: boolean) => void;
   setRouteSheetOpen: (open: boolean) => void;
   setRouteSetupOpen: (open: boolean) => void;
@@ -182,6 +186,8 @@ function normalizeSearchHistoryFromConfig(raw: unknown): MapSearchHistoryEntry[]
   return out;
 }
 
+let pendingPlaceSelectionSeq = 0;
+
 // ── Initial state ──────────────────────────────────────────────────
 
 const initialState: MapState = {
@@ -205,6 +211,7 @@ const initialState: MapState = {
     isLoaded: false,
     loadError: undefined,
     google: undefined,
+    pendingPlaceSelection: null,
   },
 };
 
@@ -438,6 +445,36 @@ const mapStore = createAppStoreWithActions<MapState, MapActions>(
       }));
     },
 
+    setPendingPlaceSelection: (selection) => {
+      const placeId = selection.placeId.trim();
+      if (!placeId) return;
+      pendingPlaceSelectionSeq += 1;
+      set((state) => ({
+        _temp: {
+          ...state._temp,
+          pendingPlaceSelection: {
+            ...selection,
+            placeId,
+            requestId: pendingPlaceSelectionSeq,
+          },
+        },
+      }));
+    },
+
+    clearPendingPlaceSelection: (requestId) => {
+      set((state) => {
+        const current = state._temp.pendingPlaceSelection;
+        if (!current) return {};
+        if (requestId !== undefined && current.requestId !== requestId) return {};
+        return {
+          _temp: {
+            ...state._temp,
+            pendingPlaceSelection: null,
+          },
+        };
+      });
+    },
+
     setPlaceResultsSheetOpen: (open: boolean) => {
       set((state) => ({
         currentView: {
@@ -518,6 +555,7 @@ export const selectLocationError = (s: MapStore) => s._temp.locationError;
 export const selectIsLoaded = (s: MapStore) => s._temp.isLoaded;
 export const selectLoadError = (s: MapStore) => s._temp.loadError;
 export const selectGoogle = (s: MapStore) => s._temp.google;
+export const selectPendingPlaceSelection = (s: MapStore) => s._temp.pendingPlaceSelection;
 export const selectRefreshLocation = (s: MapStore) => s.refreshLocation;
 
 // ── State adapter: strip _temp from exported state (contains google SDK with circular refs) ──

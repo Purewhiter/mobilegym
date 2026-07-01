@@ -222,6 +222,18 @@ interface SimFSApi {
   mkdir(path: string, name: string): Promise<unknown>;
   read(path: string): Promise<Blob | null>;
   write(path: string, content: string | Blob | ArrayBuffer, options?: { mimeType?: string }): Promise<unknown>;
+  setMetadata(
+    path: string,
+    patch: {
+      createdAt?: number;
+      modifiedAt?: number;
+      mimeType?: string;
+      thumbnailUri?: string;
+      width?: number;
+      height?: number;
+      duration?: number;
+    },
+  ): Promise<unknown | null>;
   delete(path: string): Promise<boolean>;
   move(fromPath: string, toPath: string, newName?: string): Promise<unknown>;
   copy(sourcePath: string, destPath: string, newName?: string): Promise<unknown>;

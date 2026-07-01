@@ -337,7 +337,10 @@ class ParallelRunner(BaseRunner):
                         # Step 2: Immediately dispatch trials 1~N-1 to queue
                         if repeat_n > 1:
                             for t in range(1, repeat_n):
-                                task_copy = task.__class__(**params)
+                                task_copy = task.__class__(
+                                    _seed=getattr(task, "_seed", None),
+                                    **params,
+                                )
                                 if hasattr(task, '_instance_id'):
                                     task_copy._instance_id = task._instance_id
                                 if hasattr(task, '_template_index'):

@@ -515,7 +515,12 @@ class MobileGymEnv(BaseMobileEnv):
         """
         launch_args: dict[str, Any] = {"headless": headless}
         if browser_type == "chromium":
-            launch_args["args"] = ["--ignore-certificate-errors"]
+            launch_args["args"] = [
+                "--ignore-certificate-errors",
+                # Google Maps vector rendering needs WebGL in headless runs.
+                # Recent Chromium requires an explicit opt-in for SwiftShader.
+                "--enable-unsafe-swiftshader",
+            ]
         if proxy:
             launch_args["proxy"] = {"server": proxy}
         return launch_args

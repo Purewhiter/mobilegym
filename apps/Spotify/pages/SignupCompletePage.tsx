@@ -45,7 +45,7 @@ export const SignupCompletePage: React.FC = () => {
               alt={artist.name}
               className="w-full h-full object-cover"
               onError={(e) => {
-                (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${artist.name}&background=random`;
+                (e.target as HTMLImageElement).src = '/cdn/spotify/images/categories/1e18c2ee7a0fb340.jpg';
               }}
             />
           </div>

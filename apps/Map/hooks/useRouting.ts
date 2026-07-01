@@ -16,6 +16,7 @@ import {
   getOfflineRoutePayload,
   makePointPairRouteCacheKey,
 } from '../utils/offlineRouteStore';
+import { hasGoogleMapsApiKey } from '../utils/googleMapsConfig';
 
 export type RoutePoint = {
   lat: number;
@@ -112,6 +113,7 @@ export function useRouting(options: {
   const { replaceState } = useMapGestures();
   const location = useLocation();
   const google = useMapStore(selectGoogle);
+  const hasRealGoogleMapsKey = hasGoogleMapsApiKey();
   const locale = useLocale();
   const s = useMemo(() => getMapStrings(locale), [locale]);
   const setActiveRoute = useMapStore((s) => s.setActiveRoute);
@@ -248,8 +250,9 @@ export function useRouting(options: {
             return;
           }
 
-          if (!google) {
-            console.log(`[Map][离线未命中] 路线: ${mode} 未命中离线路线，Google SDK 不可用`);
+          if (!google || !hasRealGoogleMapsKey) {
+            const reason = google ? '未配置真实 key' : 'Google SDK 不可用';
+            console.log(`[Map][离线未命中] 路线: ${mode} 未命中离线路线，${reason}`);
             clearAndResetError(s.route_not_found_detail);
             return;
           }
@@ -364,7 +367,17 @@ export function useRouting(options: {
     return () => {
       isCancelled = true;
     };
-  }, [destination, origin, google, selectedTransportMode, mapInstance, clearRoutePolyline, locale, s]);
+  }, [
+    destination,
+    origin,
+    google,
+    hasRealGoogleMapsKey,
+    selectedTransportMode,
+    mapInstance,
+    clearRoutePolyline,
+    locale,
+    s,
+  ]);
 
   const handleSwapRoute = useCallback(() => {
     if (destination && origin) {
@@ -476,7 +489,9 @@ export function useRouting(options: {
     setModeDurations({});
 
     void (async () => {
-      const routeApi = google ? await importRoutesLibrary(google.maps).catch(() => null) : null;
+      const routeApi = google && hasRealGoogleMapsKey
+        ? await importRoutesLibrary(google.maps).catch(() => null)
+        : null;
 
       await Promise.all(
         modesToFetch.map(async (mode) => {
@@ -498,7 +513,8 @@ export function useRouting(options: {
             }
 
             if (!routeApi) {
-              console.log(`[Map][离线未命中] 路线时长: ${mode} 未命中离线时长，Google Routes 不可用`);
+              const reason = google ? '未配置真实 key' : 'Google Routes 不可用';
+              console.log(`[Map][离线未命中] 路线时长: ${mode} 未命中离线时长，${reason}`);
               setModeDurations((prev) => ({
                 ...prev,
                 [key]: 'N/A',
@@ -528,7 +544,7 @@ export function useRouting(options: {
         }),
       );
     })();
-  }, [destination, origin, google, locale]);
+  }, [destination, origin, google, hasRealGoogleMapsKey, locale]);
 
   useEffect(() => {
     if (!destination || !origin) {

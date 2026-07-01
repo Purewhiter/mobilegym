@@ -1,6 +1,3 @@
-import { manifest } from '../manifest';
-import { SIMULATOR_CONFIG } from '@/os/data';
-
 /**
  * 视口感知工具：遮挡检测 + 条件性平移。
  *
@@ -10,13 +7,6 @@ import { SIMULATOR_CONFIG } from '@/os/data';
  */
 
 const MARGIN_RATIO = 0.04;
-
-function getMapCssZoomScale() {
-  const dvw = manifest.designViewportWidth;
-  const vw = SIMULATOR_CONFIG.framework.viewportWidth ?? 360;
-  if (!dvw || dvw <= 0 || dvw === vw) return 1;
-  return dvw / vw;
-}
 
 function getMapDiv(map: google.maps.Map): HTMLElement | null {
   try {
@@ -28,14 +18,66 @@ function getMapDiv(map: google.maps.Map): HTMLElement | null {
 
 function getVisibleCenterYInMapCoords(map: google.maps.Map, sheetRatio: number) {
   const mapH = getMapDiv(map)?.clientHeight ?? 0;
-  const cssZoomScale = getMapCssZoomScale();
-  return (mapH * (1 - sheetRatio) / 2) / cssZoomScale;
+  return mapH * (1 - sheetRatio) / 2;
 }
 
 function getVisibleCenterXInMapCoords(map: google.maps.Map) {
   const mapW = getMapDiv(map)?.clientWidth ?? 0;
-  const cssZoomScale = getMapCssZoomScale();
-  return (mapW / 2) / cssZoomScale;
+  return mapW / 2;
+}
+
+function panLatLngToMapDivPoint(
+  map: google.maps.Map,
+  latLng: google.maps.LatLngLiteral,
+  targetX: number,
+  targetY: number,
+): google.maps.LatLngLiteral {
+  const projection = map.getProjection();
+  const zoom = map.getZoom();
+  const div = getMapDiv(map);
+  if (!div) {
+    map.panTo(latLng);
+    return latLng;
+  }
+
+  const mapW = div.clientWidth;
+  const mapH = div.clientHeight;
+  if (
+    !projection ||
+    zoom == null ||
+    mapW <= 0 ||
+    mapH <= 0 ||
+    targetX < 0 ||
+    targetY < 0
+  ) {
+    map.panTo(latLng);
+    return latLng;
+  }
+
+  const targetPoint = projection.fromLatLngToPoint(new google.maps.LatLng(latLng));
+  if (!targetPoint) {
+    map.panTo(latLng);
+    return latLng;
+  }
+
+  const clampedTargetX = Math.max(0, Math.min(mapW, targetX));
+  const clampedTargetY = Math.max(0, Math.min(mapH, targetY));
+  const worldDeltaX = (mapW / 2 - clampedTargetX) / (2 ** zoom);
+  const worldDeltaY = (mapH / 2 - clampedTargetY) / (2 ** zoom);
+
+  const nextCenterPoint = new google.maps.Point(
+    targetPoint.x + worldDeltaX,
+    targetPoint.y + worldDeltaY,
+  );
+  const nextCenter = projection.fromPointToLatLng(nextCenterPoint);
+  if (!nextCenter) {
+    map.panTo(latLng);
+    return latLng;
+  }
+
+  const center = { lat: nextCenter.lat(), lng: nextCenter.lng() };
+  map.panTo(center);
+  return center;
 }
 
 /**
@@ -79,9 +121,9 @@ export function isClickOccludedBySheet(
  * 将标记从当前位置（地图中心）平移到"剩余可见区域"的中心。
  * 前提：调用前标记已在地图中心（通过 panTo 或 Google Maps 默认行为）。
  *
- * 注意：GoogleMap 组件内部有一层 CSS zoom 补偿。
- * map.panBy() 使用的是地图内部坐标系，而"可见区域"是补偿后再被父容器裁剪的区域。
- * 因此目标 Y 需要先除以 zoom scale，再换算为 map.panBy 的内部像素。
+ * map.panBy() 使用的是地图 div 的内部 CSS 像素坐标系。
+ * App 外层可能被 OS 用 CSS zoom 缩放，但这里全程使用 map div 的
+ * clientWidth/clientHeight，因此不需要额外按全局视口比例换算。
  */
 export function panMarkerToVisibleCenter(
   map: google.maps.Map,
@@ -112,14 +154,54 @@ export function panScreenPointToVisibleCenter(
   containerRect: DOMRect,
   sheetRatio: number,
 ) {
-  const cssZoomScale = getMapCssZoomScale();
-  const relX = pointClientX - containerRect.left;
-  const relY = pointClientY - containerRect.top;
-  const targetX = containerRect.width / 2;
-  const targetY = containerRect.height * (1 - sheetRatio) / 2;
-  const deltaX = (relX - targetX) / cssZoomScale;
-  const deltaY = (relY - targetY) / cssZoomScale;
+  const div = getMapDiv(map);
+  const rect = div?.getBoundingClientRect() ?? containerRect;
+  const mapW = div?.clientWidth ?? containerRect.width;
+  const mapH = div?.clientHeight ?? containerRect.height;
+  const screenToMapX = rect.width > 0 ? mapW / rect.width : 1;
+  const screenToMapY = rect.height > 0 ? mapH / rect.height : 1;
+  const relX = (pointClientX - rect.left) * screenToMapX;
+  const relY = (pointClientY - rect.top) * screenToMapY;
+  const targetX = mapW / 2;
+  const targetY = mapH * (1 - sheetRatio) / 2;
+  const deltaX = relX - targetX;
+  const deltaY = relY - targetY;
   map.panBy(deltaX, deltaY);
+}
+
+export function clientPointToLatLng(
+  map: google.maps.Map,
+  pointClientX: number,
+  pointClientY: number,
+): google.maps.LatLngLiteral | null {
+  const projection = map.getProjection();
+  const zoom = map.getZoom();
+  const center = map.getCenter();
+  const div = getMapDiv(map);
+  if (!projection || zoom == null || !center || !div) return null;
+
+  const rect = div.getBoundingClientRect();
+  const mapW = div.clientWidth;
+  const mapH = div.clientHeight;
+  if (rect.width <= 0 || rect.height <= 0 || mapW <= 0 || mapH <= 0) return null;
+
+  const screenToMapX = mapW / rect.width;
+  const screenToMapY = mapH / rect.height;
+  const relX = (pointClientX - rect.left) * screenToMapX;
+  const relY = (pointClientY - rect.top) * screenToMapY;
+  const offsetX = relX - mapW / 2;
+  const offsetY = relY - mapH / 2;
+
+  const centerPoint = projection.fromLatLngToPoint(center);
+  if (!centerPoint) return null;
+
+  const scale = 2 ** zoom;
+  const point = new google.maps.Point(
+    centerPoint.x + offsetX / scale,
+    centerPoint.y + offsetY / scale,
+  );
+  const latLng = projection.fromPointToLatLng(point);
+  return latLng ? { lat: latLng.lat(), lng: latLng.lng() } : null;
 }
 
 /**
@@ -130,43 +212,99 @@ export function panLatLngToVisibleCenter(
   map: google.maps.Map,
   latLng: google.maps.LatLngLiteral,
   sheetRatio: number,
-) {
-  const projection = map.getProjection();
-  const zoom = map.getZoom();
+): google.maps.LatLngLiteral {
   const div = getMapDiv(map);
-  if (!div) { map.panTo(latLng); return; }
+  if (!div) {
+    map.panTo(latLng);
+    return latLng;
+  }
   const mapW = div.clientWidth;
   const mapH = div.clientHeight;
-  if (!projection || zoom == null || mapW <= 0 || mapH <= 0 || sheetRatio <= 0) {
+  if (mapW <= 0 || mapH <= 0 || sheetRatio <= 0) {
     map.panTo(latLng);
-    return;
+    return latLng;
   }
 
-  const targetPoint = projection.fromLatLngToPoint(new google.maps.LatLng(latLng));
-  if (!targetPoint) {
-    map.panTo(latLng);
-    return;
-  }
-
-  const currentMarkerXInMapCoords = mapW / 2;
-  const currentMarkerYInMapCoords = mapH / 2;
-  const targetMarkerXInMapCoords = getVisibleCenterXInMapCoords(map);
-  const targetMarkerYInMapCoords = getVisibleCenterYInMapCoords(map, sheetRatio);
-  const worldDeltaX = (currentMarkerXInMapCoords - targetMarkerXInMapCoords) / (2 ** zoom);
-  const worldDeltaY = (currentMarkerYInMapCoords - targetMarkerYInMapCoords) / (2 ** zoom);
-
-  const nextCenterPoint = new google.maps.Point(
-    targetPoint.x + worldDeltaX,
-    targetPoint.y + worldDeltaY,
+  return panLatLngToMapDivPoint(
+    map,
+    latLng,
+    getVisibleCenterXInMapCoords(map),
+    getVisibleCenterYInMapCoords(map, sheetRatio),
   );
+}
 
-  const nextCenter = projection.fromPointToLatLng(nextCenterPoint);
-  if (!nextCenter) {
+export function panLatLngToVisibleRectCenter(
+  map: google.maps.Map,
+  latLng: google.maps.LatLngLiteral,
+  visibleRect: Pick<DOMRectReadOnly, 'left' | 'right' | 'top' | 'bottom'>,
+): google.maps.LatLngLiteral {
+  const div = getMapDiv(map);
+  if (!div) {
     map.panTo(latLng);
-    return;
+    return latLng;
   }
 
-  map.panTo(nextCenter);
+  const mapRect = div.getBoundingClientRect();
+  const mapW = div.clientWidth;
+  const mapH = div.clientHeight;
+  if (mapRect.width <= 0 || mapRect.height <= 0 || mapW <= 0 || mapH <= 0) {
+    map.panTo(latLng);
+    return latLng;
+  }
+
+  const targetClientX = (visibleRect.left + visibleRect.right) / 2;
+  const targetClientY = (visibleRect.top + visibleRect.bottom) / 2;
+  const targetX = (targetClientX - mapRect.left) * (mapW / mapRect.width);
+  const targetY = (targetClientY - mapRect.top) * (mapH / mapRect.height);
+  return panLatLngToMapDivPoint(map, latLng, targetX, targetY);
+}
+
+export function getMapVisibleRectAboveBottomSheet(
+  map: google.maps.Map,
+  sheetEl: HTMLElement | null,
+  fallbackBottomInset = 0,
+): Pick<DOMRectReadOnly, 'left' | 'right' | 'top' | 'bottom'> | null {
+  const div = getMapDiv(map);
+  if (!div) return null;
+
+  const mapRect = div.getBoundingClientRect();
+  if (mapRect.width <= 0 || mapRect.height <= 0) return null;
+
+  let bottom = mapRect.bottom;
+  const sheetRect = sheetEl?.getBoundingClientRect();
+  const sheetOverlapsMap =
+    sheetRect &&
+    sheetRect.width > 0 &&
+    sheetRect.height > 0 &&
+    sheetRect.right > mapRect.left &&
+    sheetRect.left < mapRect.right &&
+    sheetRect.top < mapRect.bottom &&
+    sheetRect.bottom > mapRect.top;
+
+  if (sheetOverlapsMap) {
+    bottom = Math.min(bottom, Math.max(mapRect.top, sheetRect.top));
+  }
+
+  if (fallbackBottomInset > 0) {
+    const rawSheetScale =
+      sheetEl && sheetRect && sheetEl.offsetWidth > 0
+        ? sheetRect.width / sheetEl.offsetWidth
+        : mapRect.width / div.clientWidth;
+    const sheetScale = Number.isFinite(rawSheetScale) && rawSheetScale > 0 ? rawSheetScale : 1;
+    const expectedBottom = sheetRect?.bottom ?? mapRect.bottom;
+    bottom = Math.min(
+      bottom,
+      Math.max(mapRect.top, expectedBottom - fallbackBottomInset * sheetScale),
+    );
+  }
+
+  if (bottom <= mapRect.top) return null;
+  return {
+    left: mapRect.left,
+    right: mapRect.right,
+    top: mapRect.top,
+    bottom,
+  };
 }
 
 interface ApplySearchResultsViewportOptions {

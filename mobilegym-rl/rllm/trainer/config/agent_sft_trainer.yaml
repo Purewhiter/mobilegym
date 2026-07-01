@@ -1,0 +1,16 @@
+hydra:
+  searchpath:
+    - pkg://verl.trainer.config
+
+defaults:
+  - sft_trainer
+  - _self_
+
+  
+data:
+  rllm:
+    tokenize_and_mask_method: cumulative
+
+trainer:
+  log_episodes: false
+  episode_log_dir: logs/${trainer.project_name}/${trainer.experiment_name}

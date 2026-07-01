@@ -2,7 +2,10 @@
 /**
  * Map App 的 Service Worker 离线快照采集脚本。
  * 用 Puppeteer 打开 dev server 上的 Map App，捕获所有发往 Google Maps
- * 相关域名的响应，落盘到 apps/Map/sw/files/，并生成 manifest.json。
+ * 相关域名的响应，落盘到 mobilegym-data/map/cache/ 或 mobilegym-data/map/vector/，
+ * 并生成 manifest.json。vector profile 还会从完整 manifest 派生一个小的
+ * bootstrap-manifest.json，供 Service Worker 启动阶段快速加载。运行时由
+ * /cdn/map/... 接入这些文件。
  *
  * 用法:
  *   1. 在另一个 terminal: npm run dev
@@ -14,6 +17,8 @@
  *
  * 环境变量:
  *   DEV_URL          dev server URL，默认 http://localhost:5173
+ *   MAP_SNAPSHOT_PROFILE  "vector" 写入 mobilegym-data/map/vector/；默认 "raster" 写入 mobilegym-data/map/cache/
+ *   MAP_SNAPSHOT_OUT_DIR  覆盖输出目录
  *   HEADLESS         "1" 走 headless 模式
  *   MANUAL           "1" 跳过自动交互，仅捕获手动操作
  *   AUTO_EXIT_MS     非 0 时，自动交互完成后再等待 N ms，自动 flush + 退出（CI/无人值守）
@@ -25,20 +30,36 @@ import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { createHash } from 'crypto';
 import puppeteer from 'puppeteer';
+import {
+  updateServiceWorkerCacheName,
+  writeVectorBootstrapManifest,
+} from './bootstrap_manifest_utils.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const APP_DIR = resolve(__dirname, '..');
 const ROOT = resolve(APP_DIR, '../..');
 const SW_DIR = resolve(APP_DIR, 'sw');
-const FILES_DIR = resolve(SW_DIR, 'files');
-const MANIFEST_PATH = resolve(SW_DIR, 'manifest.json');
+const SNAPSHOT_PROFILE = process.env.MAP_SNAPSHOT_PROFILE === 'vector' ? 'vector' : 'raster';
+const VECTOR_PROFILE = SNAPSHOT_PROFILE === 'vector';
+const DATA_ROOT = resolve(ROOT, 'mobilegym-data');
+const DEFAULT_SNAPSHOT_DIR = VECTOR_PROFILE
+  ? resolve(DATA_ROOT, 'map/vector')
+  : resolve(DATA_ROOT, 'map/cache');
+const SNAPSHOT_DIR = process.env.MAP_SNAPSHOT_OUT_DIR
+  ? resolve(process.env.MAP_SNAPSHOT_OUT_DIR)
+  : DEFAULT_SNAPSHOT_DIR;
+const FILES_DIR = resolve(SNAPSHOT_DIR, 'files');
+const MANIFEST_PATH = resolve(SNAPSHOT_DIR, 'manifest.json');
 const SW_PATH = resolve(SW_DIR, 'map-sw.js');
+const BOOTSTRAP_MANIFEST_PATH = resolve(SW_DIR, 'vector/bootstrap-manifest.json');
 const PLACES_PATH = resolve(APP_DIR, 'data/places.json');
+const VECTOR_MANIFEST_SOURCE = 'mobilegym-data/map/vector/manifest.json';
 
 const TARGET_HOSTS = new Set([
   'maps.googleapis.com',
   'maps.gstatic.com',
+  'www.gstatic.com',
   'mts0.googleapis.com',
   'mts1.googleapis.com',
   'khms0.googleapis.com',
@@ -57,9 +78,15 @@ const MANUAL_ONLY = process.env.MANUAL === '1';
 const AUTO_EXIT_MS = Number.parseInt(process.env.AUTO_EXIT_MS || '0', 10);
 
 const collected = new Map();
+const stats = {
+  skippedRasterImages: 0,
+  staticMapImages: 0,
+  vectorIcons: 0,
+  vectorTiles: 0,
+};
 
 function ensureDirs() {
-  if (!existsSync(SW_DIR)) mkdirSync(SW_DIR, { recursive: true });
+  if (!existsSync(SNAPSHOT_DIR)) mkdirSync(SNAPSHOT_DIR, { recursive: true });
   if (existsSync(FILES_DIR)) {
     for (const name of readdirSync(FILES_DIR)) {
       if (name === '.gitkeep') continue;
@@ -108,11 +135,19 @@ async function captureResponse(response) {
     if (!TARGET_HOSTS.has(url.host)) return;
     if (collected.has(reqUrl)) return;
     if (response.status() < 200 || response.status() >= 300) return;
-    const buf = await response.buffer().catch(() => null);
-    if (!buf || buf.length === 0) return;
     const headers = response.headers();
+    const contentType = headers['content-type'] || 'application/octet-stream';
+    if (VECTOR_PROFILE && shouldSkipVectorProfileResponse(url, contentType)) {
+      stats.skippedRasterImages++;
+      return;
+    }
+    const buf = await readResponseBody(response, contentType);
+    if (!buf || buf.length === 0) return;
+    if (VECTOR_PROFILE && isVectorTileResponse(url, contentType)) stats.vectorTiles++;
+    if (VECTOR_PROFILE && isVectorIconResponse(url, contentType)) stats.vectorIcons++;
+    if (VECTOR_PROFILE && isStaticMapImageResponse(url, contentType)) stats.staticMapImages++;
     collected.set(reqUrl, {
-      contentType: headers['content-type'] || 'application/octet-stream',
+      contentType,
       cacheControl: headers['cache-control'] || '',
       status: response.status(),
       body: buf,
@@ -121,6 +156,60 @@ async function captureResponse(response) {
   } catch {
     /* skip */
   }
+}
+
+async function readResponseBody(response, contentType) {
+  const ct = (contentType || '').toLowerCase();
+  if (!ct.includes('charset=x-user-defined')) {
+    return response.buffer().catch(() => null);
+  }
+  const text = await response.text().catch(() => null);
+  if (text === null) return null;
+  const bytes = Buffer.alloc(text.length);
+  for (let i = 0; i < text.length; i++) {
+    const code = text.charCodeAt(i);
+    bytes[i] = code >= 0xf780 && code <= 0xf7ff ? code - 0xf700 : code & 0xff;
+  }
+  return bytes;
+}
+
+function shouldSkipVectorProfileResponse(url, contentType) {
+  const ct = (contentType || '').toLowerCase();
+  if (url.pathname === '/maps/vt' || url.pathname.startsWith('/maps/vt/')) {
+    if (url.pathname.startsWith('/maps/vt/icon/')) return false;
+    return ct.startsWith('image/');
+  }
+  if (/^khms\d\.googleapis\.com$/.test(url.host) || /^mts\d\.googleapis\.com$/.test(url.host)) {
+    return ct.startsWith('image/');
+  }
+  return false;
+}
+
+function isVectorTileResponse(url, contentType) {
+  const ct = (contentType || '').toLowerCase();
+  return (
+    url.host === 'maps.googleapis.com'
+    && url.pathname.startsWith('/maps/vt/pb=')
+    && !ct.startsWith('image/')
+  );
+}
+
+function isVectorIconResponse(url, contentType) {
+  const ct = (contentType || '').toLowerCase();
+  return (
+    url.host === 'maps.googleapis.com'
+    && url.pathname.startsWith('/maps/vt/icon/')
+    && ct.startsWith('image/')
+  );
+}
+
+function isStaticMapImageResponse(url, contentType) {
+  const ct = (contentType || '').toLowerCase();
+  return (
+    url.host === 'maps.googleapis.com'
+    && url.pathname.includes('StaticMapService.GetMapImage')
+    && ct.startsWith('image/')
+  );
 }
 
 function readSimulatorLocation() {
@@ -159,6 +248,15 @@ async function driveMapTo(page, center, zoom) {
   }));
   // idle 事件只表示视口稳定，瓦片请求可能还在飞行中；多等 500ms 让网络完成
   await wait(500);
+  if (VECTOR_PROFILE) {
+    const renderingType = await page.evaluate(() => {
+      const m = window.__mapInstance;
+      return m && typeof m.getRenderingType === 'function' ? m.getRenderingType() : '';
+    });
+    if (renderingType && renderingType !== 'VECTOR') {
+      throw new Error(`当前 Google Maps renderingType=${renderingType}，不是 VECTOR`);
+    }
+  }
 }
 
 /**
@@ -267,10 +365,22 @@ function stripKeyFromUrl(rawUrl) {
   try {
     const u = new URL(rawUrl);
     u.searchParams.delete('key');
+    u.searchParams.delete('token');
+    if (u.pathname === '/maps/vt' && u.searchParams.has('pb')) {
+      u.searchParams.set('pb', normalizeTilePb(u.searchParams.get('pb') || ''));
+    } else if (u.pathname.startsWith('/maps/vt/pb=')) {
+      u.pathname = normalizeTilePb(u.pathname);
+    }
     return u.toString();
   } catch {
     return rawUrl.replace(/([?&])key=[^&#]*(&?)/, (_, lead, trail) => (trail ? lead : ''));
   }
+}
+
+function normalizeTilePb(value) {
+  return value
+    .replace(/(!2sm!3i)\d+/g, '$1E')
+    .replace(/(!28i)\d+/g, '$1E');
 }
 
 function looksTextual(contentType, buf) {
@@ -304,30 +414,45 @@ function makeSnapshotCacheName(entries) {
     ].join('\t'))
     .join('\n');
   const hash = createHash('sha1').update(seed).digest('hex').slice(0, 12);
-  return `map-cache-${hash}`;
+  return VECTOR_PROFILE ? `map-vector-cache-${hash}` : `map-cache-${hash}`;
 }
 
 function updateMapSwCacheName(cacheName) {
-  if (!existsSync(SW_PATH)) {
-    console.warn(`[snapshot] 未找到 ${SW_PATH}，无法同步 CACHE_NAME`);
-    return;
-  }
-  const src = readFileSync(SW_PATH, 'utf-8');
-  const next = src.replace(
-    /const CACHE_NAME = 'map-cache-[^']+';/,
-    `const CACHE_NAME = '${cacheName}';`,
-  );
-  if (next === src) {
-    console.warn('[snapshot] 未能在 map-sw.js 中找到 CACHE_NAME，跳过 cache name 同步');
-    return;
-  }
-  writeFileSync(SW_PATH, next);
-  console.log(`[snapshot] map-sw.js CACHE_NAME -> ${cacheName}`);
+  const constName = VECTOR_PROFILE ? 'VECTOR_CACHE_NAME' : 'RASTER_CACHE_NAME';
+  const prefix = VECTOR_PROFILE ? 'map-vector-cache-' : 'map-cache-';
+  updateServiceWorkerCacheName({
+    swPath: SW_PATH,
+    constName,
+    cacheName,
+    prefix,
+    logPrefix: '[snapshot]',
+  });
+}
+
+function writeBootstrapManifestForVectorProfile(entries, sourceCacheName) {
+  // The bootstrap manifest must be regenerated whenever the vector manifest is
+  // regenerated. Otherwise startup resources can drift while the SW only checks
+  // the small bootstrap index for non-tile requests.
+  if (!VECTOR_PROFILE) return null;
+  const result = writeVectorBootstrapManifest({
+    entries,
+    outputPath: BOOTSTRAP_MANIFEST_PATH,
+    source: VECTOR_MANIFEST_SOURCE,
+    sourceCacheName,
+  });
+  updateServiceWorkerCacheName({
+    swPath: SW_PATH,
+    constName: 'BOOTSTRAP_CACHE_NAME',
+    cacheName: result.cacheName,
+    prefix: 'map-bootstrap-cache-',
+    logPrefix: '[snapshot]',
+  });
+  return result;
 }
 
 async function flushToDisk() {
   console.log(`\n[snapshot] 共 ${collected.size} 个响应，写入磁盘...`);
-  const entries = [];
+  const entryByUrl = new Map();
   let urlScrubs = 0;
   let bodyScrubs = 0;
   for (const [rawUrl, { contentType, cacheControl, status, body }] of collected) {
@@ -341,7 +466,7 @@ async function flushToDisk() {
     const hash = createHash('sha1').update(cleanUrl).digest('hex').slice(0, 16);
     const file = `${hash}${ext}`;
     writeFileSync(resolve(FILES_DIR, file), cleanBody);
-    entries.push({
+    entryByUrl.set(cleanUrl, {
       url: cleanUrl,
       file,
       contentType,
@@ -351,6 +476,7 @@ async function flushToDisk() {
       bodyHash,
     });
   }
+  const entries = [...entryByUrl.values()];
   const sortedEntries = entries.sort((a, b) => a.url.localeCompare(b.url));
   const cacheName = makeSnapshotCacheName(sortedEntries);
   const manifest = {
@@ -361,9 +487,16 @@ async function flushToDisk() {
   };
   writeFileSync(MANIFEST_PATH, JSON.stringify(manifest, null, 2));
   updateMapSwCacheName(cacheName);
+  const bootstrapManifest = writeBootstrapManifestForVectorProfile(sortedEntries, cacheName);
   const totalKB = (entries.reduce((sum, e) => sum + (e.size || 0), 0) / 1024).toFixed(1);
   console.log(`[snapshot] manifest 写入 ${MANIFEST_PATH}`);
+  if (bootstrapManifest) {
+    console.log(`[snapshot] bootstrap manifest 写入 ${BOOTSTRAP_MANIFEST_PATH} (${bootstrapManifest.entries.length} 条启动资源)`);
+  }
   console.log(`[snapshot] ${entries.length} 条响应, 总计 ${totalKB} KB`);
+  if (VECTOR_PROFILE) {
+    console.log(`[snapshot] 矢量统计: 捕获 ${stats.vectorTiles} 个 vector tile 响应，${stats.vectorIcons} 个 icon 响应，${stats.staticMapImages} 个 static map image 响应，跳过 ${stats.skippedRasterImages} 个 raster tile/image 响应`);
+  }
   console.log(`[snapshot] 安全清洗: ${urlScrubs} 个 URL 去 key，${bodyScrubs} 处响应体抹掉 API key`);
 }
 
@@ -371,17 +504,22 @@ async function main() {
   ensureDirs();
 
   console.log(`[snapshot] Puppeteer 启动 (${HEADLESS ? 'headless' : 'headful'})`);
+  console.log(`[snapshot] profile=${SNAPSHOT_PROFILE}, 输出目录 ${SNAPSHOT_DIR}`);
   console.log(`[snapshot] 打开 ${DEV_URL}`);
 
   const browser = await puppeteer.launch({
     headless: HEADLESS,
     defaultViewport: HEADLESS ? { width: 480, height: 900 } : null,
-    args: HEADLESS
-      ? ['--no-sandbox', '--disable-setuid-sandbox']
-      : ['--window-size=520,940'],
+    args: [
+      '--enable-webgl',
+      '--ignore-gpu-blocklist',
+      '--use-angle=metal',
+      ...(HEADLESS ? ['--no-sandbox', '--disable-setuid-sandbox'] : ['--window-size=520,940']),
+    ],
   });
 
   const [page] = await browser.pages();
+  await page.setBypassServiceWorker(true);
   page.on('response', captureResponse);
   page.on('pageerror', (err) => console.error('[snapshot][pageerror]', err.message));
 

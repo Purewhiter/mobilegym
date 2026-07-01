@@ -134,10 +134,29 @@ export const MapMarker: React.FC<MapMarkerProps> = ({
     if (!google || !map) return;
 
     let cancelled = false;
-    let markerEl: google.maps.marker.AdvancedMarkerElement | null = null;
+    let markerEl: google.maps.marker.AdvancedMarkerElement | google.maps.Marker | null = null;
     let boundClickHandler: EventListener | null = null;
+    let legacyClickListener: google.maps.MapsEventListener | null = null;
 
     void (async () => {
+      if (!map.get('mapId')) {
+        const m = new google.maps.Marker({
+          map,
+          position,
+          title,
+          icon,
+          zIndex: zIndex ?? undefined,
+        });
+        if (onClick) legacyClickListener = m.addListener('click', () => onClick());
+        if (cancelled) {
+          legacyClickListener?.remove();
+          m.setMap(null);
+          return;
+        }
+        markerEl = m;
+        return;
+      }
+
       const markerLib = (await google.maps.importLibrary('marker')) as google.maps.MarkerLibrary;
       if (cancelled || !map) return;
 
@@ -175,8 +194,13 @@ export const MapMarker: React.FC<MapMarkerProps> = ({
     return () => {
       cancelled = true;
       if (markerEl) {
-        if (boundClickHandler) markerEl.removeEventListener('gmp-click', boundClickHandler);
-        markerEl.map = null;
+        if (markerEl instanceof google.maps.Marker) {
+          legacyClickListener?.remove();
+          markerEl.setMap(null);
+        } else {
+          if (boundClickHandler) markerEl.removeEventListener('gmp-click', boundClickHandler);
+          markerEl.map = null;
+        }
         markerEl = null;
       }
     };

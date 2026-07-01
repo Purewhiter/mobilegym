@@ -71,13 +71,6 @@ export interface SpotifyState {
   followedArtists: string[];
   customPlaylists: (SpotifyPlaylist | SpotifyArtist)[];
   playHistory: PlayHistoryEntry[];
-  analytics?: {
-    lastArtistTopAlbum?: { artist: string; topAlbum: string; n: number };
-    lastArtistPopularTracks?: { artist: string; n: number; tracks: SpotifyTrack[] };
-    lastAlbumAvgDuration?: { album: string; avg: string; n: number };
-    lastArtistKeywordCount?: { artist: string; keyword: string; count: number; n: number };
-    lastAlbumInfo?: { album: string; trackCount: number; year: string };
-  };
   settings: SpotifySettings;
   pendingPlaylistTrack: SpotifyTrack | null;
   searchHistory: SearchHistoryEntry[];
@@ -104,12 +97,7 @@ export interface SpotifyActions {
   switchAccount: (userId: string) => void;
   addTrackToPlaylist: (name: string, track: SpotifyTrack) => void;
   removeTrackFromPlaylist: (name: string, trackId: string) => void;
-  setArtistTopAlbum: (artist: string, topAlbum: string, n: number) => void;
-  setArtistPopularTracks: (artist: string, tracks: SpotifyTrack[], n: number) => void;
-  setAlbumAvgDuration: (album: string, avg: string, n: number) => void;
-  setArtistKeywordCount: (artist: string, keyword: string, count: number, n: number) => void;
   updateSettings: <K extends keyof SpotifySettings>(category: K, patch: Partial<SpotifySettings[K]>) => void;
-  setAlbumInfo: (album: string, trackCount: number, year: string) => void;
   setSearchResults: (query: string, tracks: SpotifyTrack[]) => void;
   showQueueToast: (track: SpotifyTrack) => void;
   clearQueueToast: () => void;
@@ -355,41 +343,6 @@ export const useSpotifyStore = createAppStoreWithActions<SpotifyState, SpotifyAc
       const s = get();
       set({
         currentTrack: s.currentTrack?.id === trackId ? { ...s.currentTrack, cover: newCover } : s.currentTrack,
-      });
-    },
-
-    // ── Analytics ──────────────────────────────────────────────
-
-    setArtistTopAlbum: (artist, topAlbum, n) => {
-      set({
-        analytics: { ...(get().analytics || {}), lastArtistTopAlbum: { artist, topAlbum, n } },
-      });
-    },
-
-    setArtistPopularTracks: (artist, tracks, n) => {
-      set({
-        analytics: {
-          ...(get().analytics || {}),
-          lastArtistPopularTracks: { artist, tracks, n },
-        },
-      });
-    },
-
-    setAlbumAvgDuration: (album, avg, n) => {
-      set({
-        analytics: { ...(get().analytics || {}), lastAlbumAvgDuration: { album, avg, n } },
-      });
-    },
-
-    setArtistKeywordCount: (artist, keyword, count, n) => {
-      set({
-        analytics: { ...(get().analytics || {}), lastArtistKeywordCount: { artist, keyword, count, n } },
-      });
-    },
-
-    setAlbumInfo: (album, trackCount, year) => {
-      set({
-        analytics: { ...(get().analytics || {}), lastAlbumInfo: { album, trackCount, year } },
       });
     },
 

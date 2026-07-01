@@ -559,7 +559,50 @@ export async function writeFile(
   // Save to IndexedDB
   await saveFileToDB(node.id, blob);
   await saveMetadataToDB(node);
-  
+
+  return node;
+}
+
+/**
+ * Editable file metadata — the descriptive fields a caller may safely patch
+ * without breaking filesystem invariants. Structural fields (id/path/name/
+ * parentId/type) are excluded because changing them is a move/rename (use
+ * ``moveNode``); derived/internal fields (size/storage) are excluded because
+ * they must stay in sync with the actual blob and storage backend (use
+ * ``writeFile`` to change content).
+ */
+export type EditableMetadata = Partial<Pick<FSNode,
+  'createdAt' | 'modifiedAt' | 'mimeType' |
+  'thumbnailUri' | 'width' | 'height' | 'duration'
+>>;
+
+/**
+ * Patch a file's editable metadata in place without touching its blob or
+ * storage backend. Unlike ``writeFile``, this does not fetch/rewrite content,
+ * does not migrate ``preset`` files into IndexedDB, and works even when the
+ * file's blob is unavailable — it only mutates node metadata.
+ *
+ * Returns the updated node, or null if the path doesn't exist or isn't a file.
+ */
+export async function setMetadata(
+  path: string,
+  patch: EditableMetadata,
+): Promise<FSNode | null> {
+  const node = getNode(path);
+  if (!node || node.type !== 'file') return null;
+
+  const keys: (keyof EditableMetadata)[] = [
+    'createdAt', 'modifiedAt', 'mimeType',
+    'thumbnailUri', 'width', 'height', 'duration',
+  ];
+  for (const key of keys) {
+    const value = patch[key];
+    if (value !== undefined) {
+      (node as unknown as Record<string, unknown>)[key] = value;
+    }
+  }
+
+  await saveMetadataToDB(node);
   return node;
 }
 
@@ -1249,6 +1292,7 @@ function exposeAgentAPI(): void {
     // File operations
     read: readFile,
     write: writeFile,
+    setMetadata,
     delete: deleteNode,
     move: moveNode,
     copy: copyFile,

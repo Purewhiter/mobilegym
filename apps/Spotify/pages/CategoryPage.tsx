@@ -39,9 +39,9 @@ export const CategoryPage: React.FC = () => {
       bg: 'bg-[#181818]',
       bannerText: s.category_2025_top_artists,
       items: [
-        { title: s.category_2025_local, sub: `8,194 ${s.category_saves_count}`, img: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&q=80' },
-        { title: s.category_2025_hk_artists, sub: `3,801 ${s.category_saves_count}`, img: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=300&q=80' },
-        { title: s.category_2025_hk_songs, sub: `6,034 ${s.category_saves_count}`, img: 'https://images.unsplash.com/photo-1521156294747-d3eb0f576e31?w=300&q=80' },
+        { title: s.category_2025_local, sub: `8,194 ${s.category_saves_count}`, img: '/cdn/spotify/images/ui/a54306ca213fae64.jpg' },
+        { title: s.category_2025_hk_artists, sub: `3,801 ${s.category_saves_count}`, img: '/cdn/spotify/images/ui/6775f936e97eff59.jpg' },
+        { title: s.category_2025_hk_songs, sub: `6,034 ${s.category_saves_count}`, img: '/cdn/spotify/images/categories/db0f8223bb3c6ad1.jpg' },
       ],
     },
     sc_upcoming: {
@@ -50,9 +50,9 @@ export const CategoryPage: React.FC = () => {
       bg: 'bg-app-surface',
       subtitle: s.category_upcoming_subtitle,
       items: [
-        { day: 'Feb 6', title: 'Piss In The Wind', artist: 'Joji', sub: `1.0287M ${s.category_pre_save_count}`, img: 'https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=300&q=80' },
-        { day: 'Feb 27', title: 'The Mountain', artist: 'Gorillaz', sub: `889K ${s.category_pre_save_count}`, img: 'https://images.unsplash.com/photo-1459749411177-8c4750bb06bb?w=300&q=80' },
-        { day: 'in 8 days', title: "Don't...", artist: 'A$AP Rocky', sub: '731K', img: 'https://images.unsplash.com/photo-1498038432885-c6f3f1b912ee?w=300&q=80' },
+        { day: 'Feb 6', title: 'Piss In The Wind', artist: 'Joji', sub: `1.0287M ${s.category_pre_save_count}`, img: '/cdn/spotify/images/ui/38297fa8a9b39a96.jpg' },
+        { day: 'Feb 27', title: 'The Mountain', artist: 'Gorillaz', sub: `889K ${s.category_pre_save_count}`, img: '/cdn/spotify/images/categories/e278947d7426ae98.jpg' },
+        { day: 'in 8 days', title: "Don't...", artist: 'A$AP Rocky', sub: '731K', img: '/cdn/spotify/images/ui/6206ad59c3b61a29.jpg' },
       ],
     },
   }), [

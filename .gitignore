@@ -68,3 +68,15 @@ mobilegym-data
 _REMOVED_FILES.md
 docs/pending
 docs/archive
+
+.phone_shots/
+
+# --- Vendored rLLM training stack (mobilegym-rl/) ---
+mobilegym-rl/logs/
+mobilegym-rl/checkpoints
+mobilegym-rl/swanlog/
+mobilegym-rl/outputs/
+mobilegym-rl/eval_results/
+mobilegym-rl/.rllm_local/
+mobilegym-rl/.pytest_cache/
+mobilegym-rl/**/*.egg-info/

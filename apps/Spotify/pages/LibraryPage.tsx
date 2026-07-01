@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useLocale } from '@/os/locale';
 import { IcSearch, IcAdd, IcSort, IcGrid, IcHeart, IcPin, IcDownload, IcNavForward, IcCheck, IcNavBackArrow } from '../res/icons';
 import { useSearchParams } from 'react-router-dom';
@@ -8,6 +8,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useSpotifyGestures } from '../hooks/useSpotifyGestures';
 import { useSpotifyStrings } from '../hooks/useSpotifyStrings';
 import { localizeSpotifyArtistName, localizeSpotifyText } from '../utils/localizeSpotifyText';
+import { searchITunes } from '../utils/itunes';
 interface LibraryItem {
   id: string;
   name: string;
@@ -17,64 +18,60 @@ interface LibraryItem {
   pinned?: boolean;
 }
 
-const INITIAL_ARTISTS: LibraryItem[] = [
-  { id: 'liked', name: '已点赞的歌曲', type: 'playlist', subtitle: '歌单 • 7 首歌曲', image: '', pinned: true },
-  { id: 'xs', name: '许嵩', type: 'artist', subtitle: '艺人', image: '' },
-  { id: 'jj', name: '林俊杰', type: 'artist', subtitle: '艺人', image: '' },
-  { id: 'jay', name: '周杰伦', type: 'artist', subtitle: '艺人', image: '' },
-  { id: 'add', name: '添加艺人', type: 'button', subtitle: '', image: '' },
-];
-
 const SUGGESTED_NAMES = [
   "孙燕姿", "薛之谦", "陈奕迅", "张惠妹", "莫文蔚", "BTS", "NewJeans",
   "周深", "谭维维", "陆虎", "王铮亮", "刘宇宁", "李琦", "杨坤", "张杰", "Taylor Swift", "邓紫棋", "李荣浩"
 ];
 
-// Helper to fetch image
-const fetchArtistImage = async (name: string): Promise<string | undefined> => {
-  try {
-    const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(name)}&entity=album&limit=1&country=TW`);
-    const data = await res.json();
-    if (data.results && data.results.length > 0) {
-      return data.results[0].artworkUrl100?.replace('100x100bb', '400x400bb');
-    }
-  } catch (e) {
-    console.error(e);
-  }
-  return undefined;
+const LOCAL_ARTIST_IMAGES: Record<string, string> = {
+  '许嵩': '/cdn/spotify/images/artists/57c801788d2d543b.jpg',
+  '林俊杰': '/cdn/spotify/images/artists/26611d4691c264ae.jpg',
+  '林俊傑': '/cdn/spotify/images/artists/26611d4691c264ae.jpg',
+  '周杰伦': '/cdn/spotify/images/artists/f4418ae92a1181fc.jpg',
+  '周杰倫': '/cdn/spotify/images/artists/f4418ae92a1181fc.jpg',
+  '孙燕姿': '/cdn/spotify/images/artists/ed819c57e605dc99.jpg',
+  '薛之谦': '/cdn/spotify/images/artists/57c801788d2d543b.jpg',
+  '陈奕迅': '/cdn/spotify/images/artists/a28152b5be62a920.jpg',
+  '张惠妹': '/cdn/spotify/images/artists/dd016a80ebc63ec9.jpg',
+  '莫文蔚': '/cdn/spotify/images/artists/84cf3e2796003af7.jpg',
+  'BTS': '/cdn/spotify/images/artists/44127f0b4e57b6f0.jpg',
+  'NewJeans': '/cdn/spotify/images/artists/774359a9cb22634e.jpg',
+  '周深': '/cdn/spotify/images/artists/a526975805839c04.jpg',
+  '谭维维': '/cdn/spotify/images/artists/ac83965058674aa0.jpg',
+  '陆虎': '/cdn/spotify/images/artists/48a6cbcaa7c7e6f1.jpg',
+  '王铮亮': '/cdn/spotify/images/artists/c3bf8ff998066b75.jpg',
+  '刘宇宁': '/cdn/spotify/images/artists/e00ceda949dcac14.jpg',
+  '李琦': '/cdn/spotify/images/artists/01a8e75493a39fd2.jpg',
+  '杨坤': '/cdn/spotify/images/artists/c29de0d5c7bb667e.jpg',
+  '张杰': '/cdn/spotify/images/artists/5a391509cd9e0741.jpg',
+  'Taylor Swift': '/cdn/spotify/images/artists/fe695fd99b055e71.jpg',
+  '邓紫棋': '/cdn/spotify/images/categories/6eeb258765394021.jpg',
+  '李荣浩': '/cdn/spotify/images/artists/bd916f1ce9cd801d.jpg',
 };
+
+const localArtistImage = (name: string) => LOCAL_ARTIST_IMAGES[name.trim()];
 
 const AddArtistView: React.FC<{ onAdd: (items: LibraryItem[]) => void, existingNames: string[] }> = ({ onAdd, existingNames }) => {
   const locale = useLocale();
   const isEnglish = locale === 'en';
   const { bindBack, bindTap, back } = useSpotifyGestures();
   const s = useSpotifyStrings();
-  const [candidates, setCandidates] = useState<LibraryItem[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<LibraryItem[] | null>(null);
 
-  useEffect(() => {
-    const load = async () => {
-      // Filter out artists already in library
-      const namesToLoad = SUGGESTED_NAMES.filter(n => !existingNames.includes(n));
-
-      const promises = namesToLoad.map(async (name) => {
-        const img = await fetchArtistImage(name);
-        return {
-          id: name,
-          name: name,
-          type: 'artist' as const,
-          subtitle: '艺人',
-          image: img
-        };
-      });
-
-      const results = await Promise.all(promises);
-      setCandidates(results);
-    };
-    load();
-  }, []);
+  const candidates = useMemo(
+    () => SUGGESTED_NAMES
+      .filter(name => !existingNames.includes(name))
+      .map(name => ({
+        id: name,
+        name,
+        type: 'artist' as const,
+        subtitle: '艺人',
+        image: localArtistImage(name),
+      })),
+    [existingNames],
+  );
 
   const performSearch = async () => {
     if (!searchTerm.trim()) {
@@ -83,8 +80,7 @@ const AddArtistView: React.FC<{ onAdd: (items: LibraryItem[]) => void, existingN
     }
 
     try {
-      const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(searchTerm)}&entity=album&limit=20&country=TW`);
-      const data = await res.json();
+      const data = await searchITunes({ term: searchTerm, entity: 'album', limit: 20, country: 'TW' });
       const rawResults = data.results || [];
 
       // Deduplicate by artist name and map
@@ -105,7 +101,8 @@ const AddArtistView: React.FC<{ onAdd: (items: LibraryItem[]) => void, existingN
 
       setSearchResults(Array.from(uniqueArtists.values()));
     } catch (e) {
-      console.error(e);
+      console.warn('[Spotify] Library artist search failed', e);
+      setSearchResults([]);
     }
   };
 
@@ -233,22 +230,18 @@ export const LibraryPage: React.FC = () => {
   const setActiveFilter = (val: 'all' | 'playlist' | 'artist') =>
     setSearchParams(p => { if (val === 'all') p.delete('filter'); else p.set('filter', val); return p; }, { replace: true });
 
-  // Artist images cache (fetched from iTunes)
-  const [artistImages, setArtistImages] = useState<Record<string, string>>({});
-  const showAddArtist = searchParams.get('sheet') === 'add_artist';
-
-  useEffect(() => {
-    const fetchImages = async () => {
-      const toFetch = (followedArtists || []).filter(name => !artistImages[name]);
-      for (const name of toFetch) {
-        const img = await fetchArtistImage(name);
-        if (img) {
-          setArtistImages(prev => ({ ...prev, [name]: img }));
-        }
-      }
-    };
-    fetchImages();
+  const artistImages = useMemo(() => {
+    const images: Record<string, string> = {};
+    for (const artist of SPOTIFY_CONFIG.libraryArtists ?? []) {
+      images[artist.name] = artist.avatar;
+    }
+    for (const name of followedArtists || []) {
+      const image = localArtistImage(name);
+      if (image) images[name] = image;
+    }
+    return images;
   }, [followedArtists]);
+  const showAddArtist = searchParams.get('sheet') === 'add_artist';
 
   const toggleFollowArtist = useSpotifyStore(s => s.toggleFollowArtist);
 

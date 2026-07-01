@@ -13,6 +13,7 @@ import { AddToPlaylistSheet } from '../components/AddToPlaylistSheet';
 import { localizeSpotifyText } from '../utils/localizeSpotifyText';
 import { loadSearchResults } from '../data/loader';
 import { openSaveLocation } from '../components/LikedToast';
+import { inferLargeArtworkUrl } from '../utils/artwork';
 
 const FILTER_CHIPS = ['歌曲', '歌单', '专辑', '播客', '视频', '艺人'];
 
@@ -26,6 +27,7 @@ function toTrackFromItunes(result: any): SpotifyTrack {
     title: String(result?.trackName ?? ''),
     artist: String(result?.artistName ?? ''),
     cover: String(result?.artworkUrl100 ?? ''),
+    coverLarge: inferLargeArtworkUrl(String(result?.artworkUrl100 ?? '')),
     duration: `${minutes}:${String(seconds).padStart(2, '0')}`,
   } as SpotifyTrack;
 }

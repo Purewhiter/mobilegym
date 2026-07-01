@@ -171,7 +171,9 @@ Each instance gets a unique, reproducible seed:
 instance_seed = (base_seed ^ zlib.crc32(f"{task_id}:{i}".encode())) & 0xFFFFFFFF
 ```
 
-`base_seed` comes from `--sample-seed` (with a fallback default).
+`base_seed` comes from `--sample-seed`. When the CLI flag is omitted, the
+runner generates a 32-bit seed for the run and records it in `meta.json` as
+`sample_seed` with `sample_seed_source: "auto"`.
 
 ### Discovery rules
 
@@ -198,7 +200,7 @@ Full CLI reference: [`REFERENCE.md`](REFERENCE.md).
 
 ## 4. 🎲 Parameter sampling
 
-Sampling turns one task class into many concrete task instances. Each instance gets a fresh draw from its declared parameter space; the same `--sample-seed` deterministically reproduces the same instances across runs — important both for reproducible benchmarks and for GRPO's "identical initial state" requirement.
+Sampling turns one task class into many concrete task instances. Each instance gets a fresh draw from its declared parameter space; the same `--sample-seed` deterministically reproduces the same instances across runs — important both for reproducible benchmarks and for GRPO's "identical initial state" requirement. If `--sample-seed` is omitted, read the generated `sample_seed` from `meta.json` and pass it explicitly to reproduce the sampled tasks.
 
 Inside `task.setup()`, `sampler.sample(env_state, task)` runs the sampling logic:
 
@@ -451,7 +453,9 @@ with `n` = total trials and `c` = successful trials.
 | `--sample-n 3` | Generates up to 3 instances of the task class with **different parameters** | Test generalization |
 | `--repeat-n 8` | Runs the same instance **8 times** | Stability / pass@k |
 
-Combinable: `--sample-n 3 --repeat-n 8` = up to 3 parameter instances, each repeated 8 times. Tasks without parameters stay at 1 instance; finite enum-only tasks and tasks with `sample_max` may produce fewer than N. All trials of the same task instance use identical parameters for fair comparison.
+Combinable: `--sample-n 3 --repeat-n 8` = up to 3 parameter instances, each repeated 8 times. Tasks without parameters stay at 1 instance; finite enum-only tasks and tasks with `sample_max` may produce fewer than N. All trials of the same task instance share both identical parameters **and the same `_seed`**, so any `_prepare` / `_post_sample` randomization is reproduced identically across trials — a precondition for the pass@k estimator to be unbiased.
+
+**Seed reproducibility.** When `--sample-seed` is omitted, the runner draws a fresh 32-bit seed per run and records it in `meta.json` (`sample_seed`, with `sample_seed_source: "auto"`). So unseeded runs still vary their sampled parameters from run to run, but any single run can be reproduced later by passing `--sample-seed <value-from-meta>` alongside the same task-selection flags.
 
 ---
 

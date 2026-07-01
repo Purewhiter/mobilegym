@@ -3,6 +3,7 @@ export interface SpotifyTrack {
   title: string;
   artist: string;
   cover: string;
+  coverLarge?: string;
   duration: string;
 }
 
@@ -11,6 +12,7 @@ export interface SpotifyArtist {
   name: string;
   subtitle?: string;
   avatar: string;
+  avatarLarge?: string;
 }
 
 export interface SpotifyPlaylist {
@@ -18,6 +20,7 @@ export interface SpotifyPlaylist {
   title: string;
   subtitle?: string;
   cover: string;
+  coverLarge?: string;
   type?: 'playlist' | 'album';
 }
 
@@ -25,6 +28,7 @@ export interface SpotifySimilarArtistSection {
   id: string;
   anchor: string;
   avatar: string;
+  avatarLarge?: string;
   playlists: SpotifyPlaylist[];
 }
 
@@ -40,6 +44,7 @@ export interface HomeTabItem {
   title: string;
   subtitle?: string;
   cover: string;
+  coverLarge?: string;
   type?: string;
   podcastName?: string;
   description?: string;
@@ -55,6 +60,7 @@ export interface PlaySource {
   id: string;
   title: string;
   cover?: string;
+  coverLarge?: string;
 }
 
 export interface PlayHistoryEntry {
@@ -85,4 +91,3 @@ export type PremiumPlan = {
   buttonTextColor: string;
   colorHex: string;
 };
-
