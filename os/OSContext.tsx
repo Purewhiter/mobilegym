@@ -626,7 +626,12 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
       //      的 beforeunload → flushAll 会把这些"reset 后的 initial"写入 localStorage,
       //      同时 X store 在 reset 前残留的 task 末态 setState (如 toggleBookmark)
       //      若仍在 debounce 队列里也会被一起 flush。
-      //   3) localStorage.clear: 清掉旧持久化, 让新 page hydrate 时拿到 initialState。
+      //   3) localStorage.clear + sessionStorage.clear: 清掉旧持久化, 让新 page
+      //      hydrate 时拿到 initialState。sessionStorage 不走 debouncedPersist,
+      //      但 apps 会把 per-tab UI 态 (如腾讯会议历史页搜索词) 直接写进去,
+      //      同一 tab 连跑多个 bench episode 会跨 episode 泄漏, 必须一并清。
+      //      storageIsolation 的命名空间键虽也存在 sessionStorage, 但设计上以
+      //      window.name 为恢复源 (见 storageIsolation.ts), 清掉可自愈。
       //   4) clearFileSystemDB 是 await IndexedDB transaction, 期间旧 page 仍存活,
       //      React effect cleanup / 用户操作可能再次 setState 排入 pending。
       //      所以在它后面再清一次 pending + localStorage 兜底, 把 await 期间的脏写
@@ -641,6 +646,7 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
 
       cancelAllPendingPersistWrites();
       localStorage.clear();
+      try { sessionStorage.clear(); } catch { /* 隐私模式等不可用场景 — 非致命 */ }
 
       // TextSelectionService is opted out of the registry (DOM refs in state),
       // so reset it manually to avoid stale targetElement / menu state.
@@ -654,6 +660,7 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
       // Second sweep: 关闭 clearFileSystemDB await 窗口期内任何新的 persist 排队。
       cancelAllPendingPersistWrites();
       localStorage.clear();
+      try { sessionStorage.clear(); } catch { /* 同上 — 非致命 */ }
 
       // resetAllOsStores() wiped the volatile derived services (AlarmManager /
       // MediaSession) AFTER resetAllAppStores() re-published into them, leaving
