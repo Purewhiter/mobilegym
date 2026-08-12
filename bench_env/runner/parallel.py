@@ -269,6 +269,8 @@ class ParallelRunner(BaseRunner):
                 pbar.update(1)
         
         async def worker(wid: int) -> None:
+            # Safe without lock: asyncio is single-threaded; += between awaits is atomic.
+            nonlocal success_count, fail_count
             env = self.env_pool[wid]
             try:
                 agent = self.agent_factory()
@@ -420,8 +422,40 @@ class ParallelRunner(BaseRunner):
         # Start workers
         worker_tasks = [asyncio.create_task(worker(i)) for i in range(n)]
         
-        # Wait for all items to complete
-        await queue.join()
+        # Wait for all items to complete. Don't await queue.join() alone:
+        # if every worker dies before draining the queue (e.g. agent_factory
+        # raises in all of them), no consumer ever calls task_done() and
+        # join() would deadlock forever. Watch worker tasks alongside and
+        # fail fast with the first worker exception once all are gone.
+        join_task = asyncio.create_task(queue.join())
+        pending_workers: set[asyncio.Task] = set(worker_tasks)
+        try:
+            while True:
+                done, _ = await asyncio.wait(
+                    {join_task, *pending_workers},
+                    return_when=asyncio.FIRST_COMPLETED,
+                )
+                if join_task in done:
+                    break
+                pending_workers -= done
+                if not pending_workers:
+                    # Materialize ALL worker exceptions (marks them retrieved,
+                    # avoiding "Task exception was never retrieved" noise),
+                    # then fail fast with the first one.
+                    exceptions = [
+                        exc for t in worker_tasks
+                        if (exc := t.exception()) is not None
+                    ]
+                    raise (exceptions[0] if exceptions else RuntimeError(
+                        "All workers exited before the task queue was drained"
+                    ))
+        finally:
+            if not join_task.done():
+                join_task.cancel()
+                try:
+                    await join_task
+                except asyncio.CancelledError:
+                    pass
         
         # Send sentinels to stop workers
         for _ in range(n):

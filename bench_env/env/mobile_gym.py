@@ -356,6 +356,11 @@ class MobileGymEnv(BaseMobileEnv):
     # - norm_0_1:    归一化坐标 0..1
     # - physical:    物理像素坐标（physical_width/physical_height）
     VALID_COORD_SPACES = {"norm_0_1000", "norm_0_1", "physical"}
+
+    # Wall-clock cap for page.evaluate calls that await browser-side promises.
+    # Playwright's evaluate is NOT bound by the default timeout, so a stuck
+    # frontend promise would otherwise hang the worker forever.
+    EVALUATE_TIMEOUT_S: float = 60.0
     
     def __init__(
         self,
@@ -639,21 +644,34 @@ class MobileGymEnv(BaseMobileEnv):
         return self
 
     async def close(self) -> None:
-        """Close browser and release resources (only those we own)."""
-        try:
-            # 总是关闭 page
-            if self._page:
+        """Close browser and release resources (only those we own).
+
+        Each resource is closed in its own try/except (same pattern as
+        EnvPool._cleanup) so one failure doesn't short-circuit the rest.
+        """
+        # 总是关闭 page
+        if self._page:
+            try:
                 await self._page.close()
-            # 只关闭自己创建的 context
-            if self._owns_context and self._context:
+            except Exception as e:
+                logger.debug(f"MobileGymEnv.close(): page.close() failed: {type(e).__name__}: {e}")
+        # 只关闭自己创建的 context
+        if self._owns_context and self._context:
+            try:
                 await self._context.close()
-            # 只关闭自己创建的 browser
-            if self._owns_browser and self._browser:
+            except Exception as e:
+                logger.debug(f"MobileGymEnv.close(): context.close() failed: {type(e).__name__}: {e}")
+        # 只关闭自己创建的 browser
+        if self._owns_browser and self._browser:
+            try:
                 await self._browser.close()
-            if self._pw:
+            except Exception as e:
+                logger.debug(f"MobileGymEnv.close(): browser.close() failed: {type(e).__name__}: {e}")
+        if self._pw:
+            try:
                 await self._pw.stop()
-        except Exception as e:
-            logger.debug(f"Error during MobileGymEnv.close(): {type(e).__name__}: {e}")
+            except Exception as e:
+                logger.debug(f"MobileGymEnv.close(): playwright.stop() failed: {type(e).__name__}: {e}")
         self._pw = self._browser = self._context = self._page = None
 
     async def restart(self) -> "MobileGymEnv":
@@ -882,7 +900,8 @@ class MobileGymEnv(BaseMobileEnv):
         """Wait until __SIM__ is ready and optional app data is available."""
         await self._wait_ready(timeout_ms=timeout_ms, app_ids=app_ids)
 
-    async def set_state(self, patch: dict, *, deep: bool = True, reload: bool = False) -> None:
+    async def set_state(self, patch: dict, *, deep: bool = True, reload: bool = False,
+                        strict: bool = False) -> None:
         """
         Modify environment state.
         
@@ -892,6 +911,10 @@ class MobileGymEnv(BaseMobileEnv):
             patch: State patch to merge, format {"apps": {...}, "os": {...}}
             deep: Deep merge nested objects (default True)
             reload: Reload page after setting state (default False)
+            strict: Raise instead of warn when the patch is not applied
+                (evaluate error/timeout, or __SIM__.setState unavailable).
+                Use for setup-critical injections whose silent failure
+                would corrupt judging (default False for compatibility)
             
         Example:
             await env.set_state({
@@ -903,17 +926,38 @@ class MobileGymEnv(BaseMobileEnv):
             })
         """
         try:
-            await self.page.evaluate(
-                """({patch, deep, reload}) => {
-                    if (window.__SIM__?.setState) {
-                        window.__SIM__.setState(patch, {deep, reload});
-                    }
-                }""",
-                {"patch": patch, "deep": deep, "reload": reload}
+            applied = await asyncio.wait_for(
+                self.page.evaluate(
+                    """({patch, deep, reload}) => {
+                        if (window.__SIM__?.setState) {
+                            window.__SIM__.setState(patch, {deep, reload});
+                            return true;
+                        }
+                        return false;
+                    }""",
+                    {"patch": patch, "deep": deep, "reload": reload}
+                ),
+                timeout=self.EVALUATE_TIMEOUT_S,
             )
+            if not applied:
+                raise RuntimeError(
+                    "set_state was not applied: window.__SIM__.setState is unavailable "
+                    "(page not initialized?)"
+                )
             if reload:
                 await self._wait_ready()
+        except asyncio.TimeoutError as e:
+            err = RuntimeError(
+                f"set_state timed out after {self.EVALUATE_TIMEOUT_S:.0f}s "
+                f"(page.evaluate promise never resolved)"
+            )
+            if strict:
+                raise err from e
+            if self.verbose:
+                logger.warning(f"set_state failed: {err}")
         except Exception as e:
+            if strict:
+                raise
             if self.verbose:
                 logger.warning(f"set_state failed: {e}")
 
@@ -944,25 +988,36 @@ class MobileGymEnv(BaseMobileEnv):
         to eliminate per-app CDP round-trips. Each app is opened sequentially
         in the browser (single-threaded JS) with a settle delay between them.
         """
-        await self.page.evaluate(
-            """async ({appIds, settleMs}) => {
-                // Pre-import state.ts modules for involved apps so their
-                // Zustand stores are registered in storeRegistry before
-                // React.lazy chunk loading completes.  After a page reload
-                // stores are lazily created — the per-app settle window
-                // may be too short, leaving stores missing from snapshots.
-                try { await window.__SIM__?.preloadAppStores?.(appIds); } catch {}
+        # Budget: base evaluate cap + the browser-side settle loop duration.
+        evaluate_timeout_s = self.EVALUATE_TIMEOUT_S + len(app_ids) * settle_ms / 1000.0
+        try:
+            await asyncio.wait_for(
+                self.page.evaluate(
+                    """async ({appIds, settleMs}) => {
+                        // Pre-import state.ts modules for involved apps so their
+                        // Zustand stores are registered in storeRegistry before
+                        // React.lazy chunk loading completes.  After a page reload
+                        // stores are lazily created — the per-app settle window
+                        // may be too short, leaving stores missing from snapshots.
+                        try { await window.__SIM__?.preloadAppStores?.(appIds); } catch {}
 
-                const os = window.__OS__;
-                if (!os?.openApp) return;
-                for (const id of appIds) {
-                    os.openApp(id);
-                    await new Promise(r => setTimeout(r, settleMs));
-                }
-                os.goHome?.();
-            }""",
-            {"appIds": app_ids, "settleMs": settle_ms},
-        )
+                        const os = window.__OS__;
+                        if (!os?.openApp) return;
+                        for (const id of appIds) {
+                            os.openApp(id);
+                            await new Promise(r => setTimeout(r, settleMs));
+                        }
+                        os.goHome?.();
+                    }""",
+                    {"appIds": app_ids, "settleMs": settle_ms},
+                ),
+                timeout=evaluate_timeout_s,
+            )
+        except asyncio.TimeoutError as e:
+            raise RuntimeError(
+                f"warm_apps({app_ids}) timed out after {evaluate_timeout_s:.0f}s "
+                f"(browser-side open/settle loop never resolved)"
+            ) from e
         # One final Python-side settle for the home screen
         await asyncio.sleep(0.3)
 
@@ -1109,20 +1164,22 @@ class MobileGymEnv(BaseMobileEnv):
     async def _swipe(self, start: Tuple[float, float], end: Tuple[float, float], duration: int = 400) -> None:
         x1, y1 = start
         x2, y2 = end
+        # Same proportional physical→CSS mapping as _tap; x/dpr drifts when
+        # physical_size and DPR don't divide evenly (e.g. 1080px @ 412dp).
+        cx1, cy1 = self._p2c(x1, y1)
+        cx2, cy2 = self._p2c(x2, y2)
         try:
             used = await self.page.evaluate(
                 """async ({sx,sy,ex,ey,d}) => {
                     if (window.__SIM_INPUT__?.swipe) { await window.__SIM_INPUT__.swipe({x:sx,y:sy},{x:ex,y:ey},{ms:d}); return true; }
                     return false;
                 }""",
-                {"sx": x1/self.dpr, "sy": y1/self.dpr, "ex": x2/self.dpr, "ey": y2/self.dpr, "d": duration},
+                {"sx": cx1, "sy": cy1, "ex": cx2, "ey": cy2, "d": duration},
             )
             if used:
                 return
         except Exception as e:
             logger.debug(f"__SIM_INPUT__.swipe failed, falling back to mouse: {type(e).__name__}")
-        cx1, cy1 = self._p2c(x1, y1)
-        cx2, cy2 = self._p2c(x2, y2)
         await self.page.mouse.move(cx1, cy1)
         await self.page.mouse.down()
         await self.page.mouse.move(cx2, cy2, steps=10)
@@ -1152,20 +1209,21 @@ class MobileGymEnv(BaseMobileEnv):
     async def _drag(self, start: Tuple[float, float], end: Tuple[float, float], duration: int = 400) -> None:
         x1, y1 = start
         x2, y2 = end
+        # Same proportional physical→CSS mapping as _tap (see _swipe).
+        cx1, cy1 = self._p2c(x1, y1)
+        cx2, cy2 = self._p2c(x2, y2)
         try:
             used = await self.page.evaluate(
                 """async ({sx,sy,ex,ey,d}) => {
                     if (window.__SIM_INPUT__?.drag) { await window.__SIM_INPUT__.drag({x:sx,y:sy},{x:ex,y:ey},{ms:d}); return true; }
                     return false;
                 }""",
-                {"sx": x1/self.dpr, "sy": y1/self.dpr, "ex": x2/self.dpr, "ey": y2/self.dpr, "d": duration},
+                {"sx": cx1, "sy": cy1, "ex": cx2, "ey": cy2, "d": duration},
             )
             if used:
                 return
         except Exception as e:
             logger.debug(f"__SIM_INPUT__.drag failed, falling back to mouse: {type(e).__name__}")
-        cx1, cy1 = self._p2c(x1, y1)
-        cx2, cy2 = self._p2c(x2, y2)
         await self.page.mouse.move(cx1, cy1)
         await self.page.mouse.down()
         await asyncio.sleep(0.5)
@@ -1313,34 +1371,43 @@ class MobileGymEnv(BaseMobileEnv):
             raise RuntimeError(f"{p} _wait_ready phase=__OS__ timeout: {type(e).__name__}: {e}") from e
         # 3. 预加载当前任务涉及的 App 的重型数据 (allSettled with per-app error)
         with sw.phase("waitForData"):
-            wait_result = await self.page.evaluate(
-            """async (ids) => {
-                if (!window.__SIM__?.waitForData) return {ok: true, failed: []};
-                // Monkey-patch fetch to capture response debug info on non-ok responses
-                const origFetch = window.fetch;
-                window.fetch = async function(...args) {
-                    const resp = await origFetch.apply(this, args);
-                    if (!resp.ok) {
-                        const body = await resp.clone().text().catch(() => '(unreadable)');
-                        console.error(
-                            `[waitForData] fetch FAILED: url=${resp.url} status=${resp.status} ` +
-                            `statusText=${resp.statusText} type=${resp.type} redirected=${resp.redirected} ` +
-                            `bodyLen=${body.length} body=${body.substring(0, 200)}`
-                        );
-                    }
-                    return resp;
-                };
-                try {
-                    await window.__SIM__.waitForData(ids || undefined);
-                    return {ok: true, failed: []};
-                } catch (e) {
-                    return {ok: false, error: String(e)};
-                } finally {
-                    window.fetch = origFetch;
-                }
-            }""",
-            app_ids,
-        )
+            try:
+                wait_result = await asyncio.wait_for(
+                    self.page.evaluate(
+                        """async (ids) => {
+                            if (!window.__SIM__?.waitForData) return {ok: true, failed: []};
+                            // Monkey-patch fetch to capture response debug info on non-ok responses
+                            const origFetch = window.fetch;
+                            window.fetch = async function(...args) {
+                                const resp = await origFetch.apply(this, args);
+                                if (!resp.ok) {
+                                    const body = await resp.clone().text().catch(() => '(unreadable)');
+                                    console.error(
+                                        `[waitForData] fetch FAILED: url=${resp.url} status=${resp.status} ` +
+                                        `statusText=${resp.statusText} type=${resp.type} redirected=${resp.redirected} ` +
+                                        `bodyLen=${body.length} body=${body.substring(0, 200)}`
+                                    );
+                                }
+                                return resp;
+                            };
+                            try {
+                                await window.__SIM__.waitForData(ids || undefined);
+                                return {ok: true, failed: []};
+                            } catch (e) {
+                                return {ok: false, error: String(e)};
+                            } finally {
+                                window.fetch = origFetch;
+                            }
+                        }""",
+                        app_ids,
+                    ),
+                    timeout=timeout_ms / 1000.0,
+                )
+            except asyncio.TimeoutError as e:
+                raise RuntimeError(
+                    f"{p} _wait_ready phase=waitForData({app_ids}) timed out after "
+                    f"{timeout_ms / 1000.0:.0f}s (waitForData promise never resolved)"
+                ) from e
         if not wait_result.get("ok"):
             raise RuntimeError(f"{p} _wait_ready phase=waitForData({app_ids}) failed: {wait_result.get('error', 'unknown')}")
 
@@ -1353,7 +1420,7 @@ class MobileGymEnv(BaseMobileEnv):
         Python side always json.loads(). No raw object fallback.
         """
         try:
-            result = await self.page.evaluate(
+            result = await asyncio.wait_for(self.page.evaluate(
                 """async () => {
                     const state = window.__SIM__?.getState?.();
                     if (!state) return null;
@@ -1401,13 +1468,19 @@ class MobileGymEnv(BaseMobileEnv):
                         })();
                     return {mode: 'gz', data: b64};
                 }"""
-            )
+            ), timeout=self.EVALUATE_TIMEOUT_S)
             if not result:
                 return None
             if result["mode"] == "gz":
                 raw = gzip.decompress(base64.b64decode(result["data"]))
                 return json_mod.loads(raw)
             return json_mod.loads(result["data"])
+        except asyncio.TimeoutError:
+            logger.warning(
+                f"{self._log_prefix} _get_state() timed out after "
+                f"{self.EVALUATE_TIMEOUT_S:.0f}s (page.evaluate promise never resolved)"
+            )
+            return None
         except Exception as e:
             logger.warning(f"{self._log_prefix} _get_state() failed: {type(e).__name__}: {e}")
             return None

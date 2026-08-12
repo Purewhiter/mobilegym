@@ -36,23 +36,34 @@ Simulator `VITE_*` keys are recommended for the richest local experience, but op
 
 ---
 
-## 🚦 Check the simulator is reachable
+## 🚦 Start the simulator (serve a production build)
 
-Every simulator run hits the simulator at `--env-url`. Verify it's up before launching a run — otherwise every episode fails immediately with a connection error:
+Every simulator run hits the simulator at `--env-url`. For evaluation, serve the **production build** — the dev server (`npm run dev`) double-renders every component (React StrictMode) and ships unminified assets, which roughly halves evaluation throughput:
+
+```bash
+./scripts/server/serve_dist.sh          # rebuild dist/ if stale, then vite preview on :3000
+# equivalent manual form: npm run build && npm run preview -- --port 3000 --strictPort
+```
+
+The script rebuilds `dist/` whenever it is missing or older than the latest git commit, then serves it with `vite preview` (default port 3000; pass another port as the first argument). Freshness is checked against the last *commit* time, so uncommitted edits still need a manual `npm run build`.
+
+Keep `npm run dev` for interactive debugging only (hot reload, Run Explorer's `/api/runs`) — not for benchmark numbers.
+
+Verify the simulator is up before launching a run — otherwise every episode fails immediately with a connection error:
 
 ```bash
 curl -sI http://localhost:3000 | head -1
 # HTTP/1.1 200 OK
 ```
 
-Starting the simulator (which involves cloning `mobilegym-data` for default app data) is covered in the [project root README](../README.md#-quick-start), not here.
+First-time setup (installing dependencies, cloning `mobilegym-data` for default app data) is covered in the [project root README](../README.md#-quick-start), not here.
 
-> 🚀 **Strongly recommended for `--parallel ≥ 8` / RL — use the nginx gateway, not `npm run dev`.**
-> The dev server is single-process and bottlenecks fast; nginx serves `dist/` over HTTP/2 with 8 workers + a backend gateway. A one-shot script does the whole setup:
+> 🚀 **For `--parallel ≥ 8` / RL — use the nginx gateway.**
+> `vite preview` is single-process and bottlenecks fast; nginx serves `dist/` over HTTP/2 with 8 workers + a backend gateway. A one-shot script does the whole setup:
 >
 > ```bash
 > conda install -c conda-forge nginx                # one-time, if not already installed
-> npm run build
+> npm run build                                     # nginx serves dist/ as-is — rebuild after every code change so it isn't stale
 > ./scripts/server/start_nginx_gateway.sh           # → https://localhost:4180  (HTTP/2 + TLS)
 > # stop with: ./scripts/server/start_nginx_gateway.sh stop
 > ```

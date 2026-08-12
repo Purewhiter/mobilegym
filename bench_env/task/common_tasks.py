@@ -941,8 +941,10 @@ class CriteriaTask(BaseTask):
             _set_nested(patch_by_app[app_id], field_path, inverted)
 
         if patch_by_app:
+            # strict=True: a silently dropped inversion patch would leave the
+            # env already in the goal state, making the judge trivially pass.
             await env.set_state(
-                {"apps": patch_by_app}, deep=True, reload=False,
+                {"apps": patch_by_app}, deep=True, reload=False, strict=True,
             )
 
 

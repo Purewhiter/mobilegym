@@ -18,6 +18,7 @@ from bench_env.task.judge import JudgeInput
 from bench_env.task.spotify import tasks as _tasks_module
 from bench_env.task.spotify.app import Spotify
 from bench_env.tests.conftest import make_judge_input
+from bench_env.tests.fixtures.spotify import BASE_STATE, DEFAULTS, _track
 
 ALL_TASK_CLASSES: list[type[BaseTask]] = [
     obj
@@ -28,39 +29,6 @@ ANSWER_TASK_CLASSES = [cls for cls in ALL_TASK_CLASSES if issubclass(cls, Answer
 
 TEST_OS_STATE = {"time": {"timestamp": 1742025600000}}
 DEFAULT_ROUTE = {"app": "spotify", "path": "/"}
-
-
-def _load_defaults() -> dict[str, Any]:
-    path = Path(__file__).resolve().parents[3] / "apps" / "Spotify" / "data" / "defaults.json"
-    return json.loads(path.read_text(encoding="utf-8"))
-
-
-DEFAULTS = _load_defaults()
-
-
-def _base_state() -> dict[str, Any]:
-    state = copy.deepcopy(DEFAULTS)
-    user = copy.deepcopy(state["user"])
-    state.update(
-        {
-            "currentUser": user,
-            "accounts": [user],
-            "currentTrack": copy.deepcopy(
-                state["recentPlays"][0] if state["recentPlays"] else state["recommendedTracks"][0]
-            ),
-            "isPlaying": False,
-            "shuffle": False,
-            "repeat": "off",
-            "queue": copy.deepcopy(state["recommendedTracks"]),
-            "likedSongs": [],
-            "followedArtists": copy.deepcopy(state.get("followedArtists", [])),
-            "customPlaylists": [],
-        }
-    )
-    return state
-
-
-BASE_STATE = _base_state()
 
 
 def _make_task_input(
@@ -123,31 +91,6 @@ def _state(
     if search_history is not None:
         state["searchHistory"] = copy.deepcopy(search_history)
     return state
-
-
-def _build_catalog() -> list[dict[str, Any]]:
-    tracks: list[dict[str, Any]] = []
-    for key in ("startListening", "recommendedTracks", "extraTracks", "recentPlays", "likedSongs"):
-        tracks.extend(copy.deepcopy(DEFAULTS.get(key, [])))
-    deduped: dict[str, dict[str, Any]] = {}
-    fallback: list[dict[str, Any]] = []
-    for track in tracks:
-        track_id = str(track.get("id") or "")
-        if track_id:
-            deduped.setdefault(track_id, track)
-        else:
-            fallback.append(track)
-    return list(deduped.values()) + fallback
-
-
-TRACK_CATALOG = _build_catalog()
-
-
-def _track(title: str) -> dict[str, Any]:
-    for track in TRACK_CATALOG:
-        if track["title"] == title:
-            return copy.deepcopy(track)
-    raise ValueError(f"Unknown test track: {title}")
 
 
 def _custom_track(track_id: str, title: str, artist: str, duration: str = "3:30") -> dict[str, Any]:

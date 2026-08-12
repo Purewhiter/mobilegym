@@ -26,21 +26,21 @@ from bench_env.task.wechat.app import Wechat
 from bench_env.task.wechat_reading.app import WechatReading
 from bench_env.task.x.app import X
 from bench_env.tests.conftest import make_judge_input
-from bench_env.tests.bilibili.test_tasks import BASE_STATE as BILIBILI_BASE_STATE, _sanlian_video
-from bench_env.tests.notes.test_tasks import BASE_STATE as NOTES_BASE_STATE, _add_note
-from bench_env.tests.redbook.test_tasks import (
+from bench_env.tests.fixtures.bilibili import BASE_STATE as BILIBILI_BASE_STATE, _sanlian_video
+from bench_env.tests.fixtures.notes import BASE_STATE as NOTES_BASE_STATE, _add_note
+from bench_env.tests.fixtures.redbook import (
     BASE_STATE as REDBOOK_BASE_STATE,
     _append_chat_message as _append_redbook_chat_message,
     _collect_note,
     _publish_note,
 )
-from bench_env.tests.sms.test_tasks import (
+from bench_env.tests.fixtures.sms import (
     BASE_APP_STATE as SMS_APP_STATE,
     BASE_STATE as SMS_PROVIDER_STATE,
     _append_outgoing_message as _append_sms_outgoing,
 )
-from bench_env.tests.spotify.test_tasks import BASE_STATE as SPOTIFY_BASE_STATE, _track
-from bench_env.tests.wechat_reading.test_tasks import (
+from bench_env.tests.fixtures.spotify import BASE_STATE as SPOTIFY_BASE_STATE, _track
+from bench_env.tests.fixtures.wechat_reading import (
     BASE_STATE as WECHAT_READING_BASE_STATE,
     TEST_OS_STATE,
 )

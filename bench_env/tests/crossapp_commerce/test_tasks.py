@@ -19,8 +19,8 @@ from bench_env.task.ebay.app import expect_top
 from bench_env.task.judge import JudgeInput
 from bench_env.task.wechat.app import Wechat
 from bench_env.tests.conftest import make_judge_input
-from bench_env.tests.alipay.test_tasks import BASE_STATE as ALIPAY_BASE_STATE, TEST_OS_STATE
-from bench_env.tests.notes.test_tasks import BASE_STATE as NOTES_BASE_STATE, _add_note
+from bench_env.tests.fixtures.alipay import BASE_STATE as ALIPAY_BASE_STATE, TEST_OS_STATE
+from bench_env.tests.fixtures.notes import BASE_STATE as NOTES_BASE_STATE, _add_note
 
 ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_ROUTE = {"app": "launcher", "path": "/"}

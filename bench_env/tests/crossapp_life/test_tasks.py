@@ -30,10 +30,10 @@ from bench_env.task.railway12306.app import Railway12306
 from bench_env.task.weather.app import Weather
 from bench_env.task.wechat.app import Wechat
 from bench_env.tests.conftest import make_judge_input
-from bench_env.tests.alipay.test_tasks import BASE_STATE as ALIPAY_BASE_STATE
-from bench_env.tests.calendar.test_tasks import BASE_STATE as CALENDAR_BASE_STATE, _add_event
-from bench_env.tests.clock.test_tasks import DEFAULTS as CLOCK_BASE_STATE, _with_new_alarm
-from bench_env.tests.map.test_tasks import (
+from bench_env.tests.fixtures.alipay import BASE_STATE as ALIPAY_BASE_STATE
+from bench_env.tests.fixtures.calendar import BASE_STATE as CALENDAR_BASE_STATE, _add_event
+from bench_env.tests.fixtures.clock import DEFAULTS as CLOCK_BASE_STATE, _with_new_alarm
+from bench_env.tests.fixtures.map import (
     BASE_STATE as MAP_BASE_STATE,
     MUSEUM_RESULTS,
     NATIONAL_MUSEUM,
@@ -41,19 +41,19 @@ from bench_env.tests.map.test_tasks import (
     _state as _map_state,
     _with_new_search,
 )
-from bench_env.tests.notes.test_tasks import BASE_STATE as NOTES_BASE_STATE, _add_note
-from bench_env.tests.railway12306.test_tasks import (
+from bench_env.tests.fixtures.notes import BASE_STATE as NOTES_BASE_STATE, _add_note
+from bench_env.tests.fixtures.railway12306 import (
     DEFAULTS as RAILWAY_DEFAULTS,
     _booking_curr_state,
     _booking_order,
     _booking_query_state,
 )
-from bench_env.tests.sms.test_tasks import (
+from bench_env.tests.fixtures.sms import (
     BASE_APP_STATE as SMS_APP_STATE,
     BASE_STATE as SMS_PROVIDER_STATE,
     _append_outgoing_message as _append_sms_outgoing,
 )
-from bench_env.tests.weather.test_tasks import (
+from bench_env.tests.fixtures.weather import (
     BASE_DATE,
     BASE_STATE as WEATHER_BASE_STATE,
     TEST_OS_STATE,
