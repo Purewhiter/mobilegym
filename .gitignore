@@ -13,6 +13,7 @@ __pycache__/
 
 node_modules
 dist
+dist-bench
 dist-ssr
 *.local
 
