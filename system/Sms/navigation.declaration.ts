@@ -14,7 +14,8 @@ export const NAVIGATION_DECLARATION = {
       entryPoint: 'home',
       scrollContainers: MAIN_SCROLL,
       uiStates: [{ id: 'sms.list.base', search: {}, description: '会话列表页' }],
-      queryParams: {},
+      // 长按会话弹出的上下文菜单：值为会话 id（动态、不可枚举），URL 驱动、back 关闭
+      queryParams: { contextMenu: 'string' },
       description: '会话列表页',
     },
     {

@@ -22,6 +22,10 @@ export interface SpotifyPlaylist {
   cover: string;
   coverLarge?: string;
   type?: 'playlist' | 'album';
+  /** 用户自建歌单：曲目 id 列表（随 store 持久化进 localStorage，bench_env 判分读取） */
+  trackIds?: string[];
+  /** 用户自建歌单：完整曲目快照（随 store 持久化进 localStorage，bench_env 判分读取） */
+  storedTracks?: SpotifyTrack[];
 }
 
 export interface SpotifySimilarArtistSection {

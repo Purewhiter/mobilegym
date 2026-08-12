@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { IcNavForward } from '../res/icons';
 import { useCalendarStore } from '../state';
 import { useShallow } from 'zustand/react/shallow';
@@ -55,13 +56,16 @@ const SwitchItem: React.FC<{ title: string; checked: boolean; onChange: (v: bool
 /* ---- Page ---- */
 
 const CalendarSettingsPage: React.FC = () => {
-    const { bindBack } = useCalendarGestures();
+    const { bindBack, go, back } = useCalendarGestures();
     const { settings, updateSettings } = useCalendarStore(useShallow(s => ({ settings: s.settings, updateSettings: s.updateSettings })));
     const s = useAppStrings(strings, stringsEn);
     const [toast, setToast] = useState<{ visible: boolean; message: string }>({ visible: false, message: '' });
-    const [reminderOpen, setReminderOpen] = useState(false);
-    const [allDayReminderOpen, setAllDayReminderOpen] = useState(false);
-    const [laterReminderOpen, setLaterReminderOpen] = useState(false);
+    // 三个选择弹层共用一个 query key（?sheet=枚举值）驱动，back 关闭
+    const [searchParams] = useSearchParams();
+    const sheet = searchParams.get('sheet');
+    const reminderOpen = sheet === 'reminder';
+    const allDayReminderOpen = sheet === 'alldayReminder';
+    const laterReminderOpen = sheet === 'laterReminder';
 
     const showToast = (message: string) => {
         setToast({ visible: true, message });
@@ -108,7 +112,7 @@ const CalendarSettingsPage: React.FC = () => {
             <CalendarActionSheet
                 open={reminderOpen}
                 title={s.settings_default_reminder}
-                onClose={() => setReminderOpen(false)}
+                onClose={() => back()}
                 items={[
                     { id: '0', title: s.label_at_start, onClick: () => updateSettings({ defaultReminder: '0_minutes_before' }) },
                     { id: '5', title: s.settings_reminder_val_5_min, onClick: () => updateSettings({ defaultReminder: '5_minutes_before' }) },
@@ -121,7 +125,7 @@ const CalendarSettingsPage: React.FC = () => {
             <CalendarActionSheet
                 open={allDayReminderOpen}
                 title={s.settings_default_allday_reminder}
-                onClose={() => setAllDayReminderOpen(false)}
+                onClose={() => back()}
                 items={[
                     { id: '0', title: s.settings_allday_0, onClick: () => updateSettings({ defaultAllDayReminder: 'start_of_day' }) },
                     { id: '9', title: s.settings_allday_9, onClick: () => updateSettings({ defaultAllDayReminder: '9_am_on_day' }) },
@@ -131,7 +135,7 @@ const CalendarSettingsPage: React.FC = () => {
             <CalendarActionSheet
                 open={laterReminderOpen}
                 title={s.settings_default_later_reminder}
-                onClose={() => setLaterReminderOpen(false)}
+                onClose={() => back()}
                 items={[
                     { id: '5', title: s.settings_later_5_min, onClick: () => updateSettings({ defaultReminderLaterTime: '5_minutes' }) },
                     { id: '10', title: s.settings_later_10_min, onClick: () => updateSettings({ defaultReminderLaterTime: '10_minutes' }) },
@@ -200,9 +204,9 @@ const CalendarSettingsPage: React.FC = () => {
 
                 <Section title={s.settings_section_reminder}>
                     <Item title={s.settings_reminder} onClick={() => showToast('暂未实现：日程提醒设置')} />
-                    <Item title={s.settings_default_reminder} value={defaultReminderLabel} onClick={() => setReminderOpen(true)} />
-                    <Item title={s.settings_default_allday_reminder} value={defaultAllDayReminderLabel} onClick={() => setAllDayReminderOpen(true)} />
-                    <Item title={s.settings_default_later_reminder} value={defaultLaterReminderLabel} onClick={() => setLaterReminderOpen(true)} />
+                    <Item title={s.settings_default_reminder} value={defaultReminderLabel} onClick={() => go('settings.reminderSheet.open')} />
+                    <Item title={s.settings_default_allday_reminder} value={defaultAllDayReminderLabel} onClick={() => go('settings.alldayReminderSheet.open')} />
+                    <Item title={s.settings_default_later_reminder} value={defaultLaterReminderLabel} onClick={() => go('settings.laterReminderSheet.open')} />
                     <SwitchItem
                         title={s.settings_holiday_reminder}
                         checked={settings.holidayReminder}

@@ -56,8 +56,8 @@ export const SwipeableServiceGrid: React.FC<SwipeableServiceGridProps> = ({
     setOverscrollActive(isAtEnd && totalPages > 0);
   }, [totalPages]);
 
-  // Handle touch end: if overscroll panel is in view, navigate
-  const handleTouchEnd = useCallback(() => {
+  // Handle pointer release: if overscroll panel is in view, navigate
+  const handlePointerRelease = useCallback(() => {
     const el = scrollRef.current;
     if (!el) return;
     const maxScroll = el.scrollWidth - el.clientWidth;
@@ -84,8 +84,8 @@ export const SwipeableServiceGrid: React.FC<SwipeableServiceGridProps> = ({
       <div
         ref={scrollRef}
         className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar"
-        onTouchEnd={handleTouchEnd}
-        onMouseUp={handleTouchEnd}
+        onPointerUp={handlePointerRelease}
+        onPointerCancel={handlePointerRelease}
       >
         {/* Item pages */}
         {pages.map((pageItems, pageIdx) => (

@@ -34,6 +34,7 @@ import {
   setSelectedCityId,
   setStoredBundle,
   isBundleFresh,
+  type WeatherState,
 } from './utils/weatherStore';
 import { useWeatherStore } from './state';
 import { convertTemp } from './utils/unitConversion';
@@ -223,31 +224,31 @@ const WeatherContent: React.FC = () => {
   const isMenuOpen = searchParams.get('menu') === 'more';
   const s = useAppStrings(strings, stringsEn);
 
-  const weatherState = useWeatherStore();
-  const tempUnit = weatherState.settings.tempUnit;
-  const setWeatherState = (updater: (prev: typeof weatherState) => typeof weatherState) => {
+  // 细粒度订阅：只挑本组件渲染需要的字段，避免整店订阅导致无关写入也触发重渲染
+  const tempUnit = useWeatherStore((state) => state.settings.tempUnit);
+  const savedCities = useWeatherStore((state) => state.savedCities);
+  const bundlesByCityId = useWeatherStore((state) => state.bundlesByCityId);
+  const setWeatherState = (updater: (prev: WeatherState) => WeatherState) => {
     useWeatherStore.setState(updater(useWeatherStore.getState()), true);
   };
 
-  const savedCities = weatherState.savedCities;
-
-  // 当前页面索引：0=定位，1+=已添加城市
-  const initialIndex = (() => {
-    if (weatherState.selectedCityId === 'located') return 0;
-    const idx = savedCities.findIndex((c) => c.id === weatherState.selectedCityId);
+  // 当前页面索引：0=定位，1+=已添加城市（selectedCityId 仅初始化时读取一次，之后由 currentIndex 驱动）
+  const [currentIndex, setCurrentIndex] = useState(() => {
+    const { selectedCityId } = useWeatherStore.getState();
+    if (selectedCityId === 'located') return 0;
+    const idx = savedCities.findIndex((c) => c.id === selectedCityId);
     if (idx >= 0) return idx + 1;
     return 0;
-  })();
-  const [currentIndex, setCurrentIndex] = useState(() => initialIndex);
-  // 水平滚动进度 0-1（用于温度淡出效果）
-  const [scrollProgress, setScrollProgress] = useState(0);
-  // 垂直滚动折叠进度 0-1（用于 CollapsingToolbar 效果）
-  const [collapseProgress, setCollapseProgress] = useState(0);
+  });
+  // 水平滚动进度 0-1（温度淡出）与垂直折叠进度 0-1（CollapsingToolbar）为逐帧连续值，
+  // 不进 React state：由滚动回调直接写主容器的 CSS 变量 --scroll-progress / --collapse-progress，
+  // 消费处用 var() + calc() 派生，避免每滚动帧整树重渲染。
 
   const horizontalScrollRef = useRef<HTMLDivElement>(null);
   const didInitPageScrollRef = useRef(false);
   const mainContainerRef = useRef<HTMLDivElement>(null);
   const titleBarRef = useRef<HTMLDivElement>(null);
+  const stickyLocationRef = useRef<HTMLDivElement>(null);
   const activeWarningRef = useRef<HTMLDivElement>(null);
   const locationRef = useRef<HTMLDivElement>(null);
   const tempRef = useRef<HTMLDivElement>(null);
@@ -255,10 +256,10 @@ const WeatherContent: React.FC = () => {
   // 折叠范围：预警卡片接近标题栏时开始折叠
   const COLLAPSE_RANGE = 90;
 
-  // 触摸相关
-  const touchStartX = useRef(0);
-  const touchStartY = useRef(0);
-  const touchStartScrollLeft = useRef(0);
+  // 指针拖拽相关（城市横滑分页，统一 PointerEvent：鼠标/触摸/触控笔同一条路径）
+  const pointerStartX = useRef(0);
+  const pointerStartY = useRef(0);
+  const pointerStartScrollLeft = useRef(0);
   const isSwiping = useRef(false);
   const swipeDirection = useRef<'horizontal' | 'vertical' | null>(null);
 
@@ -270,9 +271,9 @@ const WeatherContent: React.FC = () => {
   // 让 render 派生切换到「无 bundle + 不再 loading」= 失败/空态。
   const [loadingCityIds, setLoadingCityIds] = useState<Set<string>>(() => {
     const initial = new Set<string>();
-    if (!weatherState.bundlesByCityId['located']?.bundle) initial.add('located');
+    if (!bundlesByCityId['located']?.bundle) initial.add('located');
     for (const city of savedCities) {
-      if (!weatherState.bundlesByCityId[city.id]?.bundle) initial.add(city.id);
+      if (!bundlesByCityId[city.id]?.bundle) initial.add(city.id);
     }
     return initial;
   });
@@ -303,7 +304,7 @@ const WeatherContent: React.FC = () => {
   // state-builder/bench 通过 __SIM__.setState patch bundlesByCityId.located
   // 时，下面的 useMemo 会重算，UI 立即反映。
   const locationData = useMemo<CityWeatherData>(() => {
-    const stored = weatherState.bundlesByCityId['located'];
+    const stored = bundlesByCityId['located'];
     if (stored?.bundle) {
       return cityWeatherDataFromBundle(stored.locationName || s.locating, stored.bundle);
     }
@@ -311,18 +312,18 @@ const WeatherContent: React.FC = () => {
       return { ...emptyCityWeatherData(locatedFailureMessage), loading: false };
     }
     return { ...emptyCityWeatherData(s.locating), loading: loadingCityIds.has('located') };
-  }, [weatherState.bundlesByCityId, loadingCityIds, locatedFailureMessage, s.locating]);
+  }, [bundlesByCityId, loadingCityIds, locatedFailureMessage, s.locating]);
 
   // 派生：已添加城市的 UI 数据。
   const citiesData = useMemo<CityWeatherData[]>(() => {
     return savedCities.map((city) => {
-      const stored = weatherState.bundlesByCityId[city.id];
+      const stored = bundlesByCityId[city.id];
       if (stored?.bundle) {
         return cityWeatherDataFromBundle(city.name, stored.bundle);
       }
       return { ...emptyCityWeatherData(city.name), loading: loadingCityIds.has(city.id) };
     });
-  }, [savedCities, weatherState.bundlesByCityId, loadingCityIds]);
+  }, [savedCities, bundlesByCityId, loadingCityIds]);
 
   // 所有页面数据
   const allPagesData = [locationData, ...citiesData];
@@ -508,7 +509,7 @@ const WeatherContent: React.FC = () => {
     const city = savedCities[cityIdx];
     if (!city) return;
 
-    const stored = weatherState.bundlesByCityId[city.id];
+    const stored = bundlesByCityId[city.id];
     if (stored?.bundle) return; // 不做自动刷新：仅在没有缓存时才请求一次
     if (inflightCityIdsRef.current.has(city.id)) return;
     inflightCityIdsRef.current.add(city.id);
@@ -530,7 +531,7 @@ const WeatherContent: React.FC = () => {
         clearLoading(city.id);
       }
     })();
-  }, [currentIndex, fetchCityWeather, savedCities, weatherState.bundlesByCityId, markLoading, clearLoading]);
+  }, [currentIndex, fetchCityWeather, savedCities, bundlesByCityId, markLoading, clearLoading]);
 
   // 监听水平滚动容器
   const handleHorizontalScroll = useCallback(() => {
@@ -566,28 +567,43 @@ const WeatherContent: React.FC = () => {
     // 计算滚动进度（用于温度淡出）
     // 距离最近吸附点越远，progress 越大；滑动 30% 页宽就完全淡出
     const progress = Math.min(offsetToSnap / (pageWidth * 0.3), 1);
-    setScrollProgress(progress);
+    mainContainerRef.current?.style.setProperty('--scroll-progress', String(progress));
   }, [currentIndex, savedCities, totalPages]);
 
-  // 处理触摸开始 - 用于可滑动区域触发水平滚动
-  const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX;
-    touchStartY.current = e.touches[0].clientY;
-    touchStartScrollLeft.current = horizontalScrollRef.current?.scrollLeft ?? 0;
+  // 处理指针按下 - 用于可滑动区域触发水平滚动
+  const handlePointerDown = useCallback((e: React.PointerEvent) => {
+    // 仅主指针 + 主键（鼠标左键 / 触摸 / 笔尖均为 button 0），对齐原 touches[0] 语义
+    if (!e.isPrimary || e.button !== 0) return;
+    pointerStartX.current = e.clientX;
+    pointerStartY.current = e.clientY;
+    pointerStartScrollLeft.current = horizontalScrollRef.current?.scrollLeft ?? 0;
     isSwiping.current = true;
     swipeDirection.current = null;
   }, []);
 
-  const handleTouchMove = useCallback((e: React.TouchEvent) => {
-    if (!isSwiping.current || !horizontalScrollRef.current) return;
+  const handlePointerMove = useCallback((e: React.PointerEvent) => {
+    if (!e.isPrimary || !isSwiping.current || !horizontalScrollRef.current) return;
+    // 指针已抬起（如鼠标在窗口外松开、错过 pointerup）：结束拖拽，避免悬停移动误触发
+    if (e.buttons === 0) {
+      isSwiping.current = false;
+      swipeDirection.current = null;
+      return;
+    }
 
-    const deltaX = e.touches[0].clientX - touchStartX.current;
-    const deltaY = e.touches[0].clientY - touchStartY.current;
+    const deltaX = e.clientX - pointerStartX.current;
+    const deltaY = e.clientY - pointerStartY.current;
 
     // 判断滑动方向（只在第一次移动时判断）
     if (swipeDirection.current === null) {
       if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 10) {
         swipeDirection.current = 'horizontal';
+        // 确认水平拖拽后才捕获指针：拖出容器仍跟手；未捕获前的点按不影响子元素 click。
+        // 捕获失败（合成事件无活动指针等）仅降级为不跟出容器，不中断拖拽。
+        try {
+          e.currentTarget.setPointerCapture(e.pointerId);
+        } catch {
+          // ignore
+        }
       } else if (Math.abs(deltaY) > Math.abs(deltaX) && Math.abs(deltaY) > 10) {
         swipeDirection.current = 'vertical';
       }
@@ -601,7 +617,7 @@ const WeatherContent: React.FC = () => {
       if (e.cancelable) e.preventDefault();
 
       const maxScrollLeft = pageWidth * Math.max(0, totalPages - 1);
-      const targetScroll = touchStartScrollLeft.current - deltaX;
+      const targetScroll = pointerStartScrollLeft.current - deltaX;
       container.scrollLeft = Math.min(maxScrollLeft, Math.max(0, targetScroll));
     }
   }, [totalPages]);
@@ -623,7 +639,7 @@ const WeatherContent: React.FC = () => {
     }
   }, [totalPages]);
 
-  const handleTouchEnd = useCallback(() => {
+  const handlePointerEnd = useCallback(() => {
     const wasHorizontal = swipeDirection.current === 'horizontal';
     isSwiping.current = false;
     swipeDirection.current = null;
@@ -651,7 +667,12 @@ const WeatherContent: React.FC = () => {
     // 距离越小，折叠进度越大；卡片贴到标题栏时进度=1
     const denom = Math.max(start - titleBottom, COLLAPSE_RANGE);
     const progress = Math.min(Math.max((start - warningTop) / denom, 0), 1);
-    setCollapseProgress(progress);
+    mainContainerRef.current?.style.setProperty('--collapse-progress', String(progress));
+    // pointer-events 是离散值，CSS var 表达不了：与旧逻辑一致，
+    // sticky 城市名在 stickyLocationOpacity(=clamp((p-0.92)/0.08,0,1)) > 0.1 时才可交互
+    if (stickyLocationRef.current) {
+      stickyLocationRef.current.style.pointerEvents = (progress - 0.92) / 0.08 > 0.1 ? 'auto' : 'none';
+    }
   }, [COLLAPSE_RANGE]);
 
   const warningsCount = currentData.warnings?.length || 0;
@@ -676,14 +697,13 @@ const WeatherContent: React.FC = () => {
     setLocationLift(lift);
   }, [currentIndex, warningsCount, statusBarH]);
 
-  // 计算温度透明度（水平切换 + 垂直滚动渐隐）
-  const tempFade = Math.max(0.08, 1 - collapseProgress * 0.92);
-  const temperatureOpacity = (1 - scrollProgress * 0.8) * tempFade;
-  const locationMoveProgress = Math.pow(collapseProgress, 1.8);
-  const tempBlur = Math.min(10, collapseProgress * 10);
-  const locationSwitchAt = 0.92;
-  const showStickyLocation = collapseProgress >= locationSwitchAt;
-  const stickyLocationOpacity = Math.min(Math.max((collapseProgress - locationSwitchAt) / 0.08, 0), 1);
+  // 温度透明度（水平切换 + 垂直滚动渐隐）、城市名位移、模糊、sticky 城市名淡入
+  // 均改由 CSS 变量在各消费处用 calc() 派生（公式与原 JS 一致）：
+  //   tempFade            = max(0.08, 1 - collapse * 0.92)
+  //   temperatureOpacity  = (1 - scroll * 0.8) * tempFade
+  //   locationMove        = pow(collapse, 1.8)
+  //   tempBlur            = min(collapse * 10px, 10px)
+  //   stickyLocationOpacity = clamp((collapse - 0.92) / 0.08, 0, 1)
 
   const isLocationPage = currentIndex === 0;
 
@@ -739,11 +759,14 @@ const WeatherContent: React.FC = () => {
       <div
         ref={mainContainerRef}
         className="w-full h-full overflow-y-auto relative z-10 no-scrollbar"
+        // pan-y：垂直平移交给原生滚动；水平拖拽不会被浏览器接管（触摸下不触发 pointercancel），
+        // 统一走下方 pointer 处理器驱动分页。CSS 变量初值 0 = 未滚动状态。
+        style={{ touchAction: 'pan-y', '--scroll-progress': 0, '--collapse-progress': 0 } as React.CSSProperties}
         onScroll={handleVerticalScroll}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-        onTouchCancel={handleTouchEnd}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerEnd}
+        onPointerCancel={handlePointerEnd}
       >
         {/* ===== 主标题栏（对齐真机 main_title_bar_layout / bg_blur）===== */}
         <div
@@ -764,7 +787,7 @@ const WeatherContent: React.FC = () => {
                 // 用同一层模糊覆盖“状态栏 + topbar”，避免两段模糊不一致/叠加产生分层
                 top: -statusBarH,
                 height: statusBarH + TITLE_ROW_HEIGHT + 40,
-                opacity: 0.32 + collapseProgress * 0.6,
+                opacity: 'calc(0.32 + var(--collapse-progress) * 0.6)',
                 background: colors.overlay_titlebar_blur,
                 maskImage: 'linear-gradient(to bottom, black 0%, black 70%, transparent 100%)',
                 WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 70%, transparent 100%)',
@@ -776,7 +799,7 @@ const WeatherContent: React.FC = () => {
               style={{
                 top: -statusBarH,
                 height: statusBarH + TITLE_ROW_HEIGHT + 40,
-                opacity: 0.22 + collapseProgress * 0.32,
+                opacity: 'calc(0.22 + var(--collapse-progress) * 0.32)',
                 background: `linear-gradient(to bottom, ${colors.overlay_bg_gradient_mid}, ${colors.overlay_bg_gradient_end} 65%, rgba(0,0,0,0))`,
                 maskImage: 'linear-gradient(to bottom, black 0%, black 70%, transparent 100%)',
                 WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 70%, transparent 100%)',
@@ -786,8 +809,10 @@ const WeatherContent: React.FC = () => {
           {/* 折叠后固定在 topbar 的位置信息 */}
           <div
             id="main_title_container_layout_sticky"
+            ref={stickyLocationRef}
             className="absolute left-4 top-0 bottom-0 flex flex-col justify-center text-white min-w-0"
-            style={{ opacity: stickyLocationOpacity, pointerEvents: stickyLocationOpacity > 0.1 ? 'auto' : 'none' }}
+            // pointerEvents 初值 none（展开态），折叠越过阈值后由 handleVerticalScroll 置为 auto
+            style={{ opacity: 'clamp(0, (var(--collapse-progress) - 0.92) / 0.08, 1)', pointerEvents: 'none' }}
           >
             <div className="text-[16px] font-medium tracking-wide truncate max-w-[220px] leading-tight">
               {displayCurrentLocationName}
@@ -832,8 +857,8 @@ const WeatherContent: React.FC = () => {
               marginLeft: 31,
               width: 329,
               height: 64,
-              opacity: 1 - stickyLocationOpacity,
-              transform: `translateY(${-locationMoveProgress * locationLift}px)`,
+              opacity: 'calc(1 - clamp(0, (var(--collapse-progress) - 0.92) / 0.08, 1))',
+              transform: `translateY(calc(pow(var(--collapse-progress), 1.8) * ${-locationLift}px))`,
               transition: 'transform 80ms linear',
             }}
           >
@@ -857,9 +882,9 @@ const WeatherContent: React.FC = () => {
               marginTop: 4,
               width: 225,
               height: 127,
-              opacity: temperatureOpacity,
+              opacity: 'calc((1 - var(--scroll-progress) * 0.8) * max(0.08, 1 - var(--collapse-progress) * 0.92))',
               touchAction: 'pan-y',
-              filter: `blur(${tempBlur}px)`,
+              filter: 'blur(min(calc(var(--collapse-progress) * 10px), 10px))',
               overflow: 'visible',
             }}
           >
@@ -881,7 +906,7 @@ const WeatherContent: React.FC = () => {
               marginLeft: 19,
               marginRight: 0,
               width: 341,
-              filter: `blur(${tempBlur}px)`,
+              filter: 'blur(min(calc(var(--collapse-progress) * 10px), 10px))',
             }}
           >
             <div id="fl_weather_parent" className="ml-[12px]" style={{ height: 24 }}>

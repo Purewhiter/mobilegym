@@ -1,5 +1,5 @@
 import React from 'react';
-import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { SettingLayout, SettingSection, SettingItemSwitch, SettingItemValue, SettingBottomSheet } from './index';
 import { useBilibiliStore } from '../../state';
 import { useBilibiliGestures } from '../../hooks/useBilibiliGestures';
@@ -14,9 +14,7 @@ const LABELS: Record<string, string> = { '7days': '关注我7天以上的人', f
 
 export const SettingsHarassPage: React.FC = () => {
   const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { back } = useBilibiliGestures();
+  const { back, bindTap } = useBilibiliGestures();
   const setSetting = useBilibiliStore((s) => s.setSetting);
   const oneKey = useBilibiliStore((s) => s.settings.harass.oneKey) ?? false;
   const comment = useBilibiliStore((s) => s.settings.harass.comment) ?? 'all';
@@ -25,7 +23,7 @@ export const SettingsHarassPage: React.FC = () => {
 
   const sheet = searchParams.get('sheet') ?? '';
 
-  const openSheet = (key: string) => navigate(`${location.pathname}?sheet=${key}`);
+  // 弹窗打开走声明化 go()（URL 驱动、push 入栈），关闭统一 back() 弹栈
   const closeSheet = () => back();
 
   const currentValue = sheet === 'comment' ? comment : sheet === 'danmaku' ? danmaku : sheet === 'pm' ? pm : '';
@@ -48,9 +46,21 @@ export const SettingsHarassPage: React.FC = () => {
         onChange={(v) => setSetting('harass.oneKey', v)}
       />
       <SettingSection title="长期防护" />
-      <SettingItemValue label="谁可以发评论" value={LABELS[comment] ?? '所有人'} onClick={() => openSheet('comment')} />
-      <SettingItemValue label="谁可以发弹幕" value={LABELS[danmaku] ?? '所有人'} onClick={() => openSheet('danmaku')} />
-      <SettingItemValue label="谁可以发私信" value={LABELS[pm] ?? '所有人'} onClick={() => openSheet('pm')} />
+      <SettingItemValue
+        label="谁可以发评论"
+        value={LABELS[comment] ?? '所有人'}
+        {...bindTap('settings.harass.sheet.open', { params: { sheet: 'comment' } })}
+      />
+      <SettingItemValue
+        label="谁可以发弹幕"
+        value={LABELS[danmaku] ?? '所有人'}
+        {...bindTap('settings.harass.sheet.open', { params: { sheet: 'danmaku' } })}
+      />
+      <SettingItemValue
+        label="谁可以发私信"
+        value={LABELS[pm] ?? '所有人'}
+        {...bindTap('settings.harass.sheet.open', { params: { sheet: 'pm' } })}
+      />
       <div className="h-8" />
 
       <SettingBottomSheet

@@ -73,7 +73,7 @@ export const PinPickerHeader: React.FC<{
           type="button"
           className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-200/80 text-gray-800 active:bg-gray-300/90"
           {...bindTap<HTMLButtonElement>(
-            { kind: 'action', id: 'pinPicker.close' },
+            { kind: 'action', id: 'pinPicker.sheet.close' },
             { onTrigger: onClose },
           )}
         >
@@ -96,7 +96,7 @@ export const PinPickerFooter: React.FC<{
         type="button"
         className="w-full rounded-full bg-[#0d5c5c] py-3.5 text-[17px] font-medium text-white shadow-sm active:bg-[#0a4a47]"
         {...bindTap<HTMLButtonElement>(
-          { kind: 'action', id: 'pinPicker.confirm' },
+          { kind: 'action', id: 'pinPicker.sheet.confirm' },
           { onTrigger: onConfirm },
         )}
       >

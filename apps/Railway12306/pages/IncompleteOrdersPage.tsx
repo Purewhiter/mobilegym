@@ -94,8 +94,8 @@ export const IncompleteOrdersPage: React.FC = () => {
   const tickets = pendingOrder.tickets;
 
   return (
-    <div className="min-h-full bg-[#FAFAFA] pb-[140px]" data-status-bar-foreground="light">
-      <div className="bg-[#4FA4F7] pt-12 pb-3 sticky top-0 z-20">
+    <div className="h-full bg-[#FAFAFA] flex flex-col" data-status-bar-foreground="light">
+      <div className="bg-[#4FA4F7] pt-12 pb-3 shrink-0 z-20">
         <div className="flex items-center justify-between px-4">
           <button className="flex items-center justify-center p-1" onClick={() => setShowLeaveConfirm(true)}>
             <IcNavBack size={26} className="text-white" />
@@ -114,6 +114,11 @@ export const IncompleteOrdersPage: React.FC = () => {
         </div>
       </div>
 
+      <div
+        className="flex-1 overflow-y-auto no-scrollbar pb-4"
+        data-scroll-container="main"
+        data-scroll-direction="vertical"
+      >
       <div className="mx-3 mt-3 rounded-[12px] bg-white overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
         <div className="px-4 pt-4 pb-3">
           <div className="flex items-start justify-between gap-3">
@@ -229,6 +234,7 @@ export const IncompleteOrdersPage: React.FC = () => {
           <div className="w-8 h-4 bg-white/30 rounded-full flex items-center p-[2px]"><div className="w-3 h-3 rounded-full bg-white" /></div>
         </div>
       </div>
+      </div>
 
       {showAmountSheet && (
         <button
@@ -237,7 +243,7 @@ export const IncompleteOrdersPage: React.FC = () => {
         />
       )}
 
-      <div className="fixed left-0 right-0 bottom-0 z-[60] bg-[#FAFAFA] border-t border-[#EDEDED] pb-[calc(env(safe-area-inset-bottom)+8px)]">
+      <div className="relative z-[60] shrink-0 bg-[#FAFAFA] border-t border-[#EDEDED] pb-[calc(env(safe-area-inset-bottom)+8px)]">
         {showAmountSheet && (
           <div className="overflow-hidden shadow-[0_-2px_8px_rgba(0,0,0,0.06)]">
             <div className="bg-[#4FA4F7] py-3 text-center text-white text-[16px] font-medium">

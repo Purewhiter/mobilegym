@@ -44,7 +44,14 @@ export const NAVIGATION_DECLARATION = {
         { id: 'recent.base', search: {}, description: '最近文件' },
         { id: 'recent.modal.details', search: { modal: 'details' }, description: '最近文件 - 详情弹窗' },
         { id: 'recent.modal.rename', search: { modal: 'rename' }, description: '最近文件 - 重命名弹窗' },
-        { id: 'recent.select', search: { mode: 'select' }, description: '最近文件 - 选择模式' },
+        {
+          id: 'recent.select',
+          search: { mode: 'select' },
+          description: '最近文件 - 选择模式',
+          actions: [
+            { id: 'recent.select.send', label: '发送选中的文件', behavior: 'other' },
+          ],
+        },
         { id: 'recent.select.modal.delete', search: { mode: 'select', modal: 'delete' }, description: '最近文件 - 选择模式 - 删除确认' },
         { id: 'recent.select.modal.more', search: { mode: 'select', modal: 'more' }, description: '最近文件 - 选择模式 - 更多菜单' },
         { id: 'recent.select.modal.transfer', search: { mode: 'select', modal: 'transfer' }, description: '最近文件 - 选择模式 - 复制/移动目标选择' },
@@ -80,7 +87,14 @@ export const NAVIGATION_DECLARATION = {
         { id: 'folder.modal.details', search: { modal: 'details' }, description: '文件夹浏览 - 详情弹窗' },
         { id: 'folder.modal.rename', search: { modal: 'rename' }, description: '文件夹浏览 - 重命名弹窗' },
         { id: 'folder.modal.newFolder', search: { modal: 'newFolder' }, description: '文件夹浏览 - 新建文件夹' },
-        { id: 'folder.select', search: { mode: 'select' }, description: '文件夹浏览 - 选择模式' },
+        {
+          id: 'folder.select',
+          search: { mode: 'select' },
+          description: '文件夹浏览 - 选择模式',
+          actions: [
+            { id: 'folder.select.send', label: '发送选中的文件', behavior: 'other' },
+          ],
+        },
         { id: 'folder.select.modal.delete', search: { mode: 'select', modal: 'delete' }, description: '文件夹浏览 - 选择模式 - 删除确认' },
         { id: 'folder.select.modal.more', search: { mode: 'select', modal: 'more' }, description: '文件夹浏览 - 选择模式 - 更多菜单' },
         { id: 'folder.select.modal.transfer', search: { mode: 'select', modal: 'transfer' }, description: '文件夹浏览 - 选择模式 - 复制/移动目标选择' },

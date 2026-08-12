@@ -2,7 +2,7 @@ import BroadcastBus, { ACTION_BOOT_COMPLETED } from '../../os/BroadcastBus';
 import { createAppStoreWithActions, memoSelector } from '../../os/createAppStore';
 import MediaSessionService, { type ActiveMediaSession } from '../../os/MediaSessionService';
 import { SPOTIFY_CONFIG } from './data';
-import type { SpotifyTrack, SpotifyPlaylist, SpotifyArtist, PlaySource, PlayHistoryEntry, SearchHistoryEntry } from './types';
+import type { SpotifyTrack, SpotifyPlaylist, SpotifyArtist, SpotifyUser, PlaySource, PlayHistoryEntry, SearchHistoryEntry } from './types';
 import * as TimeService from '../../os/TimeService';
 
 let localSeq = 0;
@@ -59,8 +59,8 @@ export interface SpotifySettings {
 }
 
 export interface SpotifyState {
-  currentUser: any;
-  accounts: any[];
+  currentUser: SpotifyUser;
+  accounts: SpotifyUser[];
   currentTrack: SpotifyTrack | null;
   isPlaying: boolean;
   shuffle: boolean;
@@ -106,7 +106,7 @@ export interface SpotifyActions {
 
 // ── Initial State ──────────────────────────────────────────────────
 
-const configUser = SPOTIFY_CONFIG.user as { id: string; name: string; initial: string; color: string };
+const configUser: SpotifyUser = SPOTIFY_CONFIG.user;
 
 const initialState: SpotifyState = {
   currentUser: configUser,
@@ -126,8 +126,8 @@ const initialState: SpotifyState = {
     const fromConfig = (SPOTIFY_CONFIG.followedArtists ?? []) as string[];
     if (fromConfig.length > 0) return fromConfig;
     // Fallback: init from libraryArtists names
-    const lib = (SPOTIFY_CONFIG as any).libraryArtists ?? [];
-    return lib.map((a: any) => a.name).filter(Boolean);
+    const lib = SPOTIFY_CONFIG.libraryArtists ?? [];
+    return lib.map(a => a.name).filter(Boolean);
   })(),
   customPlaylists: [],
   playHistory: [],
@@ -274,15 +274,15 @@ export const useSpotifyStore = createAppStoreWithActions<SpotifyState, SpotifyAc
       const s = get();
       const trackIds = initialTrack ? [initialTrack.id] : [];
       const storedTracks = initialTrack ? [initialTrack] : [];
-      const newPlaylist = {
+      const newPlaylist: SpotifyPlaylist = {
         id: nextId('cp'),
         title: name,
         subtitle: `歌单 • ${trackIds.length} 首歌曲|en:Playlist • ${trackIds.length} songs`,
         cover: initialTrack?.cover || '',
-        type: 'playlist' as const,
+        type: 'playlist',
         trackIds,
         storedTracks,
-      } as SpotifyPlaylist & { trackIds: string[]; storedTracks: SpotifyTrack[] };
+      };
       set({ customPlaylists: [newPlaylist, ...(s.customPlaylists || [])] });
       return newPlaylist;
     },
@@ -290,19 +290,19 @@ export const useSpotifyStore = createAppStoreWithActions<SpotifyState, SpotifyAc
     addTrackToPlaylist: (name, track) => {
       const s = get();
       const playlists = [...(s.customPlaylists || [])];
-      let pl = playlists.find(p => (p as any).title === name);
+      let pl = playlists.find((p): p is SpotifyPlaylist => 'title' in p && p.title === name);
       if (!pl) {
         pl = {
           id: nextId('cp'),
           title: name,
           subtitle: '歌单 • 0 首歌曲|en:Playlist • 0 songs',
           cover: '',
-          type: 'playlist' as const,
-        } as any;
-        playlists.unshift(pl!);
+          type: 'playlist',
+        };
+        playlists.unshift(pl);
       }
-      const trackIds: string[] = Array.isArray((pl as any).trackIds) ? [...(pl as any).trackIds] : [];
-      const storedTracks: SpotifyTrack[] = Array.isArray((pl as any).storedTracks) ? [...(pl as any).storedTracks] : [];
+      const trackIds: string[] = Array.isArray(pl.trackIds) ? [...pl.trackIds] : [];
+      const storedTracks: SpotifyTrack[] = Array.isArray(pl.storedTracks) ? [...pl.storedTracks] : [];
       const tNorm = track.title.trim().toLowerCase();
       const aNorm = track.artist.trim().toLowerCase();
       const dupById = trackIds.includes(track.id);
@@ -311,31 +311,31 @@ export const useSpotifyStore = createAppStoreWithActions<SpotifyState, SpotifyAc
         trackIds.push(track.id);
         storedTracks.push(track);
       }
-      (pl as any).trackIds = trackIds;
-      (pl as any).storedTracks = storedTracks;
-      if (!((pl as any).cover) && track.cover) {
-        (pl as any).cover = track.cover;
+      pl.trackIds = trackIds;
+      pl.storedTracks = storedTracks;
+      if (!pl.cover && track.cover) {
+        pl.cover = track.cover;
       }
       const count = trackIds.length;
-      (pl as any).subtitle = `歌单 • ${count} 首歌曲|en:Playlist • ${count} songs`;
+      pl.subtitle = `歌单 • ${count} 首歌曲|en:Playlist • ${count} songs`;
       set({ customPlaylists: playlists });
     },
 
     removeTrackFromPlaylist: (name, trackId) => {
       const s = get();
       const playlists = [...(s.customPlaylists || [])];
-      const pl = playlists.find(p => (p as any).title === name);
+      const pl = playlists.find((p): p is SpotifyPlaylist => 'title' in p && p.title === name);
       if (!pl) return;
-      const trackIds: string[] = Array.isArray((pl as any).trackIds) ? [...(pl as any).trackIds] : [];
-      const storedTracks: SpotifyTrack[] = Array.isArray((pl as any).storedTracks) ? [...(pl as any).storedTracks] : [];
+      const trackIds: string[] = Array.isArray(pl.trackIds) ? [...pl.trackIds] : [];
+      const storedTracks: SpotifyTrack[] = Array.isArray(pl.storedTracks) ? [...pl.storedTracks] : [];
       const nextIds = trackIds.filter(id => id !== trackId);
       const nextStored = storedTracks.filter(t => t.id !== trackId);
-      (pl as any).trackIds = nextIds;
-      (pl as any).storedTracks = nextStored;
+      pl.trackIds = nextIds;
+      pl.storedTracks = nextStored;
       const count = nextIds.length;
-      (pl as any).subtitle = `歌单 • ${count} 首歌曲|en:Playlist • ${count} songs`;
+      pl.subtitle = `歌单 • ${count} 首歌曲|en:Playlist • ${count} songs`;
       // Update cover: use first remaining track's cover, or clear
-      (pl as any).cover = nextStored.length > 0 ? (nextStored[0].cover || '') : '';
+      pl.cover = nextStored.length > 0 ? (nextStored[0].cover || '') : '';
       set({ customPlaylists: playlists });
     },
 
@@ -349,12 +349,11 @@ export const useSpotifyStore = createAppStoreWithActions<SpotifyState, SpotifyAc
     // ── Settings ──────────────────────────────────────────────
 
     updateSettings: (category, patch) => {
-      set(state => ({
-        settings: {
-          ...state.settings,
-          [category]: { ...(state.settings[category] as any), ...patch },
-        },
-      }));
+      set(state => {
+        const settings = { ...state.settings };
+        settings[category] = { ...settings[category], ...patch };
+        return { settings };
+      });
     },
 
     // ── Accounts ──────────────────────────────────────────────

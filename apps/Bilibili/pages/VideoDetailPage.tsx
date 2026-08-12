@@ -22,6 +22,37 @@ export function setPendingNewFavFolder(id: string) {
     pendingNewFavFolderId = id;
 }
 
+const TRIPLE_PRESS_DURATION = 800;
+
+// 长按三连的进度环：逐帧进度 state 隔离在这个只含 SVG 的小组件里自绘，
+// 避免父级 1300+ 行的详情页整页 60fps 重渲染
+const TripleProgressRing: React.FC<{ duration: number }> = ({ duration }) => {
+    const [progress, setProgress] = useState(0);
+    useEffect(() => {
+        let raf = 0;
+        const start = realNow();
+        const tick = () => {
+            const p = Math.min(100, ((realNow() - start) / duration) * 100);
+            setProgress(p);
+            if (p < 100) raf = requestAnimationFrame(tick);
+        };
+        raf = requestAnimationFrame(tick);
+        return () => cancelAnimationFrame(raf);
+    }, [duration]);
+    return (
+        <svg className="absolute inset-[-6px] w-[40px] h-[40px] rotate-[-90deg] pointer-events-none" viewBox="0 0 36 36">
+            <path
+                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                fill="none"
+                stroke="#FB7299"
+                strokeWidth="2.5"
+                strokeDasharray={`${progress}, 100`}
+                strokeLinecap="round"
+            />
+        </svg>
+    );
+};
+
 const CommentItem: React.FC<{ comment: CommentReply }> = ({ comment }) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const { now } = useSystemTime();
@@ -214,10 +245,10 @@ export const VideoDetailPage: React.FC = () => {
     const [controlsVisible, setControlsVisible] = useState(true);
     const [hideTimerKey, setHideTimerKey] = useState(0);
 
-    const [longPressProgress, setLongPressProgress] = useState(0);
-    const animationFrameRef = useRef<any>(null);
+    // 长按三连：父级只保存“是否在按压”这一布尔态；逐帧进度由 TripleProgressRing 自绘
+    const [isTriplePressing, setIsTriplePressing] = useState(false);
+    const triplePressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const isLongPressTriggeredRef = useRef(false);
-    const isPressingRef = useRef(false);
     const [toast, setToast] = useState<{ show: boolean, msg: string }>({ show: false, msg: '' });
 
     const [showFavToast, setShowFavToast] = useState(false);
@@ -353,39 +384,24 @@ export const VideoDetailPage: React.FC = () => {
         // Prevent default browser actions if needed, but scrolling is important.
         // Usually Pointer Events are fine. 
         isLongPressTriggeredRef.current = false;
-        isPressingRef.current = true;
 
-        if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
-
-        const startTime = realNow();
-        const duration = 800;
-
-        const animate = () => {
-            if (!isPressingRef.current) return;
-
-            const elapsed = realNow() - startTime;
-            const p = Math.min(100, (elapsed / duration) * 100);
-            setLongPressProgress(p);
-
-            if (p >= 100) {
-                isLongPressTriggeredRef.current = true;
-                isPressingRef.current = false; // Stop pressing
-                const res = tripleAction(video!.id);
-                showToast(res.msg);
-                setLongPressProgress(0);
-                return;
-            }
-            animationFrameRef.current = requestAnimationFrame(animate);
-        };
-        animationFrameRef.current = requestAnimationFrame(animate);
+        if (triplePressTimerRef.current) clearTimeout(triplePressTimerRef.current);
+        setIsTriplePressing(true);
+        triplePressTimerRef.current = setTimeout(() => {
+            triplePressTimerRef.current = null;
+            isLongPressTriggeredRef.current = true;
+            const res = tripleAction(video!.id);
+            showToast(res.msg);
+            setIsTriplePressing(false);
+        }, TRIPLE_PRESS_DURATION);
     };
 
     const handleLikeEnd = (e: React.PointerEvent) => {
-        isPressingRef.current = false;
-        if (animationFrameRef.current) {
-            cancelAnimationFrame(animationFrameRef.current);
+        if (triplePressTimerRef.current) {
+            clearTimeout(triplePressTimerRef.current);
+            triplePressTimerRef.current = null;
         }
-        setLongPressProgress(0);
+        setIsTriplePressing(false);
 
         // Click Logic
         if (!isLongPressTriggeredRef.current) {
@@ -395,12 +411,12 @@ export const VideoDetailPage: React.FC = () => {
     };
 
     const handleLikeCancel = (e: React.PointerEvent) => {
-        isPressingRef.current = false;
         isLongPressTriggeredRef.current = false;
-        if (animationFrameRef.current) {
-            cancelAnimationFrame(animationFrameRef.current);
+        if (triplePressTimerRef.current) {
+            clearTimeout(triplePressTimerRef.current);
+            triplePressTimerRef.current = null;
         }
-        setLongPressProgress(0);
+        setIsTriplePressing(false);
     };
 
     const handleCoinClick = () => {
@@ -1028,18 +1044,7 @@ export const VideoDetailPage: React.FC = () => {
                                 )}
                             >
                                 <div className="relative w-7 h-7 flex items-center justify-center">
-                                    {longPressProgress > 0 && (
-                                        <svg className="absolute inset-[-6px] w-[40px] h-[40px] rotate-[-90deg] pointer-events-none" viewBox="0 0 36 36">
-                                            <path
-                                                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                                                fill="none"
-                                                stroke="#FB7299"
-                                                strokeWidth="2.5"
-                                                strokeDasharray={`${longPressProgress}, 100`}
-                                                strokeLinecap="round"
-                                            />
-                                        </svg>
-                                    )}
+                                    {isTriplePressing && <TripleProgressRing duration={TRIPLE_PRESS_DURATION} />}
                                     <CircleDollarSign
                                         size={24}
                                         className={`transition-colors ${coined ? 'fill-[#FB7299] text-app-primary' : 'text-[#61666D]'}`}
@@ -1064,18 +1069,7 @@ export const VideoDetailPage: React.FC = () => {
                                 data-action="video.intro.fav.toggle"
                             >
                                 <div className="relative w-7 h-7 flex items-center justify-center">
-                                    {longPressProgress > 0 && (
-                                        <svg className="absolute inset-[-6px] w-[40px] h-[40px] rotate-[-90deg] pointer-events-none" viewBox="0 0 36 36">
-                                            <path
-                                                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                                                fill="none"
-                                                stroke="#FB7299"
-                                                strokeWidth="2.5"
-                                                strokeDasharray={`${longPressProgress}, 100`}
-                                                strokeLinecap="round"
-                                            />
-                                        </svg>
-                                    )}
+                                    {isTriplePressing && <TripleProgressRing duration={TRIPLE_PRESS_DURATION} />}
                                     <Star
                                         size={24}
                                         className={`transition-colors ${favored ? 'fill-[#FB7299] text-app-primary' : 'text-[#61666D]'}`}

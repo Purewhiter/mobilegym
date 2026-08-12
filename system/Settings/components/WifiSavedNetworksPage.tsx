@@ -1,4 +1,5 @@
 import React, { useMemo, useRef, useState } from 'react';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { SettingsHeader } from './SettingsHeader';
 import { useAppNavigate } from '../navigation';
 import { PreferenceItem } from './PreferenceItem';
@@ -10,7 +11,9 @@ import { stringsEn } from '../res/strings.en';
 import { useAppStrings } from '@/os/useAppStrings';
 
 export const WifiSavedNetworksPage: React.FC<{ title: string }> = ({ title }) => {
-  const { go } = useAppNavigate();
+  const { go, back } = useAppNavigate();
+  const { pageId } = useParams();
+  const [searchParams] = useSearchParams();
   const s = useAppStrings(strings, stringsEn);
   const savedNetworks = useWifiSavedNetworks();
   const connectedSsid = useWifiConnectedSsid();
@@ -27,8 +30,8 @@ export const WifiSavedNetworksPage: React.FC<{ title: string }> = ({ title }) =>
     }, 1600);
   };
 
-  const [ssidDialogOpen, setSsidDialogOpen] = useState(false);
-  const [pwdDialogOpen, setPwdDialogOpen] = useState(false);
+  const ssidDialogOpen = searchParams.get('addNetwork') === 'ssid';
+  const pwdDialogOpen = searchParams.get('addNetwork') === 'password';
   const pendingSsidRef = useRef('');
 
   const list = useMemo(() => {
@@ -61,7 +64,7 @@ export const WifiSavedNetworksPage: React.FC<{ title: string }> = ({ title }) =>
               summary={s.manually_add_a_wlan_network}
               showDivider={list.length > 0}
               showChevron={true}
-              onClick={() => setSsidDialogOpen(true)}
+              onClick={() => go('page.addNetwork.ssid.open', { pageId: pageId ?? '' })}
             />
             {list.map((n, idx) => {
               const isConnected = n.ssid === connectedSsid;
@@ -89,11 +92,10 @@ export const WifiSavedNetworksPage: React.FC<{ title: string }> = ({ title }) =>
         open={ssidDialogOpen}
         title={s.add_network}
         placeholder={s.network_name_ssid}
-        onClose={() => setSsidDialogOpen(false)}
+        onClose={() => back()}
         onConfirm={(ssid) => {
           pendingSsidRef.current = ssid;
-          setSsidDialogOpen(false);
-          setPwdDialogOpen(true);
+          go('page.addNetwork.password.open', { pageId: pageId ?? '' });
         }}
       />
       <InputDialog
@@ -102,7 +104,7 @@ export const WifiSavedNetworksPage: React.FC<{ title: string }> = ({ title }) =>
         placeholder={s.leave_empty_for_open_networks}
         confirmText={s.add}
         allowEmpty={true}
-        onClose={() => setPwdDialogOpen(false)}
+        onClose={() => back()}
         onConfirm={(pwd) => {
           const ssid = pendingSsidRef.current;
           addWifiSavedNetwork({
@@ -111,8 +113,9 @@ export const WifiSavedNetworksPage: React.FC<{ title: string }> = ({ title }) =>
             password: pwd || undefined,
             autoJoin: true,
           });
-          setPwdDialogOpen(false);
           showToast(s.added_to_saved_networks);
+          // 弹出两级弹窗历史（ssid → password）回到列表
+          back(2);
         }}
       />
 

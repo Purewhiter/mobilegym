@@ -8,6 +8,7 @@ import { useWechatStore } from '../../state';
 import { useShallow } from 'zustand/react/shallow';
 import { useWechatGestures } from '../../hooks/useWechatGestures';
 import { useLocale } from '@/os/locale';
+import type { ProfileSubject } from '../../types';
 const asset = (r: unknown) => { const str = String(r ?? '').trim(); return (!str || str.startsWith('http')) ? str : `/@app-assets/Wechat/${str}`; };
 
 export const UserProfile: React.FC = () => {
@@ -66,14 +67,14 @@ export const UserProfile: React.FC = () => {
           blacklistedNotice: '已添加至黑名单，你将不再收到对方的消息',
         };
 
-    const contact = isMe ? user :
+    const contact: ProfileSubject = isMe ? user :
                     contactFromList ||
                     nearbyPerson ||
                     { wxid: 'unknown', name: text.unknownUser, avatar: '', category: '', region: '', gender: '' };
 
-    const lastMoment = moments.find(m => m.wxid === (contact as any).wxid);
-    const isBlacklisted = (contact as any).isBlacklisted;
-    const isChatOnly = (contact as any).permissionMode === 'chatOnly';
+    const lastMoment = moments.find(m => m.wxid === contact.wxid);
+    const isBlacklisted = contact.isBlacklisted;
+    const isChatOnly = contact.permissionMode === 'chatOnly';
 
     // 附近的人的资料页面
     if (isNearbyPerson) {
@@ -83,27 +84,27 @@ export const UserProfile: React.FC = () => {
                 <div className="bg-app-surface px-6 pt-6 pb-6 flex">
                     <div className="w-(--app-avatar-width-64) h-(--app-avatar-height-64) rounded-[6px] mr-5 bg-(--app-c-me-avatar-bg) overflow-hidden flex-shrink-0">
                         <img 
-                            src={(contact as any).avatar || asset('avatars/avatar_default.jpg')} 
+                            src={contact.avatar || asset('avatars/avatar_default.jpg')} 
                             className="w-full h-full object-cover" 
                             alt="" 
                         />
                     </div>
                     <div className="flex-1 flex flex-col justify-center min-w-0">
                         <div className="flex items-center text-(--app-item-text-size-22) font-bold text-app-text mb-1.5 leading-none">
-                            <span className="truncate">{(contact as any).name}</span>
-                            {(contact as any).gender === t.common_female && (
+                            <span className="truncate">{contact.name}</span>
+                            {contact.gender === t.common_female && (
                                 <div className="ml-1.5 text-(--app-c-common-link-pink)">
                                     <IcUser size={dimens.icSizeChevronSm} fill="currentColor" strokeWidth={0} />
                                 </div>
                             )}
-                            {(contact as any).gender === t.common_male && (
+                            {contact.gender === t.common_male && (
                                 <div className="ml-1.5 text-(--app-c-common-link-blue)">
                                     <IcUser size={dimens.icSizeChevronSm} fill="currentColor" strokeWidth={0} />
                                 </div>
                             )}
                         </div>
-                        <div className="text-(--app-c-tw-text-gray-500) text-(--app-settings-group-title-size) mb-0.5 font-normal">{text.distance}: {(contact as any).distance || text.unknown}</div>
-                        <div className="text-(--app-c-tw-text-gray-500) text-(--app-settings-group-title-size) font-normal">{text.region}: {(contact as any).region || text.unknown}</div>
+                        <div className="text-(--app-c-tw-text-gray-500) text-(--app-settings-group-title-size) mb-0.5 font-normal">{text.distance}: {contact.distance || text.unknown}</div>
+                        <div className="text-(--app-c-tw-text-gray-500) text-(--app-settings-group-title-size) font-normal">{text.region}: {contact.region || text.unknown}</div>
                     </div>
                 </div>
 
@@ -113,10 +114,10 @@ export const UserProfile: React.FC = () => {
                         <span className="text-(--app-settings-item-text-size) text-app-text font-medium">{t.contacts_friend_info}</span>
                         <IcNavForward size={dimens.icSizeChevron} className="text-(--app-c-me-chevron-color)" strokeWidth={dimens.icStrokeWidth} />
                     </div>
-                    {(contact as any).signature && (
+                    {contact.signature && (
                         <div className="flex mb-2">
                             <span className="text-(--app-settings-group-title-size) text-(--app-c-tw-text-gray-400) w-(--app-contacts-user-profile-width-50) flex-shrink-0">{text.signature}</span>
-                            <span className="text-(--app-settings-group-title-size) text-app-text flex-1">{(contact as any).signature}</span>
+                            <span className="text-(--app-settings-group-title-size) text-app-text flex-1">{contact.signature}</span>
                         </div>
                     )}
                     <div className="flex">
@@ -149,27 +150,27 @@ export const UserProfile: React.FC = () => {
             <div className="bg-app-surface px-6 pt-6 pb-6 flex">
                 <div className="w-(--app-avatar-width-64) h-(--app-avatar-height-64) rounded-[6px] mr-5 bg-(--app-c-me-avatar-bg) overflow-hidden flex-shrink-0">
                     <img 
-                        src={(contact as any).avatar || asset('avatars/avatar_default.jpg')} 
+                        src={contact.avatar || asset('avatars/avatar_default.jpg')} 
                         className="w-full h-full object-cover" 
                         alt="" 
                     />
                 </div>
                 <div className="flex-1 flex flex-col justify-center min-w-0">
                     <div className="flex items-center text-(--app-item-text-size-22) font-bold text-app-text mb-1 leading-none">
-                        <span className="truncate">{(contact as any).name}</span>
-                        {(contact as any).gender === t.common_female && (
+                        <span className="truncate">{contact.name}</span>
+                        {contact.gender === t.common_female && (
                             <div className="ml-1.5 text-(--app-c-common-link-pink)">
                                 <IcUser size={dimens.icSizeChevronSm} fill="currentColor" strokeWidth={0} />
                             </div>
                         )}
-                        {(contact as any).gender === t.common_male && (
+                        {contact.gender === t.common_male && (
                             <div className="ml-1.5 text-(--app-c-common-link-blue)">
                                 <IcUser size={dimens.icSizeChevronSm} fill="currentColor" strokeWidth={0} />
                             </div>
                         )}
                     </div>
-                    <div className="text-(--app-c-tw-text-gray-400) text-(--app-settings-group-title-size) mb-1 font-normal truncate">{text.wechatId}: {(contact as any).wxid || text.notSet}</div>
-                    <div className="text-(--app-c-tw-text-gray-400) text-(--app-settings-group-title-size) font-normal truncate">{text.region}: {(contact as any).region || text.unknown}</div>
+                    <div className="text-(--app-c-tw-text-gray-400) text-(--app-settings-group-title-size) mb-1 font-normal truncate">{text.wechatId}: {contact.wxid || text.notSet}</div>
+                    <div className="text-(--app-c-tw-text-gray-400) text-(--app-settings-group-title-size) font-normal truncate">{text.region}: {contact.region || text.unknown}</div>
                 </div>
             </div>
 
@@ -177,7 +178,7 @@ export const UserProfile: React.FC = () => {
             {!isMe && (
                 <div 
                     className="bg-app-surface flex items-center px-4 py-4 active:bg-(--app-c-tw-bg-gray-50) cursor-pointer min-h-(--app-item-height-72) border-t border-(--app-c-misc-border-light)"
-                    {...bindTap<HTMLDivElement>('friendInfo.open', { params: { id: (contact as any).wxid } })}
+                    {...bindTap<HTMLDivElement>('friendInfo.open', { params: { id: contact.wxid } })}
                 >
                     <div className="flex-1 flex flex-col justify-center">
                         <div className="text-(--app-settings-item-text-size) text-app-text font-normal mb-0.5">{t.contacts_friend_info}</div>
@@ -200,7 +201,7 @@ export const UserProfile: React.FC = () => {
             {!isBlacklisted && (
                 <div 
                     className={`bg-app-surface flex items-center px-4 py-3 active:bg-(--app-c-tw-bg-gray-50) cursor-pointer h-(--app-settings-item-height) border-b border-gray-100/50 ${isMe ? 'mt-2 border-t' : ''}`} 
-                    {...bindTap<HTMLDivElement>('moments.user.open', { params: { wxid: (contact as any).wxid } })}
+                    {...bindTap<HTMLDivElement>('moments.user.open', { params: { wxid: contact.wxid } })}
                 >
                     <span className="text-(--app-settings-item-text-size) text-app-text w-24 flex-shrink-0">{t.discover_moments}</span>
                     <div className="flex-1 flex items-center overflow-hidden">
@@ -224,7 +225,7 @@ export const UserProfile: React.FC = () => {
                 <div className="bg-app-surface">
                     <button 
                         className="w-full h-(--app-settings-item-height) text-(--app-c-address-link-text) font-bold text-(--app-settings-item-text-size) flex justify-center items-center active:bg-(--app-c-tw-bg-gray-50)" style={{ transition: 'color var(--app-duration-short) var(--app-easing-standard), background-color var(--app-duration-short) var(--app-easing-standard), border-color var(--app-duration-short) var(--app-easing-standard)' }}
-                        {...bindTap<HTMLButtonElement>('chat.open', { params: { id: (contact as any).wxid } })}
+                        {...bindTap<HTMLButtonElement>('chat.open', { params: { id: contact.wxid } })}
                     >
                         <IcMessage size={dimens.icSizeToolbar} className="mr-2" strokeWidth={1.5} /> {text.sendMessage}
                     </button>

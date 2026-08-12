@@ -97,12 +97,21 @@ function haversineMeters(lat1: number, lng1: number, lat2: number, lng2: number)
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
+// routes.json 体积大（约 8MB），用 fetch 加载以避开 Vite ESM 转换管线
+// （否则会被打进 JS chunk），模式同 apps/Bilibili/data/loader.ts。
+const routesJsonUrl = new URL('../data/routes.json', import.meta.url).href;
+
 async function loadRoutesSnapshot(): Promise<RoutesSnapshot | null> {
   if (!routesSnapshotPromise) {
-    routesSnapshotPromise = import('../data/routes.json').then(
-      (m) => (m.default ?? m) as RoutesSnapshot,
-      () => null,
-    );
+    routesSnapshotPromise = fetch(routesJsonUrl)
+      .then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status} for ${routesJsonUrl}`);
+        return r.json();
+      })
+      .then(
+        (data) => data as RoutesSnapshot,
+        () => null,
+      );
   }
   return routesSnapshotPromise;
 }

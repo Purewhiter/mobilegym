@@ -42,7 +42,7 @@ export const PersonalRoomPage: React.FC = () => {
                 </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto no-scrollbar px-4 pb-20" data-scroll-container="main" data-scroll-direction="vertical">
+            <div className="flex-1 overflow-y-auto no-scrollbar px-4 pb-4" data-scroll-container="main" data-scroll-direction="vertical">
                 {/* Profile Section */}
                 <div className="bg-app-surface rounded-xl p-6 mt-2 mb-3 shadow-sm relative">
                     <div className="flex items-start justify-between mb-4">
@@ -91,8 +91,8 @@ export const PersonalRoomPage: React.FC = () => {
                 </div>
             </div>
 
-            {/* Bottom Button */}
-            <div className="fixed bottom-0 left-0 right-0 bg-app-surface border-t border-gray-100 px-4 py-4">
+            {/* Bottom Button：流内尾部元素（CSS zoom 下 fixed 定位会偏移） */}
+            <div className="shrink-0 bg-app-surface border-t border-gray-100 px-4 py-4">
                 <button className="w-full py-3 bg-app-primary text-white rounded-lg font-medium active:opacity-90 text-[15px]">
                     {s.personal_room_enter}
                 </button>

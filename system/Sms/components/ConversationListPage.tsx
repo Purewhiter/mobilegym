@@ -1,5 +1,5 @@
 import React from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { IcSearch, IcAdd, IcClose } from '../res/icons';
 import { ConversationItem } from './ConversationItem';
 import { Toast } from '@/os/components/Toast';
@@ -32,13 +32,12 @@ const SmsIcon: React.FC<{ name: string; size?: number }> = ({ name, size = 24 })
 };
 
 export const ConversationListPage: React.FC = () => {
-    const { go } = useSmsGestures();
+    const { go, back } = useSmsGestures();
     const { conversations, messagesByConversationId } = useSmsProviderState();
     const s = useAppStrings(strings, stringsEn);
     const [query, setQuery] = React.useState('');
     const [toast, setToast] = React.useState<{ visible: boolean; message: string }>({ visible: false, message: '' });
     const [searchParams, setSearchParams] = useSearchParams();
-    const routerNavigate = useNavigate();
     const menuConvId = searchParams.get('contextMenu');
     const menuConv = React.useMemo(
         () => (menuConvId ? conversations.find((c) => c.id === menuConvId) : null) ?? null,
@@ -52,7 +51,7 @@ export const ConversationListPage: React.FC = () => {
         setSearchParams((p) => { p.set('contextMenu', conv.id); return p; });
     };
     const closeMenu = () => {
-        if (menuConvId) routerNavigate(-1);
+        if (menuConvId) back();
     };
 
     const handlePointerDown = (conv: Conversation) => {

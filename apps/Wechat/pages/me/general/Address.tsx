@@ -15,12 +15,18 @@ function nextAddressId(): string {
 }
 export const AddressListPage = () => {
     const addresses = useWechatStore(s => s.user.addresses);
+    const { bindTap } = useWechatGestures();
 
     if (addresses.length === 0) {
         return (
             <div className="min-h-full bg-app-surface flex flex-col items-center justify-center -mt-20">
                 <div className="text-(--app-c-tw-text-gray-400) text-(--app-chat-bubble-text-size) mb-2">暂时没有地址信息</div>
-                <div className="text-(--app-c-address-link-text) text-(--app-chat-bubble-text-size)">添加地址</div>
+                <div
+                    className="text-(--app-c-address-link-text) text-(--app-chat-bubble-text-size) cursor-pointer active:opacity-60"
+                    {...bindTap<HTMLDivElement>('profile.address.add.open')}
+                >
+                    添加地址
+                </div>
             </div>
         );
     }

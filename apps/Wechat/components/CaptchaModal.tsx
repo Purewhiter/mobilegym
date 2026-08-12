@@ -40,14 +40,15 @@ export const CaptchaModal: React.FC<CaptchaModalProps> = ({ open, onClose, onSuc
 
   if (!open) return null;
 
-  const handleDragStart = (e: React.MouseEvent | React.TouchEvent) => {
+  const handleDragStart = (e: React.PointerEvent<HTMLDivElement>) => {
+    e.currentTarget.setPointerCapture(e.pointerId);
     setIsDragging(true);
   };
 
-  const handleDragMove = (e: React.MouseEvent | React.TouchEvent) => {
+  const handleDragMove = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!isDragging || !sliderRef.current) return;
     
-    const clientX = 'touches' in e ? e.touches[0].clientX : (e as React.MouseEvent).clientX;
+    const clientX = e.clientX;
     const rect = sliderRef.current.getBoundingClientRect();
     const knobWidth = 54;
     const usableWidth = Math.max(1, rect.width - knobWidth);
@@ -85,7 +86,7 @@ export const CaptchaModal: React.FC<CaptchaModalProps> = ({ open, onClose, onSuc
   const progressWidthPx = Math.max(0, Math.min(knobLeftPx + knobWidth, trackWidth));
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onMouseMove={handleDragMove} onTouchMove={handleDragMove} onMouseUp={handleDragEnd} onTouchEnd={handleDragEnd}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
       <div className="bg-white w-[340px] rounded-md overflow-hidden flex flex-col">
         <div className="bg-[#1b77ff] text-white px-4 pt-3 pb-3 relative">
           <button onClick={onClose} className="absolute right-2 top-2 p-2">
@@ -122,9 +123,11 @@ export const CaptchaModal: React.FC<CaptchaModalProps> = ({ open, onClose, onSuc
           <div className="mt-3">
             <div
               ref={sliderRef}
-              className="relative h-11 bg-[#e6e6e6] rounded-sm overflow-hidden"
-              onMouseDown={handleDragStart}
-              onTouchStart={handleDragStart}
+              className="relative h-11 bg-[#e6e6e6] rounded-sm overflow-hidden touch-none"
+              onPointerDown={handleDragStart}
+              onPointerMove={handleDragMove}
+              onPointerUp={handleDragEnd}
+              onPointerCancel={handleDragEnd}
             >
               <div className="absolute inset-0 flex items-center justify-center text-[12px] text-gray-500 select-none">
                 {success ? '验证通过' : ''}

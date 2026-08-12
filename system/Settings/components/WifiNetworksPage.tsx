@@ -1,4 +1,5 @@
 import React, { useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { IcWifi, IcLock, IcUnlock } from '../res/icons';
 import { useAppNavigate } from '../navigation';
 import { SettingsHeader } from './SettingsHeader';
@@ -27,7 +28,9 @@ function securityLabel(sec: string): string {
 }
 
 export const WifiNetworksPage: React.FC = () => {
-  const { go } = useAppNavigate();
+  const { go, back } = useAppNavigate();
+  const { pageId } = useParams();
+  const [searchParams] = useSearchParams();
   const s = useAppStrings(strings, stringsEn);
   const [wifiEnabled, setWifiEnabled] = useBooleanPreference('wifi_enable', true);
   const savedNetworks = useWifiSavedNetworks();
@@ -57,7 +60,8 @@ export const WifiNetworksPage: React.FC = () => {
     }, 1600);
   };
 
-  const [pwdOpen, setPwdOpen] = useState(false);
+  // 密码弹窗可见性由 URL（?connectNetwork=password）驱动，back 关闭；待连接网络留在 ref
+  const pwdOpen = searchParams.get('connectNetwork') === 'password';
   const pendingRef = useRef<{ ssid: string; security: string }>({ ssid: '', security: 'WPA2' });
 
   const list = useMemo(() => {
@@ -117,7 +121,7 @@ export const WifiNetworksPage: React.FC = () => {
       return;
     }
     pendingRef.current = { ssid, security };
-    setPwdOpen(true);
+    go('page.connectNetwork.password.open', { pageId: pageId ?? '' });
   };
 
   return (
@@ -198,11 +202,11 @@ export const WifiNetworksPage: React.FC = () => {
         inputType="password"
         allowEmpty={false}
         confirmText={s.connect}
-        onClose={() => setPwdOpen(false)}
+        onClose={() => back()}
         onConfirm={(pwd) => {
           const { ssid, security } = pendingRef.current;
           connectTo(ssid, security, pwd);
-          setPwdOpen(false);
+          back();
         }}
       />
 

@@ -211,15 +211,61 @@ export const PaymentConfirmationPage: React.FC = () => {
                 </div>
 
                 <div className="bg-[#f2f2f2] grid grid-cols-3 gap-[1px]">
-                    {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => (
-                        <button
-                            key={n}
-                            className="bg-white py-4 text-2xl font-medium active:bg-gray-200"
-                            {...bindTap<HTMLButtonElement>({ kind: 'action', id: `wechat.pay.num.${n}` as any }, { onTrigger: () => handlePasswordInput(n.toString()) })}
-                        >
-                            {n}
-                        </button>
-                    ))}
+                    {/* 规范：action ID 必须是字面量绑定（禁止动态拼接），静态工具才能发现 */}
+                    <button
+                        className="bg-white py-4 text-2xl font-medium active:bg-gray-200"
+                        {...bindTap<HTMLButtonElement>({ kind: 'action', id: 'wechat.pay.num.1' }, { onTrigger: () => handlePasswordInput('1') })}
+                    >
+                        1
+                    </button>
+                    <button
+                        className="bg-white py-4 text-2xl font-medium active:bg-gray-200"
+                        {...bindTap<HTMLButtonElement>({ kind: 'action', id: 'wechat.pay.num.2' }, { onTrigger: () => handlePasswordInput('2') })}
+                    >
+                        2
+                    </button>
+                    <button
+                        className="bg-white py-4 text-2xl font-medium active:bg-gray-200"
+                        {...bindTap<HTMLButtonElement>({ kind: 'action', id: 'wechat.pay.num.3' }, { onTrigger: () => handlePasswordInput('3') })}
+                    >
+                        3
+                    </button>
+                    <button
+                        className="bg-white py-4 text-2xl font-medium active:bg-gray-200"
+                        {...bindTap<HTMLButtonElement>({ kind: 'action', id: 'wechat.pay.num.4' }, { onTrigger: () => handlePasswordInput('4') })}
+                    >
+                        4
+                    </button>
+                    <button
+                        className="bg-white py-4 text-2xl font-medium active:bg-gray-200"
+                        {...bindTap<HTMLButtonElement>({ kind: 'action', id: 'wechat.pay.num.5' }, { onTrigger: () => handlePasswordInput('5') })}
+                    >
+                        5
+                    </button>
+                    <button
+                        className="bg-white py-4 text-2xl font-medium active:bg-gray-200"
+                        {...bindTap<HTMLButtonElement>({ kind: 'action', id: 'wechat.pay.num.6' }, { onTrigger: () => handlePasswordInput('6') })}
+                    >
+                        6
+                    </button>
+                    <button
+                        className="bg-white py-4 text-2xl font-medium active:bg-gray-200"
+                        {...bindTap<HTMLButtonElement>({ kind: 'action', id: 'wechat.pay.num.7' }, { onTrigger: () => handlePasswordInput('7') })}
+                    >
+                        7
+                    </button>
+                    <button
+                        className="bg-white py-4 text-2xl font-medium active:bg-gray-200"
+                        {...bindTap<HTMLButtonElement>({ kind: 'action', id: 'wechat.pay.num.8' }, { onTrigger: () => handlePasswordInput('8') })}
+                    >
+                        8
+                    </button>
+                    <button
+                        className="bg-white py-4 text-2xl font-medium active:bg-gray-200"
+                        {...bindTap<HTMLButtonElement>({ kind: 'action', id: 'wechat.pay.num.9' }, { onTrigger: () => handlePasswordInput('9') })}
+                    >
+                        9
+                    </button>
                     <div className="bg-[#f2f2f2]" />
                     <button
                         className="bg-white py-4 text-2xl font-medium active:bg-gray-200"

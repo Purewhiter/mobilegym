@@ -97,8 +97,7 @@ const PickerColumn = <T extends string | number>({
         ref={containerRef}
         className="relative h-full overflow-y-auto no-scrollbar"
         onScroll={handleScroll}
-        onTouchEnd={snapToNearest}
-        onMouseUp={snapToNearest}
+        onPointerUp={snapToNearest}
         style={{ scrollSnapType: 'y mandatory' }}
       >
         <div style={{ height: PAD_HEIGHT }} />

@@ -311,6 +311,8 @@ export const NAVIGATION_DECLARATION = {
       entryPoint: 'none',
       scrollContainers: MAIN_SCROLL,
       // 搜索结果页：出现 Tab，且必须带 q
+      // menu=true：已关注菜单（URL 驱动、可回退关闭）；仅综合/用户 Tab 有用户卡片入口，
+      // 打开时保留 tab（菜单浮层下的内容不变），因此枚举两个组合态
       uiStates: [
         { id: 'searchResults.tab.comprehensive', search: { tab: 'comprehensive' }, description: '搜索结果-综合' },
         {
@@ -340,12 +342,31 @@ export const NAVIGATION_DECLARATION = {
               scope: 'item',
               paramsSchema: { mid: 'string' },
             },
-            { id: 'search.user.menu.open', label: '搜索-已关注菜单：打开', behavior: 'other' },
-            { id: 'search.user.menu.close', label: '搜索-已关注菜单：关闭', behavior: 'other' },
           ],
         },
         { id: 'searchResults.tab.movie', search: { tab: 'movie' }, description: '搜索结果-影视' },
         { id: 'searchResults.tab.article', search: { tab: 'article' }, description: '搜索结果-图文' },
+        {
+          id: 'searchResults.comprehensive.menu',
+          search: { tab: 'comprehensive', menu: 'true' },
+          description: '搜索结果-综合（已关注菜单，菜单内可取消关注）',
+        },
+        {
+          id: 'searchResults.user.menu',
+          search: { tab: 'user', menu: 'true' },
+          description: '搜索结果-用户（已关注菜单，菜单内可取消关注）',
+        },
+        // 直播/图文 Tab 目前回落渲染综合结果面板（含用户卡片），菜单入口同样存在
+        {
+          id: 'searchResults.live.menu',
+          search: { tab: 'live', menu: 'true' },
+          description: '搜索结果-直播（已关注菜单，菜单内可取消关注）',
+        },
+        {
+          id: 'searchResults.article.menu',
+          search: { tab: 'article', menu: 'true' },
+          description: '搜索结果-图文（已关注菜单，菜单内可取消关注）',
+        },
       ],
       queryParams: { q: 'string' },
       description: '搜索（结果页）',
@@ -569,7 +590,22 @@ export const NAVIGATION_DECLARATION = {
     { path: '/settings/message/fan', component: 'SettingsMessageFanPage', params: {}, entryPoint: 'none', scrollContainers: MAIN_SCROLL, uiStates: [{ id: 'settings.message.fan.base', search: {}, description: '新增粉丝消息提醒' }], queryParams: {}, description: '新增粉丝消息提醒' },
     { path: '/settings/message/support', component: 'SettingsSupportPage', params: {}, entryPoint: 'none', scrollContainers: MAIN_SCROLL, uiStates: [{ id: 'settings.message.support.base', search: {}, description: '应援团' }], queryParams: {}, description: '应援团' },
     { path: '/settings/message/unfollow', component: 'SettingsUnfollowPage', params: {}, entryPoint: 'none', scrollContainers: MAIN_SCROLL, uiStates: [{ id: 'settings.message.unfollow.base', search: {}, description: '未关注人消息' }], queryParams: {}, description: '未关注人消息' },
-    { path: '/settings/harass', component: 'SettingsHarassPage', params: {}, entryPoint: 'none', scrollContainers: MAIN_SCROLL, uiStates: [{ id: 'settings.harass.base', search: {}, description: '防骚扰和互动人群设置' }], queryParams: {}, description: '防骚扰和互动人群设置' },
+    {
+      path: '/settings/harass',
+      component: 'SettingsHarassPage',
+      params: {},
+      entryPoint: 'none',
+      scrollContainers: MAIN_SCROLL,
+      // sheet=<key>：长期防护三项的人群选择底部弹窗（URL 驱动、可回退关闭）
+      uiStates: [
+        { id: 'settings.harass.base', search: {}, description: '防骚扰和互动人群设置' },
+        { id: 'settings.harass.sheet.comment', search: { sheet: 'comment' }, description: '谁可以发评论-人群选择弹窗' },
+        { id: 'settings.harass.sheet.danmaku', search: { sheet: 'danmaku' }, description: '谁可以发弹幕-人群选择弹窗' },
+        { id: 'settings.harass.sheet.pm', search: { sheet: 'pm' }, description: '谁可以发私信-人群选择弹窗' },
+      ],
+      queryParams: {},
+      description: '防骚扰和互动人群设置',
+    },
     { path: '/settings/storage', component: 'SettingsStoragePage', params: {}, entryPoint: 'none', scrollContainers: MAIN_SCROLL, uiStates: [{ id: 'settings.storage.base', search: {}, description: '清理存储空间' }], queryParams: {}, description: '清理存储空间' },
     { path: '/settings/other', component: 'SettingsOtherPage', params: {}, entryPoint: 'none', scrollContainers: MAIN_SCROLL, uiStates: [{ id: 'settings.other.base', search: {}, description: '其他设置(主)' }], queryParams: {}, description: '其他设置(主)' },
     { path: '/settings/other/watermark', component: 'SettingsWatermarkPage', params: {}, entryPoint: 'none', scrollContainers: MAIN_SCROLL, uiStates: [{ id: 'settings.other.watermark.base', search: {}, description: '图片水印设置' }], queryParams: {}, description: '图片水印设置' },
@@ -735,7 +771,8 @@ export const NAVIGATION_DECLARATION = {
         { path: '/user/:mid', search: { tab: '*' } },
         { path: '/user/:mid', search: { menu: 'true' } },
         { path: '/ranking', search: { tab: '*' } },
-        { path: '/search/results', search: { tab: '*' } },
+        // 搜索结果页的视频卡片在已关注菜单（menu=true）打开时被遮挡
+        { path: '/search/results', search: { tab: '*', menu: null } },
         '/partitions/:label',
         '/profile/fav/:folderId',
         '/favorites/folder/:folderId',
@@ -818,7 +855,8 @@ export const NAVIGATION_DECLARATION = {
         { path: '/video/:bvid', search: { tab: 'comment' } },
         { path: '/video/:bvid', search: { tab: 'intro', menu: 'true' } },
         { path: '/following', search: { tab: '*' } },
-        { path: '/search/results', search: { tab: '*' } },
+        // 搜索结果页的用户卡片在已关注菜单（menu=true）打开时被遮挡
+        { path: '/search/results', search: { tab: '*', menu: null } },
         { path: '/user/:mid', search: { tab: '*' } },
         { path: '/user/:mid', search: { menu: 'true' } },
         // “我的好友”页必须带 tab（follow/fans）或 menu=true；这里仅允许从 tab 状态打开用户，避免生成无入度占位节点
@@ -917,10 +955,11 @@ export const NAVIGATION_DECLARATION = {
     },
     {
       id: 'search.results.tab.switch',
-      from: { path: '/search/results', search: { tab: '*' } },
+      // Tab 栏在 menu overlay 打开时被遮挡，from 需排除 menu=true，避免生成不可达边
+      from: { path: '/search/results', search: { tab: '*', menu: null } },
       to: '/search/results',
       preserveParams: ['q'],
-      search: {},
+      search: { menu: null },
       searchParams: { tab: 'string' },
       mode: 'replace',
       params: {},
@@ -929,7 +968,7 @@ export const NAVIGATION_DECLARATION = {
     },
     {
       id: 'search.results.query.submit',
-      from: { path: '/search/results', search: { tab: '*' } },
+      from: { path: '/search/results', search: { tab: '*', menu: null } },
       to: '/search/results',
       preserveParams: ['tab'],
       search: {},
@@ -941,7 +980,7 @@ export const NAVIGATION_DECLARATION = {
     },
     {
       id: 'search.results.close',
-      from: { path: '/search/results', search: { tab: '*' } },
+      from: { path: '/search/results', search: { tab: '*', menu: null } },
       to: '/search',
       search: {},
       searchParams: {},
@@ -949,6 +988,25 @@ export const NAVIGATION_DECLARATION = {
       params: {},
       label: '退出搜索结果（回到搜索首页）',
       ui: { placement: 'topbar', icon: 'search_clear', gesture: 'tap' },
+    },
+    {
+      id: 'search.user.menu.open',
+      // 已关注菜单入口出现在用户卡片上：综合/直播/图文 Tab（综合结果面板）与用户 Tab（用户条目）；
+      // 番剧/影视 Tab 无用户卡片。打开时保留 q/tab（浮层半透明，底下内容不应切换），menu 打开态入口被遮挡需排除
+      from: [
+        { path: '/search/results', search: { tab: 'comprehensive', menu: null } },
+        { path: '/search/results', search: { tab: 'user', menu: null } },
+        { path: '/search/results', search: { tab: 'live', menu: null } },
+        { path: '/search/results', search: { tab: 'article', menu: null } },
+      ],
+      to: '/search/results',
+      preserveParams: ['q', 'tab'],
+      search: { menu: 'true' },
+      searchParams: {},
+      mode: 'push',
+      params: {},
+      label: '打开搜索-已关注菜单',
+      ui: { placement: 'content', icon: 'user_menu', gesture: 'tap' },
     },
 
     // =========================
@@ -1210,6 +1268,8 @@ export const NAVIGATION_DECLARATION = {
     { id: 'settings.push.open', from: '/settings', to: '/settings/push', search: {}, searchParams: {}, mode: 'push', params: {}, label: '推送设置', ui: { placement: 'content', icon: 'settings', gesture: 'tap' } },
     { id: 'settings.message.open', from: '/settings', to: '/settings/message', search: {}, searchParams: {}, mode: 'push', params: {}, label: '消息设置', ui: { placement: 'content', icon: 'settings', gesture: 'tap' } },
     { id: 'settings.harass.open', from: '/settings', to: '/settings/harass', search: {}, searchParams: {}, mode: 'push', params: {}, label: '防骚扰和互动人群设置', ui: { placement: 'content', icon: 'settings', gesture: 'tap' } },
+    // sheet 为离散维度（comment/danmaku/pm，已在 uiStates 枚举），push 入栈，back 关闭
+    { id: 'settings.harass.sheet.open', from: { path: '/settings/harass', search: { sheet: null } }, to: '/settings/harass', search: {}, searchParams: { sheet: 'string' }, mode: 'push', params: {}, label: '打开防骚扰人群选择弹窗', ui: { placement: 'content', icon: 'settings', gesture: 'tap' } },
     { id: 'settings.storage.open', from: '/settings', to: '/settings/storage', search: {}, searchParams: {}, mode: 'push', params: {}, label: '清理存储空间', ui: { placement: 'content', icon: 'settings', gesture: 'tap' } },
     { id: 'settings.other.open', from: '/settings', to: '/settings/other', search: {}, searchParams: {}, mode: 'push', params: {}, label: '其他设置', ui: { placement: 'content', icon: 'settings', gesture: 'tap' } },
     { id: 'settings.timer.open', from: '/settings', to: '/settings/timer', search: {}, searchParams: {}, mode: 'push', params: {}, label: '定时关闭', ui: { placement: 'content', icon: 'settings', gesture: 'tap' } },

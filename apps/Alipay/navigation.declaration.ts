@@ -824,6 +824,16 @@ export const NAVIGATION_DECLARATION = {
             { id: 'cashierPassword.keypad.delete', label: '删除支付密码一位', behavior: 'other' },
           ],
         },
+        {
+          id: 'cashier.dialog.cancel',
+          search: { dialog: 'cancel' },
+          description: '收银台-放弃交易确认弹窗',
+        },
+        {
+          id: 'cashier.modal.password.dialog.cancel',
+          search: { modal: 'password', dialog: 'cancel' },
+          description: '收银台-支付密码弹窗上的放弃交易确认弹窗',
+        },
       ],
       queryParams: { amount: 'string', orderId: 'string', merchantName: 'string', subject: 'string' },
       description: '收银台（外部支付请求）',
@@ -1535,7 +1545,7 @@ export const NAVIGATION_DECLARATION = {
     // =========================
     {
       id: 'cashier.password.open',
-      from: { path: '/pay/cashier', search: { modal: null } },
+      from: { path: '/pay/cashier', search: { modal: null, dialog: null } },
       to: '/pay/cashier',
       search: { modal: 'password' },
       searchParams: {},
@@ -1543,6 +1553,21 @@ export const NAVIGATION_DECLARATION = {
       params: {},
       label: '打开收银台支付密码弹窗',
       ui: { placement: 'content', icon: 'payment_password', gesture: 'tap' },
+    },
+    {
+      id: 'cashier.cancel.open',
+      from: [
+        { path: '/pay/cashier', search: { modal: null, dialog: null } },
+        { path: '/pay/cashier', search: { modal: 'password', dialog: null } },
+      ],
+      to: '/pay/cashier',
+      search: { dialog: 'cancel' },
+      searchParams: {},
+      mode: 'push',
+      params: {},
+      preserveParams: ['modal'],
+      label: '打开收银台放弃交易确认弹窗',
+      ui: { placement: 'topbar', icon: 'close', gesture: 'tap' },
     },
 
     // =========================

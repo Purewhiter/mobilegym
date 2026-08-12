@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocale } from '@/os/locale';
+import { useAppVisibleInterval } from '@/os/hooks/useAppVisibleTimers';
 import { useSearchParams } from 'react-router-dom';
 import { IcExpand, IcMoreVertical, IcMore, IcPlay, IcPause, IcSkipPrev, IcSkipNext, IcShuffle, IcRepeat, IcMic, IcShare, IcQueue, IcAddCircle, IcLikedIndicator } from '../res/icons';
 import { useSpotifyStore, selectLikedSongIds } from '../state';
@@ -65,16 +66,19 @@ export const PlayerPage: React.FC = () => {
         setImageLoaded(!cachedLargeCover);
     }, [currentTrack?.id, currentTrack?.cover, currentTrack?.coverLarge]);
 
-    // Effect: Progress Timer
-    useEffect(() => {
-        let interval: any;
-        if (isPlaying) {
-            interval = setInterval(() => {
-                setProgress(p => (p >= duration ? 0 : p + 1));
-            }, 1000);
-        }
-        return () => clearInterval(interval);
-    }, [isPlaying, duration]);
+    // Effect: Progress Timer — ticks only while the app is foregrounded.
+    // progress 是本地计数（不从 store/时间戳推导），因此回前台时按真实流逝时间
+    // 补齐后台漏掉的 tick，并复用每秒 tick 相同的回绕规则（周期 = duration + 1）。
+    useAppVisibleInterval(
+        () => setProgress(p => (p >= duration ? 0 : p + 1)),
+        isPlaying ? 1000 : null,
+        {
+            onResume: (elapsedMs) => {
+                const missedTicks = Math.floor(elapsedMs / 1000);
+                if (missedTicks > 0) setProgress(p => (p + missedTicks) % (duration + 1));
+            },
+        },
+    );
 
     // Effect: Redirect if no track
     useEffect(() => {

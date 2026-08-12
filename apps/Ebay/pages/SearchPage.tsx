@@ -1,13 +1,13 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { IcCamera, IcNavBack, IcCart, IcHeart, IcSort, IcFilter, IcSearch } from '../res/icons';
-import { useEbayGestures } from '../navigation';
+import { useEbayGestures, useEbayNavigation } from '../navigation';
 import TabBar from '../components/TabBar';
 import SortModal, { type SortOptionType } from '../components/SortModal';
 import FilterDrawer, { type BuyingFormatFilter, type ViewMode } from '../components/FilterDrawer';
 import { useScrollDirection } from '../hooks/useScrollDirection';
 import { loadProducts, getProductsSync, loadCategories, getCategoriesSync, type CategoryDef } from '../data/loader';
 import type { ProductItem } from '../types';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { useEbayStore } from '../state';
 import { useEbayStrings } from '../hooks/useEbayStrings';
 import { useLocale } from '../../../os/locale';
@@ -95,12 +95,12 @@ function filterProducts(
 
 const SearchPage: React.FC = () => {
   const { bindBack, bindTap } = useEbayGestures();
+  const { go, back } = useEbayNavigation();
   const s = useEbayStrings();
   const locale = useLocale();
   const isEn = locale === 'en';
   const numberLocale = isEn ? 'en-US' : 'zh-CN';
   const locationRouter = useLocation();
-  const routerNavigate = useNavigate();
   const scrollRef = useRef<HTMLDivElement>(null);
   const isTabBarVisible = useScrollDirection();
   const addRecentSearch = useEbayStore(st => st.addRecentSearch);
@@ -136,8 +136,9 @@ const SearchPage: React.FC = () => {
 
   // UI state
   const [sortOption, setSortOption] = useState<SortOptionType>('bestMatch');
-  const [isSortModalOpen, setIsSortModalOpen] = useState(false);
-  const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
+  // 排序弹层/筛选抽屉为 URL 驱动（?sortSheet=open / ?filterDrawer=open 入栈，back 关闭），返回键可直接关闭
+  const isSortModalOpen = initParams.get('sortSheet') === 'open';
+  const isFilterDrawerOpen = initParams.get('filterDrawer') === 'open';
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [buyingFormat, setBuyingFormat] = useState<BuyingFormatFilter>('all');
   const [lastSubmittedQuery, setLastSubmittedQuery] = useState(initQuery);
@@ -341,11 +342,15 @@ const SearchPage: React.FC = () => {
     setLastSubmittedQuery(nextQuery);
     setSearchStep('results');
     addRecentSearch(nextQuery);
-    routerNavigate(`/search?q=${encodeURIComponent(nextQuery)}`, { replace: true });
+    go('search.query.submit', { q: nextQuery }, { mode: 'replace' });
   };
 
   const closeSortModal = () => {
-    setIsSortModalOpen(false);
+    if (isSortModalOpen) back();
+  };
+
+  const closeFilterDrawer = () => {
+    if (isFilterDrawerOpen) back();
   };
 
   const handleFilterReset = () => {
@@ -361,7 +366,7 @@ const SearchPage: React.FC = () => {
   };
 
   const handleFilterApply = () => {
-    setIsFilterDrawerOpen(false);
+    closeFilterDrawer();
     recordSearchSnapshot();
   };
 
@@ -425,12 +430,17 @@ const SearchPage: React.FC = () => {
       {/* Header */}
       <div className="bg-app-surface z-20 flex-shrink-0">
         <div className="px-3 py-2 pt-10 flex items-center space-x-3">
-          <div onClick={() => { setSearchStep('input'); routerNavigate('/search', { replace: true }); }} className="cursor-pointer">
+          <div
+            {...bindTap('search.query.edit')}
+            onClick={() => { setSearchStep('input'); go('search.query.edit', {}, { mode: 'replace' }); }}
+            className="cursor-pointer"
+          >
             <IcNavBack size={24} className="text-black" />
           </div>
           <div
+            {...bindTap('search.query.edit')}
             className="flex-1 bg-gray-100 rounded-full h-10 flex items-center px-3 relative cursor-text"
-            onClick={() => { setSearchStep('input'); routerNavigate('/search', { replace: true }); }}
+            onClick={() => { setSearchStep('input'); go('search.query.edit', {}, { mode: 'replace' }); }}
           >
             <IcSearch size={18} className="text-black mr-2" />
             <span className="text-black text-base font-normal truncate flex-1">{searchQuery || s.search_placeholder}</span>
@@ -448,15 +458,15 @@ const SearchPage: React.FC = () => {
           </button>
           <div className="flex items-center space-x-6">
             <button
+              {...bindTap('search.sort.open')}
               className="flex items-center text-blue-600 space-x-1"
-              onClick={() => setIsSortModalOpen(true)}
             >
               <span className="text-sm font-bold">{s.search_sort}</span>
               <IcSort size={14} />
             </button>
             <button
+              {...bindTap('search.filter.open')}
               className="flex items-center text-blue-600 space-x-1"
-              onClick={() => setIsFilterDrawerOpen(true)}
             >
               <span className="text-sm font-bold">{s.search_filters}</span>
               <IcFilter size={14} />
@@ -519,7 +529,7 @@ const SearchPage: React.FC = () => {
 
       <FilterDrawer
         isOpen={isFilterDrawerOpen}
-        onClose={() => setIsFilterDrawerOpen(false)}
+        onClose={closeFilterDrawer}
         onApply={handleFilterApply}
         onReset={handleFilterReset}
         sortOption={sortOption}

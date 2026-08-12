@@ -62,15 +62,15 @@ export const SettingItemSwitch: React.FC<{
   </div>
 );
 
-/** 带当前值 + 右箭头的设置项（点击进子页或弹窗） */
-export const SettingItemValue: React.FC<{
+/** 带当前值 + 右箭头的设置项（点击进子页或弹窗）。支持直接展开 bindTap(...) 的返回值（onClick + data-trigger-*）。 */
+export const SettingItemValue: React.FC<React.HTMLAttributes<HTMLDivElement> & {
   label: string;
   subtitle?: string;
   value: string;
   triggerId?: string;
-  onClick?: () => void;
-}> = ({ label, subtitle, value, triggerId, onClick }) => (
+}> = ({ label, subtitle, value, triggerId, onClick, ...rest }) => (
   <div
+    {...rest}
     className="flex items-center justify-between px-4 py-3.5 active:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
     onClick={onClick}
     {...(triggerId ? { 'data-trigger': triggerId, 'data-trigger-type': 'tap' as const } : {})}

@@ -14,8 +14,12 @@ export function useEbayNavigation() {
   const location = useLocation();
 
   const go = useCallback(
-    (id: string, params: Record<string, string | number> = {}) => {
-      const searchParams = new URLSearchParams(location.search);
+    (
+      id: string,
+      params: Record<string, string | number> = {},
+      options?: { mode?: 'push' | 'replace' },
+    ) => {
+      const currentSearchParams = new URLSearchParams(location.search);
       const t = NAVIGATION_DECLARATION.transitions?.find(
         (transition: any) => transition.id === id,
       ) as TransitionDeclaration | undefined;
@@ -24,10 +28,6 @@ export function useEbayNavigation() {
         throw new Error(`Transition not found: ${id}`);
       }
 
-      // Simplified logic assuming simple transitions for now
-      // For a real robust implementation, we should copy the full logic from Wechat/navigation.ts
-      // But given the scope, I'll stick to direct navigation if possible, but respecting the structure.
-      
       let targetPathname = t.to;
 
       // Replace path params like :id with actual values
@@ -35,7 +35,26 @@ export function useEbayNavigation() {
         targetPathname = targetPathname.replace(`:${key}`, String(value));
       }
 
-      navigate(targetPathname);
+      // Query 构建顺序与 Wechat/navigation.ts buildSearchParams 一致：
+      // preserveParams 保留当前 URL 键 → search 写入静态键值 → searchParams 映射运行时参数
+      const nextSearchParams = new URLSearchParams();
+      for (const key of t.preserveParams ?? []) {
+        const value = currentSearchParams.get(key);
+        if (value !== null) nextSearchParams.set(key, value);
+      }
+      for (const [key, value] of Object.entries(t.search)) {
+        if (value === null) nextSearchParams.delete(key);
+        else nextSearchParams.set(key, value);
+      }
+      for (const key of Object.keys(t.searchParams)) {
+        const value = params[key];
+        if (value !== undefined) nextSearchParams.set(key, String(value));
+      }
+
+      const searchStr = nextSearchParams.toString();
+      const targetUrl = searchStr ? `${targetPathname}?${searchStr}` : targetPathname;
+
+      navigate(targetUrl, options?.mode === 'replace' ? { replace: true } : undefined);
     },
     [navigate, location.pathname, location.search],
   );

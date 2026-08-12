@@ -29,6 +29,29 @@ const formatDuration = (d: any) => {
     return d;
 };
 
+// 用 indexOf 切片 + JSX 拼接做关键词高亮（大小写不敏感）。
+// 不能用 new RegExp(query)：用户输入含正则元字符（如 "C++"、"("）会抛 SyntaxError；
+// 也不能拼 HTML 字符串走 dangerouslySetInnerHTML（XSS 面）。
+const renderHighlightedText = (text: string, query: string): React.ReactNode => {
+    if (!text || !query) return text;
+    const lowerText = text.toLowerCase();
+    const lowerQuery = query.toLowerCase();
+    let idx = lowerText.indexOf(lowerQuery);
+    if (idx === -1) return text;
+    const nodes: React.ReactNode[] = [];
+    let start = 0;
+    while (idx !== -1) {
+        if (idx > start) nodes.push(text.slice(start, idx));
+        nodes.push(
+            <span key={idx} className="text-app-primary">{text.slice(idx, idx + query.length)}</span>,
+        );
+        start = idx + query.length;
+        idx = lowerText.indexOf(lowerQuery, start);
+    }
+    if (start < text.length) nodes.push(text.slice(start));
+    return nodes;
+};
+
 // ----- Icons -----
 const NewIcon: React.FC<{ label: string }> = ({ label }) => (
     <span className="bg-[#FF6699] text-white text-[10px] px-1 rounded-[2px] ml-1">{label}</span>
@@ -119,9 +142,9 @@ const MediaResultItem: React.FC<{ item: any; type: 'anime' | 'movie' }> = ({ ite
 
             <div className="flex-1 flex flex-col min-w-0 h-[113px] justify-between py-0.5">
                 <div>
-                    <h3 className="text-[14px] font-bold text-app-text leading-snug mb-1 line-clamp-2"
-                        dangerouslySetInnerHTML={{ __html: item.highlightedTitle || item.title }}
-                    />
+                    <h3 className="text-[14px] font-bold text-app-text leading-snug mb-1 line-clamp-2">
+                        {item.highlightedTitle || item.title}
+                    </h3>
                     <div className="text-[11px] text-app-text-muted leading-normal flex flex-col gap-0.5">
                         <div className="flex items-center gap-1">
                             <span className="border border-[#23C9ED] text-[#23C9ED] text-[9px] px-0.5 rounded-[2px] leading-none">{locale === 'en' ? 'Official' : '出品'}</span>
@@ -171,7 +194,11 @@ const MediaResultItem: React.FC<{ item: any; type: 'anime' | 'movie' }> = ({ ite
     );
 };
 
-const RichUserCard: React.FC<{ user: any; videoById: Map<string, any> }> = ({ user, videoById }) => {
+const RichUserCard: React.FC<{
+    user: any;
+    videoById: Map<string, any>;
+    onOpenMenu: (mid: string) => void;
+}> = ({ user, videoById, onOpenMenu }) => {
     const { bindTap } = useBilibiliGestures();
     const locale = useLocale();
     const toggleFollow = useBilibiliStore(s => s.toggleFollow);
@@ -180,7 +207,6 @@ const RichUserCard: React.FC<{ user: any; videoById: Map<string, any> }> = ({ us
         const mid = String(id);
         return (biliUser.followingList || []).some(u => String(u.mid) === mid);
     };
-    const [showMenu, setShowMenu] = useState(false);
 
     // Hydrate videos
     const recentVideos = (user.videos || []).slice(0, 3).map((v: any) => {
@@ -206,7 +232,7 @@ const RichUserCard: React.FC<{ user: any; videoById: Map<string, any> }> = ({ us
                     </div>
                     <div>
                         <div className="flex items-center gap-1.5 mb-1">
-                            <span className="text-[17px] text-app-primary font-medium" dangerouslySetInnerHTML={{ __html: user.highlightedName || user.name }}></span>
+                            <span className="text-[17px] text-app-primary font-medium">{user.highlightedName || user.name}</span>
                             <span className={`text-[9px] px-1 rounded-[2px] border ${user.level >= 6 ? 'border-[#FF0000] text-[#FF0000]' : 'border-[#9499A0] text-app-text-muted'}`}>
                                 LV{user.level}
                             </span>
@@ -222,10 +248,10 @@ const RichUserCard: React.FC<{ user: any; videoById: Map<string, any> }> = ({ us
 
                 {isFollowing(user.mid) ? (
                     <button
-                        {...bindTap(
-                            { kind: 'action', id: 'search.user.menu.open' },
-                            { stopPropagation: true, onTrigger: () => setShowMenu(true) },
-                        )}
+                        {...bindTap('search.user.menu.open', {
+                            stopPropagation: true,
+                            beforeTrigger: () => onOpenMenu(String(user.mid)),
+                        })}
                         className="h-8 w-[92px] rounded-full bg-[#E3E5E7] text-[#61666D] flex items-center justify-center gap-1 font-medium text-[13px] whitespace-nowrap leading-none active:bg-[#d0d3d6] transition-colors flex-none"
                     >
                         <Menu size={14} />
@@ -288,39 +314,6 @@ const RichUserCard: React.FC<{ user: any; videoById: Map<string, any> }> = ({ us
                 {locale === 'en' ? `View all ${user.videos?.length || 0} videos` : `查看全部${user.videos?.length || 0}个视频`}
                 <ChevronRight size={14} />
             </div>
-
-            {/* Unfollow Menu Overlay */}
-            {showMenu && (
-                <div className="fixed inset-0 z-[100] flex flex-col justify-end text-base">
-                    <div
-                        className="absolute inset-0 bg-black/50"
-                        {...bindTap(
-                            { kind: 'action', id: 'search.user.menu.close' },
-                            { stopPropagation: true, onTrigger: () => setShowMenu(false) },
-                        )}
-                    />
-                    <div className="bg-app-surface rounded-t-xl z-20 overflow-hidden" onClick={(e) => e.stopPropagation()}>
-                        <div className="py-3.5 text-center text-app-text border-b border-gray-100 active:bg-gray-50" onClick={() => setShowMenu(false)}>{locale === 'en' ? 'Add to special follows' : '加入特别关注'}</div>
-                        <div className="py-3.5 text-center text-app-text border-b border-gray-100 active:bg-gray-50" onClick={() => setShowMenu(false)}>{locale === 'en' ? 'Set group' : '设置分组'}</div>
-                        <div
-                            className="py-3.5 text-center text-app-primary border-b border-gray-100 active:bg-gray-50"
-                            {...bindTap(
-                                { kind: 'action', id: 'search.user.follow.toggle' },
-                                {
-                                    onTrigger: () => {
-                                        toggleFollow(String(user.mid));
-                                        setShowMenu(false);
-                                    },
-                                },
-                            )}
-                        >
-                            {locale === 'en' ? 'Unfollow' : '取消关注'}
-                        </div>
-                        <div className="h-1.5 bg-app-bg" />
-                        <div className="py-3.5 text-center text-app-text active:bg-gray-50" onClick={() => setShowMenu(false)}>{locale === 'en' ? 'Cancel' : '取消'}</div>
-                    </div>
-                </div>
-            )}
         </div>
     );
 };
@@ -345,7 +338,7 @@ const VideoResultItem: React.FC<{ video: any; authorByName: Map<string, any> }> 
                 </div>
             </div>
             <div className="flex-1 flex flex-col justify-between py-0.5">
-                <h3 className="text-[14px] text-app-text line-clamp-2 leading-snug" dangerouslySetInnerHTML={{ __html: video.highlightedTitle || video.title }}></h3>
+                <h3 className="text-[14px] text-app-text line-clamp-2 leading-snug">{video.highlightedTitle || video.title}</h3>
                 <div className="flex flex-col gap-1">
                     <div className="flex items-center gap-1.5 text-[11px] text-app-text-muted">
                         {authorFace && <img referrerPolicy="no-referrer" src={authorFace} className="w-3.5 h-3.5 rounded-full" />}
@@ -362,7 +355,7 @@ const VideoResultItem: React.FC<{ video: any; authorByName: Map<string, any> }> 
     );
 };
 
-const UserResultItem: React.FC<{ user: any }> = ({ user }) => {
+const UserResultItem: React.FC<{ user: any; onOpenMenu: (mid: string) => void }> = ({ user, onOpenMenu }) => {
     const { bindTap } = useBilibiliGestures();
     const locale = useLocale();
     const toggleFollow = useBilibiliStore(s => s.toggleFollow);
@@ -371,7 +364,6 @@ const UserResultItem: React.FC<{ user: any }> = ({ user }) => {
         const mid = String(id);
         return (biliUser.followingList || []).some(u => String(u.mid) === mid);
     };
-    const [showMenu, setShowMenu] = useState(false);
 
     return (
         <div
@@ -389,7 +381,7 @@ const UserResultItem: React.FC<{ user: any }> = ({ user }) => {
                 </div>
                 <div className="flex flex-col gap-0.5">
                     <div className="flex items-center gap-1.5">
-                        <span className="text-[15px] text-app-text font-medium" dangerouslySetInnerHTML={{ __html: user.highlightedName || user.name }}></span>
+                        <span className="text-[15px] text-app-text font-medium">{user.highlightedName || user.name}</span>
                         <span className={`text-[9px] px-1 rounded-[2px] border ${user.level >= 6 ? 'border-[#FF0000] text-[#FF0000]' : 'border-[#9499A0] text-app-text-muted'}`}>
                             LV{user.level}
                         </span>
@@ -409,10 +401,10 @@ const UserResultItem: React.FC<{ user: any }> = ({ user }) => {
 
             {isFollowing(user.mid) ? (
                 <button
-                    {...bindTap(
-                        { kind: 'action', id: 'search.user.menu.open' },
-                        { stopPropagation: true, onTrigger: () => setShowMenu(true) },
-                    )}
+                    {...bindTap('search.user.menu.open', {
+                        stopPropagation: true,
+                        beforeTrigger: () => onOpenMenu(String(user.mid)),
+                    })}
                     className="h-7 w-[86px] rounded-full bg-[#E3E5E7] text-[#61666D] flex items-center justify-center gap-1 font-medium text-[12px] whitespace-nowrap leading-none active:bg-[#d0d3d6] transition-colors flex-none"
                 >
                     <Menu size={12} />
@@ -432,39 +424,6 @@ const UserResultItem: React.FC<{ user: any }> = ({ user }) => {
                 >
                     <span style={{ writingMode: 'horizontal-tb' }}>{locale === 'en' ? '+ Follow' : '+ 关注'}</span>
                 </button>
-            )}
-
-            {/* Unfollow Menu Overlay */}
-            {showMenu && (
-                <div className="fixed inset-0 z-[100] flex flex-col justify-end text-base cursor-default">
-                    <div
-                        className="absolute inset-0 bg-black/50"
-                        {...bindTap(
-                            { kind: 'action', id: 'search.user.menu.close' },
-                            { stopPropagation: true, onTrigger: () => setShowMenu(false) },
-                        )}
-                    />
-                    <div className="bg-app-surface rounded-t-xl z-20 overflow-hidden" onClick={(e) => e.stopPropagation()}>
-                        <div className="py-3.5 text-center text-app-text border-b border-gray-100 active:bg-gray-50" onClick={() => setShowMenu(false)}>{locale === 'en' ? 'Add to special follows' : '加入特别关注'}</div>
-                        <div className="py-3.5 text-center text-app-text border-b border-gray-100 active:bg-gray-50" onClick={() => setShowMenu(false)}>{locale === 'en' ? 'Set group' : '设置分组'}</div>
-                        <div
-                            className="py-3.5 text-center text-app-primary border-b border-gray-100 active:bg-gray-50"
-                            {...bindTap(
-                                { kind: 'action', id: 'search.user.follow.toggle' },
-                                {
-                                    onTrigger: () => {
-                                        toggleFollow(String(user.mid));
-                                        setShowMenu(false);
-                                    },
-                                },
-                            )}
-                        >
-                            {locale === 'en' ? 'Unfollow' : '取消关注'}
-                        </div>
-                        <div className="h-1.5 bg-app-bg" />
-                        <div className="py-3.5 text-center text-app-text active:bg-gray-50" onClick={() => setShowMenu(false)}>{locale === 'en' ? 'Cancel' : '取消'}</div>
-                    </div>
-                </div>
             )}
         </div>
     );
@@ -573,7 +532,7 @@ const MovieResultsPane: React.FC<{ items: any[] }> = ({ items }) => {
     );
 };
 
-const UserResultsPane: React.FC<{ items: any[] }> = ({ items }) => {
+const UserResultsPane: React.FC<{ items: any[]; onOpenMenu: (mid: string) => void }> = ({ items, onOpenMenu }) => {
     const locale = useLocale();
     const userVirtual = useVirtualList({
         items,
@@ -608,7 +567,7 @@ const UserResultsPane: React.FC<{ items: any[] }> = ({ items }) => {
                                     transform: `translateY(${vItem.start}px)`,
                                 }}
                             >
-                                <UserResultItem user={item} />
+                                <UserResultItem user={item} onOpenMenu={onOpenMenu} />
                             </div>
                         );
                     })}
@@ -626,7 +585,8 @@ const ComprehensiveResultsPane: React.FC<{
     users: any[];
     videoById: Map<string, any>;
     authorByName: Map<string, any>;
-}> = ({ videos, users, videoById, authorByName }) => {
+    onOpenMenu: (mid: string) => void;
+}> = ({ videos, users, videoById, authorByName, onOpenMenu }) => {
     const locale = useLocale();
     const comprehensiveVirtual = useVirtualList({
         items: videos,
@@ -664,7 +624,7 @@ const ComprehensiveResultsPane: React.FC<{
             </div>
 
             {users.length > 0 && (
-                <RichUserCard user={users[0]} videoById={videoById} />
+                <RichUserCard user={users[0]} videoById={videoById} onOpenMenu={onOpenMenu} />
             )}
 
             {videos.length > 0 && (
@@ -700,7 +660,7 @@ const ComprehensiveResultsPane: React.FC<{
 
 // ----- Page Component -----
 export const SearchPage: React.FC = () => {
-    const { bindBack, bindTap, go } = useBilibiliGestures();
+    const { bindBack, bindTap, go, back } = useBilibiliGestures();
     const { pathname } = useLocation();
     const locale = useLocale();
     const [searchParams] = useSearchParams();
@@ -765,6 +725,12 @@ export const SearchPage: React.FC = () => {
     const searchHistory = useBilibiliStore(s => s.user.searchHistory || []);
     const addSearchHistory = useBilibiliStore(s => s.addSearchHistory);
     const clearSearchHistory = useBilibiliStore(s => s.clearSearchHistory);
+    const toggleFollow = useBilibiliStore(s => s.toggleFollow);
+
+    // 已关注菜单：打开/关闭由 URL（?menu=true）驱动，返回键可关闭；
+    // 菜单操作的目标用户用本地 state 记录（与 UserRelationPage 的 selectedMid 模式一致）
+    const showUserMenu = searchParams.get('menu') === 'true';
+    const [menuMid, setMenuMid] = useState<string | null>(null);
 
     // Keep input value synced with committed query in URL
     useEffect(() => {
@@ -792,7 +758,7 @@ export const SearchPage: React.FC = () => {
         if (!committedQuery) return { videos: [], users: [], animes: [], movies: [] };
         const q = committedQuery.toLowerCase();
 
-        const highlight = (text: string) => text.replace(new RegExp(committedQuery, 'gi'), match => `<span class="text-app-primary">${match}</span>`);
+        const highlight = (text: string) => renderHighlightedText(text, committedQuery);
 
         // Search Videos
         const videos = VIDEO_DATA.filter(v =>
@@ -1011,7 +977,7 @@ export const SearchPage: React.FC = () => {
         }
 
         if (activeTab === 'user') {
-            return <UserResultsPane key={activeTab} items={searchResults.users} />;
+            return <UserResultsPane key={activeTab} items={searchResults.users} onOpenMenu={setMenuMid} />;
         }
 
         return (
@@ -1021,6 +987,7 @@ export const SearchPage: React.FC = () => {
                 users={searchResults.users}
                 videoById={videoById}
                 authorByName={authorByName}
+                onOpenMenu={setMenuMid}
             />
         );
     };
@@ -1036,6 +1003,34 @@ export const SearchPage: React.FC = () => {
                     {renderTabs()}
                     {renderResults()}
                 </>
+            )}
+
+            {/* Unfollow Menu Overlay（URL 驱动，back 关闭） */}
+            {isSearching && showUserMenu && menuMid && (
+                <div className="fixed inset-0 z-[100] flex flex-col justify-end text-base cursor-default">
+                    <div className="absolute inset-0 bg-black/50" {...bindBack()} />
+                    <div className="bg-app-surface rounded-t-xl z-20 overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                        <div className="py-3.5 text-center text-app-text border-b border-gray-100 active:bg-gray-50" {...bindBack()}>{locale === 'en' ? 'Add to special follows' : '加入特别关注'}</div>
+                        <div className="py-3.5 text-center text-app-text border-b border-gray-100 active:bg-gray-50" {...bindBack()}>{locale === 'en' ? 'Set group' : '设置分组'}</div>
+                        <div
+                            className="py-3.5 text-center text-app-primary border-b border-gray-100 active:bg-gray-50"
+                            {...bindTap(
+                                { kind: 'action', id: 'search.user.follow.toggle' },
+                                {
+                                    params: { mid: menuMid },
+                                    onTrigger: () => {
+                                        toggleFollow(menuMid);
+                                        back();
+                                    },
+                                },
+                            )}
+                        >
+                            {locale === 'en' ? 'Unfollow' : '取消关注'}
+                        </div>
+                        <div className="h-1.5 bg-app-bg" />
+                        <div className="py-3.5 text-center text-app-text active:bg-gray-50" {...bindBack()}>{locale === 'en' ? 'Cancel' : '取消'}</div>
+                    </div>
+                </div>
             )}
         </div>
     );

@@ -23,7 +23,7 @@ export const NAVIGATION_DECLARATION = {
           search: { menu: 'more' },
           description: '首页更多菜单',
           actions: [
-            { id: 'menu.feedback', label: '反馈天气', behavior: 'other' },
+            { id: 'menu.feedback.open', label: '反馈天气', behavior: 'other' },
           ],
         },
       ],
