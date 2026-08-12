@@ -24,6 +24,15 @@ In **grounded mode** (the default for bench and for ``test_scripted.py``), plans
 must submit answers through the AnswerSheet app UI via ``grounded_answer`` /
 ``grounded_answer_repeatable`` — not the legacy ``ANSWER`` action.
 
+**Self-verification**: ``assert_visible`` / ``assert_text`` / ``assert_answer``
+steps compile to a ``NOOP`` action with ``semantic == "assert_visible"``. The
+env resolves them as read-only probes (visibility wait + hit-test for selector
+asserts; a judge-matcher text search inside the scope container for
+``assert_answer``) and raises ``SCRIPTED_ASSERT_FAILED`` on failure, ending the
+episode as ERROR. These steps appear in recorded trajectories as NOOP records
+carrying that semantic marker — downstream trajectory synthesis must filter
+them out by it.
+
 Plans currently live as test assets under
 ``bench_env/tests/<suite>/scripted_plans.py`` (a module-level ``PLANS`` dict
 keyed by full ``task.id``). Conceptually a task's script should ship with the
@@ -138,6 +147,76 @@ click_selector = tap_at
 def long_press_at(selector: str, *, summary: str, duration_ms: int = 800) -> Step:
     """Locate a visible component by selector; env resolves to a coordinate LONG_PRESS."""
     return {"op": "long_press", "selector": selector, "duration_ms": duration_ms, "summary": summary}
+
+
+def assert_visible(selector: str, *, timeout_ms: int = 3000, summary: str) -> Step:
+    """Assert ``selector`` is on screen, visible and tap-hittable right now.
+
+    Read-only probe with zero side effects: compiles to a ``NOOP`` action whose
+    selector the env resolves (visibility wait + hit-test) without tapping.
+    Failure raises ``SCRIPTED_ASSERT_FAILED`` → episode ERROR.
+    """
+    return {"op": "assert_visible", "selector": selector, "timeout_ms": timeout_ms, "summary": summary}
+
+
+def assert_text(text: str, *, scope: str = "[data-adjust-resize]", exact: bool = False, summary: str | None = None) -> Step:
+    """Assert ``text`` is visible inside the foreground Activity container.
+
+    ``text`` supports ``{param}`` rendering. ``exact=True`` uses ``:text-is``
+    (exact match, whitespace-normalized); otherwise ``:text`` (substring,
+    case-insensitive).
+    """
+    pseudo = ":text-is" if exact else ":text"
+    # Playwright quoted-string escaping: backslashes first, then double quotes.
+    quoted = text.replace("\\", "\\\\").replace('"', '\\"')
+    return assert_visible(
+        f'{scope} {pseudo}("{quoted}"):visible',
+        timeout_ms=3000,
+        summary=summary or f"assert on-screen: {text!r}",
+    )
+
+
+def assert_answer(
+    value: str,
+    *,
+    field_index: int = 0,
+    scope: str = "[data-adjust-resize]",
+    summary: str | None = None,
+) -> Step:
+    """Assert a judge-recognized answer ``value`` is on screen inside ``scope``.
+
+    Compiles to a read-only ``NOOP`` probe (``semantic == "assert_visible"``)
+    that reuses the judge's *own* grounded field matcher: ``field_index`` picks
+    the ``task.answer_fields`` entry whose matcher kind (number / time / date /
+    duration / exact / exact_tc) decides how on-screen text is compared. The
+    env collects candidate texts inside ``scope`` and passes each to the
+    matcher; any match passes, otherwise the episode errors with
+    ``SCRIPTED_ASSERT_FAILED``. The judge itself is not modified.
+
+    Semantics vs. the judge (the assert is a pre-flight self-check — the judge
+    stays authoritative):
+
+    - ``number`` / ``time`` / ``duration``: same tolerance as the judge's
+      matchers, applied to raw screen text — thousands separators, units and
+      surrounding words are fine (``"100023.46"`` matches on-screen
+      ``"100,023.46"``; time carries the judge's ±5 min tolerance).
+    - ``date``: compared against ``date_match_labels(value, os_state=None)``,
+      so relative labels (今天/明天/…) are unavailable — write the assert value
+      as an absolute date (``"2026-08-13"`` or ``"8月13日"``).
+    - ``exact`` / ``exact_tc`` (text/choice fields): deliberately loosened
+      from the judge's whole-string equality to normalized *containment*,
+      because screen text embeds answers in labels and sentences.
+
+    ``value`` supports ``{param}`` rendering. Compilation fails loudly when the
+    task declares no ``answer_fields`` or ``field_index`` is out of range.
+    """
+    return {
+        "op": "assert_answer",
+        "value": value,
+        "field_index": field_index,
+        "scope": scope,
+        "summary": summary or f"assert answer on-screen: {value!r}",
+    }
 
 
 def swipe_up(*, x: int = 500, from_y: int = 750, to_y: int = 250, summary: str = "swipe up") -> Step:
@@ -429,12 +508,45 @@ class ScriptedAgent(BaseAgent):
         super().__init__(config)
         self._task_id = ""
         self._task_params: dict[str, Any] = {}
+        self._answer_fields: list[dict] = []
         self._steps: list[Step] = []
         self._cursor = 0
 
     def set_task_context(self, task: Any) -> None:
         self._task_id = str(getattr(task, "id", "") or "")
         self._task_params = _with_derived_params(self._task_id, dict(getattr(task, "params", {}) or {}))
+        # answer_fields supports two declaration formats (see BaseTask):
+        # list[dict] of field defs, or {"question": ..., "fields": [...]}.
+        raw_fields = getattr(task, "answer_fields", None)
+        if isinstance(raw_fields, dict):
+            raw_fields = raw_fields.get("fields")
+        self._answer_fields = [dict(f) for f in (raw_fields or []) if isinstance(f, dict)]
+
+    def _answer_matcher_kind(self, field_index: int) -> str:
+        """Judge matcher kind for ``answer_fields[field_index]``.
+
+        Mirrors ``build_grounded_checks``: an explicit ``matcher`` key wins,
+        otherwise the default is derived from the field ``type``. Raises for
+        tasks without ``answer_fields`` or an out-of-range index — a plan
+        authoring error must fail loudly at compile time.
+        """
+        if not self._answer_fields:
+            raise ValueError(
+                f"assert_answer requires task answer_fields, but task "
+                f"{self._task_id!r} declares none"
+            )
+        if not 0 <= field_index < len(self._answer_fields):
+            raise ValueError(
+                f"assert_answer field_index={field_index} out of range: task "
+                f"{self._task_id!r} has {len(self._answer_fields)} answer field(s)"
+            )
+        field = self._answer_fields[field_index]
+        matcher = field.get("matcher")
+        if isinstance(matcher, str) and matcher:
+            return matcher
+        from bench_env.task.common_tasks import _default_matcher_for_field
+
+        return _default_matcher_for_field(field)
 
     def reset(self, task: str) -> None:
         self._task = task
@@ -518,6 +630,42 @@ class ScriptedAgent(BaseAgent):
             action = Action.home()
         elif op == "awake":
             action = Action(ActionType.AWAKE, {"value": str(step.get("app", "")), "semantic": semantic})
+        elif op == "assert_visible":
+            # Read-only visibility probe: env resolves the selector (or raises
+            # SCRIPTED_ASSERT_FAILED) and NoopHandler performs no interaction.
+            action = Action(
+                ActionType.NOOP,
+                {
+                    "selector": str(step["selector"]),
+                    "assert_timeout_ms": int(step.get("timeout_ms", 3000)),
+                    "semantic": "assert_visible",
+                },
+            )
+        elif op == "assert_answer":
+            # Read-only judge-matcher probe: env searches scope texts with the
+            # matcher named here (see assert_answer / mobile_gym NOOP branch).
+            field_index = int(step.get("field_index", 0))
+            kind = self._answer_matcher_kind(field_index)
+            value = str(step.get("value", ""))
+            if kind == "number":
+                try:
+                    float(value.replace(",", "").replace("，", "").strip())
+                except ValueError:
+                    raise ValueError(
+                        f"assert_answer value {value!r} is not numeric, but "
+                        f"answer_fields[{field_index}] of task {self._task_id!r} "
+                        f"uses the 'number' matcher"
+                    ) from None
+            action = Action(
+                ActionType.NOOP,
+                {
+                    "assert_answer_value": value,
+                    "assert_matcher_kind": kind,
+                    "assert_scope": str(step.get("scope") or "[data-adjust-resize]"),
+                    "assert_timeout_ms": int(step.get("timeout_ms", 3000)),
+                    "semantic": "assert_visible",
+                },
+            )
         elif op == "complete":
             action = Action.complete(str(step.get("message", "scripted task complete")))
         elif op == "abort":

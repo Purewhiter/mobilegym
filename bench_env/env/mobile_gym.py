@@ -11,6 +11,8 @@ import json as json_mod
 import logging
 import os
 import random
+import re
+import time
 from pathlib import Path
 from typing import Any, Optional, Tuple
 
@@ -19,6 +21,8 @@ from playwright.async_api import async_playwright, Browser, BrowserContext, Page
 from bench_env.logger import get_logger
 from bench_env.env.base import Action, ActionType, BaseMobileEnv, Observation, StepResult
 from bench_env.task import TaskRegistry, JudgeInput, JudgeResult, BaseTask
+from bench_env.task.common_tasks import _match_numeric, match_duration, match_time, normalize_text
+from bench_env.task.utils import date_match_labels
 
 logger = get_logger(__name__)
 
@@ -251,6 +255,85 @@ class InfoHandler(ActionHandler):
             done=False,
             info={"stop_reason": ActionType.INFO, "question": question}
         )
+
+
+# ==================== Scripted assert_answer matching ====================
+# Pure text-matching helpers for the scripted ``assert_answer`` probe (see
+# ``bench_env.agent.scripted.assert_answer``). They *reuse the judge's own
+# field matchers* from ``bench_env.task`` so an assert passes exactly when the
+# on-screen text carries a judge-recognized answer value. Kept as module-level
+# pure functions so they are unit-testable without a browser.
+
+def _normalized_contains(expected: str, candidate: str) -> bool:
+    """Normalized containment (Chinese numerals → digits, whitespace-tolerant)."""
+    exp = normalize_text(str(expected)).strip()
+    act = normalize_text(str(candidate))
+    if not exp:
+        return False
+    if exp in act:
+        return True
+    exp_nows = re.sub(r"\s+", "", exp)
+    return bool(exp_nows) and exp_nows in re.sub(r"\s+", "", act)
+
+
+def _contains_with_digit_boundary(label: str, candidate: str) -> bool:
+    """Containment that refuses digit-adjacent hits ("1日" must not hit "11日")."""
+    lab = normalize_text(str(label)).strip()
+    act = normalize_text(str(candidate))
+    if not lab:
+        return False
+    pattern = re.escape(lab)
+    if lab[0].isdigit():
+        pattern = r"(?<!\d)" + pattern
+    if lab[-1].isdigit():
+        pattern = pattern + r"(?!\d)"
+    return re.search(pattern, act) is not None
+
+
+def _scripted_answer_text_match(kind: str, expected: str, candidate: str) -> bool:
+    """Does one on-screen ``candidate`` text carry the answer ``expected``?
+
+    Matcher reuse per judge kind (``field.matcher`` /
+    ``_default_matcher_for_field``):
+
+    - ``number`` → ``_match_numeric``: extracts standalone numbers from the
+      candidate (thousands separators / units / Chinese numerals tolerated).
+    - ``time`` → ``match_time`` (judge's ±5 min tolerance).
+    - ``duration`` → ``match_duration`` (hour/minute forms normalized).
+    - ``date`` → ``date_match_labels(expected, os_state=None)`` labels searched
+      as substrings (digit-boundary guarded). Relative labels (今天/明天/…) are
+      unavailable without os_state — assert values must be absolute dates.
+    - ``exact_tc`` → traditional→simplified via the judge's ``to_simplified``,
+      then normalized containment.
+    - ``exact`` (text/choice default) → normalized containment.
+
+    Containment for date/exact/exact_tc is deliberately *looser* than the
+    judge's whole-string equality: screen text embeds answers in sentences.
+    The assert is a pre-flight self-check; the judge stays authoritative.
+    """
+    candidate = str(candidate)
+    if not candidate.strip():
+        return False
+    if kind == "number":
+        try:
+            exp_num = float(str(expected).replace(",", "").replace("，", "").strip())
+        except ValueError:
+            return False  # ScriptedAgent validates at compile time; stay defensive here.
+        return _match_numeric(exp_num, candidate)
+    if kind == "time":
+        return match_time(str(expected), candidate)
+    if kind == "duration":
+        return match_duration(str(expected), candidate)
+    if kind == "date":
+        return any(
+            _contains_with_digit_boundary(label, candidate)
+            for label in date_match_labels(str(expected), None)
+        )
+    if kind == "exact_tc":
+        from bench_env.task.utils import to_simplified
+        return _normalized_contains(to_simplified(str(expected)), to_simplified(candidate))
+    # "exact" and any unknown custom kind: normalized containment.
+    return _normalized_contains(str(expected), candidate)
 
 
 class MobileGymEnv(BaseMobileEnv):
@@ -1054,8 +1137,11 @@ class MobileGymEnv(BaseMobileEnv):
     # Scripted/replay agents may emit a CSS ``selector`` instead of ``point``.
     # ``step()`` resolves it to ``point`` (and drops ``selector``) before handlers
     # run, so every agent shares the same coordinate tap path as model agents.
+    # NOOP is included for scripted ``assert_visible`` probes: the selector is
+    # resolved (visibility wait + hit-test) purely as a read-only assertion;
+    # NoopHandler never consumes the resulting ``point``.
     _SELECTOR_RESOLVABLE = frozenset(
-        {ActionType.CLICK, ActionType.DOUBLE_TAP, ActionType.LONG_PRESS, ActionType.TYPE, ActionType.DRAG, ActionType.SWIPE}
+        {ActionType.CLICK, ActionType.DOUBLE_TAP, ActionType.LONG_PRESS, ActionType.TYPE, ActionType.DRAG, ActionType.SWIPE, ActionType.NOOP}
     )
 
     def _css_center_to_coord(self, cx: float, cy: float) -> list[float]:
@@ -1068,7 +1154,7 @@ class MobileGymEnv(BaseMobileEnv):
         # "physical": map CSS px back to physical px
         return [round(cx / vw * self.physical_width), round(cy / vh * self.physical_height)]
 
-    async def _resolve_selector_point(self, selector: str) -> list[float]:
+    async def _resolve_selector_point(self, selector: str, *, timeout_ms: int = 8000) -> list[float]:
         """Resolve a CSS selector to a tap point in this env's ``coord_space``.
 
         This must not scroll the page implicitly. Scripted trajectories are
@@ -1083,7 +1169,7 @@ class MobileGymEnv(BaseMobileEnv):
         ``elementFromPoint`` to confirm the tap will land on the element.
         """
         loc = self.page.locator(selector)
-        await loc.first.wait_for(state="visible", timeout=8000)
+        await loc.first.wait_for(state="visible", timeout=timeout_ms)
         count = await loc.count()
         probe = (
             """el => {
@@ -1204,6 +1290,12 @@ class MobileGymEnv(BaseMobileEnv):
         if action.action_type not in self._SELECTOR_RESOLVABLE:
             return
         data = action.data
+        if action.action_type == ActionType.NOOP and data.get("assert_answer_value") is not None:
+            # Scripted assert_answer probe: read-only judge-matcher text search
+            # inside the scope container (no tap/scroll/state change).
+            await self._resolve_assert_answer(data)
+            data.pop("selector", None)
+            return
         selector = data.get("selector")
         if not selector:
             # Still honor the "selector key is always removed" contract when a
@@ -1232,10 +1324,89 @@ class MobileGymEnv(BaseMobileEnv):
                 if self.verbose:
                     _log_env_info(self, f"SELECTOR {selector!r} -> {data['point1']} -> {data['point2']}")
         elif data.get("point") is None:
-            data["point"] = await self._resolve_selector_point(str(selector))
+            # NOOP = scripted assert_visible probe: honor its own timeout and
+            # surface failures with a distinct marker so the episode errors out.
+            is_assert = action.action_type == ActionType.NOOP
+            timeout_ms = int(data.pop("assert_timeout_ms", 8000)) if is_assert else 8000
+            try:
+                data["point"] = await self._resolve_selector_point(str(selector), timeout_ms=timeout_ms)
+            except Exception as e:
+                if is_assert:
+                    raise RuntimeError(
+                        f"SCRIPTED_ASSERT_FAILED: selector {selector!r} not visible/hittable: {e}"
+                    ) from e
+                raise
             if self.verbose:
                 _log_env_info(self, f"SELECTOR {selector!r} -> {data['point']}")
         del data["selector"]
+
+    async def _collect_assert_scope_texts(self, scope: str) -> list[str]:
+        """Candidate on-screen texts inside every rendered ``scope`` container.
+
+        Read-only DOM sampling: textContent of leaf elements (no element
+        children, length-capped) plus the container ``innerText`` split into
+        lines — the latter re-joins values whose digits span multiple inline
+        nodes. Hidden containers/elements (zero-size rects, display:none,
+        visibility:hidden — e.g. backgrounded activities) are skipped.
+        """
+        texts = await self.page.evaluate(
+            r"""(scopeSelector) => {
+                const out = [];
+                const seen = new Set();
+                const push = (t) => {
+                    const s = String(t || '').replace(/\s+/g, ' ').trim();
+                    if (!s || s.length > 200 || seen.has(s)) return;
+                    seen.add(s);
+                    out.push(s);
+                };
+                const rendered = (el) => {
+                    const r = el.getBoundingClientRect();
+                    if (r.width <= 0 || r.height <= 0) return false;
+                    const st = getComputedStyle(el);
+                    return st.display !== 'none' && st.visibility !== 'hidden';
+                };
+                for (const root of document.querySelectorAll(scopeSelector)) {
+                    if (!rendered(root)) continue;
+                    for (const el of root.querySelectorAll('*')) {
+                        if (el.childElementCount === 0 && rendered(el)) push(el.textContent);
+                    }
+                    for (const line of String(root.innerText || '').split('\n')) push(line);
+                }
+                return out;
+            }""",
+            scope,
+        )
+        return [str(t) for t in (texts or [])]
+
+    async def _resolve_assert_answer(self, data: dict) -> None:
+        """Scripted ``assert_answer``: poll scope texts against a judge matcher.
+
+        Read-only (no tap/scroll/state change). Retries every ~400ms within
+        ``assert_timeout_ms`` (default 3000); raises ``SCRIPTED_ASSERT_FAILED``
+        when no candidate text matches, ending the episode as ERROR.
+        """
+        value = str(data.get("assert_answer_value", ""))
+        kind = str(data.get("assert_matcher_kind") or "exact")
+        scope = str(data.get("assert_scope") or "[data-adjust-resize]")
+        timeout_ms = int(data.pop("assert_timeout_ms", 3000))
+        deadline = time.monotonic() + max(0, timeout_ms) / 1000.0
+        while True:
+            for text in await self._collect_assert_scope_texts(scope):
+                if _scripted_answer_text_match(kind, value, text):
+                    if self.verbose:
+                        _log_env_info(
+                            self,
+                            f"ASSERT_ANSWER {value!r} (matcher={kind}) matched {text!r}",
+                        )
+                    return
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                break
+            await asyncio.sleep(min(0.4, remaining))
+        raise RuntimeError(
+            f"SCRIPTED_ASSERT_FAILED: answer {value!r} (matcher={kind}) "
+            f"not found on screen within {scope}"
+        )
 
     def _p2c(self, x: float, y: float) -> Tuple[float, float]:
         # Map "physical" coordinate space to CSS viewport precisely, even when

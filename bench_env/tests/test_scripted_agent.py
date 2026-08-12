@@ -12,12 +12,17 @@ import pytest
 from bench_env.agent.scripted import (
     ScriptedAgent,
     _render,
+    assert_answer,
+    assert_text,
+    assert_visible,
+    complete,
     load_plan,
     tap_action,
     tap_trigger,
     type_text,
 )
 from bench_env.env.base import ActionType, Observation
+from bench_env.env.mobile_gym import _scripted_answer_text_match
 
 
 def _obs() -> Observation:
@@ -25,9 +30,16 @@ def _obs() -> Observation:
 
 
 class _FakeTask:
-    def __init__(self, task_id: str, params: dict | None = None):
+    def __init__(self, task_id: str, params: dict | None = None, answer_fields=None):
         self.id = task_id
         self.params = params or {}
+        self.answer_fields = answer_fields
+
+
+def _agent_with_fields(answer_fields) -> ScriptedAgent:
+    agent = ScriptedAgent()
+    agent.set_task_context(_FakeTask("fake.AnswerTask", answer_fields=answer_fields))
+    return agent
 
 
 # ── compilation ─────────────────────────────────────────────────────
@@ -57,6 +69,201 @@ def test_explicit_point_beats_selector():
     action = ScriptedAgent()._compile_step(type_text("x", point=[100, 200]))
     assert action.data["point"] == [100, 200]
     assert "selector" not in action.data
+
+
+# ── assert steps (in-place self-verification) ───────────────────────
+
+def test_assert_visible_step_structure():
+    step = assert_visible('[data-trigger="pay.submit"]', summary="pay button on screen")
+    assert step == {
+        "op": "assert_visible",
+        "selector": '[data-trigger="pay.submit"]',
+        "timeout_ms": 3000,
+        "summary": "pay button on screen",
+    }
+    assert assert_visible("input", timeout_ms=500, summary="s")["timeout_ms"] == 500
+
+
+def test_assert_text_builds_scoped_text_selector():
+    step = assert_text("时钟")
+    assert step["op"] == "assert_visible"
+    assert step["selector"] == '[data-adjust-resize] :text("时钟"):visible'
+    assert step["timeout_ms"] == 3000
+    assert step["summary"] == "assert on-screen: '时钟'"
+    assert assert_text("首页", scope="#root")["selector"] == '#root :text("首页"):visible'
+
+
+def test_assert_text_exact_switches_to_text_is():
+    assert ':text-is("确定")' in assert_text("确定", exact=True)["selector"]
+    assert ':text("确定")' in assert_text("确定", exact=False)["selector"]
+
+
+def test_assert_text_escapes_playwright_quotes():
+    step = assert_text('say "hi" \\ end')
+    assert step["selector"] == '[data-adjust-resize] :text("say \\"hi\\" \\\\ end"):visible'
+
+
+def test_assert_visible_compiles_to_noop_probe():
+    action = ScriptedAgent()._compile_step(assert_visible("#ok", timeout_ms=1500, summary="ok visible"))
+    assert action.action_type == ActionType.NOOP
+    assert action.data["selector"] == "#ok"
+    assert action.data["assert_timeout_ms"] == 1500
+    assert action.data["semantic"] == "assert_visible"
+    assert action.data.get("point") is None  # env resolves selector at step() time
+    assert action.summary == "ok visible"
+
+
+def test_assert_text_renders_params_through_reset(monkeypatch):
+    import bench_env.agent.scripted as scripted_mod
+
+    plan = [assert_text("联系人 {name}"), complete()]
+    monkeypatch.setattr(scripted_mod, "load_plan", lambda task_id: plan)
+    agent = ScriptedAgent()
+    agent.set_task_context(_FakeTask("fake.AssertPlan", {"name": "张三"}))
+    agent.reset("desc")
+    action = agent._compile_step(agent._steps[0])
+    assert action.action_type == ActionType.NOOP
+    assert action.data["selector"] == '[data-adjust-resize] :text("联系人 张三"):visible'
+    assert action.data["semantic"] == "assert_visible"
+
+
+# ── assert_answer (judge-matcher reuse) ─────────────────────────────
+
+def test_assert_answer_step_structure():
+    step = assert_answer("100023.46")
+    assert step == {
+        "op": "assert_answer",
+        "value": "100023.46",
+        "field_index": 0,
+        "scope": "[data-adjust-resize]",
+        "summary": "assert answer on-screen: '100023.46'",
+    }
+    custom = assert_answer("x", field_index=2, scope="#root", summary="s")
+    assert (custom["field_index"], custom["scope"], custom["summary"]) == (2, "#root", "s")
+
+
+def test_assert_answer_compiles_with_derived_number_kind():
+    agent = _agent_with_fields([{"type": "number", "label": "总资产"}])
+    action = agent._compile_step(assert_answer("100023.46"))
+    assert action.action_type == ActionType.NOOP
+    assert action.data == {
+        "assert_answer_value": "100023.46",
+        "assert_matcher_kind": "number",
+        "assert_scope": "[data-adjust-resize]",
+        "assert_timeout_ms": 3000,
+        "semantic": "assert_visible",
+    }
+    assert "selector" not in action.data and action.data.get("point") is None
+
+
+def test_assert_answer_kind_prefers_explicit_matcher_key():
+    agent = _agent_with_fields([
+        {"type": "text", "label": "结束时间", "matcher": "time"},
+        {"type": "text", "label": "日期", "matcher": "date"},
+    ])
+    assert agent._compile_step(assert_answer("11:00")).data["assert_matcher_kind"] == "time"
+    assert (
+        agent._compile_step(assert_answer("2026-08-13", field_index=1)).data["assert_matcher_kind"]
+        == "date"
+    )
+
+
+def test_assert_answer_kind_defaults_by_field_type():
+    agent = _agent_with_fields([
+        {"type": "text", "label": "天气状况"},
+        {"type": "choice", "label": "选项", "options": ["a", "b"]},
+    ])
+    assert agent._compile_step(assert_answer("阴")).data["assert_matcher_kind"] == "exact"
+    assert agent._compile_step(assert_answer("a", field_index=1)).data["assert_matcher_kind"] == "exact"
+
+
+def test_assert_answer_supports_dict_answer_fields_format():
+    agent = _agent_with_fields(
+        {"question": "余额是多少？", "fields": [{"type": "number", "label": "余额"}]}
+    )
+    assert agent._compile_step(assert_answer("42")).data["assert_matcher_kind"] == "number"
+
+
+def test_assert_answer_without_answer_fields_raises():
+    agent = _agent_with_fields(None)
+    with pytest.raises(ValueError, match="declares none"):
+        agent._compile_step(assert_answer("42"))
+
+
+def test_assert_answer_field_index_out_of_range_raises():
+    agent = _agent_with_fields([{"type": "number", "label": "x"}])
+    with pytest.raises(ValueError, match="out of range"):
+        agent._compile_step(assert_answer("42", field_index=1))
+
+
+def test_assert_answer_non_numeric_value_for_number_field_raises():
+    agent = _agent_with_fields([{"type": "number", "label": "x"}])
+    with pytest.raises(ValueError, match="not numeric"):
+        agent._compile_step(assert_answer("26°C"))
+    # Thousands separators are accepted for number values.
+    assert agent._compile_step(assert_answer("100,023.46")).data["assert_answer_value"] == "100,023.46"
+
+
+def test_assert_answer_renders_params_through_reset(monkeypatch):
+    import bench_env.agent.scripted as scripted_mod
+
+    plan = [assert_answer("{amount}"), complete()]
+    monkeypatch.setattr(scripted_mod, "load_plan", lambda task_id: plan)
+    agent = ScriptedAgent()
+    agent.set_task_context(
+        _FakeTask("fake.AnswerPlan", {"amount": "88.5"}, answer_fields=[{"type": "number"}])
+    )
+    agent.reset("desc")
+    action = agent._compile_step(agent._steps[0])
+    assert action.data["assert_answer_value"] == "88.5"
+    assert action.data["semantic"] == "assert_visible"
+
+
+# ── assert_answer matcher dispatch (env-side pure function) ─────────
+
+def test_answer_match_number_tolerates_thousands_separators_and_units():
+    assert _scripted_answer_text_match("number", "100023.46", "总资产 100,023.46 元")
+    assert _scripted_answer_text_match("number", "100,023.46", "100023.46")
+    assert _scripted_answer_text_match("number", "26", "26°C")
+    assert not _scripted_answer_text_match("number", "999999", "总资产 100,023.46 元")
+    assert not _scripted_answer_text_match("number", "100023.46", "余额 ****")
+
+
+def test_answer_match_time_reuses_judge_tolerance():
+    assert _scripted_answer_text_match("time", "3:59", "当前时间 03:59")
+    assert _scripted_answer_text_match("time", "03:59", "3:59")
+    assert _scripted_answer_text_match("time", "13:10", "下午1点10分")
+    assert _scripted_answer_text_match("time", "10:00", "10:03")  # judge ±5min
+    assert not _scripted_answer_text_match("time", "03:59", "16:00")
+
+
+def test_answer_match_date_uses_absolute_labels():
+    assert _scripted_answer_text_match("date", "2026-08-13", "8月13日 周四 晴")
+    assert _scripted_answer_text_match("date", "2026-08-13", "2026-08-13")
+    assert _scripted_answer_text_match("date", "8月13日", "8月13日 多云")
+    assert not _scripted_answer_text_match("date", "2026-08-13", "8月14日 晴")
+    # Digit boundary: "1日" label must not hit "11日".
+    assert not _scripted_answer_text_match("date", "2026-08-01", "8月11日")
+
+
+def test_answer_match_duration_normalizes_units():
+    assert _scripted_answer_text_match("duration", "1小时30分", "时长 90分钟")
+    assert _scripted_answer_text_match("duration", "90分钟", "1小时30分")
+    assert _scripted_answer_text_match("duration", "59分", "0小时59分")
+    assert not _scripted_answer_text_match("duration", "30分钟", "1小时")
+
+
+def test_answer_match_exact_is_normalized_containment():
+    assert _scripted_answer_text_match("exact", "阴", "今天 多云转阴 26°C")
+    assert _scripted_answer_text_match("exact", "3小时", "三小时后提醒")  # Chinese numerals
+    assert _scripted_answer_text_match("exact", "夜 曲", "夜曲 - 周杰伦")  # whitespace-tolerant
+    assert not _scripted_answer_text_match("exact", "晴", "阴天")
+    assert not _scripted_answer_text_match("exact", "阴", "")
+
+
+def test_answer_match_exact_tc_converts_traditional():
+    assert _scripted_answer_text_match("exact_tc", "陈奕迅", "陳奕迅 Eason Chan")
+    assert not _scripted_answer_text_match("exact_tc", "周杰伦", "陳奕迅")
 
 
 # ── plan discovery + param rendering ────────────────────────────────
