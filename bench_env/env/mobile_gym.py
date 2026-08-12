@@ -22,6 +22,16 @@ from bench_env.task import TaskRegistry, JudgeInput, JudgeResult, BaseTask
 logger = get_logger(__name__)
 
 
+def _decode_gz_state(b64_data: str) -> dict:
+    """b64decode + gunzip + json.loads in one call.
+
+    CPU-bound (10-50 ms for MB-scale states); always dispatched via
+    ``asyncio.to_thread`` so it never blocks the shared event loop —
+    at 64+ concurrent envs these decodes otherwise serialize every worker.
+    """
+    return json_mod.loads(gzip.decompress(base64.b64decode(b64_data)))
+
+
 def _env_message(env: "MobileGymEnv", message: str) -> str:
     prefix = getattr(env, "_log_prefix", "").strip()
     return f"{prefix} {message}".strip()
@@ -357,6 +367,16 @@ class MobileGymEnv(BaseMobileEnv):
     # - physical:    物理像素坐标（physical_width/physical_height）
     VALID_COORD_SPACES = {"norm_0_1000", "norm_0_1", "physical"}
 
+    # Screenshot wire-scale options (Playwright page.screenshot(scale=...)).
+    # - device: 物理分辨率截图（默认，与既有行为一致，如 1080×2400）
+    # - css:    CSS 视口分辨率截图（如 360×800）。每步传输约 150KB→36KB、
+    #           浏览器侧截图耗时约 80ms→33ms，但会改变 VLM 输入分辨率，
+    #           启用前需 A/B 验证 SR 无回退。
+    # 注意与 RunnerConfig.screenshot_scale（落盘时的 PIL 缩放，见 recorder.py）
+    # 区分：wire scale 影响传给 Agent/VLM 的原始截图，screenshot_scale 只影响
+    # trajectory 目录里保存的副本。
+    VALID_SCREENSHOT_WIRE_SCALES = {"device", "css"}
+
     # Wall-clock cap for page.evaluate calls that await browser-side promises.
     # Playwright's evaluate is NOT bound by the default timeout, so a stuck
     # frontend promise would otherwise hang the worker forever.
@@ -379,12 +399,20 @@ class MobileGymEnv(BaseMobileEnv):
         delay_after_action: float = 0.8,
         verbose: bool = True,
         worker_id: int = -1,
+        screenshot_wire_scale: str = "device",
     ):
         # Validate coord_space
         if coord_space not in self.VALID_COORD_SPACES:
             raise ValueError(
                 f"Invalid coord_space '{coord_space}'. "
                 f"Valid options: {sorted(self.VALID_COORD_SPACES)}"
+            )
+
+        # Validate screenshot_wire_scale
+        if screenshot_wire_scale not in self.VALID_SCREENSHOT_WIRE_SCALES:
+            raise ValueError(
+                f"Invalid screenshot_wire_scale '{screenshot_wire_scale}'. "
+                f"Valid options: {sorted(self.VALID_SCREENSHOT_WIRE_SCALES)}"
             )
         
         # Validate delay_after_action
@@ -398,6 +426,7 @@ class MobileGymEnv(BaseMobileEnv):
         self.coord_space = coord_space
         self.delay_after_action = delay_after_action
         self.verbose = verbose
+        self.screenshot_wire_scale = screenshot_wire_scale
 
         self.physical_width, self.physical_height = physical_size
         self.dpr = float(device_scale_factor)
@@ -757,8 +786,13 @@ class MobileGymEnv(BaseMobileEnv):
 
         def on_console(msg):
             bl = self._browser_logger
-            if bl:
-                bl.debug(f"{_btag()}[page#{seq}] console.{msg.type}: {msg.text}")
+            if not bl:
+                return
+            # 非 verbose 只记录 warning/error：console.log/info/debug 在 64 并发下
+            # 会经 CDP→driver→事件循环→文件放大成显著负载；verbose=True 保持全量。
+            if not self.verbose and msg.type not in ("warning", "error"):
+                return
+            bl.debug(f"{_btag()}[page#{seq}] console.{msg.type}: {msg.text}")
 
         if self._page:
             self._page.on("pageerror", on_pageerror)
@@ -785,7 +819,12 @@ class MobileGymEnv(BaseMobileEnv):
 
         Args:
             app_ids: 需要预加载重型数据的 App ID 列表（如 ['redbook']）。
-                     传 None 则加载全部（旧行为）；传 [] 则跳过预加载。
+                     三态契约（与前端 __SIM__.waitForData 一致）：
+                     None → 预加载全部 app 数据（全量）；
+                     []   → 跳过预加载（waitForData 立即 resolve）；
+                     [..] → 只加载列出的 app。
+                     调用侧（task.setup）会把 task.apps 原样传入，
+                     不得用 ``or None`` 把 [] 折叠成 None。
         """
         self._step_count = 0
         self._done = False
@@ -1046,7 +1085,9 @@ class MobileGymEnv(BaseMobileEnv):
     async def _get_observation(self, *, include_state: bool = True) -> Observation:
         sw = self.stopwatch
         with sw.phase("screenshot"):
-            screenshot_bytes = await self.page.screenshot(type="jpeg", quality=80)
+            screenshot_bytes = await self.page.screenshot(
+                type="jpeg", quality=80, scale=self.screenshot_wire_scale
+            )
         with sw.phase("route"):
             route = await self._get_route() or {}
         if include_state:
@@ -1472,8 +1513,10 @@ class MobileGymEnv(BaseMobileEnv):
             if not result:
                 return None
             if result["mode"] == "gz":
-                raw = gzip.decompress(base64.b64decode(result["data"]))
-                return json_mod.loads(raw)
+                # Off-loop decode: b64 + gunzip + parse of large states is
+                # 10-50 ms of pure CPU — run in a worker thread.
+                return await asyncio.to_thread(_decode_gz_state, result["data"])
+            # raw mode is capped at <100 KB in the browser; parsing is ~1 ms.
             return json_mod.loads(result["data"])
         except asyncio.TimeoutError:
             logger.warning(

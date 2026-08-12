@@ -38,6 +38,21 @@ def test_from_args_preserves_explicit_zero_sample_seed() -> None:
     assert config.sample_seed_source == "cli"
 
 
+def test_screenshot_wire_scale_defaults_to_device() -> None:
+    assert _config().screenshot_wire_scale == "device"
+
+
+def test_from_args_passes_screenshot_wire_scale_through() -> None:
+    config = RunnerConfig.from_args(
+        argparse.Namespace(
+            agent="generic", model_name="test-model", sample_seed=None,
+            screenshot_wire_scale="css",
+        )
+    )
+
+    assert config.screenshot_wire_scale == "css"
+
+
 def test_task_max_steps_overrides_difficulty_default_when_cli_not_explicit() -> None:
     class Task(_Task):
         max_steps = 30

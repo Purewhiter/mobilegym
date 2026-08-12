@@ -47,7 +47,12 @@ export function buildSimApi(): SimApi {
     /** 定向预加载指定 app 的 state.ts — no-op: eager loaded */
     preloadAppStores: async (_appIds: string[]) => { /* no-op: eager loaded */ },
     waitForData: async (appIds?: string[]) => {
-      const all = !appIds || appIds.length === 0;
+      // 语义契约（与 bench_env MobileGymEnv.reset(app_ids) 对齐）：
+      //   undefined/null → 预加载全部 app 数据（全量）
+      //   []             → 跳过预加载，立即 resolve（task.apps=[] 的任务无须付全量代价）
+      //   ['a','b']      → 只加载列出的 app
+      if (appIds && appIds.length === 0) return;
+      const all = !appIds;
       const has = (id: string) => all || appIds!.includes(id);
 
       const loadApp = async (importFn: () => Promise<AppDataLoaderModule>) => {

@@ -111,6 +111,14 @@ class RunnerConfig:
     browser_log_prefix: str = ""
     no_save_trajectory: bool = False
     screenshot_scale: float = 0.3
+    # 截图"线上"分辨率（Playwright page.screenshot(scale=...)），影响传给
+    # Agent/VLM 的原始截图；与 screenshot_scale（trajectory 落盘时的 PIL 缩放）
+    # 是两个独立的旋钮。
+    #   "device"（默认）= 物理分辨率（1080×2400），与既有行为完全一致
+    #   "css"           = CSS 视口分辨率（360×800）：每步传输约 150KB→36KB、
+    #                     浏览器侧截图约 80ms→33ms，但改变 VLM 输入分辨率，
+    #                     启用前需 A/B 验证 SR 无回退
+    screenshot_wire_scale: str = "device"
     
     # Loop detection
     loop_detect: int = 0  # 连续相同action次数阈值，0=禁用
@@ -273,6 +281,7 @@ class RunnerConfig:
             runs_dir=Path(get("runs_dir") or "runs"),
             no_save_trajectory=get("no_save_trajectory", False),
             screenshot_scale=get("screenshot_scale", 0.3),
+            screenshot_wire_scale=get("screenshot_wire_scale", "device") or "device",
 
             loop_detect=get("loop_detect", 0),
             

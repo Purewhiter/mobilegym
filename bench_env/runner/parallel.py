@@ -107,6 +107,13 @@ class ParallelRunner(BaseRunner):
                 )
                 try:
                     async with self.env_pool:
+                        # Wire per-env config that EnvPool doesn't plumb through.
+                        # screenshot_wire_scale 属于 env 观测行为（MobileGymEnv
+                        # 截图 scale），默认 "device" 与既有行为一致。
+                        wire_scale = getattr(self.config, "screenshot_wire_scale", "device")
+                        for env in self.env_pool:
+                            if hasattr(env, "screenshot_wire_scale"):
+                                env.screenshot_wire_scale = wire_scale
                         # Init per-worker browser logs
                         if run_dir:
                             browser_log_dir = self.config.browser_log_dir or (run_dir / "browser_logs")
@@ -205,7 +212,8 @@ class ParallelRunner(BaseRunner):
                         )
                         results[idx] = error_result
                         if self.recorder:
-                            self.recorder.record_result(error_result.to_dict())
+                            # 阻塞文件写移出事件循环（record_result 持 _write_lock，线程安全）
+                            await asyncio.to_thread(self.recorder.record_result, error_result.to_dict())
                         self._emit_progress(error_result)
                     except Exception:
                         logger.error(f"[W{wid+1}] Failed to create fallback error result")
@@ -322,7 +330,7 @@ class ParallelRunner(BaseRunner):
                             async with results_lock:
                                 results.append(result)
                             if self.recorder:
-                                self.recorder.record_result(result.to_dict())
+                                await asyncio.to_thread(self.recorder.record_result, result.to_dict())
                             _update_pbar(result)
                             # Don't dispatch other trials since params are unknown
                             # Advance pbar for the skipped trials
@@ -383,10 +391,11 @@ class ParallelRunner(BaseRunner):
                         **EpisodeResult._task_taxonomy(task),
                     )
                     
+                    # trajectory.json + results.jsonl 落盘是阻塞 IO — 移出事件循环
                     if episode:
-                        episode.finish(result.to_dict())
+                        await asyncio.to_thread(episode.finish, result.to_dict())
                     elif self.recorder:
-                        self.recorder.record_result(result.to_dict())
+                        await asyncio.to_thread(self.recorder.record_result, result.to_dict())
                     
                     async with results_lock:
                         results.append(result)
@@ -412,7 +421,7 @@ class ParallelRunner(BaseRunner):
                     async with results_lock:
                         results.append(error_result)
                     if self.recorder:
-                        self.recorder.record_result(error_result.to_dict())
+                        await asyncio.to_thread(self.recorder.record_result, error_result.to_dict())
                     _update_pbar(error_result)
                 
                 finally:
