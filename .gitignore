@@ -71,6 +71,10 @@ docs/archive
 
 .phone_shots/
 
+# Benchmark run outputs (screenshots + trajectories); runs/ is covered elsewhere
+# but ad-hoc runs dirs (runs_human_a/ etc.) must never be committed either
+runs*/
+
 # Local tool caches / scratch / backup artifacts
 .pw-browsers/
 .superpowers/
