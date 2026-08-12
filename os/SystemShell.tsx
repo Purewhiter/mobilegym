@@ -36,6 +36,7 @@ import { TopEdgeShadeGestureCatcher } from './components/TopEdgeShadeGestureCatc
 import { DeviceEffects } from './components/DeviceEffects';
 import { IntentChooserSheet } from './components/IntentChooserSheet';
 import { useGlobalLongPress } from './hooks/useGlobalLongPress';
+import { useTaskManagerSelector } from './hooks/useTaskManagerSelector';
 import { TextSelectionService } from './TextSelectionService';
 import * as TimeService from './TimeService';
 import { SystemShadeService } from './SystemShadeService';
@@ -408,23 +409,6 @@ export const areChromeTaskSnapshotsEqual = (a: ChromeTaskSnapshot, b: ChromeTask
     && a.isLauncherVisible === b.isLauncherVisible
     && a.isRecentsVisible === b.isRecentsVisible;
 };
-
-function useTaskManagerSelector<T>(
-  selector: (state: OSState) => T,
-  isEqual: (a: T, b: T) => boolean = Object.is,
-): T {
-  const cacheRef = useRef<T>(selector(TaskManager.getState()));
-  const subscribe = useCallback((onStoreChange: () => void) => {
-    return TaskManager.subscribe(() => onStoreChange());
-  }, []);
-  const getSnapshot = useCallback(() => {
-    const next = selector(TaskManager.getState());
-    if (isEqual(cacheRef.current, next)) return cacheRef.current;
-    cacheRef.current = next;
-    return next;
-  }, [selector, isEqual]);
-  return useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
-}
 
 const getForegroundObserverTarget = (
   activeTopActivityId: string | null,
