@@ -1,3 +1,6 @@
+import { TaskManager } from './TaskManager';
+import { getActiveAppId } from './taskUtils';
+
 export interface AppNavigator {
   navigate: (path: string, options?: { replace?: boolean }) => void;
   back: () => boolean;
@@ -51,8 +54,9 @@ export const AppNavigatorRegistry = {
     if (appId) {
       return registry.get(appId)?.route() ?? null;
     }
-    if (typeof window === 'undefined') return null;
-    const activeAppId = window.__OS__?.state?.activeAppId;
+    // 直接从 TaskManager 同步取真值 —— window.__OS__.state 在 OSProvider 的
+    // useEffect 中才更新，任务栈刚变化时滞后一拍。
+    const activeAppId = getActiveAppId(TaskManager.getState());
     if (activeAppId && registry.has(activeAppId)) {
       return registry.get(activeAppId)?.route() ?? null;
     }

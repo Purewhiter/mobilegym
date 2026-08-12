@@ -47,7 +47,9 @@ import {
   applyOsStatePatch,
   buildSimState,
 } from './simState';
+import { deepMergeWithArrayOps } from './utils/deepMergeWithArrayOps';
 import { runAppDataLoaderModule } from './appDataLoaderReady';
+import type { OSApi, SimApi } from './types/globals';
 
 /** 预加载所有 App 的 state.ts（eager: 打进主 bundle，页面加载即执行 createAppStore 副作用） */
 const _eagerAppStateModules = import.meta.glob<unknown>(
@@ -62,6 +64,11 @@ void _eagerAppStateModules; // 确保 tree-shaking 不会移除
 // --- getState() cache for launcher (rarely changes, expensive to parse) ---
 let _launcherCacheRaw: string | null | undefined = undefined;
 let _launcherCacheParsed: any = null;
+
+// --- navigateToActivity 失败记录 ---
+// 超时时任务栈已 push 但 UI 导航没发生，栈与界面可能不一致；外部（bench）原本无从感知。
+// 记录最近一次失败，暴露在 __SIM__.getState().os.lastNavError；成功导航后清空。
+let lastNavError: { route: string; activityId: string; timestamp: number } | null = null;
 
 interface OSContextProps {
   state: OSState;
@@ -178,6 +185,7 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
       timeoutMs: 5000,
     });
     if (!nav) {
+      lastNavError = { route, activityId, timestamp: now() };
       console.warn(`[OS] Navigate to ${route} timed out after 5000ms (activity=${activityId})`);
       return;
     }
@@ -186,6 +194,7 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
       + `replace=${opts?.replace != null ? String(opts.replace) : '-'} foreignTask=${String(isInForeignTask)}`,
     );
     nav(route, opts?.replace != null ? { replace: opts.replace } : undefined);
+    lastNavError = null;
     console.log(`[OS] Navigate activity ${activityId} -> ${route} in ${realNow() - startTime}ms`);
   }, []);
 
@@ -519,7 +528,8 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   }), [state]);
 
   useEffect(() => {
-    window.__OS__ = {
+    // 显式标注 OSApi，让 tsc 校验对象与 globals.d.ts 契约一致（此前 as any 绕过了检查）
+    const api: OSApi = {
       state: osStateForApi,
       launchApp,
       launchTaskById,
@@ -595,7 +605,8 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
       content: ContentResolver,
       pendingIntent: PendingIntent,
       sms: SmsGateway,
-    } as any;
+    };
+    window.__OS__ = api;
   }, [
     osStateForApi,
     launchApp,
@@ -638,6 +649,7 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
       resetAllOsStores();
       OsStateStore.reset();
       TaskManager.reset();
+      lastNavError = null;
 
       cancelAllPendingPersistWrites();
       localStorage.clear();
@@ -667,7 +679,8 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
         extras: { now: now() },
       });
     };
-    window.__SIM__ = {
+    // 显式标注 SimApi，与 window.__OS__ 一致地走 globals.d.ts 契约校验
+    const simApi: SimApi = {
       /** Clear all state WITHOUT reloading. Use with Playwright page.reload(). */
       resetState: _resetStateCore,
       /** Clear all state AND reload (legacy). */
@@ -831,7 +844,7 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
           _launcherCacheParsed = null;
         }
 
-        return buildSimState({
+        const simState = buildSimState({
           tasks: latestState.tasks,
           activeTaskId: latestState.activeTaskId,
           isLauncherVisible: latestState.isLauncherVisible,
@@ -847,6 +860,9 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
           shade: SystemShadeService.getState(),
           launcher,
         });
+        // 最近一次 navigateToActivity 超时记录（成功导航后为 null），供 bench 检测栈与 UI 不一致
+        simState.os.lastNavError = lastNavError;
+        return simState;
       },
       setState: (patch: { apps?: Record<string, any>; os?: Record<string, any> }, options?: { deep?: boolean; reload?: boolean }) => {
         // 外部脚本显式调 setState (state-builder snapshot restore / bench inject /
@@ -855,57 +871,6 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
         // 之后新文档模块自然重置 flag, 这里只为非 reload 场景关 gate)。
         endPersistReset();
         const { deep = true, reload = false } = options || {};
-
-        const ARRAY_MATCH_RE = /^(\w+)\[(\w+)=(.+)\]$/;
-        const ARRAY_PUSH_RE = /^(\w+)\[\]$/;
-
-        const deepMerge = (target: any, source: any): any => {
-          if (source === undefined) return target;
-          if (source === null) return null;
-          if (typeof source !== 'object' || Array.isArray(source)) return source;
-          if (typeof target !== 'object' || target === null || Array.isArray(target)) return source;
-
-          const result = { ...target };
-          for (const key of Object.keys(source)) {
-            // arr[field=value] — update or delete matched array elements
-            const matchM = key.match(ARRAY_MATCH_RE);
-            if (matchM) {
-              const [, arrKey, matchField, matchVal] = matchM;
-              const arr = result[arrKey];
-              if (Array.isArray(arr)) {
-                const val = source[key];
-                if (val === null || val === undefined) {
-                  // DELETE: remove all matched elements
-                  result[arrKey] = arr.filter(item =>
-                    !(item && typeof item === 'object' && String(item[matchField]) === matchVal)
-                  );
-                } else {
-                  // UPDATE: deepMerge into all matched elements
-                  result[arrKey] = arr.map(item =>
-                    item && typeof item === 'object' && String(item[matchField]) === matchVal
-                      ? deepMerge(item, val)
-                      : item
-                  );
-                }
-              }
-              continue;
-            }
-
-            // arr[] — append element(s)
-            const pushM = key.match(ARRAY_PUSH_RE);
-            if (pushM) {
-              const arrKey = pushM[1];
-              const existing = Array.isArray(result[arrKey]) ? result[arrKey] : [];
-              const val = source[key];
-              result[arrKey] = Array.isArray(val) ? [...existing, ...val] : [...existing, val];
-              continue;
-            }
-
-            // Regular key — recursive deepMerge
-            result[key] = deepMerge(target[key], source[key]);
-          }
-          return result;
-        };
 
         if (patch.os && typeof patch.os === 'object') {
           applyOsStatePatch(patch.os, { source: 'external' });
@@ -922,7 +887,7 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
                 for (const [k, v] of Object.entries(current)) {
                   if (typeof v !== 'function') currentData[k] = v;
                 }
-                store.setState(deepMerge(currentData, appPatch));
+                store.setState(deepMergeWithArrayOps(currentData, appPatch));
               } else {
                 store.setState(appPatch as any);
               }
@@ -931,7 +896,7 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
               const merged = current === null
                 ? appPatch
                 : deep
-                  ? deepMerge(current, appPatch)
+                  ? deepMergeWithArrayOps(current, appPatch)
                   : { ...current, ...appPatch };
               writePersistedAppState(appId, merged as Record<string, any>);
             }
@@ -944,7 +909,10 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
         }
       },
     };
-  }, [state, launchApp, launchTaskById, goHome, showRecents, closeTask, closeApp, finishActivity, setBrightness, setVolume, handleSystemBack, openApp, startActivity, startActivityForResult, setResult]);
+    window.__SIM__ = simApi;
+    // 依赖数组不含 state：闭包内全部经 TaskManager.getState() 等实时读取，
+    // 不依赖渲染快照；带上 state 会导致每次任务栈变化都无谓重建 __SIM__。
+  }, [launchApp, launchTaskById, goHome, showRecents, closeTask, closeApp, finishActivity, setBrightness, setVolume, handleSystemBack, openApp, startActivity, startActivityForResult, setResult]);
 
   const contextValue = useMemo<OSContextProps>(() => ({
     state,

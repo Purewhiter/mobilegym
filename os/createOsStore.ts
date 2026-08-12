@@ -3,6 +3,7 @@ import { persist, subscribeWithSelector, type PersistStorage, type StorageValue 
 import { immer } from 'zustand/middleware/immer';
 import { cancelPending, debouncedSetItem } from './debouncedPersist';
 import { safeParseJSON } from './utils/safeParseJSON';
+import { deepMergeWithArrayOps } from './utils/deepMergeWithArrayOps';
 
 type WritableState = Record<string, any>;
 type BoundStore<S extends WritableState> = UseBoundStore<StoreApi<S>>;
@@ -30,11 +31,34 @@ const _registry = new Map<string, RegisteredStore>();
 const _providerRegistry = new Map<string, RegisteredStore>();
 const _providerStoreRefs = new Map<string, BoundStore<any>>();
 
+/**
+ * 把某一 scope（service / provider）的失败 store 名单同步到 window 上的检测标志。
+ * 只替换本 scope 的条目，保留其他 scope；整体为空时删除标志（避免陈旧值误导 bench）。
+ */
+function publishWindowFailures(
+  windowKey: '__OS_RESET_FAILURES__' | '__OS_SNAPSHOT_FAILURES__',
+  scope: 'service' | 'provider',
+  failures: string[],
+): void {
+  if (typeof window === 'undefined') return;
+  const prev = window[windowKey];
+  const rest = (Array.isArray(prev) ? prev : []).filter((n) => !n.startsWith(`${scope}:`));
+  const next = [...rest, ...failures.map((n) => `${scope}:${n}`)];
+  if (next.length > 0) {
+    window[windowKey] = next;
+  } else {
+    delete window[windowKey];
+  }
+}
+
 export function resetAllOsStores(): void {
+  const serviceFailures: string[] = [];
+  const providerFailures: string[] = [];
   for (const entry of _registry.values()) {
     try {
       entry.reset();
     } catch (err) {
+      serviceFailures.push(entry.name);
       console.error(`[OsStoreRegistry] reset failed: ${entry.name}`, err);
     }
   }
@@ -42,49 +66,46 @@ export function resetAllOsStores(): void {
     try {
       entry.reset();
     } catch (err) {
+      providerFailures.push(entry.name);
       console.error(`[OsStoreRegistry] provider reset failed: ${entry.name}`, err);
     }
   }
+  publishWindowFailures('__OS_RESET_FAILURES__', 'service', serviceFailures);
+  publishWindowFailures('__OS_RESET_FAILURES__', 'provider', providerFailures);
 }
 
 export function snapshotOsStores(): Record<string, any> {
   const out: Record<string, any> = {};
+  const failures: string[] = [];
   for (const [name, entry] of _registry) {
     try {
       out[name] = entry.getState();
     } catch (err) {
+      failures.push(name);
       console.error(`[OsStoreRegistry] snapshot failed: ${name}`, err);
     }
   }
+  publishWindowFailures('__OS_SNAPSHOT_FAILURES__', 'service', failures);
   return out;
 }
 
 export function snapshotProviders(): Record<string, any> {
   const out: Record<string, any> = {};
+  const failures: string[] = [];
   for (const [name, entry] of _providerRegistry) {
     try {
       out[name] = entry.getState();
     } catch (err) {
+      failures.push(name);
       console.error(`[OsStoreRegistry] provider snapshot failed: ${name}`, err);
     }
   }
+  publishWindowFailures('__OS_SNAPSHOT_FAILURES__', 'provider', failures);
   return out;
 }
 
 export function patchProviders(patch: Record<string, any>, deep: boolean): string[] {
   const patched: string[] = [];
-  const deepMerge = (target: any, source: any): any => {
-    if (source === undefined) return target;
-    if (source === null) return null;
-    if (typeof source !== 'object' || Array.isArray(source)) return source;
-    if (typeof target !== 'object' || target === null || Array.isArray(target)) return source;
-    const result = { ...target };
-    for (const key of Object.keys(source)) {
-      result[key] = deepMerge(target[key], source[key]);
-    }
-    return result;
-  };
-
   for (const [providerName, providerPatch] of Object.entries(patch)) {
     if (providerPatch === undefined || providerPatch === null) continue;
     const store = _providerStoreRefs.get(providerName);
@@ -98,7 +119,7 @@ export function patchProviders(patch: Record<string, any>, deep: boolean): strin
       for (const [k, v] of Object.entries(current as Record<string, any>)) {
         if (typeof v !== 'function') currentData[k] = v;
       }
-      const merged = deepMerge(currentData, providerPatch);
+      const merged = deepMergeWithArrayOps(currentData, providerPatch);
       (store.setState as any)(merged, true);
     } else {
       (store.setState as any)(providerPatch, true);
@@ -151,7 +172,9 @@ function createStorage<S extends WritableState>(
       };
     },
     setItem(key: string, value: StorageValue<S>) {
-      debouncedSetItem(key, JSON.stringify(value));
+      // 惰性序列化：JSON.stringify 挪进防抖回调执行（zustand 状态不可变，闭包引用安全），
+      // 避免 300ms 窗口内被覆盖的写入白白付出序列化成本。
+      debouncedSetItem(key, () => JSON.stringify(value));
     },
     removeItem(key: string) {
       cancelPending(key);

@@ -37,8 +37,10 @@ export interface Task {
   /** 激活此 Task 时的前台 TaskId（用于 Task 返回栈：finish 时回到发起方） */
   launchedByTaskId?: string;
   /** 此 Task 的初始路由是否由外部 openApp(appId, route) 设置。
-   *  true → Back 到底时 finish Task（等同 Android 非 launcher Activity 的 finish）
-   *  false/undefined → Back 到底时 moveTaskToBack（Task 保活） */
+   *  当前仅影响 LAUNCH_APP 从桌面重激活此 Task 时是否清除 launchedByTaskId：
+   *  true → 保留 launchedByTaskId（外部路由的瞬态流程如支付，finish 后仍能回到调用方）
+   *  false/undefined → 从桌面重激活时清除 launchedByTaskId（Back 到底回桌面）。
+   *  注意：Back 到底一律不销毁 Task（见 OSContext 的 os.returnToLauncherTask / os.goHomeFallback）。 */
   wasExternallyRouted?: boolean;
 }
 

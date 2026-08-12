@@ -75,8 +75,8 @@ function getDefaultFolderName(): string {
 }
 
 function makeId(prefix: string): string {
-  const cryptoAny = globalThis.crypto as any;
-  if (cryptoAny?.randomUUID) return `${prefix}_${cryptoAny.randomUUID()}`;
+  const cryptoObj: Crypto | undefined = globalThis.crypto;
+  if (cryptoObj?.randomUUID) return `${prefix}_${cryptoObj.randomUUID()}`;
   return `${prefix}_${TimeService.now().toString(16)}_${Math.random().toString(16).slice(2)}`;
 }
 
@@ -512,7 +512,7 @@ const LauncherAppIcon = React.memo(function LauncherAppIcon(props: {
   const startLongPress = (e: React.PointerEvent<HTMLButtonElement>) => {
     if (!onLongPress && !onLongPressDrag) return;
     // Only primary button (mouse) / touch / pen.
-    if (typeof (e as any).button === 'number' && (e as any).button !== 0) return;
+    if (typeof e.button === 'number' && e.button !== 0) return;
 
     suppressNextClickRef.current = false;
     longPressedRef.current = false;
@@ -520,7 +520,7 @@ const LauncherAppIcon = React.memo(function LauncherAppIcon(props: {
     activePointerIdRef.current = e.pointerId;
     startPosRef.current = { x: e.clientX, y: e.clientY };
     clearTimer();
-    const isTrustedEvent = !!(e as any).isTrusted;
+    const isTrustedEvent = !!e.isTrusted;
     timerRef.current = window.setTimeout(() => {
       timerRef.current = null;
       longPressedRef.current = true;
@@ -564,7 +564,7 @@ const LauncherAppIcon = React.memo(function LauncherAppIcon(props: {
     // Best-effort: release pointer capture if we took it
     try {
       const pid = activePointerIdRef.current;
-      const el = btnRef.current as any;
+      const el = btnRef.current;
       if (pid != null && el?.releasePointerCapture) {
         el.releasePointerCapture(pid);
       }
@@ -655,7 +655,7 @@ const FolderIcon = React.memo(function FolderIcon(props: {
 
   const startLongPress = (e: React.PointerEvent<HTMLButtonElement>) => {
     if (!onLongPress && !onLongPressDrag) return;
-    if (typeof (e as any).button === 'number' && (e as any).button !== 0) return;
+    if (typeof e.button === 'number' && e.button !== 0) return;
 
     suppressNextClickRef.current = false;
     longPressedRef.current = false;
@@ -663,7 +663,7 @@ const FolderIcon = React.memo(function FolderIcon(props: {
     activePointerIdRef.current = e.pointerId;
     startPosRef.current = { x: e.clientX, y: e.clientY };
     clearTimer();
-    const isTrustedEvent = !!(e as any).isTrusted;
+    const isTrustedEvent = !!e.isTrusted;
     timerRef.current = window.setTimeout(() => {
       timerRef.current = null;
       longPressedRef.current = true;
@@ -706,7 +706,7 @@ const FolderIcon = React.memo(function FolderIcon(props: {
     startPosRef.current = null;
     try {
       const pid = activePointerIdRef.current;
-      const el = btnRef.current as any;
+      const el = btnRef.current;
       if (pid != null && el?.releasePointerCapture) {
         el.releasePointerCapture(pid);
       }
@@ -758,7 +758,10 @@ const FolderIcon = React.memo(function FolderIcon(props: {
                 return <div key={i} className="bg-white/10 rounded-[4px]" />;
               }
               const manifest = getAppManifest(appId);
-              const Icon = (manifest?.icon as any) ?? null;
+              // manifest.icon 允许是图片 URL（AppIconSource = ComponentType | string），
+              // 字符串不能当作 JSX 组件渲染，这里只渲染组件型图标。
+              const icon = manifest?.icon;
+              const Icon = typeof icon === 'string' ? null : icon ?? null;
               return (
                 <div key={i} className="bg-white/10 rounded-[4px] flex items-center justify-center">
                   {Icon ? (
@@ -826,7 +829,7 @@ function LauncherClockWidget(props: { onClick: () => void; onLongPress?: (anchor
       style={{ touchAction: onLongPress ? 'pan-x' : undefined }}
       onPointerDown={(e) => {
         if (!onLongPress) return;
-        if (typeof (e as any).button === 'number' && (e as any).button !== 0) return;
+        if (typeof e.button === 'number' && e.button !== 0) return;
         suppressNextClickRef.current = false;
         startPosRef.current = { x: e.clientX, y: e.clientY };
         clearTimer();
@@ -987,17 +990,34 @@ function getLocalizedLauncherWeatherText(
   return formatLauncherPinyinLabel(raw);
 }
 
+/**
+ * Weather App store 状态的结构化投影（launcher 跨层只读，不 import App 层类型）。
+ * 字段全部可选：store.getState() 在类型上是 any，这里只声明本组件实际读取的部分。
+ */
+type LauncherWeatherStateSlice = {
+  selectedCityId?: string;
+  savedCities?: Array<{ id?: string; name?: string }>;
+  bundlesByCityId?: Record<string, {
+    locationName?: string;
+    bundle?: {
+      now?: { temp?: string; text?: string };
+      daily?: Array<{ tempMax?: string; tempMin?: string }>;
+      airQuality?: { aqi?: string } | null;
+    };
+  } | undefined>;
+};
+
 function deriveWeatherSnapshot(store: ReturnType<typeof getStore>): WeatherSnapshot {
   if (!store) return null;
-  const s = store.getState() as any;
+  const s: LauncherWeatherStateSlice | undefined = store.getState();
   const cityId = s?.selectedCityId ?? '';
   const bundle = s?.bundlesByCityId?.[cityId];
   if (!bundle?.bundle?.now) return null;
-  const savedCities: any[] = s?.savedCities ?? [];
+  const savedCities = s?.savedCities ?? [];
   let cityName = '--';
   if (cityId === 'located') cityName = bundle.locationName ?? '定位中';
   else {
-    const city = savedCities.find((c: any) => c.id === cityId);
+    const city = savedCities.find((c) => c.id === cityId);
     cityName = city?.name ?? '--';
   }
   const now = bundle.bundle.now;
@@ -1128,7 +1148,7 @@ function LauncherWeatherWidget(props: { onClick: () => void; onLongPress?: (anch
       style={{ touchAction: onLongPress ? 'pan-x' : undefined }}
       onPointerDown={(e) => {
         if (!onLongPress) return;
-        if (typeof (e as any).button === 'number' && (e as any).button !== 0) return;
+        if (typeof e.button === 'number' && e.button !== 0) return;
         suppressNextClickRef.current = false;
         startPosRef.current = { x: e.clientX, y: e.clientY };
         clearTimer();
@@ -1502,7 +1522,7 @@ export const Launcher: React.FC = () => {
     NotificationService.getState,
   );
   const badgeCountByAppId = useMemo(() => {
-    const prefs = preferences as Record<string, any>;
+    const prefs = preferences;
     const map: Partial<Record<AppId, number>> = {};
     for (const it of notifications.items) {
       const appId = it.appId;
@@ -1519,7 +1539,7 @@ export const Launcher: React.FC = () => {
   }, [preferences, notifications.items]);
 
   const iconSizePct = useMemo(() => {
-    const raw = (preferences as any).icon_size;
+    const raw = preferences.icon_size;
     const n = typeof raw === 'number' ? raw : Number(raw);
     if (!Number.isFinite(n)) return 100;
     return Math.max(80, Math.min(120, Math.round(n)));
@@ -1530,7 +1550,7 @@ export const Launcher: React.FC = () => {
   }, [iconSizePct]);
 
   const preferredGrid = useMemo(() => {
-    const raw = (preferences as any).home_screen_layout;
+    const raw = preferences.home_screen_layout;
     if (typeof raw !== 'string' || !raw.trim()) return null;
     const s = raw.trim().toLowerCase().replace('×', 'x').replace(/\s+/g, '');
     const m = s.match(/^(\d{1,2})x(\d{1,2})$/);
@@ -2272,11 +2292,12 @@ export const Launcher: React.FC = () => {
 
     // Hotseat is full (no space to push into).
     // Only allow swap when we have a valid origin cell on workspace.
-    const originScreenId = (d.origin as any).screenId;
-    const originCellX = Number((d.origin as any).cellX);
-    const originCellY = Number((d.origin as any).cellY);
+    const workspaceOrigin = d.origin.container === 'workspace' ? d.origin : null;
+    const originScreenId = workspaceOrigin?.screenId;
+    const originCellX = Number(workspaceOrigin?.cellX);
+    const originCellY = Number(workspaceOrigin?.cellY);
     const originCanReceive =
-      d.origin.container === 'workspace' &&
+      workspaceOrigin != null &&
       typeof originScreenId === 'string' &&
       Number.isFinite(originCellX) &&
       Number.isFinite(originCellY) &&
@@ -2917,7 +2938,7 @@ export const Launcher: React.FC = () => {
             onPointerDown={(e) => {
               const target = e.target as HTMLElement | null;
               if (target?.closest('button, [role="button"], [data-desktop-interactive="true"]')) return;
-              if (typeof (e as any).button === 'number' && (e as any).button !== 0) return;
+              if (typeof e.button === 'number' && e.button !== 0) return;
               bgStartPosRef.current = { x: e.clientX, y: e.clientY };
               clearBgTimer();
               bgTimerRef.current = window.setTimeout(() => {

@@ -182,6 +182,39 @@ export function makeNamespacedKey(key: string): string {
 
 const PATCH_MARK = '__MG_LOCALSTORAGE_NS_PATCH__';
 
+const NS_KEY_PREFIX = 'mg:ns_';
+
+/**
+ * 启动时回收旧命名空间的 localStorage 键（保守版）。
+ * tab / load 模式下每个新标签页 / 每次加载都会生成新命名空间，旧 `mg:ns_*:*` 键
+ * 永不复用，不清理会无限累积直至 QuotaExceeded。此处删除所有 `mg:ns_` 前缀且
+ * 不属于当前命名空间的键。
+ * 注意：若有并发存活的其他标签页，其命名空间的持久化键也会被删（该页内存态不受
+ * 影响，刷新后回到默认态）——这是 tab 隔离语义下可接受的取舍。
+ * IndexedDB 旧库（mg_ns_*__ 前缀，见 getNamespacedIndexedDbName）不在此回收：
+ * indexedDB.databases() 枚举兼容性与并发删除风险拿不准，暂不处理。
+ */
+function cleanupStaleNamespaceKeys(
+  currentPrefix: string,
+  originalKey: (index: number) => string | null,
+  originalRemoveItem: (key: string) => void,
+): void {
+  try {
+    const storage = window.localStorage;
+    const staleKeys: string[] = [];
+    const len = storage.length;
+    for (let i = 0; i < len; i++) {
+      const k = originalKey.call(storage, i);
+      if (k && String(k).startsWith(NS_KEY_PREFIX) && !String(k).startsWith(currentPrefix)) {
+        staleKeys.push(String(k));
+      }
+    }
+    for (const k of staleKeys) originalRemoveItem.call(storage, k);
+  } catch {
+    // best-effort — 清理失败不影响启动
+  }
+}
+
 /**
  * Monkey-patch Storage methods so all existing code that uses localStorage
  * automatically becomes namespaced, without touching every app.
@@ -206,6 +239,8 @@ export function installLocalStorageNamespacing(): { mode: StorageIsolationMode; 
   const originalKey = proto.key;
 
   const prefix = `mg:${namespace}:`;
+
+  cleanupStaleNamespaceKeys(prefix, originalKey, originalRemoveItem);
 
   proto.getItem = function (this: Storage, key: string) {
     if (this === window.localStorage) return originalGetItem.call(this, prefix + String(key));

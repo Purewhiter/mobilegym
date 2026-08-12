@@ -34,7 +34,9 @@ export function createDebouncedStorage(): PersistStorage<any> {
       return raw ? JSON.parse(raw) : null;
     },
     setItem(key: string, value: StorageValue<any>) {
-      debouncedSetItem(key, JSON.stringify(value));
+      // 惰性序列化：JSON.stringify 挪进防抖回调执行（zustand 状态不可变，闭包引用安全），
+      // 避免 300ms 窗口内被覆盖的写入白白付出序列化成本。
+      debouncedSetItem(key, () => JSON.stringify(value));
     },
     removeItem(key: string) {
       cancelPending(key);
@@ -87,6 +89,23 @@ export function writePersistedAppState(appId: string, state: Record<string, any>
 }
 
 /**
+ * 构造 reset 用的 setState patch：以 initialState 为基底，并把运行期新增的
+ * 顶层数据 key（不在 initialState 里且非函数）显式置为 undefined。
+ * 否则 setState 浅合并会让这些 key 逃过 __SIM__.resetState()（OS 侧 createOsStore
+ * 的 reset 是 replace 语义，App 侧浅合并必须显式抹掉多余 key 才能对齐）。
+ */
+function buildResetPatch(store: AnyStore, initialState: Record<string, any>): Record<string, any> {
+  const patch: Record<string, any> = { ...initialState };
+  const current = store.getState() as Record<string, any>;
+  for (const key of Object.keys(current)) {
+    if (key in patch) continue;
+    if (typeof current[key] === 'function') continue;  // actions 保留
+    patch[key] = undefined;
+  }
+  return patch;
+}
+
+/**
  * Zustand v5 persist 的 toThenable 对同步 storage 是同步链式调用（非微任务），
  * 导致 hydration 在 create() 内同步完成。若在 create() 返回后才注册
  * onFinishHydration 回调，回调永远不会触发。
@@ -121,7 +140,7 @@ export function createAppStore<T extends Record<string, any>>(
     })
   );
   storeRegistry.set(appId, store as unknown as AnyStore);
-  resetRegistry.set(appId, () => store.setState({ ...initialState }));
+  resetRegistry.set(appId, () => store.setState(buildResetPatch(store as unknown as AnyStore, initialState) as Partial<T>));
   if (options?.afterHydration) {
     runAfterHydration(store, options.afterHydration);
   }
@@ -135,7 +154,7 @@ export function createVolatileAppStore<T extends Record<string, any>>(
 ) {
   const store = create<T>()(() => ({ ...initialState }));
   storeRegistry.set(appId, store as unknown as AnyStore);
-  resetRegistry.set(appId, () => store.setState({ ...initialState }));
+  resetRegistry.set(appId, () => store.setState(buildResetPatch(store as unknown as AnyStore, initialState) as Partial<T>));
   return store;
 }
 
@@ -178,8 +197,9 @@ export function createAppStoreWithActions<
     )
   );
   storeRegistry.set(appId, store as unknown as AnyStore);
-  // Shallow merge initialState 回去, actions 不在 initialState 里所以保留。
-  resetRegistry.set(appId, () => store.setState({ ...initialState } as any));
+  // Shallow merge initialState 回去, actions 不在 initialState 里所以保留;
+  // 运行期新增的顶层数据 key 由 buildResetPatch 显式置 undefined。
+  resetRegistry.set(appId, () => store.setState(buildResetPatch(store as unknown as AnyStore, initialState) as any));
   if (options?.afterHydration) {
     runAfterHydration(store, options.afterHydration);
   }

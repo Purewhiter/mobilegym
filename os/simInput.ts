@@ -87,7 +87,7 @@ export interface SimQueryRect {
   /** 元素中心点（physical px） */
   centerPhysical: { x: number; y: number };
   /** 便于调试：匹配到的元素标注 */
-  meta?: { selector?: string; triggerId?: string; triggerParams?: any; elementId?: string };
+  meta?: { selector?: string; triggerId?: string; triggerParams?: unknown; elementId?: string };
 }
 
 export interface SimQueryAPI {
@@ -100,7 +100,7 @@ export interface SimQueryAPI {
    * 通过 data-trigger + 可选 params 获取元素坐标（返回第一个可见且匹配 params 的元素）
    * 例：getRectByTrigger('faceToFace.join.open', { pin: '2345' })
    */
-  getRectByTrigger: (triggerId: string, params?: Record<string, any>) => SimQueryRect | null;
+  getRectByTrigger: (triggerId: string, params?: Record<string, unknown>) => SimQueryRect | null;
   /**
    * 通过元素 id 获取坐标（等价于 getRectBySelector(`#${id}`)）
    */
@@ -111,23 +111,23 @@ export interface SimQueryAPI {
   getScrollMeta: () => ScrollMetaMap;
 }
 
-function assertFinite(n: any, label: string) {
+function assertFinite(n: unknown, label: string): asserts n is number {
   if (typeof n !== 'number' || Number.isNaN(n) || !Number.isFinite(n)) {
     throw new TypeError(`[__SIM_INPUT__] ${label} must be a finite number, got ${String(n)}`);
   }
 }
 
-function coercePoint(p: any, label: string): Point {
+function coercePoint(p: unknown, label: string): Point {
   if (Array.isArray(p) && p.length >= 2) {
-    const x = p[0];
-    const y = p[1];
+    const x: unknown = p[0];
+    const y: unknown = p[1];
     assertFinite(x, `${label}[0] (x)`);
     assertFinite(y, `${label}[1] (y)`);
     return { x, y };
   }
-  if (p && typeof p === 'object' && 'x' in p && 'y' in p) {
-    const x = (p as any).x;
-    const y = (p as any).y;
+  if (typeof p === 'object' && p !== null && 'x' in p && 'y' in p) {
+    const x = p.x;
+    const y = p.y;
     assertFinite(x, `${label}.x`);
     assertFinite(y, `${label}.y`);
     return { x, y };
@@ -252,7 +252,7 @@ function setCaretFromClientX(el: HTMLInputElement | HTMLTextAreaElement, clientX
   // We approximate by measuring text width and placing caret near clicked x.
   try {
     // Some input types don't support selection APIs (e.g. number)
-    if (typeof (el as any).setSelectionRange !== 'function') return;
+    if (typeof el.setSelectionRange !== 'function') return;
     const value = String(el.value ?? '');
     if (!value) {
       el.setSelectionRange(0, 0);
@@ -266,7 +266,7 @@ function setCaretFromClientX(el: HTMLInputElement | HTMLTextAreaElement, clientX
 
     // Visible text start inside the input box.
     // Account for horizontal scrolling in the input.
-    const scrollLeft = typeof (el as any).scrollLeft === 'number' ? (el as any).scrollLeft : 0;
+    const scrollLeft = typeof el.scrollLeft === 'number' ? el.scrollLeft : 0;
     const xIn = Math.max(0, clientX - rect.left - padL - borderL + scrollLeft);
 
     const font = buildCanvasFont(style);
@@ -308,7 +308,7 @@ function focusIfFocusable(el: Element, x: number, y: number) {
 
   try {
     // preventScroll is best-effort (some browsers may not support it)
-    (el as any).focus?.({ preventScroll: true });
+    el.focus?.({ preventScroll: true });
   } catch {
     try {
       el.focus();
@@ -354,7 +354,7 @@ function sleep(ms: number) {
 
 function setNativeValue(el: HTMLInputElement | HTMLTextAreaElement, value: string) {
   // React 受控输入需要走原生 setter 才能触发 onChange 正常工作
-  let proto: any = Object.getPrototypeOf(el);
+  let proto: object | null = Object.getPrototypeOf(el);
   while (proto) {
     const desc = Object.getOwnPropertyDescriptor(proto, 'value');
     if (desc && typeof desc.set === 'function') {
@@ -364,7 +364,7 @@ function setNativeValue(el: HTMLInputElement | HTMLTextAreaElement, value: strin
     proto = Object.getPrototypeOf(proto);
   }
   // fallback
-  (el as any).value = value;
+  el.value = value;
 }
 
 interface ScrollableTargetInfo {
@@ -560,7 +560,7 @@ export function initSimInput(): void {
       const clear = opts?.clear ?? false;
       const perCharMs = Math.max(0, opts?.perCharMs ?? 0);
 
-      const active = document.activeElement as any;
+      const active = document.activeElement;
       if (!active || active === document.body || active === document.documentElement) {
         throw new Error('[__SIM_INPUT__] no focused input element; tap an input first');
       }
@@ -863,10 +863,10 @@ export function initSimInput(): void {
     },
     getRectById: (id: string) => {
       if (!id) return null;
-      const safe = CSS && (CSS as any).escape ? (CSS as any).escape(id) : id.replace(/"/g, '\\"');
+      const safe = typeof CSS !== 'undefined' && typeof CSS.escape === 'function' ? CSS.escape(id) : id.replace(/"/g, '\\"');
       return queryApi.getRectBySelector(`#${safe}`);
     },
-    getRectByTrigger: (triggerId: string, params?: Record<string, any>) => {
+    getRectByTrigger: (triggerId: string, params?: Record<string, unknown>) => {
       try {
         const selector = `[data-trigger="${triggerId}"]`;
         const els = Array.from(document.querySelectorAll(selector));
@@ -875,10 +875,11 @@ export function initSimInput(): void {
           const raw = (el as HTMLElement).getAttribute('data-trigger-params');
           if (!raw) return false;
           try {
-            const obj = JSON.parse(raw);
+            const obj: unknown = JSON.parse(raw);
             if (!obj || typeof obj !== 'object') return false;
+            const rec = obj as Record<string, unknown>;
             for (const [k, v] of Object.entries(params)) {
-              if ((obj as any)[k] !== v) return false;
+              if (rec[k] !== v) return false;
             }
             return true;
           } catch {
@@ -887,7 +888,7 @@ export function initSimInput(): void {
         });
         if (!matched) return null;
         const rawParams = (matched as HTMLElement).getAttribute('data-trigger-params');
-        let parsed: any = undefined;
+        let parsed: unknown = undefined;
         if (rawParams) {
           try { parsed = JSON.parse(rawParams); } catch { parsed = rawParams; }
         }
