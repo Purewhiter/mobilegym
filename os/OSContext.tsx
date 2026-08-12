@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useMemo, useRef, useSyncExternalStore } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useSyncExternalStore } from 'react';
 import type { AppId, OSState } from './types';
 import type { AppIntentFilter, IntentPayload } from './types/manifest';
 import { getStore, readPersistedAppState, writePersistedAppState } from './createAppStore';
@@ -7,7 +7,6 @@ import { getTimeConfig, now, formatTime, formatDate, getDayOfWeek } from './Time
 import { getLocationConfig, getSimulatedCoords } from './LocationService';
 import { dataLoaderByAppId } from './data/appRegistry';
 import { initFileSystem } from './FileSystemService';
-import * as MediaService from './MediaService';
 import { KeyboardService } from './keyboard/KeyboardService';
 import { ClipboardService } from './ClipboardService';
 import { NotificationService } from './NotificationService';
@@ -30,8 +29,6 @@ import {
 import PackageManagerService from './PackageManagerService';
 import ContentResolver from './ContentResolver';
 import { AppNavigatorRegistry } from './AppNavigatorRegistry';
-import { AppLifecycle } from './AppLifecycle';
-import { BackDispatcher } from './BackDispatcher';
 import { TaskManager } from './TaskManager';
 import { IntentResolver } from './IntentResolver';
 import { PendingIntent } from './PendingIntent';
@@ -45,6 +42,8 @@ import { deepMergeWithArrayOps } from './utils/deepMergeWithArrayOps';
 import { readLauncherSummary } from './sim/launcherSnapshot';
 import { resetStateCore } from './sim/simResetCore';
 import { getLastNavError } from './osNavError';
+import { useOsBackHandlers } from './hooks/useOsBackHandlers';
+import { useAppLifecycleSync } from './hooks/useAppLifecycleSync';
 import {
   launchApp,
   launchTaskById,
@@ -106,9 +105,6 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     (onStoreChange) => IntentResolver.subscribe(() => onStoreChange()),
     IntentResolver.getState,
   );
-  const prevActiveAppIdRef = useRef<AppId | null>(getActiveAppId(state));
-  const prevRunningAppsRef = useRef<AppId[]>(deriveRunningApps(state.tasks));
-
   useEffect(() => {
     initFileSystem().catch(console.error);
   }, []);
@@ -126,101 +122,9 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     };
   }, []);
 
-  useEffect(() => {
-    const previousActiveAppId = prevActiveAppIdRef.current;
-    const currentActiveAppId = getActiveAppId(state);
-    if (previousActiveAppId !== currentActiveAppId) {
-      if (previousActiveAppId) AppLifecycle.emit(previousActiveAppId, 'background');
-      if (currentActiveAppId) AppLifecycle.emit(currentActiveAppId, 'foreground');
-      prevActiveAppIdRef.current = currentActiveAppId;
-    }
-  }, [state.activeTaskId, state.tasks]);
+  useAppLifecycleSync(state);
 
-  useEffect(() => {
-    const previousRunningApps = new Set(prevRunningAppsRef.current);
-    const currentRunningApps = deriveRunningApps(state.tasks);
-    const currentRunningSet = new Set(currentRunningApps);
-
-    previousRunningApps.forEach((appId) => {
-      if (!currentRunningSet.has(appId)) {
-        AppLifecycle.emit(appId, 'destroy');
-      }
-    });
-
-    prevRunningAppsRef.current = currentRunningApps;
-  }, [state.tasks]);
-
-  useEffect(() => {
-    const unregisters = [
-      BackDispatcher.register('os.intentChooser', () => {
-        if (!IntentResolver.getState().open) return false;
-        IntentResolver.cancelIntentChooser();
-        return true;
-      }, 900),
-      BackDispatcher.register('os.mediaPicker', () => {
-        if (!MediaService.isPickerActive()) return false;
-        MediaService.cancelSelection();
-        return true;
-      }, 600),
-      BackDispatcher.register('os.appBack', () => {
-        const activeAppId = getActiveAppId(TaskManager.getState());
-        if (!activeAppId) return false;
-        const handler = AppNavigatorRegistry.getBackHandler(activeAppId);
-        return !!handler?.();
-      }, 100),
-      BackDispatcher.register('os.activityBack', () => {
-        const activeTask = getActiveTask(TaskManager.getState());
-        const topActivity = getTaskTopActivity(activeTask);
-        if (!topActivity) return false;
-        const handler = AppNavigatorRegistry.getActivityBackHandler(topActivity.activityId);
-        return !!handler?.();
-      }, 50),
-      BackDispatcher.register('os.finishTopActivity', () => {
-        const activeTask = getActiveTask(TaskManager.getState());
-        if (!activeTask || activeTask.stack.length <= 1) return false;
-        finishActivity();
-        return true;
-      }, 25),
-      BackDispatcher.register('os.returnToLauncherTask', () => {
-        const latestState = TaskManager.getState();
-        const activeTask = getActiveTask(latestState);
-        if (!activeTask || activeTask.stack.length > 1) return false;
-        const { launchedByTaskId } = activeTask;
-        if (!launchedByTaskId) return false;
-        if (!latestState.tasks.some((t) => t.taskId === launchedByTaskId)) return false;
-        // 重置 App MemoryRouter 到 '/'，让用户从 recents 重新进入时看到 App 主页（如 SMS inbox）
-        // 而不是上次离开时的子页（如 /new compose）。
-        const top = getTaskTopActivity(activeTask);
-        if (top) {
-          const activityNav = AppNavigatorRegistry.getActivity(top.activityId)?.navigate;
-          try { activityNav?.('/'); } catch { /* ignore */ }
-        }
-        // 不 closeTask —— Android 默认 task 持久保留在 recents，模拟器跟齐这一行为。
-        // 同时消费 launchedByTaskId 指针（一次性）：用户从 recents 重新进入此 task 再 back 时，
-        // 会走 goHomeFallback 回桌面，而非沿原启动链跳回旧 caller。
-        TaskManager.activateTask(launchedByTaskId);
-        TaskManager.consumeLaunchedBy(activeTask.taskId);
-        return true;
-      }, 12),
-      BackDispatcher.register('os.goHomeFallback', () => {
-        const latestState = TaskManager.getState();
-        const activeTask = getActiveTask(latestState);
-        // 同 returnToLauncherTask：不 closeTask，只重置 App 到 '/' 并回桌面。
-        if (activeTask) {
-          const top = getTaskTopActivity(activeTask);
-          if (top) {
-            const activityNav = AppNavigatorRegistry.getActivity(top.activityId)?.navigate;
-            try { activityNav?.('/'); } catch { /* ignore */ }
-          }
-        }
-        goHome();
-        return true;
-      }, 0),
-    ];
-    return () => {
-      unregisters.forEach((unregister) => unregister());
-    };
-  }, []);
+  useOsBackHandlers();
 
   const osStateForApi = useMemo(() => ({
     ...state,
