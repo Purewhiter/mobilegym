@@ -6,6 +6,11 @@ import { execFileSync, spawn, type ChildProcess } from 'child_process';
 import { fileURLToPath } from 'url';
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
+import {
+  INDEX_NAME as THEME_INDEX_NAME,
+  buildIndexPayload,
+  isBundleDir,
+} from './scripts/lib/theme_asset_index.mjs';
 
 // Fix for __dirname in ESM
 const __filename = fileURLToPath(import.meta.url);
@@ -598,6 +603,10 @@ function serveAppAssetsPlugin() {
 /**
  * Dev 环境下把 /cdn/ 映射到仓库根的 mobilegym-data/（gitignored），
  * 与生产 nginx 的 alias 行为一致；生产 nginx.source.conf 里的 location /cdn/ 等价。
+ *
+ * assets-index.json（WMR bundle 的文件清单，等价真机 MAML zip 包的 central
+ * directory）在磁盘不存在时按需扫描目录动态生成——dev/preview 无须预生成
+ * 任何文件；nginx 静态路径由 start_nginx_gateway.sh 预生成。
  */
 function serveCdnPlugin() {
   const MIME: Record<string, string> = {
@@ -613,7 +622,16 @@ function serveCdnPlugin() {
     if (!rel || rel.includes('..')) return next();
 
     const filePath = path.join(CDN_ROOT, rel);
-    if (!filePath.startsWith(CDN_ROOT) || !fs.existsSync(filePath) || !fs.statSync(filePath).isFile()) {
+    if (!filePath.startsWith(CDN_ROOT)) return next();
+
+    if (!fs.existsSync(filePath) || !fs.statSync(filePath).isFile()) {
+      // 动态清单兜底：仅对真实 bundle 目录（含 manifest.xml）响应，不写盘。
+      if (path.basename(filePath) === THEME_INDEX_NAME && isBundleDir(path.dirname(filePath))) {
+        res.setHeader('Content-Type', 'application/json');
+        res.setHeader('Cache-Control', 'no-cache');
+        res.end(buildIndexPayload(path.dirname(filePath)));
+        return;
+      }
       return next();
     }
 

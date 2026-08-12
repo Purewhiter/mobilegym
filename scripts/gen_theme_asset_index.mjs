@@ -1,28 +1,21 @@
 #!/usr/bin/env node
 /**
- * Generate assets-index.json for every WMR bundle directory in the theme data pack.
+ * Pre-generate static assets-index.json files for WMR bundle directories.
  *
- * Why: MAML widget bundles have no file index. Without one, the WMR engine has
- * to discover frame counts / locale files by probing (requesting URLs until
- * they 404). With an index, the engine loads exactly the files that exist and
- * theme-related 404s drop to zero (see os/wmr/engine/assetIndex.ts).
- *
- * A "WMR bundle directory" is any directory containing a manifest.xml under
- * <themes-root>/<themeId>/ (e.g. widget_2x2/, clock_2x4/).
+ * Only needed for static-file servers (nginx production path — wired into
+ * start_nginx_gateway.sh). vite dev/preview serve the index dynamically via
+ * the /cdn middleware and need no generated files. See
+ * scripts/lib/theme_asset_index.mjs for background.
  *
  * Usage:
  *   node scripts/gen_theme_asset_index.mjs [--root <path-to-mobilegym-data>] [--check]
  *
- * Defaults to ./mobilegym-data (the symlinked data pack). Idempotent: output
- * is a sorted file list, so re-running produces byte-identical results.
- * --check exits 1 if any index is missing or stale (for CI / preflight).
+ * Idempotent (sorted output). --check exits 1 if any index is missing/stale.
  */
 import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
-
-const INDEX_NAME = 'assets-index.json';
-const IGNORED = new Set([INDEX_NAME, '.DS_Store', 'Thumbs.db']);
+import { INDEX_NAME, buildIndexPayload, isBundleDir } from './lib/theme_asset_index.mjs';
 
 function parseArgs(argv) {
   const args = { root: 'mobilegym-data', check: false };
@@ -37,31 +30,19 @@ function parseArgs(argv) {
   return args;
 }
 
-/** Recursively list files under dir as sorted posix-style relative paths. */
-function listFiles(dir, base = dir) {
-  const out = [];
-  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-    if (entry.name.startsWith('.') || IGNORED.has(entry.name)) continue;
-    const full = path.join(dir, entry.name);
-    if (entry.isDirectory()) out.push(...listFiles(full, base));
-    else if (entry.isFile()) out.push(path.relative(base, full).split(path.sep).join('/'));
-  }
-  return out.sort();
-}
-
-/** Find every directory containing a manifest.xml under root (bundle dirs). */
+/** Find every bundle directory (manifest.xml holder) under root. */
 function findBundleDirs(root) {
   const found = [];
   const walk = (dir) => {
+    if (isBundleDir(dir)) {
+      found.push(dir);
+      return; // bundles do not nest
+    }
     let entries;
     try {
       entries = fs.readdirSync(dir, { withFileTypes: true });
     } catch {
       return;
-    }
-    if (entries.some((e) => e.isFile() && e.name === 'manifest.xml')) {
-      found.push(dir);
-      return; // bundles do not nest
     }
     for (const e of entries) {
       if (e.isDirectory() && !e.name.startsWith('.')) walk(path.join(dir, e.name));
@@ -84,8 +65,7 @@ let unchanged = 0;
 let stale = 0;
 
 for (const dir of bundleDirs) {
-  const files = listFiles(dir);
-  const payload = JSON.stringify({ v: 1, files });
+  const payload = buildIndexPayload(dir);
   const target = path.join(dir, INDEX_NAME);
   const existing = fs.existsSync(target) ? fs.readFileSync(target, 'utf8') : null;
   if (existing === payload) {
@@ -99,7 +79,7 @@ for (const dir of bundleDirs) {
   }
   fs.writeFileSync(target, payload);
   written++;
-  console.log(`[write] ${path.relative(themesRoot, target)} (${files.length} files)`);
+  console.log(`[write] ${path.relative(themesRoot, target)}`);
 }
 
 console.log(
