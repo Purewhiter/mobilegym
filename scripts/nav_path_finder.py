@@ -1,10 +1,94 @@
 import argparse
 import json
 import re
+import sys
 from collections import deque
 from dataclasses import dataclass
 from difflib import SequenceMatcher
 from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple
+
+# Keep in sync with scripts/lib/nav_graph_schema.mjs.
+# Policy: schemaVersion missing -> accepted as legacy (warning);
+#         schemaVersion present but unsupported -> hard error;
+#         simplified-graph features -> hard error.
+NAV_GRAPH_SCHEMA_VERSION = 1
+
+
+def _detect_simplified_graph(graph: Any) -> Optional[str]:
+    """Return a human-readable reason if this is the route-level simplified graph."""
+    if not isinstance(graph, dict):
+        return None
+    if graph.get("variant") == "simplified":
+        return 'top-level variant is "simplified"'
+    if "edgeCount" in graph and "transitionCount" not in graph:
+        return "top-level has edgeCount but no transitionCount (simplified output shape)"
+    nodes = graph.get("nodes")
+    if isinstance(nodes, list) and any(
+        isinstance(n, dict) and isinstance(n.get("states"), list) for n in nodes
+    ):
+        return 'nodes[] carry aggregated "states" lists (route-level simplified nodes)'
+    edges = graph.get("edges")
+    if isinstance(edges, list) and any(
+        isinstance(e, dict) and isinstance(e.get("transitions"), list) for e in edges
+    ):
+        return 'edges[] carry merged "transitions" lists (route-level simplified edges)'
+    return None
+
+
+def validate_nav_graph(graph: Any, graph_path: str) -> None:
+    """Minimal structural validation; print clear errors and exit non-zero on failure."""
+    problems: List[str] = []
+    warnings: List[str] = []
+
+    if not isinstance(graph, dict):
+        problems.append("graph JSON must be an object with nodes[]/edges[]")
+    else:
+        simplified_reason = _detect_simplified_graph(graph)
+        if simplified_reason:
+            problems.append(
+                f"this looks like a *_simplified nav graph ({simplified_reason}); "
+                "feed the full nav graph (e.g. public/<app>_nav_graph.json), not the simplified companion"
+            )
+        else:
+            schema_version = graph.get("schemaVersion")
+            if schema_version is None:
+                warnings.append(
+                    f"graph has no schemaVersion (legacy output); expected schemaVersion={NAV_GRAPH_SCHEMA_VERSION}. "
+                    "Regenerate with scripts/navigation_declaration_analyzer.mjs to stamp it."
+                )
+            elif schema_version != NAV_GRAPH_SCHEMA_VERSION:
+                problems.append(
+                    f"unsupported schemaVersion={schema_version!r}; this tool supports schemaVersion={NAV_GRAPH_SCHEMA_VERSION}"
+                )
+
+            nodes = graph.get("nodes")
+            edges = graph.get("edges")
+            if not isinstance(nodes, list):
+                problems.append("graph.nodes is missing or not an array")
+            elif len(nodes) == 0:
+                problems.append("graph.nodes is empty — nothing to traverse")
+            if not isinstance(edges, list):
+                problems.append("graph.edges is missing or not an array")
+
+            if isinstance(nodes, list):
+                bad_ids: List[str] = []
+                for n in nodes:
+                    node_id = n.get("id") if isinstance(n, dict) else None
+                    if not isinstance(node_id, str) or not node_id.startswith("/"):
+                        bad_ids.append("<missing id>" if node_id is None else repr(node_id))
+                        if len(bad_ids) >= 5:
+                            break
+                if bad_ids:
+                    problems.append(
+                        f'node ids must be strings starting with "/"; offending ids: {", ".join(bad_ids)}'
+                    )
+
+    for w in warnings:
+        print(f"[NavPathFinder] WARN: {w} (graph: {graph_path})", file=sys.stderr)
+    if problems:
+        for p in problems:
+            print(f"[NavPathFinder] ERROR: {p} (graph: {graph_path})", file=sys.stderr)
+        sys.exit(2)
 
 
 def _normalize(text: str) -> str:
@@ -1006,6 +1090,8 @@ def main() -> None:
 
     with open(args.graph, "r", encoding="utf-8") as f:
         graph = json.load(f)
+
+    validate_nav_graph(graph, args.graph)
 
     finder = NavGraphPathFinder(
         graph,

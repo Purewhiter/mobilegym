@@ -8,9 +8,10 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "serve": "bash scripts/server/serve_dist.sh",
     "test": "vitest run",
     "test:watch": "vitest",
-    "lint": "eslint os/ apps/ && node scripts/lint_store_getters.mjs",
+    "lint": "eslint os/ apps/ system/ && node scripts/lint_store_getters.mjs",
     "build:web-css": "tailwindcss -i web/tailwind.input.css -o web/tailwind.css --minify",
     "watch:web-css": "tailwindcss -i web/tailwind.input.css -o web/tailwind.css --watch"
   },

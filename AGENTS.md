@@ -16,7 +16,7 @@ User-facing documentation under `docs/` and `bench_env/docs/` is in **English**.
 ### ESLint
 
 ```bash
-npm run lint          # Lint runtime code under os/ and apps/
+npm run lint          # Lint runtime code under os/, apps/ and system/
 ```
 
 Current rule: bare `Date.now()` and any form of `new Date(...)` (including parameterised forms — they must go through `TimeService`) are forbidden. Config lives in `eslint.config.js`.

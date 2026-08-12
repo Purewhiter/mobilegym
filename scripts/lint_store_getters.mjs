@@ -6,22 +6,33 @@
  * These have stable references — subscribing via useStore(s => s.isLiked)
  * will NOT trigger re-renders when the underlying data changes.
  *
- * Two-pass analysis:
- *   Pass 1 — Store definitions: finds query-like methods in *Actions interfaces
- *   Pass 2 — Consumer subscriptions: finds useXxxStore(s => s.<getter>) in .tsx files
+ * Implementation: TypeScript AST (not regex), so it understands
+ *   - `interface FooActions { ... }` (incl. extends clauses)
+ *   - `type FooActions = { ... }` / intersections (`Base & { ... }`)
+ *   - property signatures  `getX: (id: string) => X`
+ *   - method shorthand     `getX(id: string): X`
+ *   - generic methods      `getX: <T>(k: string) => T`
  *
- * See docs/platform/state-model.md "Store actions: no query-style getters"
+ * Three-pass analysis over apps/ + system/:
+ *   Pass 1 — Store definitions: query-like methods in *Actions* interfaces/type aliases (ERROR)
+ *   Pass 2 — Consumer subscriptions: useXxxStore(s => s.<getter>) (ERROR)
+ *   Pass 3 — Whole-store subscriptions: bare useXxxStore() without a selector (WARN, non-blocking)
+ *
+ * Exit code: 1 when error-level issues exist (pass 1/2); pass-3 warnings never block.
+ *
+ * See docs/platform/state/model.md "Store actions: no query-style getters"
  *
  * Usage:
- *   node scripts/lint_store_getters.mjs              # scan all apps
+ *   node scripts/lint_store_getters.mjs              # scan all apps (apps/ + system/)
  *   node scripts/lint_store_getters.mjs Spotify X    # scan specific apps
  *   node scripts/lint_store_getters.mjs --json       # JSON output
  */
 import fs from 'fs';
 import path from 'path';
+import ts from 'typescript';
 
 const WORKSPACE = process.cwd();
-const APPS_DIR = path.join(WORKSPACE, 'apps');
+const SCAN_ROOTS = ['apps', 'system'];
 
 export const QUERY_PREFIXES = ['is', 'get', 'check', 'has'];
 export const SAFE_NAMES = new Set([
@@ -29,110 +40,243 @@ export const SAFE_NAMES = new Set([
   'isExpanded', 'isVisible', 'isMuted', 'isPaused', 'isOpen',
 ]);
 
+const STORE_HOOK_RE = /^use[A-Z0-9_]\w*Store$/;
+
 const args = process.argv.slice(2);
 const jsonMode = args.includes('--json');
 const appFilters = args.filter(a => !a.startsWith('--'));
 
+function parseSource(source, filePath) {
+  const kind = filePath.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS;
+  return ts.createSourceFile(filePath, source, ts.ScriptTarget.Latest, true, kind);
+}
+
+function memberName(member) {
+  const name = member.name;
+  if (!name) return null;
+  if (ts.isIdentifier(name) || ts.isStringLiteral(name)) return name.text;
+  return null;
+}
+
+function isQueryName(name) {
+  return QUERY_PREFIXES.some(prefix => {
+    if (!name.startsWith(prefix)) return false;
+    const charAfter = name[prefix.length];
+    return Boolean(charAfter) && charAfter === charAfter.toUpperCase();
+  });
+}
+
 // ── Pass 1: Scan store definitions ──────────────────────────────────
 
+/**
+ * Collect TypeLiteral member lists reachable from a type alias RHS
+ * (direct `{...}`, intersections `A & {...}`, parenthesized types).
+ */
+function collectTypeLiteralMembers(typeNode, out = []) {
+  if (!typeNode) return out;
+  if (ts.isTypeLiteralNode(typeNode)) {
+    out.push(...typeNode.members);
+    return out;
+  }
+  if (ts.isIntersectionTypeNode(typeNode)) {
+    for (const t of typeNode.types) collectTypeLiteralMembers(t, out);
+    return out;
+  }
+  if (ts.isParenthesizedTypeNode(typeNode)) {
+    return collectTypeLiteralMembers(typeNode.type, out);
+  }
+  return out;
+}
+
+/**
+ * Extract function-like members as {name, returnTypeText, node}.
+ * Supports `name: (args) => Ret` (incl. generic arrow) and `name(args): Ret`.
+ */
+function functionLikeMembers(members, sf) {
+  const out = [];
+  for (const member of members) {
+    const name = memberName(member);
+    if (!name) continue;
+
+    let returnTypeNode = null;
+    if (ts.isPropertySignature(member) && member.type && ts.isFunctionTypeNode(member.type)) {
+      returnTypeNode = member.type.type;
+    } else if (ts.isMethodSignature(member)) {
+      returnTypeNode = member.type ?? null;
+      if (!returnTypeNode) continue; // no annotation — cannot prove it's a query getter
+    } else {
+      continue;
+    }
+
+    out.push({
+      name,
+      returnTypeText: returnTypeNode ? returnTypeNode.getText(sf) : '',
+      node: member,
+    });
+  }
+  return out;
+}
+
+/**
+ * Find query-like getters declared in *Actions* interfaces / type aliases.
+ *
+ * @param {string} source file contents
+ * @param {string} filePath used in issue records
+ * @returns {{issues: Array<{file:string,line:number,method:string,iface:string,returnType:string,message:string}>, queryMethods: Set<string>}}
+ */
 export function findActionsInterfaces(source, filePath) {
+  const sf = parseSource(source, filePath);
   const issues = [];
   const queryMethods = new Set();
 
-  // [^{]* allows extends / implements clauses between name and opening brace
-  const interfaceRe = /interface\s+(\w*Actions\w*)\b[^{]*\{/g;
-  let match;
-  while ((match = interfaceRe.exec(source)) !== null) {
-    const ifaceName = match[1];
-    const startIdx = match.index + match[0].length;
-
-    let depth = 1;
-    let i = startIdx;
-    while (i < source.length && depth > 0) {
-      if (source[i] === '{') depth++;
-      else if (source[i] === '}') depth--;
-      i++;
-    }
-    const body = source.slice(startIdx, i - 1);
-
-    // [\s\S]*? handles multi-line parameter lists (non-greedy stops at first `)`).
-    // Optional <...> before ( handles generic methods like getX: <T>(k: string) => T
-    const methodRe = /^\s+(\w+)\s*:\s*(?:<[^>]*>\s*)?\(([\s\S]*?)\)\s*=>\s*(\S+)/gm;
-    let mMatch;
-    while ((mMatch = methodRe.exec(body)) !== null) {
-      const name = mMatch[1];
-      const returnType = mMatch[3].replace(/[;,]$/, '');
-
+  const inspect = (ifaceName, members) => {
+    for (const { name, returnTypeText, node } of functionLikeMembers(members, sf)) {
+      const returnType = returnTypeText.replace(/[;,]$/, '');
       if (returnType === 'void') continue;
       if (SAFE_NAMES.has(name)) continue;
+      if (!isQueryName(name)) continue;
 
-      const isQuery = QUERY_PREFIXES.some(prefix => {
-        if (!name.startsWith(prefix)) return false;
-        const charAfter = name[prefix.length];
-        return charAfter && charAfter === charAfter.toUpperCase();
+      const line = sf.getLineAndCharacterOfPosition(node.getStart(sf)).line + 1;
+      issues.push({
+        file: filePath,
+        line,
+        method: name,
+        iface: ifaceName,
+        returnType,
+        message: `Query getter "${name}" in ${ifaceName} — should be a memoSelector or derived in component (§5.3)`,
       });
-
-      if (isQuery) {
-        const lineNum = source.slice(0, startIdx + mMatch.index).split('\n').length;
-        issues.push({
-          file: filePath,
-          line: lineNum,
-          method: name,
-          iface: ifaceName,
-          returnType,
-          message: `Query getter "${name}" in ${ifaceName} — should be a memoSelector or derived in component (§5.3)`,
-        });
-        queryMethods.add(name);
-      }
+      queryMethods.add(name);
     }
-  }
+  };
+
+  const visit = (node) => {
+    if (ts.isInterfaceDeclaration(node) && node.name.text.includes('Actions')) {
+      inspect(node.name.text, node.members);
+    }
+    if (ts.isTypeAliasDeclaration(node) && node.name.text.includes('Actions')) {
+      inspect(node.name.text, collectTypeLiteralMembers(node.type));
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(sf);
 
   return { issues, queryMethods };
 }
 
 // ── Pass 2: Scan consumer subscriptions ─────────────────────────────
 
+/**
+ * Find `useXxxStore(s => s.<getter>)` subscriptions to known getter functions.
+ *
+ * @param {string} source file contents
+ * @param {string} filePath used in issue records
+ * @param {Set<string>} knownGetters getters found in this app's store
+ * @returns {Array<{file:string,line:number,store:string,method:string,message:string}>}
+ */
 export function findGetterSubscriptions(source, filePath, knownGetters) {
   const issues = [];
   if (knownGetters.size === 0) return issues;
 
-  const getterPattern = [...knownGetters].map(n => n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
-  // Accept any single identifier as the arrow param (not just s/state/st)
-  const re = new RegExp(
-    `(use\\w+Store)\\(\\s*(\\w+)\\s*=>\\s*\\2\\.(${getterPattern})\\s*\\)`,
-    'g',
-  );
+  const sf = parseSource(source, filePath);
 
-  let match;
-  while ((match = re.exec(source)) !== null) {
-    const lineNum = source.slice(0, match.index).split('\n').length;
-    issues.push({
-      file: filePath,
-      line: lineNum,
-      store: match[1],
-      method: match[3],
-      message: `Subscribing to getter "${match[3]}" via ${match[1]} — will NOT trigger re-renders (§5.3)`,
-    });
-  }
+  const visit = (node) => {
+    if (
+      ts.isCallExpression(node) &&
+      ts.isIdentifier(node.expression) &&
+      STORE_HOOK_RE.test(node.expression.text) &&
+      node.arguments.length >= 1
+    ) {
+      const selector = node.arguments[0];
+      if (
+        ts.isArrowFunction(selector) &&
+        selector.parameters.length === 1 &&
+        ts.isIdentifier(selector.parameters[0].name) &&
+        ts.isPropertyAccessExpression(selector.body) &&
+        ts.isIdentifier(selector.body.expression) &&
+        selector.body.expression.text === selector.parameters[0].name.text &&
+        knownGetters.has(selector.body.name.text)
+      ) {
+        const line = sf.getLineAndCharacterOfPosition(node.getStart(sf)).line + 1;
+        issues.push({
+          file: filePath,
+          line,
+          store: node.expression.text,
+          method: selector.body.name.text,
+          message: `Subscribing to getter "${selector.body.name.text}" via ${node.expression.text} — will NOT trigger re-renders (§5.3)`,
+        });
+      }
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(sf);
+
+  return issues;
+}
+
+// ── Pass 3: Whole-store subscriptions (warn-level) ──────────────────
+
+/**
+ * Find bare `useXxxStore()` calls (no selector): the component re-renders on
+ * EVERY store change. Warn-level — reported, but never blocks the exit code.
+ *
+ * @param {string} source file contents
+ * @param {string} filePath used in issue records
+ * @returns {Array<{file:string,line:number,store:string,message:string}>}
+ */
+export function findWholeStoreSubscriptions(source, filePath) {
+  const issues = [];
+  const sf = parseSource(source, filePath);
+
+  const visit = (node) => {
+    if (
+      ts.isCallExpression(node) &&
+      ts.isIdentifier(node.expression) &&
+      STORE_HOOK_RE.test(node.expression.text) &&
+      node.arguments.length === 0
+    ) {
+      const line = sf.getLineAndCharacterOfPosition(node.getStart(sf)).line + 1;
+      issues.push({
+        file: filePath,
+        line,
+        store: node.expression.text,
+        message: `Whole-store subscription ${node.expression.text}() without selector — re-renders on every store change; subscribe to specific fields instead`,
+      });
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(sf);
 
   return issues;
 }
 
 // ── Main ────────────────────────────────────────────────────────────
 
+function listAppDirs() {
+  /** @type {Array<{app:string, dir:string}>} */
+  const out = [];
+  for (const root of SCAN_ROOTS) {
+    const rootDir = path.join(WORKSPACE, root);
+    if (!fs.existsSync(rootDir)) continue;
+    for (const entry of fs.readdirSync(rootDir, { withFileTypes: true })) {
+      if (!entry.isDirectory()) continue;
+      if (appFilters.length > 0 && !appFilters.includes(entry.name)) continue;
+      out.push({ app: entry.name, dir: path.join(rootDir, entry.name) });
+    }
+  }
+  return out;
+}
+
 function run() {
-  const appDirs = fs.readdirSync(APPS_DIR, { withFileTypes: true })
-    .filter(d => d.isDirectory())
-    .filter(d => appFilters.length === 0 || appFilters.includes(d.name))
-    .map(d => d.name);
+  const appDirs = listAppDirs();
 
   const allStoreIssues = [];
   const allConsumerIssues = [];
+  const allWholeStoreIssues = [];
   const appGetters = new Map(); // app -> Set<string>
 
-  // Pass 1
-  for (const app of appDirs) {
-    const stateFile = path.join(APPS_DIR, app, 'state.ts');
+  // Pass 1: store definitions (state.ts)
+  for (const { app, dir } of appDirs) {
+    const stateFile = path.join(dir, 'state.ts');
     if (!fs.existsSync(stateFile)) continue;
 
     const source = fs.readFileSync(stateFile, 'utf-8');
@@ -143,29 +287,38 @@ function run() {
     }
   }
 
-  // Pass 2: scan each app's consumers using ONLY that app's getters (no cross-app pollution)
-  for (const app of appDirs) {
+  // Pass 2 + 3: consumers. Per-app getter sets only (no cross-app pollution).
+  for (const { app, dir } of appDirs) {
     const getters = appGetters.get(app);
-    if (!getters || getters.size === 0) continue;
-
-    const appDir = path.join(APPS_DIR, app);
-    const tsxFiles = collectFiles(appDir, /\.tsx$/);
-    for (const f of tsxFiles) {
+    const consumerFiles = collectFiles(dir, /\.(ts|tsx)$/).filter(
+      f => path.basename(f) !== 'state.ts' && path.basename(f) !== 'navigation.declaration.ts',
+    );
+    for (const f of consumerFiles) {
       const source = fs.readFileSync(f, 'utf-8');
-      const issues = findGetterSubscriptions(source, path.relative(WORKSPACE, f), getters);
-      allConsumerIssues.push(...issues);
+      const rel = path.relative(WORKSPACE, f);
+      if (getters && getters.size > 0) {
+        allConsumerIssues.push(...findGetterSubscriptions(source, rel, getters));
+      }
+      allWholeStoreIssues.push(...findWholeStoreSubscriptions(source, rel));
     }
   }
 
   // Output
-  const totalIssues = allStoreIssues.length + allConsumerIssues.length;
+  const errorCount = allStoreIssues.length + allConsumerIssues.length;
+  const warnCount = allWholeStoreIssues.length;
+  const exitCode = errorCount > 0 ? 1 : 0;
 
   if (jsonMode) {
-    console.log(JSON.stringify({ storeDefinitions: allStoreIssues, consumerSubscriptions: allConsumerIssues }, null, 2));
-    process.exit(totalIssues > 0 ? 1 : 0);
+    console.log(JSON.stringify({
+      storeDefinitions: allStoreIssues,
+      consumerSubscriptions: allConsumerIssues,
+      wholeStoreSubscriptions: allWholeStoreIssues,
+      summary: { errors: errorCount, warnings: warnCount, exitCode },
+    }, null, 2));
+    process.exit(exitCode);
   }
 
-  if (totalIssues === 0) {
+  if (errorCount === 0 && warnCount === 0) {
     console.log('✅ No store getter anti-patterns found.');
     process.exit(0);
   }
@@ -186,8 +339,20 @@ function run() {
     }
   }
 
-  console.log(`Found ${totalIssues} issue(s). See docs/platform/state-model.md "Store actions: no query-style getters"`);
-  process.exit(1);
+  if (allWholeStoreIssues.length > 0) {
+    console.log(`⚠️  WARN (non-blocking) — whole-store subscriptions without selector (${allWholeStoreIssues.length}):\n`);
+    for (const issue of allWholeStoreIssues) {
+      console.log(`  ${issue.file}:${issue.line}`);
+      console.log(`    ${issue.message}\n`);
+    }
+  }
+
+  if (errorCount > 0) {
+    console.log(`Found ${errorCount} blocking issue(s) (+${warnCount} warning(s)). See docs/platform/state/model.md "Store actions: no query-style getters"`);
+  } else {
+    console.log(`Found ${warnCount} warning(s), no blocking issues.`);
+  }
+  process.exit(exitCode);
 }
 
 function collectFiles(dir, pattern) {

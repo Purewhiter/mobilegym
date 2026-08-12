@@ -1,11 +1,13 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
 import path from 'node:path';
-import vm from 'node:vm';
-import { pathToFileURL } from 'node:url';
-import { createRequire } from 'node:module';
 import { spawnSync } from 'node:child_process';
-import ts from 'typescript';
+import {
+  loadNavigationDeclaration,
+  loadDataConfig,
+  resolveAppDir,
+} from './lib/declaration_loader.mjs';
+import { NAV_GRAPH_SCHEMA_VERSION } from './lib/nav_graph_schema.mjs';
 
 function usage() {
   console.log(`Usage: node scripts/navigation_declaration_analyzer.mjs <AppName|AppPath> [options]
@@ -114,199 +116,9 @@ function guessActionTasksOutPath(graphOutPath) {
   return `${graphOutPath}_action_tasks.json`;
 }
 
-function resolveAppPath(appArg, appsRoot) {
-  const directPath = path.resolve(appArg);
-  if (fs.existsSync(directPath)) {
-    return directPath;
-  }
-  const joined = path.resolve(appsRoot, appArg);
-  if (fs.existsSync(joined)) {
-    return joined;
-  }
-  throw new Error(`Could not find app directory for "${appArg}". Tried:\n - ${directPath}\n - ${joined}`);
-}
-
-function loadNavigationDeclaration(filePath) {
-  const source = fs.readFileSync(filePath, 'utf-8');
-  const transpiled = ts.transpileModule(source, {
-    compilerOptions: {
-      module: ts.ModuleKind.CommonJS,
-      esModuleInterop: true,
-      target: ts.ScriptTarget.ES2020,
-    },
-    fileName: filePath,
-    reportDiagnostics: true,
-  });
-
-  if (transpiled.diagnostics?.length) {
-    const message = ts.formatDiagnosticsWithColorAndContext(transpiled.diagnostics, {
-      getCurrentDirectory: () => process.cwd(),
-      getCanonicalFileName: fileName => fileName,
-      getNewLine: () => '\n',
-    });
-    throw new Error(`Failed to transpile ${filePath}:\n${message}`);
-  }
-
-  const module = { exports: {} };
-  const context = {
-    module,
-    exports: module.exports,
-    require: createRequire(pathToFileURL(filePath)),
-    __dirname: path.dirname(filePath),
-    __filename: filePath,
-    console,
-    process,
-  };
-
-  vm.runInNewContext(transpiled.outputText, context, { filename: filePath });
-
-  if (!context.module.exports?.NAVIGATION_DECLARATION) {
-    throw new Error(`NAVIGATION_DECLARATION not found in ${filePath}`);
-  }
-
-  return context.module.exports.NAVIGATION_DECLARATION;
-}
-
-function loadDataConfig(filePath, exportName) {
-  // data/*.ts frequently imports other local .ts modules (e.g., ./videoData).
-  // Node's native require does not load .ts, so we need a ts-aware loader for data-mode.
-  // This loader:
-  // - Supports relative imports of .ts/.tsx by transpiling on the fly
-  // - Supports json assets via native require
-  // - Stubs out non-js assets (png/jpg/css/...) to keep config evaluation deterministic
-  const tsModuleCache = new Map(); // absPath -> module.exports
-  const importMetaShim = {
-    env: process.env,
-    hot: undefined,
-    glob: () => {
-      throw new Error('import.meta.glob is not supported when loading data-mode config in Node.');
-    },
-  };
-
-  const transpileTs = (absPath) => {
-    const source = fs.readFileSync(absPath, 'utf-8');
-    const transpiled = ts.transpileModule(source, {
-      compilerOptions: {
-        module: ts.ModuleKind.CommonJS,
-        esModuleInterop: true,
-        target: ts.ScriptTarget.ES2020,
-      },
-      fileName: absPath,
-      reportDiagnostics: true,
-    });
-    if (transpiled.diagnostics?.length) {
-      const message = ts.formatDiagnosticsWithColorAndContext(transpiled.diagnostics, {
-        getCurrentDirectory: () => process.cwd(),
-        getCanonicalFileName: fileName => fileName,
-        getNewLine: () => '\n',
-      });
-      throw new Error(`Failed to transpile ${absPath}:\n${message}`);
-    }
-    // TS keeps `import.meta` intact even when transpiling to CommonJS.
-    // Replace it only inside this Node-side loader so Vite/browser runtime is unaffected.
-    return transpiled.outputText.replace(/\bimport\.meta\b/g, '__IMPORT_META__');
-  };
-
-  const makeTsAwareRequire = (parentFilePath) => {
-    const nativeRequire = createRequire(pathToFileURL(parentFilePath));
-    const parentDir = path.dirname(parentFilePath);
-
-    const resolveRelative = (req) => {
-      const base = path.resolve(parentDir, req);
-      const candidates = [];
-      // If explicit extension
-      if (path.extname(base)) {
-        candidates.push(base);
-      } else {
-        candidates.push(`${base}.ts`, `${base}.tsx`, `${base}.js`, `${base}.json`);
-        candidates.push(path.join(base, 'index.ts'), path.join(base, 'index.tsx'), path.join(base, 'index.js'));
-      }
-      for (const c of candidates) {
-        if (fs.existsSync(c)) return c;
-      }
-      return null;
-    };
-
-    /** @type {(req:string)=>any} */
-    const reqFn = (req) => {
-      // Stub common non-js assets used by apps (images/styles) to avoid runtime loader errors.
-      if (/\.(png|jpg|jpeg|gif|webp|svg|css)$/.test(req)) {
-        return req;
-      }
-
-      // Relative/local imports: handle TS/TSX via transpile+vm
-      if (req.startsWith('.') || req.startsWith('/')) {
-        const resolved = resolveRelative(req);
-        if (!resolved) {
-          // Let native require throw a useful error with its resolver.
-          return nativeRequire(req);
-        }
-        const ext = path.extname(resolved).toLowerCase();
-        if (ext === '.ts' || ext === '.tsx') {
-          if (tsModuleCache.has(resolved)) return tsModuleCache.get(resolved);
-
-          const module = { exports: {} };
-          // Pre-populate cache to break cycles.
-          tsModuleCache.set(resolved, module.exports);
-          const context = {
-            module,
-            exports: module.exports,
-            require: makeTsAwareRequire(resolved),
-            __dirname: path.dirname(resolved),
-            __filename: resolved,
-            __IMPORT_META__: importMetaShim,
-            console,
-            process,
-          };
-          const js = transpileTs(resolved);
-          vm.runInNewContext(js, context, { filename: resolved });
-          // Ensure cache points at final exports object (module.exports may be reassigned).
-          tsModuleCache.set(resolved, context.module.exports);
-          return context.module.exports;
-        }
-        // .js/.json etc: use native require on the resolved absolute path
-        return nativeRequire(resolved);
-      }
-
-      // Bare specifiers: delegate to node resolver (node_modules / builtin)
-      return nativeRequire(req);
-    };
-
-    return reqFn;
-  };
-
-  const module = { exports: {} };
-  const context = {
-    module,
-    exports: module.exports,
-    require: makeTsAwareRequire(filePath),
-    __dirname: path.dirname(filePath),
-    __filename: filePath,
-    __IMPORT_META__: importMetaShim,
-    console,
-    process,
-  };
-
-  const js = transpileTs(filePath);
-  vm.runInNewContext(js, context, { filename: filePath });
-
-  // Auto-detect export if not specified
-  if (exportName) {
-    if (!context.module.exports[exportName]) {
-      throw new Error(`Export "${exportName}" not found in ${filePath}`);
-    }
-    return context.module.exports[exportName];
-  }
-
-  // Try to find *_CONFIG export
-  const exports = context.module.exports;
-  const configKey = Object.keys(exports).find(key => key.endsWith('_CONFIG'));
-  if (configKey) {
-    return exports[configKey];
-  }
-
-  throw new Error(`No *_CONFIG export found in ${filePath}. Use --data-export to specify.`);
-}
+// App directory resolution and declaration/data-config loading live in
+// scripts/lib/declaration_loader.mjs (shared with the consistency checker so the
+// two tools can never disagree on what a declaration contains).
 
 // ============================================================================
 // REF PATH RESOLVER
@@ -2011,7 +1823,7 @@ function applyPreserveParamsToSearch(baseSearch, preserveParams, sourceNodeSearc
 function main() {
   try {
     const args = parseArgs(process.argv.slice(2));
-    const appPath = resolveAppPath(args.app, args.appsRoot);
+    const appPath = resolveAppDir(args.app, { roots: [args.appsRoot, 'system'] });
     const navFile = path.join(appPath, 'navigation.declaration.ts');
 
     if (!fs.existsSync(navFile)) {
@@ -2154,6 +1966,7 @@ function main() {
     }
 
     const output = {
+      schemaVersion: NAV_GRAPH_SCHEMA_VERSION,
       app: declaration.app,
       appDir: path.relative(process.cwd(), appPath),
       mode: args.dataFile ? 'data' : 'schema',
@@ -2180,6 +1993,8 @@ function main() {
       if (!args.dataFile) {
         const simplifiedGraph = buildSimplifiedGraph(graph);
         const simplifiedOutput = {
+          schemaVersion: NAV_GRAPH_SCHEMA_VERSION,
+          variant: 'simplified',
           app: declaration.app,
           appDir: path.relative(process.cwd(), appPath),
           mode: 'schema',

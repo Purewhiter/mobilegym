@@ -1,0 +1,78 @@
+# CI 质量闸门 — Node (lint / typecheck / vitest) + Python (bench_env 离线 pytest)
+#
+# 首跑注意事项（不确定点集中在这里，见各步骤内联注释）：
+# - `npm run test` / `npx tsc --noEmit` 的全仓通过状态在本 PR 编写时无法本地全量验证
+#   （仓库正被并行改造），首跑若红请按输出定位，不代表本 workflow 配置有误。
+name: CI
+
+on:
+  push:
+    branches: [dev]
+  pull_request:
+    branches: [dev]
+
+concurrency:
+  # 同一 PR / 同一分支的旧跑批自动取消，避免堆积
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  node:
+    name: Node — lint / typecheck / unit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # eslint os/ apps/ system/ + scripts/lint_store_getters.mjs
+      - name: Lint
+        run: npm run lint
+
+      # 根 tsconfig.json 覆盖 os/ apps/ system/（tsconfig.node.json 是 project reference，
+      # 普通 `tsc --noEmit` 不会检查它；vite.config.ts 的类型由 IDE / tsc -b 兜底）。
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      # vitest run，include = tests/**/*.test.ts（见 vitest.config.ts）
+      - name: Unit tests
+        run: npm run test
+
+  python:
+    name: Python — bench_env offline tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: bench_env/requirements.txt
+
+      # 仓库根没有 requirements.txt / pyproject.toml，Python 依赖只在 bench_env/requirements.txt。
+      # 额外补装：
+      # - pytest-asyncio：bench_env/tests/conftest.py 顶层 `import pytest_asyncio`，
+      #   但 requirements.txt 未声明（间接依赖缺口）；requirements.txt 归属另一条改造线，
+      #   这里先在 CI 侧显式补齐。
+      # - pytest：由 pytest-xdist 传递引入，显式声明更稳。
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r bench_env/requirements.txt
+          pip install pytest pytest-asyncio
+
+      # 离线测试不启动浏览器（playwright 的 Python 包必须可 import，但 chromium
+      # 二进制只有 live 测试需要，故不跑 `playwright install chromium`）。
+      # 没有 pytest.ini / pyproject 提供默认 marker 过滤，`-m "not live"` 必须显式传。
+      # 本地实证：2638 passed / 2 skipped（~6s），177 个 live 用例被正确反选。
+      - name: Offline tests
+        run: python -m pytest bench_env/tests -m "not live" -q

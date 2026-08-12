@@ -16,11 +16,11 @@ const __dirname = path.dirname(__filename);
  * Works for both dev server (npm run dev) and preview server (npm run preview)
  */
 function accessLogPlugin() {
-  const logMiddleware = (req, res, next) => {
+  const logMiddleware = (req: any, res: any, next: any) => {
     const start = Date.now();
     const originalEnd = res.end;
     
-    res.end = function(...args) {
+    res.end = function(...args: any[]) {
       const duration = Date.now() - start;
       const time = new Date().toLocaleTimeString('zh-CN', { hour12: false });
       const status = res.statusCode;
@@ -38,10 +38,10 @@ function accessLogPlugin() {
 
   return {
     name: 'access-log',
-    configureServer(server) {
+    configureServer(server: any) {
       server.middlewares.use(logMiddleware);
     },
-    configurePreviewServer(server) {
+    configurePreviewServer(server: any) {
       server.middlewares.use(logMiddleware);
     }
   };
@@ -54,8 +54,8 @@ function accessLogPlugin() {
 function listPublicFilesPlugin() {
   return {
     name: 'list-public-files',
-    configureServer(server) {
-      server.middlewares.use('/api/list-public-files', (req, res) => {
+    configureServer(server: any) {
+      server.middlewares.use('/api/list-public-files', (req: any, res: any) => {
         const publicDir = path.resolve(__dirname, 'public');
         
         try {
@@ -91,7 +91,7 @@ function listPublicFilesPlugin() {
           }
 
           // Sort by filename
-          const sortByFile = (a, b) => a.file.localeCompare(b.file);
+          const sortByFile = (a: any, b: any) => a.file.localeCompare(b.file);
           actionTasks.sort(sortByFile);
           navGraphs.sort(sortByFile);
 
@@ -234,13 +234,13 @@ function fileSystemPlugin() {
       console.log(`[sdcard] Emitted manifest.json (${files.length} files, ${directories.length} dirs)`);
     },
 
-    configureServer(server) {
+    configureServer(server: any) {
       // 初始扫描
       refreshCache();
       
       // 监视文件变化，使缓存失效
       server.watcher.add(SDCARD_DIR);
-      server.watcher.on('all', (event, filePath) => {
+      server.watcher.on('all', (event: any, filePath: any) => {
         if (filePath.startsWith(SDCARD_DIR)) {
           const basename = path.basename(filePath);
           // Only skip known OS-generated noise files, not system dot-directories like .data
@@ -251,7 +251,7 @@ function fileSystemPlugin() {
       });
       
       // API 端点 - 使用缓存
-      server.middlewares.use('/api/sdcard', (_req, res) => {
+      server.middlewares.use('/api/sdcard', (_req: any, res: any) => {
         try {
           // 只在缓存失效时重新扫描
           if (!cacheValid) {
@@ -279,9 +279,9 @@ function runsExplorerPlugin() {
   return {
     name: 'runs-explorer-api',
     
-    configureServer(server) {
+    configureServer(server: any) {
       // GET /api/runs - List all run directories
-      server.middlewares.use('/api/runs', (req, res, next) => {
+      server.middlewares.use('/api/runs', (req: any, res: any, next: any) => {
         const url = new URL(req.url || '/', `http://${req.headers.host}`);
         const pathParts = url.pathname.split('/').filter(Boolean);
         
@@ -518,8 +518,8 @@ function serveAppAssetsPlugin() {
     },
 
     // ── Dev: 中间件伺服 ──
-    configureServer(server) {
-      server.middlewares.use((req, res, next) => {
+    configureServer(server: any) {
+      server.middlewares.use((req: any, res: any, next: any) => {
         const url = req.url;
         if (!url || !url.startsWith(PREFIX)) return next();
 
@@ -605,7 +605,7 @@ function serveCdnPlugin() {
     '.json': 'application/json',
   };
   const CDN_ROOT = path.resolve(__dirname, 'mobilegym-data');
-  const serveCdnMiddleware = (req, res, next) => {
+  const serveCdnMiddleware = (req: any, res: any, next: any) => {
     const url = req.url || '/';
     const rel = decodeURIComponent(url.split('?')[0]).replace(/^\/+/, '');
     if (!rel || rel.includes('..')) return next();
@@ -623,10 +623,10 @@ function serveCdnPlugin() {
 
   return {
     name: 'serve-cdn',
-    configureServer(server) {
+    configureServer(server: any) {
       server.middlewares.use('/cdn/', serveCdnMiddleware);
     },
-    configurePreviewServer(server) {
+    configurePreviewServer(server: any) {
       server.middlewares.use('/cdn/', serveCdnMiddleware);
     },
   };
@@ -842,10 +842,10 @@ function apiGatewayPlugin(mode: string) {
     return allow.includes(host);
   };
 
-  const readJsonBody = (req): Promise<any> =>
+  const readJsonBody = (req: any): Promise<any> =>
     new Promise((resolve, reject) => {
       let data = '';
-      req.on('data', (chunk) => (data += chunk));
+      req.on('data', (chunk: any) => (data += chunk));
       req.on('end', () => {
         if (!data) return resolve({});
         try {
@@ -889,7 +889,7 @@ function apiGatewayPlugin(mode: string) {
     }
   };
 
-  const getSessionId = (req) => {
+  const getSessionId = (req: any) => {
     const h = req.headers?.['x-gw-session'];
     if (!h) return 'anon';
     if (Array.isArray(h)) return h[0] || 'anon';
@@ -964,7 +964,7 @@ function apiGatewayPlugin(mode: string) {
     return pairs.length ? pairs.join('; ') : undefined;
   };
 
-  const forwardHeaders = (upstreamHeaders: Headers, res, allowList?: string[]) => {
+  const forwardHeaders = (upstreamHeaders: Headers, res: any, allowList?: string[]) => {
     // Forward a safe subset of headers. (Hop-by-hop headers must not be forwarded.)
     const allow = allowList ?? [
       'content-type',
@@ -982,7 +982,7 @@ function apiGatewayPlugin(mode: string) {
     }
   };
 
-  const handler = async (req, res) => {
+  const handler = async (req: any, res: any) => {
     try {
       const incoming = new URL(req.url || '/', `http://${req.headers.host}`);
       /**
@@ -1347,11 +1347,11 @@ function apiGatewayPlugin(mode: string) {
 
   return {
     name: 'api-gateway',
-    configureServer(server) {
+    configureServer(server: any) {
       server.middlewares.use('/api/gw', handler);
       server.middlewares.use('/api/gw/', handler);
     },
-    configurePreviewServer(server) {
+    configurePreviewServer(server: any) {
       server.middlewares.use('/api/gw', handler);
       server.middlewares.use('/api/gw/', handler);
     },
@@ -1362,7 +1362,7 @@ function apiGatewayPlugin(mode: string) {
  * Generate a human-readable label from filename
  * Format: "appName [Type]" or "appName [Type] (suffix)"
  */
-function generateLabel(filename, type) {
+function generateLabel(filename: string, type: string) {
   // Remove extension
   let name = filename.replace(/\.(jsonl?|json)$/, '');
   
