@@ -25,8 +25,8 @@ const {
  *   styles onto it while a card is dragged (read side of the id contract:
  *   here, os/components/chromeForeground.ts and os/components/GestureBar.tsx).
  * - `--recents-scroll` (documentElement CSS var) — written on horizontal card
- *   scroll; read by computeActivityContainerStyle (os/SystemShell.tsx, moving
- *   to os/components/ActivityHost.tsx) to shift recents card previews.
+ *   scroll; read by computeActivityContainerStyle
+ *   (os/components/ActivityHost.tsx) to shift recents card previews.
  * - `data-recents-card="${taskId}"` — declared on each card; queried back by
  *   syncSwipeToActivityContainer to keep card and activity preview in sync.
  */

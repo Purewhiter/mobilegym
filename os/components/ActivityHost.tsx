@@ -37,7 +37,7 @@ export const computeActivityContainerStyle = (args: {
   const paddingLeft = 48; // Tailwind px-12
   const cardStride = recentsCardWidth + recentsCardGap;
   const cardTop =
-recentsTopPadding +
+    recentsTopPadding +
     (recentsScrollContainerHeight - recentsCardHeight) / 2;
 
   if (args.shouldHide) {

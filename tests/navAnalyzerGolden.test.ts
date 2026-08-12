@@ -74,3 +74,40 @@ describe('navigation_declaration_analyzer golden (schema mode vs public/ artifac
     );
   }
 });
+
+// data 模式产物不入库（按需生成），没有 public/ golden 可比；用「确定性双跑 +
+// 结构快照」锁 nav_data_expand/prune 的回归：同一声明与数据两次运行必须逐字节
+// 一致，且节点/边规模与 schemaVersion 落在快照锁定的形状上。
+describe('navigation_declaration_analyzer golden (data mode determinism + shape)', () => {
+  it(
+    'WechatReading --data: 双跑逐字节一致且图形状稳定',
+    () => {
+      const run = (outName: string) => {
+        const outFile = path.join(tmpDir, outName);
+        const res = spawnSync(
+          process.execPath,
+          [SCRIPT, 'WechatReading', '--data', 'data/index.ts', '-o', outFile],
+          { cwd: REPO_ROOT, encoding: 'utf-8', timeout: 120_000 },
+        );
+        expect(res.status, `stderr: ${res.stderr}`).toBe(0);
+        return fs.readFileSync(outFile);
+      };
+
+      const first = run('wr_data_1.json');
+      const second = run('wr_data_2.json');
+      expect(first.equals(second), describeFirstDiff(first, second)).toBe(true);
+
+      const graph = JSON.parse(first.toString('utf-8'));
+      expect(graph.schemaVersion).toBe(1);
+      expect(graph.mode).toBe('data');
+      // 形状快照：节点/边数量随声明或数据有意变化时，更新此处即可。
+      expect({ nodes: graph.nodes.length, edges: graph.edges.length }).toMatchInlineSnapshot(`
+        {
+          "edges": 706,
+          "nodes": 213,
+        }
+      `);
+    },
+    240_000,
+  );
+});
