@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { computeActivityContainerStyle } from '../os/SystemShell';
+import { computeActivityContainerStyle } from '../os/components/ActivityHost';
 
-// Behavior lock for computeActivityContainerStyle (currently in os/SystemShell.tsx,
-// slated to move into os/components/ActivityHost.tsx). Expected values are derived
+// Behavior lock for computeActivityContainerStyle in os/components/ActivityHost.tsx
+// (originally extracted from os/SystemShell.tsx). Expected values are derived
 // from SIMULATOR_CONFIG.framework:
 //   recentsCardWidth=200, recentsAppPreviewWidth=390, recentsCardGap=24,
 //   recentsTopPadding=96, recentsScrollContainerHeight=500, recentsCardHeight=434,
