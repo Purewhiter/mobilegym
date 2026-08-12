@@ -88,7 +88,8 @@ SCRIPTED_CASES: list[tuple[str, Callable[[], BaseTask]]] = [
             topic="预算评审会",
             duration=30,
             pin="2468",
-            answer="888 666 1234",
+            # App 端会议号由主题确定性派生（见 TencentMeeting.predicted_meeting_id）。
+            answer=TencentMeeting.predicted_meeting_id("预算评审会"),
         ),
     ),
     ("CountFriendMeetings", lambda: meeting_tasks.CountFriendMeetings(answer=str(_tm().friend_hosted_history_meeting_count()))),

@@ -27,10 +27,36 @@ function nextId(prefix: string): string {
 
 // ---- Helper: pure function, no need to be inside a component ----
 
-const generateMeetingId = (): string => {
-    const part1 = Math.floor(100 + Math.random() * 900);
-    const part2 = Math.floor(100 + Math.random() * 900);
-    const part3 = Math.floor(100 + Math.random() * 900);
+// 确定性 PRNG（FNV-1a + mulberry32，与 Railway12306 availabilityGenerator 同一约定）。
+// 会议号由会议主题派生：同一主题始终得到同一号码，屏幕上看仍是任意 9 位数。
+// bench_env/task/tencent_meeting/app.py 的 predicted_meeting_id 镜像了本算法，
+// 修改此处必须同步修改那边。
+
+const fnv1a = (s: string): number => {
+    let h = 2166136261;
+    for (let i = 0; i < s.length; i++) {
+        h ^= s.charCodeAt(i);
+        h = Math.imul(h, 16777619) >>> 0;
+    }
+    return h >>> 0;
+};
+
+const makeMulberry32 = (seed: number): (() => number) => {
+    let state = seed >>> 0;
+    return (): number => {
+        state = (state + 0x6D2B79F5) >>> 0;
+        let t = state;
+        t = (Math.imul(t ^ (t >>> 15), t | 1)) >>> 0;
+        t ^= (t + (Math.imul(t ^ (t >>> 7), t | 61))) >>> 0;
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+};
+
+const generateMeetingId = (seedKey: string): string => {
+    const rng = makeMulberry32(fnv1a(`tm-meeting-id|${seedKey}`));
+    const part1 = Math.floor(100 + rng() * 900);
+    const part2 = Math.floor(100 + rng() * 900);
+    const part3 = Math.floor(100 + rng() * 900);
     return `${part1} ${part2} ${part3}`;
 };
 
@@ -186,8 +212,8 @@ export const useMeetingStore = createAppStoreWithActions<MeetingState, MeetingAc
                 hostName = user.name;
                 meetingStartTime = TimeService.now();
             } else {
-                meetingId = generateMeetingId();
                 meetingTitle = buildQuickMeetingTitle(user.name);
+                meetingId = generateMeetingId(meetingTitle);
                 hostId = user.id;
                 hostName = user.name;
                 meetingStartTime = TimeService.now();
@@ -429,7 +455,7 @@ export const useMeetingStore = createAppStoreWithActions<MeetingState, MeetingAc
             const state = get();
             const newMeeting: ScheduledMeeting = {
                 id: nextId('scheduled'),
-                meetingId: generateMeetingId(),
+                meetingId: generateMeetingId(params.title),
                 title: params.title,
                 note: params.note,
                 startTime: params.startTime,

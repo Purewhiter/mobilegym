@@ -80,6 +80,34 @@ TENCENT_MEETING_NEW_TEAM_TOPICS = [
     "联调对齐会",
 ]
 
+_UINT32_MASK = 0xFFFFFFFF
+
+
+def _imul32(a: int, b: int) -> int:
+    return ((a & _UINT32_MASK) * (b & _UINT32_MASK)) & _UINT32_MASK
+
+
+def _fnv1a(text: str) -> int:
+    h = 2166136261
+    for ch in text:
+        h ^= ord(ch)
+        h = _imul32(h, 16777619)
+    return h & _UINT32_MASK
+
+
+def _mulberry32(seed: int):
+    state = seed & _UINT32_MASK
+
+    def _next() -> float:
+        nonlocal state
+        state = (state + 0x6D2B79F5) & _UINT32_MASK
+        t = state
+        t = _imul32(t ^ (t >> 15), t | 1)
+        t ^= (t + _imul32(t ^ (t >> 7), t | 61)) & _UINT32_MASK
+        return ((t ^ (t >> 14)) & _UINT32_MASK) / 4294967296
+
+    return _next
+
 
 class TencentMeeting(BaseApp):
     """Tencent Meeting state accessor."""
@@ -123,6 +151,18 @@ class TencentMeeting(BaseApp):
         digits = re.sub(r"\s+", "", meeting_id)
         pattern = r"\s*".join(re.escape(ch) for ch in digits)
         return re.compile(pattern)
+
+    @staticmethod
+    def predicted_meeting_id(title: str) -> str:
+        """镜像 apps/TencentMeeting/state.ts 的 generateMeetingId。
+
+        App 端会议号由主题确定性派生（FNV-1a + mulberry32），本方法给
+        scripted 回放测试在会议创建前预测号码用；两侧算法必须保持同步。
+        返回展示格式 "xxx yyy zzz"（三段三位数、空格分隔）。
+        """
+        rng = _mulberry32(_fnv1a(f"tm-meeting-id|{title}"))
+        parts = [str(int(100 + rng() * 900)) for _ in range(3)]
+        return " ".join(parts)
 
     @property
     def user(self) -> dict[str, Any]:
