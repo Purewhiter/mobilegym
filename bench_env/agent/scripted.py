@@ -34,6 +34,7 @@ task; this location is temporary, so plan discovery is isolated in
 from __future__ import annotations
 
 import importlib
+import re
 from typing import Any
 
 from bench_env.agent.base import AgentConfig, AgentStepRecord, BaseAgent
@@ -244,7 +245,9 @@ def load_plan(task_id: str) -> list[Step] | None:
 
     ``task_id`` is ``"<suite>.<ClassName>"``; the suite selects the plan module
     ``bench_env.tests.<suite>.scripted_plans``, which must expose a module-level
-    ``PLANS: dict[str, list[Step]]`` keyed by full task id.
+    ``PLANS: dict[str, list[Step]]`` keyed by full task id. With ``--sample-n``
+    > 1 the runner appends an ``_i{n}`` instance suffix to ``task.id``; plans
+    are keyed by the base id, so fall back to the suffix-stripped lookup.
     """
     suite = task_id.split(".", 1)[0] if task_id else ""
     if not suite:
@@ -257,6 +260,10 @@ def load_plan(task_id: str) -> list[Step] | None:
     if not isinstance(plans, dict):
         return None
     steps = plans.get(task_id)
+    if steps is None:
+        base_id = re.sub(r"_i\d+$", "", task_id)
+        if base_id != task_id:
+            steps = plans.get(base_id)
     return list(steps) if isinstance(steps, list) else None
 
 

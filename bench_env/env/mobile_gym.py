@@ -1206,6 +1206,9 @@ class MobileGymEnv(BaseMobileEnv):
         data = action.data
         selector = data.get("selector")
         if not selector:
+            # Still honor the "selector key is always removed" contract when a
+            # (mis-authored) step carries an empty selector string.
+            data.pop("selector", None)
             return
         if action.action_type in {ActionType.DRAG, ActionType.SWIPE}:
             if data.get("point1") is None or data.get("point2") is None:
