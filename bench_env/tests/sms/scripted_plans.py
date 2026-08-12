@@ -4,11 +4,14 @@ from __future__ import annotations
 
 from bench_env.agent.scripted import (
     Step,
+    assert_text,
+    assert_visible,
     back,
     complete,
     grounded_answer,
     open_answer_sheet,
     submit_answer_sheet,
+    swipe,
     type_text,
     wait,
 )
@@ -82,6 +85,14 @@ PLANS: dict[str, list[Step]] = {
         complete(),
     ],
     "sms.ReadUnreadConversationCount": [
+        # Evidence probe: the unread count never renders as text — the list
+        # marks unread rows with an orange dot (ConversationItem w-2 h-2
+        # rounded-full). Assert an unread-marked row is on screen before
+        # counting/answering; opening threads would dirty the diff.
+        assert_visible(
+            '[data-adjust-resize] div.flex.items-start:has(div.w-2.h-2.rounded-full):visible',
+            summary="assert unread-marked conversation rows on screen",
+        ),
         *grounded_answer("5", summary="answer unread conversation count"),
         complete(),
     ],
@@ -100,6 +111,22 @@ PLANS: dict[str, list[Step]] = {
         complete(),
     ],
     "sms.CompareConversationMessageCount": [
+        # Gather: list rows only show the latest-message preview (no counts), so
+        # open both compared threads and browse them before answering. Opening a
+        # thread marks it read — os.providers.sms.conversations is whitelisted in
+        # the task's expected_changes, so this stays a clean diff.
+        row_with_text("{sender1}", summary="open {sender1} conversation"),
+        wait(0.5, summary="wait for {sender1} thread"),
+        swipe([500, 350], [500, 700], summary="scroll {sender1} thread toward earliest message"),
+        assert_text("当前话费", summary="assert 中国电信 thread content on screen"),
+        back(summary="return to conversation list"),
+        wait(0.3, summary="wait for conversation list"),
+        row_with_text("{sender2}", summary="open {sender2} conversation"),
+        wait(0.5, summary="wait for {sender2} thread"),
+        swipe([500, 350], [500, 700], summary="scroll {sender2} thread toward earliest message"),
+        assert_text("充值补贴", summary="assert 中国联通 thread content on screen"),
+        back(summary="return to conversation list"),
+        wait(0.3, summary="wait for conversation list"),
         *grounded_choice_answer("中国电信", summary="answer conversation with more messages"),
         complete(),
     ],

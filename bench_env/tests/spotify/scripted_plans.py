@@ -10,7 +10,7 @@ and replays each step via the standard environment action space — ``tap_trigge
 
 from __future__ import annotations
 
-from bench_env.agent.scripted import Step, back, complete, grounded_answer, grounded_answer_repeatable, swipe, tap_action, tap_trigger, type_text, wait
+from bench_env.agent.scripted import Step, assert_answer, assert_visible, awake, back, complete, grounded_answer, grounded_answer_repeatable, swipe, tap_action, tap_trigger, type_text, wait
 
 
 def click_selector(selector: str, *, summary: str) -> Step:
@@ -319,10 +319,37 @@ PLANS: dict[str, list[Step]] = {
         complete(),
     ],
     "spotify.ListLibraryArtists": [
+        # Gather the answer on-screen first: followed artists render as rows in
+        # the Library "All" list (only 3 entries — no scrolling needed).
+        awake("Spotify", summary="open Spotify"),
+        trigger_visible("tab.library", summary="open Library tab to view followed artists"),
+        wait(0.5, summary="wait for library artist rows"),
+        # Self-verify: each answered artist name must be visible in the library
+        # list before the answer sheet opens (one assert per repeatable value).
+        assert_answer("许嵩", field_index=0, summary="assert library artist row 许嵩 on screen"),
+        assert_answer("林俊杰", field_index=0, summary="assert library artist row 林俊杰 on screen"),
+        assert_answer("周杰伦", field_index=0, summary="assert library artist row 周杰伦 on screen"),
         *grounded_answer_repeatable("许嵩", "林俊杰", "周杰伦", summary="answer library artists"),
         complete(),
     ],
     "spotify.FindRecentArtistSongs": [
+        # Gather the answer on-screen first: sidebar → Recently Played. The 6
+        # default recentPlays land in one collapsed "已播放 6 首歌曲" group, so
+        # expand it to reveal the per-song rows (title + artist, no scrolling).
+        awake("Spotify", summary="open Spotify"),
+        trigger_visible("home.sidebar.open", summary="open sidebar"),
+        wait(0.3, summary="wait for sidebar animation"),
+        trigger_visible("history.open", summary="open Recently Played page"),
+        wait(0.5, summary="wait for recently played groups"),
+        click_selector(
+            'div.cursor-pointer:has-text("已播放 6 首歌曲"):visible, div.cursor-pointer:has-text("Played 6 songs"):visible',
+            summary="expand today's played group to view song rows",
+        ),
+        wait(0.3, summary="wait for expanded track rows"),
+        # Self-verify: both answered song titles must be visible in the expanded
+        # played group before the answer sheet opens (one assert per value).
+        assert_answer("Welcome to New York", field_index=0, summary="assert recent song row Welcome to New York on screen"),
+        assert_answer("Love Story", field_index=0, summary="assert recent song row Love Story on screen"),
         *grounded_answer_repeatable("Welcome to New York", "Love Story", summary="answer recent Taylor Swift songs"),
         complete(),
     ],
@@ -371,12 +398,35 @@ PLANS: dict[str, list[Step]] = {
     ],
     "spotify.SearchAlbumInfo": [
         *search("{album}"),
+        # Album cards render above song rows in unfiltered results; the first
+        # card is the Thriller album (collectionId 269572838) — open it to see
+        # "9 首歌曲" and "℗ 1982" on the album page before answering.
+        trigger_param("playlist.open", "269572838", param="id", summary="open Thriller album from search results"),
+        wait(1.0, summary="wait for album page with track count and release year"),
+        # Self-verify before answering. Field 0 is a bare short number ("9") —
+        # a raw assert_answer would match any stray digit, so anchor on the
+        # album page's semantic track-count row instead (zh/en locales).
+        assert_visible(
+            '[data-adjust-resize] :text("9 首歌曲"):visible, [data-adjust-resize] :text("9 songs"):visible',
+            summary='assert album track-count row "9 首歌曲" on screen',
+        ),
+        # Field 1 (release year): the album subtitle shows "… ℗ 1982 …".
+        assert_answer("1982", field_index=1, summary="assert release year 1982 on album page"),
         *grounded_answer("9", "1982", summary="answer Thriller track count and release year"),
         complete(),
     ],
     "spotify.SearchPlayAndReport": [
         *search("{song}"),
         tap_action("search.track.play", summary="play first matching search result"),
+        # Artist is visible on the search result row; duration only shows in the
+        # full-screen player (progress bar right end) — open it before answering.
+        wait(0.5, summary="wait for bottom player bar"),
+        trigger_visible("player.open", summary="open full-screen player to view duration"),
+        wait(0.5, summary="wait for player page"),
+        # Self-verify: artist name and static total duration (progress bar right
+        # end renders currentTrack.duration) must be visible before answering.
+        assert_answer("周杰倫", field_index=0, summary="assert artist 周杰倫 on player page"),
+        assert_answer("3:59", field_index=1, summary="assert duration 3:59 on player page"),
         *grounded_answer("周杰倫", "3:59", summary="answer artist and duration for 青花瓷"),
         complete(),
     ],
@@ -463,10 +513,14 @@ PLANS: dict[str, list[Step]] = {
         action_param("search.track.play", "it_1887246591", summary="play first discovered artist track"),
         wait(0.3, summary="wait for bottom player"),
         action_param("track.like.toggle", "it_1887246591", summary="like first discovered track"),
+        # Self-verify each answered title while its search-result row is still
+        # on screen (the first row may scroll away before the second like).
+        assert_answer("那天下雨了", field_index=0, summary="assert first liked track title 那天下雨了 on screen"),
         scroll_main_down(summary="scroll search results to second discovered track"),
         action_param("search.track.play", "it_1887246590", summary="play second discovered artist track"),
         wait(0.3, summary="wait for bottom player"),
         action_param("track.like.toggle", "it_1887246590", summary="like second discovered track"),
+        assert_answer("西西里", field_index=0, summary="assert second liked track title 西西里 on screen"),
         *grounded_answer_repeatable("那天下雨了", "西西里", summary="answer liked discovered track titles"),
         complete(),
     ],

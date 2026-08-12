@@ -4,6 +4,9 @@ from __future__ import annotations
 
 from bench_env.agent.scripted import (
     Step,
+    assert_answer,
+    assert_text,
+    assert_visible,
     back,
     complete,
     enter,
@@ -153,6 +156,33 @@ def switch_video_tab(tab: str) -> list[Step]:
     ]
 
 
+def scroll_video_main(times: int, *, summary_prefix: str = "scroll video page") -> list[Step]:
+    """Deterministic scrolls inside the video-detail main scroll container.
+
+    Fraction-based swipe without inertia: each swipe drags from 80% to 20% of
+    the container height, moving a fixed ~0.6 x container-height per swipe, so
+    ``times`` swipes land at a predictable scroll offset (unlike full-screen
+    inertia swipes).
+    """
+    steps: list[Step] = []
+    for i in range(times):
+        steps.append(
+            {
+                "op": "swipe",
+                "selector": '[data-scroll-container="main"]:visible',
+                "start_fraction": 0.5,
+                "end_fraction": 0.5,
+                "start_y_fraction": 0.8,
+                "end_y_fraction": 0.2,
+                "duration_ms": 300,
+                "inertia": False,
+                "summary": f"{summary_prefix} {i + 1}/{times}",
+            }
+        )
+        steps.append(wait(0.3, summary="wait for scroll to settle"))
+    return steps
+
+
 def clear_search_history() -> list[Step]:
     return [
         trigger_visible("search.results.close", summary="return to search home"),
@@ -169,6 +199,14 @@ PLANS: dict[str, list[Step]] = {
     ],
     "bilibili.ViewProfileStatTask": [
         *open_me(),
+        # Scope to the Me-header card (unique `.px-5.pb-4` div holding B币/硬币/
+        # 动态/关注/粉丝): following/followers answers are 1-digit numbers that
+        # would otherwise match stray digits elsewhere on the page.
+        assert_answer(
+            "{answer}",
+            scope=".px-5.pb-4",
+            summary="assert profile stat value in Me header card",
+        ),
         *grounded_answer("{answer}", summary="answer profile stat"),
         complete(),
     ],
@@ -188,6 +226,9 @@ PLANS: dict[str, list[Step]] = {
     ],
     "bilibili.ViewMyUidTask": [
         *open_profile_edit(),
+        # The UID row renders label and 12-digit value in separate spans;
+        # the judge's text matcher finds the value via normalized containment.
+        assert_answer("{answer}", summary="assert my UID on profile edit page"),
         *grounded_answer("{answer}", summary="answer my UID"),
         complete(),
     ],
@@ -197,11 +238,23 @@ PLANS: dict[str, list[Step]] = {
     ],
     "bilibili.VideoAnswerOnlineTask": [
         *open_video_from_search("{title}", "{bvid}"),
+        # Anchor the full "N人正在看" line (outside the collapsed description,
+        # visible by default) rather than the bare count: the plays stat next
+        # to it can render a near-identical "N.N万" figure.
+        assert_text("{answer}人正在看", summary="assert online count on video detail"),
         *grounded_answer("{answer}", summary="answer video online count"),
         complete(),
     ],
     "bilibili.VideoAnswerTagsTask": [
         *open_video_from_search("{title}", "{bvid}"),
+        # Tags live in the collapsed description block; expand it first via the
+        # chevron button next to the title (plain onClick, no data-trigger).
+        click_selector("h1 + button:visible", summary="expand video description"),
+        wait(0.6, summary="wait for description expand animation"),
+        assert_visible(
+            'span.rounded-full:text-is("{tag1}"):visible',
+            summary="assert first tag pill is on screen",
+        ),
         *grounded_answer("{tag1}", "{tag2}", "{tag3}", summary="answer three video tags"),
         complete(),
     ],
@@ -224,11 +277,17 @@ PLANS: dict[str, list[Step]] = {
         wait(0.4, summary="wait for favorites"),
         click_selector(trigger_param("favFolderDetail.open", "folderId", "{folder_id}"), summary="open target favorite folder"),
         wait(0.4, summary="wait for favorite folder"),
+        # The folder detail header shows "{count}个内容"; the semantic line is
+        # safer than a bare-number assert (video durations/plays nearby).
+        assert_text("{answer}个内容", summary="assert folder item count on detail page"),
         *grounded_answer("{answer}", summary="answer favorite folder count"),
         complete(),
     ],
     "bilibili.SearchUserFollowerCountTask": [
         *open_search_user("{up_name}"),
+        # The user-tab row renders "{N.N万}粉丝 · {n}个视频" via the same
+        # compact-stat formatting the judge injects, so containment matches.
+        assert_answer("{answer}", summary="assert follower count on user search row"),
         *grounded_answer("{answer}", summary="answer searched user follower count"),
         complete(),
     ],
@@ -277,13 +336,31 @@ PLANS: dict[str, list[Step]] = {
     "bilibili.FavVideoAndCountTask": [
         *open_ranking_video("{bvid}"),
         action_visible("video.intro.fav.toggle", summary="favorite requested ranking video"),
-        wait(0.3, summary="wait after favorite"),
+        wait(0.4, summary="wait after favorite"),
+        # Long-press the favorite icon to open the folder sheet, whose rows show
+        # "{count}个内容" from the live store. Long press never emits a click
+        # (simInput), so the just-added favorite is not toggled back off.
+        long_press_at(
+            '[data-action="video.intro.fav.toggle"]:visible',
+            summary="long press favorite icon to open folder sheet",
+            duration_ms=800,
+        ),
+        wait(0.8, summary="wait for favorite folder sheet"),
+        assert_text("{answer}个内容", summary="assert default folder item count on screen"),
         *grounded_answer("{answer}", summary="answer default favorite folder count"),
         complete(),
     ],
     "bilibili.VideoCommentContainsAnswerUidTask": [
         *open_video_from_search("{title}", "{bvid}"),
         *switch_video_tab("comment"),
+        # The comment list shows nicknames only; the UID is on the commenter's
+        # profile page. Scroll the hot-sorted list (target sits around rank 11),
+        # then open the commenter via their avatar/nickname (comment mids are
+        # strings, so the params JSON carries quotes).
+        *scroll_video_main(3, summary_prefix="scroll comments toward target"),
+        click_selector(trigger_param("user.open", "mid", "{answer}"), summary="open matching commenter profile"),
+        wait(0.8, summary="wait for user profile page"),
+        assert_text("UID: {answer}", summary="assert commenter UID on screen"),
         *grounded_answer("{answer}", summary="answer matching comment UID"),
         complete(),
     ],
@@ -291,6 +368,11 @@ PLANS: dict[str, list[Step]] = {
         *open_video_from_search("{title}", "{bvid}"),
         *switch_video_tab("comment"),
         swipe([500, 850], [500, 300], summary="scroll comments"),
+        # Comment rows render "{time} {location}" with the IP属地： prefix
+        # stripped — the same normalization the judge applies to the answer.
+        # The comment list is fully rendered (no virtualization), so the
+        # probe sees the row regardless of the exact scroll offset.
+        assert_answer("{answer}", summary="assert comment IP location on screen"),
         *grounded_answer("{answer}", summary="answer matching comment IP location"),
         complete(),
     ],

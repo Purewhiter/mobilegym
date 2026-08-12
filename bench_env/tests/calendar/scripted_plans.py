@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from bench_env.agent.scripted import (
     Step,
+    assert_answer,
+    assert_text,
     awake,
     back,
     complete,
@@ -111,6 +113,15 @@ def jump_to_date(date_value: str) -> list[Step]:
         type_text(date_value, selector='input[type="date"]:visible', clear=True, summary="enter target date"),
         click_selector('button:has-text("跳转"):visible', summary="jump to target date"),
         wait(0.5, summary="wait for Calendar home on target date"),
+    ]
+
+
+def open_date_calculate() -> list[Step]:
+    return [
+        *open_calendar(),
+        *open_more_menu(),
+        click_selector('button:has-text("日期推算"):visible', summary="open date calculate page"),
+        wait(0.4, summary="wait for date calculate page"),
     ]
 
 
@@ -308,6 +319,11 @@ PLANS: dict[str, list[Step]] = {
         complete(),
     ],
     "calendar.SearchEventTitle": [
+        # Search results (with dates) are the answer page for "earliest event".
+        *open_search("{keyword}"),
+        # Earliest match sorts last (results are startTs-desc) but all seed
+        # matches fit one screen; prove the answer title is read off the list.
+        assert_answer("{answer}", field_index=0, summary="assert earliest event title in results"),
         *grounded_answer("{answer}", summary="answer earliest matching event title"),
         complete(),
     ],
@@ -328,18 +344,60 @@ PLANS: dict[str, list[Step]] = {
         complete(),
     ],
     "calendar.DateCalcForward": [
+        # Compute on the 日期推算 tab (default direction is 往后/after), then read
+        # the on-page result before answering.
+        *open_date_calculate(),
+        type_text("{date}", selector='input[type="date"]:visible', clear=True, summary="enter start date"),
+        type_text("{days}", selector='input[type="number"]:visible', clear=True, summary="enter day count"),
+        click_selector('button:has-text("开始推算"):visible', summary="run forward calculation"),
+        wait(0.4, summary="wait for calculation result"),
+        # Result card renders "YYYY-MM-DD（M月D日）"; the date matcher hits the
+        # ISO label of the injected answer date.
+        assert_answer("{answer}", field_index=0, summary="assert calculated date in result card"),
         *grounded_answer("{answer}", summary="answer calculated forward date"),
         complete(),
     ],
     "calendar.CalculateDateInterval": [
+        # Compute on the 日期间隔 tab ("相差 N 天"), then answer.
+        *open_date_calculate(),
+        click_selector('button:has-text("日期间隔"):visible', summary="switch to interval tab"),
+        wait(0.3, summary="wait for interval tab"),
+        type_text("{date1}", selector='xpath=(//input[@type="date"])[1]', clear=True, summary="enter interval start date"),
+        type_text("{date2}", selector='xpath=(//input[@type="date"])[2]', clear=True, summary="enter interval end date"),
+        click_selector('button:has-text("开始推算"):visible', summary="run interval calculation"),
+        wait(0.4, summary="wait for interval result"),
+        # Result card renders "相差 N 天"; the number matcher extracts N.
+        assert_answer("{answer}", field_index=0, summary="assert interval days in result card"),
         *grounded_answer("{answer}", summary="answer date interval"),
         complete(),
     ],
     "calendar.QueryHolidayLength": [
+        # Test pins holiday=春节: rest days 2026-02-15..23 all sit in the February
+        # month view (休 badges). Jump to a plain February date so no badge is
+        # hidden by the selected-cell highlight.
+        *jump_to_date("2026-02-10"),
+        # Evidence asserts (B): the answer "9" is a *count* of 休 badges — a bare
+        # assert_answer("9") would false-positive on the day-number 9 present in
+        # every month grid, so instead prove the context: the month-view title is
+        # exactly 2月 and at least one 休 badge is rendered. The count itself
+        # stays actor-derived (the probe cannot count elements).
+        assert_text("2月", exact=True, summary="assert month view is on February"),
+        assert_text("休", summary="assert 休 rest badge visible in month grid"),
         *grounded_answer("{answer}", summary="answer holiday length"),
         complete(),
     ],
     "calendar.QueryMakeupWorkday": [
+        # Test pins holiday=春节: the post-holiday makeup workday 2026-02-28 (班
+        # badge) is in the same February month view. Land just after the holiday
+        # ends so the badge cell stays unselected.
+        *jump_to_date("2026-02-24"),
+        # Evidence asserts (B, weak): the answer date 2026-02-28 renders as a bare
+        # day number "28" in its cell (no "2月28日" text), so the date matcher has
+        # nothing to hit. Prove the context instead: February title + a 班 badge on
+        # screen. Weak because Feb 2026 also shows the pre-holiday 班 on 02-14 and
+        # the probe cannot tell which cell carries the badge.
+        assert_text("2月", exact=True, summary="assert month view is on February"),
+        assert_text("班", summary="assert 班 makeup badge visible in month grid"),
         *grounded_answer("{answer}", summary="answer makeup workday"),
         complete(),
     ],
@@ -355,15 +413,40 @@ PLANS: dict[str, list[Step]] = {
         complete(),
     ],
     "calendar.QueryFirstEventOnDate": [
+        # After the jump, the home agenda panel lists that day's events sorted by
+        # start time (title + HH:mm), so the first row is the answer.
+        *jump_to_date("{date}"),
+        # Fixed event start time from seed data — safe from clock rollover.
+        assert_answer("{answerTitle}", field_index=0, summary="assert first event title in agenda"),
+        assert_answer("{answerTime}", field_index=1, summary="assert first event start time in agenda"),
         *grounded_answer("{answerTitle}", "{answerTime}", summary="answer first event and start time"),
         complete(),
     ],
     "calendar.DateCalcThenCreate": [
-        *create_event_on_date("{targetDate}", "{title}"),
+        # create_event_on_date expanded so the assert can sit inside the form:
+        # the start-time row renders "YYYY年M月D日周X" for the jump target, so the
+        # date matcher proves the calculated target date is on screen where the
+        # event is being created (before the keyboard opens for the title).
+        *open_new_event_on_date("{targetDate}"),
+        assert_answer("{answer}", field_index=0, summary="assert target date visible in event form"),
+        set_event_title("{title}"),
+        save_event(),
+        wait(0.8, summary="wait for event creation"),
         *grounded_answer("{answer}", summary="answer calculated created date"),
         complete(),
     ],
     "calendar.MakeupDayReminder": [
+        # Test pins holiday=清明 (rest 2026-04-04..06, no post-holiday makeup):
+        # the April month view shows no 班 badge after the holiday, so this plan
+        # statically covers the 不用补班 branch only. The has-makeup branch
+        # (create an event instead) cannot be expressed in a single static plan.
+        *jump_to_date("2026-04-07"),
+        # Evidence asserts (B, weak): the branch answer rests on the *absence* of
+        # a 班 badge in April, and negative asserts are unsupported. Fall back to
+        # context: the month view is on April and the 清明 rest badges (04-04..06,
+        # the region the agent must inspect) are rendered.
+        assert_text("4月", exact=True, summary="assert month view is on April"),
+        assert_text("休", summary="assert 清明 rest badges visible in month grid"),
         *grounded_choice_answer("{answerChoice}", summary="answer makeup reminder branch"),
         complete(),
     ],
@@ -375,15 +458,35 @@ PLANS: dict[str, list[Step]] = {
         *delete_search_event("{keyword}", "seed_project_report"),
         *delete_search_event("{keyword}", "seed_team_dinner"),
         *delete_search_event("{keyword}", "seed_team_weekly"),
+        # Evidence assert (B): the deleted *count* is never rendered anywhere, so
+        # it stays actor-derived from the six delete blocks above. Re-run the
+        # search (the last deletion cleared the query) and assert the empty state
+        # — the on-screen counterpart of the judge's "no matches remain" check.
+        type_text("{keyword}", selector='input[placeholder="搜索日程"]:visible', clear=True, summary="re-enter keyword to verify empty"),
+        assert_text("未找到相关日程", summary="assert all matching events deleted"),
         *grounded_answer("{deletedCount}", summary="answer deleted event count"),
         complete(),
     ],
     "calendar.CompareScheduleDensity": [
+        # View each date's agenda list on the home page in turn, then answer.
+        # Evidence asserts (B): the compared *counts* are never rendered as
+        # numbers, so assert one known seed event title per day to prove each
+        # agenda was actually on screen. Titles come from the seed data pinned by
+        # test_scripted.py: date1=today+3 (团队周会+产品评审), date2=today+14
+        # (妈妈生日 only).
+        *jump_to_date("{date1}"),
+        assert_text("团队周会", summary="assert date1 agenda shows its seed event"),
+        *jump_to_date("{date2}"),
+        assert_text("妈妈生日", summary="assert date2 agenda shows its seed event"),
         *grounded_choice_answer("{answerChoice}", summary="answer denser date"),
         complete(),
     ],
     "calendar.EditAndReportNewTime": [
         *edit_event_time("{title}", "{eventId}"),
+        # Saving the edit lands back on the event detail page, whose time row
+        # renders "YYYY年M月D日 HH:MM - HH:MM"; the time matcher (±5min) hits the
+        # new end time. Fixed event time — safe from clock rollover.
+        assert_answer("{answerEnd}", field_index=0, summary="assert updated end time on detail page"),
         *grounded_answer("{answerEnd}", summary="answer updated end time"),
         complete(),
     ],

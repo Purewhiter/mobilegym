@@ -9,6 +9,8 @@ from __future__ import annotations
 
 from bench_env.agent.scripted import (
     Step,
+    assert_answer,
+    assert_text,
     back,
     complete,
     grounded_answer,
@@ -117,15 +119,29 @@ NOTE_READING = "ivsfhjfnd"
 NOTE_TANDIAN = "yqgdara1j"
 NOTE_FIRST_COLLECTED = "2kvlyjk5h"
 USER_HAIBIAN = "x1dubbu13"
-USER_HIYANG = "rdh0g1uqf"
+USER_XIYOU = "rdh0g1uqf"  # 西柚慢行 (followed, 5 published notes)
+USER_TIETIE = "k6bkr5bed"  # 铁铁健身日记 — author of NOTE_FIRST_COLLECTED
+USER_LIUHAI = "lzwv6upbv"  # 刘海研究所 — author of NOTE_TANDIAN (first 探店 result)
 COMMENT_TUTORIAL_ROOT = "3xzbdfr98"
 
 PLANS: dict[str, list[Step]] = {
     "redbook.CheckMyProfileField": [
+        tap_trigger("tab.me", summary="open Me tab with profile stats"),
+        wait(0.3, summary="wait for profile stats"),
+        # 短数字防假阳性：scope 收窄到"粉丝"统计格（followList.open type=0），
+        # 格内只有数字与"粉丝"标签，"3" 不会误中页面其他文本。
+        assert_answer(
+            "3",
+            scope='[data-trigger="followList.open"][data-trigger-params*=\'"type":"0"\']',
+            summary="assert follower count 3 inside the 粉丝 stat cell",
+        ),
         *grounded_answer("3", summary="answer follower count"),
         complete(),
     ],
     "redbook.CheckSearchNoteField": [
+        # First result card renders the author name directly (HomePage NoteItem).
+        *search("{keyword}"),
+        assert_answer("泡芙酱", summary="assert first OOTD result author 泡芙酱 on-screen"),
         *grounded_answer("泡芙酱", summary="answer first OOTD search result author"),
         complete(),
     ],
@@ -144,6 +160,12 @@ PLANS: dict[str, list[Step]] = {
         complete(),
     ],
     "redbook.CheckSearchUserField": [
+        *search("{username}"),
+        trigger_param("search.tab.switch", "users", param="tab", summary="switch to users result tab"),
+        wait(0.3, summary="wait for user results"),
+        trigger_param("user.open", USER_HAIBIAN, param="userId", summary="open 海边小橘子 profile"),
+        wait(0.5, summary="wait for profile IP location"),
+        assert_answer("福建", summary="assert profile IP location 福建 on-screen"),
         *grounded_answer("福建", summary="answer 海边小橘子 IP location"),
         complete(),
     ],
@@ -167,22 +189,67 @@ PLANS: dict[str, list[Step]] = {
     "redbook.LikeFeedNoteAndReportLikes": [
         *reveal_tutorial_note(),
         like_note(NOTE_TUTORIAL, summary="like recommend feed note containing 教程"),
+        # 点赞后卡片计数就地 +1（106→107）；scope 收窄到该笔记的 like 控件，
+        # 短数字 107 不会误中其他卡片的计数。
+        assert_answer(
+            "107",
+            scope=(
+                '[data-action="note.item.like.toggle"]'
+                f'[data-action-params*=\'"noteId":"{NOTE_TUTORIAL}"\']'
+            ),
+            summary="assert liked count 107 inside the 教程 note like control",
+        ),
         *grounded_answer("107", summary="report likes after toggle on 教程 feed note"),
         complete(),
     ],
     "redbook.CheckFollowingUserNoteCount": [
+        tap_trigger("tab.me", summary="open Me tab"),
+        trigger_param("followList.open", "1", param="type", summary="open following list"),
+        wait(0.3, summary="wait for following list"),
+        trigger_param("user.open", USER_XIYOU, param="userId", summary="open 西柚慢行 profile"),
+        wait(0.5, summary="wait for user profile"),
+        swipe([500, 820], [500, 300], summary="scroll notes grid to count notes"),
+        wait(0.3, summary="wait after scrolling notes grid"),
+        # 计数类答案不断数字（"5" 极易误中）：改断浏览终点证据 —— 西柚慢行
+        # feed 序第 5（最后一）篇笔记 oqau26cz2 的卡片标题可见，证明网格已数到底。
+        assert_text(
+            "期末急救包！三天搞定高数概率重难点",
+            summary="assert 5th (last) note card of 西柚慢行 visible",
+        ),
         *grounded_answer("5", summary="answer note count for followed user 西柚慢行"),
         complete(),
     ],
     "redbook.CheckFirstChatLastMessage": [
+        # Chat list first row already previews lastMessage; open the chat for the full bubble.
+        tap_trigger("tab.message", summary="open Messages tab with chat previews"),
+        wait(0.3, summary="wait for chat list"),
+        trigger_param("chat.open", USER_HAIBIAN, param="userId", summary="open latest chat"),
+        wait(0.5, summary="wait for chat messages"),
+        assert_answer("周末要不要一起去逛逛？", summary="assert last chat message bubble on-screen"),
         *grounded_answer("周末要不要一起去逛逛？", summary="answer latest chat last message"),
         complete(),
     ],
     "redbook.CheckFirstCollectedAuthorField": [
+        tap_trigger("tab.me", summary="open Me tab"),
+        tap_trigger("me.tab.collects", summary="open collects tab"),
+        open_note(NOTE_FIRST_COLLECTED, summary="open first collected note"),
+        wait(0.5, summary="wait for note detail"),
+        trigger_param("user.open", USER_TIETIE, param="userId", summary="open note author profile"),
+        wait(0.5, summary="wait for author profile IP location"),
+        assert_answer("上海", summary="assert author IP location 上海 on-screen"),
         *grounded_answer("上海", summary="answer first collected note author location"),
         complete(),
     ],
     "redbook.SearchFirstNoteAuthorTopLikedTitle": [
+        *search("{keyword}"),
+        trigger_param("user.open", USER_LIUHAI, param="userId", summary="open first 探店 result author profile"),
+        wait(0.5, summary="wait for author profile"),
+        swipe([500, 820], [500, 350], summary="scroll author notes grid to compare likes"),
+        wait(0.3, summary="wait after scrolling notes grid"),
+        assert_answer(
+            "今日美甲分享｜冰透蓝钻杏仁甲✨",
+            summary="assert top-liked note title on author notes grid",
+        ),
         *grounded_answer("今日美甲分享｜冰透蓝钻杏仁甲✨", summary="answer author top-liked note title for 探店 search"),
         complete(),
     ],
@@ -191,6 +258,9 @@ PLANS: dict[str, list[Step]] = {
         open_note(NOTE_READING, summary="open first 读书 search result"),
         collect_note(NOTE_READING),
         trigger_param("user.open", "9y4u7u3e3", param="userId", summary="open note author profile"),
+        # 主页头部原样渲染两个统计数（无"万"缩写）；assert 自带 3s 轮询，兼作页面加载等待。
+        assert_answer("36646", field_index=0, summary="assert author followers 36646 on profile header"),
+        assert_answer("671631", field_index=1, summary="assert author likes-and-collections 671631 on profile header"),
         *grounded_answer("36646", "671631", summary="report author followers and likes"),
         complete(),
     ],

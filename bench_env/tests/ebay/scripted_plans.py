@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from bench_env.agent.scripted import (
     Step,
+    assert_answer,
+    assert_text,
     back,
     complete,
     grounded_answer,
@@ -122,6 +124,7 @@ def set_common_filters(
     location: str | None = None,
     price_min: str | None = None,
     price_max: str | None = None,
+    expect_count: str | None = None,
 ) -> list[Step]:
     steps: list[Step] = [open_filters()]
     if brand:
@@ -158,6 +161,15 @@ def set_common_filters(
                 show_results(summary="return from price filter"),
             ]
         )
+    if expect_count is not None:
+        # Evidence probe: the filter drawer footer button renders the live
+        # result count ("显示 N 个结果") — assert it before applying.
+        steps.append(
+            assert_text(
+                f"显示 {expect_count} 个结果",
+                summary=f"assert filter drawer shows {expect_count} results",
+            )
+        )
     steps.extend(
         [
             show_results(summary="apply filters"),
@@ -176,6 +188,7 @@ def filtered_search(
     location: str | None = None,
     price_min: str | None = None,
     price_max: str | None = None,
+    expect_count: str | None = None,
 ) -> list[Step]:
     return [
         *submit_search(query, from_home=from_home),
@@ -185,6 +198,7 @@ def filtered_search(
             location=location,
             price_min=price_min,
             price_max=price_max,
+            expect_count=expect_count,
         ),
     ]
 
@@ -206,11 +220,18 @@ PLANS: dict[str, list[Step]] = {
     ],
     "ebay.SearchFirstResult": [
         *submit_search("{query}", from_home=True),
+        assert_answer("Dyson 电风扇 电子产品 1", summary="assert first result title on screen"),
         *grounded_answer("Dyson 电风扇 电子产品 1", summary="answer first result title"),
         complete(),
     ],
     "ebay.CountSonyHeadphonesEurope": [
-        *filtered_search("Sony {query}", from_home=True, condition="{condition}", location="{location}"),
+        *filtered_search(
+            "Sony {query}",
+            from_home=True,
+            condition="{condition}",
+            location="{location}",
+            expect_count="10",
+        ),
         *grounded_answer("10", summary="answer filtered Sony headphones count"),
         complete(),
     ],
@@ -222,19 +243,30 @@ PLANS: dict[str, list[Step]] = {
             location="{location}",
             price_min="{price_min}",
             price_max="{price_max}",
+            expect_count="5",
         ),
         *grounded_answer("5", summary="answer filtered Nike sneakers count"),
         complete(),
     ],
     "ebay.FindCheapestProduct": [
         *filtered_search("Dyson {query}", from_home=True, condition="{condition}", location="{location}"),
+        # Cheapest item is not on the first screen under bestMatch; sort so the
+        # answer is read off the first card.
+        *set_sort("最低价 + 运费优先"),
+        assert_text("¥1,141.70", summary="assert cheapest total visible after sort"),
         *grounded_answer("Dyson 吸尘器 家庭和花园 61", "1141.7", summary="answer cheapest Dyson vacuum"),
         complete(),
     ],
     "ebay.CompareTwoProductPrices": [
         *filtered_search("{item1}", from_home=True, condition="全新", location="亚洲"),
+        *set_sort("最低价 + 运费优先"),
+        assert_text("¥3,756.76", summary="assert cheapest {item1} price visible after sort"),
+        # Submitting a new query resets sort back to bestMatch — re-sort after
+        # the second search + filters.
         *submit_search("{item2}"),
         *set_common_filters(condition="全新", location="亚洲"),
+        *set_sort("最低价 + 运费优先"),
+        assert_text("¥2,653.23", summary="assert cheapest {item2} price visible after sort"),
         *grounded_choice_answer("电视更便宜", "3756.76", "2653.23", summary="answer two product price comparison"),
         complete(),
     ],
@@ -246,6 +278,7 @@ PLANS: dict[str, list[Step]] = {
             location="{location1}",
             price_min="{price_min1}",
             price_max="{price_max1}",
+            expect_count="6",
         ),
         *submit_search("Nike {query2}"),
         *set_common_filters(
@@ -253,6 +286,7 @@ PLANS: dict[str, list[Step]] = {
             location="{location2}",
             price_min="{price_min2}",
             price_max="{price_max2}",
+            expect_count="5",
         ),
         *grounded_choice_answer("耳机更多", "6", "5", summary="answer two group count comparison"),
         complete(),

@@ -9,11 +9,21 @@ from bench_env.agent.scripted import (
     complete,
     enter,
     home,
+    swipe,
     type_text,
     wait,
 )
 from bench_env.tests.map.scripted_plans import route_to_place
-from bench_env.tests.tencent_meeting.scripted_plans import join_meeting, rename_meeting_self
+from bench_env.tests.tencent_meeting.scripted_plans import (
+    HISTORY_TOPICS_2026_02_03,
+    HISTORY_TOPICS_DISPLAY_ORDER,
+    join_meeting,
+    open_history_list,
+    rename_meeting_self,
+    scroll_history_list,
+    search_history,
+    visit_history_details,
+)
 
 
 def click_selector(selector: str, summary: str) -> Step:
@@ -87,6 +97,18 @@ def scroll_wechat_contacts_down(summary: str = "scroll WeChat contacts") -> Step
         "duration_ms": 300,
         "summary": summary,
     }
+
+
+def open_wechat_chat(contact_wxid: str, *, summary: str = "read chat messages") -> list[Step]:
+    """Open a WeChat contact chat just to read its incoming messages."""
+    return [
+        *open_app("WeChat"),
+        back(summary="normalize WeChat to chat list"),
+        awake("WeChat", summary="return to WeChat chat list"),
+        wait(0.3, summary="wait for WeChat chat list"),
+        trigger_param("chat.open", "id", contact_wxid, "open WeChat contact chat"),
+        wait(0.6, summary=summary),
+    ]
 
 
 def send_wechat_message(
@@ -296,6 +318,75 @@ def create_calendar_event(
     if alarm:
         steps.append(toggle_calendar_alarm())
     steps.extend([save_calendar_event(), wait(0.8, summary="wait for calendar event save")])
+    return steps
+
+
+def calendar_month_cell(day_text: str) -> str:
+    """Month-grid cell whose date number equals ``day_text`` (e.g. "13").
+
+    数字格文本在当月唯一；showExtendMonth 的邻月格只出现月头/月尾几天，
+    与测试运行日（非月界日）不冲突。
+    """
+    return f'div.cursor-pointer:has(span:text-is("{day_text}")):visible'
+
+
+def select_calendar_day(day_text: str, *, summary: str) -> list[Step]:
+    return [
+        click_selector(calendar_month_cell(day_text), f"select day {day_text} on month grid"),
+        wait(0.4, summary=summary),
+    ]
+
+
+def open_calendar_agenda_event(title: str, *, summary: str) -> list[Step]:
+    """Open an event's detail page from the agenda panel below the month grid."""
+    return [
+        click_selector(f'button:has-text("{title}"):visible', f"open calendar event {title}"),
+        wait(0.4, summary=summary),
+    ]
+
+
+def open_gallery_album(album_name: str) -> list[Step]:
+    return [
+        *open_app("相册"),
+        click_selector('button[aria-label="相册"]:visible', "open Gallery albums tab"),
+        wait(0.4, summary="wait for albums grid"),
+        click_selector(f'button:has-text("{album_name}"):visible', f"open {album_name} album"),
+        wait(0.8, summary="wait for album photo grid"),
+    ]
+
+
+def view_gallery_photos(*names: str) -> list[Step]:
+    """Open each photo in the viewer (by grid thumbnail alt), read it, and go back."""
+    steps: list[Step] = []
+    for name in names:
+        steps.extend(
+            [
+                click_selector(f'img[alt="{name}"]:visible', f"open photo {name}"),
+                wait(0.4, summary=f"view photo {name}"),
+                back(summary=f"close photo {name}"),
+            ]
+        )
+    return steps
+
+
+def swipe_gallery_viewer_next(summary: str) -> Step:
+    """Swipe left inside the photo viewer to show the next (older) photo."""
+    return swipe([750, 500], [250, 500], summary=summary)
+
+
+def view_gallery_photo_run(first_name: str, *followup_names: str) -> list[Step]:
+    """Open ``first_name`` from the grid, then page through ``followup_names`` in the viewer.
+
+    查看器内 allItems 按 createdAt 倒序，左滑 = 下一张（更旧）；调用方需保证
+    这些照片在该排序下连续（带日期文件名的照片 createdAt 由文件名推断，确定性成立）。
+    """
+    steps: list[Step] = [
+        click_selector(f'img[alt="{first_name}"]:visible', f"open photo {first_name}"),
+        wait(0.5, summary=f"view photo {first_name}"),
+    ]
+    for name in followup_names:
+        steps.append(swipe_gallery_viewer_next(f"swipe to next photo {name}"))
+    steps.append(back(summary="leave photo viewer"))
     return steps
 
 
@@ -587,6 +678,25 @@ def open_file_folder(path: str) -> list[Step]:
     return steps
 
 
+def text_file_trigger(path: str) -> str:
+    return f'[data-trigger="file.text.open"][data-trigger-params*=\'"path":"{path}"\']:visible'
+
+
+def open_text_file(path: str, *, read_summary: str | None = None, scrolls: int = 0) -> list[Step]:
+    """Open a .txt/.log file in the text preview, optionally scroll through it, then back."""
+    name = path.rsplit("/", 1)[-1]
+    steps: list[Step] = [
+        click_selector(text_file_trigger(path), f"open text file {name}"),
+        wait(0.5, summary=read_summary or f"read {name}"),
+    ]
+    for index in range(scrolls):
+        step = scroll_file_manager_main_down(f"scroll {name} ({index + 1}/{scrolls})")
+        step["inertia"] = True
+        steps.append(step)
+    steps.append(back(summary=f"leave {name} preview"))
+    return steps
+
+
 def create_folder(name: str) -> list[Step]:
     return [
         click_selector('button[aria-label="新建文件夹"]:visible', "open new folder dialog"),
@@ -761,18 +871,26 @@ PLANS: dict[str, list[Step]] = {
         complete(),
     ],
     "crossapp_work.CalendarEarliestToAlarm": [
+        # 月视图点明天的日期格，日程面板即显示"临时早会A 09:30"（最早日程）。
         *open_app("日历"),
+        *select_calendar_day("{tomorrow_day}", summary="read tomorrow's earliest event in agenda"),
         *add_default_alarm(),
         *set_alarm_time("07:00", "9", "0", source_hour="7", source_minute="0", scroll_to_source=True),
         complete(),
     ],
     "crossapp_work.MeetingLongestInfoToWechat": [
-        *open_tencent_meeting(),
+        # {date} 测试固定采样 2026-02-03；该分组 5 场逐场进详情读时间段（时长=结束-开始）。
+        *open_history_list(),
+        *scroll_history_list(2, summary="locate the {date} group"),
+        *visit_history_details(*HISTORY_TOPICS_2026_02_03),
         *send_wechat_message("{wechat_message}"),
         complete(),
     ],
     "crossapp_work.MeetingDurationToWechat": [
-        *open_tencent_meeting(),
+        # {date} 测试固定采样 2026-02-03；5 场逐场进详情读"参会时长"求和。
+        *open_history_list(),
+        *scroll_history_list(2, summary="locate the {date} group"),
+        *visit_history_details(*HISTORY_TOPICS_2026_02_03),
         *send_wechat_message("{wechat_message}"),
         complete(),
     ],
@@ -832,12 +950,26 @@ PLANS: dict[str, list[Step]] = {
         complete(),
     ],
     "crossapp_work.TencentMeetingLongestPlannedToWechat": [
-        *open_tencent_meeting(),
+        # 预定时长只在详情页时间行可见：通览列表后 13 场逐场进详情比较（搜索式行定位压步数）。
+        *open_history_list(),
+        *scroll_history_list(2, summary="survey history list"),
+        *visit_history_details(*HISTORY_TOPICS_DISPLAY_ORDER),
         *send_wechat_message("{wechat_message}"),
         complete(),
     ],
     "crossapp_work.TencentMeetingKeywordLongestParticipationToNotes": [
-        *open_tencent_meeting(),
+        # 先搜索 {keyword} 看匹配数量（6 场），再逐场进详情读"参会时长"比较。
+        *open_history_list(),
+        search_history("{keyword}"),
+        wait(0.4, summary="count keyword-matching meetings"),
+        *visit_history_details(
+            "小明的快速会议",
+            "老王的快速会议",
+            "张三的快速会议",
+            "李四的快速会议",
+            "王五的快速会议",
+            "孙七的快速会议",
+        ),
         *create_note("参会统计", "{note_content}"),
         complete(),
     ],
@@ -849,14 +981,42 @@ PLANS: dict[str, list[Step]] = {
         complete(),
     ],
     "crossapp_work.CountCurrentLogErrorsToWechat": [
+        # 当前日志 = 排障包下 5 个 .log（archive/ 为上月归档、README/error_codes 非日志，无需打开）。
+        *open_file_folder("/sdcard/Download/排障包"),
+        *open_text_file("/sdcard/Download/排障包/app.log", read_summary="count ERROR lines in app.log"),
+        *open_text_file("/sdcard/Download/排障包/network.log", read_summary="count ERROR lines in network.log"),
+        click_selector(folder_path("/sdcard/Download/排障包/system"), "open system logs folder"),
+        wait(0.4, summary="wait for system folder"),
+        *open_text_file("/sdcard/Download/排障包/system/boot.log", read_summary="count ERROR lines in boot.log"),
+        *open_text_file("/sdcard/Download/排障包/system/auth.log", read_summary="count ERROR lines in auth.log"),
+        *open_text_file("/sdcard/Download/排障包/system/debug.log", read_summary="count ERROR lines in debug.log"),
         *send_wechat_message("{wechat_message}", contact_wxid="{boss_wxid}"),
         complete(),
     ],
     "crossapp_work.CountOpenWorkOrdersFromPhotosToWechat": [
+        # 先看陈静的口径消息，再到相册-相机逐张查看 6 张工单表照片，最后回复统计结果。
+        *open_wechat_chat("{chenjing_wxid}", summary="read 陈静's counting criteria message"),
+        *open_gallery_album("相机"),
+        *view_gallery_photos(
+            "IMG_8041.jpg",
+            "IMG_8042.jpg",
+            "IMG_8043.jpg",
+            "IMG_8044.jpg",
+            "IMG_8045.jpg",
+            "IMG_8046.jpg",
+        ),
         *send_wechat_message("{wechat_message}", contact_wxid="{chenjing_wxid}"),
         complete(),
     ],
     "crossapp_work.InspectionReportToWechat": [
+        # 巡检记录.txt 中昨天记录段在文件末尾（前面是 14 天历史），惯性滚动翻到；值班表看今日巡检人。
+        *open_file_folder("/sdcard/Download/巡检记录"),
+        *open_text_file(
+            "/sdcard/Download/巡检记录/巡检记录.txt",
+            read_summary="read yesterday's inspection records",
+            scrolls=4,
+        ),
+        *open_text_file("/sdcard/Download/巡检记录/值班表.txt", read_summary="read today's inspector on roster"),
         *send_wechat_message("{wechat_message}", contact_wxid="{boss_wxid}"),
         *send_wechat_message("{wechat_message}", contact_wxid="{inspector_wxid}", via_contacts=True),
         complete(),
@@ -877,6 +1037,13 @@ PLANS: dict[str, list[Step]] = {
         complete(),
     ],
     "crossapp_work.OrganizeMeetingMaterialsToWechat": [
+        # 日历点昨天：日程面板同时显示"支付回调复盘会"（描述指向老板要资料）和"客服排班同步"
+        # （描述指向陈静，干扰项），逐个进详情读描述后再整理文件。
+        *open_app("日历"),
+        *select_calendar_day("{yesterday_day}", summary="read yesterday's meetings in agenda"),
+        *open_calendar_agenda_event("支付回调复盘会", summary="read description: materials owed to boss"),
+        back(summary="back to calendar agenda"),
+        *open_calendar_agenda_event("客服排班同步", summary="confirm this one is for 陈静, not boss"),
         *move_files(
             "/sdcard/Download/会议资料",
             "/sdcard/Documents/meeting_pack",
@@ -888,6 +1055,17 @@ PLANS: dict[str, list[Step]] = {
         complete(),
     ],
     "crossapp_work.OrganizeReimbursementPhotosToWechat": [
+        # 相册-相机逐张核对 6 张候选照片（4/17-4/23，按拍摄时间倒序连续，左滑翻页），
+        # 识别出吃饭（IMG_20260417_184226）和打车（IMG_20260418_093000）两张报销发票。
+        *open_gallery_album("相机"),
+        *view_gallery_photo_run(
+            "IMG_20260423_191032.jpg",
+            "IMG_20260418_093000.jpg",
+            "IMG_20260418_091544.jpg",
+            "IMG_20260417_184226.jpg",
+            "IMG_20260417_181500.jpg",
+            "IMG_20260417_181200.jpg",
+        ),
         *move_camera_reimbursement_files(),
         *send_wechat_message_and_images(
             "报销照片已整理，合计359.70",

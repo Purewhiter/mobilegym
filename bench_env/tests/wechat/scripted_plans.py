@@ -4,10 +4,13 @@ from __future__ import annotations
 
 from bench_env.agent.scripted import (
     Step,
+    assert_answer,
+    back,
     complete,
     enter,
     grounded_answer,
     long_press_at,
+    swipe,
     type_text,
     wait,
 )
@@ -271,6 +274,10 @@ PLANS: dict[str, list[Step]] = {
         complete(),
     ],
     "wechat.ReadMyWxid": [
+        # Acquire the answer on-screen first: the Me tab renders "微信号: <wxid>".
+        trigger_visible("tab.me", summary="open Me tab"),
+        wait(0.3, summary="read my WeChat ID on Me page"),
+        assert_answer("xiaoming001", summary="assert my WeChat ID on screen"),
         *grounded_answer("xiaoming001", summary="answer my WeChat ID"),
         complete(),
     ],
@@ -297,6 +304,11 @@ PLANS: dict[str, list[Step]] = {
         complete(),
     ],
     "wechat.ReadContactRegion": [
+        # Acquire the answer on-screen first: the contact profile renders "地区: <region>".
+        # "{contact}" (blank.) sits in group B near the top of Contacts — no scroll needed.
+        *open_contact_profile("{contact}"),
+        wait(0.3, summary="read contact region on profile"),
+        assert_answer("马达加斯加", summary="assert contact region on screen"),
         *grounded_answer("马达加斯加", summary="answer contact region"),
         complete(),
     ],
@@ -311,17 +323,31 @@ PLANS: dict[str, list[Step]] = {
         wait(0.3, summary="wait for enabled Sports detail"),
         trigger_visible("wechatSports.open", summary="open WeChat Sports"),
         trigger_visible("wechatSports.leaderboard.open", summary="open leaderboard"),
+        assert_answer("赵敏", summary="assert top stepper on leaderboard"),
         *grounded_answer("赵敏", summary="answer top stepper"),
         complete(),
     ],
     "wechat.ConditionalReplyToBoss": [
         click_selector('[data-trigger="chat.open"]:has-text("Boss"):visible', summary="open Boss chat"),
+        wait(0.3, summary="wait for Boss chat"),
+        # Best-effort: scroll the history upward so the older "{keyword}" message
+        # (buried above ~10 newer messages) enters the viewport before replying.
+        swipe([500, 300], [500, 780], summary="scroll Boss history up 1/3"),
+        swipe([500, 300], [500, 780], summary="scroll Boss history up 2/3"),
+        swipe([500, 300], [500, 780], summary="scroll Boss history up 3/3"),
+        wait(0.3, summary="check history for {keyword}"),
         type_text("{yes_reply}", selector="textarea:visible", clear=True, summary="type conditional reply"),
         enter(summary="send conditional reply"),
         wait(0.3, summary="wait for message send"),
         complete(),
     ],
     "wechat.PostMomentFromChat": [
+        # Acquire the source message first: open the {contact} chat and read the
+        # latest received text, then return to the chat list before posting.
+        # (Opening ChatDetail writes no persistent state — the diff stays clean.)
+        click_selector('[data-trigger="chat.open"]:has-text("{contact}"):visible', summary="open {contact} chat"),
+        wait(0.3, summary="read the latest message from {contact}"),
+        back(summary="return to chat list"),
         *post_text_moment("明天一起去吃火锅吗？"),
         complete(),
     ],

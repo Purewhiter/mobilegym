@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from bench_env.agent.scripted import (
     Step,
+    assert_text,
     awake,
     back,
     complete,
@@ -410,6 +411,20 @@ PLANS: dict[str, list[Step]] = {
         complete(),
     ],
     "payment.AlipayContinuousPaymentsToContactsRecordBalances": [
+        # Gather: read the starting balance once (Me tab → balance page) before
+        # the first transfer; each post-transfer balance recorded in the note is
+        # the start balance minus the running transfer total (task reasoning).
+        awake("Alipay", summary="open Alipay"),
+        wait(0.5, summary="wait for Alipay foreground"),
+        tap_trigger("tab.my", summary="open Alipay Me tab"),
+        wait(0.4, summary="wait for Me tab"),
+        tap_trigger("balance.open", summary="open Alipay balance page"),
+        wait(0.6, summary="wait for balance page"),
+        assert_text("100,023.46", summary="assert starting balance on screen"),
+        back(summary="leave balance page"),
+        wait(0.3, summary="wait for Me tab after balance page"),
+        tap_trigger("tab.home", summary="return to Alipay home tab"),
+        wait(0.3, summary="wait for Alipay home tab"),
         *transfer_account_success("13867891288", "{amount1}", note="发工资"),
         *transfer_account_from_transfer_page_success("13945678909", "{amount2}", note="发工资"),
         *transfer_account_from_transfer_page_success("13256784311", "{amount3}", note="发工资"),

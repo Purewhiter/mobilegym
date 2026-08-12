@@ -4,6 +4,9 @@ from __future__ import annotations
 
 from bench_env.agent.scripted import (
     Step,
+    assert_answer,
+    assert_text,
+    assert_visible,
     back,
     complete,
     grounded_answer,
@@ -135,6 +138,10 @@ def open_editor_menu() -> list[Step]:
 
 PLANS: dict[str, list[Step]] = {
     "notes.ReadNotesCount": [
+        # All 5 default notes fit on the first screen; assert one known title so
+        # the answer is grounded in a rendered list (plan already couples to
+        # defaults via the literal "5").
+        assert_text("购物清单", summary="assert notes list rendered"),
         *grounded_answer("5", summary="answer visible notes count"),
         complete(),
     ],
@@ -159,10 +166,27 @@ PLANS: dict[str, list[Step]] = {
         complete(),
     ],
     "notes.ReadNoteContent": [
+        # Evidence: the editor keeps content inside a React-controlled
+        # <textarea> value, invisible to text probes — assert the content
+        # keywords on the home-list card snippet instead (full textContent,
+        # only CSS-truncated).
+        assert_answer("{keyword1}", summary="assert content keyword1 on list card"),
+        assert_answer("{keyword2}", summary="assert content keyword2 on list card"),
+        # Open the note so its full content is on screen; the editor skips
+        # autosave when nothing changed, so notes state stays clean. No back
+        # needed — grounded_answer starts with home().
+        *open_note("{note_title}"),
         *grounded_answer("牛奶\n鸡蛋\n洗衣液", summary="answer note content"),
         complete(),
     ],
     "notes.ReadTodoText": [
+        # Incomplete todos sort first and all fit on the todo tab's first screen.
+        *open_todo_tab(),
+        # answer_fields declares one repeatable entry, so field_index stays 0;
+        # one assert per answered todo text.
+        assert_answer("明天去车站", summary="assert todo 1 on screen"),
+        assert_answer("给妈妈打电话", summary="assert todo 2 on screen"),
+        assert_answer("预约牙医", summary="assert todo 3 on screen"),
         *grounded_answer_repeatable("明天去车站", "给妈妈打电话", "预约牙医", summary="answer incomplete todos"),
         complete(),
     ],
@@ -185,6 +209,12 @@ PLANS: dict[str, list[Step]] = {
         complete(),
     ],
     "notes.SearchNoteTitle": [
+        # Home-page search filters instantly; matching card stays on screen.
+        # Search query is page-local React state, so app state stays clean.
+        type_text("{keyword}", selector='input[placeholder="搜索笔记"]', clear=True, summary="search notes by keyword"),
+        back(summary="dismiss search keyboard"),
+        wait(0.3, summary="wait for search results"),
+        assert_answer("{note_title}", summary="assert matched note title in filtered list"),
         *grounded_answer("{note_title}", summary="answer search result title"),
         complete(),
     ],
@@ -203,6 +233,13 @@ PLANS: dict[str, list[Step]] = {
         wait(0.4, summary="wait for reminder dialog"),
         click_selector('button:has-text("确定"):visible', summary="confirm default reminder time"),
         wait(0.4, summary="wait for reminder save"),
+        # Evidence: the editor header renders the "提醒 M月D日 h:mm" row only
+        # after alarmAt is saved (the more-menu ActionSheet is unmounted by
+        # now). The on-screen hour has no zero padding while the injected
+        # {answer} is zero-padded ("09:15"), so assert the reminder row
+        # itself; the judge's match_time (±5 min) stays authoritative for
+        # the answered value.
+        assert_text("提醒", summary="assert reminder row rendered in editor header"),
         *grounded_answer("{answer}", summary="answer reminder time"),
         complete(),
     ],
@@ -211,16 +248,35 @@ PLANS: dict[str, list[Step]] = {
         *open_editor_menu(),
         click_selector('button:has-text("设为私密"):visible', summary="set note private"),
         wait(0.4, summary="wait for private route"),
+        # Evidence: "set private" replaces the editor with the private-notes
+        # page; the note card visible there proves the operation landed and
+        # the plan is on the page the count is read from. The count "1"
+        # itself stays un-asserted (short digit, high mismatch risk).
+        assert_text("{note_title}", summary="assert note card on private-notes page"),
         *grounded_answer("1", summary="answer private notes count"),
         complete(),
     ],
     "notes.TodoBatchWorkflow": [
         *add_todo("{new_todo}"),
+        # Evidence: the draft row only commits to a plain (assertable) todo
+        # row when its input blurs — focusing the search box does exactly
+        # that, so filter by the new text and assert the committed row.
+        type_text("{new_todo}", selector='input[placeholder="搜索待办"]', clear=True, summary="search new todo"),
+        back(summary="dismiss todo search keyboard"),
+        wait(0.3, summary="wait for new todo filter"),
+        assert_visible(todo_row("{new_todo}"), summary="assert new todo row visible"),
         type_text("{existing_todo}", selector='input[placeholder="搜索待办"]', clear=True, summary="search existing todo"),
         back(summary="dismiss todo search keyboard"),
         wait(0.3, summary="wait for existing todo"),
         click_selector(todo_checkbox("{existing_todo}"), summary="mark existing todo completed"),
         wait(0.3, summary="wait for todo completion"),
+        # Evidence: after the toggle the row moves to the completed section
+        # and its checkbox flips to "取消完成". The count "3" stays
+        # un-asserted (short digit, high mismatch risk).
+        assert_visible(
+            todo_checkbox("{existing_todo}", completed=True),
+            summary="assert existing todo marked completed",
+        ),
         *grounded_answer("3", summary="answer remaining incomplete todo count"),
         complete(),
     ],

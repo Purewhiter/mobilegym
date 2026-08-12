@@ -27,8 +27,18 @@ from bench_env.tests.tencent_meeting.test_tasks import BASE_STATE as TM_BASE_STA
 SUITE = "crossapp_work"
 ROOT = Path(__file__).resolve().parents[3]
 SCRIPTED_MAX_STEPS = {
+    # 排程时间滚轮的滑动步数随当前时刻变化（最坏 64 步 > L4 默认 60）。
+    "FullMeetingConflictCheckBroadcast": 75,
+    # 排程时间滚轮的滑动步数随当前时刻变化（最坏 64 步 > L4 默认 60）。
+    "MeetingFullFlowToWechat": 75,
+    # 日历读两场会议详情 + 文件整理 + 微信汇报（≈67 步 > L4 默认 60）。
+    "OrganizeMeetingMaterialsToWechat": 80,
     "OrganizePdfReportsToWechat": 120,
+    # 相册逐张核对 6 张候选照片 + 文件整理 + 微信发图（≈73 步 > L4 默认 60）。
+    "OrganizeReimbursementPhotosToWechat": 90,
     "ScheduleReleaseMeetingAndNotifyViaNotesWechatSms": 75,
+    # 13 场历史会议逐场进详情比较预定时长（≈58 步 > 任务预算 45）。
+    "TencentMeetingLongestPlannedToWechat": 75,
 }
 
 
@@ -210,6 +220,19 @@ def _with_alarm_before_meeting(task: BaseTask) -> BaseTask:
     return _with_dynamic_params(task, build)
 
 
+def _with_calendar_day_params(task: BaseTask, **day_offsets: int) -> BaseTask:
+    """注入月视图日期格的"几号"文本（如 tomorrow_day=+1 天的几号），供 plan 点日期格。"""
+
+    def build(state: dict[str, Any], _current_task: BaseTask) -> dict[str, str]:
+        today = sim_today(state["os"])
+        return {
+            name: str((today + dt.timedelta(days=offset)).day)
+            for name, offset in day_offsets.items()
+        }
+
+    return _with_dynamic_params(task, build)
+
+
 def _with_today_inspector(task: BaseTask) -> BaseTask:
     def build(state: dict[str, Any], current_task: BaseTask) -> dict[str, str]:
         inspector = current_task.inspector_for_os(state["os"])  # type: ignore[attr-defined]
@@ -230,10 +253,15 @@ def _with_schedule_params(task: BaseTask, *, time_param: str = "time", duration_
     return _with_dynamic_params(task, build)
 
 
+def _predicted_meeting_id(topic: str) -> str:
+    """新会议号由主题确定性派生（镜像 App 端 generateMeetingId），创建前即可预测。"""
+    return TencentMeeting.predicted_meeting_id(topic)
+
+
 def _with_free_conflict_flow_params(task: BaseTask) -> BaseTask:
     def build(state: dict[str, Any], current_task: BaseTask) -> dict[str, Any]:
         target_time = str(current_task.params["time"])
-        message = f"{current_task.params['flow_topic']} 8886661234"
+        message = f"{current_task.params['flow_topic']} {_predicted_meeting_id(str(current_task.params['flow_topic']))}"
         return {
             **_schedule_params(state, target_time),
             "tomorrow": tomorrow_ymd(state["os"]),
@@ -246,7 +274,7 @@ def _with_free_conflict_flow_params(task: BaseTask) -> BaseTask:
 
 
 SCRIPTED_CASES: list[tuple[str, Callable[[], BaseTask]]] = [
-    ("CalendarEarliestToAlarm", lambda: _task("CalendarEarliestToAlarm")),
+    ("CalendarEarliestToAlarm", lambda: _with_calendar_day_params(_task("CalendarEarliestToAlarm"), tomorrow_day=1)),
     ("CountCurrentLogErrorsToWechat", lambda: _task("CountCurrentLogErrorsToWechat", boss_wxid=_wxid("Boss"), wechat_message="当前日志错误 23 个")),
     ("CountOpenWorkOrdersFromPhotosToWechat", lambda: _task("CountOpenWorkOrdersFromPhotosToWechat", chenjing_wxid=_wxid("陈静"), wechat_message="未闭环工单共27个，拍过照12个：WO-A-001 WO-A-002 WO-A-006 WO-A-008 WO-A-012 WO-A-015 WO-A-019 WO-A-020 WO-A-025 WO-A-027 WO-A-032 WO-A-033 WO-B-002 WO-B-006 WO-B-008 WO-B-012 WO-B-019 WO-B-027 WO-B-032 WO-C-002 WO-C-006 WO-C-012 WO-C-019 WO-C-027 WO-C-032 WO-D-002 WO-D-012")),
     ("ExistingMeetingToCalendar", lambda: _with_meeting_calendar_params(_task("ExistingMeetingToCalendar", topic="项目例会", **_scheduled_date_time("项目例会")))),
@@ -263,18 +291,18 @@ SCRIPTED_CASES: list[tuple[str, Callable[[], BaseTask]]] = [
             end_time="11:00",
             tomorrow=_tomorrow(),
             **_contact(),
-            wechat_message="项目周会 8886661234",
+            wechat_message=f"项目周会 {_predicted_meeting_id('项目周会')}",
         )),
     ),
     ("MeetingJoinAndNotifySms", lambda: _task("MeetingJoinAndNotifySms", topic="老王的快速会议", meeting_id=_meeting_id("老王的快速会议"), name="访客小王", contact="张三", sms_message="我已入会")),
     ("MeetingLongestInfoToWechat", lambda: _task("MeetingLongestInfoToWechat", date="2026-02-03", **_contact(), wechat_message=_longest_history_message())),
-    ("MeetingMultiChannelNotify", lambda: _task("MeetingMultiChannelNotify", topic="快速会议", pin="123456", contact1="张伟", contact1_wxid=_wxid("张伟"), contact2="张三", wechat_message="会议号 8886661234", sms_message="会议号 8886661234")),
+    ("MeetingMultiChannelNotify", lambda: _task("MeetingMultiChannelNotify", topic="快速会议", pin="123456", contact1="张伟", contact1_wxid=_wxid("张伟"), contact2="张三", wechat_message=f"会议号 {_predicted_meeting_id('快速会议')}", sms_message=f"会议号 {_predicted_meeting_id('快速会议')}")),
     ("MeetingReminderToNotes", lambda: _with_live_upcoming_note(_task("MeetingReminderToNotes", note_content=_upcoming_note()))),
     ("MeetingRouteEtaToWechat", lambda: _with_route_message(_task("MeetingRouteEtaToWechat", place="中国国家博物馆", **_contact(), wechat_message=f"{_route_duration('中国国家博物馆')} 项目例会 11:00"))),
-    ("OrganizeMeetingMaterialsToWechat", lambda: _task("OrganizeMeetingMaterialsToWechat", boss_wxid=_wxid("Boss"), wechat_message="会议附件_03.xlsx 会议附件_04.png 会议附件_05.txt 已整理")),
+    ("OrganizeMeetingMaterialsToWechat", lambda: _with_calendar_day_params(_task("OrganizeMeetingMaterialsToWechat", boss_wxid=_wxid("Boss"), wechat_message="会议附件_03.xlsx 会议附件_04.png 会议附件_05.txt 已整理"), yesterday_day=-1)),
     ("OrganizePdfReportsToWechat", lambda: _task("OrganizePdfReportsToWechat", boss_wxid=_wxid("Boss"), wechat_message="项目进展报告.pdf 验收报告.pdf 阶段总结报告.pdf 测试报告.pdf 已整理")),
     ("OrganizeReimbursementPhotosToWechat", lambda: _task("OrganizeReimbursementPhotosToWechat", boss_wxid=_wxid("Boss"), wechat_message="报销照片已整理，合计359.70")),
-    ("ScheduleReleaseMeetingAndNotifyViaNotesWechatSms", lambda: _with_schedule_params(_task("ScheduleReleaseMeetingAndNotifyViaNotesWechatSms", topic="版本发布会", pin="123456", time="09:00", **_contact(), sms_contact="张三", note_content="版本发布会 8886661234 密码123456", wechat_message="版本发布会 8886661234 密码123456", sms_message="版本发布会 8886661234 密码123456"), duration_minutes=15)),
+    ("ScheduleReleaseMeetingAndNotifyViaNotesWechatSms", lambda: _with_schedule_params(_task("ScheduleReleaseMeetingAndNotifyViaNotesWechatSms", topic="版本发布会", pin="123456", time="09:00", **_contact(), sms_contact="张三", note_content=f"版本发布会 {_predicted_meeting_id('版本发布会')} 密码123456", wechat_message=f"版本发布会 {_predicted_meeting_id('版本发布会')} 密码123456", sms_message=f"版本发布会 {_predicted_meeting_id('版本发布会')} 密码123456"), duration_minutes=15)),
     ("SmsAndCalendarOnDate", lambda: _task("SmsAndCalendarOnDate", contact="张三", message="明天见", event_title="约会", tomorrow=_tomorrow())),
     ("SubmitRequestedAttachmentsToBoss", lambda: _task("SubmitRequestedAttachmentsToBoss", boss_wxid=_wxid("Boss"), wechat_message="供应商盖章确认.pdf 流水截图_A.png 已提交")),
     ("TencentMeetingKeywordLongestParticipationToNotes", lambda: _task("TencentMeetingKeywordLongestParticipationToNotes", keyword="快速会议", note_content="6 小明的快速会议")),

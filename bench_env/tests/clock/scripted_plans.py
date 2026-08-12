@@ -2,7 +2,19 @@
 
 from __future__ import annotations
 
-from bench_env.agent.scripted import Step, awake, back, complete, grounded_answer, home, type_text, wait, swipe
+from bench_env.agent.scripted import (
+    Step,
+    assert_answer,
+    assert_visible,
+    awake,
+    back,
+    complete,
+    grounded_answer,
+    home,
+    type_text,
+    wait,
+    swipe,
+)
 
 
 def click_selector(selector: str, *, summary: str) -> Step:
@@ -146,12 +158,60 @@ def remove_first_world_city() -> list[Step]:
     ]
 
 
+def browse_alarm_list() -> list[Step]:
+    """Open the alarm tab and scroll the list so every alarm card gets on screen."""
+    return [
+        *open_clock(),
+        swipe([500, 820], [500, 260], summary="scroll through alarm list"),
+        wait(0.3, summary="wait after scrolling alarm list"),
+    ]
+
+
+def open_world_city_list() -> list[Step]:
+    """Open the world clock tab and scroll past the analog clock to the city rows."""
+    return [
+        *open_world_tab(),
+        swipe([500, 850], [500, 250], summary="scroll world clock to city list"),
+        wait(0.4, summary="wait for city list"),
+    ]
+
+
+def view_world_city_row(city: str) -> Step:
+    """Tap the city row (a no-op outside selection mode) to prove it is visible.
+
+    The row renders the city's current time on the right and the local-time
+    difference in its subtitle, so resolving it verifies the queried info is
+    actually reachable on screen.
+    """
+    return click_selector(
+        f'div.rounded-2xl:has-text("{city}"):visible',
+        summary=f"view {city} row in city list",
+    )
+
+
+def assert_world_city_row(city: str) -> Step:
+    """Assert the city row card is on screen (in-viewport hit-test, zero side effects).
+
+    Scoped to the row card (`div.rounded-2xl`) rather than a bare city-name
+    text probe, so ancestor containers cannot satisfy the assert.
+    """
+    return assert_visible(
+        f'div.rounded-2xl:has-text("{city}"):visible',
+        summary=f"assert {city} row on screen",
+    )
+
+
 PLANS: dict[str, list[Step]] = {
     "clock.ToggleAlarm": [
         *toggle_alarm("{time}"),
         complete(),
     ],
     "clock.CountAlarms": [
+        *browse_alarm_list(),
+        # The count ("7") never renders on screen — the browse endpoint is the
+        # evidence: the last default alarm card (a7, 22:30) proves the list was
+        # scrolled to its end before answering.
+        assert_visible(alarm_card("22:30"), summary="assert last alarm card 22:30 on screen"),
         *grounded_answer("{answer}", summary="answer alarm count"),
         complete(),
     ],
@@ -180,6 +240,10 @@ PLANS: dict[str, list[Step]] = {
         complete(),
     ],
     "clock.CheckAlarmNote": [
+        # The note renders in the alarm card subtitle ("repeat｜note"); scrolling
+        # the list brings the {time} card on screen.
+        *browse_alarm_list(),
+        assert_answer("{answer}", summary="assert alarm note on screen"),
         *grounded_answer("{answer}", summary="answer alarm note"),
         complete(),
     ],
@@ -197,28 +261,62 @@ PLANS: dict[str, list[Step]] = {
         complete(),
     ],
     "clock.CheckCityTime": [
+        *open_world_city_list(),
+        view_world_city_row("{city}"),
+        # Judge time matcher (±5 min) absorbs the render-vs-judge moment drift.
+        assert_answer("{answer}", summary="assert {city} time on screen"),
         *grounded_answer("{answer}", summary="answer city time"),
         complete(),
     ],
     "clock.CompareCityTimeDiff": [
+        *open_world_city_list(),
+        view_world_city_row("{city1}"),
+        view_world_city_row("{city2}"),
+        # The hour difference ("差N小时") is computed, never rendered on screen —
+        # the evidence is both city rows (name + current time) visible together.
+        assert_world_city_row("{city1}"),
+        assert_world_city_row("{city2}"),
         *grounded_answer("{answer}", summary="answer city time difference"),
         complete(),
     ],
     "clock.CityLocalTimeDiff": [
+        # The "快X小时/慢X小时" text renders verbatim in the city row subtitle.
+        *open_world_city_list(),
+        view_world_city_row("{city}"),
+        assert_answer("{answer}", summary="assert local time diff text on screen"),
         *grounded_answer("{answer}", summary="answer local city time difference"),
         complete(),
     ],
     "clock.LatestTimezoneCity": [
+        # All four default city rows fit on screen once scrolled to the list.
+        *open_world_city_list(),
+        # The answer is the winning city's name, rendered in its row title.
+        assert_answer("{answer}", summary="assert latest-timezone city on screen"),
         *grounded_answer("{answer}", summary="answer latest timezone city"),
         complete(),
     ],
     "clock.AddCityAndCheckTime": [
         *add_city("{city}"),
+        # The selector closes back onto the world tab at its top — scroll past
+        # the analog clock so the newly appended row is actually on screen.
+        swipe([500, 850], [500, 250], summary="scroll world clock to city list"),
+        wait(0.4, summary="wait for city list"),
+        assert_world_city_row("{city}"),
+        # Judge time matcher (±5 min) absorbs the render-vs-judge moment drift.
+        assert_answer("{answer}", summary="assert {city} time on screen"),
         *grounded_answer("{answer}", summary="answer added city time"),
         complete(),
     ],
     "clock.AddCityAndCompareTimeDiff": [
         *add_city("{new_city}"),
+        # The selector closes back onto the world tab at its top — scroll past
+        # the analog clock so the newly appended row is actually on screen.
+        swipe([500, 850], [500, 250], summary="scroll world clock to city list"),
+        wait(0.4, summary="wait for city list"),
+        # The hour difference ("差N小时") is computed, never rendered on screen —
+        # the evidence is the new row plus the existing city row visible together.
+        assert_world_city_row("{new_city}"),
+        assert_world_city_row("{existing_city}"),
         *grounded_answer("{answer}", summary="answer added city time difference"),
         complete(),
     ],

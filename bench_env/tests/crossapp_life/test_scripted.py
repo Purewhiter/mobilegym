@@ -16,6 +16,7 @@ from bench_env.task.base import BaseTask
 from bench_env.task.map.app import Map
 from bench_env.task.railway12306.app import Railway12306, _catalog_available_trains
 from bench_env.task.registry import TaskRegistry
+from bench_env.task.utils import sim_today
 from bench_env.task.weather.app import WEATHER_SAVED_CITIES, Weather
 from bench_env.task.wechat.app import Wechat
 from bench_env.tests.crossapp_life.scripted_plans import PLANS
@@ -30,6 +31,12 @@ ROOT = Path(__file__).resolve().parents[3]
 DAY_MS = 86_400_000
 ISO_DATE_RE = re.compile(r"^(\d{4})-(\d{2})-(\d{2})(.*)$")
 DEFAULT_ALARM_TIMES = ["04:30", "05:00", "06:00", "06:10", "06:20", "07:00", "22:30"]
+# 天气侧补了“切城市 + 15 日预报页”取数步骤后，叠加闹钟滚轮的动态展开步数，
+# 最坏情况超过 L4 默认预算 60（机制沿用 crossapp_work 的 SCRIPTED_MAX_STEPS）。
+SCRIPTED_MAX_STEPS: dict[str, int] = {
+    "FullTripPlanWeatherDriven": 75,
+    "WeekendShanghaiTripIfClearAndFree": 75,
+}
 
 
 def _load_json(*parts: str) -> dict[str, Any]:
@@ -303,8 +310,41 @@ def _railway_account_username() -> str:
     )
 
 
+def _map_best_name(category: str, radius: int = 3000) -> str:
+    best = Map.best_rated_from_results(Map.geo_search(category, limit=0), max_distance_meters=radius)
+    return str(best["name"])
+
+
+def _with_dynamic_params(
+    task: BaseTask, builder: Callable[[dict[str, Any], BaseTask], dict[str, Any]]
+) -> BaseTask:
+    """仿 crossapp_work.test_scripted：_post_sample 后读 env 状态注入 plan 参数。"""
+    original_post_sample = task._post_sample
+
+    async def _post_sample(env: MobileGymEnv) -> None:
+        await original_post_sample(env)
+        state = await env.get_state(required_apps=task.apps or None)
+        task.params.update(builder(state, task))
+
+    task._post_sample = _post_sample  # type: ignore[method-assign]
+    return task
+
+
+def _with_calendar_day_params(task: BaseTask, **day_offsets: int) -> BaseTask:
+    """注入月视图日期格的“几号”文本（如 tomorrow_day=+1 天的几号），供 plan 点日期格。"""
+
+    def build(state: dict[str, Any], _current_task: BaseTask) -> dict[str, str]:
+        today = sim_today(state["os"])
+        return {
+            name: str((today + dt.timedelta(days=offset)).day)
+            for name, offset in day_offsets.items()
+        }
+
+    return _with_dynamic_params(task, build)
+
+
 SCRIPTED_CASES: list[tuple[str, Callable[[], BaseTask]]] = [
-    ("CalendarEventToWechat", lambda: _task("CalendarEventToWechat", **_contact(), wechat_message="项目评审 09:00")),
+    ("CalendarEventToWechat", lambda: _with_calendar_day_params(_task("CalendarEventToWechat", **_contact(), wechat_message="项目评审 09:00"), tomorrow_day=1)),
     ("CalendarFreeWeatherInvite", lambda: _task("CalendarFreeWeatherInvite", city="北京", **_contact(), wechat_message="下周末天气不错，一起出去玩")),
     (
         "FullTripPlanWeatherDriven",
@@ -315,7 +355,7 @@ SCRIPTED_CASES: list[tuple[str, Callable[[], BaseTask]]] = [
             **_rail_params("北京", "上海", _weather().first_non_rainy_date("上海", 1, 14)),
         ),
     ),
-    ("MapNearbyBestToWechat", lambda: _task("MapNearbyBestToWechat", radius=3000, category="咖啡馆", **_contact(), wechat_message=_map_best_message("咖啡馆", 3000))),
+    ("MapNearbyBestToWechat", lambda: _task("MapNearbyBestToWechat", radius=3000, category="咖啡馆", best_name=_map_best_name("咖啡馆", 3000), **_contact(), wechat_message=_map_best_message("咖啡馆", 3000))),
     ("MapPlaceToWechat", lambda: _task("MapPlaceToWechat", place="中国国家博物馆", **_contact(), wechat_message=_address_message("中国国家博物馆"))),
     (
         "MapRatingConditionBuyTicket",
@@ -532,5 +572,5 @@ def test_scripted_cases_cover_every_task() -> None:
 async def test_crossapp_life_scripted_passes_judge(
     env: MobileGymEnv, name: str, make_task: Callable[[], BaseTask]
 ) -> None:
-    res = await run_scripted(env, make_task(), suite=SUITE)
+    res = await run_scripted(env, make_task(), suite=SUITE, max_steps=SCRIPTED_MAX_STEPS.get(name))
     assert res.success, f"{name}: scripted episode must pass (COMPLETE + judge.passed):\n{format_episode_result(res)}"
