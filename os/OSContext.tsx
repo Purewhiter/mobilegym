@@ -45,6 +45,18 @@ import { deepMergeWithArrayOps } from './utils/deepMergeWithArrayOps';
 import { readLauncherSummary } from './sim/launcherSnapshot';
 import { resetStateCore } from './sim/simResetCore';
 import { recordNavError, clearNavError, getLastNavError } from './osNavError';
+import {
+  buildOsDebugStack,
+  launchApp,
+  launchTaskById,
+  goHome,
+  showRecents,
+  setBrightness,
+  setVolume,
+  chooseIntentActivity,
+  cancelIntentChooser,
+  handleSystemBack,
+} from './osActions';
 import { runAppDataLoaderModule, type AppDataLoaderModule } from './appDataLoaderReady';
 import type { OSApi, SimApi } from './types/globals';
 
@@ -78,19 +90,6 @@ interface OSContextProps {
 }
 
 const OSContext = createContext<OSContextProps | undefined>(undefined);
-
-function buildOsDebugStack(tag: string): string {
-  try {
-    throw new Error(tag);
-  } catch (error) {
-    if (!(error instanceof Error) || !error.stack) return 'n/a';
-    return error.stack
-      .split('\n')
-      .slice(1, 5)
-      .map((line) => line.trim())
-      .join(' <- ');
-  }
-}
 
 export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const state = useSyncExternalStore(
@@ -301,26 +300,6 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     }
   }, []);
 
-  const launchApp = useCallback((appId: AppId) => {
-    KeyboardService.hide();
-    TaskManager.launchApp(appId);
-  }, []);
-
-  const launchTaskById = useCallback((taskId: string) => {
-    KeyboardService.hide();
-    TaskManager.activateTask(taskId);
-  }, []);
-
-  const goHome = useCallback(() => {
-    KeyboardService.hide();
-    TaskManager.goHome();
-  }, []);
-
-  const showRecents = useCallback(() => {
-    KeyboardService.hide();
-    TaskManager.showRecents();
-  }, []);
-
   const closeApp = useCallback((appId: AppId) => {
     const latestState = TaskManager.getState();
     const task = latestState.tasks.find((t) => t.rootAppId === appId);
@@ -328,22 +307,6 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     routeSetPreference('os_recents_closed_app', appId, { source: 'os' });
     closeTask(task.taskId);
   }, [closeTask]);
-
-  const setBrightness = useCallback((value: number) => {
-    routeSetPreference('brightness', value, { source: 'os' });
-  }, []);
-
-  const setVolume = useCallback((value: number) => {
-    routeSetPreference('media_volume', value, { source: 'os' });
-  }, []);
-
-  const chooseIntentActivity = useCallback((appId: AppId) => {
-    IntentResolver.chooseIntentActivity(appId);
-  }, []);
-
-  const cancelIntentChooser = useCallback(() => {
-    IntentResolver.cancelIntentChooser();
-  }, []);
 
   useEffect(() => {
     const unregisters = [
@@ -415,11 +378,7 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     return () => {
       unregisters.forEach((unregister) => unregister());
     };
-  }, [finishActivity, goHome]);
-
-  const handleSystemBack = useCallback(() => {
-    BackDispatcher.handleBack();
-  }, []);
+  }, [finishActivity]);
 
   const startActivityForResult = useCallback((
     appIdOrIntent: AppId | string | IntentPayload,
@@ -450,7 +409,7 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
       markExternalRoute: TaskManager.markExternalRoute,
       setActivityIntent: TaskManager.setActivityIntent,
     });
-  }, [navigateToActivity, launchApp]);
+  }, [navigateToActivity]);
 
   const setResult = useCallback((result: ActivityResult) => {
     const activeTask = getActiveTask(TaskManager.getState());
@@ -508,7 +467,7 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
         void navigateToActivity(activity.activityId, initialRoute, { replace: false });
       }
     });
-  }, [launchApp, navigateToActivity]);
+  }, [navigateToActivity]);
 
   const osStateForApi = useMemo(() => ({
     ...state,
@@ -597,15 +556,8 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     window.__OS__ = api;
   }, [
     osStateForApi,
-    launchApp,
-    launchTaskById,
-    goHome,
-    showRecents,
     closeTask,
     closeApp,
-    setBrightness,
-    setVolume,
-    handleSystemBack,
     openApp,
     startActivity,
     startActivityForResult,
@@ -779,7 +731,7 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     window.__SIM__ = simApi;
     // 依赖数组不含 state：闭包内全部经 TaskManager.getState() 等实时读取，
     // 不依赖渲染快照；带上 state 会导致每次任务栈变化都无谓重建 __SIM__。
-  }, [launchApp, launchTaskById, goHome, showRecents, closeTask, closeApp, finishActivity, setBrightness, setVolume, handleSystemBack, openApp, startActivity, startActivityForResult, setResult]);
+  }, [closeTask, closeApp, finishActivity, openApp, startActivity, startActivityForResult, setResult]);
 
   const contextValue = useMemo<OSContextProps>(() => ({
     state,
@@ -796,17 +748,9 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     cancelIntentChooser,
   }), [
     state,
-    launchApp,
-    launchTaskById,
-    goHome,
-    showRecents,
     closeTask,
     closeApp,
-    setBrightness,
-    setVolume,
     intentChooser,
-    chooseIntentActivity,
-    cancelIntentChooser,
   ]);
 
   return (
