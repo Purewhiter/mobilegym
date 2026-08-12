@@ -170,6 +170,10 @@ tar -xzf mobilegym-data.tar.gz && rm mobilegym-data.tar.gz
 > 需要 **Node ≥ 22** 和 **Python ≥ 3.11**，推荐用 conda 环境。
 > 数据集采用 CC BY-NC 4.0 —— 详见 [`LICENSE-DATA`](LICENSE-DATA) 与 [`mobilegym-data/DISCLAIMER.md`](mobilegym-data/DISCLAIMER.md)。
 
+### 1.5. 配置模拟器密钥（可选）
+
+推荐配置模拟器密钥以获得最完整的本地体验，但对标准 benchmark 来说是可选的。配置密钥后可以获得更好的视觉保真度、Google 地图/天气实时兜底、内置 LLM 以及快照数据再生成能力；详见 [`.env.example`](.env.example) 与 [docs/getting-started.md](docs/getting-started.md#configure-simulator-keys-optional)。
+
 ### 2. 启动模拟器
 
 按你要做的事情选对应的启动方式：
@@ -208,6 +212,11 @@ python -m bench_env.run \
 # 列出全部任务模板
 python -m bench_env.run --list
 
+# 亲手操作手机 —— 手动模式，无需模型（适合初次上手 / 调试判题）。
+# 单任务、整个 suite、任意 split 都支持 —— 换用 --task-id / --suite / --split 即可。
+python -m bench_env.run --task-id wechat.ReadMyWxid --agent human \
+  --env-url http://localhost:4173
+
 # 跑单个任务
 python -m bench_env.run --task-id wechat.ReadMyWxid \
   --env-url http://localhost:4173 \
@@ -218,10 +227,9 @@ python -m bench_env.run --suite wechat --parallel 4 \
   --env-url http://localhost:4173 \
   --agent autoglm --model-name autoglm-phone-9b
 
-# 跑完整 test split，并打开 VLM 判官做 sanity check（论文 §6.5）
+# 跑完整 test split（256 个任务）
 python -m bench_env.run --split test --parallel 8 \
   --env-url http://localhost:4173 \
-  --judge-mode auto \
   --agent autoglm --model-name autoglm-phone-9b
 
 # 大规模并行 —— 128 路 rollout，16 进程 × 16 浏览器（每浏览器 8 个 page）
