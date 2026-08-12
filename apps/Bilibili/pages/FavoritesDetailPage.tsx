@@ -4,20 +4,10 @@ const ChevronLeft = IcNavBack, Search = IcSearch, MoreHorizontal = IcMore, MoreV
 import { useParams } from 'react-router-dom';
 import { useBilibiliStore } from '../state';
 import { useBilibiliGestures } from '../hooks/useBilibiliGestures';
+import { useBilibiliStrings } from '../hooks/useBilibiliStrings';
+import { useLocale } from '../locale';
+import { formatBilibiliStat } from '../utils/localize';
 import { useVideos } from '../hooks/useData';
-// Helper for formatting stats numbers
-const formatStat = (num: number | string | undefined) => {
-    if (num === undefined || num === null) return '0';
-    if (typeof num === 'string' && (num.includes('万') || num.includes('亿'))) {
-        return num;
-    }
-    const val = typeof num === 'string' ? parseFloat(num) : num;
-    if (isNaN(val)) return '0';
-    if (val >= 100000000) return (val / 100000000).toFixed(1) + '亿';
-    if (val >= 10000) return (val / 10000).toFixed(1) + '万';
-    return val.toString();
-};
-
 const formatDuration = (val: number | string | undefined) => {
     if (!val) return '00:00';
     if (typeof val === 'string' && val.includes(':')) return val;
@@ -37,8 +27,11 @@ const formatDuration = (val: number | string | undefined) => {
 
 export const FavoritesDetailPage: React.FC = () => {
     const { bindBack, bindTap } = useBilibiliGestures();
+    const s = useBilibiliStrings();
+    const locale = useLocale();
+    const formatStat = (num: number | string | undefined) => formatBilibiliStat(num, locale);
     const { folderId } = useParams();
-    const user = useBilibiliStore(s => s.user);
+    const user = useBilibiliStore(st => st.user);
     const VIDEO_DATA = useVideos();
 
     // Get folder data
@@ -80,18 +73,18 @@ export const FavoritesDetailPage: React.FC = () => {
                         {folderCover ? (
                             <img src={folderCover} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                         ) : (
-                            <div className="w-full h-full flex items-center justify-center text-gray-400">无封面</div>
+                            <div className="w-full h-full flex items-center justify-center text-gray-400">{s.fav_no_cover}</div>
                         )}
                         {/* Optional: Add video count or something on cover if needed, but not in screenshot */}
                     </div>
                     <div className="flex flex-col py-0.5">
-                        <h1 className="text-[17px] text-app-text font-medium leading-tight mb-2">{folder?.title || '收藏夹'}</h1>
-                        <div className="text-[12px] text-app-text-muted">创建者：{user.name}</div>
+                        <h1 className="text-[17px] text-app-text font-medium leading-tight mb-2">{folder?.title || s.fav_folder_default}</h1>
+                        <div className="text-[12px] text-app-text-muted">{s.fav_detail_creator.replace('{name}', user.name)}</div>
                     </div>
                 </div>
                 {/* Count section */}
                 <div className="text-[12px] text-app-text-muted mt-3 pb-2 border-b border-app-bg">
-                    {videos.length}个内容
+                    {s.stat_item_count.replace('{n}', String(videos.length))}
                 </div>
             </div>
 
@@ -116,7 +109,7 @@ export const FavoritesDetailPage: React.FC = () => {
                             <div className="mt-auto">
                                 <div className="text-[11px] text-app-text-muted flex items-center gap-1 mb-1">
                                     <span className="border border-[#9499A0]/30 rounded-[2px] px-0.5 text-[9px] scale-90 origin-left">UP</span>
-                                    {video.author || "UP主"}
+                                    {video.author || s.common_up_badge}
                                 </div>
                                 <div className="text-[11px] text-app-text-muted flex items-center gap-4">
                                     <span className="flex items-center gap-1">
@@ -143,7 +136,7 @@ export const FavoritesDetailPage: React.FC = () => {
             <div className="absolute bottom-0 left-0 right-0 bg-app-surface border-t border-app-bg px-4 py-3 z-50">
                 <button className="w-full h-10 bg-app-primary text-white rounded-full flex items-center justify-center gap-2 active:scale-[0.98] transition-transform shadow-sm">
                     <MonitorPlay size={16} className="fill-white" />
-                    <span className="text-[14px] font-medium">播放全部</span>
+                    <span className="text-[14px] font-medium">{s.common_play_all}</span>
                 </button>
             </div>
         </div>

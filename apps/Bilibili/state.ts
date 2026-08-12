@@ -2,8 +2,21 @@ import { createAppStoreWithActions, memoSelector } from '../../os/createAppStore
 import { BILIBILI_CONFIG } from './data';
 import type { BilibiliUser, BilibiliSettings } from './types';
 import { now as simNow } from '../../os/TimeService';
+import { getLocale } from '../../os/locale';
+import { resolveAppStrings } from '../../os/useAppStrings';
+import { strings } from './res/strings';
+import { stringsEn } from './res/strings.en';
 
 // ---- Helpers ----
+
+/**
+ * store action 内的文案解析（无 hooks 上下文）：
+ * App 语言设置优先，未设置时回退 OS locale —— 与 locale.ts 的 useLocale 行为一致。
+ */
+function resolveStrings(language: string | null | undefined) {
+  const locale = language == null ? getLocale() : language === 'en' ? 'en' : 'zh-Hans';
+  return resolveAppStrings(strings, stringsEn, locale);
+}
 
 function deepSet<T extends Record<string, unknown>>(
   obj: T,
@@ -117,7 +130,7 @@ export const useBilibiliStore = createAppStoreWithActions<BilibiliState, Bilibil
         } else {
           const newEntry = {
             mid,
-            name: `用户${mid}`,
+            name: resolveStrings(state.settings.language).user_fallback_name.replace('{mid}', mid),
             face: '',
             sign: '',
           };
@@ -181,13 +194,14 @@ export const useBilibiliStore = createAppStoreWithActions<BilibiliState, Bilibil
 
     addCoin: (vid, count, alsoLike) => {
       const state = get();
+      const s = resolveStrings(state.settings.language);
       const existing = (state.user.coinedVideoCoins || {})[vid] || 0;
 
       if (existing + count > 2) {
-        return { success: false, msg: '投硬币失败~超过投币上限啦~' };
+        return { success: false, msg: s.toast_coin_limit };
       }
       if (state.user.coins < count) {
-        return { success: false, msg: '硬币不足' };
+        return { success: false, msg: s.toast_coin_insufficient };
       }
 
       set((s) => {
@@ -264,6 +278,7 @@ export const useBilibiliStore = createAppStoreWithActions<BilibiliState, Bilibil
     tripleAction: (vid) => {
       let msg = '';
       const state = get();
+      const tStr = resolveStrings(state.settings.language);
       const liked = (state.user.likedVideoIds || []).includes(vid);
       const coinCount = (state.user.coinedVideoCoins || {})[vid] || 0;
       const isFavored = (state.user.favoritesFolders || []).some(
@@ -284,7 +299,7 @@ export const useBilibiliStore = createAppStoreWithActions<BilibiliState, Bilibil
             newCoinedVideoCoins[vid] = coinCount + 1;
             newCoins -= 1;
           } else {
-            msg = '硬币不足，仅点赞收藏';
+            msg = tStr.toast_coin_insufficient_like;
           }
         }
 
@@ -309,7 +324,7 @@ export const useBilibiliStore = createAppStoreWithActions<BilibiliState, Bilibil
         };
       });
 
-      return { success: true, msg: msg || '三连成功' };
+      return { success: true, msg: msg || tStr.toast_triple_success };
     },
 
     // ---- Anime/Drama ----

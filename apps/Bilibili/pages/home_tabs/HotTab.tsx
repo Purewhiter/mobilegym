@@ -4,6 +4,7 @@ import { HOT_DATA } from '../../data/hotData';
 import { useVideos } from '../../hooks/useData';
 import { useBilibiliGestures } from '../../hooks/useBilibiliGestures';
 import { useLocale } from '@/apps/Bilibili/locale';
+import { useBilibiliStrings } from '../../hooks/useBilibiliStrings';
 import {
   formatBilibiliDuration,
   formatBilibiliRelativeDate,
@@ -16,40 +17,40 @@ const Award = IcAward;
 
 export const HotTab: React.FC = () => {
   const locale = useLocale();
-  const isEnglish = locale === 'en';
+  const s = useBilibiliStrings();
   const { bindTap } = useBilibiliGestures();
   const videos = useVideos();
 
   const iconItems = [
     {
-      name: isEnglish ? 'Rankings' : '排行榜',
+      name: s.hot_rankings,
       icon: <BarChart2 className="text-white" size={24} />,
       color: 'bg-[#FF6699]',
       opensRanking: true,
     },
     {
-      name: isEnglish ? 'Weekly picks' : '每周必看',
+      name: s.hot_weekly,
       icon: <Calendar className="text-white" size={24} />,
       color: 'bg-[#FFCC33]',
     },
     {
-      name: isEnglish ? 'New Year gala' : '跨年晚会',
+      name: s.hot_gala,
       icon: <span className="text-white font-bold text-xs">2026</span>,
       color: 'bg-[#000033]',
     },
     {
-      name: isEnglish ? 'Must-watch' : '入站必刷',
+      name: s.hot_must_watch,
       icon: <Award className="text-white" size={24} />,
       color: 'bg-[#FF9900]',
     },
     {
-      name: isEnglish ? 'Year in review' : '年度报告',
+      name: s.hot_report,
       icon: <span className="text-white font-bold text-xs">REPORT</span>,
       color: 'bg-[#3366FF]',
     },
   ];
 
-  const badgeLabels = isEnglish ? ['1M views', 'Shared a lot', 'High energy'] : ['百万播放', '很多人分享', '高能'];
+  const badgeLabels = [s.hot_badge_million, s.hot_badge_shared, s.hot_badge_energy];
 
   return (
     <div className="pb-20 bg-app-bg">
@@ -109,7 +110,7 @@ export const HotTab: React.FC = () => {
 
                   <div className="text-[12px] text-gray-400">
                     {formatBilibiliStat(displayVideo.plays, locale)}{' '}
-                    {isEnglish ? 'views' : '观看'} ·{' '}
+                    {s.hot_views} ·{' '}
                     {formatBilibiliRelativeDate(Boolean(displayVideo.date), locale)}
                   </div>
                 </div>

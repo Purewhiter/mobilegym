@@ -1,21 +1,23 @@
 import React from 'react';
 import { SettingLayout, SettingSection, SettingItemSwitch } from './index';
 import { useBilibiliStore } from '../../state';
+import { useBilibiliStrings } from '../../hooks/useBilibiliStrings';
 
 export const SettingsChasePage: React.FC = () => {
-  const setSetting = useBilibiliStore((s) => s.setSetting);
-  const xianXiu = useBilibiliStore((s) => s.settings.chase.xianXiuMode) ?? false;
+  const s = useBilibiliStrings();
+  const setSetting = useBilibiliStore((st) => st.setSetting);
+  const xianXiu = useBilibiliStore((st) => st.settings.chase.xianXiuMode) ?? false;
 
   return (
-    <SettingLayout title="追番/追剧设置">
+    <SettingLayout title={s.sc_title}>
       <SettingItemSwitch
-        label="修仙模式"
-        subtitle="开启后深夜0点-6点的动画将在前一天展示"
+        label={s.sc_xianxiu}
+        subtitle={s.sc_xianxiu_sub}
         checked={xianXiu}
         onChange={(v) => setSetting('chase.xianXiuMode', v)}
       />
-      <SettingSection title="修仙模式预览" />
-      <div className="px-4 py-2 text-[12px] text-gray-500">修仙模式 显示次日0-6点番剧</div>
+      <SettingSection title={s.sc_sec_preview} />
+      <div className="px-4 py-2 text-[12px] text-gray-500">{s.sc_preview_hint}</div>
       <div className="px-4 py-2 flex items-center gap-3 border-b border-gray-100">
         <span className="text-[13px] text-gray-600">23:59</span>
         <div className="w-14 h-14 bg-gray-100 rounded flex-shrink-0" />

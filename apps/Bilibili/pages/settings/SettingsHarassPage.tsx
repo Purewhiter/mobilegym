@@ -3,23 +3,25 @@ import { useSearchParams } from 'react-router-dom';
 import { SettingLayout, SettingSection, SettingItemSwitch, SettingItemValue, SettingBottomSheet } from './index';
 import { useBilibiliStore } from '../../state';
 import { useBilibiliGestures } from '../../hooks/useBilibiliGestures';
-
-const HARASS_OPTIONS = [
-  { id: '7days', label: '关注我7天以上的人' },
-  { id: 'following', label: '我关注的人' },
-  { id: 'all', label: '所有人' },
-];
-
-const LABELS: Record<string, string> = { '7days': '关注我7天以上的人', following: '我关注的人', all: '所有人' };
+import { useBilibiliStrings } from '../../hooks/useBilibiliStrings';
 
 export const SettingsHarassPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const { back, bindTap } = useBilibiliGestures();
-  const setSetting = useBilibiliStore((s) => s.setSetting);
-  const oneKey = useBilibiliStore((s) => s.settings.harass.oneKey) ?? false;
-  const comment = useBilibiliStore((s) => s.settings.harass.comment) ?? 'all';
-  const danmaku = useBilibiliStore((s) => s.settings.harass.danmaku) ?? 'all';
-  const pm = useBilibiliStore((s) => s.settings.harass.pm) ?? 'all';
+  const s = useBilibiliStrings();
+  const setSetting = useBilibiliStore((st) => st.setSetting);
+  const oneKey = useBilibiliStore((st) => st.settings.harass.oneKey) ?? false;
+  const comment = useBilibiliStore((st) => st.settings.harass.comment) ?? 'all';
+  const danmaku = useBilibiliStore((st) => st.settings.harass.danmaku) ?? 'all';
+  const pm = useBilibiliStore((st) => st.settings.harass.pm) ?? 'all';
+
+  const HARASS_OPTIONS = [
+    { id: '7days', label: s.sh_opt_7days },
+    { id: 'following', label: s.sh_opt_following },
+    { id: 'all', label: s.opt_all },
+  ];
+
+  const LABELS: Record<string, string> = { '7days': s.sh_opt_7days, following: s.sh_opt_following, all: s.opt_all };
 
   const sheet = searchParams.get('sheet') ?? '';
 
@@ -34,31 +36,31 @@ export const SettingsHarassPage: React.FC = () => {
     closeSheet();
   };
 
-  const sheetTitle = sheet === 'comment' ? '谁可以发评论' : sheet === 'danmaku' ? '谁可以发弹幕' : sheet === 'pm' ? '谁可以发私信' : '';
+  const sheetTitle = sheet === 'comment' ? s.sh_comment : sheet === 'danmaku' ? s.sh_danmaku : sheet === 'pm' ? s.sh_pm : '';
 
   return (
-    <SettingLayout title="防骚扰和互动人群设置">
-      <SettingSection title="短期防护" />
+    <SettingLayout title={s.sh_title}>
+      <SettingSection title={s.sh_sec_short} />
       <SettingItemSwitch
-        label="一键防骚扰"
-        subtitle="开启后,特定时间内只接收选定人群的私信、弹幕、评论,并不再接收@消息。"
+        label={s.sh_onekey}
+        subtitle={s.sh_onekey_sub}
         checked={oneKey}
         onChange={(v) => setSetting('harass.oneKey', v)}
       />
-      <SettingSection title="长期防护" />
+      <SettingSection title={s.sh_sec_long} />
       <SettingItemValue
-        label="谁可以发评论"
-        value={LABELS[comment] ?? '所有人'}
+        label={s.sh_comment}
+        value={LABELS[comment] ?? s.opt_all}
         {...bindTap('settings.harass.sheet.open', { params: { sheet: 'comment' } })}
       />
       <SettingItemValue
-        label="谁可以发弹幕"
-        value={LABELS[danmaku] ?? '所有人'}
+        label={s.sh_danmaku}
+        value={LABELS[danmaku] ?? s.opt_all}
         {...bindTap('settings.harass.sheet.open', { params: { sheet: 'danmaku' } })}
       />
       <SettingItemValue
-        label="谁可以发私信"
-        value={LABELS[pm] ?? '所有人'}
+        label={s.sh_pm}
+        value={LABELS[pm] ?? s.opt_all}
         {...bindTap('settings.harass.sheet.open', { params: { sheet: 'pm' } })}
       />
       <div className="h-8" />

@@ -7,6 +7,9 @@ import {
 import { useBilibiliStore } from '../state';
 import { useBilibiliGestures } from '../hooks/useBilibiliGestures';
 import { useVideos } from '../hooks/useData';
+import { useBilibiliStrings } from '../hooks/useBilibiliStrings';
+import { useLocale } from '../locale';
+import { formatBilibiliStat } from '../utils/localize';
 import { BilibiliDanmakuIcon } from '../res/icons';
 import type { BilibiliVideo } from '../types';
 
@@ -17,16 +20,6 @@ const Lock: React.FC<{ size?: number; className?: string }> = ({ size = 14, clas
         <path d="M7 11V7a5 5 0 0 1 10 0v4" />
     </svg>
 );
-
-const formatStat = (num: number | string | undefined) => {
-    if (num === undefined || num === null) return '0';
-    if (typeof num === 'string' && (num.includes('万') || num.includes('亿'))) return num;
-    const val = typeof num === 'string' ? parseFloat(num) : num;
-    if (isNaN(val)) return '0';
-    if (val >= 100000000) return (val / 100000000).toFixed(1) + '亿';
-    if (val >= 10000) return (val / 10000).toFixed(1) + '万';
-    return val.toString();
-};
 
 const formatDuration = (val: number | string | undefined) => {
     if (!val) return '00:00';
@@ -45,6 +38,7 @@ const FolderCard: React.FC<{
     videos: BilibiliVideo[];
     onTap: any;
 }> = ({ folder, videos, onTap }) => {
+    const s = useBilibiliStrings();
     const folderVideos = folder.videoIds
         ? videos.filter(v => folder.videoIds!.includes(v.id)).slice(0, 3)
         : [];
@@ -58,7 +52,7 @@ const FolderCard: React.FC<{
                 </div>
                 <div className="flex items-center gap-1 text-[12px] text-app-text-muted">
                     {!folder.isPublic && <Lock size={12} className="text-app-text-muted" />}
-                    <span>· {count}个内容</span>
+                    <span>· {s.stat_item_count.replace('{n}', String(count))}</span>
                     <IcNavForward size={14} className="text-gray-300" />
                 </div>
             </div>
@@ -94,7 +88,11 @@ const FolderCard: React.FC<{
 const VideoListItem: React.FC<{
     video: BilibiliVideo;
     onTap: any;
-}> = ({ video, onTap }) => (
+}> = ({ video, onTap }) => {
+    const s = useBilibiliStrings();
+    const locale = useLocale();
+    const formatStat = (num: number | string | undefined) => formatBilibiliStat(num, locale);
+    return (
     <div className="flex gap-3 px-4 py-3 active:bg-gray-50 transition-colors cursor-pointer" {...onTap}>
         <div className="w-[140px] aspect-video bg-app-bg rounded-md overflow-hidden relative shrink-0">
             <img src={video.cover} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
@@ -107,7 +105,7 @@ const VideoListItem: React.FC<{
             <div className="mt-auto">
                 <div className="text-[11px] text-app-text-muted flex items-center gap-1 mb-1">
                     <span className="border border-[#9499A0]/30 rounded-[2px] px-0.5 text-[9px] scale-90 origin-left">UP</span>
-                    {video.author || 'UP主'}
+                    {video.author || s.common_up_badge}
                 </div>
                 <div className="text-[11px] text-app-text-muted flex items-center gap-3">
                     <span className="flex items-center gap-0.5">
@@ -122,14 +120,16 @@ const VideoListItem: React.FC<{
             </div>
         </div>
     </div>
-);
+    );
+};
 
 type FavTab = 'folders' | 'all' | 'video' | 'article';
 
 export const FavoritesPage: React.FC = () => {
     const { bindBack, bindTap } = useBilibiliGestures();
+    const s = useBilibiliStrings();
     const [searchParams] = useSearchParams();
-    const user = useBilibiliStore(s => s.user);
+    const user = useBilibiliStore(st => st.user);
     const VIDEO_DATA = useVideos();
 
     const activeTab = (searchParams.get('tab') as FavTab) || 'folders';
@@ -139,10 +139,10 @@ export const FavoritesPage: React.FC = () => {
     const allFavVideos = VIDEO_DATA.filter(v => allVideoIds.has(v.id));
 
     const SUB_TABS: { key: FavTab; label: string }[] = [
-        { key: 'folders', label: '收藏夹' },
-        { key: 'all', label: '全部' },
-        { key: 'video', label: '视频' },
-        { key: 'article', label: '图文' },
+        { key: 'folders', label: s.fav_tab_folders },
+        { key: 'all', label: s.fav_tab_all },
+        { key: 'video', label: s.fav_tab_video },
+        { key: 'article', label: s.fav_tab_article },
     ];
 
     return (
@@ -155,8 +155,8 @@ export const FavoritesPage: React.FC = () => {
                         <IcNavBack size={24} className="text-app-text" />
                     </div>
                     <div className="flex items-center gap-6">
-                        <span className="text-[17px] font-bold text-app-primary">收藏</span>
-                        <span className="text-[17px] text-app-text-muted">追更</span>
+                        <span className="text-[17px] font-bold text-app-primary">{s.fav_title}</span>
+                        <span className="text-[17px] text-app-text-muted">{s.fav_chase}</span>
                     </div>
                 </div>
 
@@ -216,7 +216,7 @@ export const FavoritesPage: React.FC = () => {
                         ) : (
                             <div className="flex flex-col items-center justify-center pt-32 text-app-text-muted">
                                 <IcStar size={48} className="mb-4 text-gray-200" />
-                                <p className="text-[14px]">暂无收藏内容</p>
+                                <p className="text-[14px]">{s.fav_empty}</p>
                             </div>
                         )}
                     </div>
@@ -225,7 +225,7 @@ export const FavoritesPage: React.FC = () => {
                 {activeTab === 'article' && (
                     <div className="flex flex-col items-center justify-center pt-32 text-app-text-muted">
                         <IcStar size={48} className="mb-4 text-gray-200" />
-                        <p className="text-[14px]">暂无图文收藏</p>
+                        <p className="text-[14px]">{s.fav_empty_article}</p>
                     </div>
                 )}
             </div>

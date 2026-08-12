@@ -36,7 +36,7 @@ const formatDuration = (val: number | string | undefined) => {
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
 };
 
-const BigVideoCard: React.FC<{ video: BilibiliVideo; locale: 'zh-Hans' | 'en' }> = ({ video, locale }) => {
+const BigVideoCard: React.FC<{ video: BilibiliVideo; locale: 'zh-Hans' | 'en'; mockLikeCount: string }> = ({ video, locale, mockLikeCount }) => {
     const coverSrc = typeof video.cover === 'string' && !video.cover.startsWith('#') ? video.cover : '';
     const { bindTap } = useBilibiliGestures();
 
@@ -87,7 +87,7 @@ const BigVideoCard: React.FC<{ video: BilibiliVideo; locale: 'zh-Hans' | 'en' }>
                 <div className="flex items-center gap-3 flex-shrink-0 mt-0.5">
                     <div className="flex flex-col items-center gap-0.5 text-gray-400 min-w-[32px]">
                         <ThumbsUp size={18} />
-                        <span className="text-[10px] scale-90">{locale === 'en' ? '14K' : '1.4万'}</span>
+                        <span className="text-[10px] scale-90">{mockLikeCount}</span>
                     </div>
                     <MoreVertical size={16} className="text-gray-300" />
                 </div>
@@ -163,19 +163,12 @@ export const HomePage: React.FC<HomePageProps> = ({ activeTab: urlTab = 'recomme
     const VIDEO_DATA = useVideos();
     const locale = useLocale();
     const s = useBilibiliStrings();
-    const text = locale === 'en'
-        ? {
-            tabNewJourney: 'New Era',
-            newYearComingSoon: 'New Year special coming soon',
-            searchHint: 'Perfect Match',
-            ad: 'Ad',
-        }
-        : {
-            tabNewJourney: '新征程',
-            newYearComingSoon: '跨年晚会 敬请期待',
-            searchHint: '梦幻情侣',
-            ad: '广告',
-        };
+    const text = {
+        tabNewJourney: s.home_tab_new_journey,
+        newYearComingSoon: s.home_newyear_coming,
+        searchHint: s.home_search_hint,
+        ad: s.common_ad,
+    };
     const tabs: Array<{ key: string; label: string; disabled?: boolean }> = [
         { key: 'live', label: s.tab_live },
         { key: 'recommend', label: s.tab_recommended },
@@ -220,7 +213,7 @@ export const HomePage: React.FC<HomePageProps> = ({ activeTab: urlTab = 'recomme
                 return (
                     <div className="flex-1 overflow-y-auto no-scrollbar">
                         {/* Big Card for the first video */}
-                        {firstVideo && <BigVideoCard video={firstVideo} locale={locale} />}
+                        {firstVideo && <BigVideoCard video={firstVideo} locale={locale} mockLikeCount={s.home_mock_like_count} />}
 
                         {/* Grid for the rest */}
                         <div className="grid grid-cols-2 gap-2 p-2 pb-20">

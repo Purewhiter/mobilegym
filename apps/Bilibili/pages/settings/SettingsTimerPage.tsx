@@ -1,22 +1,24 @@
 import React from 'react';
 import { SettingLayout, SettingRadioGroup } from './index';
 import { useBilibiliStore } from '../../state';
-
-const OPTIONS = [
-  { id: 'off', label: '不开启' },
-  { id: '15', label: '15分钟' },
-  { id: '30', label: '30分钟' },
-  { id: '60', label: '60分钟' },
-  { id: 'custom', label: '自定义' },
-];
+import { useBilibiliStrings } from '../../hooks/useBilibiliStrings';
 
 export const SettingsTimerPage: React.FC = () => {
-  const value = useBilibiliStore((s) => s.settings.timer) ?? 'off';
-  const setSetting = useBilibiliStore((s) => s.setSetting);
+  const s = useBilibiliStrings();
+  const value = useBilibiliStore((st) => st.settings.timer) ?? 'off';
+  const setSetting = useBilibiliStore((st) => st.setSetting);
+
+  const OPTIONS = [
+    { id: 'off', label: s.sti_off },
+    { id: '15', label: s.sti_15 },
+    { id: '30', label: s.sti_30 },
+    { id: '60', label: s.sti_60 },
+    { id: 'custom', label: s.sti_custom },
+  ];
 
   return (
-    <SettingLayout title="定时关闭">
-      <div className="px-4 py-3 text-center text-[13px] text-gray-500">计时结束后，将进行提醒</div>
+    <SettingLayout title={s.sti_title}>
+      <div className="px-4 py-3 text-center text-[13px] text-gray-500">{s.sti_hint}</div>
       <SettingRadioGroup options={OPTIONS} value={value} onChange={(id) => setSetting('timer', id)} />
       <div className="h-8" />
     </SettingLayout>

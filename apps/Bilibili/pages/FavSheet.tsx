@@ -3,6 +3,7 @@ import { IcPlayCircle, IcAdd, IcCheck } from '../res/icons';
 import { useBilibiliStore } from '../state';
 import { useBilibiliGestures } from '../hooks/useBilibiliGestures';
 import { realNow } from '../../../os/TimeService';
+import { useBilibiliStrings } from '../hooks/useBilibiliStrings';
 
 interface FavToastProps {
   visible: boolean;
@@ -10,6 +11,7 @@ interface FavToastProps {
 }
 
 export const FavToast: React.FC<FavToastProps> = ({ visible, onModify }) => {
+  const s = useBilibiliStrings();
   return (
     <div
       className={`fixed bottom-16 left-0 right-0 z-[200] flex justify-center transition-all duration-300 pointer-events-none ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
@@ -17,13 +19,13 @@ export const FavToast: React.FC<FavToastProps> = ({ visible, onModify }) => {
       <div className={`bg-[#323232] text-white rounded-lg px-4 py-2.5 mx-4 flex items-center justify-between w-full max-w-sm shadow-lg ${visible ? 'pointer-events-auto' : 'pointer-events-none'}`}>
         <div className="flex items-center gap-2">
           <IcCheck size={16} className="text-green-400" />
-          <span className="text-[13px]">已加入"默认收藏夹"</span>
+          <span className="text-[13px]">{s.fav_added_default}</span>
         </div>
         <button
           className="text-app-primary text-[13px] font-medium active:opacity-70"
           onClick={onModify}
         >
-          修改收藏夹
+          {s.fav_modify}
         </button>
       </div>
     </div>
@@ -41,8 +43,9 @@ interface FavSheetProps {
 }
 
 export const FavSheet: React.FC<FavSheetProps> = ({ visible, videoId, onClose, onCreateFolder, pendingNewFolderId }) => {
-  const biliUser = useBilibiliStore(s => s.user);
-  const setFavFolders = useBilibiliStore(s => s.setFavFolders);
+  const s = useBilibiliStrings();
+  const biliUser = useBilibiliStore(st => st.user);
+  const setFavFolders = useBilibiliStore(st => st.setFavFolders);
   const folders = biliUser.favoritesFolders || [];
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -155,18 +158,18 @@ export const FavSheet: React.FC<FavSheetProps> = ({ visible, videoId, onClose, o
         {/* "添加到稍后再看" */}
         <div className="flex items-center gap-3 px-4 pb-3 border-b border-gray-100" data-no-drag>
           <IcPlayCircle size={20} className="text-gray-600" />
-          <span className="text-[15px] text-gray-800">添加到稍后再看</span>
+          <span className="text-[15px] text-gray-800">{s.fav_watch_later}</span>
         </div>
 
         {/* header */}
         <div className="flex items-center justify-between px-4 pt-3 pb-2" data-no-drag>
-          <span className="text-[15px] font-medium">选择收藏夹</span>
+          <span className="text-[15px] font-medium">{s.fav_choose_folder}</span>
           <button
             className="flex items-center gap-1 text-[13px] text-gray-500 active:opacity-70"
             onClick={onCreateFolder}
           >
             <IcAdd size={14} />
-            <span>新建收藏夹</span>
+            <span>{s.fav_new_folder}</span>
           </button>
         </div>
 
@@ -184,7 +187,7 @@ export const FavSheet: React.FC<FavSheetProps> = ({ visible, videoId, onClose, o
                 <div>
                   <div className="text-[15px] text-gray-800">{folder.title}</div>
                   <div className="text-[12px] text-gray-400 mt-0.5">
-                    {count}个内容 · {folder.isPublic ? '公开' : '私密'}
+                    {s.stat_item_count.replace('{n}', String(count))} · {folder.isPublic ? s.fav_public : s.fav_private}
                   </div>
                 </div>
                 <div
@@ -203,7 +206,7 @@ export const FavSheet: React.FC<FavSheetProps> = ({ visible, videoId, onClose, o
             className="w-full py-2.5 text-center text-[15px] font-medium text-gray-800 active:bg-gray-50 rounded-lg"
             onClick={handleDone}
           >
-            完成
+            {s.common_done}
           </button>
         </div>
       </div>

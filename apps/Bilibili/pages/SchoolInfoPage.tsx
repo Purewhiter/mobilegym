@@ -4,10 +4,12 @@ const ChevronLeft = IcNavBack, ChevronRight = IcNavForward, Search = IcSearch, X
 import { UNIVERSITIES } from '../data/schoolData';
 import { useBilibiliStore } from '../state';
 import { useBilibiliGestures } from '../hooks/useBilibiliGestures';
+import { useBilibiliStrings } from '../hooks/useBilibiliStrings';
 export const SchoolInfoPage: React.FC = () => {
     const { bindBack, back } = useBilibiliGestures();
-    const user = useBilibiliStore(s => s.user);
-    const updateUser = useBilibiliStore(s => s.updateUser);
+    const s = useBilibiliStrings();
+    const user = useBilibiliStore(st => st.user);
+    const updateUser = useBilibiliStore(st => st.updateUser);
 
     // State
     const [schoolName, setSchoolName] = useState(user.school || '');
@@ -67,7 +69,7 @@ export const SchoolInfoPage: React.FC = () => {
                         <input
                             autoFocus
                             className="flex-1 bg-transparent border-none outline-none text-[14px] text-app-text placeholder-[#9499A0]"
-                            placeholder="搜索学校"
+                            placeholder={s.school_search_placeholder}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
@@ -81,7 +83,7 @@ export const SchoolInfoPage: React.FC = () => {
                         onClick={() => setIsSearchOpen(false)}
                         className="text-[15px] text-app-text"
                     >
-                        取消
+                        {s.common_cancel}
                     </button>
                 </div>
 
@@ -124,14 +126,14 @@ export const SchoolInfoPage: React.FC = () => {
                             className="text-app-text-muted text-[15px]"
                             onClick={() => setIsYearPickerOpen(false)}
                         >
-                            取消
+                            {s.common_cancel}
                         </button>
-                        <span className="text-[16px] font-medium text-app-text">入学年份</span>
+                        <span className="text-[16px] font-medium text-app-text">{s.school_year}</span>
                         <button
                             className="text-app-primary text-[15px]"
                             onClick={() => setIsYearPickerOpen(false)}
                         >
-                            确定
+                            {s.common_confirm}
                         </button>
                     </div>
 
@@ -177,13 +179,13 @@ export const SchoolInfoPage: React.FC = () => {
                     </button>
 
                     <h3 className="text-[16px] font-medium text-center leading-normal mb-8 text-app-text px-2">
-                        恭喜你成功加入{schoolName}校园
+                        {s.school_success.replace('{school}', schoolName)}
                     </h3>
 
                     <button
                         className="w-full py-2.5 text-app-primary text-[14px] font-medium mb-4 active:opacity-70"
                     >
-                        去邀请更多校友 &gt;
+                        {s.school_invite} &gt;
                     </button>
 
                     <button
@@ -193,7 +195,7 @@ export const SchoolInfoPage: React.FC = () => {
                             back();
                         }}
                     >
-                        返回
+                        {s.common_back}
                     </button>
                 </div>
             </div>
@@ -207,13 +209,13 @@ export const SchoolInfoPage: React.FC = () => {
                 <button {...bindBack()} className="p-1 -ml-2">
                     <ChevronLeft size={24} className="text-[#61666D]" />
                 </button>
-                <h1 className="text-[17px] font-medium text-app-text">学校信息</h1>
+                <h1 className="text-[17px] font-medium text-app-text">{s.school_title}</h1>
                 <button
                     onClick={handleSave}
                     className={`text-[15px] font-medium ${schoolName ? 'text-app-text' : 'text-app-text-muted'}`}
                     disabled={!schoolName}
                 >
-                    保存
+                    {s.common_save}
                 </button>
             </div>
 
@@ -224,10 +226,10 @@ export const SchoolInfoPage: React.FC = () => {
                     className="flex justify-between items-center px-4 py-4 border-b border-gray-50 active:bg-gray-50 transition-colors"
                 >
                     <div className="text-[15px] text-app-text">
-                        学校<span className="text-app-primary ml-0.5">*</span>
+                        {s.pe_school}<span className="text-app-primary ml-0.5">*</span>
                     </div>
                     <div className="flex items-center gap-1 text-app-text-muted">
-                        <span className="text-[15px]">{schoolName || '选择学校'}</span>
+                        <span className="text-[15px]">{schoolName || s.school_select}</span>
                         <ChevronRight size={16} className="text-[#C0C4CC]" />
                     </div>
                 </div>
@@ -236,16 +238,16 @@ export const SchoolInfoPage: React.FC = () => {
                     onClick={() => setIsYearPickerOpen(true)}
                     className="flex justify-between items-center px-4 py-4 active:bg-gray-50 transition-colors"
                 >
-                    <div className="text-[15px] text-app-text">入学年份</div>
+                    <div className="text-[15px] text-app-text">{s.school_year}</div>
                     <div className="flex items-center gap-1 text-app-text-muted">
-                        <span className="text-[15px]">{enrollmentYear || '选填'}</span>
+                        <span className="text-[15px]">{enrollmentYear || s.school_year_optional}</span>
                         <ChevronRight size={16} className="text-[#C0C4CC]" />
                     </div>
                 </div>
             </div>
 
             <div className="px-4 mt-2 text-[12px] text-app-text-muted">
-                每30天内仅可修改一次
+                {s.school_edit_limit}
             </div>
 
             {/* Delete Button (Only if school is set) */}
@@ -255,7 +257,7 @@ export const SchoolInfoPage: React.FC = () => {
                         onClick={handleDelete}
                         className="text-app-primary text-[14px]"
                     >
-                        删除学校信息
+                        {s.school_delete}
                     </button>
                 </div>
             )}

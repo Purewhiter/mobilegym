@@ -11,21 +11,27 @@ import {
 const ChevronLeft = IcNavBack, Plus = IcAdd, Tv = IcAnime, MonitorPlay = IcMonitorPlay, Clapperboard = IcClapperboard, Film = IcFilm, Music = IcMusic, Mic = IcMic, Video = IcVideo, Palette = IcPainting, Zap = IcLightning, Gamepad2 = IcGaming, Newspaper = IcNews, GraduationCap = IcGraduationCap, Cpu = IcAI, Car = IcCar, Shirt = IcSkin, Home = IcHome, Tent = IcOutdoor, Dumbbell = IcFitness, Trophy = IcTrophy, Scissors = IcHandcraft, Utensils = IcFood, VenetianMask = IcMaskDance, Plane = IcTravel, Sprout = IcRural, Cat = IcPets, Baby = IcParenting, HeartPulse = IcHeartPulse, Heart = IcHeart, Camera = IcVlog, Coffee = IcLifestyle, Wrench = IcLifeExp, LayoutList = IcList, TrendingUp = IcTrend, Store = IcStore, Ban = IcBan;
 const Trophy2 = IcTrophy;
 import { useBilibiliGestures } from '../hooks/useBilibiliGestures';
+import { useBilibiliStrings } from '../hooks/useBilibiliStrings';
+import { useLocale } from '../locale';
+import { localizePartitionLabel } from '../utils/localize';
+// label 是分区数据值（URL 参数 / partition 字段，保持中文）；仅显示时经 localizePartitionLabel 映射
 const CategoryItem = ({ icon: Icon, label, color = '#FB7299', opensRanking = false }: any) => {
     const { bindTap } = useBilibiliGestures();
+    const locale = useLocale();
     return (
         <div
             {...(opensRanking ? bindTap('ranking.open') : bindTap('partition.open', { params: { label } }))}
             className="flex flex-col items-center justify-center gap-3 py-4 active:scale-95 transition-transform cursor-pointer"
         >
             <Icon size={32} color={color} strokeWidth={1.5} />
-            <span className="text-[13px] text-app-text text-center leading-tight">{label}</span>
+            <span className="text-[13px] text-app-text text-center leading-tight">{localizePartitionLabel(label, locale)}</span>
         </div>
     );
 };
 
 export const PartitionsPage: React.FC = () => {
     const { bindBack } = useBilibiliGestures();
+    const s = useBilibiliStrings();
 
     return (
         <div className="flex flex-col h-full bg-app-surface overflow-hidden">
@@ -34,7 +40,7 @@ export const PartitionsPage: React.FC = () => {
                 <button {...bindBack()} className="p-1 -ml-2 relative z-20">
                     <ChevronLeft size={24} className="text-app-text" />
                 </button>
-                <h1 className="flex-1 text-center font-medium text-[17px] text-app-text -ml-6">分区</h1>
+                <h1 className="flex-1 text-center font-medium text-[17px] text-app-text -ml-6">{s.partitions_title}</h1>
             </div>
 
             {/* Scrollable Content */}
@@ -42,16 +48,16 @@ export const PartitionsPage: React.FC = () => {
 
                 {/* Quick Access */}
                 <div className="px-4 mt-2">
-                    <h2 className="font-bold text-[16px] text-app-text mb-3">快捷访问</h2>
+                    <h2 className="font-bold text-[16px] text-app-text mb-3">{s.partitions_quick}</h2>
                     <div className="bg-[#F6F7F8] rounded-lg py-3 flex items-center justify-center gap-1 text-[#61666D] active:bg-gray-200 transition-colors">
                         <Plus size={18} />
-                        <span className="text-[14px]">编辑</span>
+                        <span className="text-[14px]">{s.partitions_edit}</span>
                     </div>
                 </div>
 
                 {/* All Categories */}
                 <div className="px-4 mt-8">
-                    <h2 className="font-bold text-[16px] text-app-text mb-2">全部分区</h2>
+                    <h2 className="font-bold text-[16px] text-app-text mb-2">{s.partitions_all}</h2>
                     <div className="grid grid-cols-4 gap-y-2">
                         <CategoryItem icon={Tv} label="番剧" color="#FFB74D" />
                         <CategoryItem icon={MonitorPlay} label="国创" color="#FF7043" />
@@ -102,7 +108,7 @@ export const PartitionsPage: React.FC = () => {
 
                 {/* Recommended Services */}
                 <div className="px-4 mt-8 pb-10">
-                    <h2 className="font-bold text-[16px] text-app-text mb-2">推荐分区/服务</h2>
+                    <h2 className="font-bold text-[16px] text-app-text mb-2">{s.partitions_recommend}</h2>
                     <div className="grid grid-cols-4 gap-y-2">
                         <CategoryItem icon={TrendingUp} label="全区排行榜" color="#F06292" opensRanking />
                         <CategoryItem icon={Music} label="新歌热榜" color="#4FC3F7" />

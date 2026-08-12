@@ -7,20 +7,11 @@ const ChevronLeft = IcNavBack, Search = IcSearch, MoreHorizontal = IcMore, Shirt
 import { useSearchParams } from 'react-router-dom';
 import { useBilibiliStore } from '../state';
 import { useBilibiliGestures } from '../hooks/useBilibiliGestures';
+import { useBilibiliStrings } from '../hooks/useBilibiliStrings';
 import { useVideos } from '../hooks/useData';
+import { useLocale } from '../locale';
+import { formatBilibiliStat } from '../utils/localize';
 import { BilibiliDanmakuIcon } from '../res/icons';
-// Helper functions (matching HomePage)
-const formatStat = (num: number | string | undefined) => {
-    if (num === undefined || num === null) return '0';
-    if (typeof num === 'string' && (num.includes('万') || num.includes('亿'))) {
-        return num;
-    }
-    const val = typeof num === 'string' ? parseFloat(num) : num;
-    if (isNaN(val)) return '0';
-    if (val >= 100000000) return (val / 100000000).toFixed(1) + '亿';
-    if (val >= 10000) return (val / 10000).toFixed(1) + '万';
-    return val.toString();
-};
 
 const formatDuration = (val: number | string | undefined) => {
     if (!val) return '00:00';
@@ -42,7 +33,10 @@ const formatDuration = (val: number | string | undefined) => {
 export const SpacePage: React.FC = () => {
     const { bindBack, bindTap } = useBilibiliGestures();
     const [searchParams] = useSearchParams();
-    const user = useBilibiliStore(s => s.user);
+    const user = useBilibiliStore(st => st.user);
+    const s = useBilibiliStrings();
+    const locale = useLocale();
+    const formatStat = (num: number | string | undefined) => formatBilibiliStat(num, locale);
     const [isDetailExpanded, setIsDetailExpanded] = useState(false);
     const VIDEO_DATA = useVideos();
 
@@ -50,10 +44,10 @@ export const SpacePage: React.FC = () => {
     const activeTabFromUrl = (searchParams.get('tab') as 'home' | 'videos' | 'fav' | 'anime') || 'home';
     const activeTab = activeTabFromUrl === 'anime' && !hasAnime ? 'home' : activeTabFromUrl;
     const tabs = [
-        { key: 'home', label: '主页' },
-        { key: 'videos', label: '投稿' },
-        { key: 'fav', label: '收藏' },
-        ...(hasAnime ? [{ key: 'anime', label: '追番' }] : [])
+        { key: 'home', label: s.space_tab_home },
+        { key: 'videos', label: s.space_tab_works },
+        { key: 'fav', label: s.space_tab_fav },
+        ...(hasAnime ? [{ key: 'anime', label: s.space_tab_anime }] : [])
     ];
 
     // Helper: Get folder cover from most recently added video in folder
@@ -139,7 +133,7 @@ export const SpacePage: React.FC = () => {
                                     {...bindTap('userRelation.open', { params: { tab: 'fans' } })}
                                 >
                                     <span className="text-app-text text-[15px] font-medium">{user.followersList?.length || 0}</span>
-                                    <span className="text-app-text-muted text-[11px]">粉丝</span>
+                                    <span className="text-app-text-muted text-[11px]">{s.common_fans}</span>
                                 </div>
                                 <div className="w-[1px] h-3 bg-gray-200"></div>
                                 <div
@@ -147,12 +141,12 @@ export const SpacePage: React.FC = () => {
                                     {...bindTap('userRelation.open', { params: { tab: 'follow' } })}
                                 >
                                     <span className="text-app-text text-[15px] font-medium">{user.followingList?.length || 0}</span>
-                                    <span className="text-app-text-muted text-[11px]">关注</span>
+                                    <span className="text-app-text-muted text-[11px]">{s.common_follow}</span>
                                 </div>
                                 <div className="w-[1px] h-3 bg-gray-200"></div>
                                 <div className="flex flex-col items-center gap-0.5">
                                     <span className="text-app-text text-[15px] font-medium">0</span>
-                                    <span className="text-app-text-muted text-[11px]">获赞</span>
+                                    <span className="text-app-text-muted text-[11px]">{s.common_likes_received}</span>
                                 </div>
                             </div>
 
@@ -162,7 +156,7 @@ export const SpacePage: React.FC = () => {
                                     {...bindTap('profileEdit.open')}
                                     className="flex-1 h-8 border border-app-primary text-app-primary text-[13px] font-medium rounded-[4px] flex items-center justify-center active:bg-pink-50"
                                 >
-                                    编辑资料
+                                    {s.space_edit_profile}
                                 </button>
                             </div>
                         </div>
@@ -175,14 +169,14 @@ export const SpacePage: React.FC = () => {
                                 {user.name || "xiaoming-ai"}
                             </h1>
                             <span className="bg-[#9499A0] text-white text-[10px] px-1.5 py-[1px] rounded-[2px] font-medium scale-90 origin-left">
-                                大会员
+                                {s.space_vip_badge}
                             </span>
                             <div className="flex items-center gap-1">
                                 <span className="border border-[#9499A0]/30 text-app-text-muted text-[10px] px-1 py-[1px] rounded-[2px] flex items-center gap-0.5 scale-90 origin-left">
-                                    <Medal size={10} /> 粉丝勋章
+                                    <Medal size={10} /> {s.space_fan_medal}
                                 </span>
                                 <span className="border border-[#9499A0]/30 text-app-text-muted text-[10px] px-1 py-[1px] rounded-[2px] flex items-center gap-0.5 scale-90 origin-left">
-                                    <Medal size={10} /> 成就勋章
+                                    <Medal size={10} /> {s.space_achieve_medal}
                                 </span>
                             </div>
                         </div>
@@ -200,13 +194,13 @@ export const SpacePage: React.FC = () => {
                     {/* Bio & Details Toggle */}
                     <div className="flex justify-between items-start mb-3">
                         <p className={`text-[13px] text-app-text leading-snug ${!isDetailExpanded ? 'line-clamp-1' : ''}`}>
-                            {user.sign || "你好"}
+                            {user.sign || s.space_sign_fallback}
                         </p>
                         <span
                             className="text-[#00A1D6] text-[13px] whitespace-nowrap ml-4 cursor-pointer"
                             onClick={() => setIsDetailExpanded(!isDetailExpanded)}
                         >
-                            {isDetailExpanded ? '收起' : '详情'}
+                            {isDetailExpanded ? s.space_collapse : s.space_detail}
                         </span>
                     </div>
 
@@ -214,7 +208,7 @@ export const SpacePage: React.FC = () => {
                     <div className="flex flex-col gap-2">
                         <div className="flex items-center gap-2 text-[11px] text-app-text-muted">
                             <span className="flex items-center gap-1">
-                                <span className="bg-app-bg px-1.5 py-0.5 rounded-[2px]">IP属地：{user.ipLocation || '未知'}</span>
+                                <span className="bg-app-bg px-1.5 py-0.5 rounded-[2px]">{s.ip_location_label}：{user.ipLocation || s.common_unknown}</span>
                             </span>
                             {user.school ? (
                                 <span
@@ -229,7 +223,7 @@ export const SpacePage: React.FC = () => {
                                     className="flex items-center gap-1 bg-app-bg px-1.5 py-0.5 rounded-full border border-dashed border-[#9499A0]/30 cursor-pointer active:opacity-60"
                                     {...bindTap('schoolInfo.open')}
                                 >
-                                    <span className="text-lg leading-none pb-0.5">+</span> 添加学校信息
+                                    <span className="text-lg leading-none pb-0.5">+</span> {s.space_add_school}
                                 </span>
                             )}
                         </div>
@@ -272,9 +266,9 @@ export const SpacePage: React.FC = () => {
                             {/* 1. 收藏 (Favorites Preview) */}
                             <div>
                                 <div className="flex justify-between items-center mb-3">
-                                    <h3 className="text-[15px] text-app-text font-medium">收藏 <span className="text-app-text-muted text-[12px] font-normal">{user.favoritesFolders?.length || 0}</span></h3>
+                                    <h3 className="text-[15px] text-app-text font-medium">{s.space_fav_section} <span className="text-app-text-muted text-[12px] font-normal">{user.favoritesFolders?.length || 0}</span></h3>
                                     <div className="flex items-center gap-1 text-app-text-muted text-[12px]" {...bindTap('space.tab.switch', { params: { tab: 'fav' } })}>
-                                        查看更多 <ChevronLeft size={12} className="rotate-180" />
+                                        {s.common_view_more} <ChevronLeft size={12} className="rotate-180" />
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-2 gap-3">
@@ -290,7 +284,7 @@ export const SpacePage: React.FC = () => {
                                             </div>
                                             <div className="px-2 mt-2">
                                                 <div className="text-[13px] text-app-text truncate">{folder.title}</div>
-                                                <div className="text-[11px] text-app-text-muted mt-0.5">{folder.videoIds?.length || 0}个内容 · {folder.isPublic ? '公开' : '私密'}</div>
+                                                <div className="text-[11px] text-app-text-muted mt-0.5">{s.stat_item_count.replace('{n}', String(folder.videoIds?.length || 0))} · {folder.isPublic ? s.fav_public : s.fav_private}</div>
                                             </div>
                                         </div>
                                     ))}
@@ -301,9 +295,9 @@ export const SpacePage: React.FC = () => {
                             {hasAnime && (
                                 <div>
                                     <div className="flex justify-between items-center mb-3">
-                                        <h3 className="text-[15px] text-app-text font-medium">追番 <span className="text-app-text-muted text-[12px] font-normal">{user.subscribedAnime?.length || 0}</span></h3>
+                                        <h3 className="text-[15px] text-app-text font-medium">{s.space_anime_section} <span className="text-app-text-muted text-[12px] font-normal">{user.subscribedAnime?.length || 0}</span></h3>
                                         <div className="flex items-center gap-1 text-app-text-muted text-[12px]" {...bindTap('space.tab.switch', { params: { tab: 'anime' } })}>
-                                            查看更多 <ChevronLeft size={12} className="rotate-180" />
+                                            {s.common_view_more} <ChevronLeft size={12} className="rotate-180" />
                                         </div>
                                     </div>
                                     <div className="grid grid-cols-3 gap-3">
@@ -314,7 +308,7 @@ export const SpacePage: React.FC = () => {
                                                     <div className="aspect-[3/4] bg-app-bg rounded-md overflow-hidden relative mb-2">
                                                         <img src={info.cover} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                                                         <div className="absolute top-1 right-1 bg-app-primary text-white text-[10px] px-1 rounded-sm">
-                                                            在追
+                                                            {s.space_chasing}
                                                         </div>
                                                     </div>
                                                     <div className="text-[13px] text-app-text leading-snug line-clamp-1">{info.title}</div>
@@ -330,9 +324,9 @@ export const SpacePage: React.FC = () => {
                             {user.likedVideoIds && user.likedVideoIds.length > 0 && (
                                 <div>
                                     <div className="flex justify-between items-center mb-3">
-                                        <h3 className="text-[15px] text-app-text font-medium">最近点赞的视频</h3>
+                                        <h3 className="text-[15px] text-app-text font-medium">{s.recent_likes_title}</h3>
                                     <div className="flex items-center gap-1 text-app-text-muted text-[12px] cursor-pointer" {...bindTap('recentLikes.open')}>
-                                        查看更多 <ChevronLeft size={12} className="rotate-180" />
+                                        {s.common_view_more} <ChevronLeft size={12} className="rotate-180" />
                                     </div>
                                     </div>
                                     <div className="grid grid-cols-2 gap-3">
@@ -374,12 +368,12 @@ export const SpacePage: React.FC = () => {
                             <div className="w-16 h-16 rounded-full bg-app-bg flex items-center justify-center text-app-text-muted mb-4">
                                 <Upload size={28} />
                             </div>
-                            <p className="text-app-text-muted text-[13px] mb-8">发布第一个视频，领新人福利</p>
+                            <p className="text-app-text-muted text-[13px] mb-8">{s.space_publish_first}</p>
                             <button className="px-10 py-2 border border-app-primary text-app-primary rounded-full text-[14px] font-medium mb-4">
-                                我要投稿
+                                {s.space_upload_btn}
                             </button>
                             <div className="text-[#00A1D6] text-[12px] flex items-center gap-0.5">
-                                去创作中心领奖 <ChevronLeft size={10} className="rotate-180" />
+                                {s.space_creator_reward} <ChevronLeft size={10} className="rotate-180" />
                             </div>
                         </div>
                     )}
@@ -390,7 +384,7 @@ export const SpacePage: React.FC = () => {
                             <div className="bg-app-surface sticky top-[105px] z-10 px-4 py-3 flex items-center justify-between border-b border-app-bg">
                                 <div className="flex items-center gap-1 text-[13px] text-app-text">
                                     <ChevronDown size={14} className="text-app-text" />
-                                    我创建的收藏夹 <span className="text-app-text-muted text-[11px] ml-1">{user.favoritesFolders?.length || 0}</span>
+                                    {s.space_my_folders} <span className="text-app-text-muted text-[11px] ml-1">{user.favoritesFolders?.length || 0}</span>
                                 </div>
                             </div>
                             <div className="px-4">
@@ -401,7 +395,7 @@ export const SpacePage: React.FC = () => {
                                         </div>
                                         <div className="flex flex-col justify-between py-0.5 flex-1">
                                             <div className="text-[14px] text-app-text">{folder.title}</div>
-                                            <div className="text-[11px] text-app-text-muted">{folder.videoIds?.length || 0}个内容 · {folder.isPublic ? '公开' : '私密'}</div>
+                                            <div className="text-[11px] text-app-text-muted">{s.stat_item_count.replace('{n}', String(folder.videoIds?.length || 0))} · {folder.isPublic ? s.fav_public : s.fav_private}</div>
                                         </div>
                                     </div>
                                 ))}
@@ -409,7 +403,7 @@ export const SpacePage: React.FC = () => {
                             <div className="h-2 bg-app-bg/50"></div>
                             <div className="bg-app-surface px-4 py-3 flex items-center gap-1 text-[13px] text-app-text opacity-60">
                                 <ChevronDown size={14} className="-rotate-90" />
-                                我的收藏与订阅 <span className="text-app-text-muted text-[11px] ml-1">0</span>
+                                {s.space_my_subscriptions} <span className="text-app-text-muted text-[11px] ml-1">0</span>
                             </div>
                         </div>
                     )}
@@ -424,7 +418,7 @@ export const SpacePage: React.FC = () => {
                                         <div className="aspect-[3/4] bg-app-bg rounded-md overflow-hidden relative mb-2">
                                             <img src={info.cover} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                                             <div className="absolute top-1 right-1 bg-app-primary text-white text-[10px] px-1 rounded-sm">
-                                                在追
+                                                {s.space_chasing}
                                             </div>
                                         </div>
                                         <div className="text-[13px] text-app-text leading-snug line-clamp-1">{info.title}</div>

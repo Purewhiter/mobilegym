@@ -62,7 +62,7 @@ import { SettingsWatermarkPage } from './pages/settings/SettingsWatermarkPage';
 import { SettingsImageQualityPage } from './pages/settings/SettingsImageQualityPage';
 import { SettingsTimerPage } from './pages/settings/SettingsTimerPage';
 import { SettingsSleepPage } from './pages/settings/SettingsSleepPage';
-import { useLocale } from '@/apps/Bilibili/locale';
+import { useBilibiliStrings } from './hooks/useBilibiliStrings';
 // Standard Navigation Handler as per spec
 const BilibiliNavigationHandler: React.FC = () => {
     const navigate = useNavigate();
@@ -103,22 +103,14 @@ const Layout = () => {
     const { pathname } = useLocation();
     const [searchParams] = useSearchParams();
     const { bindTap } = useBilibiliGestures();
-    const locale = useLocale();
-    const text = locale === 'en'
-        ? {
-            home: 'Home',
-            following: 'Following',
-            publish: 'Post',
-            shop: 'Shop',
-            me: 'Me',
-        }
-        : {
-            home: '首页',
-            following: '关注',
-            publish: '发布',
-            shop: '会员购',
-            me: '我的',
-        };
+    const s = useBilibiliStrings();
+    const text = {
+        home: s.tabbar_home,
+        following: s.tabbar_following,
+        publish: s.tabbar_publish,
+        shop: s.tabbar_shop,
+        me: s.tabbar_me,
+    };
 
     // Identify Main Tabs
     const isHome = pathname === '/';

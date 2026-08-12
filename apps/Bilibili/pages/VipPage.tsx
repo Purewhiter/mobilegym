@@ -2,30 +2,34 @@ import React, { useState, useEffect } from 'react';
 import { IcNavBack } from '../res/icons';
 import { useBilibiliGestures } from '../hooks/useBilibiliGestures';
 import { useBilibiliStore } from '../state';
+import { useBilibiliStrings } from '../hooks/useBilibiliStrings';
+import type { StringKey } from '../res/strings';
 import * as TimeService from '../../../os/TimeService';
 
 interface VipPackage {
   id: string;
-  title: string;
+  titleKey: StringKey;
+  /** 跨 App 支付 Intent 中的中文套餐名（数据契约，不随界面语言变化） */
+  subjectName: string;
   price: number;
   originalPrice?: number;
-  badge?: string;
-  desc?: string;
+  badge?: 'gift' | 'flash';
   period: string; // 'month', 'quarter', 'year'
 }
 
 const PACKAGES: VipPackage[] = [
-  { id: 'year_auto', title: '连续包年', price: 148, originalPrice: 233, badge: '赠', desc: '已优惠¥85', period: 'year' },
-  { id: 'year_super', title: '超大连续包年', price: 178, originalPrice: 388, badge: '限时红包', desc: '已优惠¥210 | 含电视端', period: 'year' },
-  { id: 'month_auto', title: '连续包月', price: 15, originalPrice: 25, badge: '限时红包', desc: '已优惠¥10', period: 'month' },
-  { id: 'quarter_auto', title: '连续包季', price: 45, originalPrice: 68, badge: '限时红包', desc: '已优惠¥23', period: 'quarter' },
-  { id: 'quarter_super', title: '超大连续包季', price: 83, originalPrice: 118, badge: '限时红包', desc: '已优惠¥35 | 含电视端', period: 'quarter' },
+  { id: 'year_auto', titleKey: 'vip_pkg_year_auto', subjectName: '连续包年', price: 148, originalPrice: 233, badge: 'gift', period: 'year' },
+  { id: 'year_super', titleKey: 'vip_pkg_year_super', subjectName: '超大连续包年', price: 178, originalPrice: 388, badge: 'flash', period: 'year' },
+  { id: 'month_auto', titleKey: 'vip_pkg_month_auto', subjectName: '连续包月', price: 15, originalPrice: 25, badge: 'flash', period: 'month' },
+  { id: 'quarter_auto', titleKey: 'vip_pkg_quarter_auto', subjectName: '连续包季', price: 45, originalPrice: 68, badge: 'flash', period: 'quarter' },
+  { id: 'quarter_super', titleKey: 'vip_pkg_quarter_super', subjectName: '超大连续包季', price: 83, originalPrice: 118, badge: 'flash', period: 'quarter' },
 ];
 
 export const VipPage: React.FC = () => {
   const { user } = useBilibiliStore();
-  const updateUser = useBilibiliStore(s => s.updateUser);
+  const updateUser = useBilibiliStore(st => st.updateUser);
   const { bindBack, bindTap } = useBilibiliGestures();
+  const s = useBilibiliStrings();
   const [selectedId, setSelectedId] = useState('year_auto');
   const [showPayment, setShowPayment] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<'alipay' | 'wechat' | 'huabei'>('alipay');
@@ -45,6 +49,7 @@ export const VipPage: React.FC = () => {
   }, [updateUser]);
 
   const selectedPkg = PACKAGES.find(p => p.id === selectedId) || PACKAGES[0];
+  const badgeLabel = (badge: 'gift' | 'flash') => (badge === 'gift' ? s.vip_badge_gift : s.vip_badge_flash);
 
   const openPaymentSelection = () => {
     setShowPayment(true);
@@ -64,7 +69,8 @@ export const VipPage: React.FC = () => {
                             data: {
                                 amount: selectedPkg.price,
                                 source: 'bilibili',
-                                subject: `哔哩哔哩大会员${selectedPkg.title}`,
+                                // 跨 App Intent 数据契约：subject/merchantName 保持中文数据值
+                                subject: `哔哩哔哩大会员${selectedPkg.subjectName}`,
                                 period: selectedPkg.period,
                                 userName: user.name,
                                 merchantName: '哔哩哔哩弹幕网',
@@ -80,7 +86,7 @@ export const VipPage: React.FC = () => {
             console.warn('OS startActivity not found');
         }
     } else {
-        alert('请选择微信支付以体验完整流程');
+        alert(s.vip_select_wechat);
     }
   };
 
@@ -88,20 +94,20 @@ export const VipPage: React.FC = () => {
       if (paymentMethod === 'wechat') {
           return {
               icon: <span className="bg-[#07c160] text-white px-0.5 rounded mx-0.5">微</span>,
-              name: '微信支付',
-              desc: '，已阅读并同意《付款授权服务协议》，开通后到期前24小时将自动发起续费，可随时取消自动续费'
+              name: s.vip_wechat,
+              desc: s.vip_pay_agreement_desc
           };
       } else if (paymentMethod === 'alipay') {
           return {
               icon: <span className="bg-[#1677ff] text-white px-0.5 rounded mx-0.5">支</span>,
-              name: '支付宝',
-              desc: '，已阅读并同意《付款授权服务协议》，开通后到期前24小时将自动发起续费，可随时取消自动续费'
+              name: s.vip_alipay,
+              desc: s.vip_pay_agreement_desc
           };
       } else {
           return {
               icon: <span className="bg-[#1677ff] text-white px-0.5 rounded mx-0.5">花</span>,
-              name: '花呗',
-              desc: '，已阅读并同意《付款授权服务协议》，开通后到期前24小时将自动发起续费，可随时取消自动续费'
+              name: s.vip_huabei,
+              desc: s.vip_pay_agreement_desc
           };
       }
   };
@@ -124,7 +130,7 @@ export const VipPage: React.FC = () => {
           <button {...bindBack()}>
             <IcNavBack size={24} />
           </button>
-          <div className="flex-1 text-center font-medium text-lg">成为大会员</div>
+          <div className="flex-1 text-center font-medium text-lg">{s.vip_title}</div>
           <div className="w-6"></div>
         </div>
       </div>
@@ -139,8 +145,8 @@ export const VipPage: React.FC = () => {
           </div>
           <div className="text-xs text-gray-500 mt-1">
             {user.isVip && vipExpireText
-              ? `大会员：有效期至${vipExpireText}`
-              : '你还不是大会员，开通福利多多 ①'}
+              ? s.vip_expire.replace('{date}', vipExpireText)
+              : s.vip_not_vip}
           </div>
         </div>
       </div>
@@ -149,10 +155,10 @@ export const VipPage: React.FC = () => {
       <div className="bg-white px-4 py-4 mb-2">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center text-sm font-bold text-[#fb7299]">
-            <span className="bg-[#fb7299] text-white text-[10px] px-1 rounded mr-1 leading-none py-0.5">大</span>
-            手机/电脑/Pad上可用
+            <span className="bg-[#fb7299] text-white text-[10px] px-1 rounded mr-1 leading-none py-0.5">{s.vip_glyph}</span>
+            {s.vip_device_scope}
           </div>
-          <div className="text-xs text-gray-400">切换普通套餐 ⇌</div>
+          <div className="text-xs text-gray-400">{s.vip_switch_plan}</div>
         </div>
 
         <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2">
@@ -168,38 +174,38 @@ export const VipPage: React.FC = () => {
               >
                 {p.badge && (
                   <div className="absolute -top-[1px] -right-[1px] bg-[#fb7299] text-white text-[10px] px-1.5 py-0.5 rounded-bl-lg rounded-tr-md">
-                    {p.badge}
+                    {badgeLabel(p.badge)}
                   </div>
                 )}
-                <div className="text-sm font-medium mb-1 mt-2">{p.title}</div>
+                <div className="text-sm font-medium mb-1 mt-2">{s[p.titleKey]}</div>
                 <div className="flex items-baseline text-[#fb7299]">
                   <span className="text-xs">¥</span>
                   <span className="text-3xl font-bold">{p.price}</span>
                 </div>
-                {p.originalPrice && <div className="text-[10px] text-gray-400 line-through decoration-gray-400">已优惠¥{p.originalPrice - p.price}</div>}
-                {p.badge === '限时红包' && <div className="bg-[#fb7299] text-white text-[10px] px-1 rounded mt-1">限时红包</div>}
+                {p.originalPrice && <div className="text-[10px] text-gray-400 line-through decoration-gray-400">{s.vip_discount.replace('{n}', String(p.originalPrice - p.price))}</div>}
+                {p.badge === 'flash' && <div className="bg-[#fb7299] text-white text-[10px] px-1 rounded mt-1">{s.vip_badge_flash}</div>}
               </div>
             );
           })}
         </div>
         
         <div className="bg-[#fff9fa] rounded-lg p-3 mt-4 flex items-center gap-2">
-             <div className="bg-[#fb7299] text-white text-xs px-1 rounded">赠</div>
-             <div className="text-xs text-gray-700">本次送网易严选Pro纯享会员月卡</div>
+             <div className="bg-[#fb7299] text-white text-xs px-1 rounded">{s.vip_badge_gift}</div>
+             <div className="text-xs text-gray-700">{s.vip_gift_month}</div>
         </div>
 
         <div className="text-xs text-gray-500 mt-3">
-            每月按{selectedPkg.price}元自动续费，可随时取消自动续费
+            {s.vip_renew_note.replace('{n}', String(selectedPkg.price))}
         </div>
         
         <div className="flex justify-between items-center mt-4 py-3 border-t border-dashed border-gray-200">
-            <span className="text-sm font-bold">代金券</span>
-            <span className="text-xs text-[#fb7299]">不使用代金券 &gt;</span>
+            <span className="text-sm font-bold">{s.vip_voucher}</span>
+            <span className="text-xs text-[#fb7299]">{s.vip_no_voucher}</span>
         </div>
 
         <div className="bg-[#fffcf2] p-3 rounded-lg flex items-start mt-2" onClick={openPaymentSelection}>
             <div className="flex-1 text-xs text-[#b88347]">
-                使用 {payInfo.icon} {payInfo.name}{payInfo.desc}
+                {s.vip_use_prefix} {payInfo.icon} {payInfo.name}{payInfo.desc}
             </div>
             <div className="text-[#b88347] ml-2">&gt;</div>
         </div>
@@ -208,8 +214,8 @@ export const VipPage: React.FC = () => {
       {/* Joint Membership (Mock) */}
       <div className="bg-white p-4 mt-2">
           <div className="flex justify-between items-center mb-3">
-              <div className="font-bold text-sm">联合会员</div>
-              <div className="text-xs text-gray-400">查看更多 &gt;</div>
+              <div className="font-bold text-sm">{s.vip_joint}</div>
+              <div className="text-xs text-gray-400">{s.vip_see_more}</div>
           </div>
           <div className="flex gap-3 overflow-x-auto no-scrollbar">
               <div className="flex-shrink-0 w-28 h-32 border border-gray-100 rounded-lg bg-[#f6f7f9]"></div>
@@ -223,14 +229,14 @@ export const VipPage: React.FC = () => {
          <div className="flex items-start gap-2 mb-3">
              <input type="checkbox" defaultChecked className="mt-0.5 w-3.5 h-3.5 rounded-full text-[#fb7299] border-gray-300 focus:ring-[#fb7299]" />
              <div className="text-[10px] text-gray-400 leading-tight">
-                 开通前请阅读《大会员服务协议》《大会员自动续费服务规则》
+                 {s.vip_agreement}
              </div>
          </div>
          <button
             className="w-full bg-[#fb7299] text-white font-bold py-2.5 rounded-full text-lg shadow-lg shadow-pink-200 active:scale-98 transition-transform"
             {...bindTap<HTMLButtonElement>('vip.pay.confirm', { onTrigger: executePay })}
          >
-             确认协议并支付 ¥{selectedPkg.price}
+             {s.vip_confirm_pay.replace('{n}', String(selectedPkg.price))}
          </button>
       </div>
 
@@ -240,7 +246,7 @@ export const VipPage: React.FC = () => {
             <div className="absolute inset-0 bg-black/60 backdrop-blur-[1px]" onClick={() => setShowPayment(false)} />
             <div className="bg-white rounded-t-xl p-4 animate-slide-up relative z-10 pb-8">
                 <div className="flex justify-between items-center mb-6">
-                    <span className="text-lg font-bold">支付方式</span>
+                    <span className="text-lg font-bold">{s.vip_payment_title}</span>
                     <button onClick={() => setShowPayment(false)} className="text-gray-400 text-2xl leading-none">&times;</button>
                 </div>
                 
@@ -249,9 +255,9 @@ export const VipPage: React.FC = () => {
                     <div className="flex items-center gap-3">
                         <div className="w-6 h-6 bg-[#1677ff] rounded flex items-center justify-center text-white text-xs">支</div>
                         <div>
-                            <div className="text-[15px]">支付宝</div>
+                            <div className="text-[15px]">{s.vip_alipay}</div>
                             <div className="text-[10px] text-gray-400 mt-0.5 leading-tight max-w-[240px]">
-                                已阅读并同意《付款授权服务协议》，开通后到期前24小时将自动发起续费，可随时取消自动续费
+                                {s.vip_pay_agreement_full}
                             </div>
                         </div>
                     </div>
@@ -264,7 +270,7 @@ export const VipPage: React.FC = () => {
                 <div className="flex items-center justify-between py-3.5 border-b border-gray-50" onClick={() => { setPaymentMethod('wechat'); setShowPayment(false); }}>
                     <div className="flex items-center gap-3">
                         <div className="w-6 h-6 bg-[#07c160] rounded flex items-center justify-center text-white text-xs">微</div>
-                        <span className="text-[15px]">微信支付</span>
+                        <span className="text-[15px]">{s.vip_wechat}</span>
                     </div>
                     <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${paymentMethod === 'wechat' ? 'border-[#fb7299] bg-white' : 'border-gray-300'}`}>
                         {paymentMethod === 'wechat' && <div className="w-3 h-3 bg-[#fb7299] rounded-full" />}
@@ -275,7 +281,7 @@ export const VipPage: React.FC = () => {
                 <div className="flex items-center justify-between py-3.5" onClick={() => { setPaymentMethod('huabei'); setShowPayment(false); }}>
                     <div className="flex items-center gap-3">
                         <div className="w-6 h-6 bg-[#1677ff] rounded flex items-center justify-center text-white text-xs">花</div>
-                        <span className="text-[15px]">花呗</span>
+                        <span className="text-[15px]">{s.vip_huabei}</span>
                     </div>
                     <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${paymentMethod === 'huabei' ? 'border-[#fb7299] bg-white' : 'border-gray-300'}`}>
                         {paymentMethod === 'huabei' && <div className="w-3 h-3 bg-[#fb7299] rounded-full" />}

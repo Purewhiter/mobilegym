@@ -1,8 +1,8 @@
 import React from 'react';
 import { IcNavBack, IcNavForward } from '../res/icons';
-import { useLocale } from '@/apps/Bilibili/locale';
 import { useBilibiliGestures } from '../hooks/useBilibiliGestures';
 import { useBilibiliStore } from '../state';
+import { useBilibiliStrings } from '../hooks/useBilibiliStrings';
 
 /** 设置项：标题 + 可选副标题 + 右箭头，点击跳转子页 */
 const SettingItem: React.FC<{
@@ -37,86 +37,47 @@ const SectionGap: React.FC = () => (
 
 export const SettingsPage: React.FC = () => {
   const { bindBack } = useBilibiliGestures();
-  const locale = useLocale();
-  const timerVal = useBilibiliStore((s) => s.settings.timer);
-  const sleepReminder = useBilibiliStore((s) => s.settings.sleepReminder);
-  const text = locale === 'en'
-    ? {
-        title: 'Settings',
-        timerOff: 'Off',
-        timerOn: 'On',
-        sleepOn: 'Remind me',
-        sleepOff: 'No reminder',
-        accountProfile: 'Account profile',
-        security: 'Security & privacy',
-        shipping: 'Shipping info',
-        language: 'Language',
-        splash: 'Launch screen',
-        recommend: 'Home recommendations',
-        recommendSubtitle: 'Double-column / autoplay on Wi-Fi or mobile data',
-        avatarEntry: 'Home avatar entry',
-        playback: 'Playback',
-        offline: 'Offline settings',
-        chase: 'Anime & drama settings',
-        push: 'Push notifications',
-        messages: 'Message settings',
-        harass: 'Harassment & interaction filters',
-        downloads: 'Download management',
-        storage: 'Clear storage',
-        other: 'Other settings',
-        timer: 'Sleep timer',
-        sleep: 'Sleep reminder',
-        dark: 'Dark mode',
-        support: 'Support',
-        about: 'About Bilibili',
-        business: 'Business inquiries',
-        terms: 'User Agreement',
-        privacy: 'Privacy Policy',
-        privacyPermissions: 'Privacy permissions',
-        collectionList: 'Personal info collection list',
-        sharingList: 'Third-party sharing list',
-        basicPrivacy: 'Bilibili basic feature privacy policy',
-        switchAccount: 'Switch account',
-        logout: 'Sign out',
-      }
-    : {
-        title: '设置',
-        timerOff: '不开启',
-        timerOn: '已开启',
-        sleepOn: '已提醒',
-        sleepOff: '不提醒',
-        accountProfile: '账号资料',
-        security: '安全隐私',
-        shipping: '收货信息',
-        language: '语言',
-        splash: '开屏画面设置',
-        recommend: '首页推荐设置',
-        recommendSubtitle: '双列/Wi-Fi/免流/移动网络下自动播放',
-        avatarEntry: '首页头像入口设置',
-        playback: '播放设置',
-        offline: '离线设置',
-        chase: '追番/追剧设置',
-        push: '推送设置',
-        messages: '消息设置',
-        harass: '防骚扰和互动人群设置',
-        downloads: '下载管理',
-        storage: '清理存储空间',
-        other: '其他设置',
-        timer: '定时关闭',
-        sleep: '睡眠提醒',
-        dark: '深色设置',
-        support: '我的客服',
-        about: '关于哔哩哔哩',
-        business: '商务合作',
-        terms: '用户协议',
-        privacy: '隐私政策',
-        privacyPermissions: '隐私权限设置',
-        collectionList: '个人信息收集清单',
-        sharingList: '第三方信息共享清单',
-        basicPrivacy: '哔哩哔哩（基本功能）隐私政策',
-        switchAccount: '账号切换',
-        logout: '退出登录',
-      };
+  const s = useBilibiliStrings();
+  const timerVal = useBilibiliStore((st) => st.settings.timer);
+  const sleepReminder = useBilibiliStore((st) => st.settings.sleepReminder);
+  const text = {
+    title: s.settings_title,
+    timerOff: s.settings_timer_off,
+    timerOn: s.settings_timer_on,
+    sleepOn: s.settings_sleep_on,
+    sleepOff: s.settings_sleep_off,
+    accountProfile: s.settings_account_profile,
+    security: s.settings_security,
+    shipping: s.settings_shipping,
+    language: s.settings_language,
+    splash: s.settings_splash,
+    recommend: s.settings_recommend,
+    recommendSubtitle: s.settings_recommend_subtitle,
+    avatarEntry: s.settings_avatar_entry,
+    playback: s.settings_playback,
+    offline: s.settings_offline,
+    chase: s.settings_chase,
+    push: s.settings_push,
+    messages: s.settings_messages,
+    harass: s.settings_harass,
+    downloads: s.settings_downloads,
+    storage: s.settings_storage,
+    other: s.settings_other,
+    timer: s.settings_timer,
+    sleep: s.settings_sleep,
+    dark: s.settings_dark,
+    support: s.settings_support,
+    about: s.settings_about,
+    business: s.settings_business,
+    terms: s.settings_terms,
+    privacy: s.settings_privacy,
+    privacyPermissions: s.settings_privacy_permissions,
+    collectionList: s.settings_collection_list,
+    sharingList: s.settings_sharing_list,
+    basicPrivacy: s.settings_basic_privacy,
+    switchAccount: s.settings_switch_account,
+    logout: s.settings_logout,
+  };
   const timerLabel = timerVal === 'off' || timerVal === undefined ? text.timerOff : text.timerOn;
   const sleepLabel = sleepReminder ? text.sleepOn : text.sleepOff;
 

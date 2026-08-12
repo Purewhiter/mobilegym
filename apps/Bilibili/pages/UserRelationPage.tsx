@@ -5,8 +5,10 @@ import { useSearchParams } from 'react-router-dom';
 import { useBilibiliStore } from '../state';
 import { useAuthors } from '../hooks/useData';
 import { useBilibiliGestures } from '../hooks/useBilibiliGestures';
+import { useBilibiliStrings } from '../hooks/useBilibiliStrings';
 export const UserRelationPage: React.FC = () => {
     const { bindBack, bindTap, back } = useBilibiliGestures();
+    const s = useBilibiliStrings();
     const [searchParams] = useSearchParams();
     const user = useBilibiliStore(s => s.user);
     const toggleFollow = useBilibiliStore(s => s.toggleFollow);
@@ -68,7 +70,7 @@ export const UserRelationPage: React.FC = () => {
             <div className="flex items-center gap-4 px-4 pt-10 pb-3 border-b border-gray-100 bg-app-surface sticky top-0 z-40">
                 <button {...bindBack()}><ChevronLeft size={24} className="text-[#61666D]" /></button>
                 <button {...bindBack()}><X size={24} className="text-[#61666D]" /></button>
-                <h1 className="text-[17px] font-medium text-app-text">我的好友</h1>
+                <h1 className="text-[17px] font-medium text-app-text">{s.rel_title}</h1>
             </div>
 
             {/* Tabs */}
@@ -77,14 +79,14 @@ export const UserRelationPage: React.FC = () => {
                     {...(activeTab === 'follow' ? {} : bindTap('userRelation.tab.switch', { params: { tab: 'follow' } }))}
                     className={`flex-1 py-3 text-[14px] font-medium relative ${activeTab === 'follow' ? 'text-app-primary' : 'text-[#61666D]'}`}
                 >
-                    关注
+                    {s.rel_tab_follow}
                     {activeTab === 'follow' && <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-app-primary rounded-full" />}
                 </button>
                 <button
                     {...(activeTab === 'fans' ? {} : bindTap('userRelation.tab.switch', { params: { tab: 'fans' } }))}
                     className={`flex-1 py-3 text-[14px] font-medium relative ${activeTab === 'fans' ? 'text-app-primary' : 'text-[#61666D]'}`}
                 >
-                    粉丝
+                    {s.rel_tab_fans}
                     {activeTab === 'fans' && <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-app-primary rounded-full" />}
                 </button>
             </div>
@@ -95,7 +97,7 @@ export const UserRelationPage: React.FC = () => {
                     <Search size={16} className="text-app-text-muted" />
                     <input
                         className="flex-1 bg-transparent border-none outline-none text-[13px] text-app-text placeholder-[#9499A0]"
-                        placeholder={activeTab === 'follow' ? "搜索我的关注" : "搜索我的粉丝"}
+                        placeholder={activeTab === 'follow' ? s.rel_search_follow : s.rel_search_fans}
                         value={searchQuery}
                         onChange={handleSearchChange}
                     />
@@ -104,9 +106,9 @@ export const UserRelationPage: React.FC = () => {
 
             {/* List Header */}
             <div className="flex justify-between items-center px-4 py-2 text-app-text-muted text-[12px] bg-app-surface">
-                <span>{activeTab === 'follow' ? '我的关注' : '我的粉丝'} {list.length}人</span>
+                <span>{activeTab === 'follow' ? s.rel_my_follow : s.rel_my_fans} {s.rel_count_people.replace('{n}', String(list.length))}</span>
                 <button className="flex items-center gap-1">
-                    <ArrowUpDown size={12} /> 最近访问
+                    <ArrowUpDown size={12} /> {s.rel_recent_visit}
                 </button>
             </div>
 
@@ -138,7 +140,7 @@ export const UserRelationPage: React.FC = () => {
                                         {item.name}
                                     </div>
                                     <div className="text-[11px] text-app-text-muted truncate pr-4">
-                                        {item.sign || '这个人很懒，什么都没有写'}
+                                        {item.sign || s.sign_empty}
                                     </div>
                                 </div>
                             </div>
@@ -150,13 +152,13 @@ export const UserRelationPage: React.FC = () => {
                                 })}
                                 className="h-7 px-3 rounded-full bg-[#E3E5E7] text-app-text-muted flex items-center justify-center gap-1 font-medium text-[12px] shrink-0 active:bg-[#d0d3d6] ml-2"
                             >
-                                <Menu size={12} /> 已关注
+                                <Menu size={12} /> {s.common_following}
                             </button>
                         </div>
                     ))
                 ) : (
                     <div className="flex flex-col items-center justify-center pt-20 text-app-text-muted">
-                        <div className="text-[13px]">{activeTab === 'follow' ? '暂无关注' : '暂无粉丝'}</div>
+                        <div className="text-[13px]">{activeTab === 'follow' ? s.rel_empty_follow : s.rel_empty_fans}</div>
                     </div>
                 )}
             </div>
@@ -169,11 +171,11 @@ export const UserRelationPage: React.FC = () => {
                         <div className="py-4 text-center text-app-text-muted text-[13px] border-b border-gray-100">
                             {selectedUser?.name}
                         </div>
-                        <div className="py-3.5 text-center text-app-text active:bg-gray-50" onClick={closeMenu}>设置分组</div>
-                        <div className="py-3.5 text-center text-app-text active:bg-gray-50" onClick={closeMenu}>加入特别关注</div>
-                        <div className="py-3.5 text-center text-app-primary active:bg-gray-50 border-t border-gray-100" onClick={handleUnfollow}>取消关注</div>
+                        <div className="py-3.5 text-center text-app-text active:bg-gray-50" onClick={closeMenu}>{s.menu_set_group}</div>
+                        <div className="py-3.5 text-center text-app-text active:bg-gray-50" onClick={closeMenu}>{s.menu_add_special}</div>
+                        <div className="py-3.5 text-center text-app-primary active:bg-gray-50 border-t border-gray-100" onClick={handleUnfollow}>{s.menu_unfollow}</div>
                         <div className="h-2 bg-app-bg my-1" />
-                        <div className="py-3.5 text-center text-app-text active:bg-gray-50" onClick={closeMenu}>取消</div>
+                        <div className="py-3.5 text-center text-app-text active:bg-gray-50" onClick={closeMenu}>{s.common_cancel}</div>
                     </div>
                 </div>
             )}

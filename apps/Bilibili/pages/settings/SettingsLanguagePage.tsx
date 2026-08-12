@@ -1,7 +1,9 @@
 import React from 'react';
 import { SettingLayout, SettingSection, SettingRadioGroup } from './index';
 import { useBilibiliStore } from '../../state';
+import { useBilibiliStrings } from '../../hooks/useBilibiliStrings';
 
+// 语言名使用各语言自称（endonym），i18n 惯例不随界面语言翻译
 const OPTIONS = [
   { id: 'zh', label: '简体中文' },
   { id: 'zh-TW', label: '繁體中文' },
@@ -10,12 +12,13 @@ const OPTIONS = [
 ];
 
 export const SettingsLanguagePage: React.FC = () => {
-  const value = useBilibiliStore((s) => s.settings.language) ?? 'zh';
-  const setSetting = useBilibiliStore((s) => s.setSetting);
+  const s = useBilibiliStrings();
+  const value = useBilibiliStore((st) => st.settings.language) ?? 'zh';
+  const setSetting = useBilibiliStore((st) => st.setSetting);
 
   return (
-    <SettingLayout title="语言">
-      <SettingSection title="App 语言" />
+    <SettingLayout title={s.sl_title}>
+      <SettingSection title={s.sl_sec} />
       <SettingRadioGroup
         options={OPTIONS}
         value={value}

@@ -8,6 +8,7 @@ import { BILIBILI_CONFIG, resolveBilibiliAssetUrl } from '../data';
 import type { UserInfo } from '../types';
 import { useSystemTime } from '../../../os/useSystemTime';
 import { useBilibiliGestures } from '../hooks/useBilibiliGestures';
+import { useBilibiliStrings } from '../hooks/useBilibiliStrings';
 import { formatBilibiliRelativeTime, formatBilibiliStat } from '../utils/localize';
 
 const SquarePen = IcEditSquare;
@@ -30,43 +31,25 @@ export const FollowingPage: React.FC = () => {
     const { now } = useSystemTime();
     const AUTHOR_DATA = useAuthors();
     const VIDEO_DATA = useVideos();
-    const text = locale === 'en'
-        ? {
-            title: 'Following',
-            all: 'All',
-            video: 'Videos',
-            mostVisited: 'Most visited',
-            more: 'More',
-            animeUpdates: 'My anime & drama updates',
-            viewAll: 'View all',
-            uploadedVideo: 'uploaded a video',
-            plays: 'views',
-            danmaku: 'danmaku',
-            emptyTitle: 'You are not following any creators yet',
-            emptyDesc: 'Follow more creators so you never miss great content.',
-            recommended: 'Creators you may like',
-            recommendedUp: 'Recommended creator',
-            up: 'Creator',
-            follow: 'Follow',
-        }
-        : {
-            title: '关注',
-            all: '全部',
-            video: '视频',
-            mostVisited: '最常访问',
-            more: '更多',
-            animeUpdates: '我的追番·追剧',
-            viewAll: '全部',
-            uploadedVideo: '投稿了视频',
-            plays: '播放',
-            danmaku: '弹幕',
-            emptyTitle: '你还没有关注过UP主哦',
-            emptyDesc: '关注更多的UP主，精彩内容不错过',
-            recommended: '猜你喜欢的UP主',
-            recommendedUp: '推荐UP主',
-            up: 'UP主',
-            follow: '关注',
-        };
+    const s = useBilibiliStrings();
+    const text = {
+        title: s.following_title,
+        all: s.following_tab_all,
+        video: s.following_tab_video,
+        mostVisited: s.following_most_visited,
+        more: s.following_more,
+        animeUpdates: s.following_anime_updates,
+        viewAll: s.following_view_all,
+        uploadedVideo: s.following_uploaded_video,
+        plays: s.stat_plays,
+        danmaku: s.stat_danmaku,
+        emptyTitle: s.following_empty_title,
+        emptyDesc: s.following_empty_desc,
+        recommended: s.following_recommended,
+        recommendedUp: s.following_recommended_up,
+        up: s.common_up_badge,
+        follow: s.common_follow,
+    };
 
     const tabRaw = searchParams.get('tab');
     const activeTabFromUrl: 'all' | 'video' = tabRaw === 'video' ? 'video' : 'all';
@@ -192,9 +175,8 @@ export const FollowingPage: React.FC = () => {
                                     {user.subscribedAnime.map(anime => {
                                         const videoInfo = VIDEO_DATA.find(v => v.id === anime.id);
                                         const cover = videoInfo?.raw?.ss_horizontal_cover || videoInfo?.cover || DEFAULT_VIDEO_COVER;
-                                        const updateText = videoInfo?.raw?.new_ep?.index_show || (locale === 'en'
-                                            ? `Episode ${Math.floor(Math.random() * 200)} now available`
-                                            : `更新至第${Math.floor(Math.random() * 200)}话`);
+                                        const updateText = videoInfo?.raw?.new_ep?.index_show
+                                            || s.following_episode_update.replace('{n}', String(Math.floor(Math.random() * 200)));
 
                                         return (
                                             <div key={anime.id} className="flex flex-col gap-1.5 w-28 shrink-0" {...bindTap('video.open', { params: { bvid: anime.id } })}>

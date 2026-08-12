@@ -12,6 +12,9 @@ import { realNow } from '../../../os/TimeService';
 import * as TimeService from '../../../os/TimeService';
 import { useBilibiliStore } from '../state';
 import { useBilibiliGestures } from '../hooks/useBilibiliGestures';
+import { useBilibiliStrings } from '../hooks/useBilibiliStrings';
+import { useLocale } from '../locale';
+import { formatBilibiliStat } from '../utils/localize';
 import { BilibiliDanmakuIcon } from '../res/icons';
 import coinMascotImg from '../assets/22-coin.png';
 // “你可能感兴趣”面板是本地子状态：绑定到同一个 history entry（idx），push/back 仍保留；entry 被 pop 后消失
@@ -57,15 +60,16 @@ const CommentItem: React.FC<{ comment: CommentReply }> = ({ comment }) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const { now } = useSystemTime();
     const { bindTap } = useBilibiliGestures();
+    const str = useBilibiliStrings();
 
     const formatCommentTime = (ctime: number) => {
         if (!ctime) return '';
         const current = now() / 1000;
         const diff = current - ctime;
-        if (diff < 60) return '刚刚';
-        if (diff < 3600) return `${Math.floor(diff / 60)}分钟前`;
-        if (diff < 86400) return `${Math.floor(diff / 3600)}小时前`;
-        if (diff < 86400 * 30) return `${Math.floor(diff / 86400)}天前`;
+        if (diff < 60) return str.time_just_now;
+        if (diff < 3600) return str.time_minutes_ago.replace('{n}', String(Math.floor(diff / 60)));
+        if (diff < 86400) return str.time_hours_ago.replace('{n}', String(Math.floor(diff / 3600)));
+        if (diff < 86400 * 30) return str.time_days_ago.replace('{n}', String(Math.floor(diff / 86400)));
         const date = TimeService.fromTimestamp(ctime * 1000);
         return `${date.getMonth() + 1}-${date.getDate()}`;
     };
@@ -81,7 +85,7 @@ const CommentItem: React.FC<{ comment: CommentReply }> = ({ comment }) => {
             >
                 <img src={comment.avatar} className="w-full h-full object-cover" referrerPolicy="no-referrer" loading="lazy" />
                 {comment.vip && (
-                    <div className="absolute bottom-0 right-0 bg-app-primary text-white text-[8px] px-0.5 rounded-full border border-white">大</div>
+                    <div className="absolute bottom-0 right-0 bg-app-primary text-white text-[8px] px-0.5 rounded-full border border-white">{str.vip_glyph}</div>
                 )}
             </div>
 
@@ -100,16 +104,16 @@ const CommentItem: React.FC<{ comment: CommentReply }> = ({ comment }) => {
                     <div className="text-[15px] text-app-text leading-normal mt-1">
                         {displayMessage}
                         {showExpand && !isExpanded && (
-                            <>...<span onClick={() => setIsExpanded(true)} className="text-[#00A1D6] ml-1 text-sm cursor-pointer">展开</span></>
+                            <>...<span onClick={() => setIsExpanded(true)} className="text-[#00A1D6] ml-1 text-sm cursor-pointer">{str.comment_expand}</span></>
                         )}
                         {showExpand && isExpanded && (
-                            <span onClick={() => setIsExpanded(false)} className="text-[#00A1D6] ml-1 text-sm cursor-pointer"> 收起</span>
+                            <span onClick={() => setIsExpanded(false)} className="text-[#00A1D6] ml-1 text-sm cursor-pointer"> {str.comment_collapse}</span>
                         )}
                     </div>
 
                     <div className="flex items-center gap-4 text-xs text-gray-400 mt-2">
                         <span>{formatCommentTime(comment.ctime)} {comment.location?.replace('IP属地：', '')}</span>
-                        <span>回复</span>
+                        <span>{str.comment_reply}</span>
                         <div className="flex items-center gap-4 ml-auto">
                             <div className="flex items-center gap-1">
                                 <ThumbsUp size={14} />
@@ -134,7 +138,7 @@ const CommentItem: React.FC<{ comment: CommentReply }> = ({ comment }) => {
                                 </div>
                             )}
                             <div className="text-xs text-[#00A1D6] font-medium">
-                                共{comment.rcount ?? 0}条回复 &gt;
+                                {str.comment_reply_count.replace('{n}', String(comment.rcount ?? 0))} &gt;
                             </div>
                         </div>
                     )}
@@ -169,34 +173,32 @@ const formatPlayTime = (sec: number): string => {
     return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 };
 
-const formatStat = (num: number | string | undefined) => {
-    if (num === undefined || num === null) return '0';
-    // If it's already formatted (contains non-numeric characters like Wan/Yi), return as is
-    if (typeof num === 'string' && (num.includes('万') || num.includes('亿'))) {
-        return num;
-    }
-    const val = typeof num === 'string' ? parseFloat(num) : num;
-    if (isNaN(val)) return '0';
-
-    if (val >= 100000000) return (val / 100000000).toFixed(1) + '亿';
-    if (val >= 10000) return (val / 10000).toFixed(1) + '万';
-    return val.toString();
-};
-
-const formatDate = (ts: number | undefined) => {
-    if (!ts) {
-        // Fallback to a default time if timestamp is missing
-        return '2026年1月1日 18:30';
-    }
-    const date = TimeService.fromTimestamp(ts * 1000);
-    return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日 ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
-};
-
 export const VideoDetailPage: React.FC = () => {
     const { bvid } = useParams<{ bvid: string }>();
     const { bindTap, bindLongPress, bindBack, go, back } = useBilibiliGestures();
     const [searchParams] = useSearchParams();
     const location = useLocation();
+    const str = useBilibiliStrings();
+    const locale = useLocale();
+
+    // 数字格式化走 locale-aware 工具（zh 输出与旧实现一致：万/亿）
+    const formatStat = (num: number | string | undefined) => formatBilibiliStat(num, locale);
+
+    const formatDate = (ts: number | undefined) => {
+        const fill = (y: number, m: number, d: number, hm: string) =>
+            str.date_ymd_hm
+                .replace('{y}', String(y))
+                .replace('{m}', String(m))
+                .replace('{d}', String(d))
+                .replace('{hm}', hm);
+        if (!ts) {
+            // Fallback to a default time if timestamp is missing
+            return fill(2026, 1, 1, '18:30');
+        }
+        const date = TimeService.fromTimestamp(ts * 1000);
+        const hm = `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+        return fill(date.getFullYear(), date.getMonth() + 1, date.getDate(), hm);
+    };
 
     const { now } = useSystemTime();
 
@@ -452,7 +454,7 @@ export const VideoDetailPage: React.FC = () => {
         if (!res.success) {
             showToast(res.msg);
         } else {
-            showToast('投币成功');
+            showToast(str.coin_success);
         }
     };
 
@@ -667,7 +669,7 @@ export const VideoDetailPage: React.FC = () => {
 
     // Mock data for UI elements not in the main config
     const upInfo = {
-        name: video.author || 'UP主',
+        name: video.author || str.common_up_badge,
         face: video.face || '',
     };
 
@@ -720,7 +722,7 @@ export const VideoDetailPage: React.FC = () => {
                             <div className="flex items-center gap-2.5 text-white">
                                 {/* 播放/暂停（仅装饰，无 data-trigger） */}
                                 <button
-                                    aria-label={isPlaying ? '暂停' : '播放'}
+                                    aria-label={isPlaying ? str.video_pause : str.video_play}
                                     aria-pressed={isPlaying}
                                     className="w-7 h-7 flex items-center justify-center -ml-1 active:opacity-70"
                                     onClick={(e) => { e.stopPropagation(); handleTogglePlay(); }}
@@ -758,7 +760,7 @@ export const VideoDetailPage: React.FC = () => {
 
                                 {/* 全屏（仅装饰，没有 data-trigger） */}
                                 <button
-                                    aria-label="全屏"
+                                    aria-label={str.video_fullscreen}
                                     className="w-7 h-7 flex items-center justify-center -mr-1 active:opacity-70"
                                     onClick={(e) => e.stopPropagation()}
                                 >
@@ -790,13 +792,13 @@ export const VideoDetailPage: React.FC = () => {
                         {...(activeTab === 'intro' ? {} : bindTap('video.tab.switch', { params: { tab: 'intro' } }))}
                         className={`text-[15px] font-medium transition-colors ${activeTab === 'intro' ? 'text-app-primary' : 'text-gray-600'}`}
                     >
-                        简介
+                        {str.video_tab_intro}
                     </button>
                     <button
                         {...(activeTab === 'comment' ? {} : bindTap('video.tab.switch', { params: { tab: 'comment' } }))}
                         className={`text-[15px] font-medium transition-colors ${activeTab === 'comment' ? 'text-app-primary' : 'text-gray-600'}`}
                     >
-                        评论 <span className="text-xs font-normal">{commentCount}</span>
+                        {str.video_tab_comments} <span className="text-xs font-normal">{commentCount}</span>
                     </button>
 
                     {/* Animated Indicator */}
@@ -812,10 +814,10 @@ export const VideoDetailPage: React.FC = () => {
 
                 <div className="flex items-center gap-2">
                     <div className="bg-gray-100 px-3 py-1.5 rounded-full text-xs text-gray-400 w-28 text-center">
-                        点我发弹幕
+                        {str.video_send_danmaku}
                     </div>
                     <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-400">
-                        <span className="text-xs">弹</span>
+                        <span className="text-xs">{str.video_danmaku_glyph}</span>
                     </div>
                 </div>
             </div>
@@ -835,20 +837,20 @@ export const VideoDetailPage: React.FC = () => {
                                 </div>
                                 <div className="flex flex-col">
                                     <span className="text-[13px] font-medium text-app-primary">{upInfo.name}</span>
-                                    <span className="text-[10px] text-gray-400">{realFans}粉丝 {realVideoCount}视频</span>
+                                    <span className="text-[10px] text-gray-400">{str.video_fans_count.replace('{n}', realFans)} {str.video_videos_count.replace('{n}', String(realVideoCount))}</span>
                                 </div>
                             </div>
 
                             <div className="flex items-center gap-2">
                                 <button className="h-7 px-3 rounded-full bg-app-surface border border-app-primary text-app-primary flex items-center justify-center gap-0.5 font-medium text-[12px] active:bg-app-primary/5 transition-colors">
-                                    <Zap size={12} fill="currentColor" /> 充电
+                                    <Zap size={12} fill="currentColor" /> {str.common_charge}
                                 </button>
                                 {isFollowed ? (
                                     <button
                                         className="h-7 px-3 rounded-full bg-[#E3E5E7] text-[#61666D] flex items-center justify-center gap-1 font-medium text-[12px] active:bg-[#d0d3d6] transition-colors"
                                         {...bindTap('video.menu.open')}
                                     >
-                                        <Menu size={12} /> 已关注
+                                        <Menu size={12} /> {str.common_following}
                                     </button>
                                 ) : (
                                     <button
@@ -865,7 +867,7 @@ export const VideoDetailPage: React.FC = () => {
                                             )
                                             : {})}
                                     >
-                                        <Plus size={12} strokeWidth={3} /> 关注
+                                        <Plus size={12} strokeWidth={3} /> {str.common_follow}
                                     </button>
                                 )}
                             </div>
@@ -875,7 +877,7 @@ export const VideoDetailPage: React.FC = () => {
                         {showSuggestionPanel && (
                             <div className="mb-4">
                                 <div className="flex justify-between items-center text-[12px] text-app-text-muted mb-2">
-                                    <span>你可能感兴趣</span>
+                                    <span>{str.video_interested}</span>
                                     <button
                                         type="button"
                                         {...bindTap(
@@ -883,7 +885,7 @@ export const VideoDetailPage: React.FC = () => {
                                             { onTrigger: () => setShowSuggestionPanel(false) },
                                         )}
                                         className="text-app-text-muted active:opacity-70"
-                                        aria-label="关闭"
+                                        aria-label={str.common_close}
                                     >
                                         <X size={14} />
                                     </button>
@@ -896,7 +898,7 @@ export const VideoDetailPage: React.FC = () => {
                                         const label =
                                             (author as any)?.official?.title ||
                                             (author as any)?.sign ||
-                                            'UP主';
+                                            str.common_up_badge;
                                         return (
                                             <div
                                                 key={up.name}
@@ -920,7 +922,7 @@ export const VideoDetailPage: React.FC = () => {
                                                         toggleFollow(up.id);
                                                     }}
                                                 >
-                                                    {isUpFollowed ? '已关注' : '+ 关注'}
+                                                    {isUpFollowed ? str.common_following : str.common_follow_plus}
                                                 </button>
                                             </div>
                                         );
@@ -935,8 +937,8 @@ export const VideoDetailPage: React.FC = () => {
                                 <Zap size={18} />
                             </div>
                             <div className="flex-1">
-                                <div className="text-xs font-medium text-gray-800">不会做的题？千问帮你看看</div>
-                                <div className="text-[10px] text-gray-400">广告 · 22.8万播放</div>
+                                <div className="text-xs font-medium text-gray-800">{str.video_ad_promo}</div>
+                                <div className="text-[10px] text-gray-400">{str.video_ad_meta}</div>
                             </div>
                             <button className="text-gray-300"><MoreHorizontal size={14} className="rotate-90" /></button>
                         </div>
@@ -961,7 +963,7 @@ export const VideoDetailPage: React.FC = () => {
                                     <div className="flex items-center gap-1"><MonitorPlay size={12} /> {formatStat(video.plays)}</div>
                                     <div className="flex items-center gap-1"><BilibiliDanmakuIcon className="mt-0.5" /> {formatStat(video.danmaku)}</div>
                                     <span>{formatDate(video.raw?.pubdate || video.date)}</span>
-                                    <span>{VIDEO_ONLINE[bvid ?? ''] || '0'}人正在看</span>
+                                    <span>{str.video_watching_count.replace('{n}', VIDEO_ONLINE[bvid ?? ''] || '0')}</span>
                                 </div>
                             </div>
 
@@ -973,7 +975,7 @@ export const VideoDetailPage: React.FC = () => {
                                             {video.raw?.rights?.no_reprint === 1 && (
                                                 <div className="flex items-center gap-1">
                                                     <Ban size={11} className="text-[#FF6699]" />
-                                                    <span>未经作者授权禁止转载</span>
+                                                    <span>{str.video_no_reprint}</span>
                                                 </div>
                                             )}
                                         </div>
@@ -1011,7 +1013,7 @@ export const VideoDetailPage: React.FC = () => {
                                     {liked && <div className="absolute inset-0 flex items-center justify-center animate-ping opacity-20"><ThumbsUp size={24} className="fill-[#FB7299] text-app-primary" /></div>}
                                 </div>
                                 <span className={`text-[11px] font-medium ${liked ? 'text-app-primary' : 'text-[#61666D]'}`}>
-                                    {formatStat((stats.likes ?? 0) + (liked ? 1 : 0)) || '点赞'}
+                                    {formatStat((stats.likes ?? 0) + (liked ? 1 : 0)) || str.action_like}
                                 </span>
                             </div>
 
@@ -1031,7 +1033,7 @@ export const VideoDetailPage: React.FC = () => {
                                     />
                                 </div>
                                 <span className={`text-[11px] font-medium ${disliked ? 'text-app-primary' : 'text-[#61666D]'}`}>
-                                    {disliked ? '不喜欢' : '不喜欢'}
+                                    {str.action_dislike}
                                 </span>
                             </div>
 
@@ -1052,7 +1054,7 @@ export const VideoDetailPage: React.FC = () => {
                                     />
                                 </div>
                                 <span className={`text-[11px] font-medium ${coined ? 'text-app-primary' : 'text-[#61666D]'}`}>
-                                    {formatStat((stats.coins ?? 0) + coinCount) || '投币'}
+                                    {formatStat((stats.coins ?? 0) + coinCount) || str.action_coin}
                                 </span>
                             </div>
 
@@ -1077,7 +1079,7 @@ export const VideoDetailPage: React.FC = () => {
                                     />
                                 </div>
                                 <span className={`text-[11px] font-medium ${favored ? 'text-app-primary' : 'text-[#61666D]'}`}>
-                                    {formatStat((stats.favs ?? stats.favorites ?? 0) + (favored ? 1 : 0)) || '收藏'}
+                                    {formatStat((stats.favs ?? stats.favorites ?? 0) + (favored ? 1 : 0)) || str.action_fav}
                                 </span>
                             </div>
 
@@ -1086,7 +1088,7 @@ export const VideoDetailPage: React.FC = () => {
                                 <div className="w-7 h-7 flex items-center justify-center">
                                     <Share2 size={24} className="text-[#61666D]" strokeWidth={1.5} />
                                 </div>
-                                <span className="text-[11px] text-[#61666D] font-medium">{formatStat(stats?.shares ?? 0) || '分享'}</span>
+                                <span className="text-[11px] text-[#61666D] font-medium">{formatStat(stats?.shares ?? 0) || str.action_share}</span>
                             </div>
                         </div>
 
@@ -1100,7 +1102,7 @@ export const VideoDetailPage: React.FC = () => {
                         {/* 更多推荐 */}
                         <div className="border-t border-gray-100 pt-4">
                             <div className="flex items-center justify-between mb-3">
-                                <span className="text-sm font-medium">相关推荐</span>
+                                <span className="text-sm font-medium">{str.video_related}</span>
                             </div>
 
                             <div className="flex flex-col gap-3">
@@ -1125,7 +1127,7 @@ export const VideoDetailPage: React.FC = () => {
                                                     <span className="border border-app-border rounded px-0.5 text-[9px] scale-90 origin-left">UP</span>
                                                     {v.author}
                                                 </div>
-                                                <div>{formatStat(v.plays)}播放 · {formatStat(v.danmaku)}弹幕</div>
+                                                <div>{str.video_related_meta.replace('{a}', formatStat(v.plays)).replace('{b}', formatStat(v.danmaku))}</div>
                                             </div>
                                         </div>
                                         <div className="absolute top-0 right-0 py-1">
@@ -1142,7 +1144,7 @@ export const VideoDetailPage: React.FC = () => {
                         {/* 筛选栏 */}
                         <div className="flex justify-between items-center px-4 py-3">
                             <span className="text-sm text-gray-500 font-medium">
-                                {sortOrder === 'hot' ? '热门评论' : '最新评论'}
+                                {sortOrder === 'hot' ? str.comment_hot : str.comment_new}
                             </span>
                             <div
                                 className="flex items-center gap-1 text-xs text-gray-400 cursor-pointer active:opacity-60"
@@ -1152,14 +1154,14 @@ export const VideoDetailPage: React.FC = () => {
                                 )}
                             >
                                 <AlignLeft size={14} />
-                                <span>{sortOrder === 'hot' ? '按热度' : '按时间'}</span>
+                                <span>{sortOrder === 'hot' ? str.comment_sort_hot : str.comment_sort_time}</span>
                             </div>
                         </div>
 
                         {/* 评论列表 */}
                         <div className="px-4 pb-20">
                             {sortedComments.length === 0 ? (
-                                <div className="text-center text-gray-400 py-10">暂无评论</div>
+                                <div className="text-center text-gray-400 py-10">{str.comment_empty}</div>
                             ) : (
                                 sortedComments.map(comment => (
                                     <CommentItem key={comment.rpid} comment={comment} />
@@ -1174,7 +1176,7 @@ export const VideoDetailPage: React.FC = () => {
             {activeTab === 'comment' && (
                 <div className="flex-shrink-0 bg-app-surface border-t border-gray-100 flex items-center px-4 py-2 gap-3 pb-safe z-50" data-keep-keyboard="true">
                     <div className="flex-1 bg-gray-100 rounded-full h-9 flex items-center px-4 text-sm text-gray-400">
-                        万水千山总是情，评论两句行不行
+                        {str.comment_placeholder}
                     </div>
                     <div className="flex items-center gap-1 text-gray-400">
                         <span className="text-xl">😊</span>
@@ -1238,9 +1240,9 @@ export const VideoDetailPage: React.FC = () => {
 
                                             {/* Coin Icon */}
                                             <div className={`rounded-full bg-gradient-to-b from-[#E8E8E8] to-[#BDBDBD] border border-[#999] flex items-center justify-center shadow-inner mb-1.5 ${coinDialogSelected === 1 ? 'w-11 h-11' : 'w-9 h-9'}`}>
-                                                <span className={`text-[#666] font-bold ${coinDialogSelected === 1 ? 'text-[15px]' : 'text-[13px]'}`}>币</span>
+                                                <span className={`text-[#666] font-bold ${coinDialogSelected === 1 ? 'text-[15px]' : 'text-[13px]'}`}>{str.coin_glyph}</span>
                                             </div>
-                                            <span className={`text-white font-medium ${coinDialogSelected === 1 ? 'text-[15px]' : 'text-[13px]'}`}>1 硬币</span>
+                                            <span className={`text-white font-medium ${coinDialogSelected === 1 ? 'text-[15px]' : 'text-[13px]'}`}>{str.coin_one}</span>
                                         </div>
 
                                         {/* 2 Coin Block */}
@@ -1259,10 +1261,10 @@ export const VideoDetailPage: React.FC = () => {
                                             {/* Two Coins Icon */}
                                             <div className={`relative mb-1.5 ${coinDialogSelected === 2 ? 'w-14 h-11' : 'w-11 h-9'}`}>
                                                 <div className={`absolute top-0 left-0 rounded-full bg-gradient-to-b from-[#E8E8E8] to-[#BDBDBD] border border-[#999] flex items-center justify-center shadow-inner ${coinDialogSelected === 2 ? 'w-11 h-11' : 'w-9 h-9'}`}>
-                                                    <span className={`text-[#666] font-bold ${coinDialogSelected === 2 ? 'text-[15px]' : 'text-[13px]'}`}>币</span>
+                                                    <span className={`text-[#666] font-bold ${coinDialogSelected === 2 ? 'text-[15px]' : 'text-[13px]'}`}>{str.coin_glyph}</span>
                                                 </div>
                                                 <div className={`absolute top-0 right-0 rounded-full bg-gradient-to-b from-[#E8E8E8] to-[#BDBDBD] border border-[#999] flex items-center justify-center shadow-inner ${coinDialogSelected === 2 ? 'w-11 h-11' : 'w-9 h-9'}`}>
-                                                    <span className={`text-[#666] font-bold ${coinDialogSelected === 2 ? 'text-[15px]' : 'text-[13px]'}`}>币</span>
+                                                    <span className={`text-[#666] font-bold ${coinDialogSelected === 2 ? 'text-[15px]' : 'text-[13px]'}`}>{str.coin_glyph}</span>
                                                 </div>
                                                 {/* Sparkles if selected */}
                                                 {coinDialogSelected === 2 && (
@@ -1272,7 +1274,7 @@ export const VideoDetailPage: React.FC = () => {
                                                     </>
                                                 )}
                                             </div>
-                                            <span className={`text-white font-medium ${coinDialogSelected === 2 ? 'text-[15px]' : 'text-[13px]'}`}>2 硬币</span>
+                                            <span className={`text-white font-medium ${coinDialogSelected === 2 ? 'text-[15px]' : 'text-[13px]'}`}>{str.coin_two}</span>
                                         </div>
                                     </div>
                                     
@@ -1293,13 +1295,13 @@ export const VideoDetailPage: React.FC = () => {
                                 >
                                     <img
                                         src={coinMascotImg}
-                                        alt="22娘"
+                                        alt={str.mascot_alt}
                                         className="w-[100px] h-[160px] object-contain pointer-events-none"
                                         draggable={false}
                                     />
 
-                                    <div className="text-white text-[15px] mb-1.5">上划或点击22娘投硬币</div>
-                                    <div className="text-white/60 text-[13px]">硬币余额：{biliUser.coins.toFixed(1)}</div>
+                                    <div className="text-white text-[15px] mb-1.5">{str.coin_submit_hint}</div>
+                                    <div className="text-white/60 text-[13px]">{str.coin_balance.replace('{n}', biliUser.coins.toFixed(1))}</div>
                                 </div>
                                 {/* Bottom Bar */}
                                 <div className="w-full px-5 pb-[max(env(safe-area-inset-bottom),24px)] pt-4 flex items-center justify-between text-white">
@@ -1312,14 +1314,14 @@ export const VideoDetailPage: React.FC = () => {
                                         }`}>
                                             {coinDialogAlsoLike && <Check size={13} className="text-[#333]" strokeWidth={4} />}
                                         </div>
-                                        <span className="text-[15px] tracking-wide">同时点赞内容</span>
+                                        <span className="text-[15px] tracking-wide">{str.coin_also_like}</span>
                                     </div>
 
                                     <div className="flex items-center gap-2 cursor-pointer active:opacity-70">
                                         <div className="w-[18px] h-[18px] rounded-full border-[1.5px] border-white/70 flex items-center justify-center" {...bindBack()}>
                                             <X size={11} strokeWidth={2.5} className="text-white/90" />
                                         </div>
-                                        <span className="text-[14px] text-white/90">如何获取硬币？</span>
+                                        <span className="text-[14px] text-white/90">{str.coin_how}</span>
                                     </div>
                                 </div>
                             </div>
@@ -1336,16 +1338,16 @@ export const VideoDetailPage: React.FC = () => {
                 <div className="fixed inset-0 z-[100] flex flex-col justify-end">
                     <div className="absolute inset-0 bg-black/50" {...bindBack()} />
                     <div className="bg-app-surface rounded-t-xl z-20 overflow-hidden text-[15px]">
-                        <div className="py-3.5 text-center text-app-text border-b border-gray-100 active:bg-gray-50" {...bindBack()}>加入特别关注</div>
-                        <div className="py-3.5 text-center text-app-text border-b border-gray-100 active:bg-gray-50" {...bindBack()}>设置分组</div>
+                        <div className="py-3.5 text-center text-app-text border-b border-gray-100 active:bg-gray-50" {...bindBack()}>{str.menu_add_special}</div>
+                        <div className="py-3.5 text-center text-app-text border-b border-gray-100 active:bg-gray-50" {...bindBack()}>{str.menu_set_group}</div>
                         <div
                             className="py-3.5 text-center text-app-primary border-b border-gray-100 active:bg-gray-50"
                             {...bindBack({ beforeTrigger: () => toggleFollow(String(mid || '')) })}
                         >
-                            取消关注
+                            {str.menu_unfollow}
                         </div>
                         <div className="h-1.5 bg-app-bg" />
-                        <div className="py-3.5 text-center text-app-text active:bg-gray-50" {...bindBack()}>取消</div>
+                        <div className="py-3.5 text-center text-app-text active:bg-gray-50" {...bindBack()}>{str.common_cancel}</div>
                     </div>
                 </div>
             )}

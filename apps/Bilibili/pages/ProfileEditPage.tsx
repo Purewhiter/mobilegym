@@ -7,6 +7,7 @@ const ChevronLeft = IcNavBack, ChevronRight = IcNavForward, Calculator = IcCalcu
 import { useBilibiliStore } from '../state';
 import type { BilibiliUser } from '../data';
 import { useBilibiliGestures } from '../hooks/useBilibiliGestures';
+import { useBilibiliStrings } from '../hooks/useBilibiliStrings';
 import * as TimeService from '../../../os/TimeService';
 const ListItem = ({ label, value, isAvatar = false, noBorder = false, noArrow = false, isQr = false, onClick }: any) => (
     <div
@@ -31,7 +32,10 @@ const ListItem = ({ label, value, isAvatar = false, noBorder = false, noArrow = 
 
 // --- Gender Modal ---
 const GenderModal = ({ onClose, onSelect, current }: { onClose: () => void, onSelect: (val: any) => void, current?: string }) => {
+    const s = useBilibiliStrings();
+    // options 是 user.sex 的存储值（数据契约保持中文）；显示时经 GENDER_LABELS 映射
     const options = ['男', '女', '保密'];
+    const GENDER_LABELS: Record<string, string> = { '男': s.gender_male, '女': s.gender_female, '保密': s.gender_secret };
 
     return (
         <div className="fixed inset-0 z-50 flex flex-col justify-end">
@@ -43,7 +47,7 @@ const GenderModal = ({ onClose, onSelect, current }: { onClose: () => void, onSe
                         onClick={() => onSelect(opt)}
                         className={`py-4 text-center text-[16px] border-b border-gray-100 active:bg-gray-50 ${current === opt ? 'text-app-primary' : 'text-app-text'}`}
                     >
-                        {opt}
+                        {GENDER_LABELS[opt] ?? opt}
                     </div>
                 ))}
                 <div className="h-2 bg-app-bg" />
@@ -51,7 +55,7 @@ const GenderModal = ({ onClose, onSelect, current }: { onClose: () => void, onSe
                     onClick={onClose}
                     className="py-4 text-center text-[16px] text-app-text bg-app-surface active:bg-gray-50"
                 >
-                    取消
+                    {s.common_cancel}
                 </div>
             </div>
         </div>
@@ -60,6 +64,7 @@ const GenderModal = ({ onClose, onSelect, current }: { onClose: () => void, onSe
 
 // --- Birthday Picker ---
 const BirthdayPicker = ({ onClose, onSelect, initialDate }: { onClose: () => void, onSelect: (val: string) => void, initialDate?: string }) => {
+    const s = useBilibiliStrings();
     // Simplified calendar logic
     const [year, setYear] = useState(1980);
     const [month, setMonth] = useState(1);
@@ -113,13 +118,10 @@ const BirthdayPicker = ({ onClose, onSelect, initialDate }: { onClose: () => voi
         onClose();
     };
 
-    const weekDays = ['一', '二', '三', '四', '五', '六', '日']; // China standard often starts Monday, but Date.getDay() 0=Sun. 
-    // Let's stick to simple grid.
-
     // For weekday display on top
     const currentDate = TimeService.fromLocalParts(year, month - 1, day);
-    const weekMap = ['日', '一', '二', '三', '四', '五', '六'];
-    const weekDayStr = `周${weekMap[currentDate.getDay()]}`;
+    const weekMap = [s.week_sun, s.week_mon, s.week_tue, s.week_wed, s.week_thu, s.week_fri, s.week_sat];
+    const weekDayStr = s.week_prefix.replace('{w}', weekMap[currentDate.getDay()]!);
 
     // View Mode: 'date' or 'year'
     const [viewMode, setViewMode] = useState<'date' | 'year'>('date');
@@ -145,13 +147,13 @@ const BirthdayPicker = ({ onClose, onSelect, initialDate }: { onClose: () => voi
                         className={`flex items-center gap-1 text-[16px] cursor-pointer transition-opacity ${viewMode === 'year' ? 'opacity-100 font-medium' : 'opacity-70'}`}
                         onClick={() => setViewMode('year')}
                     >
-                        {year}年
+                        {s.date_year.replace('{y}', String(year))}
                     </div>
                     <div
                         className={`text-[32px] font-medium leading-tight mt-1 cursor-pointer transition-opacity ${viewMode === 'date' ? 'opacity-100' : 'opacity-70'}`}
                         onClick={() => setViewMode('date')}
                     >
-                        {month}月{day}日{weekDayStr}
+                        {s.date_mdw.replace('{m}', String(month)).replace('{d}', String(day)).replace('{w}', weekDayStr)}
                     </div>
                 </div>
 
@@ -162,13 +164,13 @@ const BirthdayPicker = ({ onClose, onSelect, initialDate }: { onClose: () => voi
                             {/* Month Navigator */}
                             <div className="flex justify-between items-center mb-4 px-2">
                                 <ChevronLeft size={20} className="text-gray-500 cursor-pointer" onClick={() => setMonth(m => m === 1 ? 12 : m - 1)} />
-                                <span className="text-[15px] font-medium">{year}年{month}月</span>
+                                <span className="text-[15px] font-medium">{s.date_ym.replace('{y}', String(year)).replace('{m}', String(month))}</span>
                                 <ChevronRight size={20} className="text-gray-500 cursor-pointer" onClick={() => setMonth(m => m === 12 ? 1 : m + 1)} />
                             </div>
 
                             {/* Week Header */}
                             <div className="grid grid-cols-7 mb-2">
-                                {['日', '一', '二', '三', '四', '五', '六'].map(d => (
+                                {[s.week_sun, s.week_mon, s.week_tue, s.week_wed, s.week_thu, s.week_fri, s.week_sat].map(d => (
                                     <div key={d} className="h-8 flex items-center justify-center text-[12px] text-gray-400">
                                         {d}
                                     </div>
@@ -217,8 +219,8 @@ const BirthdayPicker = ({ onClose, onSelect, initialDate }: { onClose: () => voi
 
                 {/* Footer */}
                 <div className="flex justify-end p-4 pt-2 shrink-0 bg-app-surface border-t border-gray-50">
-                    <button onClick={onClose} className="px-6 py-2 text-app-primary text-[14px] font-medium mr-2">取消</button>
-                    <button onClick={handleConfirm} className="px-6 py-2 text-app-primary text-[14px] font-medium">确定</button>
+                    <button onClick={onClose} className="px-6 py-2 text-app-primary text-[14px] font-medium mr-2">{s.common_cancel}</button>
+                    <button onClick={handleConfirm} className="px-6 py-2 text-app-primary text-[14px] font-medium">{s.common_confirm}</button>
                 </div>
             </div>
         </div>
@@ -230,8 +232,10 @@ const BirthdayPicker = ({ onClose, onSelect, initialDate }: { onClose: () => voi
 
 export const ProfileEditPage: React.FC = () => {
     const { bindBack, bindTap } = useBilibiliGestures();
-    const user = useBilibiliStore(s => s.user);
-    const updateUser = useBilibiliStore(s => s.updateUser);
+    const s = useBilibiliStrings();
+    const GENDER_LABELS: Record<string, string> = { '男': s.gender_male, '女': s.gender_female, '保密': s.gender_secret };
+    const user = useBilibiliStore(st => st.user);
+    const updateUser = useBilibiliStore(st => st.updateUser);
     const [showGenderModal, setShowGenderModal] = useState(false);
     const [showBirthdayModal, setShowBirthdayModal] = useState(false);
 
@@ -242,53 +246,53 @@ export const ProfileEditPage: React.FC = () => {
                 <button {...bindBack()} className="p-1 -ml-2 relative z-20">
                     <ChevronLeft size={24} className="text-app-text" />
                 </button>
-                <h1 className="flex-1 text-center font-medium text-[16px] text-app-text -ml-6">账号资料</h1>
+                <h1 className="flex-1 text-center font-medium text-[16px] text-app-text -ml-6">{s.pe_title}</h1>
             </div>
 
             {/* Section 1 */}
             <div className="mt-2 bg-app-surface pl-4">
-                <ListItem label="头像" value={user.avatar} isAvatar />
+                <ListItem label={s.pe_avatar} value={user.avatar} isAvatar />
                 <ListItem
-                    label="昵称"
+                    label={s.pe_nickname}
                     value={user.name || "xiaoming-ai"}
                     {...bindTap('profileEditName.open')}
                 />
                 <ListItem
-                    label="性别"
-                    value={user.sex || "保密"}
+                    label={s.pe_gender}
+                    value={GENDER_LABELS[user.sex || '保密'] ?? (user.sex || '保密')}
                     onClick={() => setShowGenderModal(true)}
                 />
                 <ListItem
-                    label="出生年月"
-                    value={user.birthday || "生日当天会收到祝福"}
+                    label={s.pe_birthday}
+                    value={user.birthday || s.pe_birthday_hint}
                     onClick={() => setShowBirthdayModal(true)}
                 />
                 <ListItem
-                    label="个性签名"
-                    value={user.sign || "这个人很神秘，什么都没有写"}
+                    label={s.pe_sign}
+                    value={user.sign || s.pe_sign_hint}
                     {...bindTap('profileEditSign.open')}
                 />
                 <ListItem
-                    label="学校"
-                    value={user.school || "填写学校发现更多校友~"}
+                    label={s.pe_school}
+                    value={user.school || s.pe_school_hint}
                     noBorder
                 />
             </div>
 
             {/* Section 2 */}
             <div className="mt-2 bg-app-surface pl-4">
-                <ListItem label="头像挂件" value="" noBorder />
+                <ListItem label={s.pe_pendant} value="" noBorder />
             </div>
 
             {/* Section 3 */}
             <div className="mt-2 bg-app-surface pl-4">
                 <ListItem label="UID" value={user.uid || "3690981958355889"} noArrow />
-                <ListItem label="二维码名片" value="QR" isQr noBorder />
+                <ListItem label={s.pe_qr} value="QR" isQr noBorder />
             </div>
 
             {/* Section 4 */}
             <div className="mt-2 bg-app-surface pl-4">
-                <ListItem label="哔哩哔哩认证" value="" noBorder />
+                <ListItem label={s.pe_auth} value="" noBorder />
             </div>
 
             {/* Modals */}

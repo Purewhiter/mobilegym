@@ -1,21 +1,23 @@
 import React from 'react';
 import { SettingLayout, SettingItemArrow } from './index';
 import { useBilibiliGestures } from '../../hooks/useBilibiliGestures';
-
-const ITEMS: { label: string; transitionId: string }[] = [
-  { label: '自动播放设置', transitionId: 'settings.playback.autoplay.open' },
-  { label: '竖屏模式设置', transitionId: 'settings.playback.portrait.open' },
-  { label: '小窗播放/后台听视频设置', transitionId: 'settings.playback.pip.open' },
-  { label: '弹幕/字幕设置', transitionId: 'settings.playback.danmaku.open' },
-  { label: '清晰度设置', transitionId: 'settings.playback.quality.open' },
-  { label: '其他设置', transitionId: 'settings.playback.other.open' },
-];
+import { useBilibiliStrings } from '../../hooks/useBilibiliStrings';
 
 export const SettingsPlaybackPage: React.FC = () => {
   const { go } = useBilibiliGestures();
+  const s = useBilibiliStrings();
+
+  const ITEMS: { label: string; transitionId: string }[] = [
+    { label: s.spb_autoplay, transitionId: 'settings.playback.autoplay.open' },
+    { label: s.spb_portrait, transitionId: 'settings.playback.portrait.open' },
+    { label: s.spb_pip, transitionId: 'settings.playback.pip.open' },
+    { label: s.spb_danmaku, transitionId: 'settings.playback.danmaku.open' },
+    { label: s.spb_quality, transitionId: 'settings.playback.quality.open' },
+    { label: s.spb_other, transitionId: 'settings.playback.other.open' },
+  ];
 
   return (
-    <SettingLayout title="播放设置">
+    <SettingLayout title={s.spb_title}>
       {ITEMS.map((item) => (
         <SettingItemArrow
           key={item.transitionId}

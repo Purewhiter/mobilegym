@@ -10,41 +10,38 @@ import { useAuthors, useCommenters, useVideos } from '../hooks/useData';
 import { useBilibiliStore } from '../state';
 import { BILIBILI_CONFIG } from '../data';
 import { useBilibiliGestures } from '../hooks/useBilibiliGestures';
+import { useBilibiliStrings } from '../hooks/useBilibiliStrings';
+import { useLocale } from '../locale';
+import { formatBilibiliStat } from '../utils/localize';
 import * as TimeService from '../../../os/TimeService';
-const formatTime = (ts: number) => {
-    const date = TimeService.fromTimestamp(ts * 1000);
-    const now = TimeService.getDate();
-    const diff = now.getTime() - date.getTime();
-
-    // Less than 24 hours
-    if (diff < 24 * 3600 * 1000) {
-        if (date.getDate() === now.getDate()) return '今天';
-        return '昨天';
-    }
-    // Less than 1 year
-    if (now.getFullYear() === date.getFullYear()) {
-        return `${date.getMonth() + 1}月${date.getDate()}日`;
-    }
-    return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`;
-};
-
-const formatStat = (num: number | string | undefined) => {
-    if (num === undefined || num === null) return '0';
-    if (typeof num === 'string' && (num.includes('万') || num.includes('亿'))) {
-        return num;
-    }
-    const val = typeof num === 'string' ? parseFloat(num) : num;
-    if (isNaN(val)) return '0';
-
-    if (val >= 100000000) return (val / 100000000).toFixed(1) + '亿';
-    if (val >= 10000) return (val / 10000).toFixed(1) + '万';
-    return val.toString();
-};
 
 export const UserProfilePage: React.FC = () => {
     const { mid } = useParams<{ mid: string }>();
     const { bindBack, bindTap, back } = useBilibiliGestures();
     const [searchParams] = useSearchParams();
+    const s = useBilibiliStrings();
+    const locale = useLocale();
+    const formatStat = (num: number | string | undefined) => formatBilibiliStat(num, locale);
+
+    const formatTime = (ts: number) => {
+        const date = TimeService.fromTimestamp(ts * 1000);
+        const now = TimeService.getDate();
+        const diff = now.getTime() - date.getTime();
+
+        // Less than 24 hours
+        if (diff < 24 * 3600 * 1000) {
+            if (date.getDate() === now.getDate()) return s.time_today;
+            return s.time_yesterday;
+        }
+        // Less than 1 year
+        if (now.getFullYear() === date.getFullYear()) {
+            return s.date_md.replace('{m}', String(date.getMonth() + 1)).replace('{d}', String(date.getDate()));
+        }
+        return s.date_ymd
+            .replace('{y}', String(date.getFullYear()))
+            .replace('{m}', String(date.getMonth() + 1))
+            .replace('{d}', String(date.getDate()));
+    };
 
     const AUTHOR_DATA = useAuthors();
     const COMMENTER_DATA = useCommenters();
@@ -128,12 +125,12 @@ export const UserProfilePage: React.FC = () => {
     if (!author) {
         return (
             <div className="flex flex-col h-full bg-app-surface items-center justify-center">
-                <div className="text-gray-400">正在获取用户信息...</div>
+                <div className="text-gray-400">{s.up_loading}</div>
                 <button
                     {...bindBack()}
                     className="mt-4 px-4 py-2 bg-gray-100 rounded-full text-sm"
                 >
-                    返回
+                    {s.common_back}
                 </button>
             </div>
         );
@@ -205,24 +202,24 @@ export const UserProfilePage: React.FC = () => {
                             <div className="flex items-center gap-5 text-app-text">
                                 <div className="flex flex-col items-center">
                                     <span className="text-[15px] font-medium">{formatStat(follower)}</span>
-                                    <span className="text-[11px] text-app-text-muted">粉丝</span>
+                                    <span className="text-[11px] text-app-text-muted">{s.common_fans}</span>
                                 </div>
                                 <div className="w-[1px] h-3 bg-[#E3E5E7]" />
                                 <div className="flex flex-col items-center">
                                     <span className="text-[15px] font-medium">{formatStat(following)}</span>
-                                    <span className="text-[11px] text-app-text-muted">关注</span>
+                                    <span className="text-[11px] text-app-text-muted">{s.common_follow}</span>
                                 </div>
                                 <div className="w-[1px] h-3 bg-[#E3E5E7]" />
                                 <div className="flex flex-col items-center">
                                     <span className="text-[15px] font-medium">{formatStat(likes)}</span>
-                                    <span className="text-[11px] text-app-text-muted">获赞</span>
+                                    <span className="text-[11px] text-app-text-muted">{s.common_likes_received}</span>
                                 </div>
                             </div>
 
                             {/* Buttons */}
                             <div className="flex items-center gap-2">
                                 <button className="h-8 px-5 rounded-full bg-app-surface border border-app-primary text-app-primary flex items-center justify-center gap-1 font-medium text-[13px] active:bg-app-primary/5 transition-colors">
-                                    <Zap size={14} fill="currentColor" /> 充电
+                                    <Zap size={14} fill="currentColor" /> {s.common_charge}
                                 </button>
                                 {isFollowed ? (
                                     <div className="flex gap-1 h-8">
@@ -230,7 +227,7 @@ export const UserProfilePage: React.FC = () => {
                                             className="h-full px-6 rounded-[4px] bg-[#E3E5E7] text-[#61666D] font-medium text-[13px] flex items-center justify-center active:bg-[#d0d3d6] transition-colors"
                                             {...bindTap('user.menu.open')}
                                         >
-                                            已关注
+                                            {s.common_following}
                                         </button>
                                         <button
                                             className="h-full w-8 rounded-[4px] bg-[#E3E5E7] text-[#61666D] flex items-center justify-center active:bg-[#d0d3d6] transition-colors"
@@ -246,7 +243,7 @@ export const UserProfilePage: React.FC = () => {
                                         className="h-8 px-8 rounded-full bg-app-primary text-white flex items-center justify-center font-medium text-[13px] active:bg-app-primary/90 transition-colors shadow-sm shadow-[#FB7299]/20"
                                         {...bindFollowSubmit()}
                                     >
-                                        关注
+                                        {s.common_follow}
                                     </button>
                                 )}
                             </div>
@@ -257,7 +254,7 @@ export const UserProfilePage: React.FC = () => {
                     {showSuggestionPanel && (
                         <div className="mb-4 px-2">
                             <div className="flex justify-between items-center text-[13px] text-app-text-muted mb-2 px-1">
-                                <span>你可能感兴趣</span>
+                                <span>{s.video_interested}</span>
                             </div>
                             <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">
                                 {BILIBILI_CONFIG.recommendedUp.map(up => {
@@ -267,7 +264,7 @@ export const UserProfilePage: React.FC = () => {
                                     const label =
                                         (author as any)?.official?.title ||
                                         (author as any)?.sign ||
-                                        'UP主';
+                                        s.common_up_badge;
                                     return (
                                         <div
                                             key={up.name}
@@ -288,7 +285,7 @@ export const UserProfilePage: React.FC = () => {
                                                     }`}
                                                 {...bindFollowSubmit({ stopPropagation: true, targetMid: up.id })}
                                             >
-                                                {isUpFollowed ? '已关注' : '+ 关注'}
+                                                {isUpFollowed ? s.common_following : s.common_follow_plus}
                                             </button>
                                         </div>
                                     );
@@ -317,20 +314,20 @@ export const UserProfilePage: React.FC = () => {
                         {official?.title && (
                             <div className="flex items-start gap-1 text-[12px] text-app-text">
                                 <BadgeCheck size={14} className="text-[#F6B32D] mt-0.5 flex-shrink-0" fill="#F6B32D" color="white" />
-                                <span className="leading-snug">bilibili UP主认证: {official.title}</span>
+                                <span className="leading-snug">{s.up_verify_prefix}{official.title}</span>
                             </div>
                         )}
 
                         {/* Desc */}
                         <div className="text-[12px] text-app-text-muted leading-relaxed whitespace-pre-wrap mt-1">
-                            {sign || '这个人很懒，什么都没有写'}
+                            {sign || s.sign_empty}
                         </div>
 
                         {/* IP / UID */}
                         <div className="flex items-center gap-3 text-[11px] text-app-text-muted mt-1">
                             <div className="flex items-center gap-0.5">
                                 <MapPin size={10} />
-                                <span className="mr-0.5">IP属地:</span>{author.location || '未知'}
+                                <span className="mr-0.5">{s.ip_location_label}:</span>{author.location || s.common_unknown}
                             </div>
                             <div className="flex items-center gap-0.5">
                                 <span>UID: {mid}</span>
@@ -343,10 +340,10 @@ export const UserProfilePage: React.FC = () => {
                     {/* Tabs */}
                     <div className="flex items-center border-b border-[#E3E5E7] sticky top-0 bg-app-surface z-10 pt-1">
                         {[
-                            { key: 'home', label: '主页' },
-                            { key: 'dynamic', label: '动态' },
-                            { key: 'works', label: '投稿' },
-                            { key: 'shop', label: '小店' },
+                            { key: 'home', label: s.up_tab_home },
+                            { key: 'dynamic', label: s.up_tab_dynamic },
+                            { key: 'works', label: s.up_tab_works },
+                            { key: 'shop', label: s.up_tab_shop },
                         ].map(tab => {
                             const isActive = activeTabKey === tab.key;
                             return (
@@ -375,11 +372,11 @@ export const UserProfilePage: React.FC = () => {
                                     {...bindTap('user.tab.switch', { params: { tab: 'works' } })}
                                 >
                                     <div className="flex items-center gap-2">
-                                        <span className="text-[15px] font-medium text-app-text">视频</span>
+                                        <span className="text-[15px] font-medium text-app-text">{s.up_videos_section}</span>
                                         <span className="text-[12px] text-app-text-muted bg-app-bg px-1.5 rounded-full">{enrichedVideos.length}</span>
                                     </div>
                                     <div className="text-[12px] text-app-text-muted flex items-center">
-                                        查看更多 <ChevronLeft size={12} className="rotate-180" />
+                                        {s.common_view_more} <ChevronLeft size={12} className="rotate-180" />
                                     </div>
                                 </div>
 
@@ -413,7 +410,7 @@ export const UserProfilePage: React.FC = () => {
                                 {/* Live Status */}
                                 <div className="mx-3 mt-6 mb-4 p-3 bg-[#F6F7F8] rounded-lg flex items-center justify-center gap-2 text-app-text-muted text-[13px]">
                                     <Video size={16} />
-                                    <span>TA现在并没有直播，去订阅TA的直播</span>
+                                    <span>{s.up_not_live}</span>
                                 </div>
                             </div>
                         )}
@@ -428,7 +425,7 @@ export const UserProfilePage: React.FC = () => {
                                             <div>
                                                 <div className="text-[14px] font-medium text-app-primary">{name}</div>
                                                 <div className="text-[11px] text-app-text-muted flex items-center gap-1">
-                                                    {formatTime(v.date || (TimeService.now() / 1000))} · 投稿了视频
+                                                    {formatTime(v.date || (TimeService.now() / 1000))} · {s.up_uploaded_video}
                                                 </div>
                                             </div>
                                             <button className="ml-auto text-gray-300"><MoreHorizontal size={16} /></button>
@@ -441,8 +438,8 @@ export const UserProfilePage: React.FC = () => {
 
                                             <div className="absolute bottom-2 left-2 text-white text-[12px] flex items-center gap-3 font-medium">
                                                 <span>{v.duration}</span>
-                                                <span>{formatStat(v.plays)}播放</span>
-                                                <span>{formatStat(v.danmaku || v.raw?.stat?.danmaku || 0)}弹幕</span>
+                                                <span>{formatStat(v.plays)}{s.stat_plays}</span>
+                                                <span>{formatStat(v.danmaku || v.raw?.stat?.danmaku || 0)}{s.stat_danmaku}</span>
                                             </div>
 
                                             <div className="absolute inset-0 flex items-center justify-center bg-black/10 opacity-0 group-hover:opacity-100">
@@ -478,10 +475,10 @@ export const UserProfilePage: React.FC = () => {
                                 {/* Action Bar */}
                                 <div className="flex items-center justify-between px-4 py-2 border-b border-app-bg">
                                     <button className="flex items-center gap-1 text-app-primary text-[13px] font-medium">
-                                        <PlayCircle size={16} /> 播放全部
+                                        <PlayCircle size={16} /> {s.common_play_all}
                                     </button>
                                     <button className="flex items-center gap-1 text-[#61666D] text-[12px]">
-                                        <ListFilter size={14} /> 最新发布
+                                        <ListFilter size={14} /> {s.up_sort_latest}
                                     </button>
                                 </div>
 
@@ -530,7 +527,7 @@ export const UserProfilePage: React.FC = () => {
                         )}
 
                         {activeTabKey === 'shop' && (
-                            <div className="p-10 text-center text-gray-400 text-sm">暂无商品</div>
+                            <div className="p-10 text-center text-gray-400 text-sm">{s.up_no_goods}</div>
                         )}
                     </div>
                 </div>
@@ -541,11 +538,11 @@ export const UserProfilePage: React.FC = () => {
                 <div className="fixed inset-0 z-[100] flex flex-col justify-end">
                     <div className="absolute inset-0 bg-black/50" onClick={closeMenu} />
                     <div className="bg-app-surface rounded-t-xl z-20 overflow-hidden text-[15px]">
-                        <div className="py-3.5 text-center text-app-text border-b border-gray-100 active:bg-gray-50" onClick={closeMenu}>加入特别关注</div>
-                        <div className="py-3.5 text-center text-app-text border-b border-gray-100 active:bg-gray-50" onClick={closeMenu}>设置分组</div>
-                        <div className="py-3.5 text-center text-app-primary border-b border-gray-100 active:bg-gray-50" onClick={handleUnfollow}>取消关注</div>
+                        <div className="py-3.5 text-center text-app-text border-b border-gray-100 active:bg-gray-50" onClick={closeMenu}>{s.menu_add_special}</div>
+                        <div className="py-3.5 text-center text-app-text border-b border-gray-100 active:bg-gray-50" onClick={closeMenu}>{s.menu_set_group}</div>
+                        <div className="py-3.5 text-center text-app-primary border-b border-gray-100 active:bg-gray-50" onClick={handleUnfollow}>{s.menu_unfollow}</div>
                         <div className="h-1.5 bg-app-bg" />
-                        <div className="py-3.5 text-center text-app-text active:bg-gray-50" onClick={closeMenu}>取消</div>
+                        <div className="py-3.5 text-center text-app-text active:bg-gray-50" onClick={closeMenu}>{s.common_cancel}</div>
                     </div>
                 </div>
             )}

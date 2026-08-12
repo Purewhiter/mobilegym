@@ -1,16 +1,18 @@
 import React from 'react';
 import { SettingLayout, SettingItemSwitch } from './index';
 import { useBilibiliStore } from '../../state';
+import { useBilibiliStrings } from '../../hooks/useBilibiliStrings';
 
 export const SettingsPlaybackPortraitPage: React.FC = () => {
-  const setSetting = useBilibiliStore((s) => s.setSetting);
-  const enabled = useBilibiliStore((s) => s.settings.playback.portraitFullscreen) ?? true;
+  const s = useBilibiliStrings();
+  const setSetting = useBilibiliStore((st) => st.setSetting);
+  const enabled = useBilibiliStore((st) => st.settings.playback.portraitFullscreen) ?? true;
 
   return (
-    <SettingLayout title="竖屏模式设置">
+    <SettingLayout title={s.spb_portrait}>
       <SettingItemSwitch
-        label="竖屏视频全屏用竖屏模式播放"
-        subtitle="全屏后可以上下滑视频"
+        label={s.spp_label}
+        subtitle={s.spp_sub}
         checked={enabled}
         onChange={(v) => setSetting('playback.portraitFullscreen', v)}
       />

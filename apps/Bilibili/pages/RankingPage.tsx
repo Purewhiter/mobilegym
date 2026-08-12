@@ -5,7 +5,11 @@ import { useSearchParams } from 'react-router-dom';
 import type { RankingVideo, BilibiliVideo } from '../data';
 import { useVideos, useRankings } from '../hooks/useData';
 import { useBilibiliGestures } from '../hooks/useBilibiliGestures';
+import { useBilibiliStrings } from '../hooks/useBilibiliStrings';
+import { useLocale } from '../locale';
+import { formatBilibiliStat, localizePartitionLabel } from '../utils/localize';
 import { useVirtualList } from '../../../os/hooks/useVirtualList';
+// TABS 是数据键（RANKING_DATA 的键、URL tab 参数），保持中文值；渲染时经 localizePartitionLabel 映射
 const TABS = [
     '全站', '番剧', '国创', '纪录片', '电影', '电视剧', '动画', '游戏', '鬼畜', '音乐', '舞蹈',
     '影视', '娱乐', '知识', '科技数码', '美食', '汽车',
@@ -18,22 +22,6 @@ interface RankingItemProps {
     videoById: Map<string, BilibiliVideo>;
     isLast: boolean;
 }
-
-const formatCount = (count: number | string | undefined) => {
-    if (count === undefined || count === null) return '0';
-    if (typeof count === 'string' && (count.includes('万') || count.includes('亿'))) {
-        return count;
-    }
-    const num = typeof count === 'string' ? parseFloat(count) : count;
-    if (isNaN(num)) return '0';
-
-    if (num >= 100000000) {
-        return (num / 100000000).toFixed(1) + '亿';
-    } else if (num >= 10000) {
-        return (num / 10000).toFixed(1) + '万';
-    }
-    return Math.floor(num).toString();
-};
 
 const formatDuration = (val: number | string | undefined) => {
     if (!val) return '00:00';
@@ -56,6 +44,9 @@ const formatDuration = (val: number | string | undefined) => {
 
 const RankingItem: React.FC<RankingItemProps> = ({ video, index, videoById, isLast }) => {
     const { bindTap } = useBilibiliGestures();
+    const str = useBilibiliStrings();
+    const locale = useLocale();
+    const formatCount = (count: number | string | undefined) => formatBilibiliStat(count, locale);
 
     // Hydrate from primary data source
     const displayVideo = { ...video, ...(videoById.get(video.id) || {}) };
@@ -81,13 +72,13 @@ const RankingItem: React.FC<RankingItemProps> = ({ video, index, videoById, isLa
     let subtitle = displayVideo.author;
     if (isPGC) {
         if  (displayVideo.partition === '电影' && displayVideo.danmaku) {
-            subtitle = `${formatCount(displayVideo.danmaku)}弹幕`;
+            subtitle = str.ranking_danmaku_count.replace('{n}', formatCount(displayVideo.danmaku));
         } else if (displayVideo.raw?.new_ep?.index_show) {
             subtitle = displayVideo.raw.new_ep.index_show;
         } else if (displayVideo.desc) {
             subtitle = displayVideo.desc.slice(0, 15);
         } else {
-            subtitle = '哔哩哔哩' + displayVideo.partition;
+            subtitle = str.ranking_bili_prefix.replace('{p}', localizePartitionLabel(displayVideo.partition, locale));
         }
     }
 
@@ -124,7 +115,7 @@ const RankingItem: React.FC<RankingItemProps> = ({ video, index, videoById, isLa
                     />
                 ) : (
                     <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-400 text-xs">
-                        暂无封面
+                        {str.ranking_no_cover}
                     </div>
                 )}
 
@@ -190,6 +181,8 @@ const RankingItem: React.FC<RankingItemProps> = ({ video, index, videoById, isLa
 
 export const RankingPage: React.FC = () => {
     const { bindBack, bindTap } = useBilibiliGestures();
+    const str = useBilibiliStrings();
+    const locale = useLocale();
     const [searchParams] = useSearchParams();
     const activeTab = searchParams.get('tab') || '全站';
     const VIDEO_DATA = useVideos();
@@ -214,7 +207,7 @@ export const RankingPage: React.FC = () => {
                     <button {...bindBack()} className="p-1 -ml-2">
                         <ChevronLeft size={24} className="text-gray-700" />
                     </button>
-                    <span className="text-lg font-medium">全区排行榜</span>
+                    <span className="text-lg font-medium">{str.ranking_title}</span>
                 </div>
                 <div className="flex items-center gap-4">
                     <button>
@@ -235,7 +228,7 @@ export const RankingPage: React.FC = () => {
                         className={`flex-shrink-0 px-4 py-2.5 text-[15px] font-medium transition-colors relative ${activeTab === tab ? 'text-app-primary' : 'text-gray-600'
                             }`}
                     >
-                        {tab}
+                        {localizePartitionLabel(tab, locale)}
                         {activeTab === tab && (
                             <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-0.5 bg-app-primary rounded-full" />
                         )}
@@ -280,7 +273,7 @@ export const RankingPage: React.FC = () => {
                     </div>
                 ) : (
                     <div className="flex flex-col items-center justify-center h-64 text-gray-400">
-                        <p>暂无数据</p>
+                        <p>{str.ranking_empty}</p>
                     </div>
                 )}
             </div>
