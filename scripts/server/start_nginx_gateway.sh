@@ -143,6 +143,14 @@ if [ "$MOBILEGYM_PRECOMPRESS" = "1" ] && [ -d "$ROOT_DIR/dist" ]; then
         -exec gzip -k9f {} +
 fi
 
+# 0.5 生成主题 WMR bundle 的资源清单（assets-index.json，幂等）。
+# 没有清单时引擎退回"探测式"资源发现，每次页面加载产生数十个确定性 404。
+if [ -d "$ROOT_DIR/mobilegym-data/themes" ]; then
+    echo "[setup] Generating theme asset indexes (assets-index.json)..."
+    node "$ROOT_DIR/scripts/gen_theme_asset_index.mjs" --root "$ROOT_DIR/mobilegym-data" \
+        || echo "[warn] theme asset index generation failed — engine falls back to probing (harmless)"
+fi
+
 # 1. Start API backend (uvicorn multi-worker via conda rllm)
 PYTHON_BIN="${PYTHON_BIN:-$(find_bin python python3)}"
 API_WORKERS=${API_WORKERS:-8}

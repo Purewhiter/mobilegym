@@ -71,6 +71,49 @@ if (typeof window !== 'undefined') {
   window.addEventListener('pagehide', flushFailuresToStorage);
 }
 
+// ── 资源清单注册表（根治探测 404） ─────────────────────────────────────
+// 主题包的 WMR bundle 目录可携带构建期生成的 assets-index.json（见
+// scripts/gen_theme_asset_index.mjs）。注册后，loadImage 对"清单管辖范围内
+// 但清单中不存在"的 URL 直接同步判失败，不发网络请求 —— srcid 基础文件、
+// 帧边界探测、不存在的字符图等确定性 miss 从源头归零。
+// 未注册清单的 URL（其他来源的图片、旧数据包）完全不受影响。
+const assetIndexRegistry = new Map<string, Set<string>>(); // baseUrl -> relPaths
+
+export function registerAssetIndexFiles(baseUrl: string, files: string[]): void {
+  assetIndexRegistry.set(baseUrl, new Set(files));
+}
+
+function stripQuery(s: string): string {
+  const q = s.indexOf('?');
+  return q >= 0 ? s.slice(0, q) : s;
+}
+
+/** URL 在某已注册清单管辖内且文件不存在 → true（应短路为失败）。 */
+function isMissingPerAssetIndex(url: string): boolean {
+  for (const [baseUrl, files] of assetIndexRegistry) {
+    if (!url.startsWith(baseUrl)) continue;
+    return !files.has(stripQuery(url.slice(baseUrl.length)));
+  }
+  return false;
+}
+
+/** 从已注册清单枚举 `stem_N.ext` 索引变体的全部实际存在帧号（升序）。 */
+export function assetIndexVariantFrames(baseUrl: string, src: string): number[] | null {
+  const files = assetIndexRegistry.get(baseUrl);
+  if (!files) return null;
+  const rel = stripQuery(src);
+  const dot = rel.lastIndexOf('.');
+  const stem = dot >= 0 ? rel.slice(0, dot) : rel;
+  const ext = dot >= 0 ? rel.slice(dot) : '';
+  const frames: number[] = [];
+  for (const f of files) {
+    if (!f.startsWith(stem + '_') || !f.endsWith(ext)) continue;
+    const middle = f.slice(stem.length + 1, f.length - ext.length);
+    if (/^\d+$/.test(middle)) frames.push(Number(middle));
+  }
+  return frames.sort((a, b) => a - b);
+}
+
 export type AssetUrlResolver = (src: string) => string;
 
 export function createPrefixedAssetUrlResolver(basePath: string): AssetUrlResolver {
@@ -81,6 +124,15 @@ export function loadImage(url: string): Promise<HTMLImageElement> {
   const cached = cache.get(url);
   if (cached) return Promise.resolve(cached);
   if (failed.has(url)) return Promise.resolve(cache.get(url) ?? new Image());
+
+  // 清单短路：清单说不存在的文件不发请求，同步走失败路径。
+  // 不写 sessionStorage（rememberFailure）——清单本身就是持久事实来源。
+  if (isMissingPerAssetIndex(url)) {
+    const img = new Image();
+    cache.set(url, img);
+    failed.add(url);
+    return Promise.resolve(img);
+  }
 
   let pending = loading.get(url);
   if (pending) return pending;
