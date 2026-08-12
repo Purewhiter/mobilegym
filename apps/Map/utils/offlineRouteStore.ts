@@ -3,7 +3,7 @@
  */
 import type { Locale } from '../../../os/locale';
 import type { OfflinePlaceRow } from './offlinePlaceStore';
-import { OFFLINE_SNAPSHOT_MAX_M } from './offlinePlaceStore';
+import { OFFLINE_SNAPSHOT_MAX_M, loadPlacesSnapshot } from './offlinePlaceStore';
 
 /** 内部双语文本对 */
 type BiText = { zh: string; en: string };
@@ -117,13 +117,10 @@ async function loadRoutesSnapshot(): Promise<RoutesSnapshot | null> {
 }
 
 async function loadPlacesForMatch(): Promise<Record<string, OfflinePlaceRow> | null> {
-  try {
-    const m = await import('../data/places.json');
-    const snap = (m.default ?? m) as { places?: Record<string, OfflinePlaceRow> };
-    return snap.places ?? null;
-  } catch {
-    return null;
-  }
+  // 复用 offlinePlaceStore 的 fetch 加载器：places.json 全局只拉取一份，
+  // 与原先两处 `import('../data/places.json')` 共享 ES 模块缓存的行为一致。
+  const snap = await loadPlacesSnapshot();
+  return snap?.places ?? null;
 }
 
 function readRouteCache(): Record<string, OfflineRoutePayloadRaw> {

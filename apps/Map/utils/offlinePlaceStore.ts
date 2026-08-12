@@ -80,12 +80,29 @@ function haversineMeters(lat1: number, lng1: number, lat2: number, lng2: number)
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-async function loadPlacesSnapshot(): Promise<PlacesSnapshot | null> {
+// places.json 体积大（约 3MB），用 fetch 加载以避开 Vite ESM 转换管线
+// （否则会被打进 JS chunk），模式同 apps/Bilibili/data/loader.ts。
+// new URL(..., import.meta.url) 在 dev 下解析为源码静态路径、build 下由 Vite
+// 发射为独立资源文件，两种模式均可达。
+const placesJsonUrl = new URL('../data/places.json', import.meta.url).href;
+
+/**
+ * 加载 places 快照（模块级单份缓存）。
+ * offlineRouteStore 的 POI 匹配也复用此加载器，保持与原先两处 `import()`
+ * 共享 ES 模块缓存一致的"全局只加载一份"行为。
+ * 失败时清除 inflight Promise 允许下次重试，对外仍以 null 表示快照不可用。
+ */
+export async function loadPlacesSnapshot(): Promise<PlacesSnapshot | null> {
   if (!placesSnapshotPromise) {
-    placesSnapshotPromise = import('../data/places.json').then(
-      (m) => (m.default ?? m) as PlacesSnapshot,
-      () => null,
-    );
+    placesSnapshotPromise = fetch(placesJsonUrl)
+      .then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status} for ${placesJsonUrl}`);
+        return r.json() as Promise<PlacesSnapshot>;
+      })
+      .catch(() => {
+        placesSnapshotPromise = null;
+        return null;
+      });
   }
   return placesSnapshotPromise;
 }
