@@ -199,6 +199,9 @@ function createTsModuleEvaluator() {
       __IMPORT_META__: importMetaShim,
       console,
       process,
+      // vm.runInNewContext creates a bare ECMAScript realm without Node's
+      // platform globals; expose the ones app modules legitimately use.
+      structuredClone,
     };
     const js = transpileTs(absPath);
     try {
