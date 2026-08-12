@@ -37,6 +37,14 @@ import { DeviceEffects } from './components/DeviceEffects';
 import { IntentChooserSheet } from './components/IntentChooserSheet';
 import { useGlobalLongPress } from './hooks/useGlobalLongPress';
 import { useTaskManagerSelector } from './hooks/useTaskManagerSelector';
+import {
+  getLightTextFromManifestForeground,
+  getChromeTaskSnapshot,
+  areChromeTaskSnapshotsEqual,
+  getForegroundObserverTarget,
+  getDeclaredForeground,
+  getDeclaredHidden,
+} from './components/chromeForeground';
 import { TextSelectionService } from './TextSelectionService';
 import * as TimeService from './TimeService';
 import { SystemShadeService } from './SystemShadeService';
@@ -49,7 +57,7 @@ import { getActiveTopActivityId, getTaskTopActivity, getTasksMRU } from './taskU
 import { ActivityContext } from './ActivityContext';
 import { KeyboardService } from './keyboard/KeyboardService';
 import { TaskManager } from './TaskManager';
-import type { AppId, OSState } from './types';
+import type { AppId } from './types';
 
 export const computeActivityContainerStyle = (args: {
   isRecentsVisible: boolean;
@@ -359,86 +367,6 @@ const RecentsChrome: React.FC = () => {
     </div>
   );
 };
-
-const getLightTextFromDeclaredForeground = (foreground: string | null | undefined): boolean | null => {
-  if (foreground === 'light') return true;
-  if (foreground === 'dark') return false;
-  return null;
-};
-
-const getLightTextFromManifestForeground = (foreground: 'dark' | 'light' | undefined): boolean | null => {
-  if (foreground === 'light') return true;
-  if (foreground === 'dark') return false;
-  return null;
-};
-
-const queryLastForegroundDeclaration = (
-  root: ParentNode | null,
-  attributeName: 'data-status-bar-foreground' | 'data-navigation-bar-foreground' | 'data-status-bar-hidden',
-): HTMLElement | null => {
-  if (!root) return null;
-  if (root instanceof HTMLElement && root.hasAttribute(attributeName)) {
-    return root;
-  }
-  const matches = root.querySelectorAll<HTMLElement>(`[${attributeName}]`);
-  return matches.length > 0 ? matches[matches.length - 1] : null;
-};
-
-export type ChromeTaskSnapshot = {
-  activeTopActivityId: string | null;
-  activeRootAppId: AppId | null;
-  isLauncherVisible: boolean;
-  isRecentsVisible: boolean;
-};
-
-export const getChromeTaskSnapshot = (state: OSState): ChromeTaskSnapshot => {
-  const activeTask = state.activeTaskId
-    ? state.tasks.find((task) => task.taskId === state.activeTaskId) ?? null
-    : null;
-  return {
-    activeTopActivityId: getActiveTopActivityId(state),
-    activeRootAppId: activeTask?.rootAppId ?? null,
-    isLauncherVisible: state.isLauncherVisible,
-    isRecentsVisible: state.isRecentsVisible,
-  };
-};
-
-export const areChromeTaskSnapshotsEqual = (a: ChromeTaskSnapshot, b: ChromeTaskSnapshot): boolean => {
-  return a.activeTopActivityId === b.activeTopActivityId
-    && a.activeRootAppId === b.activeRootAppId
-    && a.isLauncherVisible === b.isLauncherVisible
-    && a.isRecentsVisible === b.isRecentsVisible;
-};
-
-const getForegroundObserverTarget = (
-  activeTopActivityId: string | null,
-  isLauncherVisible: boolean,
-  isRecentsVisible: boolean,
-): ParentNode | null => {
-  if (isLauncherVisible && !isRecentsVisible) {
-    return document.querySelector('[data-launcher="true"]');
-  }
-  if (!activeTopActivityId) return null;
-  return document.getElementById(`activity-container-${activeTopActivityId}`);
-};
-
-const getDeclaredForeground = (
-  root: ParentNode | null,
-  attributeName: 'data-status-bar-foreground' | 'data-navigation-bar-foreground',
-): boolean | null => {
-  return getLightTextFromDeclaredForeground(
-    queryLastForegroundDeclaration(root, attributeName)?.getAttribute(attributeName),
-  );
-};
-
-const getDeclaredHidden = (
-  root: ParentNode | null,
-  attributeName: 'data-status-bar-hidden',
-): boolean => {
-  const value = queryLastForegroundDeclaration(root, attributeName)?.getAttribute(attributeName);
-  return value === 'true';
-};
-
 
 const StatusBar = () => {
   const {

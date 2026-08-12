@@ -3,11 +3,11 @@ import {
   getChromeTaskSnapshot,
   areChromeTaskSnapshotsEqual,
   type ChromeTaskSnapshot,
-} from '../os/SystemShell';
+} from '../os/components/chromeForeground';
 import type { OSState, Task } from '../os/types';
 
-// Behavior lock for the chrome-facing TaskManager snapshot helpers (currently in
-// os/SystemShell.tsx, slated to move into os/components/chromeForeground.ts).
+// Behavior lock for the chrome-facing TaskManager snapshot helpers in
+// os/components/chromeForeground.ts (originally extracted from os/SystemShell.tsx).
 // These narrow OSState down to the 4 fields StatusBar/GestureBar care about, so
 // chrome components skip re-renders on unrelated task-stack changes.
 
