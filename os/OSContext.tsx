@@ -48,6 +48,7 @@ import {
 } from './simState';
 import { deepMergeWithArrayOps } from './utils/deepMergeWithArrayOps';
 import { readLauncherSummary } from './sim/launcherSnapshot';
+import { recordNavError, clearNavError, getLastNavError } from './osNavError';
 import { runAppDataLoaderModule, type AppDataLoaderModule } from './appDataLoaderReady';
 import type { OSApi, SimApi } from './types/globals';
 
@@ -60,11 +61,6 @@ void _eagerAppStateModules; // 确保 tree-shaking 不会移除
 // data loader map 来自 appRegistry，避免在 OSContext 和 appRegistry 两处独立 glob。
 // appRegistry 的 lazy() 也用同一个 map，确保 cold-start 路径和 bench `waitForData`
 // 路径覆盖完全一致的 app 集合。
-
-// --- navigateToActivity 失败记录 ---
-// 超时时任务栈已 push 但 UI 导航没发生，栈与界面可能不一致；外部（bench）原本无从感知。
-// 记录最近一次失败，暴露在 __SIM__.getState().os.lastNavError；成功导航后清空。
-let lastNavError: { route: string; activityId: string; timestamp: number } | null = null;
 
 interface OSContextProps {
   state: OSState;
@@ -181,7 +177,7 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
       timeoutMs: 5000,
     });
     if (!nav) {
-      lastNavError = { route, activityId, timestamp: now() };
+      recordNavError(route, activityId);
       console.warn(`[OS] Navigate to ${route} timed out after 5000ms (activity=${activityId})`);
       return;
     }
@@ -190,7 +186,7 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
       + `replace=${opts?.replace != null ? String(opts.replace) : '-'} foreignTask=${String(isInForeignTask)}`,
     );
     nav(route, opts?.replace != null ? { replace: opts.replace } : undefined);
-    lastNavError = null;
+    clearNavError();
     console.log(`[OS] Navigate activity ${activityId} -> ${route} in ${realNow() - startTime}ms`);
   }, []);
 
@@ -645,7 +641,7 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
       resetAllOsStores();
       OsStateStore.reset();
       TaskManager.reset();
-      lastNavError = null;
+      clearNavError();
 
       cancelAllPendingPersistWrites();
       localStorage.clear();
@@ -789,7 +785,7 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
           launcher,
         });
         // 最近一次 navigateToActivity 超时记录（成功导航后为 null），供 bench 检测栈与 UI 不一致
-        simState.os.lastNavError = lastNavError;
+        simState.os.lastNavError = getLastNavError();
         return simState;
       },
       setState: (patch: { apps?: Record<string, unknown>; os?: Record<string, unknown> }, options?: { deep?: boolean; reload?: boolean }) => {
