@@ -10,6 +10,24 @@ import {
 import { NAV_GRAPH_SCHEMA_VERSION } from './lib/nav_graph_schema.mjs';
 import { resolveRefData, refNeedsParams, applyFilterFn } from './lib/nav_ref_resolver.mjs';
 import { evaluateCondition } from './lib/nav_condition_eval.mjs';
+import {
+  matchFromConstraint,
+  pathHasParams,
+  extractPathParams,
+  buildConcreteNodeId,
+  normalizeFrom,
+  normalizeEntryPointDeclaration,
+  normalizeSearch,
+  serializeSearch,
+  buildNodeId,
+  resolveTargetNodeId,
+  resolveSourceNodeId,
+  isNodeId,
+  expandFromConstraint,
+  extractRoutePath,
+  determineEdgeType,
+  applyPreserveParamsToSearch,
+} from './lib/nav_graph_core.mjs';
 
 function usage() {
   console.log(`Usage: node scripts/navigation_declaration_analyzer.mjs <AppName|AppPath> [options]
@@ -287,38 +305,6 @@ function pruneGraphByReachability(graph) {
 // ============================================================================
 
 /**
- * Match from constraint against source node
- */
-function matchFromConstraint(fromConstraint, sourceRoutePath, sourceSearch) {
-  if (fromConstraint === '*') return true;
-
-  if (typeof fromConstraint === 'string') {
-    return fromConstraint === sourceRoutePath;
-  }
-
-  if (typeof fromConstraint === 'object' && fromConstraint.path) {
-    if (fromConstraint.path !== sourceRoutePath) return false;
-
-    const constraintSearch = fromConstraint.search ?? {};
-    for (const [key, value] of Object.entries(constraintSearch)) {
-      if (value === '*') {
-        // Wildcard matches any value, but key must exist
-        if (!(key in sourceSearch)) return false;
-      } else if (value === null) {
-        // null means key must NOT exist
-        if (key in sourceSearch) return false;
-      } else {
-        // Exact match
-        if (sourceSearch[key] !== value) return false;
-      }
-    }
-    return true;
-  }
-
-  return false;
-}
-
-/**
  * Find matching dataSource for a source node
  */
 function findMatchingDataSource(dataSources, sourceRoutePath, sourceSearch) {
@@ -335,21 +321,6 @@ function findMatchingDataSource(dataSources, sourceRoutePath, sourceSearch) {
   }
 
   return null;
-}
-
-/**
- * Check if a path contains parameters (e.g., /book/:bookId)
- */
-function pathHasParams(path) {
-  return /:(\w+)/.test(path);
-}
-
-/**
- * Extract param names from path
- */
-function extractPathParams(path) {
-  const matches = path.matchAll(/:(\w+)/g);
-  return Array.from(matches).map(m => m[1]);
 }
 
 /**
@@ -765,64 +736,6 @@ function expandEdgesWithData(schemaEdges, nodes, data, routeIndex, declaration, 
     nodes: finalNodes,
     edges: expandedEdges,
   };
-}
-
-/**
- * Build concrete node ID by replacing :params with values
- */
-function buildConcreteNodeId(schemaId, boundParams, routeParams) {
-  let result = schemaId;
-
-  for (const [param, value] of Object.entries(boundParams)) {
-    result = result.replace(`:${param}`, value);
-  }
-
-  return result;
-}
-
-function normalizeFrom(from) {
-  if (Array.isArray(from)) {
-    return from;
-  }
-  return [from];
-}
-
-function fromToString(from) {
-  if (from === '*') return '*';
-  if (typeof from === 'string') return from;
-  let constraint = from.path;
-  if (from.search && Object.keys(from.search).length > 0) {
-    const parts = Object.entries(from.search)
-      .map(([key, value]) => {
-        if (value === '*') return `${key}=*`;
-        if (value === null) return `!${key}`;
-        return `${key}=${value}`;
-      })
-      .join('&');
-    constraint += `?${parts}`;
-  }
-  return constraint;
-}
-
-function normalizeEntryPointDeclaration(entryPoint) {
-  // No legacy compatibility: must be explicit enum string.
-  if (typeof entryPoint !== 'string') {
-    throw new Error(
-      `[NavDeclAnalyzer] Invalid route.entryPoint: expected 'none'|'home'|'deepLink'|'both', got ${String(entryPoint)}`,
-    );
-  }
-
-  switch (entryPoint) {
-    case 'home':
-      return { kind: 'home', home: true, deepLink: false };
-    case 'deepLink':
-      return { kind: 'deepLink', home: false, deepLink: true };
-    case 'both':
-      return { kind: 'both', home: true, deepLink: true };
-    case 'none':
-    default:
-      return { kind: 'none', home: false, deepLink: false };
-  }
 }
 
 function buildGraph(declaration) {
@@ -1269,133 +1182,6 @@ function buildGraph(declaration) {
   return { nodes, edges: dedupedEdges };
 }
 
-function normalizeSearch(search) {
-  const normalized = {};
-  for (const [key, value] of Object.entries(search)) {
-    if (value === null || value === undefined) continue;
-    normalized[key] = value;
-  }
-  return normalized;
-}
-
-function serializeSearch(search) {
-  const entries = Object.entries(search).sort(([a], [b]) => a.localeCompare(b));
-  return entries.map(([key, value]) => `${key}=${value}`).join('&');
-}
-
-function buildNodeId(path, search, queryParams) {
-  const parts = [];
-  for (const [key, value] of Object.entries(search)) {
-    parts.push(`${key}=${value}`);
-  }
-  // Dynamic query params (queryParams) are represented as placeholders in nodeId for readability,
-  // e.g. `/search?q=:q`. They are NOT discrete uiStates, and should not be expanded/enumerated.
-  // Keep ordering stable for deterministic outputs.
-  for (const key of Object.keys(queryParams ?? {}).sort()) {
-    parts.push(`${key}=:${key}`);
-  }
-  if (parts.length === 0) {
-    return path;
-  }
-  return `${path}?${parts.join('&')}`;
-}
-
-function resolveTargetNodeId(path, search, stateIndex, routeIndex) {
-  const searchKey = serializeSearch(search);
-  const pathStates = stateIndex.get(path);
-  if (pathStates && pathStates.has(searchKey)) {
-    return pathStates.get(searchKey);
-  }
-
-  const route = routeIndex.get(path);
-  if (!route) {
-    return `${path}#missing-route`;
-  }
-  return buildNodeId(path, search, route.queryParams ?? {});
-}
-
-function resolveSourceNodeId(from, stateIndex, routeIndex) {
-  if (from === '*') return '*';
-  if (typeof from === 'string') {
-    return resolveTargetNodeId(from, {}, stateIndex, routeIndex);
-  }
-  if (Array.isArray(from)) {
-    return fromToString(from);
-  }
-
-  if (from.search) {
-    const hasWildcard = Object.values(from.search).some(value => value === '*');
-    if (hasWildcard) {
-      return fromToString(from);
-    }
-  }
-
-  const normalizedSearch = normalizeSearch(from.search ?? {});
-  return resolveTargetNodeId(from.path, normalizedSearch, stateIndex, routeIndex);
-}
-
-function isNodeId(value) {
-  return typeof value === 'string' && value.startsWith('/');
-}
-
-function expandFromConstraint(from, stateIndex, routeIndex) {
-  // Simple string path - no expansion needed
-  if (typeof from === 'string') {
-    return [from];
-  }
-
-  // Check if search contains wildcards
-  const search = from.search ?? {};
-  const hasWildcard = Object.values(search).some(value => value === '*');
-  
-  if (!hasWildcard) {
-    return [from];
-  }
-
-  // Expand wildcards based on route's uiStates
-  const route = routeIndex.get(from.path);
-  if (!route || !route.uiStates) {
-    return [from]; // Can't expand, keep original
-  }
-
-  const wildcardKeys = Object.entries(search)
-    .filter(([_, value]) => value === '*')
-    .map(([key]) => key);
-
-  const matchingStates = route.uiStates.filter(state => {
-    const stateSearch = normalizeSearch(state.search ?? {});
-    // Must satisfy full constraint semantics:
-    // - wildcard keys must exist
-    // - null means key must NOT exist
-    // - exact values must match
-    return (
-      wildcardKeys.every(key => key in stateSearch) &&
-      matchFromConstraint(from, from.path, stateSearch)
-    );
-  });
-
-  if (matchingStates.length === 0) {
-    return [from]; // No matching states, keep original
-  }
-
-  return matchingStates.map(state => ({
-    path: from.path,
-    // Build an expanded constraint that points to a concrete uiState search.
-    // Important: do NOT let uiState search overwrite constraint semantics like { modal: null }.
-    search: (() => {
-      const stateSearch = { ...(state.search ?? {}) };
-      for (const [key, value] of Object.entries(search)) {
-        if (value === null) {
-          delete stateSearch[key];
-        } else if (value !== '*') {
-          stateSearch[key] = value;
-        }
-      }
-      return stateSearch;
-    })(),
-  }));
-}
-
 function buildSimplifiedGraph(graph) {
   // Build simplified nodes (one per route path)
   const routeNodes = new Map();
@@ -1476,37 +1262,6 @@ function buildSimplifiedGraph(graph) {
     }),
     edges: Array.from(edgeMap.values()),
   };
-}
-
-function extractRoutePath(nodeId) {
-  if (!nodeId || typeof nodeId !== 'string') return nodeId;
-  const questionIndex = nodeId.indexOf('?');
-  return questionIndex >= 0 ? nodeId.substring(0, questionIndex) : nodeId;
-}
-
-/**
- * Determine edge type by comparing source/target pathname.
- *
- * - navigation: pathname changes
- * - state: same pathname, only query changes
- *
- * @param {string} source - nodeId or route path
- * @param {string | undefined} target - nodeId or route path
- * @returns {'navigation' | 'state'}
- */
-function determineEdgeType(source, target) {
-  if (!target) return 'state';
-  return extractRoutePath(source) === extractRoutePath(target) ? 'state' : 'navigation';
-}
-
-function applyPreserveParamsToSearch(baseSearch, preserveParams, sourceNodeSearch) {
-  if (!preserveParams || preserveParams.length === 0) return baseSearch;
-  const out = { ...(baseSearch ?? {}) };
-  for (const k of preserveParams) {
-    const v = sourceNodeSearch?.[k];
-    if (v !== undefined) out[k] = v;
-  }
-  return out;
 }
 
 function main() {
