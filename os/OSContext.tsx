@@ -1,11 +1,11 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useSyncExternalStore } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useRef, useSyncExternalStore } from 'react';
 import type { AppId, OSState } from './types';
-import type { ActivityResult, AppIntentFilter, IntentPayload } from './types/manifest';
+import type { AppIntentFilter, IntentPayload } from './types/manifest';
 import { getStore, readPersistedAppState, writePersistedAppState } from './createAppStore';
 import { flushAll, endPersistReset } from './debouncedPersist';
 import { getTimeConfig, now, formatTime, formatDate, getDayOfWeek } from './TimeService';
 import { getLocationConfig, getSimulatedCoords } from './LocationService';
-import { isValidAppId, dataLoaderByAppId } from './data/appRegistry';
+import { dataLoaderByAppId } from './data/appRegistry';
 import { initFileSystem } from './FileSystemService';
 import * as MediaService from './MediaService';
 import { KeyboardService } from './keyboard/KeyboardService';
@@ -46,7 +46,6 @@ import { readLauncherSummary } from './sim/launcherSnapshot';
 import { resetStateCore } from './sim/simResetCore';
 import { getLastNavError } from './osNavError';
 import {
-  buildOsDebugStack,
   launchApp,
   launchTaskById,
   goHome,
@@ -56,11 +55,13 @@ import {
   chooseIntentActivity,
   cancelIntentChooser,
   handleSystemBack,
-  navigateToActivity,
-  finishTopActivity,
   finishActivity,
   closeTask,
   closeApp,
+  startActivity,
+  startActivityForResult,
+  setResult,
+  openApp,
 } from './osActions';
 import { runAppDataLoaderModule, type AppDataLoaderModule } from './appDataLoaderReady';
 import type { OSApi, SimApi } from './types/globals';
@@ -221,95 +222,6 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     };
   }, []);
 
-  const startActivityForResult = useCallback((
-    appIdOrIntent: AppId | string | IntentPayload,
-    intentOrCallback?: IntentPayload | ((result: ActivityResult) => void),
-    callbackOrUndefined?: (result: ActivityResult) => void,
-  ): boolean => {
-    return IntentResolver.startActivityForResult(appIdOrIntent, intentOrCallback, callbackOrUndefined, {
-      getState: TaskManager.getState,
-      nextActivityId: TaskManager.nextActivityId,
-      allocRequestCode: TaskManager.allocRequestCode,
-      pushActivity: TaskManager.pushActivity,
-      navigateToActivity,
-    });
-  }, []);
-
-  const startActivity = useCallback((
-    appIdOrIntent: AppId | string | IntentPayload,
-    intentOrOptions?: IntentPayload | { newTask?: boolean },
-    options?: { newTask?: boolean },
-  ): boolean => {
-    return IntentResolver.startActivity(appIdOrIntent, intentOrOptions, options, {
-      getState: TaskManager.getState,
-      nextActivityId: TaskManager.nextActivityId,
-      pushActivity: TaskManager.pushActivity,
-      popActivity: TaskManager.popActivity,
-      navigateToActivity,
-      launchApp,
-      markExternalRoute: TaskManager.markExternalRoute,
-      setActivityIntent: TaskManager.setActivityIntent,
-    });
-  }, []);
-
-  const setResult = useCallback((result: ActivityResult) => {
-    const activeTask = getActiveTask(TaskManager.getState());
-    if (!activeTask) {
-      console.warn('[OS] setResult: No active task');
-      return;
-    }
-
-    const top = getTaskTopActivity(activeTask);
-    if (!top) {
-      console.warn('[OS] setResult: No active activity');
-      return;
-    }
-
-    if (top.requestCode == null) {
-      console.warn('[OS] setResult: Top activity is not started for result');
-      return;
-    }
-
-    finishTopActivity(activeTask.taskId, result);
-  }, []);
-
-  const openApp = useCallback((appId: AppId | string, initialRoute?: string) => {
-    if (!isValidAppId(appId)) {
-      console.error(`[OS] Invalid appId: ${appId}`);
-      return;
-    }
-
-    const latestState = TaskManager.getState();
-    const taskExisted = latestState.tasks.some((t) => t.rootAppId === appId);
-    const activeAppId = getActiveAppId(latestState);
-    const activeRoute = activeAppId ? AppNavigatorRegistry.getAppRoute(activeAppId)?.path ?? '-' : '-';
-    console.log(
-      `[OSDBG] openApp appId=${appId} initialRoute=${initialRoute ?? '-'} taskExisted=${String(taskExisted)} `
-      + `activeApp=${activeAppId ?? '-'} activeRoute=${activeRoute} stack=${buildOsDebugStack('openApp')}`,
-    );
-    launchApp(appId);
-    if (!initialRoute) return;
-
-    if (!taskExisted) {
-      TaskManager.markExternalRoute(appId);
-    }
-
-    requestAnimationFrame(() => {
-      const latestState = TaskManager.getState();
-      const task = latestState.tasks.find((t) => t.rootAppId === appId);
-      const activity = task
-        ? [...task.stack].reverse().find((act) => act.appId === appId) ?? task.stack[task.stack.length - 1]
-        : null;
-      if (activity) {
-        // 永远 push（不 replace）—— 对应真机 PendingIntent + TaskStackBuilder.addNextIntentWithParentStack 的"合成 back stack"语义：
-        // - 未运行：root 启动于 '/'，push initialRoute → 历史 ['/', initialRoute]，返回回主页
-        // - 已运行：保留用户当前页，push initialRoute → 用户能按返回回到原所在页
-        // 旧逻辑 `replace: !taskExisted` 在 fresh task 场景会 clobber 掉根 '/'，导致按返回直接出 App，与真机不符。
-        void navigateToActivity(activity.activityId, initialRoute, { replace: false });
-      }
-    });
-  }, []);
-
   const osStateForApi = useMemo(() => ({
     ...state,
     activeAppId: getActiveAppId(state),
@@ -395,13 +307,7 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
       sms: SmsGateway,
     };
     window.__OS__ = api;
-  }, [
-    osStateForApi,
-    openApp,
-    startActivity,
-    startActivityForResult,
-    setResult,
-  ]);
+  }, [osStateForApi]);
 
   useEffect(() => {
     // 显式标注 SimApi，与 window.__OS__ 一致地走 globals.d.ts 契约校验
@@ -570,7 +476,8 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     window.__SIM__ = simApi;
     // 依赖数组不含 state：闭包内全部经 TaskManager.getState() 等实时读取，
     // 不依赖渲染快照；带上 state 会导致每次任务栈变化都无谓重建 __SIM__。
-  }, [openApp, startActivity, startActivityForResult, setResult]);
+    // Step 4 闭包提升后所有动作回调已是模块函数，deps 收敛为 []（挂载一次）。
+  }, []);
 
   const contextValue = useMemo<OSContextProps>(() => ({
     state,

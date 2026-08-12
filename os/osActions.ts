@@ -1,5 +1,5 @@
 import type { AppId } from './types';
-import type { ActivityResult } from './types/manifest';
+import type { ActivityResult, IntentPayload } from './types/manifest';
 import { KeyboardService } from './keyboard/KeyboardService';
 import { TaskManager } from './TaskManager';
 import { IntentResolver } from './IntentResolver';
@@ -7,7 +7,8 @@ import { BackDispatcher } from './BackDispatcher';
 import { AppNavigatorRegistry } from './AppNavigatorRegistry';
 import { routeSetPreference } from './managers/registry';
 import { realNow } from './TimeService';
-import { getActiveTask, getTaskTopActivity } from './taskUtils';
+import { isValidAppId } from './data/appRegistry';
+import { getActiveAppId, getActiveTask, getTaskTopActivity } from './taskUtils';
 import { recordNavError, clearNavError } from './osNavError';
 
 /**
@@ -235,4 +236,93 @@ export function closeApp(appId: AppId): void {
   if (!task) return;
   routeSetPreference('os_recents_closed_app', appId, { source: 'os' });
   closeTask(task.taskId);
+}
+
+export function startActivityForResult(
+  appIdOrIntent: AppId | string | IntentPayload,
+  intentOrCallback?: IntentPayload | ((result: ActivityResult) => void),
+  callbackOrUndefined?: (result: ActivityResult) => void,
+): boolean {
+  return IntentResolver.startActivityForResult(appIdOrIntent, intentOrCallback, callbackOrUndefined, {
+    getState: TaskManager.getState,
+    nextActivityId: TaskManager.nextActivityId,
+    allocRequestCode: TaskManager.allocRequestCode,
+    pushActivity: TaskManager.pushActivity,
+    navigateToActivity,
+  });
+}
+
+export function startActivity(
+  appIdOrIntent: AppId | string | IntentPayload,
+  intentOrOptions?: IntentPayload | { newTask?: boolean },
+  options?: { newTask?: boolean },
+): boolean {
+  return IntentResolver.startActivity(appIdOrIntent, intentOrOptions, options, {
+    getState: TaskManager.getState,
+    nextActivityId: TaskManager.nextActivityId,
+    pushActivity: TaskManager.pushActivity,
+    popActivity: TaskManager.popActivity,
+    navigateToActivity,
+    launchApp,
+    markExternalRoute: TaskManager.markExternalRoute,
+    setActivityIntent: TaskManager.setActivityIntent,
+  });
+}
+
+export function setResult(result: ActivityResult): void {
+  const activeTask = getActiveTask(TaskManager.getState());
+  if (!activeTask) {
+    console.warn('[OS] setResult: No active task');
+    return;
+  }
+
+  const top = getTaskTopActivity(activeTask);
+  if (!top) {
+    console.warn('[OS] setResult: No active activity');
+    return;
+  }
+
+  if (top.requestCode == null) {
+    console.warn('[OS] setResult: Top activity is not started for result');
+    return;
+  }
+
+  finishTopActivity(activeTask.taskId, result);
+}
+
+export function openApp(appId: AppId | string, initialRoute?: string): void {
+  if (!isValidAppId(appId)) {
+    console.error(`[OS] Invalid appId: ${appId}`);
+    return;
+  }
+
+  const latestState = TaskManager.getState();
+  const taskExisted = latestState.tasks.some((t) => t.rootAppId === appId);
+  const activeAppId = getActiveAppId(latestState);
+  const activeRoute = activeAppId ? AppNavigatorRegistry.getAppRoute(activeAppId)?.path ?? '-' : '-';
+  console.log(
+    `[OSDBG] openApp appId=${appId} initialRoute=${initialRoute ?? '-'} taskExisted=${String(taskExisted)} `
+    + `activeApp=${activeAppId ?? '-'} activeRoute=${activeRoute} stack=${buildOsDebugStack('openApp')}`,
+  );
+  launchApp(appId);
+  if (!initialRoute) return;
+
+  if (!taskExisted) {
+    TaskManager.markExternalRoute(appId);
+  }
+
+  requestAnimationFrame(() => {
+    const latestState = TaskManager.getState();
+    const task = latestState.tasks.find((t) => t.rootAppId === appId);
+    const activity = task
+      ? [...task.stack].reverse().find((act) => act.appId === appId) ?? task.stack[task.stack.length - 1]
+      : null;
+    if (activity) {
+      // 永远 push（不 replace）—— 对应真机 PendingIntent + TaskStackBuilder.addNextIntentWithParentStack 的"合成 back stack"语义：
+      // - 未运行：root 启动于 '/'，push initialRoute → 历史 ['/', initialRoute]，返回回主页
+      // - 已运行：保留用户当前页，push initialRoute → 用户能按返回回到原所在页
+      // 旧逻辑 `replace: !taskExisted` 在 fresh task 场景会 clobber 掉根 '/'，导致按返回直接出 App，与真机不符。
+      void navigateToActivity(activity.activityId, initialRoute, { replace: false });
+    }
+  });
 }
