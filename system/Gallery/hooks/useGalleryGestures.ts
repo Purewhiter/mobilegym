@@ -1,4 +1,3 @@
-import type React from 'react';
 import { useTriggerGestures } from '../../../os/hooks/useTriggerGestures';
 import type { TransitionId } from '../navigation.declaration';
 import { useAppNavigate } from '../navigation';

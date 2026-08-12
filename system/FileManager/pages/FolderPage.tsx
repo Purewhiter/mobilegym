@@ -103,7 +103,7 @@ export const FolderPage: React.FC = () => {
   const currentPath = searchParams.get('path') || '/sdcard';
   
   const [items, setItems] = useState<FSNode[]>([]);
-  const [scrollTop, setScrollTop] = useState(0);
+  const [, setScrollTop] = useState(0);
   const [toast, setToast] = useState({ message: '', visible: false });
   const [deleteTargetNodes, setDeleteTargetNodes] = useState<FSNode[]>([]);
   
@@ -288,11 +288,6 @@ export const FolderPage: React.FC = () => {
   };
 
   const isAllSelected = items.length > 0 && selectedIds.size === items.length;
-
-  const folderName = useMemo(() => {
-    const parts = currentPath.split('/').filter(Boolean);
-    return parts[parts.length - 1] === 'sdcard' ? s.section_internal_storage : parts[parts.length - 1];
-  }, [currentPath]);
 
   const formatDisplayDate = useCallback((timestamp: number) => {
     const date = TimeService.fromTimestamp(timestamp);

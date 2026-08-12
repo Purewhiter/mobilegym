@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { IcWarning, IcCalendar, IcCheck, IcNavBack, IcAdd, IcTicket, IcClose } from '../res/icons';
+import { IcCalendar, IcCheck, IcNavBack, IcAdd, IcClose } from '../res/icons';
 import { useLocation } from 'react-router-dom';
 import { useRailwayStore, maskIdNo } from '../state';
 import { randomSeatNo, supportsPositionPick, buildSeatNosFromPositions, computeSeatReassignProbability } from '../types';

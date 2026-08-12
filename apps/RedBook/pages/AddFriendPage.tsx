@@ -1,5 +1,4 @@
 import React from 'react';
-import { useRedBookStrings } from '../hooks/useRedBookStrings';
 import { useRedBookStore } from '../state';
 import { IcNavBack, IcInfo, IcSettings, IcScan, IcClipboard, IcMessageCircle, IcNavForward } from '../res/icons';
 import { useRedBookGestures } from '../hooks/useRedBookGestures';
@@ -14,7 +13,6 @@ const QQIcon = IcMessageCircle;
 const ChevronRight = IcNavForward;
 
 export const AddFriendPage: React.FC = () => {
-  const s = useRedBookStrings();
   const currentUser = useRedBookStore(state => state.user);
   const { bindBack, bindTap } = useRedBookGestures();
 

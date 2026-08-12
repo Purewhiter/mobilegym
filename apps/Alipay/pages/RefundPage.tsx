@@ -17,7 +17,6 @@ export const RefundPage: React.FC = () => {
   const amount = intentData?.amount != null ? String(intentData.amount) : '0';
   const merchantName = String(intentData?.merchantName ?? s.refund_page_merchant_fallback);
   const subject = intentData?.subject ?? '';
-  const orderId = intentData?.orderId != null ? String(intentData.orderId) : '';
 
   const returnResult = (result: ActivityResult) => {
     if (os?.getIntentPayload?.('alipay') && os?.setResult) {

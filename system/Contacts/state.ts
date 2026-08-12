@@ -34,7 +34,7 @@ const initialState: ContactsState = {
 export const useContactsStore = createAppStoreWithActions<ContactsState, ContactsActions>(
   'contacts',
   initialState,
-  (set, get) => ({
+  (set) => ({
     addSearchHistory: (query) => {
       const q = query.trim();
       if (!q) return;

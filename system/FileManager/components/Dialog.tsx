@@ -4,7 +4,6 @@
 import React, { useState, useEffect } from 'react';
 import { FSNode } from '../../../os/types';
 import * as FileSystem from '../../../os/FileSystemService';
-import { getFileIcon, getFileIconColor } from '../utils/fileUtils';
 import { strings } from '../res/strings';
 import { stringsEn } from '../res/strings.en';
 import { useAppStrings } from '@/os/useAppStrings';
@@ -210,8 +209,6 @@ export const FileDetailsDialog: React.FC<{
     const date = TimeService.fromTimestamp(timestamp);
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
   };
-  
-  const isFolder = file.type === 'directory';
   
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center pb-4 px-3">

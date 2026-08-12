@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { IcLanguages, IcNavForward } from '../../res/icons';
 import { useWechatStore } from '../../state';
 import { useShallow } from 'zustand/react/shallow';
 import { SettingsItem, SettingsToggle } from './Shared';
@@ -9,7 +8,7 @@ import { useWechatStrings } from '../../hooks/useWechatStrings';
 
 export const TranslationPage: React.FC = () => {
     const t = useWechatStrings();
-    const { user, settings, updateSettings } = useWechatStore(useShallow(s => ({
+    const { settings, updateSettings } = useWechatStore(useShallow(s => ({
         user: s.user,
         settings: s.settings,
         updateSettings: s.updateSettings,

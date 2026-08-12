@@ -7,25 +7,6 @@ export interface GetSimLayoutHTMLOptions {
   visibleOnly?: boolean;
 }
 
-function viewportRect() {
-  return {
-    left: 0,
-    top: 0,
-    right: window.innerWidth,
-    bottom: window.innerHeight,
-  };
-}
-
-function intersectsViewport(el: Element, vp: ReturnType<typeof viewportRect>): boolean {
-  const r = el.getBoundingClientRect();
-  return (
-    r.right >= vp.left &&
-    r.left <= vp.right &&
-    r.bottom >= vp.top &&
-    r.top <= vp.bottom
-  );
-}
-
 /**
  * 将 HTML/CSS 中以 "/" 开头的资源 URL（在 file:// 里会失效）改写为同源绝对 URL。
  *

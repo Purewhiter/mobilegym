@@ -92,7 +92,7 @@ export const SelectLocationPage: React.FC = () => {
 
             {/* 列表 */}
             <div className="flex-1 overflow-y-auto no-scrollbar pb-10">
-                {locations.map((loc, idx) => (
+                {locations.map((loc) => (
                     <div 
                         key={loc.id}
                         {...locationActionPropsOf(loc.id, loc.name)}

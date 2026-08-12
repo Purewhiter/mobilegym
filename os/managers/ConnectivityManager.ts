@@ -1,5 +1,4 @@
 import BroadcastBus, { ACTION_CONNECTIVITY_CHANGE } from '../BroadcastBus';
-import type { MobileDataType } from '../StatusBarService';
 import { mutateOsState, useOsStateStore } from '../OsStateStore';
 import type { BluetoothDevicePreset, SimInfoPreset, WifiAccessPointPreset } from '../data/types';
 import {

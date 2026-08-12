@@ -5,7 +5,7 @@ import { useKeyboard } from '../../../os/keyboard';
 import * as TimeService from '../../../os/TimeService';
 import { IcImage, IcInfo, IcNavBack, IcSendArrow } from '../res/icons';
 import { dimens } from '../res/dimens';
-import { useXStore, selectUser } from '../state';
+import { useXStore } from '../state';
 import { useXConversations } from '../data/view';
 import { useXGestures } from '../hooks/useXGestures';
 import { useXStrings } from '../hooks/useXStrings';
@@ -14,7 +14,6 @@ export const ChatPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const conversations = useXConversations();
   const sendMessage = useXStore(s => s.sendMessage);
-  const user = useXStore(selectUser);
   const [inputValue, setInputValue] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const prevKeyboardHeightRef = useRef(0);

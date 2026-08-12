@@ -22,14 +22,8 @@ export const SearchPage: React.FC = () => {
 
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
-  const [toast, setToast] = useState<{ visible: boolean; message: string }>({ visible: false, message: '' });
+  const [toast] = useState<{ visible: boolean; message: string }>({ visible: false, message: '' });
   const toastTimerRef = useRef<number | null>(null);
-
-  const showToast = (message: string) => {
-    setToast({ visible: true, message });
-    if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current);
-    toastTimerRef.current = window.setTimeout(() => setToast({ visible: false, message: '' }), 1400);
-  };
 
   useEffect(() => () => {
     if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current);

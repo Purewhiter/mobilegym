@@ -223,7 +223,7 @@ const NotificationCenterPanel: React.FC<{
   onClose: () => void;
   onOpenNotification: (it: OSNotification) => void;
   withBackground?: boolean;
-}> = ({ snapshot, onClose, onOpenNotification, withBackground = true }) => {
+}> = ({ snapshot, onOpenNotification, withBackground = true }) => {
   const locale = useLocale();
   const now = useMemo(() => TimeService.getDate(), [snapshot.items.length, snapshot.unreadCount]);
   const timeText = useMemo(() => `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`, [now]);

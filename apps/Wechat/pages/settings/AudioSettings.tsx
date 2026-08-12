@@ -6,7 +6,7 @@ import { SettingsToggle } from './Shared';
 import { useWechatGestures } from '../../hooks/useWechatGestures';
 
 export const AudioSettingsPage: React.FC = () => {
-    const { user, settings, updateSettings } = useWechatStore(useShallow(s => ({
+    const { settings, updateSettings } = useWechatStore(useShallow(s => ({
         user: s.user,
         settings: s.settings,
         updateSettings: s.updateSettings,

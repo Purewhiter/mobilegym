@@ -8,8 +8,6 @@ import {
   IcMore,
   IcHeart,
   IcInfo,
-  IcStar,
-  IcTruck,
   IcShield,
   IcExpand,
   IcFastPay,

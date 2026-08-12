@@ -19,9 +19,9 @@ export const HomePage: React.FC = () => {
   const locale = useLocale();
   const isEnglish = locale === 'en';
   const [searchParams] = useSearchParams();
-  const { bindTap, bindBack, back, go } = useSpotifyGestures();
+  const { bindTap, bindBack, back } = useSpotifyGestures();
   const s = useSpotifyStrings();
-  const { currentTrack, isPlaying, queue, recentPlays, likedSongs, customPlaylists } = useSpotifyStore(useShallow(s => ({
+  const { currentTrack, isPlaying, queue, recentPlays, likedSongs } = useSpotifyStore(useShallow(s => ({
     currentTrack: s.currentTrack, isPlaying: s.isPlaying,
     queue: s.queue, recentPlays: s.recentPlays, likedSongs: s.likedSongs, customPlaylists: s.customPlaylists,
   })));
@@ -31,8 +31,6 @@ export const HomePage: React.FC = () => {
   const isLiked = (trackId: string, track?: { title: string; artist: string }) => likedSongIds.has(trackId, track);
   const addToQueue = useSpotifyStore(s => s.addToQueue);
   const showQueueToast = useSpotifyStore(s => s.showQueueToast);
-  const addTrackToPlaylist = useSpotifyStore(s => s.addTrackToPlaylist);
-  const removeTrackFromPlaylist = useSpotifyStore(s => s.removeTrackFromPlaylist);
   const tabParam = searchParams.get('tab');
   const activeTab: TabType =
     tabParam === 'wrapped' || tabParam === 'music' || tabParam === 'podcast' ? tabParam : 'all';

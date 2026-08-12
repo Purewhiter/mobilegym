@@ -5,8 +5,8 @@ import { useRedBookStore } from '../state';
 import { useRedBookView } from '../data/view';
 import { useShallow } from 'zustand/react/shallow';
 import { REDBOOK_CONFIG } from '../data';
-import { IcNavBack, IcShare, IcMore, IcMessageCircle, IcStar, IcHeart, IcSend, IcQuote, IcFrown, IcReply, IcAt, IcSmile, IcImage, IcFilter, IcCheck } from '../res/icons';
-const ChevronLeft = IcNavBack, Share2 = IcShare, MoreHorizontal = IcMore, MessageCircle = IcMessageCircle, Star = IcStar, Heart = IcHeart, Send = IcSend, Quote = IcQuote, Frown = IcFrown, Reply = IcReply, AtSign = IcAt, Smile = IcSmile, ImageIcon = IcImage, ListFilter = IcFilter, Check = IcCheck;
+import { IcNavBack, IcMessageCircle, IcStar, IcHeart, IcFrown, IcReply, IcAt, IcSmile, IcImage, IcFilter, IcCheck } from '../res/icons';
+const ChevronLeft = IcNavBack, MessageCircle = IcMessageCircle, Star = IcStar, Heart = IcHeart, Frown = IcFrown, Reply = IcReply, AtSign = IcAt, Smile = IcSmile, ImageIcon = IcImage, ListFilter = IcFilter, Check = IcCheck;
 import { ShareModal } from '../components/ShareModal';
 import { formatPostTime, formatCommentTime } from '../utils/dateUtils';
 import { useRedBookGestures } from '../hooks/useRedBookGestures';
@@ -17,7 +17,7 @@ export const DetailPage: React.FC = () => {
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const isShareOpen = searchParams.get('modal') === 'share';
-  const { bindTap, bindBack, back, go } = useRedBookGestures();
+  const { bindTap, bindBack, go } = useRedBookGestures();
   const { user, toggleLike, toggleCollect, followUser, addComment, toggleCommentLike, addToHistory } = useRedBookStore(useShallow(s => ({
     user: s.user,
     toggleLike: s.toggleLike,

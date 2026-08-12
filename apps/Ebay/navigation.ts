@@ -1,13 +1,7 @@
 import { useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { NAVIGATION_DECLARATION } from './navigation.declaration';
-import type {
-  CaseDeclaration,
-  Condition,
-  TransitionDeclaration,
-  ValueRef,
-  Primitive,
-} from './navigation.types';
+import type { TransitionDeclaration } from './navigation.types';
 
 export function useEbayNavigation() {
   const navigate = useNavigate();

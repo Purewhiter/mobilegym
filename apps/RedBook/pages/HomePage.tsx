@@ -2,23 +2,23 @@ import { useRedBookStrings } from '../hooks/useRedBookStrings';
 import React, { useMemo, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useRedBookStore } from '../state';
-import { useRedBookView, useRedBookAuthor, useIsNoteLiked, useIsFollowingUser } from '../data/view';
+import { useRedBookView, useRedBookAuthor, useIsNoteLiked } from '../data/view';
 import { useShallow } from 'zustand/react/shallow';
 import { REDBOOK_CONFIG } from '../data';
 import { Note } from '../types';
-import { IcShare, IcScan, IcExpand, IcCollapse, IcNavForward, IcMenu, IcSearch } from '../res/icons';
-const Share2 = IcShare, ScanLine = IcScan, ChevronDown = IcExpand, ChevronUp = IcCollapse, ChevronRight = IcNavForward, Menu = IcMenu, Search = IcSearch;
+import { IcScan, IcExpand, IcCollapse, IcNavForward, IcMenu, IcSearch } from '../res/icons';
+const ScanLine = IcScan, ChevronDown = IcExpand, ChevronUp = IcCollapse, ChevronRight = IcNavForward, Menu = IcMenu, Search = IcSearch;
 import { Drawer } from '../components/Drawer';
 import { useRedBookGestures } from '../hooks/useRedBookGestures';
 import { strings, type StringKey } from '../res/strings';
-import { RedBookPlayIcon, RedBookHeartFilledIcon, RedBookHeartOutlineIcon, RedBookHeartIcon, RedBookCommentIcon, RedBookPeopleIcon } from '../res/icons';
+import { RedBookPlayIcon, RedBookHeartFilledIcon, RedBookHeartOutlineIcon, RedBookPeopleIcon } from '../res/icons';
 import * as TimeService from '../../../os/TimeService';
 // Helper to parse likes/count string to number
 const parseCount = (count: number | string): number => {
     if (typeof count === 'number') return count;
     if (!count) return 0;
     
-    let str = count.toString().replace(/\+/g, '');
+    const str = count.toString().replace(/\+/g, '');
     if (str.includes('万')) {
         return parseFloat(str.replace('万', '')) * 10000;
     }
@@ -200,84 +200,6 @@ const NoteItemImpl: React.FC<{ note: Note; showTime?: boolean }> = ({ note, show
 // memo 直接挡掉 sibling 串扰。NoteItem 自己订阅的 store 字段变化时仍正常 re-render。
 export const NoteItem = React.memo(NoteItemImpl);
 
-const FollowNoteItemImpl: React.FC<{ note: Note }> = ({ note }) => {
-    const { bindTap } = useRedBookGestures();
-    const followUser = useRedBookStore(s => s.followUser);
-    const author = useRedBookAuthor(note.authorId);
-    const isFollowing = useIsFollowingUser(note.authorId);
-    const s = useRedBookStrings();
-    const hasCoverImage = !!(note.images && note.images[0]);
-    const showTextCard = !hasCoverImage && !note.video;
-    const textCardValue = note.content || note.title || s.write_a_post;
-
-    if (!author) return null;
-
-    return (
-        <div className="bg-app-surface mb-2 p-4 border-b border-gray-100" {...bindTap('note.open', { params: { id: note.id } })}>
-            <div className="flex items-center justify-between mb-3">
-                <div
-                    className="flex items-center gap-3 cursor-pointer"
-                    {...bindTap('user.open', { params: { userId: author.id }, stopPropagation: true })}
-                >
-                    <img src={author.avatar} className="w-8 h-8 rounded-full bg-gray-200 object-cover" />
-                    <div>
-                        <div className="text-[14px] font-medium text-app-text">{author.name}</div>
-                        <div className="text-[11px] text-app-text-muted">{formatTime(note.createdAt, s)}</div>
-                    </div>
-                </div>
-                <button
-                    className="text-[12px] text-app-text-muted border border-[#eee] px-3 py-1 rounded-full"
-                    {...bindTap(
-                        { kind: 'action', id: 'home.follow.userFollow.toggle' },
-                        { params: { userId: author.id, to: !isFollowing }, stopPropagation: true, onTrigger: () => followUser(author.id) }
-                    )}
-                >
-                    {isFollowing ? s.following_2 : s.following}
-                </button>
-            </div>
-            {/* 关注流图片高度自适应：不使用固定 4:3 裁切框 */}
-            <div className="w-full bg-gray-100 rounded-lg overflow-hidden mb-3 relative">
-                {showTextCard ? (
-                    <div className="w-full aspect-[3/4] flex items-center justify-center p-4 bg-[#fffbe6]">
-                        <div className={`w-[86%] mx-auto text-left overflow-hidden font-semibold text-[#333] whitespace-pre-wrap break-words ${getFeedTextCardClass(textCardValue)}`}>
-                            {textCardValue}
-                        </div>
-                    </div>
-                ) : hasCoverImage ? (
-                    <>
-                        <img src={note.images[0]} className="w-full h-auto object-contain block" />
-                        {note.video && (
-                             <div className="absolute inset-0 flex items-center justify-center bg-black/10">
-                                <div className="w-12 h-12 bg-black/50 rounded-full flex items-center justify-center backdrop-blur-md">
-                                    <RedBookPlayIcon size={24} />
-                                </div>
-                            </div>
-                        )}
-                    </>
-                ) : (
-                    <div className="w-full h-32 flex items-center justify-center text-gray-400 text-xs">{s.no_image}</div>
-                )}
-            </div>
-            {note.title && <h3 className="text-[15px] font-bold leading-[1.4] mb-2 text-app-text">{note.title}</h3>}
-            <div className="flex items-center justify-between text-app-text-muted text-[12px]">
-                 <div className="flex items-center gap-4">
-                    <span className="flex items-center gap-1">
-                        <RedBookHeartIcon />
-                        {note.likes}
-                    </span>
-                    <span className="flex items-center gap-1">
-                        <RedBookCommentIcon />
-                        {note.comments}
-                    </span>
-                 </div>
-                 <Share2 size={14} />
-            </div>
-        </div>
-    )
-}
-
-const FollowNoteItem = React.memo(FollowNoteItemImpl);
-
 export const DiscoveryFeed: React.FC<{ feed: Note[]; showTime?: boolean }> = ({ feed, showTime }) => {
     const [col1, col2] = useMemo(() => {
         const c1: Note[] = [];
@@ -423,12 +345,12 @@ export const HomePage: React.FC = () => {
     tabParamRaw === 'follow' || tabParamRaw === 'discover' || tabParamRaw === 'city'
       ? tabParamRaw
       : 'discover';
-  const { bindTap, back, go } = useRedBookGestures();
+  const { bindTap } = useRedBookGestures();
 
   // Local state for UI only
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
-  const [myChannels, setMyChannels] = useState(initialMyChannels);
-  const [recChannels, setRecChannels] = useState(initialRecChannels);
+  const [myChannels] = useState(initialMyChannels);
+  const [recChannels] = useState(initialRecChannels);
   
   // City Dropdown State
   const [showCityDropdown, setShowCityDropdown] = useState(false);
@@ -449,7 +371,7 @@ export const HomePage: React.FC = () => {
   // Or just rely on "Load More" triggering if we scroll down?
   // 注意：不要在 tab/category 变化时重置滚动或分页长度（产品要求：任何切换都不影响滚动）。
 
-  const setActiveTab = (tab: 'follow' | 'discover' | 'city') => {
+  const setActiveTab = (_tab: string) => {
       // URL 驱动 tab。按产品要求：无论首页内部怎么切换（tab/category/subTab），
       // 都不应主动修改滚动位置或分页长度（否则会造成“回到之前位置丢失/跳动”）。
       // 如需做 UI-only 的收起/关闭逻辑，请用本地 state（不影响 scrollTop）。

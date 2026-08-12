@@ -1,10 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   IcSettings, IcMessage, IcUser, IcFile, IcTicket, IcCheckCircle,
-  IcMonitor, IcClock, IcCalendarClock, IcTimer, IcPay, IcTransfer,
-  IcLocation, IcMore, IcUserCheck, IcFingerprint, IcLock, IcPhone,
-  IcBell, IcHeartHandshake, IcTicketX, IcEducation, IcNavForward,
-  IcHelp, IcMessageCircle, IcAccessibility, IcPhoneCall, IcGlobe, IcReceipt,
+  IcUserCheck, IcNavForward,
+  IcHelp, IcMessageCircle, IcAccessibility, IcPhoneCall, IcGlobe,
 } from '../res/icons';
 import { RAILWAY12306_CONFIG } from '../data';
 

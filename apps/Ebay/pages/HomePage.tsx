@@ -1,5 +1,5 @@
 import React from 'react';
-import { IcCart, IcCamera, IcHeart, IcTag, IcGrid, IcFastPay, IcSearch, IcShield, IcNavForward } from '../res/icons';
+import { IcCart, IcCamera, IcHeart, IcTag, IcGrid, IcFastPay, IcSearch } from '../res/icons';
 import { useEbayGestures } from '../navigation';
 import TabBar from '../components/TabBar';
 import { useEbayStrings } from '../hooks/useEbayStrings';

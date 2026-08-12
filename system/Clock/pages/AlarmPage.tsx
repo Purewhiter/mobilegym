@@ -69,19 +69,7 @@ export const AlarmPage: React.FC<{
   onExitSelection: () => void;
   onToggleSelectAll: () => void;
   onDeleteSelected: () => void;
-}> = ({
-  alarms,
-  selectionMode,
-  selectedIds,
-  onToggle,
-  onOpenAdd,
-  onEdit,
-  onSelectToggle,
-  onSelectionStart,
-  onExitSelection,
-  onToggleSelectAll,
-  onDeleteSelected,
-}) => {
+}> = ({ alarms, selectionMode, selectedIds, onToggle, onOpenAdd, onEdit, onSelectToggle, onSelectionStart, onExitSelection, onToggleSelectAll }) => {
   const s = useAppStrings(strings, stringsEn);
   const [scrollTop, setScrollTop] = useState(0);
   const hasAlarms = alarms.length > 0;

@@ -12,7 +12,6 @@ import { useEbayStore } from '../state';
 import { useEbayStrings } from '../hooks/useEbayStrings';
 import { useLocale } from '../../../os/locale';
 import {
-  buildEbaySearchHaystack,
   localizeEbayBuyingFormatLabel,
   localizeEbayCategories,
   localizeEbayCategoryLabel,

@@ -4,7 +4,6 @@ import { NAVIGATION_DECLARATION, TransitionId } from './navigation.declaration';
 import {
   CaseDeclaration,
   Condition,
-  FromConstraint,
   Primitive,
   TransitionDeclaration,
   ValueRef,

@@ -12,7 +12,7 @@
  * ```
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import * as TimeService from './TimeService';
 
 interface UseSystemTimeReturn {

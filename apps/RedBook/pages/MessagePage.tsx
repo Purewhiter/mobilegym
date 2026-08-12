@@ -1,16 +1,14 @@
 import { useRedBookStrings } from '../hooks/useRedBookStrings';
-import React, { useState } from 'react';
+import React from 'react';
 import * as TimeService from '@/os/TimeService';
 import { useRedBookStore } from '../state';
 import { useShallow } from 'zustand/react/shallow';
-import { REDBOOK_CONFIG } from '../data';
-import { IcBell, IcHeart, IcContacts, IcMessage, IcSearch, IcAddCircle } from '../res/icons';
-const Bell = IcBell, Heart = IcHeart, Users = IcContacts, MessageSquare = IcMessage, Search = IcSearch, PlusCircle = IcAddCircle;
+import { IcHeart, IcContacts, IcMessage, IcSearch, IcAddCircle } from '../res/icons';
+const Heart = IcHeart, Users = IcContacts, MessageSquare = IcMessage, Search = IcSearch, PlusCircle = IcAddCircle;
 import { useRedBookGestures } from '../hooks/useRedBookGestures';
 import { useLocale } from '@/apps/RedBook/locale';
 export const MessagePage: React.FC = () => {
   const { chats, notifications } = useRedBookStore(useShallow(s => ({ chats: s.chats, notifications: s.notifications })));
-  const [activeTab, setActiveTab] = useState<number | null>(null);
   const { bindTap } = useRedBookGestures();
   const s = useRedBookStrings();
   const locale = useLocale();

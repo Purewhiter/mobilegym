@@ -19,7 +19,6 @@ import { HourlyForecastChart } from './components/HourlyForecastChart';
 import { DetailsGrid } from './components/DetailsGrid';
 import { LifeIndices } from './components/LifeIndices';
 import { IcAdd, IcMoreVert, IcPlay, IcLeaf } from './res/icons';
-import { getWeatherIcon as getWeatherIconUrl } from './utils/weatherIcons';
 import { SIMULATOR_CONFIG } from '@/os/data';
 const { statusBarHeight } = SIMULATOR_CONFIG.framework;
 import WeatherSettingsPage from './pages/WeatherSettingsPage';
@@ -219,7 +218,7 @@ const WeatherNavigationHandler: React.FC = () => {
 };
 
 const WeatherContent: React.FC = () => {
-  const { bindTap, go, back } = useWeatherGestures();
+  const { bindTap, back } = useWeatherGestures();
   const [searchParams] = useSearchParams();
   const isMenuOpen = searchParams.get('menu') === 'more';
   const s = useAppStrings(strings, stringsEn);

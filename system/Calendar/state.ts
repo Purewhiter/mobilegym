@@ -42,7 +42,7 @@ const initialState: CalendarState = {
 export const useCalendarStore = createAppStoreWithActions<CalendarState, CalendarActions>(
   'calendar',
   initialState,
-  (set, get) => ({
+  (set) => ({
     updateSettings: (patch: Partial<CalendarSettings>) => {
       set(state => ({ settings: { ...state.settings, ...patch } }));
     },

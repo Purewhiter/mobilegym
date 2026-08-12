@@ -48,7 +48,7 @@ import {
   buildSimState,
 } from './simState';
 import { deepMergeWithArrayOps } from './utils/deepMergeWithArrayOps';
-import { runAppDataLoaderModule } from './appDataLoaderReady';
+import { runAppDataLoaderModule, type AppDataLoaderModule } from './appDataLoaderReady';
 import type { OSApi, SimApi } from './types/globals';
 
 /** 预加载所有 App 的 state.ts（eager: 打进主 bundle，页面加载即执行 createAppStore 副作用） */
@@ -63,7 +63,11 @@ void _eagerAppStateModules; // 确保 tree-shaking 不会移除
 
 // --- getState() cache for launcher (rarely changes, expensive to parse) ---
 let _launcherCacheRaw: string | null | undefined = undefined;
-let _launcherCacheParsed: any = null;
+let _launcherCacheParsed: Record<string, unknown> | null = null;
+
+function isRecord(x: unknown): x is Record<string, unknown> {
+  return typeof x === 'object' && x !== null;
+}
 
 // --- navigateToActivity 失败记录 ---
 // 超时时任务栈已 push 但 UI 导航没发生，栈与界面可能不一致；外部（bench）原本无从感知。
@@ -702,12 +706,12 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
         const all = !appIds || appIds.length === 0;
         const has = (id: string) => all || appIds!.includes(id);
 
-        const loadApp = async (importFn: () => Promise<any>) => {
+        const loadApp = async (importFn: () => Promise<AppDataLoaderModule>) => {
           const mod = await importFn();
           await runAppDataLoaderModule(mod);
         };
 
-        const entries: { appId: string; importFn: () => Promise<any> }[] = [];
+        const entries: { appId: string; importFn: () => Promise<AppDataLoaderModule> }[] = [];
         for (const [appId, importFn] of dataLoaderByAppId) {
           if (!has(appId)) continue;
           entries.push({ appId, importFn });
@@ -776,22 +780,31 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
 
         flushKey(LAUNCHER_STORAGE_KEY);
         const rawLauncher = localStorage.getItem(LAUNCHER_STORAGE_KEY);
-        let launcher: any = null;
+        let launcher: Record<string, unknown> | null = null;
         if (rawLauncher) {
           if (rawLauncher === _launcherCacheRaw) {
             launcher = _launcherCacheParsed;
           } else {
             try {
-              const parsed = JSON.parse(rawLauncher);
-              const items = parsed?.items ?? {};
-              const hotseat = Array.isArray(parsed?.hotseat) ? parsed.hotseat : [];
-              const folders = parsed?.folders ?? {};
-              const screens = Array.isArray(parsed?.screens) ? parsed.screens : [];
-              const summarizeItem = (item: any, slot: any) => {
+              // localStorage JSON 边界：unknown + isRecord 守卫；仅摘要透传，不做深校验
+              const parsedRaw: unknown = JSON.parse(rawLauncher);
+              const parsed = isRecord(parsedRaw) ? parsedRaw : {};
+              const items = isRecord(parsed.items) ? parsed.items : {};
+              const hotseat: unknown[] = Array.isArray(parsed.hotseat) ? parsed.hotseat : [];
+              const folders = isRecord(parsed.folders) ? parsed.folders : {};
+              const screens: unknown[] = Array.isArray(parsed.screens) ? parsed.screens : [];
+              const cellOf = (p: unknown, key: 'cellX' | 'cellY'): number => {
+                const v = isRecord(p) ? p[key] : undefined;
+                return typeof v === 'number' ? v : 0;
+              };
+              const itemFor = (p: unknown): unknown =>
+                isRecord(p) ? items[String(p.itemId)] : undefined;
+              const summarizeItem = (itemRaw: unknown, slot: unknown): Record<string, unknown> => {
+                const item = isRecord(itemRaw) ? itemRaw : null;
                 if (item?.kind === 'app') return { slot, kind: 'app', appId: item.appId };
                 if (item?.kind === 'folder') return { slot, kind: 'folder', folderId: item.folderId };
                 if (item?.kind === 'widget') {
-                  const summary: any = { slot, kind: 'widget', widgetType: item.widgetType };
+                  const summary: Record<string, unknown> = { slot, kind: 'widget', widgetType: item.widgetType };
                   if (item.widgetType === 'wmr') {
                     summary.widgetId = item.widgetId;
                     summary.variant = item.variant;
@@ -803,35 +816,41 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
                 return { slot, kind: 'unknown' };
               };
               launcher = {
-                version: parsed?.version,
-                grid: parsed?.grid,
-                wallpaper: parsed?.wallpaper,
+                version: parsed.version,
+                grid: parsed.grid,
+                wallpaper: parsed.wallpaper,
                 screensCount: screens.length,
-                screens: screens.map((s: any) => ({
-                  id: s?.id,
-                  items: (Array.isArray(s?.placements) ? s.placements : [])
-                    .slice()
-                    .sort((a: any, b: any) => ((a?.cellY ?? 0) - (b?.cellY ?? 0)) || ((a?.cellX ?? 0) - (b?.cellX ?? 0)))
-                    .map((p: any) => {
-                      const item = items?.[p?.itemId];
-                      const slot = { cellX: p?.cellX, cellY: p?.cellY };
-                      return summarizeItem(item, slot);
-                    }),
-                })),
-                hiddenApps: Array.isArray(parsed?.hiddenApps) ? parsed.hiddenApps : [],
+                screens: screens.map((s) => {
+                  const screen = isRecord(s) ? s : null;
+                  const placements: unknown[] =
+                    screen && Array.isArray(screen.placements) ? screen.placements : [];
+                  return {
+                    id: screen?.id,
+                    items: placements
+                      .slice()
+                      .sort((a, b) => (cellOf(a, 'cellY') - cellOf(b, 'cellY')) || (cellOf(a, 'cellX') - cellOf(b, 'cellX')))
+                      .map((p) => {
+                        const slot = { cellX: isRecord(p) ? p.cellX : undefined, cellY: isRecord(p) ? p.cellY : undefined };
+                        return summarizeItem(itemFor(p), slot);
+                      }),
+                  };
+                }),
+                hiddenApps: Array.isArray(parsed.hiddenApps) ? parsed.hiddenApps : [],
                 hotseat: hotseat
                   .slice()
-                  .sort((a: any, b: any) => (a?.cellX ?? 0) - (b?.cellX ?? 0))
-                  .map((p: any) => {
-                    const item = items?.[p?.itemId];
-                    return summarizeItem(item, p?.cellX);
-                  }),
-                folders: Object.values(folders).map((f: any) => ({
-                  id: f?.id,
-                  name: f?.name,
-                  size: Array.isArray(f?.items) ? f.items.length : 0,
-                  items: Array.isArray(f?.items) ? f.items : [],
-                })),
+                  .sort((a, b) => cellOf(a, 'cellX') - cellOf(b, 'cellX'))
+                  .map((p) => summarizeItem(itemFor(p), isRecord(p) ? p.cellX : undefined)),
+                folders: Object.values(folders).map((f) => {
+                  const folder = isRecord(f) ? f : null;
+                  const folderItems: unknown[] =
+                    folder && Array.isArray(folder.items) ? folder.items : [];
+                  return {
+                    id: folder?.id,
+                    name: folder?.name,
+                    size: folderItems.length,
+                    items: folderItems,
+                  };
+                }),
               };
             } catch {
               launcher = null;
@@ -864,7 +883,7 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
         simState.os.lastNavError = lastNavError;
         return simState;
       },
-      setState: (patch: { apps?: Record<string, any>; os?: Record<string, any> }, options?: { deep?: boolean; reload?: boolean }) => {
+      setState: (patch: { apps?: Record<string, unknown>; os?: Record<string, unknown> }, options?: { deep?: boolean; reload?: boolean }) => {
         // 外部脚本显式调 setState (state-builder snapshot restore / bench inject /
         // mem_microbench) 等场景, 意味着 reset 阶段已完成、应当接收新 state 写入。
         // 关闭 reset gate, 让后续 zustand persist 正常落盘 (主 bench 路径 page.goto
@@ -883,13 +902,14 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
             if (store) {
               if (deep) {
                 const current = store.getState();
-                const currentData: Record<string, any> = {};
+                const currentData: Record<string, unknown> = {};
                 for (const [k, v] of Object.entries(current)) {
                   if (typeof v !== 'function') currentData[k] = v;
                 }
                 store.setState(deepMergeWithArrayOps(currentData, appPatch));
               } else {
-                store.setState(appPatch as any);
+                // 外部注入边界：patch 形状由调用方（bench / snapshot restore）保证
+                store.setState(appPatch as never);
               }
             } else {
               const current = readPersistedAppState(appId) ?? null;
@@ -898,7 +918,7 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
                 : deep
                   ? deepMergeWithArrayOps(current, appPatch)
                   : { ...current, ...appPatch };
-              writePersistedAppState(appId, merged as Record<string, any>);
+              writePersistedAppState(appId, merged as Record<string, unknown>);
             }
           }
         }

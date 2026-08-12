@@ -67,7 +67,7 @@ export const ConversationDetailPage: React.FC = () => {
 
     const [text, setText] = useState('');
     const [showAttachments, setShowAttachments] = useState(false);
-    const [toast, setToast] = useState<{ visible: boolean; message: string }>({ visible: false, message: '' });
+    const [toast] = useState<{ visible: boolean; message: string }>({ visible: false, message: '' });
 
     const listRef = useRef<HTMLDivElement | null>(null);
 
@@ -82,11 +82,6 @@ export const ConversationDetailPage: React.FC = () => {
         if (!el) return;
         el.scrollTop = el.scrollHeight;
     }, [messages.length]);
-
-    const showToast = (message: string) => {
-        setToast({ visible: true, message });
-        window.setTimeout(() => setToast({ visible: false, message: '' }), 1200);
-    };
 
     const canSend = text.trim().length > 0 && !!conversationId && !!conversation;
     const handleSend = () => {

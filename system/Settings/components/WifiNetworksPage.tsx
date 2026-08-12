@@ -22,11 +22,6 @@ function bandLabel(freqMHz: number): string {
   return '';
 }
 
-function securityLabel(sec: string): string {
-  if (sec === 'OPEN') return 'OPEN_NO_PWD';
-  return sec || '';
-}
-
 export const WifiNetworksPage: React.FC = () => {
   const { go, back } = useAppNavigate();
   const { pageId } = useParams();

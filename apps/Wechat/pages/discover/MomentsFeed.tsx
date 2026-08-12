@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { dimens } from '../../res/dimens';
-import { IcCamera, IcTrash, IcMore, IcLocation } from '../../res/icons';
+import { IcTrash } from '../../res/icons';
 import { useWechatStore } from '../../state';
 import { useShallow } from 'zustand/react/shallow';
 import * as TimeService from '../../../../os/TimeService';

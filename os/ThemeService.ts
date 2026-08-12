@@ -60,7 +60,8 @@ export type ThemeMeta = {
     /** 可用的数据类型图标集合（如 ["4g","5g","lte"]） */
     dataTypes?: string[];
   };
-  extracted?: any;
+  /** 主题包解包产物索引（形状开放透传）；当前消费面仅 wallpaper.default / shade。 */
+  extracted?: { wallpaper?: { default?: string }; shade?: unknown } & Record<string, unknown>;
   /** Per-component asset index: component -> { assetBaseName -> relativePath } */
   componentAssets?: Record<string, Record<string, string>>;
 };
@@ -96,30 +97,36 @@ function uniq<T>(arr: T[]): T[] {
   return Array.from(new Set(arr));
 }
 
-function isThemeMetaLike(x: any): x is ThemeMeta {
-  return x && typeof x === 'object' && typeof x.id === 'string';
+function isRecord(x: unknown): x is Record<string, unknown> {
+  return typeof x === 'object' && x !== null;
 }
 
-function normalizeThemeMeta(raw: any): ThemeMeta | null {
-  if (!raw || typeof raw !== 'object') return null;
+const isString = (x: unknown): x is string => typeof x === 'string';
+
+function normalizeThemeMeta(rawInput: unknown): ThemeMeta | null {
+  if (!isRecord(rawInput)) return null;
+  const raw = rawInput;
   const id = typeof raw.id === 'string' ? raw.id : null;
   if (!id) return null;
-  const previews = Array.isArray(raw.previews) ? raw.previews.filter((x: any) => typeof x === 'string') : [];
+  const previews = Array.isArray(raw.previews) ? raw.previews.filter(isString) : [];
   const builtInPreviews = Array.isArray(raw.builtInPreviews)
-    ? raw.builtInPreviews.filter((x: any) => typeof x === 'string')
+    ? raw.builtInPreviews.filter(isString)
     : previews;
   const subResources = Array.isArray(raw.subResources)
-    ? raw.subResources
-        .map((sr: any) => ({
-          resourceCode: String(sr?.resourceCode || ''),
-          localId: String(sr?.localId || ''),
-        }))
-        .filter((sr: any) => sr.resourceCode && sr.localId)
+    ? (raw.subResources as unknown[])
+        .map((sr) => {
+          const r = isRecord(sr) ? sr : {};
+          return {
+            resourceCode: String(r.resourceCode || ''),
+            localId: String(r.localId || ''),
+          };
+        })
+        .filter((sr) => sr.resourceCode && sr.localId)
     : [];
 
-  const dynRaw = raw.statusbarDynamic && typeof raw.statusbarDynamic === 'object' ? raw.statusbarDynamic : null;
+  const dynRaw = isRecord(raw.statusbarDynamic) ? raw.statusbarDynamic : null;
   const statusbarDynamic =
-    dynRaw && typeof dynRaw === 'object'
+    dynRaw
       ? {
           wifiLevels: typeof dynRaw.wifiLevels === 'number' ? dynRaw.wifiLevels : undefined,
           signalLevels: typeof dynRaw.signalLevels === 'number' ? dynRaw.signalLevels : undefined,
@@ -146,7 +153,7 @@ function normalizeThemeMeta(raw: any): ThemeMeta | null {
             typeof dynRaw.batteryPowerSaveChargeFrameSide === 'number' ? dynRaw.batteryPowerSaveChargeFrameSide : undefined,
           batteryBoltOverlay:
             typeof dynRaw.batteryBoltOverlay === 'string' ? dynRaw.batteryBoltOverlay : undefined,
-          dataTypes: Array.isArray(dynRaw.dataTypes) ? dynRaw.dataTypes.filter((x: any) => typeof x === 'string') : undefined,
+          dataTypes: Array.isArray(dynRaw.dataTypes) ? dynRaw.dataTypes.filter(isString) : undefined,
         }
       : undefined;
 
@@ -161,31 +168,36 @@ function normalizeThemeMeta(raw: any): ThemeMeta | null {
     previews,
     builtInPreviews,
     subResources,
-    type: raw.type,
-    capabilities: Array.isArray(raw.capabilities) ? raw.capabilities.filter((x: any) => typeof x === 'string') : undefined,
+    type: typeof raw.type === 'string' ? raw.type : undefined,
+    capabilities: Array.isArray(raw.capabilities) ? raw.capabilities.filter(isString) : undefined,
     iconPackageNames: Array.isArray(raw.iconPackageNames)
-      ? raw.iconPackageNames.filter((x: any) => typeof x === 'string')
+      ? raw.iconPackageNames.filter(isString)
       : undefined,
     statusbarIcons: Array.isArray(raw.statusbarIcons)
-      ? raw.statusbarIcons.filter((x: any) => typeof x === 'string')
+      ? raw.statusbarIcons.filter(isString)
       : undefined,
     statusbarDynamic,
-    extracted: raw.extracted,
-    componentAssets: raw.componentAssets && typeof raw.componentAssets === 'object' ? raw.componentAssets : undefined,
+    // 形状开放的透传字段：manifest 侧不做深校验，消费点自行守卫（见 ThemeMeta.extracted 注释）
+    extracted: raw.extracted as ThemeMeta['extracted'],
+    componentAssets: isRecord(raw.componentAssets)
+      ? (raw.componentAssets as Record<string, Record<string, string>>)
+      : undefined,
   };
 }
 
-function normalizeManifest(raw: any): ThemeManifest {
-  const themesRaw = Array.isArray(raw?.themes) ? raw.themes : [];
-  const fontsRaw = Array.isArray(raw?.fonts) ? raw.fonts : [];
-  const aodRaw = Array.isArray(raw?.aod) ? raw.aod : [];
-  const themes = themesRaw.map(normalizeThemeMeta).filter(Boolean) as ThemeMeta[];
-  const fonts = fontsRaw.map(normalizeThemeMeta).filter(Boolean) as ThemeMeta[];
-  const aod = aodRaw.map(normalizeThemeMeta).filter(Boolean) as ThemeMeta[];
+function normalizeManifest(rawInput: unknown): ThemeManifest {
+  const raw = isRecord(rawInput) ? rawInput : {};
+  const themesRaw: unknown[] = Array.isArray(raw.themes) ? raw.themes : [];
+  const fontsRaw: unknown[] = Array.isArray(raw.fonts) ? raw.fonts : [];
+  const aodRaw: unknown[] = Array.isArray(raw.aod) ? raw.aod : [];
+  const isMeta = (t: ThemeMeta | null): t is ThemeMeta => t !== null;
+  const themes = themesRaw.map(normalizeThemeMeta).filter(isMeta);
+  const fonts = fontsRaw.map(normalizeThemeMeta).filter(isMeta);
+  const aod = aodRaw.map(normalizeThemeMeta).filter(isMeta);
   return {
-    version: typeof raw?.version === 'number' ? raw.version : 1,
-    generatedAt: typeof raw?.generatedAt === 'string' ? raw.generatedAt : null,
-    defaultThemeId: typeof raw?.defaultThemeId === 'string' ? raw.defaultThemeId : null,
+    version: typeof raw.version === 'number' ? raw.version : 1,
+    generatedAt: typeof raw.generatedAt === 'string' ? raw.generatedAt : null,
+    defaultThemeId: typeof raw.defaultThemeId === 'string' ? raw.defaultThemeId : null,
     themes,
     fonts,
     aod,
@@ -209,14 +221,18 @@ function buildDefaultActiveConfig(themeId: ThemeId): ActiveThemeConfigV2 {
   return buildActiveConfig(themeId, THEME_CONFIG.defaultComponents);
 }
 
-function normalizeActiveConfig(raw: any, fallbackThemeId: ThemeId): ActiveThemeConfigV2 {
-  const baseId = typeof raw?.themeId === 'string' ? raw.themeId : fallbackThemeId;
-  const componentsRaw = raw?.components && typeof raw.components === 'object' ? raw.components : {};
-  const get = (k: ThemeComponentKey) => (typeof componentsRaw?.[k] === 'string' ? componentsRaw[k] : baseId);
+function normalizeActiveConfig(rawInput: unknown, fallbackThemeId: ThemeId): ActiveThemeConfigV2 {
+  const raw = isRecord(rawInput) ? rawInput : {};
+  const baseId = typeof raw.themeId === 'string' ? raw.themeId : fallbackThemeId;
+  const componentsRaw = isRecord(raw.components) ? raw.components : {};
+  const get = (k: ThemeComponentKey) => {
+    const v = componentsRaw[k];
+    return typeof v === 'string' ? v : baseId;
+  };
   return {
     version: 2,
     themeId: baseId,
-    appliedAt: typeof raw?.appliedAt === 'number' ? raw.appliedAt : timeNow(),
+    appliedAt: typeof raw.appliedAt === 'number' ? raw.appliedAt : timeNow(),
     components: {
       icons: get('icons'),
       statusbar: get('statusbar'),
@@ -225,7 +241,7 @@ function normalizeActiveConfig(raw: any, fallbackThemeId: ThemeId): ActiveThemeC
   };
 }
 
-async function fetchJson(url: string): Promise<any> {
+async function fetchJson(url: string): Promise<unknown> {
   const resp = await fetch(url, {
     headers: { Accept: 'application/json' },
   });
@@ -235,7 +251,7 @@ async function fetchJson(url: string): Promise<any> {
   const raw = await resp.text();
   try {
     return JSON.parse(raw);
-  } catch (e: any) {
+  } catch {
     const snippet = raw.slice(0, 140).replace(/\s+/g, ' ').trim();
     const ctInfo = contentType ? `content-type=${contentType}` : 'content-type=<missing>';
     throw new SyntaxError(`Invalid JSON (${ctInfo}) from ${url}: ${snippet}`);
@@ -347,7 +363,7 @@ class ThemeServiceImpl {
   }
 
   private loadActiveConfig(): ActiveThemeConfigV2 | null {
-    const raw = safeJsonParse<any>(localStorage.getItem(THEME_CONFIG.storageKey));
+    const raw = safeJsonParse<unknown>(localStorage.getItem(THEME_CONFIG.storageKey));
     return raw ? normalizeActiveConfig(raw, THEME_CONFIG.defaultThemeId) : null;
   }
 

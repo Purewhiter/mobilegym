@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { IcNavBack, IcUser, IcCheck, IcExpand } from '../res/icons';
 import { AttachmentPanel } from './AttachmentPanel';
-import { ensureConversation, sendMessage, isValidPhoneNumber, useSmsProviderState } from '../state';
+import { ensureConversation, sendMessage, isValidPhoneNumber } from '../state';
 import { SendArrowIcon, QuestionCircleIcon } from '../res/icons';
 import { strings } from '../res/strings';
 import { stringsEn } from '../res/strings.en';

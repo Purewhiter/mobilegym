@@ -42,7 +42,7 @@ interface FileSystemState {
   initialized: boolean;
 }
 
-let state: FileSystemState = {
+const state: FileSystemState = {
   nodes: new Map(),
   pathIndex: new Map(),
   initialized: false,
@@ -1190,7 +1190,7 @@ export function getDirectoryDisplayName(path: string): string {
 export function snapshotFileSystem(): { nodes: Omit<FSNode, 'thumbnailUri'>[] } {
   const nodes = Array.from(state.nodes.values())
     .map((node) => {
-      const { thumbnailUri, ...meta } = node;
+      const { ...meta } = node;
       return meta;
     })
     .sort((a, b) => a.path.localeCompare(b.path));

@@ -15,9 +15,9 @@ export const LikedSongsPage: React.FC = () => {
     const locale = useLocale();
     const isEnglish = locale === 'en';
     const [searchParams] = useSearchParams();
-    const { bindTap, bindBack, back, go } = useSpotifyGestures();
+    const { bindTap, bindBack, back } = useSpotifyGestures();
     const s = useSpotifyStrings();
-    const { currentTrack, likedSongs, customPlaylists } = useSpotifyStore(useShallow(s => ({
+    const { currentTrack, likedSongs } = useSpotifyStore(useShallow(s => ({
         currentTrack: s.currentTrack, likedSongs: s.likedSongs, customPlaylists: s.customPlaylists,
     })));
     const playTrack = useSpotifyStore(s => s.playTrack);
@@ -26,8 +26,6 @@ export const LikedSongsPage: React.FC = () => {
     const isLiked = (trackId: string, track?: { title: string; artist: string }) => likedSongIds.has(trackId, track);
     const addToQueue = useSpotifyStore(s => s.addToQueue);
     const showQueueToast = useSpotifyStore(s => s.showQueueToast);
-    const addTrackToPlaylist = useSpotifyStore(s => s.addTrackToPlaylist);
-    const removeTrackFromPlaylist = useSpotifyStore(s => s.removeTrackFromPlaylist);
 
     const isMenuOpen = searchParams.get('sheet') === 'track_menu';
     const showAddPlaylist = searchParams.get('sheet') === 'add_playlist';

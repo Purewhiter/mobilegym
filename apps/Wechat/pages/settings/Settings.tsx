@@ -11,7 +11,6 @@ export const SettingsPage: React.FC = () => {
   const t = useWechatStrings();
     const { bindTap } = useWechatGestures();
     const { go } = useAppNavigate();
-    const updateSettings = useWechatStore(s => s.updateSettings);
     const logout = useWechatStore(s => s.logout);
 
     // Fix: Made children optional to resolve TypeScript "missing property" errors in JSX

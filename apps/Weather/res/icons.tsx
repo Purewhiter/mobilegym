@@ -1,6 +1,5 @@
 // Tier-2 drawable icons — 对应 AOSP res/drawable/*.xml
 // 单色图标使用 currentColor，多色图标引用 res/colors.ts
-import React from 'react';
 import {
   Plus,
   MoreVertical,

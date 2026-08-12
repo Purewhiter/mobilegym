@@ -23,9 +23,25 @@ import {
   hydrateReplyTree,
   mergeLocalPosts,
   resolveReplyById,
+  type XHydratedPost,
   type XRuntimeMeSlice,
 } from '../utils/hydrate';
-import type { XMessage, XPost, XUser } from '../types';
+import type { XConversation, XMessage, XNotification, XPost, XSearchHistory, XUser } from '../types';
+
+/** 通知 view-model：XNotification + 内联 actor 摘要。 */
+export type XHydratedNotification = XNotification & {
+  actor: { id: string; name: string; avatar?: string };
+};
+
+/** 消息 view-model：XMessage + 发送方归一化字段。 */
+export type XHydratedMessage = XMessage & { senderUserId: string; isMe: boolean };
+
+/** 会话 view-model：XConversation + 内联 participant / lastMessage。 */
+export type XHydratedConversation = XConversation & {
+  participant: { id: string; name: string; avatar?: string; verified?: boolean };
+  lastMessage: XHydratedMessage;
+  messages: XHydratedMessage[];
+};
 
 // ---- Base dataset subscription ----
 
@@ -111,7 +127,7 @@ function useXPostIndex(): Map<string, XPost> {
 const HYDRATED_FOR_YOU_LIMIT = 200;
 const HYDRATED_FOLLOWING_LIMIT = 100;
 
-export function useXHydratedPosts(): any[] {
+export function useXHydratedPosts(): XHydratedPost[] {
   const localPosts = useXLocalPosts();
   const allUsers = useXAllUsers();
   const postIndex = useXPostIndex();
@@ -121,7 +137,7 @@ export function useXHydratedPosts(): any[] {
   );
 }
 
-export function useXHydratedFollowingPosts(): any[] {
+export function useXHydratedFollowingPosts(): XHydratedPost[] {
   const localPosts = useXLocalPosts();
   const allUsers = useXAllUsers();
   const postIndex = useXPostIndex();
@@ -141,7 +157,7 @@ export function useXHydratedFollowingPosts(): any[] {
  * useXHydratedPosts + useXHydratedFollowingPosts 共享一次 localPosts/allUsers/postIndex,
  * 避免重复 mergeLocalPosts / buildPostIndex。
  */
-export function useXHomeTimelines(): { forYou: any[]; following: any[] } {
+export function useXHomeTimelines(): { forYou: XHydratedPost[]; following: XHydratedPost[] } {
   const localPosts = useXLocalPosts();
   const allUsers = useXAllUsers();
   const postIndex = useXPostIndex();
@@ -163,7 +179,7 @@ export function useXHomeTimelines(): { forYou: any[]; following: any[] } {
 // ---- Single-post resolvers ----
 
 /** 按 id 解析单个 post (本地 timeline -> postIndex -> replies)。 */
-export function useXResolvedPost(postId: string): any | null {
+export function useXResolvedPost(postId: string): XHydratedPost | null {
   const localPosts = useXLocalPosts();
   const postIndex = useXPostIndex();
   const allUsers = useXAllUsers();
@@ -178,7 +194,7 @@ export function useXResolvedPost(postId: string): any | null {
   }, [postId, localPosts, postIndex, allUsers, base.replies]);
 }
 
-export function useXUserProfilePosts(userId: string, limit = 80): any[] {
+export function useXUserProfilePosts(userId: string, limit = 80): XHydratedPost[] {
   const localPosts = useXLocalPosts();
   const allUsers = useXAllUsers();
   const postIndex = useXPostIndex();
@@ -199,7 +215,7 @@ export function useXUserProfilePosts(userId: string, limit = 80): any[] {
  * 用户输入搜索 — case-insensitive fuzzy match 是合法例外,
  * id 也走 lowercase 让 "openai" 匹中 id=OpenAI。
  */
-export function useXSearchPosts(query: string, limit = 1000): any[] {
+export function useXSearchPosts(query: string, limit = 1000): XHydratedPost[] {
   const localPosts = useXLocalPosts();
   const allUsers = useXAllUsers();
   const postIndex = useXPostIndex();
@@ -223,11 +239,11 @@ export function useXSearchPosts(query: string, limit = 1000): any[] {
 
 // ---- Notifications / Conversations / Search history ----
 
-export function useXNotifications(): any[] {
+export function useXNotifications(): XHydratedNotification[] {
   const allUsers = useXAllUsers();
   return useMemo(
     () =>
-      baseNotifications.map((n: any) => {
+      baseNotifications.map((n) => {
         const actor = allUsers[n.actorId];
         return {
           ...n,
@@ -242,12 +258,12 @@ export function useXNotifications(): any[] {
   );
 }
 
-export function useXMentionNotifications(): any[] {
+export function useXMentionNotifications(): XHydratedNotification[] {
   const notifications = useXNotifications();
   return useMemo(() => notifications.filter((n) => n.type === 'mention'), [notifications]);
 }
 
-export function useXConversations(): any[] {
+export function useXConversations(): XHydratedConversation[] {
   const conversations = useXStore(selectConversationsSlice);
   const allUsers = useXAllUsers();
   return useMemo(() => {
@@ -278,11 +294,11 @@ export function useXConversations(): any[] {
   }, [conversations, allUsers]);
 }
 
-export function useXRecentSearches(): any[] {
+export function useXRecentSearches(): Array<XSearchHistory & { user?: XUser }> {
   const allUsers = useXAllUsers();
   return useMemo(
     () =>
-      baseSearchHistory.map((h: any) => {
+      baseSearchHistory.map((h) => {
         if (h.type === 'user' && h.userId) {
           return { ...h, user: allUsers[String(h.userId)] };
         }
@@ -308,7 +324,7 @@ export function useXRepliesForPost(postId: string): XPost[] {
  * 用户 profile -> Replies tab: 收集该 user 在所有 replies 树里的回复,
  * 同时附上 hydrated parent post (从 timeline / 关注流里查).
  */
-export function useXUserReplies(userId: string, limit = 80): Array<{ reply: XPost; parent?: any }> {
+export function useXUserReplies(userId: string, limit = 80): Array<{ reply: XPost; parent?: XHydratedPost }> {
   const base = useXBaseDataset();
   const localPosts = useXLocalPosts();
   const allUsers = useXAllUsers();
@@ -325,17 +341,17 @@ export function useXUserReplies(userId: string, limit = 80): Array<{ reply: XPos
       .slice(0, HYDRATED_FOLLOWING_LIMIT)
       .map((p) => hydratePost(p, allUsers, postIndex));
 
-    const hydratedPostById = new Map<string, any>();
+    const hydratedPostById = new Map<string, XHydratedPost>();
     for (const p of hydratedPosts) hydratedPostById.set(p.id, p);
     for (const p of hydratedFollowing) if (!hydratedPostById.has(p.id)) hydratedPostById.set(p.id, p);
 
-    const items: Array<{ reply: XPost; parent?: any }> = [];
+    const items: Array<{ reply: XPost; parent?: XHydratedPost }> = [];
     outer: for (const [parentId, replies] of Object.entries(base.replies)) {
       if (!Array.isArray(replies)) continue;
-      for (const r of replies as any[]) {
+      for (const r of replies) {
         if (!r || r.authorId !== userId) continue;
         items.push({
-          reply: hydrateReplyTree(r as XPost, allUsers),
+          reply: hydrateReplyTree(r, allUsers),
           parent: hydratedPostById.get(parentId),
         });
         if (items.length >= limit) break outer;

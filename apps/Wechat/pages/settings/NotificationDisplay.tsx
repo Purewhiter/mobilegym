@@ -5,7 +5,7 @@ import { IcCheck } from '../../res/icons';
 import { useWechatStore } from '../../state';
 import { useShallow } from 'zustand/react/shallow';
 export const NotificationDisplayPage: React.FC = () => {
-    const { user, settings, updateSettings } = useWechatStore(useShallow(s => ({
+    const { settings, updateSettings } = useWechatStore(useShallow(s => ({
         user: s.user,
         settings: s.settings,
         updateSettings: s.updateSettings,

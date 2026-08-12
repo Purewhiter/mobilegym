@@ -214,7 +214,7 @@ export async function chat(
       return callCustomAPI(messages, options);
     case 'mock':
     default:
-      return mockResponse(messages, options);
+      return mockResponse(messages);
   }
 }
 
@@ -447,8 +447,7 @@ async function callCustomAPI(
  * Generate mock response (for testing)
  */
 async function mockResponse(
-  messages: AIMessage[],
-  options: AIRequestOptions
+  messages: AIMessage[]
 ): Promise<AIResponse> {
   const config = serviceConfig.mock || { mode: 'random', delay: 1000 };
   

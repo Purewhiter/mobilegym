@@ -57,14 +57,9 @@ export const PaymentPasswordChangePage: React.FC = () => {
   const [verifyPwd, setVerifyPwd] = React.useState('');
   const [newPwd, setNewPwd] = React.useState('');
   const [error, setError] = React.useState('');
-  const [toast, setToast] = React.useState<string | null>(null);
+  const [toast] = React.useState<string | null>(null);
   const verifyInputRef = React.useRef<HTMLInputElement | null>(null);
   const newInputRef = React.useRef<HTMLInputElement | null>(null);
-
-  const showToast = (t: string) => {
-    setToast(t);
-    window.setTimeout(() => setToast(null), 1200);
-  };
 
   React.useEffect(() => {
     if (verifyPwd.replace(/\D/g, '').length !== 6) return;

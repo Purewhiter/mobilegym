@@ -3,7 +3,7 @@ import { dimensToCssVars, themeToCssVars } from '../../os/utils/themeToCssVars';
 import { applySkinToThemeColors } from '../../os/SkinService';
 import { useDarkMode } from '../../os/hooks/useDarkMode';
 import { MemoryRouter, useLocation, UNSAFE_NavigationContext, Routes, Route } from 'react-router-dom';
-import { IcGlobe, IcBack, IcForward, IcRefresh, IcHome, IcSearch, IcShield, IcNavBack, IcNavForward, IcTabs, IcMoreHoriz, IcClose, IcAdd } from './res/icons';
+import { IcGlobe, IcHome, IcSearch, IcShield, IcNavBack, IcNavForward, IcTabs, IcMoreHoriz, IcClose, IcAdd } from './res/icons';
 import { manifest } from './manifest';
 import { colors, colorsDark } from './res/colors';
 import { colorStates, colorStatesDark } from './res/colors.states';
@@ -201,7 +201,7 @@ const TabsOverlay: React.FC<{
 
 // --- Main App Logic ---
 const BrowserContent: React.FC = () => {
-    const { go, back, bindBack } = useBrowserGestures();
+    const { go, bindBack } = useBrowserGestures();
     const location = useLocation();
     const { navigator } = React.useContext(UNSAFE_NavigationContext);
 

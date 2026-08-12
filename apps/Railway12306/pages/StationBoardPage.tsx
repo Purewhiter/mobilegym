@@ -15,7 +15,6 @@ export const StationBoardPage: React.FC = () => {
   const departures = config.stationBoardDepartures;
   const arrivals = config.stationBoardArrivals;
 
-  const currentList = activeTab === 'departure' ? departures : arrivals;
   type StationItem = { trainNo: string; time: string; gate: string; status: string; destination?: string; origin?: string };
   const waitingItems: StationItem[] = activeTab === 'departure'
     ? departures.filter(d => d.status === '正在候车')

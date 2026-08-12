@@ -7,7 +7,6 @@ import {
   AtSign,
   BarChart2,
   Bell,
-  Book,
   BookOpen,
   Bus,
   Camera,

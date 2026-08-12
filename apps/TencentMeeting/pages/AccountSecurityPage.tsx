@@ -1,6 +1,6 @@
 import { useTencentMeetingStrings } from '../hooks/useTencentMeetingStrings';
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useLocation } from 'react-router-dom';
 import { IcNavBack, IcNavForward, IcInfo, IcBadge } from '../res/icons';
 import { useMeetingStore } from '../state';

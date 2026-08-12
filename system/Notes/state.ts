@@ -5,7 +5,6 @@ import type {
   Note,
   NotesFolder,
   NotesSettings,
-  NotesViewMode,
   NotesTodo,
 } from './types';
 

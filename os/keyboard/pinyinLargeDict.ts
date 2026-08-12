@@ -43,7 +43,7 @@ export function loadPinyinDict(): Promise<PinyinDictJson | null> {
       
       cache = json;
       return cache;
-    } catch (e) {
+    } catch {
       // Network error, timeout, or parsing error
       loadFailed = true;
       return null;

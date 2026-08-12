@@ -158,7 +158,7 @@ export const WmrRenderer: React.FC<WmrRendererProps> = ({
       try {
         const bundle = await loadWmrBundle(bundleSource ?? xmlBaseUrl!, locale);
         if (cancelled) return;
-        const { xml, doc, resourceStrings, analysis, assetUrlResolver } = bundle;
+        const { doc, resourceStrings, analysis, assetUrlResolver } = bundle;
         docRef.current = doc;
         bundleAnalysisRef.current = analysis;
         hasMarqueeRef.current = analysis.hasMarquee;

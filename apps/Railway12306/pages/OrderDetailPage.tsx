@@ -17,12 +17,6 @@ function formatWeekday(dateStr: string, isEnglish: boolean): string {
   return isEnglish ? weekdaysEn[date.getDay()] : weekdaysZh[date.getDay()];
 }
 
-function getOrderStatusLabel(status: string, s: ReturnType<typeof useRailwayStrings>): string {
-  if (status === 'cancelled') return s.order_status_refunded;
-  if (status === 'pending') return s.order_status_pending_payment;
-  return s.order_status_paid;
-}
-
 export const OrderDetailPage: React.FC = () => {
   const { bindBack, bindTap } = useRailwayGestures();
   const [searchParams] = useSearchParams();
@@ -57,7 +51,6 @@ export const OrderDetailPage: React.FC = () => {
     ? order.createTime.substring(0, 10).replace(/-/g, isEnglish ? '/' : '.')
     : order.date.replace(/-/g, isEnglish ? '/' : '.');
   const ticketDateStr = order.date.replace(/-/g, isEnglish ? '/' : '.');
-  const statusLabel = getOrderStatusLabel(order.status, s);
   const canRefund = order.status === 'completed';
   const isCancelled = order.status === 'cancelled';
 

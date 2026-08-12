@@ -26,12 +26,6 @@ function abs(box: Box): React.CSSProperties {
 
 const MAJOR_CITIES = WEATHER_CONFIG.majorCities;
 
-const GRID = {
-  colLefts: [11.7, 127.7, 243.7],
-  cellW: 104.7,
-  cellH: 39.0,
-} as const;
-
 function formatResultLine(city: SearchableCity, country: string, s: typeof strings): string {
   const name = getLocalizedWeatherCityName(city, s);
   if (s.app_name !== strings.app_name) {
@@ -94,31 +88,6 @@ const WeatherCitySearchPage: React.FC = () => {
     },
     [],
   );
-
-  // 搜索历史标签区高度：每行 39px + 间距，最多 ~3 行
-  const historyRowCount = searchHistory.length > 0 ? Math.ceil(searchHistory.length / 3) : 0;
-  const historyBlockHeight = historyRowCount > 0 ? 34 + historyRowCount * 50 : 0;
-
-  // 全国主要城市网格顶部起始位置
-  const majorCitiesTopBase = historyBlockHeight > 0 ? 100 + historyBlockHeight + 16 : 100;
-  const gridRowTops = Array.from(
-    { length: 8 },
-    (_, i) => majorCitiesTopBase + 36 + i * 50.7,
-  );
-
-  const gridItems = useMemo(() => {
-    const items: Array<{ city: (typeof MAJOR_CITIES)[number]; col: number; row: number }> = [];
-    let idx = 0;
-    for (let r = 0; r < gridRowTops.length; r++) {
-      for (let c = 0; c < 3; c++) {
-        if (idx >= MAJOR_CITIES.length) break;
-        if (r === gridRowTops.length - 1 && c === 2) break;
-        items.push({ city: MAJOR_CITIES[idx], col: c, row: r });
-        idx++;
-      }
-    }
-    return items;
-  }, [gridRowTops]);
 
   return (
     <div className="w-full h-full relative bg-[#f3f4f6] overflow-hidden" data-status-bar-foreground="dark">

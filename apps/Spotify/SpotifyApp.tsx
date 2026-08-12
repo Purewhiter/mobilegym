@@ -45,7 +45,6 @@ import { AppsDevicesPage } from './pages/settings/AppsDevicesPage';
 import { DataSaverPage } from './pages/settings/DataSaverPage';
 import { MediaQualityPage } from './pages/settings/MediaQualityPage';
 import { AboutPage } from './pages/settings/AboutPage';
-import { useSpotifyStore } from './state';
 import { BottomPlayer } from './components/BottomPlayer';
 import { QueueToastBanner, QueueSheet } from './components/QueueToast';
 import { LikedToastBanner, SaveLocationSheet } from './components/LikedToast';
@@ -201,7 +200,6 @@ const Layout: React.FC = () => {
   ].includes(location.pathname);
 
   const isSidebarOpen = searchParams.get('drawer') === 'sidebar';
-  const createSource = searchParams.get('source'); // 'library' or null
 
   // Track last active main tab so we can show it behind the create overlay
   const lastMainTabRef = useRef('/');

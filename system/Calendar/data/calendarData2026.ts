@@ -61,11 +61,6 @@ function yearDays(year: number): number {
     return total;
 }
 
-// Known: Chinese New Year (Spring Festival) dates 1900-2100
-// We compute by chaining from a known anchor:
-// Jan 31, 1900 = 正月初一 of lunar year 1900
-const ANCHOR = TimeService.fromLocalParts(1900, 0, 31); // Jan 31, 1900
-
 export interface LunarDateResult {
     lunarYear: number;
     lunarMonth: number;

@@ -43,7 +43,7 @@ export const StartGroupPage: React.FC = () => {
   };
 
   const alphabet = Array.from({ length: 26 }, (_, i) => String.fromCharCode(65 + i));
-  const { visibleContacts, groupedContacts, activeCategories } = useMemo(() => {
+  const { groupedContacts, activeCategories } = useMemo(() => {
     const visible = contacts.filter(c => !c.isBlacklisted);
     const grouped = new Map<string, typeof visible>();
 

@@ -1,13 +1,13 @@
 import { useRedBookStrings } from '../hooks/useRedBookStrings';
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { IcNavBack, IcSearch, IcDelete, IcClose, IcScan, IcCamera, IcSlidersH } from '../res/icons';
-const ChevronLeft = IcNavBack, Search = IcSearch, Trash2 = IcDelete, X = IcClose, ScanLine = IcScan, Camera = IcCamera, SlidersHorizontal = IcSlidersH;
+import { IcNavBack, IcSearch, IcDelete, IcClose, IcCamera, IcSlidersH } from '../res/icons';
+const ChevronLeft = IcNavBack, Search = IcSearch, Trash2 = IcDelete, X = IcClose, Camera = IcCamera, SlidersHorizontal = IcSlidersH;
 import { useRedBookStore } from '../state';
 import { useRedBookView } from '../data/view';
 import { DiscoveryFeed } from './HomePage';
 import { useRedBookGestures } from '../hooks/useRedBookGestures';
-import { strings, type StringKey } from '../res/strings';
+import { type StringKey } from '../res/strings';
 import { RedBookFlameIcon } from '../res/icons';
 // Helper for Hot Search Rank Colors
 const getRankColor = (index: number) => {
@@ -113,15 +113,6 @@ export const SearchPage: React.FC = () => {
       go(transitionId, nextParams);
       
       addSearchHistory(key);
-  };
-
-  const handleTabChange = (tab: string) => {
-      // Tab switching should replace history so Back button always goes to Landing Page
-      const nextParams: Record<string, string> = { tab };
-      if (tab === 'searchpage_all') {
-          nextParams.sort = sortKey;
-      }
-      go('search.tab.switch', nextParams);
   };
 
   const handleOpenFilter = () => {

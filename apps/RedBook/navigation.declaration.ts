@@ -4,8 +4,6 @@ const MAIN_SCROLL: ScrollContainerDeclaration[] = [
   { name: 'main', direction: 'vertical', description: '主内容区' },
 ];
 
-const NO_SCROLL: ScrollContainerDeclaration[] = [];
-
 export const NAVIGATION_DECLARATION = {
   app: 'redbook',
 

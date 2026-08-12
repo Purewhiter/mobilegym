@@ -7,7 +7,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { IcCollapse, IcExpand, IcCheck, IcClose, IcList } from '../res/icons';
-import { dimens } from '../res/dimens';
 import { strings } from '../res/strings';
 import { stringsEn } from '../res/strings.en';
 import { useAppStrings } from '@/os/useAppStrings';

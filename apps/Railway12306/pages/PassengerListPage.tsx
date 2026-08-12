@@ -36,16 +36,6 @@ function groupByInitial(passengers: Passenger[]): { letter: string; items: Passe
     .map(([letter, items]) => ({ letter, items }));
 }
 
-// ── Verification badge icons ────────────────────────────────────
-
-/** Small green verification badge icon (similar to 12306 real app) */
-const VerifiedBadge: React.FC<{ className?: string }> = ({ className }) => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className={className}>
-    <rect width="14" height="10" x="1" y="3" rx="2" fill="#4CAF50" />
-    <path d="M4.5 8l2 2 5-4" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-  </svg>
-);
-
 /** Passenger row in manage mode */
 const PassengerCard: React.FC<{ passenger: Passenger }> = ({ passenger }) => (
   <div className="flex items-center px-4 py-3.5 bg-white">
@@ -206,7 +196,6 @@ export const PassengerListPage: React.FC = () => {
   const { passengers, selectedTrain } = useRailwayStore(
     useShallow(s => ({ passengers: s.passengers, selectedTrain: s.selectedTrain })),
   );
-  const updatePassengers = useRailwayStore(s => s.updatePassengers);
   const setSelectedTrain = useRailwayStore(s => s.setSelectedTrain);
   const { bindBack, bindTap } = useRailwayGestures();
   const location = useLocation();

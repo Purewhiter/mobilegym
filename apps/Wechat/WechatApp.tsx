@@ -1,5 +1,5 @@
 
-import React, { useCallback, useState, useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { useWechatStrings } from './hooks/useWechatStrings';
 import { MemoryRouter as Router, Routes, Route, Outlet, useLocation, useNavigate, UNSAFE_NavigationContext, Navigate } from 'react-router-dom';
 import { IcMessageSquare, IcUserAdd, IcScan, IcQrCode } from './res/icons';
@@ -382,7 +382,6 @@ const Layout = () => {
 /** 定时检测 session 是否过期，过期时设 showLoginExpiredModal: true 并标记 loggedIn: false。
  * 仅在微信前台时轮询；回前台时先立即补检一次，补偿后台期间发生的过期。 */
 const SessionExpiryWatcher: React.FC = () => {
-  const auth = useWechatStore(s => s.auth);
   const checkSessionExpiry = () => {
     const s = useWechatStore.getState();
     const expiresAt = s.auth?.session?.expiresAt;

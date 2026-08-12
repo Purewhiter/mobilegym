@@ -1016,7 +1016,7 @@ const FavoritesPage: React.FC = () => {
 // Album Detail Page
 // ============================================================================
 const AlbumDetailPage: React.FC = () => {
-  const { go, back, bindBack } = useGalleryGestures();
+  const { go, bindBack } = useGalleryGestures();
   const { albumId } = useParams<{ albumId: string }>();
   const s = useAppStrings(strings, stringsEn);
   const [items, setItems] = useState<MediaItem[]>([]);
@@ -1580,7 +1580,7 @@ const PhotoViewerPage: React.FC = () => {
     }
   };
   
-  const handleDoubleTap = (e: React.MouseEvent) => {
+  const handleDoubleTap = () => {
     if (scale > 1) {
       setScale(1);
       setPosition({ x: 0, y: 0 });

@@ -80,9 +80,6 @@ import {
   // Location / Time
   MapPin,
   Calendar,
-
-  // App identity
-  Twitter,
 } from 'lucide-react';
 export type { LucideIcon } from 'lucide-react';
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { IcClose, IcDelete, IcWallet, IcBuilding, IcNavBack, IcCheck, IcNavForward, IcExpand, IcCollapse } from '../res/icons';
+import { IcClose, IcDelete, IcWallet, IcBuilding, IcNavForward, IcExpand, IcCollapse } from '../res/icons';
 import { useAlipayGestures } from '../hooks/useAlipayGestures';
 import { useAlipayStrings } from '../hooks/useAlipayStrings';
 import { useLocale } from '@/apps/Alipay/locale';
@@ -28,20 +28,7 @@ interface PaymentPasswordModalProps {
   subject?: string;
 }
 
-export const PaymentPasswordModal: React.FC<PaymentPasswordModalProps> = ({
-  visible,
-  variant = 'transfer',
-  amount,
-  payeeName,
-  expectedPassword = '000000',
-  onSuccess,
-  bankCards = [],
-  balance,
-  defaultMethodId,
-  actionPrefix = 'transferPassword',
-  maskedPhone = '',
-  subject = '',
-}) => {
+export const PaymentPasswordModal: React.FC<PaymentPasswordModalProps> = ({ visible, amount, payeeName, expectedPassword = '000000', onSuccess, bankCards = [], defaultMethodId, actionPrefix = 'transferPassword' }) => {
   const s = useAlipayStrings();
   const { bindTap, bindBack } = useAlipayGestures();
   const locale = useLocale();
@@ -102,69 +89,12 @@ export const PaymentPasswordModal: React.FC<PaymentPasswordModalProps> = ({
     setSelectedMethodId(id);
   };
 
-  const handleConfirmExpanded = () => {
-    setExpanded(false);
-  };
-
   if (!visible) return null;
 
   const CheckIcon = ({ size = 16 }: { size?: number }) => (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="#1677FF" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
       <polyline points="20 6 9 17 4 12" />
     </svg>
-  );
-
-  const Keypad = () => (
-    <div className="bg-[#D2D5DB] p-[5px] grid grid-cols-3 gap-[5px]">
-      {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
-        <button
-          key={num}
-          {...bindTap<HTMLButtonElement>(
-            { kind: 'action', id: `${actionPrefix}.keypad.press` },
-            { params: { digit: String(num) }, onTrigger: () => handleNumberClick(num.toString()) },
-          )}
-          className="bg-white rounded h-[52px] text-[22px] font-medium text-gray-900 active:bg-gray-200"
-        >
-          {num}
-        </button>
-      ))}
-      <div />
-      <button
-        {...bindTap<HTMLButtonElement>(
-          { kind: 'action', id: `${actionPrefix}.keypad.press` },
-          { params: { digit: '0' }, onTrigger: () => handleNumberClick('0') },
-        )}
-        className="bg-white rounded h-[52px] text-[22px] font-medium text-gray-900 active:bg-gray-200"
-      >
-        0
-      </button>
-      <button
-        {...bindTap<HTMLButtonElement>(
-          { kind: 'action', id: `${actionPrefix}.keypad.delete` },
-          { onTrigger: handleDelete },
-        )}
-        className="bg-white rounded h-[52px] flex items-center justify-center text-gray-900 active:bg-gray-200"
-      >
-        <IcDelete size={22} />
-      </button>
-    </div>
-  );
-
-  const PasswordDots = () => (
-    <div className="flex gap-2 justify-center">
-      {[0, 1, 2, 3, 4, 5].map((index) => (
-        <div
-          key={index}
-          className={`w-11 h-11 rounded-lg border flex items-center justify-center bg-white ${
-            index === password.length && !error ? 'border-[#1677FF]' : 'border-gray-200'
-          }`}
-        >
-          {password.length > index && (
-            <div className="w-3 h-3 rounded-full bg-black" />
-          )}
-        </div>
-      ))}
-    </div>
   );
 
   // ═══════════════════════════════════════════════════

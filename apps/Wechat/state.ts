@@ -148,11 +148,11 @@ function performCodeVerification(
   updatedCodes: WechatAuthState['verificationCodes'];
   attempt: WechatAuthState['verificationAttempts'][number];
 } {
-  const codes = [...(prevAuth.verificationCodes || [])] as any[];
-  const phoneCodes = codes.filter((c: any) => c.phone === phone);
-  const active = [...phoneCodes].reverse().find((c: any) => !c.invalidatedByNewer && !c.used) as any;
+  const codes = [...(prevAuth.verificationCodes || [])];
+  const phoneCodes = codes.filter((c) => c.phone === phone);
+  const active = [...phoneCodes].reverse().find((c) => !c.invalidatedByNewer && !c.used);
   const inputCode = String(code);
-  const matched = [...phoneCodes].reverse().find((c: any) => String(c.code) === inputCode) as any;
+  const matched = [...phoneCodes].reverse().find((c) => String(c.code) === inputCode);
 
   let ok = false;
   let reason: VerificationReason = 'no_active';
@@ -191,14 +191,14 @@ function performCodeVerification(
   } else {
     ok = true;
     reason = 'ok';
-    const idx = codes.findIndex((c: any) => c.id === active.id);
+    const idx = codes.findIndex((c) => c.id === active.id);
     if (idx >= 0) codes[idx] = { ...codes[idx], used: true };
   }
 
   return {
     ok,
     reason,
-    updatedCodes: codes as any,
+    updatedCodes: codes,
     attempt: {
       id: `vca-${now}-${Math.random().toString(16).slice(2)}`,
       phone,
@@ -217,7 +217,7 @@ const buildRealisticSystemPrompt = (contact: ContactItem, currentUser: User) => 
   const timeOfDay = hour < 6 ? '凌晨' : hour < 9 ? '早上' : hour < 12 ? '上午' : hour < 14 ? '中午' : hour < 18 ? '下午' : hour < 22 ? '晚上' : '深夜';
   const dateStr = `${now.getMonth() + 1}月${now.getDate()}日 ${timeOfDay}${hour}点`;
 
-  let prompt = `# 角色设定
+  const prompt = `# 角色设定
 你是「${contact.name}」，一个真实的微信用户，正在和朋友「${currentUser.name}」聊天。
 
 ## 你的个人信息
@@ -387,7 +387,7 @@ interface WechatActions {
 // --- Initial state ---
 
 function createInitialWechatState(): WechatState {
-  const config = getWechatConfig() as any;
+  const config = getWechatConfig();
   return {
     ...config,
     settings: config.settings,
@@ -495,7 +495,7 @@ export const useWechatStore = createAppStoreWithActions<WechatState, WechatActio
         const contact = (targetWxid === prev.user.wxid) ? prev.user : prev.contacts.find(c => c.wxid === targetWxid);
         if (!contact) return;
 
-        const contactName = (contact as any).alias || contact.name;
+        const contactName = ('alias' in contact ? contact.alias : undefined) || contact.name;
         const content = `我拍了拍"${contactName}"`;
         set({
           chats: upsertChatMessages(prev, targetWxid, now, [
@@ -703,7 +703,7 @@ export const useWechatStore = createAppStoreWithActions<WechatState, WechatActio
         return { ok: true };
       },
 
-      loginWithCode({ phone, code, captchaPassed }) {
+      loginWithCode({ phone, code }) {
         const now = TimeService.now();
         const prev = get();
         const prevAuth = prev.auth ?? EMPTY_AUTH_STATE;
@@ -785,7 +785,7 @@ export const useWechatStore = createAppStoreWithActions<WechatState, WechatActio
         });
       },
 
-      resetPassword({ phone, code, newPassword, expiresInSec }) {
+      resetPassword({ phone, code, newPassword }) {
         const now = TimeService.now();
         const prev = get();
         const prevAuth = prev.auth ?? EMPTY_AUTH_STATE;

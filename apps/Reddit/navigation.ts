@@ -1,7 +1,7 @@
 import { useCallback, useContext } from 'react';
 import { UNSAFE_NavigationContext, useLocation, useNavigate } from 'react-router-dom';
 import { NAVIGATION_DECLARATION, TransitionId } from './navigation.declaration';
-import type { CaseDeclaration, Condition, FromConstraint, Primitive, TransitionDeclaration, ValueRef } from './navigation.types';
+import type { CaseDeclaration, Condition, Primitive, TransitionDeclaration, ValueRef } from './navigation.types';
 import { memoryHistoryPopTo } from '../../os/utils/memoryHistoryPopTo';
 
 export function useAppNavigate() {

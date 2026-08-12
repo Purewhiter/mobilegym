@@ -1,6 +1,6 @@
 import React from 'react';
 import { useLocale } from '@/os/locale';
-import { IcNavBackArrow, IcPlay, IcPause, IcAddCircle, IcCheckCircle, IcMoreVertical, IcCheck } from '../res/icons';
+import { IcNavBackArrow, IcPlay, IcPause, IcAddCircle, IcMoreVertical, IcCheck } from '../res/icons';
 import { useSpotifyStore, selectLikedSongIds } from '../state';
 import { useShallow } from 'zustand/react/shallow';
 import { useSpotifyGestures } from '../hooks/useSpotifyGestures';

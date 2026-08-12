@@ -1,7 +1,7 @@
 import { useRedBookStrings } from '../hooks/useRedBookStrings';
 import React from 'react';
-import { IcLink, IcFlag, IcDownload, IcMore, IcUserAdd, IcImage, IcContacts, IcFrown, IcMessageCircle, IcTabHome, IcStar, IcEye, IcClose, IcMessage } from '../res/icons';
-const Link = IcLink, Flag = IcFlag, Download = IcDownload, MoreHorizontal = IcMore, UserPlus = IcUserAdd, ImageIcon = IcImage, Users = IcContacts, Frown = IcFrown, MessageCircle = IcMessageCircle, Aperture = IcTabHome, Star = IcStar, Eye = IcEye, X = IcClose, MessageSquare = IcMessage;
+import { IcLink, IcDownload, IcUserAdd, IcImage, IcContacts, IcFrown, IcMessageCircle, IcTabHome, IcStar, IcClose, IcMessage } from '../res/icons';
+const Link = IcLink, Download = IcDownload, UserPlus = IcUserAdd, ImageIcon = IcImage, Users = IcContacts, Frown = IcFrown, MessageCircle = IcMessageCircle, Aperture = IcTabHome, Star = IcStar, X = IcClose, MessageSquare = IcMessage;
 import { useRedBookGestures } from '../hooks/useRedBookGestures';
 interface ShareModalProps {
   isOpen: boolean;

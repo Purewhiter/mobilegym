@@ -85,7 +85,6 @@ const PickerColumn: React.FC<{
 }> = ({ options, value, onChange }) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const itemHeight = 44;
-    const visibleItems = 5;
 
     const currentIndex = options.findIndex(opt => opt.value === value);
 
@@ -233,7 +232,7 @@ const DurationPicker: React.FC<{
     onClose: () => void;
     onConfirm: () => void;
     onSwitchToEndTime: () => void;
-}> = ({ startTime, duration, onChange, onClose, onConfirm, onSwitchToEndTime }) => {
+}> = ({ duration, onChange, onClose, onConfirm, onSwitchToEndTime }) => {
     const s = useTencentMeetingStrings();
     const hourOptions = generateDurationHourOptions(s.picker_suffix_hours);
     const minuteOptions = generateDurationMinuteOptions(s.picker_suffix_minutes);

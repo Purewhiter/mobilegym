@@ -14,8 +14,6 @@ import { parseToTimestamp, now as timeNow, fromTimestamp } from '../../../os/Tim
 function formatTripDate(dateStr: string, isEnglish: boolean): string {
   const timestamp = parseToTimestamp(`${dateStr}T00:00:00`);
   const date = timestamp ? fromTimestamp(timestamp) : fromTimestamp(timeNow());
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
   const weekdaysEn = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   const weekdaysZh = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
   return isEnglish

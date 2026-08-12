@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { IcAddCircle, IcCamera, IcChart, IcGlobe, IcImage, IcLocation } from '../res/icons';
 import { dimens } from '../res/dimens';

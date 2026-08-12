@@ -7,7 +7,7 @@ import { useScrollPosition } from '../hooks/useScrollPosition';
 import { useRedBookGestures } from '../hooks/useRedBookGestures';
 export const SettingsPage: React.FC = () => {
   const scrollRef = useScrollPosition('settings_main');
-  const { logout, clearHistory, settings } = useRedBookStore();
+  const { logout, settings } = useRedBookStore();
   const { bindTap, bindBack } = useRedBookGestures();
   const s = useRedBookStrings();
 

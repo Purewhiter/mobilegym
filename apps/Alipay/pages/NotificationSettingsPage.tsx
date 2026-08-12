@@ -17,18 +17,6 @@ type ToggleKey =
 
 type IcSettings = Record<ToggleKey, boolean>;
 
-const Toggle: React.FC<{ checked: boolean; onChange: () => void }> = ({ checked, onChange }) => {
-  return (
-    <button
-      onClick={onChange}
- className={`w-12 h-7 rounded-full flex items-center p-1 ${checked ? 'bg-app-primary justify-end' : 'bg-gray-300 justify-start'}`}
- style={{ transition: 'color var(--app-duration-short) var(--app-easing-standard), background-color var(--app-duration-short) var(--app-easing-standard)' }}
-    >
-      <div className="w-5 h-5 bg-app-surface rounded-full shadow" />
-    </button>
-  );
-};
-
 const InfoBadge: React.FC = () => {
   return (
     <span className="ml-2 w-4 h-4 rounded-full border border-gray-300 flex items-center justify-center">

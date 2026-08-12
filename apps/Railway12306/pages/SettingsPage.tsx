@@ -45,7 +45,7 @@ export const SettingsPage: React.FC = () => {
 
       {sections.map((section, si) => (
         <div key={si} className="bg-app-surface mt-2">
-          {section.items.map((item, ii) => (
+          {section.items.map((item) => (
             <div
               key={item.id}
               className="flex items-center px-4 py-4 border-b border-gray-50 last:border-b-0 active:bg-gray-50"
