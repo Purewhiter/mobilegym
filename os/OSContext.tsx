@@ -1,47 +1,14 @@
 import React, { createContext, useContext, useEffect, useMemo, useSyncExternalStore } from 'react';
 import type { AppId, OSState } from './types';
 import type { AppIntentFilter, IntentPayload } from './types/manifest';
-import { getStore, readPersistedAppState, writePersistedAppState } from './createAppStore';
-import { flushAll, endPersistReset } from './debouncedPersist';
-import { getTimeConfig, now, formatTime, formatDate, getDayOfWeek } from './TimeService';
-import { getLocationConfig, getSimulatedCoords } from './LocationService';
-import { dataLoaderByAppId } from './data/appRegistry';
+import { now } from './TimeService';
 import { initFileSystem } from './FileSystemService';
-import { KeyboardService } from './keyboard/KeyboardService';
-import { ClipboardService } from './ClipboardService';
-import { NotificationService } from './NotificationService';
-import { PermissionService } from './PermissionService';
-import { QuickSettingsService } from './QuickSettingsService';
-import { SystemShadeService } from './SystemShadeService';
-import StatusBarService from './StatusBarService';
-import localeApi from './locale';
-import BroadcastBus, { ACTION_BOOT_COMPLETED, BROADCAST_ACTIONS } from './BroadcastBus';
-import { osT } from './i18n';
-import { SmsGateway } from './SmsGateway';
-import * as SkinService from './SkinService';
-import {
-  deriveIntentStack,
-  deriveRunningApps,
-  getActiveAppId,
-  getActiveTask,
-  getTaskTopActivity,
-} from './taskUtils';
-import PackageManagerService from './PackageManagerService';
-import ContentResolver from './ContentResolver';
-import { AppNavigatorRegistry } from './AppNavigatorRegistry';
+import BroadcastBus, { ACTION_BOOT_COMPLETED } from './BroadcastBus';
+import { getActiveAppId } from './taskUtils';
 import { TaskManager } from './TaskManager';
 import { IntentResolver } from './IntentResolver';
-import { PendingIntent } from './PendingIntent';
-import { ConnectivityManager } from './managers/ConnectivityManager';
-import { routeGetPreference, routeSetPreference } from './managers/registry';
-import {
-  applyOsStatePatch,
-  buildSimState,
-} from './simState';
-import { deepMergeWithArrayOps } from './utils/deepMergeWithArrayOps';
-import { readLauncherSummary } from './sim/launcherSnapshot';
-import { resetStateCore } from './sim/simResetCore';
-import { getLastNavError } from './osNavError';
+import { buildOsApi } from './osApi';
+import { buildSimApi } from './sim/simApi';
 import { useOsBackHandlers } from './hooks/useOsBackHandlers';
 import { useAppLifecycleSync } from './hooks/useAppLifecycleSync';
 import {
@@ -53,17 +20,9 @@ import {
   setVolume,
   chooseIntentActivity,
   cancelIntentChooser,
-  handleSystemBack,
-  finishActivity,
   closeTask,
   closeApp,
-  startActivity,
-  startActivityForResult,
-  setResult,
-  openApp,
 } from './osActions';
-import { runAppDataLoaderModule, type AppDataLoaderModule } from './appDataLoaderReady';
-import type { OSApi, SimApi } from './types/globals';
 
 /** 预加载所有 App 的 state.ts（eager: 打进主 bundle，页面加载即执行 createAppStore 副作用） */
 const _eagerAppStateModules = import.meta.glob<unknown>(
@@ -131,253 +90,15 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     activeAppId: getActiveAppId(state),
   }), [state]);
 
+  // __OS__ 先于 __SIM__ 挂载（声明顺序即挂载顺序，bench _wait_ready 分阶段探测两者）。
+  // 两个工厂返回值均带显式 OSApi / SimApi 标注，globals.d.ts 契约由 tsc 持续校验。
   useEffect(() => {
-    // 显式标注 OSApi，让 tsc 校验对象与 globals.d.ts 契约一致（此前 as any 绕过了检查）
-    const api: OSApi = {
-      state: osStateForApi,
-      launchApp,
-      launchTaskById,
-      goHome,
-      showRecents,
-      closeTask,
-      closeApp,
-      finishActivity,
-      setBrightness,
-      setVolume,
-      getSkin: () => SkinService.getActiveSkinId(),
-      setSkin: (id: string) => {
-        const next = id === 'neutral' ? 'neutral' : id === 'test_v1' ? 'test_v1' : 'default';
-        SkinService.setSkin(next);
-      },
-      handleBack: handleSystemBack,
-      getState: () => ({ ...TaskManager.getState(), activeAppId: getActiveAppId(TaskManager.getState()) }),
-      getAppRoute: (appId?: AppId | string) => AppNavigatorRegistry.getAppRoute(appId),
-      openApp,
-      startActivity,
-      startActivityForResult,
-      setResult,
-      hasActiveIntent: () => deriveIntentStack(TaskManager.getState().tasks).length > 0,
-      resolveActivity: (intent: { action: string; scheme?: string; type?: string }) => {
-        return PackageManagerService.resolveActivityAll(intent);
-      },
-      getIntentPayload: (appIdOrActivityId?: AppId | string) => {
-        const latestState = TaskManager.getState();
-        if (appIdOrActivityId) {
-          for (const task of latestState.tasks) {
-            for (const act of task.stack) {
-              if (act.activityId === appIdOrActivityId && act.intent) return act.intent;
-            }
-          }
-
-          const activeTask = getActiveTask(latestState);
-          if (!activeTask) return null;
-          for (let i = activeTask.stack.length - 1; i >= 0; i -= 1) {
-            const act = activeTask.stack[i];
-            if (act.appId === appIdOrActivityId && act.intent) return act.intent;
-          }
-          return null;
-        }
-
-        const top = getTaskTopActivity(getActiveTask(latestState));
-        return top?.intent ?? null;
-      },
-
-      notifications: NotificationService,
-      permissions: PermissionService,
-      clipboard: ClipboardService,
-      statusBar: StatusBarService,
-      keyboard: KeyboardService,
-      quickSettings: QuickSettingsService,
-      shade: SystemShadeService,
-      locale: localeApi,
-      device: {
-        getPreference: routeGetPreference,
-        setPreference: routeSetPreference,
-        setNearbyWifi: ConnectivityManager.setNearbyWifi,
-        setNearbyBluetooth: ConnectivityManager.setNearbyBluetooth,
-        connectWifi: ConnectivityManager.connectToAP,
-        disconnectWifi: ConnectivityManager.disconnectWifi,
-        connectBluetooth: ConnectivityManager.connectBluetooth,
-        disconnectBluetooth: ConnectivityManager.disconnectBluetooth,
-      },
-      broadcast: {
-        sendBroadcast: BroadcastBus.sendBroadcast,
-        sendOrderedBroadcast: BroadcastBus.sendOrderedBroadcast,
-        registerReceiver: BroadcastBus.registerReceiver,
-        actions: BROADCAST_ACTIONS,
-      },
-      content: ContentResolver,
-      pendingIntent: PendingIntent,
-      sms: SmsGateway,
-    };
-    window.__OS__ = api;
+    // deps=[osStateForApi]：`__OS__.state` 是 render 快照，随任务栈变化重建 api 对象。
+    window.__OS__ = buildOsApi(osStateForApi);
   }, [osStateForApi]);
 
   useEffect(() => {
-    // 显式标注 SimApi，与 window.__OS__ 一致地走 globals.d.ts 契约校验
-    const simApi: SimApi = {
-      /** Clear all state WITHOUT reloading. Use with Playwright page.reload(). */
-      resetState: resetStateCore,
-      /** Clear all state AND reload (legacy). */
-      reset: async () => {
-        await resetStateCore();
-        window.location.reload();
-      },
-      warmUpAllApps: () => {
-        const allApps = PackageManagerService.getInstalledPackages();
-        for (const app of allApps) {
-          TaskManager.launchApp(app.id);
-        }
-        TaskManager.goHome();
-      },
-      preloadAllAppStores: async () => { /* no-op: eager loaded */ },
-      /** 定向预加载指定 app 的 state.ts — no-op: eager loaded */
-      preloadAppStores: async (_appIds: string[]) => { /* no-op: eager loaded */ },
-      waitForData: async (appIds?: string[]) => {
-        const all = !appIds || appIds.length === 0;
-        const has = (id: string) => all || appIds!.includes(id);
-
-        const loadApp = async (importFn: () => Promise<AppDataLoaderModule>) => {
-          const mod = await importFn();
-          await runAppDataLoaderModule(mod);
-        };
-
-        const entries: { appId: string; importFn: () => Promise<AppDataLoaderModule> }[] = [];
-        for (const [appId, importFn] of dataLoaderByAppId) {
-          if (!has(appId)) continue;
-          entries.push({ appId, importFn });
-        }
-
-        const results = await Promise.allSettled(
-          entries.map(e => loadApp(e.importFn)),
-        );
-
-        const failedEntries = results
-          .map((r, i) => r.status === 'rejected' ? entries[i] : null)
-          .filter((e): e is typeof entries[number] => e !== null);
-
-        if (failedEntries.length > 0) {
-          console.warn(
-            `[waitForData] ${failedEntries.length} app(s) failed, retrying:`,
-            failedEntries.map(e => e.appId).join(', '),
-          );
-          await new Promise(r => setTimeout(r, 300));
-          const retryResults = await Promise.allSettled(
-            failedEntries.map(e => loadApp(e.importFn)),
-          );
-          const stillFailed = retryResults
-            .map((r, i) => r.status === 'rejected' ? `${failedEntries[i].appId}: ${r.reason}` : null)
-            .filter(Boolean);
-          if (stillFailed.length > 0) {
-            throw new Error(`waitForData failed for: ${stillFailed.join('; ')}`);
-          }
-        }
-      },
-      getState: () => {
-        const latestState = TaskManager.getState();
-        const timeConfig = getTimeConfig();
-        const time = {
-          mode: timeConfig.mode,
-          timestamp: now(),
-          formatted: formatTime(),
-          date: formatDate(),
-          dayOfWeek: getDayOfWeek(),
-        };
-
-        const locationConfig = getLocationConfig();
-        const coords = getSimulatedCoords();
-        const location = {
-          mode: locationConfig.mode,
-          coords: coords ? {
-            latitude: coords.latitude,
-            longitude: coords.longitude,
-            accuracy: coords.accuracy,
-          } : null,
-        };
-
-        const installedApps = PackageManagerService.getInstalledPackages().map((app) => ({
-          id: app.id,
-          name: osT(app.displayName),
-          type: app.type,
-        }));
-
-        const clipboardState = ClipboardService.getState();
-        const clipboard = clipboardState.current ? {
-          type: clipboardState.current.type,
-          content: clipboardState.current.content,
-          timestamp: clipboardState.current.timestamp,
-          source: clipboardState.current.source,
-        } : null;
-
-        const launcher = readLauncherSummary();
-
-        const simState = buildSimState({
-          tasks: latestState.tasks,
-          activeTaskId: latestState.activeTaskId,
-          isLauncherVisible: latestState.isLauncherVisible,
-          isRecentsVisible: latestState.isRecentsVisible,
-          runningApps: deriveRunningApps(latestState.tasks),
-          activeAppId: getActiveAppId(latestState),
-          locale: localeApi.getLocale(),
-          time,
-          location,
-          installedApps,
-          clipboard,
-          notifications: NotificationService.getState(),
-          shade: SystemShadeService.getState(),
-          launcher,
-        });
-        // 最近一次 navigateToActivity 超时记录（成功导航后为 null），供 bench 检测栈与 UI 不一致
-        simState.os.lastNavError = getLastNavError();
-        return simState;
-      },
-      setState: (patch: { apps?: Record<string, unknown>; os?: Record<string, unknown> }, options?: { deep?: boolean; reload?: boolean }) => {
-        // 外部脚本显式调 setState (state-builder snapshot restore / bench inject /
-        // mem_microbench) 等场景, 意味着 reset 阶段已完成、应当接收新 state 写入。
-        // 关闭 reset gate, 让后续 zustand persist 正常落盘 (主 bench 路径 page.goto
-        // 之后新文档模块自然重置 flag, 这里只为非 reload 场景关 gate)。
-        endPersistReset();
-        const { deep = true, reload = false } = options || {};
-
-        if (patch.os && typeof patch.os === 'object') {
-          applyOsStatePatch(patch.os, { source: 'external' });
-        }
-
-        if (patch.apps && typeof patch.apps === 'object') {
-          for (const [appId, appPatch] of Object.entries(patch.apps)) {
-            if (appPatch === undefined || appPatch === null) continue;
-            const store = getStore(appId);
-            if (store) {
-              if (deep) {
-                const current = store.getState();
-                const currentData: Record<string, unknown> = {};
-                for (const [k, v] of Object.entries(current)) {
-                  if (typeof v !== 'function') currentData[k] = v;
-                }
-                store.setState(deepMergeWithArrayOps(currentData, appPatch));
-              } else {
-                // 外部注入边界：patch 形状由调用方（bench / snapshot restore）保证
-                store.setState(appPatch as never);
-              }
-            } else {
-              const current = readPersistedAppState(appId) ?? null;
-              const merged = current === null
-                ? appPatch
-                : deep
-                  ? deepMergeWithArrayOps(current, appPatch)
-                  : { ...current, ...appPatch };
-              writePersistedAppState(appId, merged as Record<string, unknown>);
-            }
-          }
-        }
-
-        if (reload) {
-          flushAll();
-          window.location.reload();
-        }
-      },
-    };
-    window.__SIM__ = simApi;
+    window.__SIM__ = buildSimApi();
     // 依赖数组不含 state：闭包内全部经 TaskManager.getState() 等实时读取，
     // 不依赖渲染快照；带上 state 会导致每次任务栈变化都无谓重建 __SIM__。
     // Step 4 闭包提升后所有动作回调已是模块函数，deps 收敛为 []（挂载一次）。
