@@ -50,7 +50,7 @@ import { KeyboardService } from './keyboard/KeyboardService';
 import { TaskManager } from './TaskManager';
 import type { AppId, OSState } from './types';
 
-const computeActivityContainerStyle = (args: {
+export const computeActivityContainerStyle = (args: {
   isRecentsVisible: boolean;
   isActive: boolean;
   recentsSlot?: { index: number };
@@ -383,14 +383,14 @@ const queryLastForegroundDeclaration = (
   return matches.length > 0 ? matches[matches.length - 1] : null;
 };
 
-type ChromeTaskSnapshot = {
+export type ChromeTaskSnapshot = {
   activeTopActivityId: string | null;
   activeRootAppId: AppId | null;
   isLauncherVisible: boolean;
   isRecentsVisible: boolean;
 };
 
-const getChromeTaskSnapshot = (state: OSState): ChromeTaskSnapshot => {
+export const getChromeTaskSnapshot = (state: OSState): ChromeTaskSnapshot => {
   const activeTask = state.activeTaskId
     ? state.tasks.find((task) => task.taskId === state.activeTaskId) ?? null
     : null;
@@ -402,7 +402,7 @@ const getChromeTaskSnapshot = (state: OSState): ChromeTaskSnapshot => {
   };
 };
 
-const areChromeTaskSnapshotsEqual = (a: ChromeTaskSnapshot, b: ChromeTaskSnapshot): boolean => {
+export const areChromeTaskSnapshotsEqual = (a: ChromeTaskSnapshot, b: ChromeTaskSnapshot): boolean => {
   return a.activeTopActivityId === b.activeTopActivityId
     && a.activeRootAppId === b.activeRootAppId
     && a.isLauncherVisible === b.isLauncherVisible
