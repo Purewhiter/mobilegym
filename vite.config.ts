@@ -42,6 +42,8 @@ function accessLogPlugin() {
       server.middlewares.use(logMiddleware);
     },
     configurePreviewServer(server: any) {
+      // 逐请求 console.log 在高频评测下有可观 IO 开销；MOBILEGYM_ACCESS_LOG=0 关闭（默认开）
+      if (process.env.MOBILEGYM_ACCESS_LOG === '0') return;
       server.middlewares.use(logMiddleware);
     }
   };

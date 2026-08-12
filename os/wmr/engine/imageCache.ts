@@ -2,10 +2,74 @@
  * Image preloading and caching for WMR widgets.
  * Handles sprite sheets (srcid selects a frame from a vertically-stacked strip).
  */
+import { realNow } from '../../TimeService';
 
 const cache = new Map<string, HTMLImageElement>();
 const loading = new Map<string, Promise<HTMLImageElement>>();
 const failed = new Set<string>();
+
+// ── 失败 URL 的跨页面加载记忆（sessionStorage） ──────────────────────────
+// 主题包（mobilegym-data）里带 srcid 的图片如 "ources/result.png" 只存在
+// result_0.png / result_1.png 等索引变体，基础文件本就不存在；帧序列探测
+// （WmrBundleCache.warmIndexedVariantSequence）也天然以连续 miss 收尾。
+// 这些注定 404 的请求原先只记在内存 Set，每次整页 reload（bench 每个
+// episode reset 一次）都会全量重发（实测每次 ~80 个 404）。
+// 记入 sessionStorage：同 tab 跨 reload 存活；__SIM__.reset() 只 clear
+// localStorage，不波及；关浏览器/新开 tab 自动失效，数据包更新最迟一个
+// TTL 周期后恢复探测。
+const FAILED_STORE_KEY = '__WMR_IMG_FAILED_V1__';
+const FAILED_TTL_MS = 6 * 60 * 60 * 1000; // 6h
+const FAILED_MAX = 2000;
+
+const failedExpiry = new Map<string, number>(); // url -> expiresAt
+
+function restorePersistedFailures(): void {
+  try {
+    const raw = window.sessionStorage.getItem(FAILED_STORE_KEY);
+    if (!raw) return;
+    const parsed: unknown = JSON.parse(raw);
+    if (!parsed || typeof parsed !== 'object') return;
+    const now = realNow();
+    for (const [url, expiresAt] of Object.entries(parsed as Record<string, unknown>)) {
+      if (typeof expiresAt === 'number' && expiresAt > now) {
+        failed.add(url);
+        failedExpiry.set(url, expiresAt);
+      }
+    }
+  } catch {
+    // sessionStorage 不可用/数据损坏 → 静默退化为纯内存记忆
+  }
+}
+
+let persistTimer: ReturnType<typeof setTimeout> | null = null;
+
+function flushFailuresToStorage(): void {
+  if (persistTimer !== null) {
+    clearTimeout(persistTimer);
+    persistTimer = null;
+  }
+  try {
+    const now = realNow();
+    let entries = [...failedExpiry].filter(([, exp]) => exp > now);
+    if (entries.length > FAILED_MAX) entries = entries.slice(entries.length - FAILED_MAX);
+    window.sessionStorage.setItem(FAILED_STORE_KEY, JSON.stringify(Object.fromEntries(entries)));
+  } catch {
+    // quota / privacy mode → 忽略，退化为纯内存记忆
+  }
+}
+
+function rememberFailure(url: string): void {
+  failedExpiry.set(url, realNow() + FAILED_TTL_MS);
+  if (persistTimer === null) {
+    persistTimer = setTimeout(flushFailuresToStorage, 1000);
+  }
+}
+
+if (typeof window !== 'undefined') {
+  restorePersistedFailures();
+  // 探测常在页面生命周期尾部仍在进行，pagehide 时同步落盘防丢尾
+  window.addEventListener('pagehide', flushFailuresToStorage);
+}
 
 export type AssetUrlResolver = (src: string) => string;
 
@@ -27,6 +91,7 @@ export function loadImage(url: string): Promise<HTMLImageElement> {
     img.onerror = () => {
       cache.set(url, img);
       failed.add(url);
+      rememberFailure(url);
       loading.delete(url);
       resolve(img);
     };
@@ -42,6 +107,17 @@ export function getImage(url: string): HTMLImageElement | null {
 
 export function isImageLoadFailed(url: string): boolean {
   return failed.has(url);
+}
+
+// 供 WMR 引擎其他 fetch 型加载器（如 resourceStrings 的 locale XML 探测）
+// 复用同一份失败记忆：确定性 404 只探测一次，跨 reload 不重发。
+export function isKnownFailedUrl(url: string): boolean {
+  return failed.has(url);
+}
+
+export function rememberFailedUrl(url: string): void {
+  failed.add(url);
+  rememberFailure(url);
 }
 
 /**

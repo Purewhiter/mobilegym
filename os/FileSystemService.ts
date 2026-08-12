@@ -98,16 +98,21 @@ async function ensureDb(): Promise<IDBDatabase | null> {
  * 通过 Vite 服务器的 /api/sdcard 端点获取
  */
 async function scanSdcard(): Promise<ScanResult | null> {
-  // 1. Try dev-server API (only available in `npm run dev`)
-  try {
-    const response = await fetch('/api/sdcard');
-    if (response.ok) {
-      const result = await response.json();
-      console.log(`[FileSystem] Scanned ${result.totalFiles} files from /api/sdcard`);
-      return result;
+  // 1. Try dev-server API — dev only。生产构建（vite preview / nginx）没有该端点：
+  //    请求会落到 SPA fallback 拿回 index.html（200），json() 解析失败后才走
+  //    manifest，白费一次请求。构建产物必含 sdcard/manifest.json（vite.config.ts
+  //    fileSystemPlugin.generateBundle 产出），直接走静态路径。
+  if (import.meta.env.DEV) {
+    try {
+      const response = await fetch('/api/sdcard');
+      if (response.ok) {
+        const result = await response.json();
+        console.log(`[FileSystem] Scanned ${result.totalFiles} files from /api/sdcard`);
+        return result;
+      }
+    } catch {
+      // API not available
     }
-  } catch {
-    // API not available — likely production build
   }
 
   // 2. Fallback: static manifest emitted during `npm run build`

@@ -1,5 +1,6 @@
 import type { VarValue } from './types';
 import localeApi, { type Locale } from '../../locale';
+import { isKnownFailedUrl, rememberFailedUrl } from './imageCache';
 
 function normalizeLocaleVariants(locale: string): string[] {
   const normalized = locale.replace('-', '_');
@@ -59,9 +60,15 @@ export function buildWmrResourceStrings(
 }
 
 async function fetchStringsText(url: string): Promise<string | null> {
+  // 无 strings 目录的 widget 每次页面加载都会探测 1+N 个 locale 候选（全 404）；
+  // 复用 imageCache 的跨 reload 失败记忆，确定性 404 只发一次。
+  if (isKnownFailedUrl(url)) return null;
   try {
     const resp = await fetch(url);
-    if (!resp.ok) return null;
+    if (!resp.ok) {
+      if (resp.status === 404) rememberFailedUrl(url);
+      return null;
+    }
     return await resp.text();
   } catch {
     return null;

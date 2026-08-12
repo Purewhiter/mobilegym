@@ -3,17 +3,26 @@
 # mobile-gym 生产环境一键启动 (Nginx + API backend)
 #
 # 架构:
-#   Nginx (:PORT) ──┬── 静态文件 (dist/)  ← sendfile 零拷贝
-#                   └── /api/gw/* → Python (:PORT+1)
+#   Nginx ──┬── :PORT   (HTTPS, HTTP/2+TLS, 远程访问)
+#           ├── :PORT+1 (plain HTTP, 本机评测推荐 — 自签 https 会禁用浏览器缓存)
+#           │     └── 静态文件 (dist/)  ← sendfile 零拷贝
+#           └── /api/gw/* → Python uvicorn (:PORT+2, 仅 127.0.0.1)
 #
 # 使用:
-#   ./scripts/server/start_nginx_gateway.sh          # 默认 4180
+#   ./scripts/server/start_nginx_gateway.sh          # 默认 4180 (http 4181, api 4182)
 #   ./scripts/server/start_nginx_gateway.sh 4185     # 自定义端口
 #   ./scripts/server/start_nginx_gateway.sh stop     # 停止
+#
+# 预压缩 (默认开启, MOBILEGYM_PRECOMPRESS=0 关闭):
+#   启动前对 dist/ 中 >10k 的 js/json/css/svg/txt 生成 .gz 旁路文件,
+#   配合 nginx.source.conf 的 `gzip_static on` 直接送预压产物,
+#   避免 nginx 对同一文件逐请求反复现压。
 # ============================================================
 
 PORT=${1:-4180}
-API_PORT=$((PORT + 1))
+# PORT+1 = plain HTTP 评测通道; PORT+2 = 内部 API backend (仅 nginx proxy_pass 引用)
+HTTP_PORT=${HTTP_PORT:-$((PORT + 1))}
+API_PORT=$((PORT + 2))
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$ROOT_DIR" || exit 1
@@ -68,6 +77,7 @@ render_nginx_config() {
         -e "s/__MIME_TYPES__/$esc_mime_types/g" \
         -e "s/__ROOT__/$esc_root/g" \
         -e "s/__PORT__/$PORT/g" \
+        -e "s/__HTTP_PORT__/$HTTP_PORT/g" \
         -e "s/__API_PORT__/$API_PORT/g" \
         "$NGINX_SOURCE_CONFIG" > "$output"
 }
@@ -124,30 +134,48 @@ if [ ! -f "$MIME_TYPES" ]; then
 fi
 render_nginx_config
 
+# 0. 预压缩 dist 静态资源（配合 gzip_static，见脚本头注释；MOBILEGYM_PRECOMPRESS=0 关闭）
+MOBILEGYM_PRECOMPRESS=${MOBILEGYM_PRECOMPRESS:-1}
+if [ "$MOBILEGYM_PRECOMPRESS" = "1" ] && [ -d "$ROOT_DIR/dist" ]; then
+    echo "[setup] Pre-compressing dist assets for gzip_static (>10k js/json/css/svg/txt)..."
+    find "$ROOT_DIR/dist" -type f -size +10k \
+        \( -name '*.js' -o -name '*.json' -o -name '*.css' -o -name '*.svg' -o -name '*.txt' \) \
+        -exec gzip -k9f {} +
+fi
+
 # 1. Start API backend (uvicorn multi-worker via conda rllm)
 PYTHON_BIN="${PYTHON_BIN:-$(find_bin python python3)}"
 API_WORKERS=${API_WORKERS:-8}
 echo "[start] API gateway on :${API_PORT} (workers=${API_WORKERS})"
+# PYTHONPATH 必须含仓库根：api_gateway.py 内部用 uvicorn import string
+# "scripts.server.api_gateway:app" 起 worker，子进程 sys.path[0] 是 scripts/server，
+# 不带仓库根时 8 个 worker 全部 ModuleNotFoundError 崩溃循环，/api/gw 一律 504。
 # setsid 在 Linux 上给 API gateway 起独立进程组，便于 stop 时 kill -- "-$pid" 一次清理 uvicorn 全家。
 # macOS 默认没有 setsid，退回 nohup（同样能脱离终端 SIGHUP）；stop_servers 里的 `|| kill "$pid"` 会兜底。
 if command -v setsid >/dev/null 2>&1; then
-    setsid "$PYTHON_BIN" "$SCRIPT_DIR/api_gateway.py" --port "$API_PORT" --workers "$API_WORKERS" \
+    PYTHONPATH="$ROOT_DIR${PYTHONPATH:+:$PYTHONPATH}" \
+        setsid "$PYTHON_BIN" "$SCRIPT_DIR/api_gateway.py" --port "$API_PORT" --workers "$API_WORKERS" \
         >> "$NGINX_DIR/logs/api_gateway.log" 2>&1 &
 else
-    nohup "$PYTHON_BIN" "$SCRIPT_DIR/api_gateway.py" --port "$API_PORT" --workers "$API_WORKERS" \
+    PYTHONPATH="$ROOT_DIR${PYTHONPATH:+:$PYTHONPATH}" \
+        nohup "$PYTHON_BIN" "$SCRIPT_DIR/api_gateway.py" --port "$API_PORT" --workers "$API_WORKERS" \
         >> "$NGINX_DIR/logs/api_gateway.log" 2>&1 &
 fi
 echo $! > "$PIDFILE_API"
 
 # 2. Start Nginx
-echo "[start] Nginx on :${PORT} (workers=8)"
+echo "[start] Nginx on :${PORT} (https) + :${HTTP_PORT} (http), workers=auto"
 "$NGINX_BIN" -c "$NGINX_DIR/nginx.run.conf"
 
 sleep 0.5
 echo ""
-echo "✅ mobile-gym serving at https://0.0.0.0:${PORT}  (HTTP/2 + TLS)"
-echo "   Static:  Nginx (sendfile + HTTP/2 + 8 workers)"
-echo "   API:     uvicorn + starlette (:${API_PORT}, ${API_WORKERS} workers)"
+echo "✅ mobile-gym serving at:"
+echo "   https://0.0.0.0:${PORT}   (HTTP/2 + TLS，远程访问)"
+echo "   http://0.0.0.0:${HTTP_PORT}   (plain HTTP，本机评测推荐)"
+echo "   API:     uvicorn + starlette (127.0.0.1:${API_PORT}, ${API_WORKERS} workers)"
+echo ""
+echo "   评测推荐 --env-url http://localhost:${HTTP_PORT}"
+echo "   （自签 https + --ignore-certificate-errors 会禁用 Chromium HTTP 缓存，每 episode 全量冷载）"
 echo ""
 echo "   Stop:    $0 stop"
 echo "   Logs:    $NGINX_DIR/logs/{error,access,api_gateway}.log"
