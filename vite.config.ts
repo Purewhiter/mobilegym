@@ -624,14 +624,19 @@ function serveCdnPlugin() {
     const filePath = path.join(CDN_ROOT, rel);
     if (!filePath.startsWith(CDN_ROOT)) return next();
 
+    // assets-index.json 在 dev/preview 下始终动态生成（磁盘即真相）：
+    // 主题开发迭代时，静态清单文件与 immutable 缓存都会陈旧，导致新加的
+    // 文件被引擎按旧清单短路成"不存在"。动态扫描 + no-cache 保证永远同步；
+    // 数据包里的静态清单（prepare-themes.py 出厂自带）仅服务 nginx 等纯
+    // 静态路径（数据包随部署固定，静态 + immutable 正确且高效）。
+    if (path.basename(filePath) === THEME_INDEX_NAME && isBundleDir(path.dirname(filePath))) {
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Cache-Control', 'no-cache');
+      res.end(buildIndexPayload(path.dirname(filePath)));
+      return;
+    }
+
     if (!fs.existsSync(filePath) || !fs.statSync(filePath).isFile()) {
-      // 动态清单兜底：仅对真实 bundle 目录（含 manifest.xml）响应，不写盘。
-      if (path.basename(filePath) === THEME_INDEX_NAME && isBundleDir(path.dirname(filePath))) {
-        res.setHeader('Content-Type', 'application/json');
-        res.setHeader('Cache-Control', 'no-cache');
-        res.end(buildIndexPayload(path.dirname(filePath)));
-        return;
-      }
       return next();
     }
 
