@@ -83,7 +83,22 @@ def open_seed_fixture_post() -> list[Step]:
 
 
 def scroll_feed(count: int, *, summary: str) -> list[Step]:
-    return [swipe([500, 820], [500, 260], summary=f"{summary} {i + 1}/{count}") for i in range(count)]
+    """Swipe the home feed down ``count`` times with a settle wait in between.
+
+    The feed paginates via a rAF-debounced scroll handler (HomePage
+    ``displayCount``): the next page of posts only appears after a React
+    re-render. Back-to-back swipes can outrun that append under CPU load —
+    ``scrollBy`` clamps at the current content bottom and the cumulative
+    offset lands short, leaving the target row half-hidden (tap-point
+    resolution then fails). The settle wait gives pagination time to render
+    so every swipe travels its full distance.
+    """
+    steps: list[Step] = []
+    for i in range(count):
+        if i:
+            steps.append(wait(0.35, summary=f"settle feed pagination {i}/{count - 1}"))
+        steps.append(swipe([500, 820], [500, 260], summary=f"{summary} {i + 1}/{count}"))
+    return steps
 
 
 def delete_chat_message(username: str, message_id: str) -> list[Step]:
