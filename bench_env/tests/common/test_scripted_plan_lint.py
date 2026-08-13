@@ -12,7 +12,12 @@ Zero per-task declarations — every signal is inferred from existing artifacts:
   / ``parameters``;
 - plan step dicts (``bench_env.tests.<suite>.scripted_plans.PLANS`` — the DSL
   helpers in ``bench_env.agent.scripted`` materialize plans into plain step
-  dicts at import time, so no extra compilation is needed here);
+  dicts at import time, so no extra compilation is needed here). A ``Branch``
+  entry is linted **per arm** — every arm must independently satisfy R1–R4
+  (findings carry a ``[branch=<key>]`` suffix on the task id);
+- the suite's optional ``DERIVED_PARAMS`` table: its inner keys count as
+  *declared* params for R1 — they are computed from the episode's initial
+  state at materialization time, not test-injected;
 - the display-name → appId map (``MobileGymEnv.APP_NAME_MAP``).
 
 The *answer phase* of a plan starts at the first ``awake`` step whose app name
@@ -28,9 +33,9 @@ Rules (implemented in ``_lint_plan``):
   task whose initial screen already shows the answer is legal with 0
   navigation steps + 1 assert.
 - **R1** — *injected params* (plan placeholders neither declared in
-  ``task.parameters`` nor produced by ``_with_derived_params`` — currently
-  only the calendar label aliases) that flow into answer-phase type/click
-  steps need assert endorsement. This first version is deliberately loose to
+  ``task.parameters`` nor produced by the suite's ``DERIVED_PARAMS``
+  calculators) that flow into answer-phase type/click steps need assert
+  endorsement. This first version is deliberately loose to
   avoid drowning the report in duplicates: any pre-answer assert (i.e. R2
   satisfied) endorses all injected params.
   TODO(tighten): per-param endorsement — require that some assert step's
@@ -60,10 +65,11 @@ from __future__ import annotations
 import importlib
 import re
 from collections import Counter
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Any, Iterable
 
+from bench_env.agent.scripted import Branch
 from bench_env.env.mobile_gym import MobileGymEnv
 from bench_env.task.registry import TaskRegistry
 
@@ -82,13 +88,6 @@ ASSERT_OPS = frozenset({"assert_visible", "assert_answer"})
 # selector embeds the rendered value.
 ANSWER_FLOW_OPS = frozenset(
     {"type", "click", "tap", "tap_trigger", "tap_action", "keypad_text"}
-)
-
-# Derived-param aliases produced by bench_env.agent.scripted._with_derived_params
-# (calendar-only UI-label lookups). They are derived from *declared* params, so
-# they are not "injected" in the R1 sense.
-CALENDAR_ALIAS_PARAMS = frozenset(
-    {"reminderLabel", "reminderChoice", "r1Label", "r2Label", "r3Label"}
 )
 
 ANSWER_SHEET_APP_ID = "answer_sheet"
@@ -162,6 +161,29 @@ def _answer_phase_start(steps: list[dict]) -> int:
         if "答题" in app or _normalize_app(app) == ANSWER_SHEET_APP_ID:
             return idx
     return len(steps)
+
+
+def _plan_variants(task_id: str, entry: Any) -> list[tuple[str, list[dict]]]:
+    """Expand a PLANS entry into lintable ``(label, steps)`` variants.
+
+    A plain step list yields one variant; a ``Branch`` yields one per arm so a
+    single arm without asserts cannot hide behind a compliant sibling.
+    """
+    if isinstance(entry, Branch):
+        return [
+            (f"{task_id}[branch={key}]", [s for s in (steps or []) if isinstance(s, dict)])
+            for key, steps in sorted(entry.branches.items())
+        ]
+    return [(task_id, [s for s in (entry or []) if isinstance(s, dict)])]
+
+
+def _derived_param_names(module: Any, task_id: str) -> set[str]:
+    """Inner keys of the suite's ``DERIVED_PARAMS`` entry for ``task_id``."""
+    table = getattr(module, "DERIVED_PARAMS", None)
+    if not isinstance(table, dict):
+        return set()
+    entry = table.get(task_id)
+    return {str(k) for k in entry} if isinstance(entry, dict) else set()
 
 
 def _assert_value_facets(step: dict) -> tuple[str | None, bool, bool]:
@@ -286,8 +308,7 @@ def _lint_plan(
 
     # ── R1: injected params flowing into the answer phase need endorsement ──
     referenced = _placeholders(steps)
-    aliases = CALENDAR_ALIAS_PARAMS if task_id.startswith("calendar.") else frozenset()
-    injected = referenced - meta.declared_params - aliases
+    injected = referenced - meta.declared_params
     flowing: dict[str, int] = {}
     for idx in range(answer_start, len(steps)):
         step = steps[idx]
@@ -306,7 +327,7 @@ def _lint_plan(
                 "R1",
                 suite,
                 task_id,
-                f"注入参数 {details} 未在 task.parameters 声明（也非内置派生别名），"
+                f"注入参数 {details} 未在 task.parameters 声明（也非 DERIVED_PARAMS 派生键），"
                 f"且流入答题阶段的 type/click 步，plan 又无任何前置 assert 背书；"
                 f"请先在信息页对该值加 assert_text/assert_answer",
             )
@@ -360,6 +381,25 @@ def _lint_plan(
     return violations, warnings
 
 
+def _lint_entry(
+    suite: str, task_id: str, entry: Any, meta: _TaskMeta, derived_params: set[str]
+) -> tuple[list[_Finding], list[_Finding]]:
+    """Lint one PLANS entry (plain step list or ``Branch``) against task metadata.
+
+    ``derived_params`` (the task's ``DERIVED_PARAMS`` inner keys) count as
+    declared for R1; each ``Branch`` arm runs R1–R4 independently.
+    """
+    if derived_params:
+        meta = replace(meta, declared_params=meta.declared_params | derived_params)
+    violations: list[_Finding] = []
+    warnings: list[_Finding] = []
+    for label, steps in _plan_variants(task_id, entry):
+        arm_violations, arm_warnings = _lint_plan(suite, label, steps, meta)
+        violations.extend(arm_violations)
+        warnings.extend(arm_warnings)
+    return violations, warnings
+
+
 def run_lint() -> _LintResult:
     registry = TaskRegistry()
     result = _LintResult(suites=_plan_suites())
@@ -386,7 +426,6 @@ def run_lint() -> _LintResult:
                     )
 
         for task_id in sorted(plans):
-            steps = [s for s in (plans[task_id] or []) if isinstance(s, dict)]
             if task_id in exempt:
                 result.exemptions.append((suite, task_id, exempt[task_id]))
                 continue
@@ -394,7 +433,9 @@ def run_lint() -> _LintResult:
             if meta is None:
                 result.unknown_tasks.append((suite, task_id))
                 continue
-            violations, warnings = _lint_plan(suite, task_id, steps, meta)
+            violations, warnings = _lint_entry(
+                suite, task_id, plans[task_id], meta, _derived_param_names(module, task_id)
+            )
             result.violations.extend(violations)
             result.warnings.extend(warnings)
             result.plans_checked += 1
@@ -574,3 +615,48 @@ def test_lint_helpers_app_normalization_and_assert_facets() -> None:
     # Structural visibility assert carries no text payload.
     value, _, _ = _assert_value_facets(assert_visible("[data-trigger='x']", summary="s"))
     assert value is None
+
+
+def test_lint_branch_arms_are_checked_independently() -> None:
+    from bench_env.agent.scripted import assert_text, complete, grounded_answer, tap_trigger
+
+    with_assert = [
+        tap_trigger("detail.open"),
+        assert_text("{answer}"),
+        *grounded_answer("{answer}"),
+        complete(),
+    ]
+    without_assert = [tap_trigger("detail.open"), *grounded_answer("{answer}"), complete()]
+    entry = Branch(
+        pick=lambda task, state: "with_assert",
+        branches={"with_assert": with_assert, "without_assert": without_assert},
+    )
+    meta = _TaskMeta(
+        apps=["clock"], objective="query", has_answer_fields=True, declared_params=set()
+    )
+
+    # {answer} is derived → declared for R1; the assert-less arm still fails R2
+    # on its own, even though its sibling arm carries the assert.
+    violations, warnings = _lint_entry("clock", "clock.Fake", entry, meta, {"answer"})
+    assert [(f.rule, f.task_id) for f in violations] == [
+        ("R2", "clock.Fake[branch=without_assert]")
+    ]
+    assert warnings == []
+
+
+def test_lint_derived_params_count_as_declared_for_r1() -> None:
+    from bench_env.agent.scripted import complete, grounded_answer, tap_trigger
+
+    steps = [tap_trigger("detail.open"), *grounded_answer("{code}"), complete()]
+    meta = _TaskMeta(
+        apps=["clock"], objective="operate", has_answer_fields=False, declared_params=set()
+    )
+
+    # Without the DERIVED_PARAMS declaration {code} is an unendorsed injected
+    # param flowing into the answer phase → R1.
+    violations, _ = _lint_entry("clock", "clock.Fake", steps, meta, set())
+    assert [f.rule for f in violations] == ["R1"]
+
+    # Declared as derived → computed from initial state, no violation.
+    violations, _ = _lint_entry("clock", "clock.Fake", steps, meta, {"code"})
+    assert violations == []

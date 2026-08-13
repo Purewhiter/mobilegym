@@ -38,13 +38,29 @@ Plans currently live as test assets under
 keyed by full ``task.id``). Conceptually a task's script should ship with the
 task; this location is temporary, so plan discovery is isolated in
 ``load_plan()`` below — only that function changes when the scripts move.
+
+**Lazy materialization (sampling compatibility)**: ``reset()`` only stores the
+raw plan; the first ``act()`` materializes it against the episode's initial
+``obs.state`` (the runner's post-setup observation, i.e. *after*
+``_post_sample`` hooks — unlike ``task._env_state``, which is captured before
+them). Pipeline: ``Branch`` pick → ``DERIVED_PARAMS`` computation → strict
+``{param}`` render → step-macro expansion. A suite's ``scripted_plans.py``
+may declare ``DERIVED_PARAMS`` (per-task ``{param: fn(task, init_state)}``)
+so plans that need initial-state values (e.g. ``{answer}``) also work on the
+official ``--agent scripted`` sampling path, where ``task.params`` carries no
+test-injected keys; explicitly injected params always win over derived ones.
+``Branch`` is the *restricted* conditional form — one pure
+``pick(task, init_state)`` selecting among static, individually lintable step
+lists; arbitrary plan factories (``plan(task, state) -> steps``) are
+deliberately unsupported.
 """
 
 from __future__ import annotations
 
 import importlib
 import re
-from typing import Any
+from dataclasses import dataclass
+from typing import Any, Callable
 
 from bench_env.agent.base import AgentConfig, AgentStepRecord, BaseAgent
 from bench_env.env.base import Action, ActionType, Observation
@@ -315,18 +331,38 @@ def abort(reason: str) -> Step:
     return {"op": "abort", "reason": reason, "summary": "abort"}
 
 
+@dataclass(frozen=True)
+class Branch:
+    """Restricted conditional plan: pick one static branch from the initial state.
+
+    ``pick(task, init_state)`` must be a *pure* function of the task object and
+    the episode's initial state (the first ``act()`` observation's ``state``)
+    returning a key of ``branches``. Every branch stays a static, individually
+    lintable list of steps — arbitrary plan factories
+    (``plan(task, state) -> steps``) are deliberately unsupported.
+    """
+
+    pick: Callable[[Any, dict], str]
+    branches: dict[str, list[Step]]
+
+
 # ---------------------------------------------------------------------------
 # Plan discovery + param rendering
 # ---------------------------------------------------------------------------
 
-def load_plan(task_id: str) -> list[Step] | None:
-    """Return the scripted steps for ``task_id``, or ``None`` if none exist.
+def load_plan(task_id: str) -> list[Step] | Branch | None:
+    """Return the raw plan for ``task_id``, or ``None`` if none exists.
 
     ``task_id`` is ``"<suite>.<ClassName>"``; the suite selects the plan module
     ``bench_env.tests.<suite>.scripted_plans``, which must expose a module-level
-    ``PLANS: dict[str, list[Step]]`` keyed by full task id. With ``--sample-n``
-    > 1 the runner appends an ``_i{n}`` instance suffix to ``task.id``; plans
-    are keyed by the base id, so fall back to the suffix-stripped lookup.
+    ``PLANS: dict[str, list[Step] | Branch]`` keyed by full task id. With
+    ``--sample-n`` > 1 the runner appends an ``_i{n}`` instance suffix to
+    ``task.id``; plans are keyed by the base id, so fall back to the
+    suffix-stripped lookup.
+
+    The result is *raw*: ``{param}`` placeholders are unrendered and a
+    ``Branch`` is returned as-is — ``ScriptedAgent`` materializes it on the
+    first ``act()`` (branch pick → derived params → render → macro expansion).
     """
     suite = task_id.split(".", 1)[0] if task_id else ""
     if not suite:
@@ -338,12 +374,51 @@ def load_plan(task_id: str) -> list[Step] | None:
     plans = getattr(module, "PLANS", None)
     if not isinstance(plans, dict):
         return None
-    steps = plans.get(task_id)
-    if steps is None:
+    entry = plans.get(task_id)
+    if entry is None:
         base_id = re.sub(r"_i\d+$", "", task_id)
         if base_id != task_id:
-            steps = plans.get(base_id)
-    return list(steps) if isinstance(steps, list) else None
+            entry = plans.get(base_id)
+    if isinstance(entry, Branch):
+        return entry
+    return list(entry) if isinstance(entry, list) else None
+
+
+def load_derived_params(task_id: str) -> dict[str, Callable[[Any, dict], Any]]:
+    """Return the derived-param calculators for ``task_id`` (``{}`` when absent).
+
+    Discovery mirrors ``load_plan``: the suite's ``scripted_plans`` module may
+    expose a module-level table
+
+    .. code-block:: python
+
+        DERIVED_PARAMS: dict[str, dict[str, Callable[[Any, dict], Any]]] = {
+            "clock.CheckCityTime": {"answer": lambda task, state: ...},
+        }
+
+    keyed by full task id (same ``_i{n}`` instance-suffix fallback). Each inner
+    callable receives ``(task, init_state)`` — the task object and the first
+    ``act()`` observation's ``state`` — and returns the param value. The agent
+    computes these at materialization time to fill plan placeholders that
+    ``task.params`` does not carry on the sampling path; explicitly injected
+    params (tests) always win, and their calculators are skipped entirely.
+    """
+    suite = task_id.split(".", 1)[0] if task_id else ""
+    if not suite:
+        return {}
+    try:
+        module = importlib.import_module(f"bench_env.tests.{suite}.scripted_plans")
+    except ModuleNotFoundError:
+        return {}
+    table = getattr(module, "DERIVED_PARAMS", None)
+    if not isinstance(table, dict):
+        return {}
+    entry = table.get(task_id)
+    if entry is None:
+        base_id = re.sub(r"_i\d+$", "", task_id)
+        if base_id != task_id:
+            entry = table.get(base_id)
+    return dict(entry) if isinstance(entry, dict) else {}
 
 
 def _render(value: Any, params: dict[str, Any]) -> Any:
@@ -368,39 +443,6 @@ def _render(value: Any, params: dict[str, Any]) -> Any:
     if isinstance(value, dict):
         return {k: _render(v, params) for k, v in value.items()}
     return value
-
-
-def _with_derived_params(task_id: str, params: dict[str, Any]) -> dict[str, Any]:
-    """Add small UI-label aliases used by static scripted plans."""
-    if not task_id.startswith("calendar."):
-        return params
-    try:
-        from bench_env.task.calendar.app import (
-            CALENDAR_ALLDAY_REMINDER_VALUES,
-            CALENDAR_DEFAULT_REMINDER_VALUES,
-            CALENDAR_EVENT_REMINDER_VALUES,
-            CALENDAR_LATER_REMINDER_VALUES,
-        )
-    except Exception:
-        return params
-
-    derived = dict(params)
-
-    def add_label(source: str, target: str, mapping: dict[str, Any]) -> None:
-        if target in derived or source not in derived:
-            return
-        wanted = derived[source]
-        for label, value in mapping.items():
-            if value == wanted:
-                derived[target] = label
-                return
-
-    add_label("reminder", "reminderLabel", CALENDAR_DEFAULT_REMINDER_VALUES)
-    add_label("reminder", "reminderChoice", CALENDAR_EVENT_REMINDER_VALUES)
-    add_label("r1", "r1Label", CALENDAR_DEFAULT_REMINDER_VALUES)
-    add_label("r2", "r2Label", CALENDAR_ALLDAY_REMINDER_VALUES)
-    add_label("r3", "r3Label", CALENDAR_LATER_REMINDER_VALUES)
-    return derived
 
 
 def _expand_step_macros(steps: list[Step]) -> list[Step]:
@@ -507,14 +549,18 @@ class ScriptedAgent(BaseAgent):
     def __init__(self, config: AgentConfig | None = None):
         super().__init__(config)
         self._task_id = ""
+        self._task_object: Any = None
         self._task_params: dict[str, Any] = {}
         self._answer_fields: list[dict] = []
-        self._steps: list[Step] = []
+        self._raw_plan: list[Step] | Branch | None = None
+        self._steps: list[Step] | None = None  # None until first act() materializes
+        self._branch_key: str | None = None
         self._cursor = 0
 
     def set_task_context(self, task: Any) -> None:
+        self._task_object = task
         self._task_id = str(getattr(task, "id", "") or "")
-        self._task_params = _with_derived_params(self._task_id, dict(getattr(task, "params", {}) or {}))
+        self._task_params = dict(getattr(task, "params", {}) or {})
         # answer_fields supports two declaration formats (see BaseTask):
         # list[dict] of field defs, or {"question": ..., "fields": [...]}.
         raw_fields = getattr(task, "answer_fields", None)
@@ -552,13 +598,55 @@ class ScriptedAgent(BaseAgent):
         self._task = task
         self._history = []
         self._cursor = 0
+        self._branch_key = None
+        # Lazy: only load the raw plan here. Rendering needs the episode's
+        # initial state (derived params, Branch pick), which the first act()
+        # observation provides — see _materialize().
+        self._raw_plan = load_plan(self._task_id)
+        self._steps = None
 
-        raw = load_plan(self._task_id)
+    def _materialize(self, obs: Observation) -> list[Step]:
+        """Materialize the raw plan into executable steps — once, at the first act().
+
+        The first ``act()`` observation is the runner's post-setup
+        ``initial_obs``, whose ``state`` reflects the fully sampled initial
+        state *after* ``_post_sample`` hooks (e.g.
+        ``CriteriaTask._invert_criteria``) — unlike ``task._env_state``, which
+        is captured before them. Pipeline: ``Branch`` pick → derived-param
+        computation → strict ``{param}`` render → step-macro expansion.
+
+        Failures (unknown branch key, missing params, a raising calculator)
+        propagate: ``Controller.run`` wraps ``agent.act`` in the episode
+        try-block, so the exception surfaces as a loud episode ERROR — the
+        same semantics render errors had when they were raised in ``reset()``.
+        """
+        raw = self._raw_plan
         if raw is None:
-            self._steps = [abort(f"No scripted plan for task id={self._task_id!r}: {task}")]
-            return
-        rendered_steps = [_render(dict(step), self._task_params) for step in raw if isinstance(step, dict)]
-        self._steps = _expand_step_macros(rendered_steps)
+            return [abort(f"No scripted plan for task id={self._task_id!r}: {self._task}")]
+
+        init_state: dict[str, Any] = obs.state if isinstance(obs.state, dict) else {}
+
+        steps: list[Step]
+        if isinstance(raw, Branch):
+            key = raw.pick(self._task_object, init_state)
+            if key not in raw.branches:
+                raise ValueError(
+                    f"scripted Branch.pick for task {self._task_id!r} returned "
+                    f"{key!r} — not one of {sorted(raw.branches)}"
+                )
+            self._branch_key = str(key)
+            steps = list(raw.branches[key])
+        else:
+            steps = raw
+
+        params = dict(self._task_params)
+        for name, fn in load_derived_params(self._task_id).items():
+            if name in params:
+                continue  # explicit injection (tests) wins; skip the calculator
+            params[name] = fn(self._task_object, init_state)
+
+        rendered = [_render(dict(step), params) for step in steps if isinstance(step, dict)]
+        return _expand_step_macros(rendered)
 
     def build_messages(self, obs: Observation) -> list[dict]:
         return []  # No LLM prompt.
@@ -678,6 +766,10 @@ class ScriptedAgent(BaseAgent):
         return action
 
     def act(self, obs: Observation) -> Action:
+        first_act = self._steps is None
+        if first_act:
+            self._steps = self._materialize(obs)
+
         if self._cursor >= len(self._steps):
             step: Step = {"op": "abort", "reason": "Script exhausted before completion"}
         else:
@@ -685,6 +777,9 @@ class ScriptedAgent(BaseAgent):
             self._cursor += 1
 
         action = self._compile_step(step)
+        if first_act and self._branch_key is not None:
+            # Audit note in the trajectory: which branch this episode took.
+            action.raw_response = f"{action.raw_response} [branch={self._branch_key}]"
         self._history.append(
             AgentStepRecord(
                 step_idx=len(self._history) + 1,

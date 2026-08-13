@@ -1,8 +1,10 @@
 """Offline unit tests for the scripted replay agent (no browser).
 
 Verify that plan steps compile to the right Actions and that plan discovery /
-strict param rendering behave. Live, per-suite verification uses
-``scripted_support.run_scripted`` (full ``run_episode``, grounded mode).
+strict param rendering behave — including the lazy first-act materialization
+(``Branch`` pick → ``DERIVED_PARAMS`` → render → macro expansion). Live,
+per-suite verification uses ``scripted_support.run_scripted`` (full
+``run_episode``, grounded mode).
 """
 
 from __future__ import annotations
@@ -10,12 +12,14 @@ from __future__ import annotations
 import pytest
 
 from bench_env.agent.scripted import (
+    Branch,
     ScriptedAgent,
     _render,
     assert_answer,
     assert_text,
     assert_visible,
     complete,
+    load_derived_params,
     load_plan,
     tap_action,
     tap_trigger,
@@ -113,7 +117,7 @@ def test_assert_visible_compiles_to_noop_probe():
     assert action.summary == "ok visible"
 
 
-def test_assert_text_renders_params_through_reset(monkeypatch):
+def test_assert_text_renders_params_via_first_act(monkeypatch):
     import bench_env.agent.scripted as scripted_mod
 
     plan = [assert_text("联系人 {name}"), complete()]
@@ -121,7 +125,7 @@ def test_assert_text_renders_params_through_reset(monkeypatch):
     agent = ScriptedAgent()
     agent.set_task_context(_FakeTask("fake.AssertPlan", {"name": "张三"}))
     agent.reset("desc")
-    action = agent._compile_step(agent._steps[0])
+    action = agent.act(_obs())  # first act materializes + emits step 0
     assert action.action_type == ActionType.NOOP
     assert action.data["selector"] == '[data-adjust-resize] :text("联系人 张三"):visible'
     assert action.data["semantic"] == "assert_visible"
@@ -204,7 +208,7 @@ def test_assert_answer_non_numeric_value_for_number_field_raises():
     assert agent._compile_step(assert_answer("100,023.46")).data["assert_answer_value"] == "100,023.46"
 
 
-def test_assert_answer_renders_params_through_reset(monkeypatch):
+def test_assert_answer_renders_params_via_first_act(monkeypatch):
     import bench_env.agent.scripted as scripted_mod
 
     plan = [assert_answer("{amount}"), complete()]
@@ -214,7 +218,7 @@ def test_assert_answer_renders_params_through_reset(monkeypatch):
         _FakeTask("fake.AnswerPlan", {"amount": "88.5"}, answer_fields=[{"type": "number"}])
     )
     agent.reset("desc")
-    action = agent._compile_step(agent._steps[0])
+    action = agent.act(_obs())  # first act materializes + emits step 0
     assert action.data["assert_answer_value"] == "88.5"
     assert action.data["semantic"] == "assert_visible"
 
@@ -268,10 +272,12 @@ def test_answer_match_exact_tc_converts_traditional():
 
 # ── plan discovery + param rendering ────────────────────────────────
 
-def test_reset_loads_and_renders_plan():
+def test_first_act_materializes_real_plan():
     agent = ScriptedAgent()
     agent.set_task_context(_FakeTask("spotify.CreateNewPlaylist", {"name": "MyList"}))
     agent.reset("desc")
+    assert agent._steps is None  # raw plan loaded, nothing rendered yet
+    agent.act(_obs())
     typed = [agent._compile_step(s) for s in agent._steps if s.get("op") == "type"]
     assert typed and typed[0].data["value"] == "MyList"
 
@@ -300,3 +306,165 @@ def test_render_is_strict_on_missing_param():
 
 def test_render_leaves_plain_strings_untouched():
     assert _render("no placeholder", {}) == "no placeholder"
+
+
+# ── lazy materialization (sampling-path compatibility) ──────────────
+
+def _state_obs(state: dict) -> Observation:
+    return Observation(screenshot_base64="", route={}, state=state, step_idx=0)
+
+
+def test_reset_defers_materialization_to_first_act(monkeypatch):
+    import bench_env.agent.scripted as scripted_mod
+
+    calls = {"derived": 0}
+
+    def counting_derived(task_id):
+        calls["derived"] += 1
+        return {}
+
+    monkeypatch.setattr(scripted_mod, "load_plan", lambda tid: [type_text("{name}"), complete()])
+    monkeypatch.setattr(scripted_mod, "load_derived_params", counting_derived)
+    agent = ScriptedAgent()
+    agent.set_task_context(_FakeTask("fake.Lazy", {"name": "N1"}))
+    agent.reset("desc")
+    assert agent._steps is None  # nothing rendered at reset time
+
+    first = agent.act(_obs())
+    assert first.data["value"] == "N1"
+    materialized = agent._steps
+    assert materialized is not None and calls["derived"] == 1
+
+    second = agent.act(_obs())
+    assert second.action_type == ActionType.COMPLETE
+    assert agent._steps is materialized and calls["derived"] == 1  # materialize ran once
+
+
+def test_materialization_missing_param_raises_loudly(monkeypatch):
+    import bench_env.agent.scripted as scripted_mod
+
+    monkeypatch.setattr(scripted_mod, "load_plan", lambda tid: [type_text("{missing}")])
+    agent = ScriptedAgent()
+    agent.set_task_context(_FakeTask("fake.Missing"))
+    agent.reset("desc")  # lazy: reset itself must not raise
+    # The runner catches act() exceptions and ends the episode as ERROR —
+    # same loud-failure semantics render errors had in reset().
+    with pytest.raises(ValueError, match="cannot be rendered"):
+        agent.act(_obs())
+
+
+# ── DERIVED_PARAMS channel ───────────────────────────────────────────
+
+def test_derived_params_computed_from_task_and_initial_state(monkeypatch):
+    import bench_env.agent.scripted as scripted_mod
+
+    plan = [type_text("{answer}"), type_text("{extra}"), complete()]
+    derived = {
+        "answer": lambda task, state: f"{state['apps']['clock']['count']}",
+        "extra": lambda task, state: f"{task.id}-extra",
+    }
+    monkeypatch.setattr(scripted_mod, "load_plan", lambda tid: plan)
+    monkeypatch.setattr(scripted_mod, "load_derived_params", lambda tid: dict(derived))
+    agent = ScriptedAgent()
+    agent.set_task_context(_FakeTask("fake.Derived"))
+    agent.reset("desc")
+    obs = _state_obs({"apps": {"clock": {"count": 7}}})
+    assert agent.act(obs).data["value"] == "7"  # computed from first-act obs.state
+    assert agent.act(obs).data["value"] == "fake.Derived-extra"  # task object reaches fn
+
+
+def test_injected_params_win_over_derived(monkeypatch):
+    import bench_env.agent.scripted as scripted_mod
+
+    def must_not_run(task, state):
+        raise AssertionError("calculator must be skipped when the param is injected")
+
+    monkeypatch.setattr(scripted_mod, "load_plan", lambda tid: [type_text("{answer}"), complete()])
+    monkeypatch.setattr(scripted_mod, "load_derived_params", lambda tid: {"answer": must_not_run})
+    agent = ScriptedAgent()
+    agent.set_task_context(_FakeTask("fake.Injected", {"answer": "injected"}))
+    agent.reset("desc")
+    assert agent.act(_obs()).data["value"] == "injected"
+
+
+def test_load_derived_params_discovery_and_instance_suffix(monkeypatch):
+    import sys
+    import types
+
+    def fn(task, state):
+        return "v"
+
+    mod = types.ModuleType("bench_env.tests.fakesuite.scripted_plans")
+    mod.DERIVED_PARAMS = {"fakesuite.Foo": {"answer": fn}}
+    monkeypatch.setitem(sys.modules, "bench_env.tests.fakesuite.scripted_plans", mod)
+
+    assert load_derived_params("fakesuite.Foo") == {"answer": fn}
+    assert load_derived_params("fakesuite.Foo_i2") == {"answer": fn}  # _i{n} fallback
+    assert load_derived_params("fakesuite.Bar") == {}
+    assert load_derived_params("nosuchsuite.Foo") == {}
+
+
+def test_suites_without_derived_params_table_yield_empty():
+    assert load_derived_params("spotify.CreateNewPlaylist") == {}
+
+
+# ── Branch (restricted conditional plans) ────────────────────────────
+
+def _branch_plan() -> Branch:
+    return Branch(
+        pick=lambda task, state: "on" if state.get("flag") else "off",
+        branches={
+            "on": [type_text("enabled-{name}"), complete()],
+            "off": [type_text("disabled-{name}"), complete()],
+        },
+    )
+
+
+def test_load_plan_returns_branch_raw(monkeypatch):
+    import sys
+    import types
+
+    branch = _branch_plan()
+    mod = types.ModuleType("bench_env.tests.fakesuite.scripted_plans")
+    mod.PLANS = {"fakesuite.Foo": branch}
+    monkeypatch.setitem(sys.modules, "bench_env.tests.fakesuite.scripted_plans", mod)
+    assert load_plan("fakesuite.Foo") is branch
+    assert load_plan("fakesuite.Foo_i3") is branch
+
+
+def test_branch_pick_routes_on_initial_state(monkeypatch):
+    import bench_env.agent.scripted as scripted_mod
+
+    monkeypatch.setattr(scripted_mod, "load_plan", lambda tid: _branch_plan())
+    for flag, expected in ((True, "enabled-X"), (False, "disabled-X")):
+        agent = ScriptedAgent()
+        agent.set_task_context(_FakeTask("fake.Branchy", {"name": "X"}))
+        agent.reset("desc")
+        assert agent.act(_state_obs({"flag": flag})).data["value"] == expected
+
+
+def test_branch_key_audited_on_first_action_only(monkeypatch):
+    import bench_env.agent.scripted as scripted_mod
+
+    monkeypatch.setattr(scripted_mod, "load_plan", lambda tid: _branch_plan())
+    agent = ScriptedAgent()
+    agent.set_task_context(_FakeTask("fake.Branchy", {"name": "X"}))
+    agent.reset("desc")
+    obs = _state_obs({"flag": True})
+    first = agent.act(obs)
+    assert first.raw_response.endswith("[branch=on]")
+    assert agent.history[-1].llm_response.endswith("[branch=on]")  # lands in trajectory
+    second = agent.act(obs)
+    assert "[branch=" not in second.raw_response
+
+
+def test_branch_pick_unknown_key_fails_loudly(monkeypatch):
+    import bench_env.agent.scripted as scripted_mod
+
+    bad = Branch(pick=lambda task, state: "nope", branches={"on": [complete()]})
+    monkeypatch.setattr(scripted_mod, "load_plan", lambda tid: bad)
+    agent = ScriptedAgent()
+    agent.set_task_context(_FakeTask("fake.Branchy"))
+    agent.reset("desc")
+    with pytest.raises(ValueError, match="not one of"):
+        agent.act(_obs())
