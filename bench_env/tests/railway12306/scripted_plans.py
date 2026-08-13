@@ -1041,7 +1041,8 @@ PLANS: dict[str, list[Step] | Branch] = {
         swipe([500, 720], [500, 280], summary="scroll passenger list to count everyone"),
         wait(0.3, summary="wait after passenger list scroll"),
         # 尾行 = 拼音分组最后一组（Z）末位乘车人周子涵（swipe 后进入视口）。
-        assert_text("周子涵", summary="assert passenger list tail (last passenger) visible"),
+        # 首尾行合证列表完整浏览，收尾断言背书计数 {answer}。
+        assert_text("周子涵", summary="assert passenger list tail (last passenger) visible", endorses=["answer"]),
         *grounded_answer("{answer}", summary="answer passenger count"),
         complete(),
     ],

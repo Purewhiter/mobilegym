@@ -431,6 +431,7 @@ PLANS: dict[str, list[Step]] = {
         assert_visible(
             'xpath=(//button[@data-trigger="bill.detail.open"])[5]',
             summary="assert 5th latest bill row on screen",
+            endorses=["answer"],
         ),
         *grounded_answer("{answer}", summary="answer latest five spending total"),
         complete(),
@@ -449,6 +450,7 @@ PLANS: dict[str, list[Step]] = {
         assert_visible(
             'xpath=(//button[@data-trigger="bill.detail.open"])[last()]',
             summary="assert last transfer row visible after browse",
+            endorses=["answer"],
         ),
         *grounded_answer("{answer}", summary="answer large transfer income count"),
         complete(),
@@ -463,6 +465,7 @@ PLANS: dict[str, list[Step]] = {
         assert_visible(
             'xpath=(//div[@data-trigger="chat.open"])[last()]',
             summary="assert last conversation row visible after browse",
+            endorses=["answer"],
         ),
         *grounded_answer("{answer}", summary="answer unread message count"),
         complete(),
@@ -510,6 +513,7 @@ PLANS: dict[str, list[Step]] = {
         assert_visible(
             'xpath=(//button[@data-trigger="bill.search.detail.open"])[last()]',
             summary="assert last search result row visible after browse",
+            endorses=["answer"],
         ),
         *grounded_answer("{answer}", summary="answer bill search result count"),
         complete(),
@@ -565,8 +569,10 @@ PLANS: dict[str, list[Step]] = {
         # Current-year group labels render "N月" — the month's trailing digit
         # + 月 is always a substring of that label (2026-01 → "1月"); other
         # years render the raw "YYYY-MM" key, matching {month2} verbatim.
+        # The pair jointly proves the comparison basis; the closing assert
+        # carries the {answer} endorsement.
         assert_text("{month1[6]}月", summary="assert {month1} summary row on screen"),
-        assert_text("{month2}", summary="assert {month2} group header on screen"),
+        assert_text("{month2}", summary="assert {month2} group header on screen", endorses=["answer"]),
         *grounded_choice_answer("{answer}", summary="answer higher expense month"),
         complete(),
     ],

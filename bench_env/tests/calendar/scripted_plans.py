@@ -644,7 +644,7 @@ def _search_delete_all_arm(event_ids: list[str]) -> list[Step]:
             # the empty state — the on-screen counterpart of the judge's "no
             # matches remain" check.
             type_text("{keyword}", selector='input[placeholder="搜索日程"]:visible', clear=True, summary="re-enter keyword to verify empty"),
-            assert_text("未找到相关日程", summary="assert all matching events deleted"),
+            assert_text("未找到相关日程", summary="assert all matching events deleted", endorses=["deletedCount"]),
             *grounded_answer("{deletedCount}", summary="answer deleted event count"),
             complete(),
         ]
@@ -756,7 +756,7 @@ PLANS: dict[str, list[Step] | Branch] = {
         # and at least one 休 badge is rendered. The count itself stays
         # actor-derived (the probe cannot count elements).
         assert_text("{holidayMonthLabel}", exact=True, summary="assert month view is on the holiday month"),
-        assert_text("休", summary="assert 休 rest badge visible in month grid"),
+        assert_text("休", summary="assert 休 rest badge visible in month grid", endorses=["answer"]),
         *grounded_answer("{answer}", summary="answer holiday length"),
         complete(),
     ],
@@ -771,7 +771,7 @@ PLANS: dict[str, list[Step] | Branch] = {
         # screen. Weak because a month may show a pre-holiday 班 too (Feb 2026:
         # 02-14) and the probe cannot tell which cell carries the badge.
         assert_text("{makeupMonthLabel}", exact=True, summary="assert month view is on the makeup month"),
-        assert_text("班", summary="assert 班 makeup badge visible in month grid"),
+        assert_text("班", summary="assert 班 makeup badge visible in month grid", endorses=["answer"]),
         *grounded_answer("{answer}", summary="answer makeup workday"),
         complete(),
     ],
@@ -836,10 +836,16 @@ PLANS: dict[str, list[Step] | Branch] = {
         # per-date evidence is the month-grid *selected day cell* — the unique
         # bg-app-primary circle whose day number must match the jumped date,
         # with that date's agenda rendered right below.
+        # The pair jointly proves both agendas were viewed; the closing assert
+        # carries the {answerChoice} endorsement.
         *jump_to_date("{date1}"),
         assert_visible(selected_day_cell("{date1Day}"), summary="assert date1 selected in month grid"),
         *jump_to_date("{date2}"),
-        assert_visible(selected_day_cell("{date2Day}"), summary="assert date2 selected in month grid"),
+        assert_visible(
+            selected_day_cell("{date2Day}"),
+            summary="assert date2 selected in month grid",
+            endorses=["answerChoice"],
+        ),
         *grounded_choice_answer("{answerChoice}", summary="answer denser date"),
         complete(),
     ],

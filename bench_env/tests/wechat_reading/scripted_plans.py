@@ -494,7 +494,12 @@ def _compare_lengths_arm(*, add: bool) -> list[Step]:
         back(summary="dismiss search keyboard"),
         trigger_param("book.detail.open", "{thicker_id}", param="bookId", summary="open thicker book detail"),
         wait(0.4, summary="wait for book detail"),
-        assert_text("{thicker_words}", summary="assert thicker book word count on screen"),
+        # 两本字数断言合证"哪本更厚"的比较依据，收尾断言背书 {thicker_title}。
+        assert_text(
+            "{thicker_words}",
+            summary="assert thicker book word count on screen",
+            endorses=["thicker_title"],
+        ),
     ]
     if add:
         steps += [
@@ -656,8 +661,9 @@ PLANS: dict[str, list[Step] | Branch] = {
         trigger_visible("myReading.open.week", summary="open weekly reading stats"),
         wait(0.5, summary="wait for weekly stats page"),
         # 答案（星期几）需综合最近 7 天记录推理，窗口可跨自然周，周视图单屏
-        # 不直接给出该结论文本；断"阅读时长分布"图表卡可见作为读屏证据。
-        assert_text("阅读时长分布", summary="assert weekly duration chart visible"),
+        # 不直接给出该结论文本；断"阅读时长分布"图表卡可见作为读屏证据，
+        # 背书 {answer}。
+        assert_text("阅读时长分布", summary="assert weekly duration chart visible", endorses=["answer"]),
         *grounded_choice_answer("{answer}", summary="answer longest reading weekday"),
         complete(),
     ],

@@ -32,15 +32,30 @@ Rules (implemented in ``_lint_plan``):
   answer phase starts. Navigation step count is deliberately NOT checked: a
   task whose initial screen already shows the answer is legal with 0
   navigation steps + 1 assert.
-- **R1** — *injected params* (plan placeholders neither declared in
-  ``task.parameters`` nor produced by the suite's ``DERIVED_PARAMS``
-  calculators) that flow into answer-phase type/click steps need assert
-  endorsement. This first version is deliberately loose to
-  avoid drowning the report in duplicates: any pre-answer assert (i.e. R2
-  satisfied) endorses all injected params.
-  TODO(tighten): per-param endorsement — require that some assert step's
-  rendered string references ``{name}`` or ``{name_screen}`` for each
-  injected param that flows into the answer phase.
+- **R1** — *answer-class params* (plan placeholders NOT declared in
+  ``task.parameters`` — i.e. test-injected or ``DERIVED_PARAMS``-derived, so
+  their values are never part of the instruction) that flow into answer-phase
+  type/click steps need **per-param** assert endorsement — one endorsing
+  assert per param, so asserting field A never covers direct-filling field B.
+  A pre-answer assert endorses param ``p`` when:
+
+  a) its *payload* (selector / value — ``summary`` never counts) references
+     ``{p}`` — covers ``assert_answer("{p}", field_index=…)`` field binding
+     and selector-embedded references alike;
+  b) the payload references ``{p_screen}`` — the ``*_screen`` naming
+     convention for screen-form variants of judge-form answers (e.g. weather
+     asserts the canonicalized on-screen bucket label ``{answer_screen}``
+     while typing the judge-aligned ``{answer}``);
+  c) the step carries an explicit ``endorses=["p", …]`` annotation (DSL
+     kwarg on ``assert_visible`` / ``assert_text`` / ``assert_answer``) —
+     the escape hatch for B-class *evidence* asserts whose payload has no
+     literal tie to the param (e.g. proving a count answer by showing the
+     list's last row). Only annotate asserts that genuinely prove how the
+     named param's value was obtained on screen.
+
+  Same-source ``DERIVED_PARAMS`` calculators (a derived assert key computed
+  from the same accessor as the answer param) are deliberately NOT inferred —
+  plans in that shape must use the ``*_screen`` convention or ``endorses``.
 - **R3** — multi-app tasks (``len(task.apps) > 1``) must ``awake`` every
   declared appId at least once (display names normalized via
   ``APP_NAME_MAP``; the AnswerSheet awake does not count). Single-app tasks
@@ -75,6 +90,9 @@ from bench_env.task.registry import TaskRegistry
 
 # Flipped to True on 2026-08-12 (backlog cleared) — every R1/R2/R3/R4
 # violation is now a hard test failure (R4 value warnings stay warnings).
+# 2026-08-13: R1 tightened from "any pre-answer assert endorses everything"
+# to per-param endorsement (endorsement backlog cleared the same day — the
+# transient R1_STRICT warn gate is gone, tightened R1 fails under STRICT).
 STRICT = True
 
 REPORT_PATH = Path("/tmp/scripted_lint_report.md")
@@ -186,6 +204,28 @@ def _derived_param_names(module: Any, task_id: str) -> set[str]:
     return {str(k) for k in entry} if isinstance(entry, dict) else set()
 
 
+def _assert_endorsements(step: dict) -> set[str]:
+    """Param names an assert step endorses (see the R1 rule in the module doc).
+
+    Channel a/b — payload references: every ``{name}`` placeholder outside
+    ``summary`` fields endorses ``name``; a ``{name_screen}`` reference
+    additionally endorses ``name`` (the ``*_screen`` screen-form convention).
+    Channel c — the explicit ``endorses`` annotation compiled by the DSL
+    assert constructors (plain param names, no braces).
+    """
+    names: set[str] = set()
+    for name in _placeholders(step, skip_summary=True):
+        names.add(name)
+        if name.endswith("_screen"):
+            names.add(name[: -len("_screen")])
+    raw = step.get("endorses")
+    if isinstance(raw, str):
+        raw = [raw]
+    if isinstance(raw, (list, tuple)):
+        names.update(str(n).strip().strip("{}") for n in raw if str(n).strip())
+    return names
+
+
 def _assert_value_facets(step: dict) -> tuple[str | None, bool, bool]:
     """Return ``(value_text, exactish, scope_narrowed)`` for an assert step.
 
@@ -217,6 +257,11 @@ class _TaskMeta:
     objective: str
     has_answer_fields: bool
     declared_params: set[str]
+    # Inner keys of the suite's DERIVED_PARAMS entry — computed from the
+    # episode's initial state, not part of the instruction, so they are
+    # answer-class for R1 (unlike declared_params, which the instruction
+    # carries and the agent may legitimately type without reading the screen).
+    derived_params: set[str] = field(default_factory=set)
 
 
 def _answer_fields_truthy(cls: type) -> bool:
@@ -306,30 +351,36 @@ def _lint_plan(
             )
         )
 
-    # ── R1: injected params flowing into the answer phase need endorsement ──
+    # ── R1: answer-class params flowing into the answer phase need per-param
+    # assert endorsement (asserting field A must not cover direct-filling B) ──
     referenced = _placeholders(steps)
-    injected = referenced - meta.declared_params
+    answer_class = referenced - meta.declared_params  # injected ∪ derived
     flowing: dict[str, int] = {}
     for idx in range(answer_start, len(steps)):
         step = steps[idx]
         if str(step.get("op") or "") not in ANSWER_FLOW_OPS:
             continue
-        for name in _placeholders(step, skip_summary=True) & injected:
+        for name in _placeholders(step, skip_summary=True) & answer_class:
             flowing.setdefault(name, idx)
-    # Loose endorsement (v1): any pre-answer assert endorses all injected
-    # params — same criterion as R2, so R1 adds signal mainly for tasks
-    # outside R2's scope. TODO(tighten): require a per-param endorsement — an
-    # assert step whose rendered string references {name} or {name}_screen.
-    if flowing and not has_pre_answer_assert:
-        details = ", ".join(f"{{{name}}}(step {idx})" for name, idx in sorted(flowing.items()))
+    endorsed: set[str] = set()
+    for step in steps[:answer_start]:
+        if _is_assert(step):
+            endorsed |= _assert_endorsements(step)
+    unendorsed = {name: idx for name, idx in flowing.items() if name not in endorsed}
+    if unendorsed:
+        details = ", ".join(
+            f"{{{name}}}（{'派生' if name in meta.derived_params else '注入'}，step {idx}）"
+            for name, idx in sorted(unendorsed.items())
+        )
         violations.append(
             _Finding(
                 "R1",
                 suite,
                 task_id,
-                f"注入参数 {details} 未在 task.parameters 声明（也非 DERIVED_PARAMS 派生键），"
-                f"且流入答题阶段的 type/click 步，plan 又无任何前置 assert 背书；"
-                f"请先在信息页对该值加 assert_text/assert_answer",
+                f"答案类参数 {details} 流入答题阶段的 type/click 步，但没有任何前置 assert "
+                f"逐参数背书；背书方式：断言载荷（selector/value，summary 不算）引用 "
+                f"{{参数名}} 或 {{参数名_screen}}，或对确证该参数获取过程的证据断言标注 "
+                f"endorses=[\"参数名\"]（DSL 断言构造函数的可选参数）",
             )
         )
 
@@ -386,11 +437,14 @@ def _lint_entry(
 ) -> tuple[list[_Finding], list[_Finding]]:
     """Lint one PLANS entry (plain step list or ``Branch``) against task metadata.
 
-    ``derived_params`` (the task's ``DERIVED_PARAMS`` inner keys) count as
-    declared for R1; each ``Branch`` arm runs R1–R4 independently.
+    ``derived_params`` (the task's ``DERIVED_PARAMS`` inner keys) are recorded
+    on the meta as answer-class origins for R1 (derived values come from the
+    initial state, not the instruction, so flowing into the answer phase they
+    need endorsement just like injected ones); each ``Branch`` arm runs R1–R4
+    independently.
     """
     if derived_params:
-        meta = replace(meta, declared_params=meta.declared_params | derived_params)
+        meta = replace(meta, derived_params=derived_params)
     violations: list[_Finding] = []
     warnings: list[_Finding] = []
     for label, steps in _plan_variants(task_id, entry):
@@ -448,7 +502,7 @@ def run_lint() -> _LintResult:
 # ---------------------------------------------------------------------------
 
 _RULE_TITLES = {
-    "R1": "R1 注入参数须有断言背书",
+    "R1": "R1 答案类参数须逐参数断言背书",
     "R2": "R2 查询 plan 须有证据断言",
     "R3": "R3 多 App awake 覆盖",
     "R4": "R4 断言卫生（答题阶段后不得有 assert）",
@@ -635,28 +689,91 @@ def test_lint_branch_arms_are_checked_independently() -> None:
         apps=["clock"], objective="query", has_answer_fields=True, declared_params=set()
     )
 
-    # {answer} is derived → declared for R1; the assert-less arm still fails R2
-    # on its own, even though its sibling arm carries the assert.
+    # The assert-less arm fails R2 (no evidence assert) *and* R1 ({answer} is
+    # derived — answer-class — and flows unendorsed), even though its sibling
+    # arm carries the endorsing assert.
     violations, warnings = _lint_entry("clock", "clock.Fake", entry, meta, {"answer"})
     assert [(f.rule, f.task_id) for f in violations] == [
-        ("R2", "clock.Fake[branch=without_assert]")
+        ("R2", "clock.Fake[branch=without_assert]"),
+        ("R1", "clock.Fake[branch=without_assert]"),
     ]
     assert warnings == []
 
 
-def test_lint_derived_params_count_as_declared_for_r1() -> None:
-    from bench_env.agent.scripted import complete, grounded_answer, tap_trigger
-
-    steps = [tap_trigger("detail.open"), *grounded_answer("{code}"), complete()]
-    meta = _TaskMeta(
-        apps=["clock"], objective="operate", has_answer_fields=False, declared_params=set()
+def test_lint_r1_per_param_endorsement() -> None:
+    from bench_env.agent.scripted import (
+        assert_answer,
+        assert_text,
+        assert_visible,
+        complete,
+        grounded_answer,
+        tap_trigger,
     )
 
-    # Without the DERIVED_PARAMS declaration {code} is an unendorsed injected
-    # param flowing into the answer phase → R1.
-    violations, _ = _lint_entry("clock", "clock.Fake", steps, meta, set())
-    assert [f.rule for f in violations] == ["R1"]
+    meta = _TaskMeta(
+        apps=["clock"], objective="query", has_answer_fields=True, declared_params={"city"}
+    )
 
-    # Declared as derived → computed from initial state, no violation.
-    violations, _ = _lint_entry("clock", "clock.Fake", steps, meta, {"code"})
-    assert violations == []
+    def lint(steps: list[dict], derived: set[str]) -> list[str]:
+        violations, _ = _lint_entry("clock", "clock.Fake", steps, meta, derived)
+        return [f.rule for f in violations]
+
+    # Derived params are answer-class: flowing unendorsed → R1 (R2 is satisfied
+    # by the unrelated structural assert, which endorses nothing).
+    structural = assert_visible("[data-trigger='x']", summary="structural check")
+    steps = [tap_trigger("detail.open"), structural, *grounded_answer("{code}"), complete()]
+    assert lint(steps, {"code"}) == ["R1"]
+
+    # (a) same-name payload reference endorses the param…
+    steps = [
+        tap_trigger("detail.open"),
+        assert_answer("{code}", field_index=0),
+        *grounded_answer("{code}"),
+        complete(),
+    ]
+    assert lint(steps, {"code"}) == []
+
+    # …but asserting field A does not cover direct-filling field B.
+    steps = [
+        tap_trigger("detail.open"),
+        assert_answer("{code}", field_index=0),
+        *grounded_answer("{code}", "{other}"),
+        complete(),
+    ]
+    assert lint(steps, {"code", "other"}) == ["R1"]
+
+    # (b) the *_screen convention: asserting {code_screen} endorses {code}.
+    steps = [
+        tap_trigger("detail.open"),
+        assert_answer("{code_screen}", field_index=0),
+        *grounded_answer("{code}"),
+        complete(),
+    ]
+    assert lint(steps, {"code", "code_screen"}) == []
+
+    # (c) explicit endorses annotation on a B-class evidence assert.
+    steps = [
+        tap_trigger("detail.open"),
+        assert_visible("li:last-child", summary="list end", endorses=["code"]),
+        *grounded_answer("{code}"),
+        complete(),
+    ]
+    assert lint(steps, {"code"}) == []
+
+    # A {param} reference in the assert *summary* endorses nothing.
+    steps = [
+        tap_trigger("detail.open"),
+        assert_text("静态文案", summary="near {code}"),
+        *grounded_answer("{code}"),
+        complete(),
+    ]
+    assert lint(steps, {"code"}) == ["R1"]
+
+    # Instruction-declared params typed into the sheet are exempt.
+    steps = [
+        tap_trigger("detail.open"),
+        assert_answer("{code}", field_index=0),
+        *grounded_answer("{code}", "{city}"),
+        complete(),
+    ]
+    assert lint(steps, {"code"}) == []

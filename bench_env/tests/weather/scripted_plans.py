@@ -243,16 +243,23 @@ def swipe_forecast_days(*, span: str, gentle: bool = False) -> Step:
     }
 
 
-def check_city_forecast(city_placeholder: str, *, span: str, gentle: bool = False) -> list[Step]:
+def check_city_forecast(
+    city_placeholder: str, *, span: str, gentle: bool = False, endorses: list[str] | None = None
+) -> list[Step]:
     """Switch to a city, open its 15-day forecast, browse, and return home.
 
     The forecast page header carries no city name, so the per-city evidence
     assert (right city actually visited) lands on the home page hero before
-    the forecast is opened.
+    the forecast is opened (``endorses`` — params whose values were gathered
+    by this per-city inspection round).
     """
     return [
         *select_city(city_placeholder),
-        assert_text(city_placeholder, summary=f"assert {city_placeholder} page on screen"),
+        assert_text(
+            city_placeholder,
+            summary=f"assert {city_placeholder} page on screen",
+            endorses=endorses,
+        ),
         *open_daily_forecast(),
         swipe_forecast_days(span=span, gentle=gentle),
         back(summary=f"back to home from {city_placeholder} forecast"),
@@ -635,8 +642,14 @@ PLANS: dict[str, list[Step] | Branch] = {
         # work here — every manager-card text layer is pointer-events-none, so
         # its hit-test always lands on the transparent card button instead;
         # assert the aria-labeled button (the layer select_city itself taps).
+        # The card pair jointly proves the side-by-side comparison basis; the
+        # closing assert carries the verdict endorsement.
         assert_visible('button[aria-label^="{city1}"]:visible', summary="assert {city1} card on compare screen"),
-        assert_visible('button[aria-label^="{city2}"]:visible', summary="assert {city2} card on compare screen"),
+        assert_visible(
+            'button[aria-label^="{city2}"]:visible',
+            summary="assert {city2} card on compare screen",
+            endorses=["answer"],
+        ),
         *grounded_choice_answer("{answer}", summary="answer hotter city"),
         complete(),
     ],
@@ -651,8 +664,10 @@ PLANS: dict[str, list[Step] | Branch] = {
                 assert_answer("{answer}", summary="assert detail metric value on details grid"),
             ),
             "wind": _check_detail_card_arm(
+                # The two split readings jointly prove the concatenated
+                # {answer}; the closing assert carries its endorsement.
                 assert_text("{answer_dir}", summary="assert wind direction on details grid"),
-                assert_text("{answer_scale}", summary="assert wind scale on details grid"),
+                assert_text("{answer_scale}", summary="assert wind scale on details grid", endorses=["answer"]),
             ),
         },
     ),
@@ -713,7 +728,9 @@ PLANS: dict[str, list[Step] | Branch] = {
         # instead ({city} hero with the actual temp, then the feels-like card).
         assert_text("{city}", summary="assert {city} hero with actual temp on screen"),
         *scroll_home_down(1, "{city} feels-like card"),
-        assert_text("体感", summary="assert feels-like card on screen"),
+        # Both source readings jointly prove the computed difference; the
+        # closing assert carries the {answer} endorsement.
+        assert_text("体感", summary="assert feels-like card on screen", endorses=["answer"]),
         *grounded_answer("{answer}", summary="answer feels-like difference"),
         complete(),
     ],
@@ -727,7 +744,9 @@ PLANS: dict[str, list[Step] | Branch] = {
         assert_text("{city1}", summary="assert {city1} page with 3-day card on screen"),
         *select_city("{city2}"),
         wait(0.4, summary="read {city2} tomorrow high/low on 3-day card"),
-        assert_text("{city2}", summary="assert {city2} page with 3-day card on screen"),
+        # Both per-city inspections jointly prove the comparison basis; the
+        # closing assert carries the verdict endorsement.
+        assert_text("{city2}", summary="assert {city2} page with 3-day card on screen", endorses=["answer"]),
         *grounded_choice_answer("{answer}", summary="answer larger temperature range"),
         complete(),
     ],
@@ -739,7 +758,9 @@ PLANS: dict[str, list[Step] | Branch] = {
         assert_text("{city1}", summary="assert {city1} page on screen"),
         *scroll_home_down(1, "{city1} humidity card"),
         *select_city("{city2}"),
-        assert_text("{city2}", summary="assert {city2} page on screen"),
+        # Both per-city inspections jointly prove the comparison basis; the
+        # closing assert carries the verdict endorsement.
+        assert_text("{city2}", summary="assert {city2} page on screen", endorses=["answer"]),
         *scroll_home_down(1, "{city2} humidity card"),
         *grounded_choice_answer("{answer}", summary="answer more humid city"),
         complete(),
@@ -773,9 +794,11 @@ PLANS: dict[str, list[Step] | Branch] = {
         complete(),
     ],
     "weather.ThreeCityRainCheck": [
+        # The three per-city forecast rounds jointly prove the comparison
+        # basis; the closing round's assert carries the verdict endorsement.
         *check_city_forecast("{city1}", span="next 7 days"),
         *check_city_forecast("{city2}", span="next 7 days"),
-        *check_city_forecast("{city3}", span="next 7 days"),
+        *check_city_forecast("{city3}", span="next 7 days", endorses=["answer"]),
         *grounded_choice_answer("{answer}", summary="answer least rainy city"),
         complete(),
     ],
@@ -802,9 +825,11 @@ PLANS: dict[str, list[Step] | Branch] = {
         complete(),
     ],
     "weather.WeekendTempRange3City": [
+        # The three per-city forecast rounds jointly prove the comparison
+        # basis; the closing round's assert carries the verdict endorsement.
         *check_city_forecast("{city1}", span="weekend", gentle=True),
         *check_city_forecast("{city2}", span="weekend", gentle=True),
-        *check_city_forecast("{city3}", span="weekend", gentle=True),
+        *check_city_forecast("{city3}", span="weekend", gentle=True, endorses=["answer"]),
         *grounded_choice_answer("{answer}", summary="answer weekend smallest range city"),
         complete(),
     ],

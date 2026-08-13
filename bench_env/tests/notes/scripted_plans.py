@@ -258,8 +258,9 @@ PLANS: dict[str, list[Step]] = {
     "notes.ReadNotesCount": [
         # All default notes fit on the first screen; assert the derived
         # top-card title so the answer is grounded in a rendered list without
-        # coupling the plan to defaults.json contents.
-        assert_text("{evidence_title}", summary="assert notes list rendered"),
+        # coupling the plan to defaults.json contents (count evidence — the
+        # probe cannot count cards, the rendered list endorses {answer}).
+        assert_text("{evidence_title}", summary="assert notes list rendered", endorses=["answer"]),
         *grounded_answer("{answer}", summary="answer visible notes count"),
         complete(),
     ],
@@ -299,8 +300,10 @@ PLANS: dict[str, list[Step]] = {
         # <textarea> value, invisible to text probes — assert the content
         # keywords on the home-list card snippet instead (full textContent,
         # only CSS-truncated).
+        # The keyword pair identifies the {answer} content on the rendered
+        # card; the closing assert carries the endorsement.
         assert_answer("{keyword1}", summary="assert content keyword1 on list card"),
-        assert_answer("{keyword2}", summary="assert content keyword2 on list card"),
+        assert_answer("{keyword2}", summary="assert content keyword2 on list card", endorses=["answer"]),
         # Open the note so its full content is on screen; the editor skips
         # autosave when nothing changed, so notes state stays clean. No back
         # needed — grounded_answer starts with home(). {answer} is the derived
@@ -373,9 +376,9 @@ PLANS: dict[str, list[Step]] = {
         # after alarmAt is saved (the more-menu ActionSheet is unmounted by
         # now). The on-screen hour has no zero padding while the injected
         # {answer} is zero-padded ("09:15"), so assert the reminder row
-        # itself; the judge's match_time (±5 min) stays authoritative for
-        # the answered value.
-        assert_text("提醒", summary="assert reminder row rendered in editor header"),
+        # itself (endorsing {answer}); the judge's match_time (±5 min) stays
+        # authoritative for the answered value.
+        assert_text("提醒", summary="assert reminder row rendered in editor header", endorses=["answer"]),
         *grounded_answer("{answer}", summary="answer reminder time"),
         complete(),
     ],
@@ -387,8 +390,9 @@ PLANS: dict[str, list[Step]] = {
         # Evidence: "set private" replaces the editor with the private-notes
         # page; the note card visible there proves the operation landed and
         # the plan is on the page the count is read from. The derived count
-        # itself stays un-asserted (short digit, high mismatch risk).
-        assert_text("{note_title}", summary="assert note card on private-notes page"),
+        # itself stays un-asserted (short digit, high mismatch risk) — this
+        # page-context assert endorses it.
+        assert_text("{note_title}", summary="assert note card on private-notes page", endorses=["answer"]),
         *grounded_answer("{answer}", summary="answer private notes count"),
         complete(),
     ],
@@ -408,10 +412,12 @@ PLANS: dict[str, list[Step]] = {
         wait(0.3, summary="wait for todo completion"),
         # Evidence: after the toggle the row moves to the completed section
         # and its checkbox flips to "取消完成". The derived count stays
-        # un-asserted (short digit, high mismatch risk).
+        # un-asserted (short digit, high mismatch risk) — the workflow's
+        # closing evidence assert endorses it.
         assert_visible(
             todo_checkbox("{existing_todo}", completed=True),
             summary="assert existing todo marked completed",
+            endorses=["answer"],
         ),
         *grounded_answer("{answer}", summary="answer remaining incomplete todo count"),
         complete(),

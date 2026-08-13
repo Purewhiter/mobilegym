@@ -29,6 +29,7 @@ from bench_env.agent.scripted import (
     Branch,
     Step,
     assert_answer,
+    assert_text,
     awake,
     back,
     complete,
@@ -1030,6 +1031,11 @@ DERIVED_PARAMS: dict[str, dict[str, Callable[[Any, dict[str, Any]], Any]]] = {
         "cheapest_price_digits": lambda t, s: (
             f"{round(_cheapest_high_speed_price(s, str(t.p.from_station), str(t.p.to_station), str(t.p.date)), 2):g}"
         ),
+        # 余额页标题渲染 toLocaleString('en-US', 2fr)——与 crossapp_commerce 的
+        # {balance_screen} 同款屏显派生（_post_sample 注入值 round 2 位恒吻合）。
+        "balance_screen": lambda t, s: (
+            f"{float(Alipay(s['apps']['alipay']).total_balance):,.2f}"
+        ),
         "answer_price": lambda t, s: (
             f"{round(_cheapest_high_speed_price(s, str(t.p.from_station), str(t.p.to_station), str(t.p.date)), 2):g}元"
         ),
@@ -1412,9 +1418,17 @@ PLANS: dict[str, list[Step] | Branch] = {
             field_index=0,
             scope='[data-scroll-container="main"]',
             summary="assert cheapest second-class price on query results",
+            endorses=["answer_price"],
         ),
         # 余额在 支付宝 → 我的 → 余额页（crossapp_commerce 已验证路径）。
         *open_alipay_balance(),
+        # 证据断言：够/不够是 票价 vs 余额 的比较结论，屏上无此字样；票价断言
+        # + 余额屏显断言合证比较依据，收尾断言背书 {answer_afford}。
+        assert_text(
+            "{balance_screen}",
+            summary="assert Alipay total balance on screen",
+            endorses=["answer_afford"],
+        ),
         *grounded_text_then_choice(
             "{answer_price}",
             "{answer_afford}",
@@ -1431,7 +1445,9 @@ PLANS: dict[str, list[Step] | Branch] = {
         wait(0.3, summary="read the {city} ticket travel date"),
         *open_weather_city("{city}", select=True, forecast_swipes=2),
         # 证据断言：到达日最高/最低温出现在 15 日预报页（列全量渲染，scope
-        # 收窄到预报横滚容器；天气文案为昼夜合并注入值，无法整串包含匹配）。
+        # 收窄到预报横滚容器；天气文案为昼夜合并注入值，无法整串包含匹配——
+        # 文案与温度同列渲染，双温度断言钉住到达日列，收尾断言背书
+        # {answer_weather}）。
         assert_answer(
             "{answer_high}",
             field_index=1,
@@ -1443,6 +1459,7 @@ PLANS: dict[str, list[Step] | Branch] = {
             field_index=2,
             scope='[data-scroll-container="forecast"]',
             summary="assert arrival-day low temp on 15-day forecast",
+            endorses=["answer_weather"],
         ),
         *grounded_answer("{answer_weather}", "{answer_high}", "{answer_low}", summary="answer destination weather"),
         complete(),

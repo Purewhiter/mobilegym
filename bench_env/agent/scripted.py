@@ -31,7 +31,9 @@ asserts; a judge-matcher text search inside the scope container for
 ``assert_answer``) and raises ``SCRIPTED_ASSERT_FAILED`` on failure, ending the
 episode as ERROR. These steps appear in recorded trajectories as NOOP records
 carrying that semantic marker — downstream trajectory synthesis must filter
-them out by it.
+them out by it. The optional ``endorses`` kwarg is a lint-only annotation
+(compiled into the step dict, ignored at runtime) naming the answer-class
+params an *evidence* assert vouches for — see the plan lint's R1 rule.
 
 Plans currently live as test assets under
 ``bench_env/tests/<suite>/scripted_plans.py`` (a module-level ``PLANS`` dict
@@ -165,22 +167,65 @@ def long_press_at(selector: str, *, summary: str, duration_ms: int = 800) -> Ste
     return {"op": "long_press", "selector": selector, "duration_ms": duration_ms, "summary": summary}
 
 
-def assert_visible(selector: str, *, timeout_ms: int = 3000, summary: str) -> Step:
+def _endorses_list(endorses: list[str] | tuple[str, ...] | str | None) -> list[str]:
+    """Normalize an ``endorses`` annotation into a list of param names.
+
+    The names are plain identifiers (no ``{}`` braces) of answer-class params
+    this assert vouches for — see the plan lint's R1 rule. Rejects empty /
+    non-string entries loudly: a malformed annotation would otherwise silently
+    endorse nothing.
+    """
+    if endorses is None:
+        return []
+    names = [endorses] if isinstance(endorses, str) else list(endorses)
+    cleaned: list[str] = []
+    for name in names:
+        if not isinstance(name, str) or not name.strip():
+            raise ValueError(f"endorses entries must be non-empty param names, got {name!r}")
+        cleaned.append(name.strip().strip("{}"))
+    return cleaned
+
+
+def assert_visible(
+    selector: str,
+    *,
+    timeout_ms: int = 3000,
+    summary: str,
+    endorses: list[str] | tuple[str, ...] | str | None = None,
+) -> Step:
     """Assert ``selector`` is on screen, visible and tap-hittable right now.
 
     Read-only probe with zero side effects: compiles to a ``NOOP`` action whose
     selector the env resolves (visibility wait + hit-test) without tapping.
     Failure raises ``SCRIPTED_ASSERT_FAILED`` → episode ERROR.
+
+    ``endorses`` — optional lint annotation (no runtime effect): names of
+    answer-class params this assert vouches for when the endorsement cannot be
+    inferred from a ``{param}`` reference in the payload, e.g. an evidence
+    assert proving a *count* answer by showing the list's last row. Only
+    annotate when the asserted evidence genuinely proves how the named param's
+    value was obtained on screen.
     """
-    return {"op": "assert_visible", "selector": selector, "timeout_ms": timeout_ms, "summary": summary}
+    step: Step = {"op": "assert_visible", "selector": selector, "timeout_ms": timeout_ms, "summary": summary}
+    names = _endorses_list(endorses)
+    if names:
+        step["endorses"] = names
+    return step
 
 
-def assert_text(text: str, *, scope: str = "[data-adjust-resize]", exact: bool = False, summary: str | None = None) -> Step:
+def assert_text(
+    text: str,
+    *,
+    scope: str = "[data-adjust-resize]",
+    exact: bool = False,
+    summary: str | None = None,
+    endorses: list[str] | tuple[str, ...] | str | None = None,
+) -> Step:
     """Assert ``text`` is visible inside the foreground Activity container.
 
     ``text`` supports ``{param}`` rendering. ``exact=True`` uses ``:text-is``
     (exact match, whitespace-normalized); otherwise ``:text`` (substring,
-    case-insensitive).
+    case-insensitive). ``endorses`` — see ``assert_visible``.
     """
     pseudo = ":text-is" if exact else ":text"
     # Playwright quoted-string escaping: backslashes first, then double quotes.
@@ -189,6 +234,7 @@ def assert_text(text: str, *, scope: str = "[data-adjust-resize]", exact: bool =
         f'{scope} {pseudo}("{quoted}"):visible',
         timeout_ms=3000,
         summary=summary or f"assert on-screen: {text!r}",
+        endorses=endorses,
     )
 
 
@@ -198,6 +244,7 @@ def assert_answer(
     field_index: int = 0,
     scope: str = "[data-adjust-resize]",
     summary: str | None = None,
+    endorses: list[str] | tuple[str, ...] | str | None = None,
 ) -> Step:
     """Assert a judge-recognized answer ``value`` is on screen inside ``scope``.
 
@@ -225,14 +272,19 @@ def assert_answer(
 
     ``value`` supports ``{param}`` rendering. Compilation fails loudly when the
     task declares no ``answer_fields`` or ``field_index`` is out of range.
+    ``endorses`` — see ``assert_visible``.
     """
-    return {
+    step: Step = {
         "op": "assert_answer",
         "value": value,
         "field_index": field_index,
         "scope": scope,
         "summary": summary or f"assert answer on-screen: {value!r}",
     }
+    names = _endorses_list(endorses)
+    if names:
+        step["endorses"] = names
+    return step
 
 
 def swipe_up(*, x: int = 500, from_y: int = 750, to_y: int = 250, summary: str = "swipe up") -> Step:

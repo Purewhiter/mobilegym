@@ -532,7 +532,8 @@ def _total_duration_arm(
 
     就地自证（B类）：总时长不在任何单屏（各详情页只显示本场参会时长
     HH:MM:SS）。逐场断言该值在屏 —— 全部加数齐备即证明求和所需信息
-    全部读自屏幕，而非任何单一"最后证据"能替代。
+    全部读自屏幕，而非任何单一"最后证据"能替代；收尾（末场）断言背书
+    求和结果 {answer}。
     """
     return [
         *open_history_list(),
@@ -544,6 +545,7 @@ def _total_duration_arm(
                     assert_text(
                         durations[topic],
                         summary=f"assert participation duration of {topic}",
+                        endorses=["answer"] if topic == topics[-1] else None,
                     )
                 ]
                 for topic in topics
@@ -593,8 +595,14 @@ PLANS: dict[str, list[Step] | Branch] = {
         # 就地自证（A类，仅 field 0）：开始时间在时间行内（time 匹配可从
         # "02月03日14:00-17:00..." 提取 HH:MM）。field 1 预定时长是"结束-开始"
         # 的推导值，"{N}分钟" 字样不在屏（match_duration 不解析 HH:MM-HH:MM
-        # 区间，属格式失配），其证据与开始时间同一行，本断言已锁定该行可见。
-        assert_answer("{answer_start}", field_index=0, summary="assert start time on detail time row"),
+        # 区间，属格式失配），其证据与开始时间同一行，本断言已锁定该行可见，
+        # 故一并背书 {answer_duration}。
+        assert_answer(
+            "{answer_start}",
+            field_index=0,
+            summary="assert start time on detail time row",
+            endorses=["answer_duration"],
+        ),
         *grounded_answer("{answer_start}", "{answer_duration}", summary="answer history start and duration"),
         complete(),
     ],
@@ -685,8 +693,12 @@ PLANS: dict[str, list[Step] | Branch] = {
         # 5 次滑动确保滚到 13 行列表底部（过滚在底部钳制，多滑无副作用）。
         *scroll_history_list(5, summary="scan history hosts"),
         # 证据二：滚到底后列表末行"周八的个人会议室"在屏 → 13 场（每行带主持人
-        # 列）已全部过目，计数所需信息获取完毕。
-        assert_text("周八的个人会议室", summary="assert last history row visible after full scan"),
+        # 列）已全部过目，计数所需信息获取完毕，收尾断言背书 {answer}。
+        assert_text(
+            "周八的个人会议室",
+            summary="assert last history row visible after full scan",
+            endorses=["answer"],
+        ),
         *grounded_answer("{answer}", summary="answer friend-hosted meeting count"),
         complete(),
     ],
@@ -790,7 +802,8 @@ PLANS: dict[str, list[Step] | Branch] = {
         ),
         *open_history_detail("{topic2}"),
         wait(0.3, summary="read second meeting participation duration"),
-        assert_text("参会时长", summary="assert participation duration row of topic2"),
+        # 两侧时长行断言合证比较依据，收尾断言背书比较结论 {answer}。
+        assert_text("参会时长", summary="assert participation duration row of topic2", endorses=["answer"]),
         *grounded_choice_answer("{answer}", summary="answer longer participation meeting"),
         complete(),
     ],

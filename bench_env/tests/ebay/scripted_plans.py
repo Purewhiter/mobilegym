@@ -178,6 +178,7 @@ def set_common_filters(
     price_min: str | None = None,
     price_max: str | None = None,
     expect_count: str | None = None,
+    expect_count_endorses: list[str] | None = None,
 ) -> list[Step]:
     steps: list[Step] = [open_filters()]
     if brand:
@@ -221,6 +222,7 @@ def set_common_filters(
             assert_text(
                 f"显示 {expect_count} 个结果",
                 summary=f"assert filter drawer shows {expect_count} results",
+                endorses=expect_count_endorses,
             )
         )
     steps.extend(
@@ -463,20 +465,41 @@ PLANS: dict[str, list[Step]] = {
         # answer is read off the first card (navigation device, not a param).
         *set_sort("最低价 + 运费优先"),
         assert_answer("{cheapest_title}", field_index=0, summary="assert cheapest title visible after sort"),
-        assert_answer("{cheapest_screen_price}", field_index=1, summary="assert cheapest item price visible after sort"),
+        # The card renders the bare item price only; the shipping-inclusive
+        # {cheapest_total} is computed off the same judge-picked card, so the
+        # screen-price assert endorses it.
+        assert_answer(
+            "{cheapest_screen_price}",
+            field_index=1,
+            summary="assert cheapest item price visible after sort",
+            endorses=["cheapest_total"],
+        ),
         *grounded_answer("{cheapest_title}", "{cheapest_total}", summary="answer cheapest {brand} {query}"),
         complete(),
     ],
     "ebay.CompareTwoProductPrices": [
         *filtered_search("{item1}", from_home=True, condition="全新", location="亚洲"),
         *set_sort("{sort_label}"),
-        assert_answer("{item1_screen_price}", field_index=1, summary="assert {item1} extreme item price visible after sort"),
+        # Cards render bare item prices; the shipping-inclusive totals and the
+        # verdict derive from the same judge-picked cards — each screen-price
+        # assert endorses its total, the closing one also the verdict.
+        assert_answer(
+            "{item1_screen_price}",
+            field_index=1,
+            summary="assert {item1} extreme item price visible after sort",
+            endorses=["item1_total"],
+        ),
         # Submitting a new query resets sort back to bestMatch — re-sort after
         # the second search + filters.
         *submit_search("{item2}"),
         *set_common_filters(condition="全新", location="亚洲"),
         *set_sort("{sort_label}"),
-        assert_answer("{item2_screen_price}", field_index=2, summary="assert {item2} extreme item price visible after sort"),
+        assert_answer(
+            "{item2_screen_price}",
+            field_index=2,
+            summary="assert {item2} extreme item price visible after sort",
+            endorses=["item2_total", "winner_choice"],
+        ),
         *grounded_choice_answer(
             "{winner_choice}", "{item1_total}", "{item2_total}",
             summary="answer two product price comparison",
@@ -494,12 +517,15 @@ PLANS: dict[str, list[Step]] = {
             expect_count="{count1}",
         ),
         *submit_search("{brand2} {query2}"),
+        # The two drawer count asserts jointly prove the comparison basis; the
+        # closing one carries the verdict endorsement.
         *set_common_filters(
             condition="{condition2}",
             location="{location2}",
             price_min="{price_min2}",
             price_max="{price_max2}",
             expect_count="{count2}",
+            expect_count_endorses=["count_winner_choice"],
         ),
         *grounded_choice_answer(
             "{count_winner_choice}", "{count1}", "{count2}",

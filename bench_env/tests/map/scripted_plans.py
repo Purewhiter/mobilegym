@@ -301,7 +301,7 @@ def open_nearest_result_detail() -> list[Step]:
     ]
 
 
-def expand_route_sheet() -> list[Step]:
+def expand_route_sheet(*, endorses: list[str] | None = None) -> list[Step]:
     """Drag the route sheet from the MEDIUM snap to the near-fullscreen EXPANDED snap.
 
     After route calculation the sheet rests at MEDIUM (300 app px; only
@@ -309,7 +309,8 @@ def expand_route_sheet() -> list[Step]:
     in the expanded state (RouteDetailSheet ``isExpanded`` branch), so drag the
     sheet handle (norm y≈683 at MEDIUM under the 412-design-width zoom) up
     before reading directions; the trailing assert hard-fails if the sheet did
-    not actually expand.
+    not actually expand (``endorses`` — params whose values are read off the
+    expanded directions).
     """
     return [
         {
@@ -323,6 +324,7 @@ def expand_route_sheet() -> list[Step]:
             '[data-adjust-resize] :text("具体路线"):visible, '
             '[data-adjust-resize] :text("Detailed steps"):visible',
             summary="assert step-by-step directions visible",
+            endorses=endorses,
         ),
     ]
 
@@ -733,8 +735,9 @@ PLANS: dict[str, list[Step]] = {
     ],
     "map.CheckRouteSuccess": [
         *route_between(mode="driving"),
-        # 分步导航文本只在 route sheet 拖到近全屏的 expanded 态渲染。
-        *expand_route_sheet(),
+        # 分步导航文本只在 route sheet 拖到近全屏的 expanded 态渲染；{answer}
+        # （前 3 步导航文本拼接）即读自该展开列表，断言背书之。
+        *expand_route_sheet(endorses=["answer"]),
         *grounded_answer("{answer}", summary="submit route steps"),
         *return_to_map(),
         complete(),
@@ -784,8 +787,14 @@ PLANS: dict[str, list[Step]] = {
         # 就地自证：结论字段（answer_fastest"步行更快/开车更快"）屏上没有——它是对
         # 两个模式时长的比较推理；证据是两个时长同屏可见：驾车时长在路线页头部与
         # 驾车 tab，步行时长在步行 tab（路线页各交通方式 tab 自带该模式时长）。
+        # 双时长断言合证比较依据，收尾断言背书 {answer_fastest}。
         assert_answer("{answer_walk_duration}", field_index=1, summary="assert walking duration on screen"),
-        assert_answer("{answer_drive_duration}", field_index=2, summary="assert driving duration on screen"),
+        assert_answer(
+            "{answer_drive_duration}",
+            field_index=2,
+            summary="assert driving duration on screen",
+            endorses=["answer_fastest"],
+        ),
         *grounded_choice_then_text(
             "{answer_fastest}",
             "{answer_walk_duration}",
@@ -805,11 +814,12 @@ PLANS: dict[str, list[Step]] = {
         # 就地自证（证据断言）：油费=距离×费率是推理值，屏上只有距离；而距离本身
         # 不是本任务注入参数（answer 只有费用数值），无法 assert_answer 逐字段——
         # 断言路线页头部的距离栏（RouteDetailSheet 的"(14.5 公里)"span）可见，
-        # 证明估算依据读自屏幕。
+        # 证明估算依据读自屏幕，背书 {answer}。
         assert_visible(
             '[data-adjust-resize] div.shadow-up.rounded-t-2xl '
             'span.text-lg.text-gray-600:text-matches("公里|千米|km|米"):visible',
             summary="assert route distance figure on screen",
+            endorses=["answer"],
         ),
         *grounded_answer("{answer}", summary="submit driving cost"),
         complete(),
@@ -824,11 +834,12 @@ PLANS: dict[str, list[Step]] = {
         *browse_results(22),
         # 就地自证（证据断言）："第 N 名"排名屏上不存在（对半径内同类评分的推理值），
         # 无法 assert_answer；断言浏览终点：列表最后一行（末端结果行）在屏，证明
-        # 排名依据的结果列表已翻阅到底。
+        # 排名依据的结果列表已翻阅到底，背书 {answer}。
         assert_visible(
             'xpath=(//div[contains(@class,"place-results-sheet-container")]'
             '//div[@data-action="placeResults.result.select.item"])[last()]',
             summary="assert result list browsed to its last row",
+            endorses=["answer"],
         ),
         *grounded_answer("{answer}", summary="submit rating rank"),
         complete(),

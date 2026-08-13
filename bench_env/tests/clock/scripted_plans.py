@@ -409,7 +409,7 @@ def view_world_city_row(city: str) -> Step:
     )
 
 
-def assert_world_city_row(city: str) -> Step:
+def assert_world_city_row(city: str, *, endorses: list[str] | None = None) -> Step:
     """Assert the city row card is on screen (in-viewport hit-test, zero side effects).
 
     Scoped to the row card (`div.rounded-2xl`) rather than a bare city-name
@@ -418,6 +418,7 @@ def assert_world_city_row(city: str) -> Step:
     return assert_visible(
         f'div.rounded-2xl:has-text("{city}"):visible',
         summary=f"assert {city} row on screen",
+        endorses=endorses,
     )
 
 
@@ -515,7 +516,11 @@ PLANS: dict[str, list[Step] | Branch] = {
         # The count never renders on screen — the browse endpoint is the
         # evidence: the last alarm card (derived from the initial state)
         # proves the list was scrolled to its end before answering.
-        assert_visible(alarm_card("{lastAlarmTime}"), summary="assert last alarm card on screen"),
+        assert_visible(
+            alarm_card("{lastAlarmTime}"),
+            summary="assert last alarm card on screen",
+            endorses=["answer"],
+        ),
         *grounded_answer("{answer}", summary="answer alarm count"),
         complete(),
     ],
@@ -573,9 +578,10 @@ PLANS: dict[str, list[Step] | Branch] = {
         view_world_city_row("{city1}"),
         view_world_city_row("{city2}"),
         # The hour difference ("差N小时") is computed, never rendered on screen —
-        # the evidence is both city rows (name + current time) visible together.
+        # the evidence is both city rows (name + current time) visible together;
+        # the closing assert carries the {answer} endorsement.
         assert_world_city_row("{city1}"),
-        assert_world_city_row("{city2}"),
+        assert_world_city_row("{city2}", endorses=["answer"]),
         *grounded_answer("{answer}", summary="answer city time difference"),
         complete(),
     ],
@@ -614,9 +620,10 @@ PLANS: dict[str, list[Step] | Branch] = {
         swipe([500, 850], [500, 250], summary="scroll world clock to city list"),
         wait(0.4, summary="wait for city list"),
         # The hour difference ("差N小时") is computed, never rendered on screen —
-        # the evidence is the new row plus the existing city row visible together.
+        # the evidence is the new row plus the existing city row visible together;
+        # the closing assert carries the {answer} endorsement.
         assert_world_city_row("{new_city}"),
-        assert_world_city_row("{existing_city}"),
+        assert_world_city_row("{existing_city}", endorses=["answer"]),
         *grounded_answer("{answer}", summary="answer added city time difference"),
         complete(),
     ],

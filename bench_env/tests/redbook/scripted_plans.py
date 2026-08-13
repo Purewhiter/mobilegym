@@ -660,7 +660,11 @@ PLANS: dict[str, list[Step] | Branch] = {
         # 4 次长滑对最深候选网格（15 篇笔记）也足以滚到底（滚到底后多余滑动无害）。
         *swipe_page_down(4, "user notes grid bottom"),
         wait(0.3, summary="wait after scrolling notes grid"),
-        assert_text("{last_note_title}", summary="assert last note card of the user visible"),
+        assert_text(
+            "{last_note_title}",
+            summary="assert last note card of the user visible",
+            endorses=["answer"],
+        ),
         *grounded_answer("{answer}", summary="answer note count for followed user"),
         complete(),
     ],

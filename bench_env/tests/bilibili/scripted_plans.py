@@ -533,9 +533,20 @@ PLANS: dict[str, list[Step] | Branch] = {
         # chevron button next to the title (plain onClick, no data-trigger).
         click_selector("h1 + button:visible", summary="expand video description"),
         wait(0.6, summary="wait for description expand animation"),
+        # Per-field asserts: all tags render as sibling pills in one flex-wrap
+        # block inside the expanded description, so the three probes share the
+        # first pill's render path and screen region.
         assert_visible(
             'span.rounded-full:text-is("{tag1}"):visible',
             summary="assert first tag pill is on screen",
+        ),
+        assert_visible(
+            'span.rounded-full:text-is("{tag2}"):visible',
+            summary="assert second tag pill is on screen",
+        ),
+        assert_visible(
+            'span.rounded-full:text-is("{tag3}"):visible',
+            summary="assert third tag pill is on screen",
         ),
         *grounded_answer("{tag1}", "{tag2}", "{tag3}", summary="answer three video tags"),
         complete(),

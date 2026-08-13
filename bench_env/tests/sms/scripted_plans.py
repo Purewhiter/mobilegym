@@ -109,14 +109,15 @@ def send_reply(sender: str, content: str) -> list[Step]:
     ]
 
 
-def browse_thread(sender: str) -> list[Step]:
+def browse_thread(sender: str, *, endorses: list[str] | None = None) -> list[Step]:
     """Open a conversation, scroll toward its earliest message, certify the
-    thread header on screen, and return to the list."""
+    thread header on screen, and return to the list (``endorses`` — params
+    whose values were gathered by browsing this thread)."""
     return [
         row_with_text(sender, summary=f"open {sender} conversation"),
         wait(0.5, summary=f"wait for {sender} thread"),
         swipe([500, 350], [500, 700], summary=f"scroll {sender} thread toward earliest message"),
-        assert_text(sender, exact=True, summary=f"assert {sender} thread header on screen"),
+        assert_text(sender, exact=True, summary=f"assert {sender} thread header on screen", endorses=endorses),
         back(summary="return to conversation list"),
         wait(0.3, summary="wait for conversation list"),
     ]
@@ -225,6 +226,7 @@ PLANS: dict[str, list[Step]] = {
         assert_visible(
             '[data-adjust-resize] div.flex.items-start:has(div.w-2.h-2.rounded-full):visible',
             summary="assert unread-marked conversation rows on screen",
+            endorses=["answer"],
         ),
         *grounded_answer("{answer}", summary="answer unread conversation count"),
         complete(),
@@ -248,8 +250,10 @@ PLANS: dict[str, list[Step]] = {
         # open both compared threads and browse them before answering. Opening a
         # thread marks it read — os.providers.sms.conversations is whitelisted in
         # the task's expected_changes, so this stays a clean diff.
+        # The two thread-header asserts jointly prove both compared threads
+        # were browsed; the closing one carries the verdict endorsement.
         *browse_thread("{sender1}"),
-        *browse_thread("{sender2}"),
+        *browse_thread("{sender2}", endorses=["answer"]),
         *grounded_choice_answer("{answer}", summary="answer conversation with more messages"),
         complete(),
     ],
