@@ -14,19 +14,26 @@ import pytest
 from bench_env.agent.scripted import (
     Branch,
     ScriptedAgent,
+    _expand_step_macros,
     _render,
     assert_answer,
     assert_text,
     assert_visible,
     complete,
+    keypad_text,
     load_derived_params,
     load_plan,
+    read_text,
     tap_action,
     tap_trigger,
     type_text,
 )
 from bench_env.env.base import ActionType, Observation
-from bench_env.env.mobile_gym import _scripted_answer_text_match
+from bench_env.env.mobile_gym import (
+    _extract_read_value,
+    _scripted_answer_text_match,
+    _substitute_runtime_vars,
+)
 
 
 def _obs() -> Observation:
@@ -221,6 +228,97 @@ def test_assert_answer_renders_params_via_first_act(monkeypatch):
     action = agent.act(_obs())  # first act materializes + emits step 0
     assert action.data["assert_answer_value"] == "88.5"
     assert action.data["semantic"] == "assert_visible"
+
+
+# ── read_text (runtime screen reads → episode variables) ────────────
+
+def test_read_text_step_structure():
+    step = read_text("p.code", var="code", extract=r"验证码：(\d{6})", timeout_ms=8000, summary="s")
+    assert step == {
+        "op": "read_text",
+        "selector": "p.code",
+        "var": "code",
+        "extract": r"验证码：(\d{6})",
+        "timeout_ms": 8000,
+        "summary": "s",
+    }
+    minimal = read_text("p", var="v")
+    assert "extract" not in minimal
+    assert minimal["timeout_ms"] == 5000
+    assert minimal["summary"] == "read {var:v} from screen"
+
+
+def test_read_text_compiles_to_noop_probe():
+    action = ScriptedAgent()._compile_step(read_text("p.code", var="code", extract=r"(\d{6})"))
+    assert action.action_type == ActionType.NOOP
+    assert action.data == {
+        "read_selector": "p.code",
+        "read_var": "code",
+        "read_timeout_ms": 5000,
+        "read_extract": r"(\d{6})",
+        "semantic": "read_text",
+    }
+    # No extract → key absent (env treats it as "store the whole text").
+    assert "read_extract" not in ScriptedAgent()._compile_step(read_text("p", var="v")).data
+
+
+def test_render_leaves_runtime_var_tokens_intact():
+    # {var:...} survives materialization; {param} still renders strictly.
+    assert _render("{var:code}", {}) == "{var:code}"
+    assert _render("pay {amount} with {var:code}", {"amount": "9.9"}) == "pay 9.9 with {var:code}"
+    # A real missing param next to a var token still fails loudly.
+    with pytest.raises(ValueError, match="cannot be rendered"):
+        _render("{missing} {var:code}", {})
+    # Nested structures keep both behaviours.
+    step = _render(read_text("p:has-text('{bank}')", var="code"), {"bank": "工商银行"})
+    assert step["selector"] == "p:has-text('工商银行')"
+    assert step["summary"] == "read {var:code} from screen"
+    # The extract regex is exempt from rendering: its quantifiers ({6}) would
+    # otherwise be parsed as str.format positional fields.
+    step = _render(read_text("p", var="code", extract=r"验证码：(\d{6})"), {})
+    assert step["extract"] == r"验证码：(\d{6})"
+
+
+def test_keypad_text_rejects_runtime_var_values():
+    with pytest.raises(ValueError, match="keypad_text"):
+        _expand_step_macros([keypad_text("{var:code}", press_action="pay.keypad.press")])
+
+
+def test_substitute_runtime_vars_replaces_known_names():
+    variables = {"code": "483920", "tail": "5445"}
+    assert _substitute_runtime_vars("{var:code}", variables) == "483920"
+    assert _substitute_runtime_vars("code={var:code} tail={var:tail}", variables) == (
+        "code=483920 tail=5445"
+    )
+    # Non-token strings and non-strings pass through untouched.
+    assert _substitute_runtime_vars("no tokens {here}", variables) == "no tokens {here}"
+    assert _substitute_runtime_vars(42, variables) == 42
+    # Recursion into action-data shapes.
+    data = {"value": "{var:code}", "clear": True, "nested": ["{var:tail}", 1]}
+    assert _substitute_runtime_vars(data, variables) == {
+        "value": "483920",
+        "clear": True,
+        "nested": ["5445", 1],
+    }
+
+
+def test_substitute_runtime_vars_undefined_name_fails_loudly():
+    with pytest.raises(RuntimeError, match="SCRIPTED_VAR_UNDEFINED.*code"):
+        _substitute_runtime_vars("{var:code}", {})
+    with pytest.raises(RuntimeError, match="known vars.*tail"):
+        _substitute_runtime_vars("{var:code}", {"tail": "5445"})
+
+
+def test_extract_read_value_normalizes_and_extracts():
+    # No pattern → whitespace-normalized full text.
+    assert _extract_read_value("  【工商银行】\n验证码：483920，5分钟内有效 ", None) == (
+        "【工商银行】 验证码：483920，5分钟内有效"
+    )
+    # First capture group wins; a group-less pattern returns the whole match.
+    assert _extract_read_value("验证码：483920，5分钟内有效", r"验证码：(\d{6})") == "483920"
+    assert _extract_read_value("验证码：483920", r"\d{6}") == "483920"
+    with pytest.raises(ValueError, match="found no match"):
+        _extract_read_value("没有数字", r"\d{6}")
 
 
 # ── assert_answer matcher dispatch (env-side pure function) ─────────

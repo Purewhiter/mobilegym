@@ -64,6 +64,17 @@ Rules (implemented in ``_lint_plan``):
   (violation); assert values that are pure digits shorter than 4 chars
   without ``exact`` matching / a narrowed scope are reported as warnings
   only (never fail, even in STRICT mode).
+- **R5** — runtime-variable hygiene: every ``{var:name}`` token referenced in
+  a step's payload (``summary`` never counts) must be produced by an earlier
+  ``read_text`` step storing that exact ``var`` in the same plan variant.
+  ``{var:…}`` values are read from the screen *during* the episode, so they
+  are exempt from R1's placeholder accounting (they are not params at all) —
+  R5 is what keeps that exemption honest: a ``{var:}`` token without its
+  ``read_text`` producer is a plan bug, not a lint bypass.
+
+``read_text`` steps count as on-screen evidence for R2 (reading a value off
+the screen subsumes asserting it is there), and their stored variables flow
+onward only through ``{var:name}`` tokens guarded by R5.
 
 Mode: runs in **STRICT mode** (backlog cleared 2026-08-12) — every violation
 (not R4 value warnings) fails the test. A structured report grouped by suite
@@ -85,6 +96,7 @@ from pathlib import Path
 from typing import Any, Iterable
 
 from bench_env.agent.scripted import Branch
+from bench_env.env.base import RUNTIME_VAR_RE
 from bench_env.env.mobile_gym import MobileGymEnv
 from bench_env.task.registry import TaskRegistry
 
@@ -100,6 +112,11 @@ REPORT_PATH = Path("/tmp/scripted_lint_report.md")
 _TESTS_ROOT = Path(__file__).resolve().parents[1]
 
 ASSERT_OPS = frozenset({"assert_visible", "assert_answer"})
+
+# Steps that constitute on-screen evidence for R2: asserts verify a value is
+# on screen; read_text goes further — the value is *taken from* the screen
+# and can only flow onward through R5-guarded {var:name} tokens.
+EVIDENCE_OPS = ASSERT_OPS | frozenset({"read_text"})
 
 # Ops through which an injected answer value can "flow" inside the answer
 # phase: typing it into the sheet, or clicking a choice/keypad control whose
@@ -148,11 +165,23 @@ def _placeholders(value: Any, *, skip_summary: bool = False) -> set[str]:
 
     ``skip_summary=True`` ignores ``summary`` fields — a placeholder that only
     appears in a human-readable summary never carries answer data.
+    ``{var:name}`` runtime-variable tokens are not params (they carry values
+    read from the screen during the episode — see R5) and are stripped before
+    scanning so they never surface as R1 answer-class placeholders.
     """
     names: set[str] = set()
     for text in _iter_strings(value, skip_summary=skip_summary):
         cleaned = text.replace("{{", "").replace("}}", "")
+        cleaned = RUNTIME_VAR_RE.sub("", cleaned)
         names.update(m.group(1) for m in _PLACEHOLDER_RE.finditer(cleaned))
+    return names
+
+
+def _runtime_vars(value: Any) -> set[str]:
+    """Names of ``{var:name}`` tokens in payload strings (``summary`` skipped)."""
+    names: set[str] = set()
+    for text in _iter_strings(value, skip_summary=True):
+        names.update(m.group(1) for m in RUNTIME_VAR_RE.finditer(text))
     return names
 
 
@@ -306,7 +335,7 @@ def _task_meta(registry: TaskRegistry, task_id: str) -> _TaskMeta | None:
 
 @dataclass
 class _Finding:
-    rule: str  # "R1" | "R2" | "R3" | "R4"
+    rule: str  # "R1" | "R2" | "R3" | "R4" | "R5"
     suite: str
     task_id: str
     message: str
@@ -333,11 +362,13 @@ def _lint_plan(
     answer_start_desc = (
         f"step {answer_start}" if answer_start < len(steps) else "plan 末尾（无答题卡阶段）"
     )
-    has_pre_answer_assert = any(_is_assert(s) for s in steps[:answer_start])
+    has_pre_answer_evidence = any(
+        str(s.get("op") or "") in EVIDENCE_OPS for s in steps[:answer_start]
+    )
 
     # ── R2: query plans must show on-screen evidence before answering ──
     is_query = meta.objective in {"query", "hybrid"} or meta.has_answer_fields
-    if is_query and not has_pre_answer_assert:
+    if is_query and not has_pre_answer_evidence:
         af_note = "，声明了 answer_fields" if meta.has_answer_fields else ""
         violations.append(
             _Finding(
@@ -345,7 +376,7 @@ def _lint_plan(
                 suite,
                 task_id,
                 f"查询类任务（objective={meta.objective}{af_note}）在答题阶段起点"
-                f"（{answer_start_desc}）之前没有任何 assert 步；"
+                f"（{answer_start_desc}）之前没有任何 assert/read_text 步；"
                 f"请在导航到信息页、答案可见处插入 assert_text/assert_answer，"
                 f"证明答案读自屏幕而非直填",
             )
@@ -429,6 +460,25 @@ def _lint_plan(
                 )
             )
 
+    # ── R5: {var:name} tokens must be produced by an earlier read_text ──
+    stored_vars: set[str] = set()
+    for idx, step in enumerate(steps):
+        missing = _runtime_vars(step) - stored_vars
+        if missing:
+            tokens = ", ".join(f"{{var:{name}}}" for name in sorted(missing))
+            violations.append(
+                _Finding(
+                    "R5",
+                    suite,
+                    task_id,
+                    f"step {idx}（{str(step.get('summary', ''))!r}）引用了 {tokens}，"
+                    f"但此前没有 read_text 步存入该变量；{{var:}} 只能承载 read_text "
+                    f"从屏幕读出的运行时值，不是绕过参数声明的直填通道",
+                )
+            )
+        if str(step.get("op") or "") == "read_text" and step.get("var"):
+            stored_vars.add(str(step["var"]))
+
     return violations, warnings
 
 
@@ -506,8 +556,9 @@ _RULE_TITLES = {
     "R2": "R2 查询 plan 须有证据断言",
     "R3": "R3 多 App awake 覆盖",
     "R4": "R4 断言卫生（答题阶段后不得有 assert）",
+    "R5": "R5 运行时变量须先 read_text 后引用",
 }
-_RULE_ORDER = ["R2", "R1", "R3", "R4"]
+_RULE_ORDER = ["R2", "R1", "R3", "R4", "R5"]
 
 
 def render_report(result: _LintResult) -> str:
@@ -535,8 +586,8 @@ def render_report(result: _LintResult) -> str:
 
     lines.append("## 按套件统计")
     lines.append("")
-    lines.append("| 套件 | R2 | R1 | R3 | R4 | R4警告 | 小计 |")
-    lines.append("| --- | ---: | ---: | ---: | ---: | ---: | ---: |")
+    lines.append("| 套件 | R2 | R1 | R3 | R4 | R5 | R4警告 | 小计 |")
+    lines.append("| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |")
     for suite in result.suites:
         counts = suite_rule.get(suite, Counter())
         total = sum(counts.values())
@@ -545,11 +596,13 @@ def render_report(result: _LintResult) -> str:
         lines.append(
             f"| {suite} | {counts.get('R2', 0)} | {counts.get('R1', 0)} "
             f"| {counts.get('R3', 0)} | {counts.get('R4', 0)} "
+            f"| {counts.get('R5', 0)} "
             f"| {warn_by_suite.get(suite, 0)} | {total} |"
         )
     lines.append(
         f"| **合计** | **{rule_counts.get('R2', 0)}** | **{rule_counts.get('R1', 0)}** "
         f"| **{rule_counts.get('R3', 0)}** | **{rule_counts.get('R4', 0)}** "
+        f"| **{rule_counts.get('R5', 0)}** "
         f"| **{len(result.warnings)}** | **{len(result.violations)}** |"
     )
     lines.append("")
@@ -777,3 +830,69 @@ def test_lint_r1_per_param_endorsement() -> None:
         complete(),
     ]
     assert lint(steps, {"code"}) == []
+
+
+def test_lint_runtime_vars_are_not_params_and_read_text_is_evidence() -> None:
+    from bench_env.agent.scripted import complete, grounded_answer, read_text, type_text
+
+    # {var:name} is a runtime token, not a placeholder: it never surfaces as
+    # an R1 answer-class param, in payloads or summaries alike.
+    step = type_text("{var:code}", summary="type {var:code} and {label}")
+    assert _placeholders(step) == {"label"}
+    assert _placeholders(step, skip_summary=True) == set()
+    assert _runtime_vars(step) == {"code"}
+    assert _runtime_vars(read_text("p", var="code")) == set()  # summary token skipped
+
+    meta = _TaskMeta(
+        apps=["clock"], objective="query", has_answer_fields=True, declared_params=set()
+    )
+
+    # read_text counts as pre-answer evidence for R2, and typing {var:code}
+    # into the sheet raises neither R1 (not a param) nor R5 (read before use).
+    steps = [
+        read_text("p.code", var="code", extract=r"(\d{6})"),
+        *grounded_answer("{var:code}"),
+        complete(),
+    ]
+    violations, warnings = _lint_entry("clock", "clock.Fake", steps, meta, set())
+    assert violations == [] and warnings == []
+
+
+def test_lint_r5_runtime_var_needs_prior_read_text() -> None:
+    from bench_env.agent.scripted import complete, read_text, type_text
+
+    meta = _TaskMeta(
+        apps=["alipay"], objective="operate", has_answer_fields=False, declared_params=set()
+    )
+
+    # Reference without any read_text producer → R5.
+    steps = [type_text("{var:code}", summary="type code"), complete()]
+    violations, _ = _lint_entry("payment", "payment.Fake", steps, meta, set())
+    assert [f.rule for f in violations] == ["R5"]
+    assert "{var:code}" in violations[0].message
+
+    # Reference *before* the read_text step (wrong order) → still R5.
+    steps = [
+        type_text("{var:code}", summary="type code"),
+        read_text("p.code", var="code"),
+        complete(),
+    ]
+    violations, _ = _lint_entry("payment", "payment.Fake", steps, meta, set())
+    assert [f.rule for f in violations] == ["R5"]
+
+    # Read first, use after — clean; different var name → R5.
+    steps = [
+        read_text("p.code", var="code"),
+        type_text("{var:code}", summary="type code"),
+        complete(),
+    ]
+    violations, _ = _lint_entry("payment", "payment.Fake", steps, meta, set())
+    assert violations == []
+
+    steps = [
+        read_text("p.code", var="code"),
+        type_text("{var:codeX}", summary="type code"),
+        complete(),
+    ]
+    violations, _ = _lint_entry("payment", "payment.Fake", steps, meta, set())
+    assert [f.rule for f in violations] == ["R5"]

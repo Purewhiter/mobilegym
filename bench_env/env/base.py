@@ -11,6 +11,7 @@ This module defines the core abstractions for mobile GUI environments:
 from __future__ import annotations
 
 import base64
+import re
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from enum import Enum
@@ -20,6 +21,15 @@ if TYPE_CHECKING:
     import numpy as np
     from bench_env.task.judge import JudgeResult
     from bench_env.task.base import BaseTask
+
+
+# Runtime episode-variable placeholder inside action data: ``{var:name}``.
+# Scripted ``read_text`` steps store variables during the episode; the env
+# substitutes these tokens right before each action executes (see
+# ``MobileGymEnv._resolve_action_selectors``). Shared here so the agent DSL
+# (skip during ``{param}`` rendering), the env (execution-time substitution)
+# and the plan lint (placeholder exemption) can never drift apart.
+RUNTIME_VAR_RE = re.compile(r"\{var:([A-Za-z_][A-Za-z0-9_]*)\}")
 
 
 class ActionType(str, Enum):

@@ -19,7 +19,7 @@ from typing import Any, Optional, Tuple
 from playwright.async_api import async_playwright, Browser, BrowserContext, Page, Playwright
 
 from bench_env.logger import get_logger
-from bench_env.env.base import Action, ActionType, BaseMobileEnv, Observation, StepResult
+from bench_env.env.base import RUNTIME_VAR_RE, Action, ActionType, BaseMobileEnv, Observation, StepResult
 from bench_env.task import TaskRegistry, JudgeInput, JudgeResult, BaseTask
 from bench_env.task.common_tasks import _match_numeric, match_duration, match_time, normalize_text
 from bench_env.task.utils import date_match_labels
@@ -336,6 +336,56 @@ def _scripted_answer_text_match(kind: str, expected: str, candidate: str) -> boo
     return _normalized_contains(str(expected), candidate)
 
 
+# ==================== Scripted read_text / runtime variables ====================
+# Pure helpers for the scripted ``read_text`` probe and the ``{var:name}``
+# execution-time substitution (see ``bench_env.agent.scripted.read_text``).
+# Module-level so they are unit-testable without a browser.
+
+def _substitute_runtime_vars(value: Any, variables: dict[str, str]) -> Any:
+    """Replace ``{var:name}`` tokens with episode variables (recursive, pure).
+
+    Strings without the token pass through untouched; lists/dicts recurse.
+    Referencing a name no ``read_text`` stored raises
+    ``SCRIPTED_VAR_UNDEFINED`` — a plan/read mismatch must end the episode
+    loudly, never type a literal ``{var:...}`` into the UI.
+    """
+    if isinstance(value, str):
+        if "{var:" not in value:
+            return value
+
+        def _replace(match: "re.Match[str]") -> str:
+            name = match.group(1)
+            if name not in variables:
+                raise RuntimeError(
+                    f"SCRIPTED_VAR_UNDEFINED: {{var:{name}}} referenced but no "
+                    f"read_text step stored it (known vars: {sorted(variables)})"
+                )
+            return variables[name]
+
+        return RUNTIME_VAR_RE.sub(_replace, value)
+    if isinstance(value, list):
+        return [_substitute_runtime_vars(v, variables) for v in value]
+    if isinstance(value, dict):
+        return {k: _substitute_runtime_vars(v, variables) for k, v in value.items()}
+    return value
+
+
+def _extract_read_value(text: str, extract: str | None) -> str:
+    """Pure extraction stage of the scripted ``read_text`` probe.
+
+    Whitespace-normalizes ``text``; with an ``extract`` regex, returns its
+    first capture group (or the whole match when the pattern declares no
+    groups). Raises ``ValueError`` when the pattern finds no match.
+    """
+    normalized = " ".join(str(text).split())
+    if not extract:
+        return normalized
+    match = re.search(str(extract), normalized)
+    if match is None:
+        raise ValueError(f"extract pattern {extract!r} found no match in text {normalized!r}")
+    return match.group(1) if match.groups() else match.group(0)
+
+
 class MobileGymEnv(BaseMobileEnv):
     """
     Playwright-driven simulated mobile environment (async).
@@ -520,6 +570,10 @@ class MobileGymEnv(BaseMobileEnv):
         self._done = False
         self._agent_message: Optional[str] = None
         self._agent_answer: Optional[str] = None
+        # Episode variable table for scripted read_text steps: values read
+        # from the screen during the episode, substituted into later actions'
+        # {var:name} tokens. Cleared on reset().
+        self._scripted_vars: dict[str, str] = {}
 
         # Observability
         self.worker_id = worker_id
@@ -874,6 +928,7 @@ class MobileGymEnv(BaseMobileEnv):
         self._done = False
         self._agent_message = None
         self._agent_answer = None
+        self._scripted_vars.clear()
 
         # First reset after start() — page is already clean, skip reload
         if self._fresh:
@@ -1137,9 +1192,9 @@ class MobileGymEnv(BaseMobileEnv):
     # Scripted/replay agents may emit a CSS ``selector`` instead of ``point``.
     # ``step()`` resolves it to ``point`` (and drops ``selector``) before handlers
     # run, so every agent shares the same coordinate tap path as model agents.
-    # NOOP is included for scripted ``assert_visible`` probes: the selector is
-    # resolved (visibility wait + hit-test) purely as a read-only assertion;
-    # NoopHandler never consumes the resulting ``point``.
+    # NOOP is included for scripted ``assert_visible`` / ``read_text`` probes:
+    # the selector is resolved (visibility wait; hit-test for asserts) purely
+    # as a read-only operation; NoopHandler never consumes the result.
     _SELECTOR_RESOLVABLE = frozenset(
         {ActionType.CLICK, ActionType.DOUBLE_TAP, ActionType.LONG_PRESS, ActionType.TYPE, ActionType.DRAG, ActionType.SWIPE, ActionType.NOOP}
     )
@@ -1171,6 +1226,17 @@ class MobileGymEnv(BaseMobileEnv):
         loc = self.page.locator(selector)
         await loc.first.wait_for(state="visible", timeout=timeout_ms)
         count = await loc.count()
+        # Two-pass hit-test: prefer candidates where elementFromPoint lands on
+        # the element itself or a descendant — the tap's own elementFromPoint
+        # (same API, same coordinate space) will then reach the element, so
+        # its click handlers are guaranteed to fire. Ancestor hits
+        # (hit.contains(el)) are only a fallback (e.g. a pointer-events:none
+        # icon inside a clickable row). This matters under CSS zoom: since the
+        # Chromium zoom standardization, getBoundingClientRect and
+        # elementFromPoint share one coordinate space, so the zoom-multiplied
+        # candidates land *outside* the element and used to be accepted via
+        # the loose ancestor check — the tap then went to the ancestor and the
+        # element's own onClick never fired.
         probe = (
             """el => {
                 const r = el.getBoundingClientRect();
@@ -1194,15 +1260,18 @@ class MobileGymEnv(BaseMobileEnv):
                 for (const [fx, fy] of fractions) {
                     const x = r.left + r.width * fx;
                     const y = r.top + r.height * fy;
-                    cands.push([x * z, y * z]);
                     cands.push([x, y]);
+                    cands.push([x * z, y * z]);
                 }
+                let ancestorHit = null;
                 for (const [x, y] of cands) {
                     if (x < 0 || y < 0 || x >= window.innerWidth || y >= window.innerHeight) continue;
                     const hit = document.elementFromPoint(x, y);
-                    if (hit && (hit === el || el.contains(hit) || hit.contains(el))) return [x, y];
+                    if (!hit) continue;
+                    if (hit === el || el.contains(hit)) return [x, y];
+                    if (!ancestorHit && hit.contains(el)) ancestorHit = [x, y];
                 }
-                return null;
+                return ancestorHit;
             }"""
         )
         # Playwright's ``:visible`` includes elements outside the visual
@@ -1281,15 +1350,27 @@ class MobileGymEnv(BaseMobileEnv):
     async def _resolve_action_selectors(self, action: Action) -> None:
         """Normalize scripted selector addressing to coordinate-only ``point``.
 
-        Runs at the start of ``step()`` before physical handlers. If ``selector``
+        Runs at the start of ``step()`` before physical handlers. First,
+        ``{var:name}`` tokens anywhere in the action data are replaced with
+        episode variables stored by earlier scripted ``read_text`` steps
+        (an unknown name fails the episode loudly). Then, if ``selector``
         is present and coordinates are missing, resolve the element center or
         relative drag endpoints to this env's ``coord_space``. The ``selector``
         key is always removed so handlers and recorded trajectories match
         model-agent coordinate actions.
         """
+        data = action.data
+        # Execution-time {var:name} substitution — the recorded trajectory
+        # carries the substituted (real on-screen) values.
+        for key, value in list(data.items()):
+            data[key] = _substitute_runtime_vars(value, self._scripted_vars)
         if action.action_type not in self._SELECTOR_RESOLVABLE:
             return
-        data = action.data
+        if action.action_type == ActionType.NOOP and data.get("read_var") is not None:
+            # Scripted read_text probe: read-only DOM text read into the
+            # episode variable table (no tap/scroll/state change).
+            await self._resolve_read_text(data)
+            return
         if action.action_type == ActionType.NOOP and data.get("assert_answer_value") is not None:
             # Scripted assert_answer probe: read-only judge-matcher text search
             # inside the scope container (no tap/scroll/state change).
@@ -1407,6 +1488,66 @@ class MobileGymEnv(BaseMobileEnv):
             f"SCRIPTED_ASSERT_FAILED: answer {value!r} (matcher={kind}) "
             f"not found on screen within {scope}"
         )
+
+    async def _resolve_read_text(self, data: dict) -> None:
+        """Scripted ``read_text``: store on-screen text into an episode variable.
+
+        Read-only probe (no tap/scroll/state change): waits for
+        ``read_selector`` to be visible within ``read_timeout_ms``, takes the
+        first *rendered* match's ``textContent`` (whitespace-normalized),
+        applies the optional ``read_extract`` regex (first capture group, else
+        the whole match) and stores the result under ``read_var`` for later
+        ``{var:name}`` substitution. The value is also written back to the
+        action data (``read_value``) so recorded trajectories show what was
+        read. Failures raise ``SCRIPTED_READ_FAILED`` → episode ERROR.
+        """
+        selector = str(data.get("read_selector") or "")
+        var = str(data.get("read_var") or "")
+        extract = data.get("read_extract")
+        timeout_ms = int(data.pop("read_timeout_ms", 5000))
+        if not selector or not var:
+            raise RuntimeError(
+                "SCRIPTED_READ_FAILED: read_text requires both read_selector and read_var"
+            )
+        loc = self.page.locator(selector)
+        try:
+            await loc.first.wait_for(state="visible", timeout=timeout_ms)
+        except Exception as e:
+            raise RuntimeError(
+                f"SCRIPTED_READ_FAILED: selector {selector!r} not visible "
+                f"within {timeout_ms}ms: {e}"
+            ) from e
+        # Unlike tap resolution there is no hit-test: overlays (e.g. a heads-up
+        # notification) must not break a pure text read of an element that is
+        # rendered underneath.
+        probe = (
+            """el => {
+                const r = el.getBoundingClientRect();
+                if (r.width <= 0 || r.height <= 0) return null;
+                const st = getComputedStyle(el);
+                if (st.display === 'none' || st.visibility === 'hidden') return null;
+                return el.textContent || '';
+            }"""
+        )
+        text: str | None = None
+        count = await loc.count()
+        for idx in range(min(count, 100)):
+            candidate = await loc.nth(idx).evaluate(probe)
+            if candidate is not None:
+                text = str(candidate)
+                break
+        if text is None:
+            raise RuntimeError(
+                f"SCRIPTED_READ_FAILED: selector {selector!r} matched no rendered element"
+            )
+        try:
+            value = _extract_read_value(text, str(extract) if extract is not None else None)
+        except ValueError as e:
+            raise RuntimeError(f"SCRIPTED_READ_FAILED: {e} (selector {selector!r})") from e
+        self._scripted_vars[var] = value
+        data["read_value"] = value  # audit trail in the recorded trajectory
+        if self.verbose:
+            _log_env_info(self, f"READ_TEXT {selector!r} -> {var}={value!r}")
 
     def _p2c(self, x: float, y: float) -> Tuple[float, float]:
         # Map "physical" coordinate space to CSS viewport precisely, even when

@@ -33,20 +33,29 @@ Explicit test injections would still win over these calculators;
 ``test_scripted.py`` deliberately injects declared parameters only, so the
 live cases regression-test this derivation path end to end.
 
-Static literals kept on purpose (not derivable, recorded as exemptions):
+Runtime values read from the screen (``read_text`` → ``{var:…}``):
 
-- ``bind_bank_card`` types the SMS code ``"111111"``: the code is generated
+- ``bind_bank_card`` no longer types a pinned SMS code: the code is generated
   *during* the episode via ``crypto.getRandomValues`` (os/SmsGateway.ts) and
   cannot be derived from the initial state (plans materialize once, on the
-  first act()). Live tests pin it via the ``DeterministicBindCards`` crypto
-  patch; on the plain ``--agent scripted`` sampling path
-  ``payment.AlipayBindMultipleCardsTransferAndRecordSuccessfulCards`` is a
-  known cannot-pass until the DSL can read runtime values.
-- Step budget: the two L4 multi-transfer plans exceed the sampling-path
-  default budget (``DIFFICULTY_MAX_STEPS[L4] == 60``; ``task.max_steps`` is
-  capped at 60 too) — ContinuousPayments needs ~141 steps, BindMultipleCards
-  ~118. ``bench_env.run`` passes only with an explicit ``--max-steps``
-  override; the live tests run with ``max_steps=180``.
+  first act()). The plan now opens the SMS app, reads the code off the
+  conversation preview with ``read_text`` (extract regex ``验证码：(六位数字)``),
+  returns to Alipay and types ``{var:…}`` — the same navigate-and-read
+  detour a human/vision agent performs. This unblocks the plain
+  ``--agent scripted`` sampling path for
+  ``payment.AlipayBindMultipleCardsTransferAndRecordSuccessfulCards``; the
+  live tests' ``DeterministicBindCards`` crypto patch stays for
+  deterministic coverage and is simply read back as ``111111``.
+
+Static literals kept on purpose (not derivable, recorded as exemptions):
+
+- Step budget: the two L4 multi-transfer plans exceed the L4 difficulty
+  default (``DIFFICULTY_MAX_STEPS[L4] == 60``) — ContinuousPayments needs
+  141~166 steps at runtime (amount keypad expands per sampled digit),
+  BindMultipleCards ~118 — so both tasks declare their own ``max_steps``
+  (180 / 130), honored by ``RunnerConfig.get_max_steps`` on the plain
+  ``--agent scripted`` sampling path and in the live tests alike; no
+  ``--max-steps`` override needed.
 - ``wechat_pay_password("123456")``: the WeChat pay sheet accepts any 6
   digits (PaymentConfirmationPage completes on length, no comparison) — a
   fixed keypad sequence, not task data.
@@ -67,6 +76,7 @@ from bench_env.agent.scripted import (
     enter,
     home,
     keypad_text,
+    read_text,
     tap_action,
     tap_trigger,
     type_text,
@@ -318,22 +328,39 @@ def create_note(title: str, content: str) -> list[Step]:
     ]
 
 
-def bind_bank_card(bank_name: str) -> list[Step]:
+def bind_bank_card(bank_name: str, *, code_var: str) -> list[Step]:
+    """Bind a bank card, reading the runtime-generated SMS code off the screen.
+
+    The verification page (AddBankCardVerifyPage) generates the code during
+    the episode and delivers it to the SMS app as
+    ``【中国{bank_name}】验证码：XXXXXX，5分钟内有效``. The plan switches to the
+    SMS app, reads the code from that bank's conversation preview into the
+    episode variable ``code_var`` (``read_text``), switches back and types
+    ``{var:<code_var>}`` into the (plain input) code field — the backgrounded
+    Alipay verify page keeps its expected code. Reading from the persistent
+    SMS conversation, not the transient heads-up banner, keeps the step free
+    of the banner's 3.8–5.2s auto-hide race; by the time the success page's
+    top-right 完成 button is tapped the banner is long gone.
+    """
     return [
         tap_trigger("bankCards.add.open", summary=f"open add-card page for {bank_name}"),
         wait(0.4, summary="wait for add-card page"),
         type_text(bank_name, selector='input:visible', clear=True, summary=f"filter bank list to {bank_name}"),
         click_selector(f'xpath=//div[contains(normalize-space(),"{bank_name}")]/ancestor::div[contains(@class,"px-4")][1]//button[contains(normalize-space(),"添加")]', summary=f"choose {bank_name} add"),
         click_selector('button:has-text("同意协议并添加"):visible, button:has-text("同意并添加"):visible', summary="agree and add selected bank card"),
-        wait(0.8, summary="wait for SMS verification page"),
-        # Runtime-generated value, not derivable from the initial state — only
-        # deterministic under the live-test crypto patch (see module docstring).
-        type_text("111111", selector='input[type="tel"]:visible', clear=True, summary="enter deterministic bank SMS code"),
+        wait(0.8, summary="wait for SMS verification page and code delivery"),
+        awake("短信", summary="open SMS app to read the verification code"),
+        wait(0.5, summary="wait for SMS conversation list"),
+        read_text(
+            f'xpath=//p[contains(normalize-space(),"{bank_name}") and contains(normalize-space(),"验证码")]',
+            var=code_var,
+            extract=r"验证码：(\d{6})",
+            summary=f"read {bank_name} SMS verification code into {{var:{code_var}}}",
+        ),
+        awake("Alipay", summary="return to Alipay verification page"),
+        wait(0.5, summary="wait for verification page"),
+        type_text("{var:" + code_var + "}", selector='input[type="tel"]:visible', clear=True, summary="enter SMS code read from the SMS app"),
         wait(0.8, summary="wait for card-added success"),
-        {"op": "click", "point": [500, 80], "summary": "open SMS notification to consume heads-up"},
-        wait(0.5, summary="wait for SMS app"),
-        awake("Alipay", summary="return to Alipay card success page"),
-        wait(0.5, summary="wait for success page"),
         click_selector('button:has-text("完成"):visible', summary="finish card binding"),
         wait(0.5, summary="return to bank cards"),
     ]
@@ -533,8 +560,8 @@ PLANS: dict[str, list[Step]] = {
     ],
     "payment.AlipayBindMultipleCardsTransferAndRecordSuccessfulCards": [
         *open_alipay_bank_cards(),
-        *bind_bank_card("工商银行"),
-        *bind_bank_card("农业银行"),
+        *bind_bank_card("工商银行", code_var="icbcCode"),
+        *bind_bank_card("农业银行", code_var="abcCode"),
         back(summary="return to Alipay Me tab after binding cards"),
         tap_trigger("tab.home", summary="open Alipay Home tab"),
         trigger_visible("transfer.open", summary="open Alipay transfer"),

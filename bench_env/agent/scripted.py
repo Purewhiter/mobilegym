@@ -35,6 +35,19 @@ them out by it. The optional ``endorses`` kwarg is a lint-only annotation
 (compiled into the step dict, ignored at runtime) naming the answer-class
 params an *evidence* assert vouches for — see the plan lint's R1 rule.
 
+**Runtime screen reads**: ``read_text`` steps compile to a ``NOOP`` with
+``semantic == "read_text"`` — the same read-only-probe carrier as asserts, but
+the env *stores* the located element's text into an episode variable table
+(``MobileGymEnv._scripted_vars``). Later steps reference stored values with
+``{var:name}`` tokens, substituted by the env right before each action
+executes. This is the only sanctioned channel for values that are generated
+*during* the episode (SMS verification codes, generated card tails, …) and
+therefore cannot come from ``{param}`` rendering or ``DERIVED_PARAMS`` — both
+of which run once against the initial state. Anything derivable up front must
+keep using params; on-screen *verification* (no data flow) stays with the
+assert steps. Downstream trajectory synthesis must filter ``read_text`` NOOP
+records by their semantic marker, like asserts.
+
 Plans currently live as test assets under
 ``bench_env/tests/<suite>/scripted_plans.py`` (a module-level ``PLANS`` dict
 keyed by full ``task.id``). Conceptually a task's script should ship with the
@@ -65,7 +78,7 @@ from dataclasses import dataclass
 from typing import Any, Callable
 
 from bench_env.agent.base import AgentConfig, AgentStepRecord, BaseAgent
-from bench_env.env.base import Action, ActionType, Observation
+from bench_env.env.base import RUNTIME_VAR_RE, Action, ActionType, Observation
 
 Point = list[int]
 Step = dict[str, Any]
@@ -287,6 +300,52 @@ def assert_answer(
     return step
 
 
+def read_text(
+    selector: str,
+    *,
+    var: str,
+    extract: str | None = None,
+    timeout_ms: int = 5000,
+    summary: str | None = None,
+) -> Step:
+    """Read on-screen text into the episode variable ``var`` at execution time.
+
+    For values that only come into existence *during* the episode (SMS
+    verification codes, runtime-generated card tails, …), which ``{param}``
+    rendering and ``DERIVED_PARAMS`` cannot provide — both run once against
+    the initial state. Values knowable up front must NOT use this: keep them
+    in params / derived params so the plan stays statically lintable.
+
+    Read-only probe with zero side effects: compiles to a ``NOOP`` action
+    (``semantic == "read_text"``). The env waits for ``selector`` to be
+    visible within ``timeout_ms``, takes the first *rendered* match's
+    ``textContent`` (whitespace-normalized), optionally applies the
+    ``extract`` regex — first capture group, or the whole match when the
+    pattern has no groups (e.g. ``r"验证码：(\\d{6})"``) — and stores the
+    result under ``var``. Later steps reference it as ``{var:<name>}`` inside
+    any action-data string (e.g. ``type_text("{var:code}")``); the env
+    substitutes right before the action executes, so recorded trajectories
+    carry the real on-screen value. ``{var:…}`` tokens pass through
+    ``{param}`` rendering untouched. Element not found / extract miss raises
+    ``SCRIPTED_READ_FAILED``; referencing a variable no ``read_text`` stored
+    raises ``SCRIPTED_VAR_UNDEFINED`` — either way a loud episode ERROR.
+
+    Not usable with ``keypad_text``: that macro expands its value into
+    per-character key taps at materialization time, before any episode
+    variable exists (it rejects ``{var:…}`` values loudly).
+    """
+    step: Step = {
+        "op": "read_text",
+        "selector": selector,
+        "var": var,
+        "timeout_ms": timeout_ms,
+        "summary": summary or f"read {{var:{var}}} from screen",
+    }
+    if extract is not None:
+        step["extract"] = extract
+    return step
+
+
 def swipe_up(*, x: int = 500, from_y: int = 750, to_y: int = 250, summary: str = "swipe up") -> Step:
     return swipe([x, from_y], [x, to_y], summary=summary)
 
@@ -479,12 +538,22 @@ def _render(value: Any, params: dict[str, Any]) -> Any:
     Strict on purpose: a missing/typo'd placeholder raises rather than silently
     leaving the literal ``{name}`` in the action — a validation agent must fail
     loudly when its plan and the task params disagree.
+
+    ``{var:name}`` runtime-variable tokens (see ``read_text``) are exempt:
+    they are escaped before ``str.format`` so materialization leaves them
+    intact for the env's execution-time substitution, while every other
+    missing placeholder still fails loudly. The ``extract`` key of a
+    ``read_text`` step is exempt entirely — it holds an execution-time regex
+    whose quantifiers (``\\d{6}``) collide with ``str.format`` syntax, so by
+    contract it never participates in ``{param}`` rendering (parameterize the
+    ``selector`` instead).
     """
     if isinstance(value, str):
         if "{" not in value:
             return value
+        prepared = RUNTIME_VAR_RE.sub(lambda m: "{{" + m.group(0)[1:-1] + "}}", value)
         try:
-            return value.format(**params)
+            return prepared.format(**params)
         except (KeyError, IndexError, ValueError) as exc:
             raise ValueError(
                 f"scripted plan placeholder {value!r} cannot be rendered "
@@ -493,7 +562,7 @@ def _render(value: Any, params: dict[str, Any]) -> Any:
     if isinstance(value, list):
         return [_render(v, params) for v in value]
     if isinstance(value, dict):
-        return {k: _render(v, params) for k, v in value.items()}
+        return {k: (v if k == "extract" else _render(v, params)) for k, v in value.items()}
     return value
 
 
@@ -554,6 +623,15 @@ def _expand_step_macros(steps: list[Step]) -> list[Step]:
             continue
 
         value = str(step.get("value", ""))
+        if RUNTIME_VAR_RE.search(value):
+            # keypad_text expands per character at materialization time —
+            # runtime variables don't exist yet. Use a plain type step
+            # (execution-time {var:…} substitution) instead.
+            raise ValueError(
+                f"keypad_text value {value!r} contains a runtime {{var:…}} token; "
+                f"keypad macros expand before read_text runs — type into an input "
+                f"instead, or add an execution-time keypad variant"
+            )
         press_action = str(step["press_action"])
         param = str(step.get("param") or "digit")
         input_selector = step.get("input_selector")
@@ -781,6 +859,19 @@ class ScriptedAgent(BaseAgent):
                     "semantic": "assert_visible",
                 },
             )
+        elif op == "read_text":
+            # Read-only text probe: env locates the selector, extracts the
+            # value and stores it in the episode variable table for later
+            # {var:name} substitution (see read_text / mobile_gym NOOP branch).
+            data = {
+                "read_selector": str(step["selector"]),
+                "read_var": str(step["var"]),
+                "read_timeout_ms": int(step.get("timeout_ms", 5000)),
+                "semantic": "read_text",
+            }
+            if step.get("extract") is not None:
+                data["read_extract"] = str(step["extract"])
+            action = Action(ActionType.NOOP, data)
         elif op == "assert_answer":
             # Read-only judge-matcher probe: env searches scope texts with the
             # matcher named here (see assert_answer / mobile_gym NOOP branch).
