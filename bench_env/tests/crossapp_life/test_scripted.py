@@ -38,12 +38,10 @@ from bench_env.tests.scripted_support import (
 )
 
 SUITE = "crossapp_life"
-# 天气侧切城市 + 15 日预报页取数步骤叠加闹钟滚轮的动态展开步数，最坏情况超过
-# L4 默认预算 60（机制沿用 crossapp_work 的 SCRIPTED_MAX_STEPS）。
-SCRIPTED_MAX_STEPS: dict[str, int] = {
-    "FullTripPlanWeatherDriven": 75,
-    "WeekendShanghaiTripIfClearAndFree": 75,
-}
+# 不再放宽步数：全部 plan 均须在任务自身预算（难度默认 / task.max_steps）内
+# 完成，与官方 --agent scripted 采样路径的预算完全一致（重分支任务的预算已
+# 由任务声明 max_steps=80 承担，见 tasks.py / defs/）。
+SCRIPTED_MAX_STEPS: dict[str, int] = {}
 
 
 def _task(name: str, **params: Any) -> BaseTask:

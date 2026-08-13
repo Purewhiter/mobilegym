@@ -89,7 +89,9 @@ class MapPlaceToWechat(BaseTask):
     objective = "operate"
     composition = "transfer"
     difficulty = "L3"
-    max_steps = 30
+    # 步数构成：地图搜索+读地址+切微信发送静态 30 步；深索引地点（搜索结果列表
+    # 靠后）需额外滚动定位，采样最坏 33-35 步，30 会截断。
+    max_steps = 38
     capabilities = ["search", "handoff"]
     parameters = {"place": PLACE_PARAM, "contact": WECHAT_CONTACT_PARAM}
     expected_changes = MAP_SEARCH_CHANGES + WECHAT_SEND_CHANGES
@@ -1363,6 +1365,10 @@ class FullTripPlanWeatherDriven(BaseTask):
     objective = "operate"
     composition = "deep_dive"
     difficulty = "L4"
+    # 步数构成：天气 15 日预报逐日核对 + 日历冲突排查 + 12306 查询下单 + 设闹钟。
+    # 静态 plan 55 步，但天气切城市与闹钟时间滚轮的滑动步数随当前时刻动态展开，
+    # 最坏 ~73 步 > L4 默认 60。
+    max_steps = 80
     capabilities = ["extract", "reasoning", "search", "create"]
     parameters = {
         "city": {

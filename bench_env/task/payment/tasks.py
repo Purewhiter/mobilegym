@@ -109,6 +109,12 @@ class AlipayContinuousPaymentsToContactsRecordBalances(BaseTask):
     objective = "operate"
     composition = "transfer"
     difficulty = "L4"
+    # 步数构成：读起始余额（Me→余额页→返回）~10 步 + 5 笔独立转账（进转账页→
+    # 输账号→逐位敲金额→备注→确认→6 位支付密码，每笔 22~28 步）+ 备忘录建档记
+    # 5 个余额 ~15 步。scripted plan 静态 126 步；金额键盘逐位展开随采样位数膨胀
+    # （金额 1~9999 含 2 位小数，最坏 7 键/笔），运行实测 141~166 步，L4 默认 60
+    # 必然截断，150 也会在采样大金额时截断于备忘录阶段。
+    max_steps = 180
     capabilities = ["finance", "handoff", "create", "reasoning"]
     apps = ["alipay", "notes"]
     expected_changes = [
@@ -207,6 +213,10 @@ class AlipayBindMultipleCardsTransferAndRecordSuccessfulCards(BaseTask):
     objective = "operate"
     composition = "transfer"
     difficulty = "L4"
+    # 步数构成：绑 2 张新卡（卡片表单+短信验证码流程，每张 ~15 步）+ 3 笔换卡
+    # 转账（每笔选卡+金额+密码 ~22 步，含 1 笔余额不足回退重选）+ 备忘录记录
+    # 成功卡片 ~12 步。scripted plan 静态 103 步、运行实测 ~118 步，L4 默认 60 必然截断。
+    max_steps = 130
     capabilities = ["finance", "handoff", "create"]
     apps = ["alipay", "notes"]
     expected_changes = [

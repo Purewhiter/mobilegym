@@ -921,7 +921,7 @@ class MyTask(CriteriaTask):
     objective = "operate"     # operate / query / hybrid
     composition = "atomic"    # atomic / sequential / transfer / deep_dive
     difficulty = "L2"         # L1 / L2 / L3 / L4
-    max_steps = 30            # Optional: 15 / 30 / 45 / 60
+    max_steps = 30            # Optional: positive int overriding the difficulty default
     capabilities = ["nav", "settings"]   # 1–4 entries; only core capabilities
 ```
 
@@ -934,7 +934,7 @@ class MyTask(CriteriaTask):
 | L3 | 11–20 steps | Complex filtering, cross-page operations |
 | L4 | 20+ steps | Multi-app composition, multi-step reasoning |
 
-If `max_steps` is omitted, the runner maps difficulty to `L1=15`, `L2=30`, `L3=45`, `L4=60`. Add `max_steps` only when a task's interaction budget differs from its difficulty bucket; valid task-level values are exactly `15`, `30`, `45`, or `60`. In grounded mode, tasks with `answer_fields` still receive an extra +15 steps for the decoupled AnswerSheet flow.
+If `max_steps` is omitted, the runner maps difficulty to `L1=15`, `L2=30`, `L3=45`, `L4=60`. Add `max_steps` only when a task's interaction budget differs from its difficulty bucket — any positive int is valid, including values beyond the difficulty tiers for legitimately long flows (base the number on the measured optimal-path step count plus margin, and leave a comment explaining the composition). In grounded mode, tasks with `answer_fields` still receive an extra +15 steps for the decoupled AnswerSheet flow.
 
 **Capability tags**:
 

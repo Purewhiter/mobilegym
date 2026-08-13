@@ -131,7 +131,7 @@ MOBILE_GYM_TO_THREAD_WORKERS=4 python -m bench_env.run --processes 16 --parallel
 Episode step budget priority:
 
 1. Explicit CLI / `RunnerConfig(max_steps=..., max_steps_explicit=True)`.
-2. Task-level `max_steps`, if set. Valid values are exactly `15`, `30`, `45`, or `60`.
+2. Task-level `max_steps`, if set. Any positive int — long flows may declare budgets beyond the difficulty tiers (e.g. `150`); the value is part of the task definition and is honored as-is.
 3. Difficulty default.
 
 When neither CLI nor task-level `max_steps` is set, max steps adapts to task `difficulty`:

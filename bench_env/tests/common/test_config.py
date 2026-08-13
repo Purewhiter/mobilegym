@@ -4,7 +4,7 @@ import argparse
 
 import pytest
 
-from bench_env.config import RunnerConfig, TASK_MAX_STEPS_ALLOWED
+from bench_env.config import RunnerConfig
 from bench_env.runner.base import BaseRunner
 from bench_env.task.registry import TaskRegistry
 
@@ -60,12 +60,21 @@ def test_cli_max_steps_overrides_task_max_steps() -> None:
     assert _config(max_steps=60, max_steps_explicit=True).get_max_steps(Task()) == 60
 
 
-@pytest.mark.parametrize("value", [0, 16, 75, "30", True])
-def test_task_max_steps_must_be_one_of_allowed_budgets(value) -> None:
+def test_task_max_steps_may_exceed_difficulty_tiers() -> None:
+    """Long-flow tasks may declare budgets beyond the difficulty defaults."""
+
+    class Task(_Task):
+        max_steps = 141
+
+    assert _config().get_max_steps(Task()) == 141
+
+
+@pytest.mark.parametrize("value", [0, -5, "30", True, 1.5])
+def test_task_max_steps_must_be_positive_int(value) -> None:
     class Task(_Task):
         max_steps = value
 
-    with pytest.raises(ValueError, match="fake.Task.*max_steps.*15, 30, 45, 60"):
+    with pytest.raises(ValueError, match="fake.Task.*max_steps.*positive int"):
         _config().get_max_steps(Task())
 
 
@@ -78,11 +87,7 @@ def test_existing_task_max_steps_values_are_valid() -> None:
             value = getattr(task_cls, "max_steps", None)
             if value is None:
                 continue
-            if (
-                not isinstance(value, int)
-                or isinstance(value, bool)
-                or value not in TASK_MAX_STEPS_ALLOWED
-            ):
+            if not isinstance(value, int) or isinstance(value, bool) or value < 1:
                 invalid.append(f"{suite}.{name}: {value!r}")
 
     assert invalid == []

@@ -597,7 +597,7 @@ Use this checklist when adding or modifying a task. PR reviews compare against i
 
 - [ ] **Four axes + capabilities**: `scope` / `objective` / `composition` / `difficulty` / `capabilities` all set.
 - [ ] **Difficulty calibrated**: matches the Golden Steps range.
-- [ ] **`max_steps` valid if set**: omit it for the difficulty default, or set exactly one of `15`, `30`, `45`, `60`.
+- [ ] **`max_steps` valid if set**: omit it for the difficulty default, or set a positive int based on the measured optimal-path step count plus margin (long flows may exceed the difficulty tiers; comment the step composition).
 - [ ] **`capabilities` only core**: 1–4 entries; nav and other prerequisite steps not labeled.
 
 ### Template

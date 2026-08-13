@@ -32,7 +32,6 @@ from bench_env.tests.scripted_support import (
 )
 
 SUITE = "payment"
-PAYMENT_MAX_STEPS = 180
 
 
 async def _force_deterministic_bank_sms_code(env: Any) -> None:
@@ -158,5 +157,7 @@ def test_scripted_cases_cover_every_task() -> None:
 async def test_payment_scripted_passes_judge(
     env: MobileGymEnv, name: str, make_task: Callable[[], BaseTask]
 ) -> None:
-    res = await run_scripted(env, make_task(), suite=SUITE, max_steps=PAYMENT_MAX_STEPS)
+    # 不放宽步数：预算取任务自身声明（长流程任务已声明 max_steps）/难度默认，
+    # 与官方 --agent scripted 采样路径完全一致。
+    res = await run_scripted(env, make_task(), suite=SUITE)
     assert res.success, f"{name}: scripted episode must pass (COMPLETE + judge.passed):\n{format_episode_result(res)}"

@@ -88,7 +88,7 @@ class BaseTask(ABC):
         
     Optional:
         - difficulty: "L1" / "L2" / "L3" / "L4"
-        - max_steps: Optional per-task budget, one of 15 / 30 / 45 / 60
+        - max_steps: Optional per-task budget (positive int, overrides the difficulty default)
         - expected_changes(): Paths that are expected to change
         - _prepare(): Prepare environment after apps opened, before sampling
         - _create_sampler(): Custom sampler creation
@@ -121,7 +121,7 @@ class BaseTask(ABC):
     composition: ClassVar[str] = "atomic"    # atomic / sequential / transfer / deep_dive
     difficulty: ClassVar[str] = "L1"         # L1 / L2 / L3 / L4
     capabilities: ClassVar[list[str]] = []   # ["nav", "search", "reasoning", ...]
-    max_steps: ClassVar[int | None] = None   # Optional task-specific budget: 15 / 30 / 45 / 60
+    max_steps: ClassVar[int | None] = None   # Optional task-specific budget (positive int; overrides difficulty default)
 
     # Multiple optimal solution paths.
     #

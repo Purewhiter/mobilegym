@@ -128,7 +128,7 @@ run_episode(env, agent, task)
 
 The agent terminates explicitly by returning `COMPLETE` / `ABORT`; otherwise the loop ends passively when `max_steps` is reached. If `--loop-detect N` is enabled, N repeated identical actions also truncate the episode. Malformed action payloads terminate the episode as a format error.
 
-`max_steps` is resolved per episode. Explicit CLI `--max-steps` wins first; otherwise a task may define `max_steps = 15 | 30 | 45 | 60`; if it omits the field, the runner uses the difficulty default (`L1=15`, `L2=30`, `L3=45`, `L4=60`). Grounded AnswerSheet tasks still receive an extra +15 steps on top of the resolved task budget.
+`max_steps` is resolved per episode. Explicit CLI `--max-steps` wins first; otherwise a task may define `max_steps` (any positive int — long flows may exceed the difficulty tiers); if it omits the field, the runner uses the difficulty default (`L1=15`, `L2=30`, `L3=45`, `L4=60`). Grounded AnswerSheet tasks still receive an extra +15 steps on top of the resolved task budget.
 
 The resolved budget is persisted per episode as `results.jsonl[].max_steps`. The run-level `meta.json` also contains `task_max_steps`, a task-id to resolved-budget map for the selected task set.
 

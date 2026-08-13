@@ -16,7 +16,6 @@ DIFFICULTY_MAX_STEPS: dict[str, int] = {
     "L3": 45,
     "L4": 60,
 }
-TASK_MAX_STEPS_ALLOWED: frozenset[int] = frozenset(DIFFICULTY_MAX_STEPS.values())
 _DEFAULT_MAX_STEPS = 30
 
 
@@ -290,15 +289,17 @@ class RunnerConfig:
             return self.max_steps
         task_steps = getattr(task, "max_steps", None)
         if task_steps is not None:
+            # Task-declared budgets are part of the task definition ("this flow
+            # legitimately needs N steps") and are honored as-is; they are not
+            # restricted to the difficulty tiers, which only serve as defaults.
             if (
                 not isinstance(task_steps, int)
                 or isinstance(task_steps, bool)
-                or task_steps not in TASK_MAX_STEPS_ALLOWED
+                or task_steps < 1
             ):
                 task_id = getattr(task, "id", None) or task.__class__.__name__
-                allowed = ", ".join(str(v) for v in sorted(TASK_MAX_STEPS_ALLOWED))
                 raise ValueError(
-                    f"{task_id}.max_steps must be one of: {allowed}; got {task_steps!r}"
+                    f"{task_id}.max_steps must be a positive int; got {task_steps!r}"
                 )
             steps = task_steps
         else:

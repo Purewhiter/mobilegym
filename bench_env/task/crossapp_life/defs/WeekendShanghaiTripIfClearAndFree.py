@@ -39,6 +39,10 @@ class WeekendShanghaiTripIfClearAndFree(BaseTask):
     objective = "operate"
     composition = "deep_dive"
     difficulty = "L4"
+    # 步数构成：高铁查询 + 天气 + 日历核对 + 条件分支（写笔记+设闹钟+微信发送）
+    # 六 App 链。plan_trip 分支静态 66 步，闹钟时间滚轮滑动步数随当前时刻动态
+    # 展开，最坏 ~73 步 > L4 默认 60。
+    max_steps = 80
     capabilities = ["search", "reasoning", "create", "handoff"]
     parameters = {"contact": WECHAT_CONTACT_PARAM}
     expected_changes = (
