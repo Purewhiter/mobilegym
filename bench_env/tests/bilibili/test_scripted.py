@@ -1,9 +1,27 @@
-"""Live scripted-plan verification for the Bilibili suite."""
+"""Live scripted-plan verification for the Bilibili suite.
+
+Single-source policy: answers, ``bvid`` / ``mid`` / ``anime_id`` /
+``folder_id`` / ``tag1-3`` and the ranking scroll depth are **not** injected
+here — they come from ``scripted_plans.DERIVED_PARAMS``, computed at
+materialization time from the episode's post-setup initial state (and the
+same static data files the judges read) through the judge-homologous
+``Bilibili`` domain class. That is exactly the official ``--agent scripted``
+sampling path, so these live cases regression-test the derivation itself.
+
+Only *declared* task parameters stay pinned below, for deterministic
+coverage (fixed titles/UP names keep the search geometry stable; ``rank=9``
+exercises the derived ranking-scroll path; ``month=8, day=13`` exercises the
+calendar-navigation Branch arm).
+
+Known exception: ``ViewMyUidTask`` declares no ``answer_fields``, so
+``_grounded`` patches them onto the *instance* — a task-definition patch
+(without it the grounded runner never configures the AnswerSheet), not a
+parameter injection. On the pure CLI sampling path this task cannot pass
+until the task class itself declares ``answer_fields`` (out of scope here).
+"""
 
 from __future__ import annotations
 
-import json
-from pathlib import Path
 from typing import Callable
 
 import pytest
@@ -11,7 +29,6 @@ import pytest
 from bench_env.env.mobile_gym import MobileGymEnv
 from bench_env.task.base import BaseTask
 from bench_env.task.bilibili import tasks as bilibili_tasks
-from bench_env.task.bilibili.app import Bilibili, norm_ip_location
 from bench_env.tests.scripted_support import (
     format_episode_result,
     run_scripted,
@@ -19,33 +36,12 @@ from bench_env.tests.scripted_support import (
 )
 
 SUITE = "bilibili"
-ROOT = Path(__file__).resolve().parents[3]
-APP_DIR = ROOT / "apps" / "Bilibili" / "data"
-DEFAULTS = json.loads((APP_DIR / "defaults.json").read_text(encoding="utf-8"))
-BILI = Bilibili(DEFAULTS)
 
 
 def _grounded(task: BaseTask, fields: list[dict]) -> BaseTask:
     """Add grounded fields for legacy AnswerTask definitions that lack them."""
     task.answer_fields = fields
     return task
-
-
-def _bvid(title: str) -> str:
-    return Bilibili.bvid_from_title(title)
-
-
-def _video_tags(title: str) -> list[str]:
-    tags = Bilibili.video_detail(_bvid(title))["tags"]
-    return [str(tag) for tag in tags[:3]]
-
-
-def _comment_answer(title: str, snippet: str) -> dict[str, str]:
-    comment = Bilibili.comment_by_contains(_bvid(title), snippet)
-    return {
-        "uid": str(comment["mid"]),
-        "location": norm_ip_location(comment["location"]),
-    }
 
 
 DEFAULT_TITLE = "盘点某国令人啼笑皆非的荒诞瞬间"
@@ -55,107 +51,53 @@ ANIME_TITLE = "鬼灭之刃 游郭篇 中配版"
 
 SCRIPTED_CASES: list[tuple[str, Callable[[], BaseTask]]] = [
     ("OpenRankingTask", lambda: bilibili_tasks.OpenRankingTask()),
-    (
-        "ViewProfileStatTask",
-        lambda: bilibili_tasks.ViewProfileStatTask(stat="coins", answer=str(BILI.profile_stat("coins"))),
-    ),
-    (
-        "SubscribeTask",
-        lambda: bilibili_tasks.SubscribeTask(up_name="流光视界", mid=Bilibili.mid_from_name("流光视界")),
-    ),
+    ("ViewProfileStatTask", lambda: bilibili_tasks.ViewProfileStatTask(stat="coins")),
+    ("SubscribeTask", lambda: bilibili_tasks.SubscribeTask(up_name="流光视界")),
     ("UpdateSignTask", lambda: bilibili_tasks.UpdateSignTask(new_sign="脚本验证签名")),
-    (
-        "CoinVideoTask",
-        lambda: bilibili_tasks.CoinVideoTask(title=DEFAULT_TITLE, bvid=_bvid(DEFAULT_TITLE)),
-    ),
+    ("CoinVideoTask", lambda: bilibili_tasks.CoinVideoTask(title=DEFAULT_TITLE)),
     (
         "ViewMyUidTask",
         lambda: _grounded(
-            bilibili_tasks.ViewMyUidTask(answer=DEFAULTS["user"]["uid"]),
+            bilibili_tasks.ViewMyUidTask(),
             [{"type": "text", "label": "UID"}],
         ),
     ),
     ("UpdateNicknameTask", lambda: bilibili_tasks.UpdateNicknameTask(new_name="script_bili_2026")),
-    (
-        "VideoAnswerOnlineTask",
-        lambda: bilibili_tasks.VideoAnswerOnlineTask(
-            title=DEFAULT_TITLE,
-            bvid=_bvid(DEFAULT_TITLE),
-            answer=Bilibili.video_detail(_bvid(DEFAULT_TITLE))["online"],
-        ),
-    ),
-    (
-        "VideoAnswerTagsTask",
-        lambda: bilibili_tasks.VideoAnswerTagsTask(
-            title=DEFAULT_TITLE,
-            bvid=_bvid(DEFAULT_TITLE),
-            tag1=_video_tags(DEFAULT_TITLE)[0],
-            tag2=_video_tags(DEFAULT_TITLE)[1],
-            tag3=_video_tags(DEFAULT_TITLE)[2],
-        ),
-    ),
+    ("VideoAnswerOnlineTask", lambda: bilibili_tasks.VideoAnswerOnlineTask(title=DEFAULT_TITLE)),
+    ("VideoAnswerTagsTask", lambda: bilibili_tasks.VideoAnswerTagsTask(title=DEFAULT_TITLE)),
     (
         "ToggleAnimeSubscriptionTask",
-        lambda: bilibili_tasks.ToggleAnimeSubscriptionTask(
-            anime_title=ANIME_TITLE,
-            anime_id="BVmg00000199",
-        ),
+        lambda: bilibili_tasks.ToggleAnimeSubscriptionTask(anime_title=ANIME_TITLE),
     ),
     ("SetSexTask", lambda: bilibili_tasks.SetSexTask(sex="男")),
     (
         "ViewFavoritesFolderCountTask",
-        lambda: bilibili_tasks.ViewFavoritesFolderCountTask(
-            folder_title="默认收藏夹",
-            folder_id="fav_default",
-            answer=str(BILI.folder_video_count("默认收藏夹")),
-        ),
+        lambda: bilibili_tasks.ViewFavoritesFolderCountTask(folder_title="默认收藏夹"),
     ),
     (
         "SearchUserFollowerCountTask",
-        lambda: bilibili_tasks.SearchUserFollowerCountTask(
-            up_name="流光视界",
-            answer=Bilibili.author_follower_display("流光视界"),
-        ),
+        lambda: bilibili_tasks.SearchUserFollowerCountTask(up_name="流光视界"),
     ),
-    (
-        "SanlianTask",
-        lambda: bilibili_tasks.SanlianTask(title=DEFAULT_TITLE, bvid=_bvid(DEFAULT_TITLE)),
-    ),
+    ("SanlianTask", lambda: bilibili_tasks.SanlianTask(title=DEFAULT_TITLE)),
     (
         "FollowRecommendationTask",
-        lambda: bilibili_tasks.FollowRecommendationTask(
-            target_up_name="流光视界",
-            target_mid=Bilibili.mid_from_name("流光视界"),
-            other_up_name="视界观察员",
-        ),
+        lambda: bilibili_tasks.FollowRecommendationTask(target_up_name="流光视界"),
     ),
     ("UnfollowAndClearHistoryTask", lambda: bilibili_tasks.UnfollowAndClearHistoryTask(up_name="铁壁观察")),
-    ("SetBirthdayTask", lambda: bilibili_tasks.SetBirthdayTask(month=1, day=1)),
-    (
-        "FavVideoAndCountTask",
-        lambda: bilibili_tasks.FavVideoAndCountTask(
-            partition="全站",
-            rank=2,
-            bvid=str(Bilibili.ranking_entry("全站", 2)["id"]),
-            answer=str(BILI.folder_video_count("默认收藏夹") + 1),
-        ),
-    ),
+    ("SetBirthdayTask", lambda: bilibili_tasks.SetBirthdayTask(month=8, day=13)),
+    ("FavVideoAndCountTask", lambda: bilibili_tasks.FavVideoAndCountTask(partition="全站", rank=9)),
     (
         "VideoCommentContainsAnswerUidTask",
         lambda: bilibili_tasks.VideoCommentContainsAnswerUidTask(
             title=DEFAULT_TITLE,
-            bvid=_bvid(DEFAULT_TITLE),
             snippet="十二小时",
-            answer=_comment_answer(DEFAULT_TITLE, "十二小时")["uid"],
         ),
     ),
     (
         "VideoCommentContainsAnswerLocationTask",
         lambda: bilibili_tasks.VideoCommentContainsAnswerLocationTask(
             title=MUSIC_BOX_TITLE,
-            bvid=_bvid(MUSIC_BOX_TITLE),
             snippet="整活达人",
-            answer=_comment_answer(MUSIC_BOX_TITLE, "整活达人")["location"],
         ),
     ),
 ]

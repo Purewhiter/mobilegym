@@ -1,98 +1,61 @@
-"""Scripted replay plans for cross-app content tasks."""
+"""Scripted replay plans for cross-app content tasks.
+
+Sampling compatibility (``DERIVED_PARAMS``): every non-declared plan
+placeholder (whole-sentence messages like ``{wechat_message}``, target ids
+like ``{note_id}``/``{bvid}``, and on-screen assert values) is computed at
+materialization time from the episode's post-setup initial state through the
+*judge-homologous* domain classes — calculators build
+``Redbook(init_state["apps"]["redbook"])`` / ``Spotify(...)`` /
+``WechatReading(...)`` / ``Notes(...)`` / ``X(...)`` / ``Wechat(...)``
+exactly like judges build them from ``input.apps_init[...]`` (multi-app
+``task.setup`` warms every declared app before the first observation, so all
+app stores are present). Bilibili rankings/authors and eBay products are
+static disk datasets that the judges themselves read via classmethods /
+module functions — the calculators call the same functions, which is the
+judge-homologous form for those sources. Explicit test injections would still
+win over these calculators; ``test_scripted.py`` deliberately injects
+declared parameters only, exercising this derivation path end to end.
+
+Restricted ``Branch`` plans (initial-state conditionals):
+
+- ``RedbookAuthorFollowersToWechat`` — the judge requires the first search
+  note's author to be *followed*; whether the author is already followed
+  depends on ``{keyword}`` (数分's author is pre-followed, the other enum
+  keywords' authors are not), so the pure ``pick`` reads the initial
+  ``followingIds`` and selects the arm with / without the follow tap.
+- ``WechatReadingBestBookToWechat`` — ``{category}`` samples over top-level
+  category cards spread across the 2-column category grid; arms differ only
+  in how many pre-scrolls bring the card into the viewport.
+"""
 
 from __future__ import annotations
 
-import datetime as _dt
-import json
-from pathlib import Path
+from typing import Any, Callable
 
 from bench_env.agent.scripted import (
+    Branch,
     Step,
     assert_text,
     assert_visible,
     awake,
     back,
     complete,
+    enter,
     home,
     swipe,
     tap_trigger,
     type_text,
     wait,
 )
-from bench_env.task.bilibili.app import Bilibili
+from bench_env.task.bilibili.app import Bilibili, format_compact_stat
+from bench_env.task.ebay.app import expect_top
+from bench_env.task.notes.app import Notes
 from bench_env.task.redbook.app import Redbook
 from bench_env.task.spotify.app import Spotify
-from bench_env.task.wechat_reading.app import WECHAT_READING_UI_TO_DATA
-
-_ROOT = Path(__file__).resolve().parents[3]
-
-
-BILI_DANCE_RANK10_BVID = str(Bilibili.ranking_entry("舞蹈", 10)["id"])
-BILI_ENTERTAINMENT_TOP3_BVIDS = [
-    str(video["id"]) for video in Bilibili.top_ranking_videos_by_plays("娱乐", 20, top_n=3)
-]
-
-# BilibiliRankAuthorLastNovToWechat：排行榜第 10 名作者的主页 mid 与其
-# 去年 11 月播放量最高的视频（与 test_scripted.py 注入参数同源计算）。
-_BILI_DANCE_RANK10_AUTHOR = Bilibili.ranking_author_name("舞蹈", 10)
-BILI_DANCE_RANK10_AUTHOR_MID = str(Bilibili.author_by_name(_BILI_DANCE_RANK10_AUTHOR)["mid"])
-BILI_DANCE_AUTHOR_LAST_NOV_TOP_BVID = str(
-    Bilibili.author_top_played_video_in_year_month(
-        _BILI_DANCE_RANK10_AUTHOR, _dt.datetime.now().year - 1, 11
-    )["id"]
-)
-
-# Redbook 派生目标（与判分器同源：defaults.json + notes.json 基础数据集）。
-_REDBOOK = Redbook(
-    json.loads((_ROOT / "apps" / "RedBook" / "data" / "defaults.json").read_text(encoding="utf-8"))
-)
-_RB_TRAVEL_TOP_NOTE = _REDBOOK.most_liked_search_note("旅行")
-RB_TRAVEL_TOP_LIKED_NOTE_ID = str(_RB_TRAVEL_TOP_NOTE["id"])
-_RB_TRAVEL_AUTHOR = _REDBOOK.note_author(_RB_TRAVEL_TOP_NOTE)
-RB_TRAVEL_AUTHOR_ID = str(_RB_TRAVEL_AUTHOR["id"])
-RB_TRAVEL_AUTHOR_TOP_COLLECTED_TITLE_PREFIX = str(
-    _REDBOOK.user_max_collected_note(str(_RB_TRAVEL_AUTHOR["name"]))["title"]
-).strip()[:12]
-RB_FITNESS_WORST_TITLE_PREFIX = str(
-    _REDBOOK.user_best_worst_notes("铁铁健身日记")[1]["title"]
-).strip()[:12]
-RB_FITNESS_AUTHOR_ID = str(_REDBOOK.require_user_by_name("铁铁健身日记")["id"])
-
-# RedbookAuthorFollowersToWechat：'数分' 首篇笔记作者（与 test_scripted.py 注入
-# note_id/author_id 同源），作者名/粉丝数在其主页头部展示。
-_RB_SHUFEN_AUTHOR = _REDBOOK.note_author(_REDBOOK.first_search_note("数分"))
-RB_SHUFEN_AUTHOR_NAME = str(_RB_SHUFEN_AUTHOR["name"])
-RB_SHUFEN_AUTHOR_FOLLOWERS = str(_RB_SHUFEN_AUTHOR["followers"])
-
-# RedbookFollowingNoteCountToSms：西柚慢行 feed 序最后一篇笔记标题（计数=5 的浏览终点证据）。
-RB_XIYOU_LAST_NOTE_TITLE = str(_REDBOOK.user_notes_by_name("西柚慢行")[-1]["title"]).strip()
-
-# SpotifySongFullDetailsToRedbook：离线搜索首条结果（时长信息在播放器页）。
-SPOTIFY_GEQIAN_FIRST_RESULT_ID = str(Spotify({}).search_local_tracks("搁浅", limit=1)[0]["id"])
-
-# SpotifyNowPlayingToWechat：冷启动 currentTrack = recentPlays[0]（apps/Spotify/state.ts
-# 初始化逻辑，judge 的 current_track_title 同口径），标题展示在首页底部迷你播放器。
-SPOTIFY_NOW_PLAYING_TITLE = str(
-    json.loads((_ROOT / "apps" / "Spotify" / "data" / "defaults.json").read_text(encoding="utf-8"))[
-        "recentPlays"
-    ][0]["title"]
-)
-
-# WechatReadingBestBookToWechat：'商业' UI 分类推荐值最高的书（与判分器同源：
-# store 按 UI→data 分类映射过滤后 rating 降序取首），分类详情行展示"推荐值 xx%"。
-_WR_BUSINESS_BOOKS = sorted(
-    (
-        book
-        for book in json.loads(
-            (_ROOT / "apps" / "WechatReading" / "data" / "defaults.json").read_text(encoding="utf-8")
-        )["store"]
-        if str(book.get("category")) in WECHAT_READING_UI_TO_DATA.get("商业", ["商业"])
-    ),
-    key=lambda book: float(book.get("rating") or 0),
-    reverse=True,
-)
-WR_BUSINESS_TOP_TITLE = str(_WR_BUSINESS_BOOKS[0]["title"])
-WR_BUSINESS_TOP_RV_LABEL = f"推荐值 {_WR_BUSINESS_BOOKS[0]['recommendedValue']}%"
+from bench_env.task.utils import sim_today
+from bench_env.task.wechat.app import Wechat
+from bench_env.task.wechat_reading.app import WECHAT_READING_UI_TO_DATA, WechatReading
+from bench_env.task.x.app import X
 
 
 def click_selector(selector: str, summary: str) -> Step:
@@ -139,9 +102,20 @@ def scroll_page(times: int, *, summary: str, from_y: int = 820, to_y: int = 420)
 
 
 def send_wechat_message(content: str) -> list[Step]:
+    """Send a text message to ``{contact}`` via the WeChat search route.
+
+    The home chat list only shows contacts with an existing conversation
+    (4 of 12 default contacts), while ``{contact}`` samples over *all*
+    contacts — search covers every contact with no scroll geometry.
+    """
     return [
         *open_app("WeChat"),
-        trigger_param("chat.open", "id", "{contact_wxid}", "open WeChat contact chat"),
+        # search.open 在多个 App 里同名（小红书/微信读书/B站…），warm 后各 App DOM
+        # 常驻——必须限定 :visible 才能命中前台微信的搜索入口。
+        click_selector('[data-trigger="search.open"]:visible', "open WeChat search"),
+        type_text("{contact}", selector="input:visible", clear=True, summary="search WeChat contact"),
+        wait(0.5, summary="wait for contact search results"),
+        trigger_param("chat.open", "id", "{contact_wxid}", "open WeChat contact chat from search"),
         wait(0.5, summary="wait for chat"),
         type_text(content, selector="textarea:visible", clear=True, summary="type WeChat message"),
         click_selector("button.bg-app-primary:visible", "send WeChat message"),
@@ -236,10 +210,13 @@ def send_sms(content: str) -> list[Step]:
 
 
 def ebay_price_low_search() -> list[Step]:
+    # 输入框 + 回车提交：recentSearches 默认只有 '电风扇'，而 {product} 采样
+    # 覆盖全部枚举商品，点击"最近搜索"项对其余商品不可达。
     return [
         *open_app("eBay"),
         tap_trigger("home.search.open", summary="open eBay search"),
-        click_selector('div.cursor-pointer:has-text("{product}"):visible', "select eBay recent search"),
+        type_text("{product}", selector="input:visible", clear=True, summary="type eBay search query"),
+        enter(summary="submit eBay search"),
         wait(0.8, summary="wait for eBay results"),
         click_selector('button:has-text("排序"):visible', "open eBay sort sheet"),
         click_selector(
@@ -256,7 +233,7 @@ def like_spotify_current() -> list[Step]:
         # 歌名证据：首页底部迷你播放器展示当前播放曲目标题；先断可见再点喜欢，
         # 避免点赞后的 toast/浮层遮挡断言点。
         assert_text(
-            SPOTIFY_NOW_PLAYING_TITLE,
+            "{now_playing_title}",
             scope='[data-trigger="player.open"]',
             summary="assert now-playing title on mini player",
         ),
@@ -337,12 +314,22 @@ def bilibili_fav_folder_label(folder: str) -> str:
 
 
 def favorite_rank_video_to_folder(bvid: str, *, create_folder: bool = False) -> list[Step]:
+    """长按收藏按钮直开收藏夹 sheet，勾选目标夹后"完成"落夹。
+
+    收藏按钮同一元素绑定 click（收藏到默认夹）与长按（video.intro.fav.longPress
+    → 直接打开选择收藏夹 sheet，打开时勾选集为空、"完成"按勾选覆盖落夹）。
+    相比旧链路（默认夹收藏 → toast"修改收藏夹" → 取消默认夹）每个视频省 5 步：
+    该 L4 任务在 CLI 采样路径的步数预算是 60，旧链路展开 69 步必然超步（live
+    此前靠测试侧 80 步放宽才通过），且长按路径不留默认夹残余。
+    """
     steps: list[Step] = [
         trigger_param("video.open", "bvid", bvid, "open ranked video for favorite folder"),
         wait(0.8, summary="wait for Bilibili video detail"),
-        click_selector('[data-action="video.intro.fav.toggle"]:visible', "favorite Bilibili video to default folder"),
-        wait(0.3, summary="wait for Bilibili favorite toast"),
-        click_selector('button:has-text("修改收藏夹"):visible', "open Bilibili favorite folder sheet"),
+        long_press_selector(
+            '[data-action="video.intro.fav.toggle"]:visible',
+            "long press Fav to open folder sheet",
+            duration_ms=900,
+        ),
         wait(0.5, summary="wait for favorite folder sheet"),
     ]
     if create_folder:
@@ -352,20 +339,12 @@ def favorite_rank_video_to_folder(bvid: str, *, create_folder: bool = False) -> 
                 wait(0.5, summary="wait for favorite folder form"),
                 type_text("{folder}", selector='input[placeholder="名称"]:visible', clear=True, summary="type folder name"),
                 click_selector('button:has-text("完成"):visible', "create favorite folder"),
-                wait(0.8, summary="return to favorite folder sheet"),
-                click_selector(bilibili_fav_folder_label("默认收藏夹"), "deselect Bilibili default favorite folder"),
-                wait(0.2, summary="wait for default folder deselection"),
+                # 创建完成回到 sheet，新夹自动勾选（pendingNewFolderId 预选机制）。
+                wait(0.8, summary="return to favorite folder sheet with new folder preselected"),
             ]
         )
     else:
-        steps.extend(
-            [
-                click_selector(bilibili_fav_folder_label("{folder}"), "select existing favorite folder"),
-                wait(0.2, summary="wait for folder selection"),
-                click_selector(bilibili_fav_folder_label("默认收藏夹"), "deselect Bilibili default favorite folder"),
-                wait(0.2, summary="wait for default folder deselection"),
-            ]
-        )
+        steps.append(click_selector(bilibili_fav_folder_label("{folder}"), "select target favorite folder"))
     steps.extend(
         [
             click_selector('button:has-text("完成"):visible', "confirm favorite folder selection"),
@@ -380,9 +359,9 @@ def favorite_rank_video_to_folder(bvid: str, *, create_folder: bool = False) -> 
 def create_bilibili_top3_folder() -> list[Step]:
     return [
         *open_bilibili_ranking_after_tab_scroll("{category}", swipes=2),
-        *favorite_rank_video_to_folder(BILI_ENTERTAINMENT_TOP3_BVIDS[0], create_folder=True),
-        *favorite_rank_video_to_folder(BILI_ENTERTAINMENT_TOP3_BVIDS[1]),
-        *favorite_rank_video_to_folder(BILI_ENTERTAINMENT_TOP3_BVIDS[2]),
+        *favorite_rank_video_to_folder("{bvid1}", create_folder=True),
+        *favorite_rank_video_to_folder("{bvid2}"),
+        *favorite_rank_video_to_folder("{bvid3}"),
     ]
 
 
@@ -498,18 +477,41 @@ def wechat_reading_hot_search() -> list[Step]:
     ]
 
 
-def wechat_reading_business_category() -> list[Step]:
-    """到达"{category} 分类推荐值最高的书"信息页：分类列表 → 经济理财 →
-    子分类 chip {category}（分类详情按 rating 降序，首行即目标书 + 推荐值）。"""
-    return [
+def wechat_reading_best_book_steps(*, category_swipes: int) -> list[Step]:
+    """到达"{category} 分类推荐值最高的书"信息页：分类列表 →（可选滚动）→
+    顶级分类 {category} 详情页。
+
+    {category} 采样值（历史/文学/心理/悬疑推理/科学技术）都是顶级分类卡片；
+    详情页默认"全部"chip 的过滤集 = 判分器的 UI→data 分类映射，且按 rating
+    降序排列——首行即目标书 + "推荐值 xx%"。卡片在 2 列网格中的行位随分类
+    不同，Branch 只在预滚动次数上分叉。
+    """
+    steps: list[Step] = [
         *open_app("微信读书"),
-        tap_trigger("categories.open", summary="open WeChat Reading categories"),
+        click_selector('[data-trigger="categories.open"]:visible', "open WeChat Reading categories"),
         wait(0.5, summary="wait for category list"),
-        trigger_param("category.detail.open", "categoryName", "经济理财", "open 经济理财 category detail"),
-        wait(0.5, summary="wait for category detail"),
-        click_selector('span.text-sm.cursor-pointer:has-text("{category}"):visible', "filter by sub-category"),
-        wait(0.5, summary="view top rated book of sub-category"),
     ]
+    if category_swipes:
+        steps += scroll_page(category_swipes, summary="scroll category grid toward target category")
+    steps += [
+        trigger_param("category.detail.open", "categoryName", "{category}", "open target category detail"),
+        wait(0.6, summary="wait for category detail"),
+        # 书名+推荐值证据：分类详情按 rating 降序，首行即目标书，行内展示"推荐值 xx%"。
+        assert_text("{top_book_title}", summary="assert top rated book title visible"),
+        assert_text("{top_book_rv_label}", summary="assert top book recommendation value visible"),
+        *send_wechat_message("{wechat_message}"),
+        complete(),
+    ]
+    return steps
+
+
+# 2 列网格行位（CategoryListPage.TOP_CATEGORIES 索引 // 2）：历史 r2 / 文学 r3 /
+# 心理 r5 首屏可见；悬疑推理 r7 需 1 次滚动；科学技术 r11 需 3 次。
+_WR_CATEGORY_ARMS = {"悬疑推理": "second_screen", "科学技术": "deep_screen"}
+
+
+def _best_book_pick(task: Any, state: dict[str, Any]) -> str:
+    return _WR_CATEGORY_ARMS.get(str(task.p.category), "first_screen")
 
 
 def view_x_user_latest_post() -> list[Step]:
@@ -554,10 +556,14 @@ def open_redbook_me_following_user_profile() -> list[Step]:
         wait(0.5, summary="wait for following list"),
         click_selector('[data-trigger="user.open"]:has-text("{username}"):visible', "open followed user profile"),
         wait(0.8, summary="wait for user profile"),
-        *scroll_page(1, summary="scroll user notes grid"),
+        # {username} 枚举作者 5-7 篇笔记（网格 3-4 行）：2 次滚动保证 feed 序最后
+        # 一篇卡片露出；笔记少时滚动 clamp 到底不会过头。
+        *scroll_page(2, summary="scroll user notes grid"),
     ]
 
 
+# 相册水景照片的文件名与倒序时间线位置由任务定义的 target_paths/target_times
+# 固定（_prepare 里重新钉时间戳），静态无采样漂移——滚动/选择顺序按此标定。
 WATER_PHOTO_ALTS = [
     "IMG_20260320_yiheyuan_wanshoushan.jpg",
     "photo_001.jpg",
@@ -623,6 +629,78 @@ def favorite_water_photos_and_share_latest() -> list[Step]:
     return steps
 
 
+# ---------------------------------------------------------------------------
+# Derived params — sampling-path compatibility
+# ---------------------------------------------------------------------------
+# 判分同源访问器：与各判分器的 `Domain(input.apps_init["<app>"])` 完全同构，
+# 只是状态来自首帧 act() 观测（runner 的 post-setup initial_obs）。多 App 任务
+# setup 会先 warm 全部声明 App，故 init_state["apps"] 含所有相关 store。
+
+def _redbook_state(state: dict[str, Any]) -> Redbook:
+    return Redbook(state["apps"]["redbook"])
+
+
+def _spotify_state(state: dict[str, Any]) -> Spotify:
+    return Spotify(state["apps"]["spotify"])
+
+
+def _reading_state(state: dict[str, Any]) -> WechatReading:
+    return WechatReading(state["apps"]["wechat_reading"])
+
+
+def _notes_state(state: dict[str, Any]) -> Notes:
+    return Notes(state["apps"]["notes"])
+
+
+def _contact_wxid(task: Any, state: dict[str, Any]) -> str:
+    """联系人 wxid：与 Wechat.require_contact_wxid 的判分/数据口径一致。"""
+    return Wechat(state["apps"]["wechat"]).require_contact_wxid(str(task.p.contact))
+
+
+def redbook_author_followers_steps(*, follow_first: bool) -> list[Step]:
+    """搜索 {keyword} → 首篇笔记 → 作者主页，读作者名/粉丝数并微信汇报。
+
+    判分器要求最终状态已关注该作者：数分的首篇作者初始已关注（再点会取关），
+    其余枚举关键词的首篇作者初始未关注（必须点关注）——Branch 按初始
+    followingIds 分叉，关注方向用 ``"to":true`` 参数锁定，避免误触取关。
+    """
+    steps: list[Step] = [
+        *redbook_search("{keyword}"),
+        trigger_param("note.open", "id", "{note_id}", "open first RedNote search result"),
+        wait(0.5, summary="wait for RedNote detail"),
+        trigger_param("user.open", "userId", "{author_id}", "open note author profile"),
+        wait(0.8, summary="view author followers on profile"),
+    ]
+    if follow_first:
+        steps += [
+            click_selector(
+                '[data-action="user.page.follow.toggle"][data-action-params*=\'"to":true\']:visible',
+                "follow the note author",
+            ),
+            wait(0.4, summary="wait for follow state update"),
+        ]
+    steps += [
+        # 作者名与粉丝数证据：粉丝数字与"粉丝"标签分属兄弟 span，用结构选择器绑定成对断言，
+        # 避免裸短数字误匹配。断言值取"关注后"视图口径（已关注作者 followers 显示 +1，
+        # 与判分器 final 状态读数一致——见 _first_note_author_final_followers）。
+        assert_text("{author_name}", summary="assert author name on profile"),
+        assert_visible(
+            'div:has(> span:text-is("{author_followers}")):has(> span:text-is("粉丝")):visible',
+            summary="assert author follower count visible",
+        ),
+        *send_wechat_message("{wechat_message}"),
+        complete(),
+    ]
+    return steps
+
+
+def _author_followers_pick(task: Any, state: dict[str, Any]) -> str:
+    rb = _redbook_state(state)
+    author = rb.note_author(rb.first_search_note(str(task.p.keyword)))
+    following = {str(uid) for uid in rb.following_ids}
+    return "already_following" if str(author["id"]) in following else "follow_first"
+
+
 # 就地自证 lint（R1/R2/R3/R4）豁免清单——理由必填，豁免项会在 lint 报告中单列。
 LINT_EXEMPT: dict[str, str] = {
     # R3（多 App awake 覆盖）：plan 在 Gallery 内发起图片分享 → 系统 chooser 选"微信" →
@@ -633,7 +711,7 @@ LINT_EXEMPT: dict[str, str] = {
     ),
 }
 
-PLANS: dict[str, list[Step]] = {
+PLANS: dict[str, list[Step] | Branch] = {
     "crossapp_content.SpotifyNowPlayingToWechat": [
         *like_spotify_current(),
         *send_wechat_message("{wechat_message}"),
@@ -660,14 +738,15 @@ PLANS: dict[str, list[Step]] = {
         *publish_redbook("{redbook_title}", "{redbook_content}"),
         complete(),
     ],
-    "crossapp_content.WechatReadingBestBookToWechat": [
-        *wechat_reading_business_category(),
-        # 书名+推荐值证据：分类详情按 rating 降序，首行即目标书，行内展示"推荐值 xx%"。
-        assert_text(WR_BUSINESS_TOP_TITLE, summary="assert top rated book title visible"),
-        assert_text(WR_BUSINESS_TOP_RV_LABEL, summary="assert top book recommendation value visible"),
-        *send_wechat_message("{wechat_message}"),
-        complete(),
-    ],
+    # Branch 仅分叉分类卡片的预滚动次数（{category} 在 2 列网格中的行位不同）。
+    "crossapp_content.WechatReadingBestBookToWechat": Branch(
+        pick=_best_book_pick,
+        branches={
+            "first_screen": wechat_reading_best_book_steps(category_swipes=0),
+            "second_screen": wechat_reading_best_book_steps(category_swipes=1),
+            "deep_screen": wechat_reading_best_book_steps(category_swipes=3),
+        },
+    ),
     "crossapp_content.WechatReadingStatsToWechat": [
         *wechat_reading_weekly_stats(),
         # 聚合类证据：最佳阅读日按滚动 7 天窗口取，可跨自然周（最佳日常落在上个日历周），
@@ -677,23 +756,15 @@ PLANS: dict[str, list[Step]] = {
         *send_wechat_message("{wechat_message}"),
         complete(),
     ],
-    "crossapp_content.RedbookAuthorFollowersToWechat": [
-        *redbook_search("{keyword}"),
-        trigger_param("note.open", "id", "{note_id}", "open first RedNote search result"),
-        wait(0.5, summary="wait for RedNote detail"),
-        # 作者名/粉丝数在作者主页展示；初始数据已关注该作者，点关注会变成取关，故只查看不点击。
-        trigger_param("user.open", "userId", "{author_id}", "open note author profile"),
-        wait(0.8, summary="view author followers on profile"),
-        # 作者名与粉丝数证据：粉丝数字与"粉丝"标签分属兄弟 span，用结构选择器绑定成对断言，
-        # 避免裸短数字误匹配。
-        assert_text(RB_SHUFEN_AUTHOR_NAME, summary="assert author name on profile"),
-        assert_visible(
-            f'div:has(> span:text-is("{RB_SHUFEN_AUTHOR_FOLLOWERS}")):has(> span:text-is("粉丝")):visible',
-            summary="assert author follower count visible",
-        ),
-        *send_wechat_message("{wechat_message}"),
-        complete(),
-    ],
+    # Branch：判分器要求已关注首篇作者——数分的作者初始已关注（再点会取关），
+    # 其余关键词的作者需先点关注；pick 读初始 followingIds。
+    "crossapp_content.RedbookAuthorFollowersToWechat": Branch(
+        pick=_author_followers_pick,
+        branches={
+            "already_following": redbook_author_followers_steps(follow_first=False),
+            "follow_first": redbook_author_followers_steps(follow_first=True),
+        },
+    ),
     "crossapp_content.XLatestPostToReddit_WithTitleFormat": [
         *view_x_user_latest_post(),
         *create_reddit_post("{reddit_title}", "{reddit_body}"),
@@ -703,7 +774,7 @@ PLANS: dict[str, list[Step]] = {
         *open_redbook_me_following_user_profile(),
         # 计数类证据不断短数字"5"：断浏览终点——feed 序最后（第 5）篇笔记卡片标题可见，
         # 证明笔记网格已完整翻到底（与 redbook 套件同页面口径一致）。
-        assert_text(RB_XIYOU_LAST_NOTE_TITLE, summary="assert last note card of followed user visible"),
+        assert_text("{last_note_title}", summary="assert last note card of followed user visible"),
         *send_sms("{sms_message}"),
         complete(),
     ],
@@ -711,7 +782,7 @@ PLANS: dict[str, list[Step]] = {
         *spotify_search("{song}"),
         back(summary="dismiss keyboard to reveal song results"),
         wait(0.4, summary="wait for keyboard dismiss"),
-        action_param("search.track.play", "trackId", SPOTIFY_GEQIAN_FIRST_RESULT_ID, "play first search result"),
+        action_param("search.track.play", "trackId", "{first_result_track_id}", "play first search result"),
         wait(0.6, summary="wait for playback"),
         tap_trigger("player.open", summary="open full player"),
         wait(0.8, summary="view artist and duration on player"),
@@ -723,10 +794,18 @@ PLANS: dict[str, list[Step]] = {
         *post_wechat_moment("{moment_content}"),
         complete(),
     ],
+    # 经"我-关注列表-用户主页-私信"到达聊天：消息 Tab 只列既有会话（安静岛无
+    # 预置会话），主页私信按钮对 {username} 采样域全覆盖。
     "crossapp_content.RedbookDmThenWechatReport": [
         *open_app("RedNote"),
-        tap_trigger("tab.message", summary="open RedNote messages"),
-        trigger_param("chat.open", "userId", "{redbook_user_id}", "open RedNote followed user chat"),
+        # tab.me 与微信/微信读书同名，限定 :visible 命中前台小红书的 TabBar。
+        click_selector('[data-trigger="tab.me"]:visible', "open RedNote Me tab"),
+        wait(0.5, summary="wait for Me tab"),
+        trigger_param("followList.open", "type", "1", "open RedNote following list"),
+        wait(0.5, summary="wait for following list"),
+        click_selector('[data-trigger="user.open"]:has-text("{username}"):visible', "open followed user profile"),
+        wait(0.8, summary="wait for user profile"),
+        trigger_param("chat.open", "userId", "{redbook_user_id}", "open DM chat from user profile"),
         wait(0.4, summary="wait for RedNote chat"),
         type_text(
             "{message}",
@@ -735,6 +814,7 @@ PLANS: dict[str, list[Step]] = {
             summary="type RedNote DM",
         ),
         click_selector("button.bg-app-primary:visible", "send RedNote DM"),
+        wait(0.4, summary="wait for RedNote DM send"),
         *send_wechat_message("{wechat_message}"),
         complete(),
     ],
@@ -789,12 +869,14 @@ PLANS: dict[str, list[Step]] = {
         complete(),
     ],
     "crossapp_content.BilibiliRankAuthorLastNovToWechat": [
-        *open_bilibili_ranked_video_after_tab_scroll("{category}", BILI_DANCE_RANK10_BVID, swipes=1),
+        # 排行 tab 滚 1 次 / 榜单滚 1 次 / 投稿滚 2 次的步数按 category=舞蹈、rank=10
+        # 的静态榜单位次标定（两参数均为单值枚举，数据集静态，无采样漂移）。
+        *open_bilibili_ranked_video_after_tab_scroll("{category}", "{bvid}", swipes=1),
         # 粉丝数在作者主页头部；user.open 默认落在"投稿"列表（最新发布排序，日期/播放量可见）。
-        trigger_param("user.open", "mid", BILI_DANCE_RANK10_AUTHOR_MID, "open ranked video author profile"),
+        trigger_param("user.open", "mid", "{author_mid}", "open ranked video author profile"),
         wait(0.8, summary="view author followers and works list"),
         *scroll_page(2, summary="scroll author works to last November"),
-        trigger_param("video.open", "bvid", BILI_DANCE_AUTHOR_LAST_NOV_TOP_BVID, "open top-played last-November video"),
+        trigger_param("video.open", "bvid", "{nov_top_bvid}", "open top-played last-November video"),
         wait(0.8, summary="view top-played November video detail"),
         *send_wechat_message("{wechat_message}"),
         complete(),
@@ -811,15 +893,16 @@ PLANS: dict[str, list[Step]] = {
     "crossapp_content.RedbookAuthorTopCollectToWechat": [
         # 前 10 篇中点赞最多的一篇按相关性排在第 8 位（"最多点赞"排序作用于全部结果，
         # 与判分器"前 10 篇内取最大"口径不一致，不能走排序捷径），滚动后打开。
+        # 滚动步数按 query=旅行（单值枚举）的固定 feed 序标定，基础数据集静态无漂移。
         *redbook_search("{query}"),
         *scroll_page(2, summary="scroll search results to most-liked note"),
-        trigger_param("note.open", "id", RB_TRAVEL_TOP_LIKED_NOTE_ID, "open most-liked search result"),
+        trigger_param("note.open", "id", "{top_note_id}", "open most-liked search result"),
         wait(0.6, summary="wait for note detail"),
-        trigger_param("user.open", "userId", RB_TRAVEL_AUTHOR_ID, "open note author profile"),
+        trigger_param("user.open", "userId", "{author_id}", "open note author profile"),
         wait(0.8, summary="view author likes-and-collections on profile"),
         *scroll_page(1, summary="scroll author notes grid", from_y=780, to_y=560),
         click_selector(
-            f'div.cursor-pointer:has-text("{RB_TRAVEL_AUTHOR_TOP_COLLECTED_TITLE_PREFIX}"):visible',
+            'div.cursor-pointer:has-text("{top_collected_prefix}"):visible',
             "open author top-collected note",
         ),
         wait(0.6, summary="view collect count on note detail"),
@@ -830,8 +913,9 @@ PLANS: dict[str, list[Step]] = {
         *redbook_search("{query}"),
         # 点赞 Top2 分别位于相关性第 4/8 位；滚动使两篇卡片（标题+点赞数）可见，
         # 并打开更深的第 8 位那篇以硬校验滚动深度。
+        # 滚动步数按 query=旅行（单值枚举）的固定 feed 序标定，基础数据集静态无漂移。
         *scroll_page(2, summary="scroll search results across top-10 notes"),
-        trigger_param("note.open", "id", RB_TRAVEL_TOP_LIKED_NOTE_ID, "open most-liked search result"),
+        trigger_param("note.open", "id", "{top_note_id}", "open most-liked search result"),
         wait(0.6, summary="view most-liked note detail"),
         *create_note("{note_title}", "{note_content}"),
         complete(),
@@ -843,9 +927,10 @@ PLANS: dict[str, list[Step]] = {
         click_selector('[data-trigger="user.open"]:has-text("{user}"):visible', "open searched user profile"),
         wait(0.8, summary="wait for user profile"),
         # 网格卡片展示点赞数；收藏数需进详情——打开收藏最低的那篇查看。
+        # 滚动 1 次按 {user} 枚举作者（8-12 篇、网格 4-5 行）的固定发帖序标定。
         *scroll_page(1, summary="scroll user notes grid"),
         click_selector(
-            f'div.cursor-pointer:has-text("{RB_FITNESS_WORST_TITLE_PREFIX}"):visible',
+            'div.cursor-pointer:has-text("{worst_note_prefix}"):visible',
             "open least-collected note",
         ),
         wait(0.6, summary="view collect count on note detail"),
@@ -855,7 +940,7 @@ PLANS: dict[str, list[Step]] = {
     "crossapp_content.RedbookUserTopCollectToWechat": [
         *collect_redbook_note("{note_id}", "{note_title}"),
         # 作者获赞与收藏数在作者主页头部展示（详情页头像 trigger 内无作者名文本，按 userId 定位）。
-        trigger_param("user.open", "userId", RB_FITNESS_AUTHOR_ID, "open note author profile"),
+        trigger_param("user.open", "userId", "{author_id}", "open note author profile"),
         wait(0.8, summary="view author likes-and-collections on profile"),
         *send_wechat_message("{wechat_message}"),
         complete(),
@@ -879,4 +964,366 @@ PLANS: dict[str, list[Step]] = {
         *post_wechat_moment("{moment_content}"),
         complete(),
     ],
+}
+
+
+# ---------------------------------------------------------------------------
+# DERIVED_PARAMS 计算器 — 每个值与对应任务 check_goals 的取数逻辑同构
+# ---------------------------------------------------------------------------
+
+def _first_note_author(task: Any, state: dict[str, Any]) -> dict[str, Any]:
+    """{keyword} 首篇笔记的作者——镜像 RedbookAuthorFollowersToWechat.check_goals。"""
+    rb = _redbook_state(state)
+    return rb.note_author(rb.first_search_note(str(task.p.keyword)))
+
+
+def _first_note_author_final_followers(task: Any, state: dict[str, Any]) -> str:
+    """作者粉丝数——关注后（final 视图）口径。
+
+    bench 域类与前端视图层都对"已关注作者"的 followers +1（view_user /
+    resolveRedBookRuntimeUser），而判分器从 *final* 状态读该值；plan 结束时
+    必然已关注，故 init 未关注（follow_first 臂）时需在 init 视图值上 +1，
+    init 已关注（already_following 臂）时 init 视图已含 +1、即 final 值。
+    屏上断言同理：关注动作之后页面立即显示 +1 后的数字。
+    """
+    rb = _redbook_state(state)
+    author = rb.note_author(rb.first_search_note(str(task.p.keyword)))
+    followers = int(str(author["followers"]))
+    if str(author["id"]) not in {str(uid) for uid in rb.following_ids}:
+        followers += 1
+    return str(followers)
+
+
+def _best_book(task: Any, state: dict[str, Any]) -> dict[str, Any]:
+    """{category} 分类 rating 最高的书——镜像 WechatReadingBestBookToWechat.check_goals。"""
+    category = str(task.p.category)
+    data_cats = WECHAT_READING_UI_TO_DATA.get(category, [category])
+    books = [b for b in _reading_state(state).store if str(b.get("category")) in data_cats]
+    if not books:
+        raise ValueError(f"No books in UI category {category!r}")
+    books.sort(key=lambda b: float(b.get("rating") or 0), reverse=True)
+    return books[0]
+
+
+def _reading_stats_message(task: Any, state: dict[str, Any]) -> str:
+    """镜像 WechatReadingStatsToWechat：ISO 日期是判分 date_labels 的首个标签。
+
+    判分器用终态 os 计算 7 天窗口；episode 时长为分钟级，与初始 os 的窗口
+    一致（跨 sim 午夜的边界情形与旧测试的挂钟锚点近似同级，可接受）。
+    """
+    date_value, minutes = _reading_state(state).best_reading_day_and_duration(state["os"])
+    return f"{date_value} 读了 {minutes} 分钟"
+
+
+def _x_latest_post_line(task: Any, state: dict[str, Any]) -> str:
+    """镜像 XLatestPostToReddit.check_goals：view_posts 序 + authorId 匹配取首条。"""
+    user = str(task.p.user)
+    user_lower = user.lower().lstrip("@")
+    for post in X(state["apps"]["x"]).view_posts():
+        aid = str(post.get("authorId") or "").lower()
+        if aid.removeprefix("u_") == user_lower or user_lower in aid:
+            content = str(post.get("content") or "").strip()
+            if content:
+                return f"{user.strip()}: {content}"
+            break
+    raise ValueError(f"No non-empty X post found for user {user!r}")
+
+
+def _daily_log_moment(task: Any, state: dict[str, Any]) -> str:
+    """镜像 DailyLogToMoments：最新两条笔记标题（title 缺失回退 content）。"""
+    latest = _notes_state(state).latest_n_notes(2)
+    if len(latest) < 2:
+        raise ValueError("DailyLogToMoments needs at least 2 notes")
+    titles = [str(note.get("title") or note.get("content") or "").strip() for note in latest]
+    return f"今天简单总结：{titles[0]}、{titles[1]}"
+
+
+def _weekly_reading_moment(task: Any, state: dict[str, Any]) -> str:
+    """镜像 WeeklyReadingAndLikedSpotifySongsToMoment（判分用 init os/apps）。"""
+    best_date, minutes = _reading_state(state).best_reading_day_and_duration(state["os"])
+    date_label = WechatReading.date_labels(best_date, state["os"])[0]
+    liked_recent = _spotify_state(state).liked_recent_intersection()
+    if liked_recent:
+        first = liked_recent[0]
+        song = f"{first['title']} {first['artist']}"
+    else:
+        song = "暂无已点赞歌曲"
+    return f"最近阅读最投入的一天：{date_label}，读了{minutes}分钟。现在在听的歌：{song}"
+
+
+def _bili_rank_entry(task: Any) -> dict[str, Any]:
+    """排行榜 (partition, rank) 条目——judge 同款 classmethod（静态榜单数据）。"""
+    return Bilibili.ranking_entry(str(task.p.partition), int(task.p.rank))
+
+
+def _bili_nov_author(task: Any, state: dict[str, Any]) -> tuple[str, int]:
+    """(作者名, 去年年份)——年份与判分器一致取 sim_today(os_init).year - 1。"""
+    author_name = Bilibili.ranking_author_name(str(task.p.category), int(task.p.rank))
+    return author_name, sim_today(state["os"]).year - 1
+
+
+def _bili_nov_message(task: Any, state: dict[str, Any]) -> str:
+    """镜像 BilibiliRankAuthorLastNovToWechat：粉丝紧凑格式/数量带量词均在判分 label 集内。"""
+    author_name, last_year = _bili_nov_author(task, state)
+    followers = Bilibili.author_follower_count(author_name)
+    last_nov = Bilibili.author_videos_in_year_month(author_name, last_year, 11)
+    top_video = Bilibili.author_top_played_video_in_year_month(author_name, last_year, 11)
+    return (
+        f"{author_name} 粉丝 {format_compact_stat(followers)}，"
+        f"去年11月发过 {len(last_nov)} 个视频，播放最高的是 {top_video['title']}"
+    )
+
+
+def _bili_top3(task: Any) -> list[dict[str, Any]]:
+    """镜像 BilibiliRankTop3FolderAndWechat：前 {rank} 名按播放量降序取 3。"""
+    return Bilibili.top_ranking_videos_by_plays(str(task.p.category), int(task.p.rank), top_n=3)
+
+
+def _rb_top_search_note(task: Any, state: dict[str, Any]) -> dict[str, Any]:
+    """{query} 前 10 篇中点赞最多的一篇——镜像 most_liked_search_note 判分口径。"""
+    return _redbook_state(state).most_liked_search_note(str(task.p.query))
+
+
+def _rb_author_top_collect_facts(task: Any, state: dict[str, Any]) -> tuple[dict, dict, dict]:
+    """(点赞最高笔记, 作者, 作者收藏最多笔记)——镜像 RedbookAuthorTopCollectToWechat。"""
+    rb = _redbook_state(state)
+    top_note = rb.most_liked_search_note(str(task.p.query))
+    author = rb.note_author(top_note)
+    top_collected = rb.user_max_collected_note(str(author["name"]))
+    return top_note, author, top_collected
+
+
+def _rb_user_top_liked_facts(task: Any, state: dict[str, Any]) -> tuple[dict, dict]:
+    """(用户点赞最高笔记, 作者)——镜像 RedbookUserTopCollectToWechat。"""
+    rb = _redbook_state(state)
+    top_liked = rb.user_max_liked_note(str(task.p.user))
+    return top_liked, rb.note_author(top_liked)
+
+
+def _ebay_cheapest_note(task: Any, state: dict[str, Any]) -> str:
+    """镜像 EbayCheapToRedbook：priceLow 首位商品标题 + 总价（静态商品库）。"""
+    top = expect_top(query=str(task.p.product), sort_id="priceLow", n=1)[0]
+    return f"{top.title}\n总价 {float(top.total_cost):.2f}"
+
+
+DERIVED_PARAMS: dict[str, dict[str, Callable[[Any, dict[str, Any]], Any]]] = {
+    "crossapp_content.SpotifyNowPlayingToWechat": {
+        "now_playing_title": lambda task, state: _spotify_state(state).current_track_title,
+        "wechat_message": lambda task, state: f"正在听 {_spotify_state(state).current_track_title}",
+        "contact_wxid": _contact_wxid,
+    },
+    "crossapp_content.BilibiliRankingToWechat": {
+        "bvid": lambda task, state: str(_bili_rank_entry(task)["id"]),
+        "title": lambda task, state: str(_bili_rank_entry(task)["title"]),
+        "wechat_message": lambda task, state: str(_bili_rank_entry(task)["title"]),
+        "contact_wxid": _contact_wxid,
+    },
+    "crossapp_content.RedbookSearchTitleToWechat": {
+        "wechat_message": lambda task, state: str(
+            _redbook_state(state).first_search_note(str(task.p.keyword))["title"]
+        ),
+        "contact_wxid": _contact_wxid,
+    },
+    "crossapp_content.SpotifyTodayNthPlayToRedbook": {
+        "redbook_title": lambda task, state: (
+            f"推荐 {_spotify_state(state).nth_today_play(int(task.p.nth))['title']}"
+        ),
+        "redbook_content": lambda task, state: (
+            f"{_spotify_state(state).nth_today_play(int(task.p.nth))['title']} "
+            f"{_spotify_state(state).nth_today_play(int(task.p.nth))['artist']}"
+        ),
+    },
+    "crossapp_content.WechatReadingBestBookToWechat": {
+        "top_book_title": lambda task, state: str(_best_book(task, state)["title"]),
+        "top_book_rv_label": lambda task, state: (
+            f"推荐值 {_best_book(task, state)['recommendedValue']}%"
+        ),
+        "wechat_message": lambda task, state: (
+            f"{_best_book(task, state)['title']} "
+            f"推荐值 {_best_book(task, state).get('recommendedValue', '')}"
+        ),
+        "contact_wxid": _contact_wxid,
+    },
+    "crossapp_content.WechatReadingStatsToWechat": {
+        "wechat_message": _reading_stats_message,
+        "contact_wxid": _contact_wxid,
+    },
+    "crossapp_content.RedbookAuthorFollowersToWechat": {
+        "note_id": lambda task, state: str(
+            _redbook_state(state).first_search_note(str(task.p.keyword))["id"]
+        ),
+        "author_id": lambda task, state: str(_first_note_author(task, state)["id"]),
+        "author_name": lambda task, state: str(_first_note_author(task, state)["name"]),
+        "author_followers": _first_note_author_final_followers,
+        "wechat_message": lambda task, state: (
+            f"{_first_note_author(task, state)['name']} "
+            f"粉丝 {_first_note_author_final_followers(task, state)}"
+        ),
+        "contact_wxid": _contact_wxid,
+    },
+    "crossapp_content.XLatestPostToReddit_WithTitleFormat": {
+        "reddit_title": _x_latest_post_line,
+        "reddit_body": _x_latest_post_line,
+    },
+    "crossapp_content.RedbookFollowingNoteCountToSms": {
+        "sms_contact": lambda task, state: str(task.p.contact),
+        "sms_message": lambda task, state: (
+            f"{task.p.username}发了"
+            f"{_redbook_state(state).followed_user_note_count(str(task.p.username))}篇笔记"
+        ),
+        "last_note_title": lambda task, state: str(
+            _redbook_state(state).user_notes_by_name(str(task.p.username))[-1]["title"]
+        ).strip(),
+    },
+    "crossapp_content.SpotifySongFullDetailsToRedbook": {
+        "first_result_track_id": lambda task, state: str(
+            _spotify_state(state).search_local_tracks(str(task.p.song), limit=1)[0]["id"]
+        ),
+        "redbook_title": lambda task, state: f"{task.p.song} 听歌笔记",
+        "redbook_content": lambda task, state: (
+            f"{task.p.song} {_spotify_state(state).track_by_title(str(task.p.song))['artist']} "
+            f"时长 {_spotify_state(state).track_by_title(str(task.p.song))['duration']}"
+        ),
+    },
+    "crossapp_content.BilibiliTripleLikeThenMoments": {
+        "bvid": lambda task, state: str(_bili_rank_entry(task)["id"]),
+        "moment_content": lambda task, state: f"推荐这个视频：{_bili_rank_entry(task)['title']}",
+    },
+    "crossapp_content.RedbookDmThenWechatReport": {
+        "redbook_user_id": lambda task, state: str(
+            _redbook_state(state).require_user_by_name(str(task.p.username))["id"]
+        ),
+        "wechat_message": lambda task, state: f"已经联系{task.p.username}了",
+        "contact_wxid": _contact_wxid,
+    },
+    "crossapp_content.NotesContentToRedbookAndX": {
+        "note_title": lambda task, state: f"{task.p.topic}想法",
+        "shared_content": lambda task, state: f"{task.p.topic}需要更强的任务判定和更清晰的执行边界。",
+        "redbook_title": lambda task, state: f"{task.p.topic}想法",
+    },
+    "crossapp_content.DailyLogToMoments": {
+        "moment_content": _daily_log_moment,
+    },
+    "crossapp_content.CulturalChecklistToRedbook": {
+        "note_title": lambda task, state: "今日文化清单",
+        "redbook_title": lambda task, state: "今日文化清单",
+        "note_content": lambda task, state: (
+            f"{_spotify_state(state).nth_today_play(1)['title']}\n"
+            f"{_reading_state(state).first_hot_search_title()}"
+        ),
+    },
+    "crossapp_content.EbayCheapToRedbook": {
+        "redbook_title": lambda task, state: "eBay商品推荐",
+        "redbook_content": _ebay_cheapest_note,
+    },
+    "crossapp_content.SpotifySaveCurrentSongToNotes": {
+        "note_title": lambda task, state: "Spotify当前播放",
+        "note_content": lambda task, state: (
+            f"{_spotify_state(state).current_track['title']} "
+            f"{_spotify_state(state).current_track['artist']}"
+        ),
+    },
+    "crossapp_content.WechatReadingShareBookList": {
+        "wechat_message": lambda task, state: "\n".join(
+            str(_reading_state(state).require_store_book(str(item["bookId"]))["title"])
+            for item in _reading_state(state).shelf[: int(task.p.n)]
+        ),
+        "contact_wxid": _contact_wxid,
+    },
+    "crossapp_content.ReadingPlanToNotes": {
+        "note_title": lambda task, state: "本周阅读计划",
+        "note_content": lambda task, state: "本周阅读计划\n" + "\n".join(
+            f"- {title}" for title in _reading_state(state).reading_book_titles()
+        ),
+    },
+    "crossapp_content.FileManagerSendFileToWechatContact": {
+        # 判分器直接锚定这两个完整文件名（含扩展名），与文件管理器数据一致。
+        "wechat_message": lambda task, state: "downloaded_image.jpg\ndownloaded_image_copy.jpg",
+        "contact_wxid": _contact_wxid,
+    },
+    "crossapp_content.NotesToWechatAndRedbook": {
+        "note_title": lambda task, state: "同步记录",
+        "redbook_title": lambda task, state: "同步记录",
+        "contact_wxid": _contact_wxid,
+    },
+    "crossapp_content.BilibiliRankAuthorLastNovToWechat": {
+        "bvid": lambda task, state: str(
+            Bilibili.ranking_entry(str(task.p.category), int(task.p.rank))["id"]
+        ),
+        "author_mid": lambda task, state: str(
+            Bilibili.author_by_name(_bili_nov_author(task, state)[0])["mid"]
+        ),
+        "nov_top_bvid": lambda task, state: str(
+            Bilibili.author_top_played_video_in_year_month(
+                _bili_nov_author(task, state)[0], _bili_nov_author(task, state)[1], 11
+            )["id"]
+        ),
+        "wechat_message": _bili_nov_message,
+        "contact_wxid": _contact_wxid,
+    },
+    "crossapp_content.BilibiliRankTop3FolderAndWechat": {
+        "bvid1": lambda task, state: str(_bili_top3(task)[0]["id"]),
+        "bvid2": lambda task, state: str(_bili_top3(task)[1]["id"]),
+        "bvid3": lambda task, state: str(_bili_top3(task)[2]["id"]),
+        "wechat_message": lambda task, state: (
+            f"{_bili_top3(task)[0]['title']} "
+            f"播放量 {format_compact_stat(int(_bili_top3(task)[0]['plays']))}"
+        ),
+        "contact_wxid": _contact_wxid,
+    },
+    "crossapp_content.RedbookAuthorTopCollectToWechat": {
+        "top_note_id": lambda task, state: str(_rb_top_search_note(task, state)["id"]),
+        "author_id": lambda task, state: str(_rb_author_top_collect_facts(task, state)[1]["id"]),
+        "top_collected_prefix": lambda task, state: str(
+            _rb_author_top_collect_facts(task, state)[2]["title"]
+        ).strip()[:12],
+        "wechat_message": lambda task, state: (
+            lambda facts: (
+                f"{facts[1]['name']} {facts[2]['title']} "
+                f"获赞与收藏 {facts[1]['likesAndCollections']}"
+            )
+        )(_rb_author_top_collect_facts(task, state)),
+        "contact_wxid": _contact_wxid,
+    },
+    "crossapp_content.RedbookTopLikedToNotes": {
+        "top_note_id": lambda task, state: str(_rb_top_search_note(task, state)["id"]),
+        "note_title": lambda task, state: "小红书点赞Top2",
+        "note_content": lambda task, state: "\n".join(
+            str(note["title"]).strip()
+            for note in _redbook_state(state).search_top_notes_by_likes(str(task.p.query), top_n=2)
+        ),
+    },
+    "crossapp_content.RedbookUserBestWorstToNotes": {
+        "worst_note_prefix": lambda task, state: str(
+            _redbook_state(state).user_best_worst_notes(str(task.p.user))[1]["title"]
+        ).strip()[:12],
+        "note_title": lambda task, state: "用户热门冷门笔记",
+        "note_content": lambda task, state: (
+            lambda pair: f"{pair[0]['title']}\n{pair[1]['title']}"
+        )(_redbook_state(state).user_best_worst_notes(str(task.p.user))),
+    },
+    "crossapp_content.RedbookUserTopCollectToWechat": {
+        "note_id": lambda task, state: str(_rb_user_top_liked_facts(task, state)[0]["id"]),
+        "note_title": lambda task, state: str(_rb_user_top_liked_facts(task, state)[0]["title"]),
+        "author_id": lambda task, state: str(_rb_user_top_liked_facts(task, state)[1]["id"]),
+        "wechat_message": lambda task, state: (
+            lambda facts: (
+                f"{facts[0]['title']} 获赞与收藏 {facts[1]['likesAndCollections']}"
+            )
+        )(_rb_user_top_liked_facts(task, state)),
+        "contact_wxid": _contact_wxid,
+    },
+    "crossapp_content.ThirdSpotifyPlayRecommendOnRedbookAndPlaylist": {
+        "track_id": lambda task, state: str(_spotify_state(state).nth_today_play(3)["id"]),
+        "redbook_title": lambda task, state: (
+            f"推荐 {_spotify_state(state).nth_today_play(3)['title']}"
+        ),
+        "redbook_content": lambda task, state: (
+            f"{_spotify_state(state).nth_today_play(3)['title']} "
+            f"{_spotify_state(state).nth_today_play(3)['artist']}"
+        ),
+    },
+    "crossapp_content.WeeklyReadingAndLikedSpotifySongsToMoment": {
+        "moment_content": _weekly_reading_moment,
+    },
 }

@@ -1,4 +1,20 @@
-"""Live scripted-plan verification for the Payment suite."""
+"""Live scripted-plan verification for the Payment suite.
+
+Single-source policy: contact ids, account/phone numbers, payment passwords,
+the running note balances and the balance-page assert text are **not**
+injected here — they come from ``scripted_plans.DERIVED_PARAMS``, computed at
+materialization time from the episode's post-setup initial state through the
+judge-homologous ``Alipay`` / ``Wechat`` domain classes. That is exactly the
+official ``--agent scripted`` sampling path, so these live cases
+regression-test the derivation itself (the previous ``ALIPAY_START_BALANCE``
+disk replica of defaults.json and the ``CONTACT_IDS`` / ``WECHAT_IDS`` lookup
+tables are gone).
+
+Only *declared* task parameters stay pinned below, for deterministic
+coverage. ``DeterministicBindCards`` additionally pins the bank-card SMS
+verification code (a runtime-generated value the plan cannot derive from the
+initial state — see the scripted_plans module docstring).
+"""
 
 from __future__ import annotations
 
@@ -17,35 +33,6 @@ from bench_env.tests.scripted_support import (
 
 SUITE = "payment"
 PAYMENT_MAX_STEPS = 180
-
-
-CONTACT_IDS = {
-    "浩杰(李浩杰)": "1",
-    "锐(郭锐)": "2",
-    "阿明(张明)": "3",
-    "小丽(李丽)": "4",
-    "老王(王建国)": "5",
-    "于奶奶(于桂兰)": "8",
-}
-
-WECHAT_IDS = {
-    "张伟": "wxid_zhangwei_888",
-}
-
-ALIPAY_START_BALANCE = 100_023.46
-
-
-def _money(value: float) -> str:
-    return f"{value:.2f}".rstrip("0").rstrip(".")
-
-
-def _balances_after(amounts: list[float]) -> dict[str, str]:
-    running = ALIPAY_START_BALANCE
-    out: dict[str, str] = {}
-    for index, amount in enumerate(amounts, start=1):
-        running = max(0.0, running - amount)
-        out[f"balance{index}"] = _money(running)
-    return out
 
 
 async def _force_deterministic_bank_sms_code(env: Any) -> None:
@@ -91,23 +78,16 @@ SCRIPTED_CASES: list[tuple[str, Callable[[], BaseTask]]] = [
         "AlipayContinuousPaymentsToContactsRecordBalances",
         lambda: payment_tasks.AlipayContinuousPaymentsToContactsRecordBalances(
             contact1="锐(郭锐)",
-            contact1Id=CONTACT_IDS["锐(郭锐)"],
             amount1=10,
             contact2="于奶奶(于桂兰)",
-            contact2Id=CONTACT_IDS["于奶奶(于桂兰)"],
             amount2=20,
             contact3="浩杰(李浩杰)",
-            contact3Id=CONTACT_IDS["浩杰(李浩杰)"],
             amount3=30,
             contact4="老王(王建国)",
-            contact4Id=CONTACT_IDS["老王(王建国)"],
             amount4=40,
             contact5="阿明(张明)",
-            contact5Id=CONTACT_IDS["阿明(张明)"],
             amount5=50,
             noteTitle="脚本工资余额记录",
-            password="123456",
-            **_balances_after([10, 20, 30, 40, 50]),
         ),
     ),
     (
@@ -118,16 +98,13 @@ SCRIPTED_CASES: list[tuple[str, Callable[[], BaseTask]]] = [
             amount2=4500,
             amount3=6500,
             noteTitle="脚本银行卡转账结果",
-            password="123456",
         ),
     ),
     (
         "AlipayChangePaymentPasswordThenPay",
         lambda: payment_tasks.AlipayChangePaymentPasswordThenPay(
-            oldPassword="000000",
             newPassword="135790",
             contact="浩杰(李浩杰)",
-            contactId=CONTACT_IDS["浩杰(李浩杰)"],
             amount=19.9,
         ),
     ),
@@ -135,10 +112,8 @@ SCRIPTED_CASES: list[tuple[str, Callable[[], BaseTask]]] = [
         "TransferToContactWithNote",
         lambda: payment_tasks.TransferToContactWithNote(
             name="浩杰(李浩杰)",
-            contactId=CONTACT_IDS["浩杰(李浩杰)"],
             amount=150,
             note="书本费",
-            password="123456",
         ),
     ),
     (
@@ -153,24 +128,18 @@ SCRIPTED_CASES: list[tuple[str, Callable[[], BaseTask]]] = [
         "AlipayTransferAndNotify",
         lambda: payment_tasks.AlipayTransferAndNotify(
             alipay_contact="浩杰(李浩杰)",
-            alipayContactId=CONTACT_IDS["浩杰(李浩杰)"],
             contact="张伟",
-            wechatId=WECHAT_IDS["张伟"],
             amount=66,
             note="午饭AA",
-            password="123456",
         ),
     ),
     (
         "WechatExtractAmountTransfer",
         lambda: payment_tasks.WechatExtractAmountTransfer(
             contact="张伟",
-            wechatId=WECHAT_IDS["张伟"],
             alipay_contact="浩杰(李浩杰)",
-            alipayContactId=CONTACT_IDS["浩杰(李浩杰)"],
             requestAmount=66,
             reply="已经转了",
-            password="123456",
         ),
     ),
 ]

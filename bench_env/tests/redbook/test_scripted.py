@@ -4,6 +4,18 @@ Each plan is replayed through ``ScriptedAgent`` via the same
 ``BaseRunner.run_episode`` path as ``bench_env.run --agent scripted`` (grounded
 AnswerSheet, ``COMPLETE``, ``EpisodeResult.success`` = goal + clean diff).
 
+Single-source policy: answers and entity ids (first-search-result /
+first-collected note ids, user ids, comment ids, category labels, feed-scroll
+branch picks) are **not** injected here — they come from
+``scripted_plans.DERIVED_PARAMS`` / ``Branch.pick``, computed at
+materialization time from the episode's post-setup initial state through the
+judge-homologous ``Redbook`` domain class. That is exactly the official
+``--agent scripted`` sampling path, so these live cases regression-test the
+derivation itself. Only *declared* task parameters stay pinned below for
+deterministic coverage; enum fields exercised per-arm (profile/user/author
+field variants, non-default categories/keywords) are covered by CLI sampling
+runs rather than extra live cases.
+
 Run against the gateway:
     pytest bench_env/tests/redbook/test_scripted.py --sim-url https://localhost:4180
 """

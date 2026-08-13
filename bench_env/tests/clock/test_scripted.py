@@ -1,18 +1,31 @@
-"""Live scripted-plan verification for the Clock suite."""
+"""Live scripted-plan verification for the Clock suite.
+
+Single-source note (Phase B): answer-class values (city times, alarm notes,
+counts, repeat labels) are **not** injected here anymore — the suite's
+``DERIVED_PARAMS`` (bench_env/tests/clock/scripted_plans.py) computes them
+from the episode's initial state, exactly as on the official
+``--agent scripted`` sampling path. These cases only pin entity-selecting
+params (alarm ids, city names) so the fixed live matrix stays deterministic.
+
+Add-alarm targets are pinned to *near-now* times: sim time is the real clock
+and the add-alarm draft opens at "now", so a nearby target keeps the wheel
+journey short and deterministic while still exercising the real anchored
+wheel path (sync wait + hour/minute wheels + save). CLI sampling covers the
+long-journey space; its limits are documented in the migration report.
+"""
 
 from __future__ import annotations
 
-import json
-import time
-from pathlib import Path
-from typing import Any, Callable
+import datetime
+from typing import Callable
 
 import pytest
 
 from bench_env.env.mobile_gym import MobileGymEnv
 from bench_env.task.base import BaseTask
 from bench_env.task.clock import tasks as clock_tasks
-from bench_env.task.clock.app import Clock
+from bench_env.task.clock.app import ALARM_TIME_PARAM
+from bench_env.task.utils import format_hhmm
 from bench_env.tests.scripted_support import (
     format_episode_result,
     run_scripted,
@@ -20,141 +33,76 @@ from bench_env.tests.scripted_support import (
 )
 
 SUITE = "clock"
-ROOT = Path(__file__).resolve().parents[3]
-APP_DIR = ROOT / "system" / "Clock" / "data"
 
 
-def _clock_state() -> dict[str, Any]:
-    defaults = json.loads((APP_DIR / "defaults.json").read_text(encoding="utf-8"))
-    cities = json.loads((APP_DIR / "cities.json").read_text(encoding="utf-8"))
-    return {**defaults, "cities": cities}
+def _near_future_alarm(offset_minutes: int) -> dict[str, int | str]:
+    """time/hour/minute params ``offset_minutes`` from now, avoiding default alarms.
+
+    The episode's add-alarm draft opens at sim "now" (= real clock), so this
+    keeps the wheel journey to a few deterministic swipes. Bump by one minute
+    while the slot collides with a default alarm time (judge asserts the
+    target is not already present in the initial state).
+    """
+    when = datetime.datetime.now() + datetime.timedelta(minutes=offset_minutes)
+    hour, minute = when.hour, when.minute
+    while format_hhmm(hour, minute) in ALARM_TIME_PARAM:
+        minute += 1
+        hour, minute = (hour + minute // 60) % 24, minute % 60
+    return {"time": format_hhmm(hour, minute), "hour": hour, "minute": minute}
 
 
-CLOCK = Clock(_clock_state())
+def _make_add_alarm() -> BaseTask:
+    return clock_tasks.AddAlarm(**_near_future_alarm(3))
 
 
-def _os_state_now() -> dict[str, Any]:
-    return {"time": {"timestamp": int(time.time() * 1000)}}
+def _make_add_alarm_with_settings() -> BaseTask:
+    return clock_tasks.AddAlarmWithSettings(
+        **_near_future_alarm(4),
+        repeat="daily",  # != the add-sheet draft default (once): exercises set_repeat
+        note="晨练",
+    )
 
 
-def _city_time(city: str) -> str:
-    return CLOCK.city_time(city, _os_state_now())
-
-
-def _local_diff_text(city: str) -> str:
-    diff_minutes = int(CLOCK.find_city(city)["gmtOffsetMinutes"]) - Clock._local_offset_minutes(_os_state_now())
-    if diff_minutes == 0:
-        return "一样"
-    sign = "快" if diff_minutes > 0 else "慢"
-    abs_minutes = abs(diff_minutes)
-    hours = abs_minutes // 60
-    minutes = abs_minutes % 60
-    parts: list[str] = []
-    if hours:
-        parts.append(f"{hours}小时")
-    if minutes:
-        parts.append(f"{minutes}分钟")
-    return f"{sign}{''.join(parts)}"
-
-
-async def _freeze_to_0710(env: Any) -> None:
-    page = getattr(env, "page", None)
-    if page is None:
-        return
-    await page.evaluate("() => window.__SIM_TIME__?.setSimulatedTime('2026-06-17T07:10:00', false)")
-
-
-class FrozenAddAlarm(clock_tasks.AddAlarm):
-    @property
-    def name(self) -> str:
-        return "AddAlarm"
-
-    async def _post_sample(self, env: Any) -> None:
-        await super()._post_sample(env)
-        await _freeze_to_0710(env)
-
-
-class FrozenAddAlarmWithSettings(clock_tasks.AddAlarmWithSettings):
-    @property
-    def name(self) -> str:
-        return "AddAlarmWithSettings"
-
-    async def _post_sample(self, env: Any) -> None:
-        await super()._post_sample(env)
-        await _freeze_to_0710(env)
-
-
-class FrozenSetupMorningAlarms(clock_tasks.SetupMorningAlarms):
-    @property
-    def name(self) -> str:
-        return "SetupMorningAlarms"
-
-    async def _post_sample(self, env: Any) -> None:
-        await super()._post_sample(env)
-        await _freeze_to_0710(env)
+def _make_setup_morning_alarms() -> BaseTask:
+    first = _near_future_alarm(3)
+    second = _near_future_alarm(16)  # ~13-minute wheel journey for the second alarm
+    return clock_tasks.SetupMorningAlarms(
+        time1=first["time"],
+        h1=first["hour"],
+        m1=first["minute"],
+        time2=second["time"],
+        h2=second["hour"],
+        m2=second["minute"],
+        repeat1="once",
+        repeat2="daily",
+    )
 
 
 SCRIPTED_CASES: list[tuple[str, Callable[[], BaseTask]]] = [
     ("ToggleAlarm", lambda: clock_tasks.ToggleAlarm(alarm_id="a1", time="04:30", toggle=False)),
-    ("CountAlarms", lambda: clock_tasks.CountAlarms(answer="7")),
-    ("AddAlarm", lambda: FrozenAddAlarm(time="07:10", hour=7, minute=10)),
+    ("CountAlarms", lambda: clock_tasks.CountAlarms()),
+    ("AddAlarm", _make_add_alarm),
     ("DeleteAlarm", lambda: clock_tasks.DeleteAlarm(alarm_id="a2", time="05:00")),
-    (
-        "SetAlarmRepeat",
-        lambda: clock_tasks.SetAlarmRepeat(
-            alarm_id="a2",
-            time="05:00",
-            repeat="daily",
-            repeatLabel="每天",
-        ),
-    ),
+    ("SetAlarmRepeat", lambda: clock_tasks.SetAlarmRepeat(alarm_id="a2", time="05:00", repeat="daily")),
     ("AddWorldCity", lambda: clock_tasks.AddWorldCity(city="北京")),
     ("RemoveWorldCity", lambda: clock_tasks.RemoveWorldCity(city="伦敦")),
-    ("CheckAlarmNote", lambda: clock_tasks.CheckAlarmNote(alarm_id="a4", time="06:10", answer="跑步")),
-    (
-        "AddAlarmWithSettings",
-        lambda: FrozenAddAlarmWithSettings(
-            time="07:10",
-            hour=7,
-            minute=10,
-            repeat="once",
-            note="晨练",
-        ),
-    ),
+    ("CheckAlarmNote", lambda: clock_tasks.CheckAlarmNote(alarm_id="a4", time="06:10")),
+    ("AddAlarmWithSettings", _make_add_alarm_with_settings),
     ("EnableAllAlarms", lambda: clock_tasks.EnableAllAlarms()),
-    ("CheckCityTime", lambda: clock_tasks.CheckCityTime(city="巴黎", answer=_city_time("巴黎"))),
-    (
-        "CompareCityTimeDiff",
-        lambda: clock_tasks.CompareCityTimeDiff(city1="巴黎", city2="纽约", answer="6"),
-    ),
-    ("CityLocalTimeDiff", lambda: clock_tasks.CityLocalTimeDiff(city="巴黎", answer=_local_diff_text("巴黎"))),
-    ("LatestTimezoneCity", lambda: clock_tasks.LatestTimezoneCity(answer="巴黎")),
-    ("AddCityAndCheckTime", lambda: clock_tasks.AddCityAndCheckTime(city="北京", answer=_city_time("北京"))),
+    ("CheckCityTime", lambda: clock_tasks.CheckCityTime(city="巴黎")),
+    ("CompareCityTimeDiff", lambda: clock_tasks.CompareCityTimeDiff(city1="巴黎", city2="纽约")),
+    ("CityLocalTimeDiff", lambda: clock_tasks.CityLocalTimeDiff(city="巴黎")),
+    ("LatestTimezoneCity", lambda: clock_tasks.LatestTimezoneCity()),
+    ("AddCityAndCheckTime", lambda: clock_tasks.AddCityAndCheckTime(city="北京")),
     (
         "AddCityAndCompareTimeDiff",
-        lambda: clock_tasks.AddCityAndCompareTimeDiff(
-            new_city="东京",
-            existing_city="巴黎",
-            answer="8",
-        ),
+        lambda: clock_tasks.AddCityAndCompareTimeDiff(new_city="东京", existing_city="巴黎"),
     ),
     (
         "ReorganizeWorldClock",
         lambda: clock_tasks.ReorganizeWorldClock(remove_city="伦敦", add_city="东京"),
     ),
-    (
-        "SetupMorningAlarms",
-        lambda: FrozenSetupMorningAlarms(
-            time1="07:10",
-            h1=7,
-            m1=10,
-            time2="07:10",
-            h2=7,
-            m2=10,
-            repeat1="once",
-            repeat2="once",
-        ),
-    ),
+    ("SetupMorningAlarms", _make_setup_morning_alarms),
 ]
 
 

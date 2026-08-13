@@ -1,4 +1,25 @@
-"""Live scripted-plan verification for the Calendar suite."""
+"""Live scripted-plan verification for the Calendar suite.
+
+Single-source policy: answers, ``eventId``, ``deletedCount``, ``targetDate``,
+the reminder-sheet labels and the holiday view dates are **not** injected here
+— they come from ``scripted_plans.DERIVED_PARAMS``, computed at
+materialization time from the episode's post-setup initial state through the
+judge-homologous ``Calendar`` domain class and the judge-side holiday tables.
+That is exactly the official ``--agent scripted`` sampling path, so these live
+cases regression-test the derivation itself.
+
+Only *declared* task parameters stay pinned below, for deterministic
+coverage:
+
+- ``MakeupDayReminder`` pins 清明 (no post-holiday makeup → the ``no_makeup``
+  Branch arm); the ``has_makeup`` arm is exercised on the CLI sampling path
+  (holidays 元旦/春节/五一/国庆).
+- ``SearchDeleteAll`` pins 项目 (the 6-deletion Branch arm); the 团队 arm (2
+  deletions) is exercised via sampling.
+- ``EditAndReportNewTime`` pins ``new_date`` on a *different* day than the
+  seeded 团队周会 (today+5 vs seed today+3) so the date-move path
+  (delete + recreate — the event form has no date control) is proven live.
+"""
 
 from __future__ import annotations
 
@@ -28,41 +49,18 @@ def _date_after(days: int) -> str:
     return (dt.date.today() + dt.timedelta(days=days)).isoformat()
 
 
-def _add_days(date_value: str, days: int) -> str:
-    return (dt.date.fromisoformat(date_value) + dt.timedelta(days=days)).isoformat()
-
-
-def _end_answer(date_value: str, start_hhmm: str, duration_minutes: int) -> str:
-    hour, minute = [int(part) for part in start_hhmm.split(":")]
-    start = dt.datetime.combine(dt.date.fromisoformat(date_value), dt.time(hour, minute))
-    end = start + dt.timedelta(minutes=duration_minutes)
-    return f"{end.date().isoformat()} {end.hour:02d}:{end.minute:02d}"
-
-
 SCRIPTED_CASES: list[tuple[str, Callable[[], BaseTask]]] = [
     ("ToggleShowWeekNumber", lambda: calendar_tasks.ToggleShowWeekNumber(toggle=True)),
     (
         "ChangeDefaultReminder",
-        lambda: calendar_tasks.ChangeDefaultReminder(
-            reminder="5_minutes_before",
-            reminderLabel="5分钟前",
-        ),
+        lambda: calendar_tasks.ChangeDefaultReminder(reminder="5_minutes_before"),
     ),
     (
         "CreateEvent",
         lambda: calendar_tasks.CreateEvent(date=_date_after(9), title="牙医复诊"),
     ),
-    (
-        "DeleteEvent",
-        lambda: calendar_tasks.DeleteEvent(
-            title="团队周会",
-            eventId="seed_team_weekly",
-        ),
-    ),
-    (
-        "SearchEventTitle",
-        lambda: calendar_tasks.SearchEventTitle(keyword="项目", answer="团队周会"),
-    ),
+    ("DeleteEvent", lambda: calendar_tasks.DeleteEvent(title="团队周会")),
+    ("SearchEventTitle", lambda: calendar_tasks.SearchEventTitle(keyword="项目")),
     (
         "CreateBirthdayEvent",
         lambda: calendar_tasks.CreateBirthdayEvent(date=_date_after(10), title="爸爸生日"),
@@ -82,7 +80,6 @@ SCRIPTED_CASES: list[tuple[str, Callable[[], BaseTask]]] = [
             date=_date_after(12),
             title="出差提醒",
             reminder=30,
-            reminderChoice="提前30分钟",
         ),
     ),
     (
@@ -95,51 +92,32 @@ SCRIPTED_CASES: list[tuple[str, Callable[[], BaseTask]]] = [
     ),
     (
         "DateCalcForward",
-        lambda: calendar_tasks.DateCalcForward(
-            date=_date_after(1),
-            days=35,
-            answer=_add_days(_date_after(1), 35),
-        ),
+        lambda: calendar_tasks.DateCalcForward(date=_date_after(1), days=35),
     ),
     (
         "CalculateDateInterval",
         lambda: calendar_tasks.CalculateDateInterval(
             date1=_date_after(5),
             date2=_date_after(50),
-            answer="45",
         ),
     ),
-    ("QueryHolidayLength", lambda: calendar_tasks.QueryHolidayLength(holiday="春节", answer="9")),
-    (
-        "QueryMakeupWorkday",
-        lambda: calendar_tasks.QueryMakeupWorkday(holiday="春节", answer="2026-02-28"),
-    ),
+    ("QueryHolidayLength", lambda: calendar_tasks.QueryHolidayLength(holiday="春节")),
+    ("QueryMakeupWorkday", lambda: calendar_tasks.QueryMakeupWorkday(holiday="春节")),
     (
         "ConfigAllReminders",
         lambda: calendar_tasks.ConfigAllReminders(
             r1="30_minutes_before",
             r2="start_of_day",
             r3="30_minutes",
-            r1Label="30分钟前",
-            r2Label="当天0:00",
-            r3Label="30分钟后",
         ),
     ),
     (
         "EditEventTime",
-        lambda: calendar_tasks.EditEventTime(
-            title="项目汇报",
-            eventId="seed_project_report",
-            new_time="11:00",
-        ),
+        lambda: calendar_tasks.EditEventTime(title="项目汇报", new_time="11:00"),
     ),
     (
         "QueryFirstEventOnDate",
-        lambda: calendar_tasks.QueryFirstEventOnDate(
-            date=_date_after(3),
-            answerTitle="团队周会",
-            answerTime="09:00",
-        ),
+        lambda: calendar_tasks.QueryFirstEventOnDate(date=_date_after(3)),
     ),
     (
         "DateCalcThenCreate",
@@ -147,41 +125,26 @@ SCRIPTED_CASES: list[tuple[str, Callable[[], BaseTask]]] = [
             date=_date_after(4),
             days=10,
             title="出发提醒",
-            targetDate=_add_days(_date_after(4), 10),
-            answer=_add_days(_date_after(4), 10),
         ),
     ),
     (
         "MakeupDayReminder",
-        lambda: calendar_tasks.MakeupDayReminder(
-            holiday="清明",
-            title="补班提醒",
-            answerChoice="不用补班",
-        ),
+        lambda: calendar_tasks.MakeupDayReminder(holiday="清明", title="补班提醒"),
     ),
-    (
-        "SearchDeleteAll",
-        lambda: calendar_tasks.SearchDeleteAll(
-            keyword="项目",
-            deletedCount="6",
-        ),
-    ),
+    ("SearchDeleteAll", lambda: calendar_tasks.SearchDeleteAll(keyword="项目")),
     (
         "CompareScheduleDensity",
         lambda: calendar_tasks.CompareScheduleDensity(
             date1=_date_after(3),
             date2=_date_after(14),
-            answerChoice=_date_after(3),
         ),
     ),
     (
         "EditAndReportNewTime",
         lambda: calendar_tasks.EditAndReportNewTime(
             title="团队周会",
-            eventId="seed_team_weekly",
-            new_date=_date_after(3),
+            new_date=_date_after(5),
             new_time="10:30",
-            answerEnd=_end_answer(_date_after(3), "10:30", 60),
         ),
     ),
 ]

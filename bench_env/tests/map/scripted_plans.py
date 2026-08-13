@@ -1,6 +1,37 @@
-"""Scripted replay plans for Map tasks."""
+"""Scripted replay plans for Map tasks.
+
+Sampling compatibility (``DERIVED_PARAMS``): every non-declared plan
+placeholder (``answer*`` / ``target_place`` / the route-picker triples) is
+computed at materialization time through the *judge-homologous* ``Map``
+domain class. Map judges never read expected values from the terminal app
+state — search results, ratings, route distances/durations/steps all come
+from the static offline datasets ``apps/Map/data/places.json`` /
+``routes.json`` (``Map.geo_search`` / ``Map.geo_route_from_current`` /
+``Map.resolve_route_pairs``), while the terminal state only carries
+behavioral evidence (``searchHistory`` diff, ``active_route``
+mode/destination). So the calculators import the same static-data accessors
+the judges call — static data is orthogonal to sampling, and derived values
+cannot drift from the judge. Explicit test injections would still win over
+these calculators; ``test_scripted.py`` deliberately injects declared
+parameters only, exercising this derivation path end to end.
+
+Route-picker parameterization (``_ROUTE_PICKS``): typing a place param into
+the route origin/destination picker and clicking "the prediction whose text
+equals the param" does NOT generalize across the sampled place values — the
+autocomplete rows (``places.json.autocomplete_index``) surface each POI with
+its own main text and need subtitle disambiguation, e.g. 国家图书馆's
+predictions are all titled 中国国家图书馆, and 圆明园's only routable POI
+(圆明园遗址公园) never appears under the query 圆明园. Each place value
+therefore maps to a verified ``(query, prediction main text, subtitle
+substring)`` triple targeting the POI that (a) has the offline
+current>/OD route segments and (b) renders the same distance/duration texts
+as ``Map.resolve_places(place)[0]`` — the candidate the answer calculators
+(and the judges' first ``check_alternatives`` branch) use.
+"""
 
 from __future__ import annotations
+
+from typing import Any, Callable
 
 from bench_env.agent.scripted import (
     Step,
@@ -20,6 +51,7 @@ from bench_env.agent.scripted import (
     type_text,
     wait,
 )
+from bench_env.task.map.app import Map
 
 SEARCH_INPUT_SELECTOR = 'input[placeholder="在此处搜索"]:visible, input[placeholder="Search here"]:visible'
 ROUTE_ORIGIN_INPUT_SELECTOR = (
@@ -179,16 +211,26 @@ def search_map(query: str) -> list[Step]:
     ]
 
 
-def route_to_place(query: str, *, mode: str = "driving") -> list[Step]:
+def route_to_place(*, mode: str = "driving") -> list[Step]:
+    """去 {place} 的路线：输入词/预测行由 _ROUTE_PICKS 查表派生（见 DERIVED_PARAMS）。
+
+    ``{place_query}``（打进目的地选点框的词）、``{place_main}``（预测行主文
+    本，精确匹配）、``{place_sub}``（副标题消歧子串）三个占位符按任务的
+    ``place`` 参数查表渲染——目标 POI 与答案派生所用的
+    ``Map.resolve_places(place)[0]`` 距离/时长文本一致。
+    """
     steps: list[Step] = [
         *open_map(),
         click_selector("button.bg-teal-700:visible", "open route setup"),
         wait(0.5, summary="wait for route setup"),
         tap_action("routeSetup.open.destinationPicker", summary="open destination picker"),
         wait(0.4, summary="wait for destination picker"),
-        type_text(query, selector=ROUTE_DEST_INPUT_SELECTOR, clear=True, summary="type route destination"),
+        type_text("{place_query}", selector=ROUTE_DEST_INPUT_SELECTOR, clear=True, summary="type route destination"),
         wait(0.6, summary="wait for destination predictions"),
-        click_selector(route_prediction(query), "select destination prediction"),
+        click_selector(
+            route_prediction("{place_main}", subtitle="{place_sub}"),
+            "select destination prediction",
+        ),
         wait(1.5, summary="wait for route calculation"),
     ]
     if mode == "walking":
@@ -317,29 +359,40 @@ def route_visible_result(
     return steps
 
 
-def route_between(
-    origin: str,
-    destination: str,
-    *,
-    mode: str = "driving",
-    origin_subtitle: str | None = None,
-    destination_subtitle: str | None = None,
-) -> list[Step]:
+def route_between(*, mode: str = "driving") -> list[Step]:
+    """从 {origin} 到 {destination} 的路线：两侧选点均由 _ROUTE_PICKS 查表派生。
+
+    ``{origin_query}/{origin_main}/{origin_sub}`` 与
+    ``{destination_query}/{destination_main}/{destination_sub}`` 按任务的
+    ``origin`` / ``destination`` 参数查表渲染，覆盖 ``DRIVING_OD_PAIRS``
+    白名单里的全部地名（采样器只会取这 4 对）。
+    """
     steps: list[Step] = [
         *open_map(),
         click_selector("button.bg-teal-700:visible", "open route setup"),
         wait(0.5, summary="wait for route setup"),
         tap_action("routeSetup.open.originPicker", summary="open origin picker"),
         wait(0.4, summary="wait for origin picker"),
-        type_text(origin, selector=ROUTE_ORIGIN_INPUT_SELECTOR, clear=True, summary="type route origin"),
+        type_text("{origin_query}", selector=ROUTE_ORIGIN_INPUT_SELECTOR, clear=True, summary="type route origin"),
         wait(0.6, summary="wait for origin predictions"),
-        click_selector(route_prediction(origin, subtitle=origin_subtitle), "select origin prediction"),
+        click_selector(
+            route_prediction("{origin_main}", subtitle="{origin_sub}"),
+            "select origin prediction",
+        ),
         wait(1.0, summary="wait for origin selection"),
         tap_action("routeSetup.open.destinationPicker", summary="open destination picker"),
         wait(0.4, summary="wait for destination picker"),
-        type_text(destination, selector=ROUTE_DEST_INPUT_SELECTOR, clear=True, summary="type route destination"),
+        type_text(
+            "{destination_query}",
+            selector=ROUTE_DEST_INPUT_SELECTOR,
+            clear=True,
+            summary="type route destination",
+        ),
         wait(0.6, summary="wait for destination predictions"),
-        click_selector(route_prediction(destination, subtitle=destination_subtitle), "select destination prediction"),
+        click_selector(
+            route_prediction("{destination_main}", subtitle="{destination_sub}"),
+            "select destination prediction",
+        ),
         wait(1.5, summary="wait for route calculation"),
     ]
     if mode == "walking":
@@ -363,13 +416,15 @@ def open_settings() -> list[Step]:
 
 
 def set_theme() -> list[Step]:
+    # 主题弹窗的单选标签与 criteria 存储值同串（apps/Map res/strings.ts
+    # theme_light/dark/device），声明参数 {theme} 可直接渲染进选项定位。
     return [
         *open_settings(),
         click_selector(row_with_text("应用和显示", "App & display"), "open app display settings"),
         wait(0.2, summary="wait for app display"),
         click_selector(row_with_text("主题", "Theme"), "open theme modal"),
         wait(0.2, summary="wait for theme modal"),
-        click_selector(radio_option("{theme_label}"), "select theme option"),
+        click_selector(radio_option("{theme}"), "select theme option"),
         click_selector('button:has-text("保存"):visible, button:has-text("Save"):visible', "save theme option"),
     ]
 
@@ -415,6 +470,218 @@ def set_multi_settings() -> list[Step]:
     ]
 
 
+# ---------------------------------------------------------------------------
+# Derived params — sampling-path compatibility
+# ---------------------------------------------------------------------------
+# Each calculator mirrors its task's judge (get_answer / check_goals in
+# bench_env/task/map/tasks.py, defs/NorthResearchInstituteAnswer.py) through
+# the same Map static-data accessors, so the typed/asserted values are
+# judge-homologous by construction. None of them reads the episode state:
+# Map judges compute expectations from apps/Map/data/{places,routes}.json.
+
+# place 参数值 → (选点输入词, 预测行主文本, 副标题消歧子串)。
+# 逐项按 places.json.autocomplete_index 与 routes.json 核验：三元组点中的 POI
+# 与 Map.resolve_places(place)[0]（答案派生和判分 check_alternatives 首选支所
+# 用候选）的 current> 距离/时长文本一致，OD 地名还需挂有 DRIVING_OD_PAIRS 的
+# 离线路段。match_duration 判分为精确分钟匹配（无容差），因此"点中的 POI 与
+# 派生 POI 文本一致"是硬约束，不能靠容差兜底。
+_ROUTE_PICKS: dict[str, tuple[str, str, str]] = {
+    # main="故宫" 的 place 预测行有两个（东城区 / 景山前街），OD 驾车段挂在
+    # 景山前街 POI 上；三个同名候选的 current 距离/时长文本一致（14.5 公里/36分钟）。
+    "故宫": ("故宫", "故宫", "景山前街"),
+    # main="天安门广场" 有前门/东城区两行；故宫>天安门广场 段挂前门 POI。
+    "天安门广场": ("天安门广场", "天安门广场", "前门"),
+    # main="颐和园" 的 place 行唯一。
+    "颐和园": ("颐和园", "颐和园", "海淀区"),
+    # 查询"圆明园"的预测里没有可路由的 POI —— 判分候选首位（也是 OD 段目的地）
+    # 是"圆明园遗址公园"，必须输入全名；副标题区分同名的清华西路行。
+    "圆明园": ("圆明园遗址公园", "圆明园遗址公园", "北京市海淀区圆明园"),
+    # 查询"国家图书馆"的预测主文本全是"中国国家图书馆"（精确匹配原词必落空）；
+    # 判分候选首位/两条 OD 段都挂中关村南大街 POI。
+    "国家图书馆": ("国家图书馆", "中国国家图书馆", "中关村南大街"),
+    "中国国家博物馆": ("中国国家博物馆", "中国国家博物馆", "东长安街"),
+    # 判分 alias 固定指向万柳店，预测只在完整名下出现。
+    "北京华联": ("北京华联（万柳购物中心）", "北京华联（万柳购物中心）", "万柳中路"),
+}
+
+
+def _pick(param: str, index: int) -> Callable[[Any, dict[str, Any]], str]:
+    """route-picker 三元组派生器：按任务的 place/origin/destination 参数查表。"""
+
+    def fn(task: Any, state: dict[str, Any]) -> str:
+        place = str(getattr(task.p, param))
+        if place not in _ROUTE_PICKS:
+            raise KeyError(
+                f"no _ROUTE_PICKS entry for {param}={place!r}; the sampled value "
+                "must be added to the verified route-picker table"
+            )
+        return _ROUTE_PICKS[place][index]
+
+    return fn
+
+
+_PLACE_PICK_PARAMS: dict[str, Callable[[Any, dict[str, Any]], str]] = {
+    "place_query": _pick("place", 0),
+    "place_main": _pick("place", 1),
+    "place_sub": _pick("place", 2),
+}
+
+_OD_PICK_PARAMS: dict[str, Callable[[Any, dict[str, Any]], str]] = {
+    "origin_query": _pick("origin", 0),
+    "origin_main": _pick("origin", 1),
+    "origin_sub": _pick("origin", 2),
+    "destination_query": _pick("destination", 0),
+    "destination_main": _pick("destination", 1),
+    "destination_sub": _pick("destination", 2),
+}
+
+
+def _search_results(task: Any) -> list[dict[str, Any]]:
+    """判分同源：Map.geo_search(category, limit=0)（tasks.py 各 get_answer/check_goals 同款）。"""
+    return Map.geo_search(str(task.p.category), limit=0)
+
+
+def _best_rated(task: Any) -> dict[str, Any]:
+    """镜像 CheckHighestRatedPlace/FindBestRatedAndRoute/BestRatedWithWalkRoute 判分。"""
+    return Map.best_rated_from_results(_search_results(task), max_distance_meters=task.p.radius)
+
+
+def _nearest_rated(task: Any) -> dict[str, Any]:
+    """镜像 FindNearestWithRating/NearestDetailAndWalkRoute 判分（全结果最近有评分）。"""
+    return Map.nearest_rated_from_results(_search_results(task))
+
+
+def _first_route_from_current(task: Any, mode: str) -> dict[str, Any]:
+    """镜像 QueryDrivingDistance/CompareRouteDuration 判分 check_alternatives 的首选支。"""
+    place = Map.resolve_places(str(task.p.place))[0]
+    return Map.geo_route_from_current(str(place["place_id"]), mode)
+
+
+def _drive_distance_answer(task: Any, state: dict[str, Any]) -> str:
+    return str(_first_route_from_current(task, "DRIVING")["distance"])
+
+
+def _route_steps_answer(task: Any, state: dict[str, Any]) -> str:
+    """镜像 CheckRouteSuccess 判分：离线 OD 段（首个 triple）的前 3 步文本。"""
+    _origin, _destination, route = Map.resolve_route_pairs(
+        str(task.p.origin), str(task.p.destination), "DRIVING"
+    )[0]
+    return "；".join(Map.route_step_texts_from_api_route(route)[:3])
+
+
+def _fastest_mode_answer(task: Any, state: dict[str, Any]) -> str:
+    """镜像 CompareRouteDuration 判分 check_route_faster_mode_answer 的期望结论。"""
+    walk = float(_first_route_from_current(task, "WALKING")["duration_seconds"])
+    drive = float(_first_route_from_current(task, "DRIVING")["duration_seconds"])
+    if walk < drive:
+        return "步行更快"
+    if drive < walk:
+        return "开车更快"
+    return "一样快"
+
+
+def _driving_cost_answer(task: Any, state: dict[str, Any]) -> str:
+    """镜像 EstimateDrivingCost 判分 check_driving_cost_answer（首候选路线 × 费率）。"""
+    route = _first_route_from_current(task, "DRIVING")
+    cost = (float(route["distance_meters"]) / 1000.0) * float(task.p.rate)
+    return f"{cost:.2f}"
+
+
+def _rating_rank_answer(task: Any, state: dict[str, Any]) -> str:
+    """精确镜像 NearestInRadiusRatingRank.get_answer（半径内最近有评分者的评分排名）。"""
+    in_radius = Map.filter_results(_search_results(task), max_distance_meters=task.p.radius)
+    nearest = Map.nearest_rated_from_results(in_radius)
+    return str(
+        Map.rating_rank_from_results(
+            in_radius,
+            str(nearest["name"]),
+            min_results=2,
+            place_id=str(nearest["place_id"]),
+        )
+    )
+
+
+def _north_institute_answer(task: Any, state: dict[str, Any]) -> str:
+    """镜像 NorthResearchInstituteAnswer 判分常量：答案是任务类硬编码的正则
+    （defs/NorthResearchInstituteAnswer.py），取其首个分支（规范全名）。"""
+    pattern = getattr(getattr(task, "answer", None), "pattern", None)
+    if not isinstance(pattern, str) or "|" not in pattern:
+        raise ValueError("NorthResearchInstituteAnswer.answer regex changed shape; update the deriver")
+    return pattern.split("|")[0]
+
+
+DERIVED_PARAMS: dict[str, dict[str, Callable[[Any, dict[str, Any]], Any]]] = {
+    "map.CheckDriveRoute": {**_PLACE_PICK_PARAMS},
+    "map.CheckHighestRatedPlace": {
+        "answer": lambda task, state: str(_best_rated(task)["name"]),
+    },
+    "map.CheckNearestPlaceAddress": {
+        "answer": lambda task, state: Map.extract_address(
+            Map.nearest_from_results(_search_results(task))
+        ),
+    },
+    "map.QueryDrivingDistance": {
+        **_PLACE_PICK_PARAMS,
+        "answer": _drive_distance_answer,
+    },
+    "map.CheckRouteSuccess": {
+        **_OD_PICK_PARAMS,
+        "answer": _route_steps_answer,
+    },
+    "map.FindBestRatedAndRoute": {
+        "target_place": lambda task, state: str(_best_rated(task)["name"]),
+        "answer_name": lambda task, state: str(_best_rated(task)["name"]),
+        "answer_distance": lambda task, state: str(
+            Map.geo_route_from_current(str(_best_rated(task)["place_id"]), "DRIVING")["distance"]
+        ),
+    },
+    "map.FindNearestWithRating": {
+        "answer_name": lambda task, state: str(_nearest_rated(task)["name"]),
+        "answer_rating": lambda task, state: str(Map.extract_rating(_nearest_rated(task))),
+    },
+    "map.CompareRouteDuration": {
+        **_PLACE_PICK_PARAMS,
+        "answer_fastest": _fastest_mode_answer,
+        "answer_walk_duration": lambda task, state: str(
+            _first_route_from_current(task, "WALKING")["duration"]
+        ),
+        "answer_drive_duration": lambda task, state: str(
+            _first_route_from_current(task, "DRIVING")["duration"]
+        ),
+    },
+    "map.FindNearestAndRoute": {
+        "target_place": lambda task, state: str(
+            Map.nearest_from_results(_search_results(task))["name"]
+        ),
+    },
+    "map.EstimateDrivingCost": {
+        **_PLACE_PICK_PARAMS,
+        "answer": _driving_cost_answer,
+    },
+    "map.NearestInRadiusRatingRank": {
+        "answer": _rating_rank_answer,
+    },
+    "map.BestRatedWithWalkRoute": {
+        "target_place": lambda task, state: str(_best_rated(task)["name"]),
+        "answer_name": lambda task, state: str(_best_rated(task)["name"]),
+        "answer_distance": lambda task, state: str(
+            Map.geo_route_from_current(str(_best_rated(task)["place_id"]), "WALKING")["distance"]
+        ),
+    },
+    "map.NearestDetailAndWalkRoute": {
+        "target_place": lambda task, state: str(_nearest_rated(task)["name"]),
+        "answer_name": lambda task, state: str(_nearest_rated(task)["name"]),
+        "answer_rating": lambda task, state: str(Map.extract_rating(_nearest_rated(task))),
+        "answer_duration": lambda task, state: str(
+            Map.geo_route_from_current(str(_nearest_rated(task)["place_id"]), "WALKING")["duration"]
+        ),
+    },
+    "map.NorthResearchInstituteAnswer": {
+        "answer": _north_institute_answer,
+    },
+}
+
+
 # 就地自证 lint（R1/R2）豁免清单——理由必填，豁免项会在 lint 报告中单列。
 LINT_EXEMPT: dict[str, str] = {
     # 屏上任何断言都必然失败：App 数据层（places.json / search_index）没有可响应
@@ -425,13 +692,17 @@ LINT_EXEMPT: dict[str, str] = {
 
 PLANS: dict[str, list[Step]] = {
     "map.CheckDriveRoute": [
-        *route_to_place("{place}", mode="driving"),
+        *route_to_place(mode="driving"),
         complete(),
     ],
     "map.CheckHighestRatedPlace": [
         *search_map("{category}"),
-        # 就地自证：搜索结果默认相关性排序，默认参数（咖啡馆）下最高评分地点位于
-        # 首屏第 2 行，名称直接可见；先断言可见再作答，证明答案读自屏幕而非直填。
+        # deep-dive 浏览：最高评分地点在相关性序中的行位随 category 采样漂移
+        # （咖啡馆#2 … 购物中心#36/酒店#38），首屏虚拟分页只渲染 20 行。翻页到
+        # 列表绝对末尾（slice(0,n) 只增不卸载，翻过的行留在 DOM），使任意行位的
+        # 名称都能被 assert_answer 命中（其文本采集不裁剪视口，只要求已渲染）。
+        *browse_results(22),
+        # 就地自证：先断言名称可见（全列表已渲染）再作答，证明答案读自屏幕而非直填。
         assert_answer("{answer}", field_index=0, summary="assert best rated place name on screen"),
         *grounded_answer("{answer}", summary="submit highest rated place answer"),
         complete(),
@@ -439,6 +710,7 @@ PLANS: dict[str, list[Step]] = {
     "map.CheckNearestPlaceAddress": [
         *search_map("{category}"),
         # 地址不在结果行内：距离排序后最近地点即第 0 行，点开详情页读 AddressCard。
+        # 采样鲁棒：nearest 恒为距离序第 1 行，与 category 取值无关。
         *sort_results_by_distance(),
         *open_nearest_result_detail(),
         # 就地自证：断言 AddressCard 上的地址可见。判分期望值是去"中国"前缀、去邮编
@@ -452,7 +724,7 @@ PLANS: dict[str, list[Step]] = {
         complete(),
     ],
     "map.QueryDrivingDistance": [
-        *route_to_place("{place}", mode="driving"),
+        *route_to_place(mode="driving"),
         # 就地自证：驾车距离在路线页头部"36分钟 (14.5 公里)"里，断言可见后再作答
         # （文本 matcher 规整化包含，空格差异无碍）。
         assert_answer("{answer}", field_index=0, summary="assert driving distance on screen"),
@@ -460,13 +732,18 @@ PLANS: dict[str, list[Step]] = {
         complete(),
     ],
     "map.CheckRouteSuccess": [
-        *route_between("{origin}", "{destination}", mode="driving", origin_subtitle="景山前街"),
+        *route_between(mode="driving"),
         # 分步导航文本只在 route sheet 拖到近全屏的 expanded 态渲染。
         *expand_route_sheet(),
         *grounded_answer("{answer}", summary="submit route steps"),
         *return_to_map(),
         complete(),
     ],
+    # 【采样豁免·滚动行位耦合】result_scrolls=2 按默认 category=咖啡馆 的距离序
+    # 行位（best#8）标定；其他采样值下目标行位在 #2~#14 间漂移，固定滚动次数会
+    # 让行内"路线"按钮不在视口（env 不做隐式滚动，视口外点不到）。行位是数据布局
+    # 事实而非任务参数，受限 Branch 也无法按 category×radius 组合枚举穷举——
+    # 完全采样化需要 read_text 类读屏机制（滚动中检测目标行进入视口再停）。
     "map.FindBestRatedAndRoute": [
         *search_map("{category}"),
         *route_visible_result("{target_place}", mode="driving", result_scrolls=2),
@@ -485,9 +762,12 @@ PLANS: dict[str, list[Step]] = {
         *set_theme(),
         complete(),
     ],
+    # 【采样豁免·滚动行位耦合】scroll_results(2) 按默认 category=咖啡馆 的距离序
+    # 行位（nearest_rated#6）标定；其他采样值下行位在 #1~#14 间漂移（#1 会被滚出
+    # 视口、#14 滚不到），行级评分断言 rated_result_row 是视口敏感的 assert_visible。
     "map.FindNearestWithRating": [
         *search_map("{category}"),
-        # 最近的有评分地点（如"麦咖啡"，距离序第 5 行）不在首屏：距离排序后滚动使行内名称+评分可见。
+        # 最近的有评分地点（麦咖啡，距离序第 6 行）不在首屏：距离排序后滚动使行内名称+评分可见。
         *sort_results_by_distance(),
         *scroll_results(2, summary_prefix="scroll to nearest rated result"),
         # 就地自证：名称走判分 matcher；评分为纯短数字改走行级数值绑定（见 rated_result_row）。
@@ -500,7 +780,7 @@ PLANS: dict[str, list[Step]] = {
         complete(),
     ],
     "map.CompareRouteDuration": [
-        *route_to_place("{place}", mode="driving"),
+        *route_to_place(mode="driving"),
         # 就地自证：结论字段（answer_fastest"步行更快/开车更快"）屏上没有——它是对
         # 两个模式时长的比较推理；证据是两个时长同屏可见：驾车时长在路线页头部与
         # 驾车 tab，步行时长在步行 tab（路线页各交通方式 tab 自带该模式时长）。
@@ -516,11 +796,12 @@ PLANS: dict[str, list[Step]] = {
     ],
     "map.FindNearestAndRoute": [
         *search_map("{category}"),
+        # 采样鲁棒：nearest 恒为距离序第 1 行（排序后无需滚动即可点行内"路线"）。
         *route_visible_result("{target_place}", mode="driving"),
         complete(),
     ],
     "map.EstimateDrivingCost": [
-        *route_to_place("{place}", mode="driving"),
+        *route_to_place(mode="driving"),
         # 就地自证（证据断言）：油费=距离×费率是推理值，屏上只有距离；而距离本身
         # 不是本任务注入参数（answer 只有费用数值），无法 assert_answer 逐字段——
         # 断言路线页头部的距离栏（RouteDetailSheet 的"(14.5 公里)"span）可见，
@@ -536,8 +817,9 @@ PLANS: dict[str, list[Step]] = {
     "map.NearestInRadiusRatingRank": [
         *search_map("{category}"),
         # deep_dive：排名需要浏览半径内全部同类评分。距离排序后连续翻页浏览到列表
-        # 绝对末尾（默认参数下全列表 60 行、2000m 内 41 行；~3 行/次 × 22 次含越界
-        # 余量——列表到底后滚动钳制，多余滑动无害），完整覆盖半径内条目。
+        # 绝对末尾（各 category 全列表 56~60 行；~3 行/次 × 22 次含越界余量——列表
+        # 到底后滚动钳制，多余滑动无害），完整覆盖半径内条目。浏览深度对采样鲁棒：
+        # radius 只影响判分计算，不影响"翻到底"这个行为。
         *sort_results_by_distance(),
         *browse_results(22),
         # 就地自证（证据断言）："第 N 名"排名屏上不存在（对半径内同类评分的推理值），
@@ -551,6 +833,8 @@ PLANS: dict[str, list[Step]] = {
         *grounded_answer("{answer}", summary="submit rating rank"),
         complete(),
     ],
+    # 【采样豁免·滚动行位耦合】同 FindBestRatedAndRoute：result_scrolls=2 按
+    # 咖啡馆行位标定，目标行位随 category/radius 采样漂移。
     "map.BestRatedWithWalkRoute": [
         *search_map("{category}"),
         *route_visible_result("{target_place}", mode="walking", result_scrolls=2),
@@ -561,6 +845,8 @@ PLANS: dict[str, list[Step]] = {
         *return_to_map(),
         complete(),
     ],
+    # 【采样豁免·滚动行位耦合】同 FindNearestWithRating：result_scrolls=1 按
+    # 咖啡馆 nearest_rated#6 标定，行级评分断言视口敏感，行位随 category 漂移。
     "map.NearestDetailAndWalkRoute": [
         *search_map("{category}"),
         *route_visible_result(
@@ -590,7 +876,8 @@ PLANS: dict[str, list[Step]] = {
     # （bench_env/task/map/defs/NorthResearchInstituteAnswer.py）check_goals 仅验答案正则
     # （含否定式防护），无操作/状态前置检查（expected_changes 只是副作用允许清单），
     # 因此本 plan 即使搜索空结果也能通过。修复方向（给 places.json 补"研究所"POI，
-    # 或改写任务/判分）由任务作者决策。
+    # 或改写任务/判分）由任务作者决策。采样兼容：answer 派生自判分器的常量正则
+    # （无参数任务，实例恒同）。
     "map.NorthResearchInstituteAnswer": [
         *search_map("研究所"),
         *grounded_answer("{answer}", summary="submit north research institute answer"),

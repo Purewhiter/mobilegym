@@ -1,12 +1,23 @@
-"""Live scripted-plan verification for the WeChat Reading suite."""
+"""Live scripted-plan verification for the WeChat Reading suite.
+
+Single-source policy: answers, ``book_id``, action-id lookups and slider
+fractions are **not** injected here — they come from
+``scripted_plans.DERIVED_PARAMS``, computed at materialization time from the
+episode's post-setup initial state through the judge-homologous
+``WechatReading`` domain class. That is exactly the official
+``--agent scripted`` sampling path, so these live cases regression-test the
+derivation itself (the previous defaults.json disk replica — relative-date
+resolution, best-weekday and month-day-count recomputation — is gone; the
+real initial state already carries absolute ``readingRecords`` dates).
+
+Only *declared* task parameters stay pinned below, for deterministic
+coverage (fixed titles keep the search/shelf geometry stable; 2026-01 keeps
+the month-view branch on a mid-range "previous month" tap count).
+"""
 
 from __future__ import annotations
 
-import datetime as dt
-import json
-import re
-from pathlib import Path
-from typing import Any, Callable
+from typing import Callable
 
 import pytest
 
@@ -20,98 +31,22 @@ from bench_env.tests.scripted_support import (
 )
 
 SUITE = "wechat_reading"
-ROOT = Path(__file__).resolve().parents[3]
-DEFAULTS = json.loads((ROOT / "apps" / "WechatReading" / "data" / "defaults.json").read_text(encoding="utf-8"))
-
-_RELATIVE_RE = re.compile(r"(\d+)([wdhms])")
-_WEEKDAY_ZH = ["星期一", "星期二", "星期三", "星期四", "星期五", "星期六", "星期日"]
-
-
-def _book(title: str) -> dict[str, Any]:
-    return next(book for book in DEFAULTS["store"] if book["title"] == title)
-
-
-def _audiobook(title: str) -> dict[str, Any]:
-    return next(book for book in DEFAULTS["audiobooks"] if book["title"] == title)
-
-
-def _hot(rank: int) -> dict[str, Any]:
-    return next(item for item in DEFAULTS["hotSearch"] if int(item["rank"]) == rank)
-
-
-def _resolve_record_datetime(value: Any, *, now: dt.datetime | None = None) -> dt.datetime:
-    now = now or dt.datetime.now()
-    if isinstance(value, (int, float)):
-        return dt.datetime.fromtimestamp(float(value) / 1000.0)
-    text = str(value or "").strip()
-    if text.startswith("-") or text.startswith("+"):
-        sign = -1 if text.startswith("-") else 1
-        delta = dt.timedelta()
-        for amount, unit in _RELATIVE_RE.findall(text[1:]):
-            n = int(amount)
-            if unit == "w":
-                delta += dt.timedelta(weeks=n)
-            elif unit == "d":
-                delta += dt.timedelta(days=n)
-            elif unit == "h":
-                delta += dt.timedelta(hours=n)
-            elif unit == "m":
-                delta += dt.timedelta(minutes=n)
-            elif unit == "s":
-                delta += dt.timedelta(seconds=n)
-        return now + sign * delta
-    if re.fullmatch(r"\d{4}-\d{2}-\d{2}", text):
-        return dt.datetime.fromisoformat(f"{text}T00:00:00")
-    return dt.datetime.fromisoformat(text)
-
-
-def _resolved_record_dates(*, now: dt.datetime | None = None) -> list[tuple[dt.date, int]]:
-    now = now or dt.datetime.now()
-    out: list[tuple[dt.date, int]] = []
-    for record in DEFAULTS["readingRecords"]:
-        stamp = _resolve_record_datetime(record["timestamp"], now=now)
-        out.append((stamp.date(), int(record["duration"])))
-    return out
-
-
-def _month_reading_day_count(year: int, month: int) -> str:
-    days = {d.day for d, _ in _resolved_record_dates() if d.year == year and d.month == month}
-    return str(len(days))
-
-
-def _best_reading_weekday() -> str:
-    today = dt.datetime.now().date()
-    start = today - dt.timedelta(days=6)
-    totals: dict[dt.date, int] = {}
-    for date_value, duration in _resolved_record_dates(now=dt.datetime.now()):
-        if start <= date_value <= today:
-            totals[date_value] = totals.get(date_value, 0) + duration
-    best = max(totals.items(), key=lambda item: item[1])[0]
-    return _WEEKDAY_ZH[best.weekday()]
-
 
 SCRIPTED_CASES: list[tuple[str, Callable[[], BaseTask]]] = [
-    ("CheckCoinBalance", lambda: wechat_reading_tasks.CheckCoinBalance(answer=str(DEFAULTS["user"]["coinBalance"]))),
-    ("CheckHotSearchRank", lambda: wechat_reading_tasks.CheckHotSearchRank(rank=1, answer=_hot(1)["title"])),
-    ("CheckBookRating", lambda: wechat_reading_tasks.CheckBookRating(book_title="活着", answer=str(_book("活着")["recommendedValue"]))),
+    ("CheckCoinBalance", lambda: wechat_reading_tasks.CheckCoinBalance()),
+    ("CheckHotSearchRank", lambda: wechat_reading_tasks.CheckHotSearchRank(rank=1)),
+    ("CheckBookRating", lambda: wechat_reading_tasks.CheckBookRating(book_title="活着")),
     ("AddBookToShelf", lambda: wechat_reading_tasks.AddBookToShelf(book_title="三体")),
     ("ManageShelf", lambda: wechat_reading_tasks.ManageShelf(book_title="苏菲的世界")),
-    ("SearchBookAuthor", lambda: wechat_reading_tasks.SearchBookAuthor(book_title="活着", answer=_book("活着")["author"])),
+    ("SearchBookAuthor", lambda: wechat_reading_tasks.SearchBookAuthor(book_title="活着")),
     ("TogglePrivateReading", lambda: wechat_reading_tasks.TogglePrivateReading(book_title="苏菲的世界")),
     ("EditProfileName", lambda: wechat_reading_tasks.EditProfileName(new_name="阿青")),
     ("SetDarkMode", lambda: wechat_reading_tasks.SetDarkMode(dark_mode="深色")),
-    ("FindAudiobookPlays", lambda: wechat_reading_tasks.FindAudiobookPlays(book_title="红楼梦", answer=_audiobook("红楼梦")["plays"])),
-    ("AnalyzeReadingHabit", lambda: wechat_reading_tasks.AnalyzeReadingHabit(answer=_best_reading_weekday())),
-    (
-        "CheckCalendarMonthReading",
-        lambda: wechat_reading_tasks.CheckCalendarMonthReading(
-            year=2026,
-            month=1,
-            answer=_month_reading_day_count(2026, 1),
-        ),
-    ),
+    ("FindAudiobookPlays", lambda: wechat_reading_tasks.FindAudiobookPlays(book_title="红楼梦")),
+    ("AnalyzeReadingHabit", lambda: wechat_reading_tasks.AnalyzeReadingHabit()),
+    ("CheckCalendarMonthReading", lambda: wechat_reading_tasks.CheckCalendarMonthReading(year=2026, month=1)),
     ("CompareBookLengths", lambda: wechat_reading_tasks.CompareBookLengths(book1="三体", book2="活着")),
-    ("FindHighestRatedBookInCategory", lambda: wechat_reading_tasks.FindHighestRatedBookInCategory(category="历史", answer="明朝那些事儿")),
+    ("FindHighestRatedBookInCategory", lambda: wechat_reading_tasks.FindHighestRatedBookInCategory(category="历史")),
     ("ConfigureReaderSettings", lambda: wechat_reading_tasks.ConfigureReaderSettings(font_size=24, style="仿真翻页")),
     ("UnfollowUser", lambda: wechat_reading_tasks.UnfollowUser(user_id="user_508", user_name="508")),
     ("SetProfileVisibility", lambda: wechat_reading_tasks.SetProfileVisibility(visibility="仅自己可见")),

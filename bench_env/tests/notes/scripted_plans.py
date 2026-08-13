@@ -1,6 +1,26 @@
-"""Scripted validation plans for Notes tasks."""
+"""Scripted validation plans for Notes tasks.
+
+Sampling compatibility (``DERIVED_PARAMS``): every plan placeholder that is
+not a declared task parameter (``answer``, ``evidence_title``,
+``view_mode_label``, ``todo1..3``, ``completed1..2``) is computed at
+materialization time from the episode's post-setup initial state via the
+*judge-homologous* ``Notes`` domain class — calculators build
+``Notes(init_state["apps"]["notes"])`` exactly like judges build
+``Notes(input.apps_init["notes"])``, and both read the same runner
+observation, so derived values cannot drift from the judge. Explicitly
+injected params would still win over these calculators; ``test_scripted.py``
+deliberately injects declared parameters only, so live runs exercise this
+derivation path end to end (the official ``--agent scripted`` sampling path).
+
+Known residual hardcode: ``notes.PinNote`` long-presses a literal coordinate —
+see the exemption comment on its plan entry.
+"""
 
 from __future__ import annotations
+
+import datetime as dt
+import math
+from typing import Any, Callable
 
 from bench_env.agent.scripted import (
     Step,
@@ -15,6 +35,8 @@ from bench_env.agent.scripted import (
     type_text,
     wait,
 )
+from bench_env.task.notes.app import Notes
+from bench_env.task.utils import now_ms
 
 
 def click_selector(selector: str, *, summary: str) -> Step:
@@ -136,18 +158,117 @@ def open_editor_menu() -> list[Step]:
     ]
 
 
+# ---------------------------------------------------------------------------
+# Derived params — sampling-path compatibility
+# ---------------------------------------------------------------------------
+# Each calculator mirrors its task's judge (get_answer / check_goals in
+# bench_env/task/notes/tasks.py) through the same Notes domain class over the
+# same initial state, so the typed/asserted values are judge-homologous by
+# construction.
+
+def _notes(state: dict[str, Any]) -> Notes:
+    """Judge-homologous accessor: ``Notes(init_state["apps"]["notes"])``."""
+    return Notes(state["apps"]["notes"])
+
+
+def _top_card_title(task: Any, state: dict[str, Any]) -> str:
+    """Title of the home list's top card — mirrors the store sort (pinned
+    first, then updatedAt desc; sortNotes in system/Notes/state.ts), so the
+    asserted title is always on the first screen regardless of note count."""
+    top = max(
+        _notes(state).visible_notes,
+        key=lambda note: (1 if note.get("pinned") else 0, int(note.get("updatedAt", 0) or 0)),
+    )
+    return str(top.get("title") or "")
+
+
+# SettingsPage.tsx binds 双列 → notesViewMode "grid" and 单列 → "list"; the
+# task's declared {mode} carries the state value, the plan taps the label.
+_VIEW_MODE_LABELS = {"list": "单列", "grid": "双列"}
+
+
+def _note_content_answer(task: Any, state: dict[str, Any]) -> str:
+    """Mirror ReadNoteContent.get_answer: content of the first init note whose
+    title equals {note_title} (exact match, raw state order)."""
+    for note in _notes(state).notes:
+        if str(note.get("title") or "") == str(task.p.note_title):
+            return str(note.get("content") or "")
+    return ""
+
+
+def _incomplete_todo_text(state: dict[str, Any], index: int) -> str:
+    """Mirror ReadTodoText.get_expected_response's incomplete_todos order; an
+    out-of-range index (fewer todos than the plan's fixed rows) raises loudly
+    at materialization."""
+    return str(_notes(state).incomplete_todos[index].get("text") or "")
+
+
+def _completed_todo_text(state: dict[str, Any], index: int) -> str:
+    """Completed-todo text by init order — the same init set whose IDs
+    check_all_completed_todos_deleted requires gone."""
+    return str(_notes(state).completed_todos[index].get("text") or "")
+
+
+def _default_reminder_answer(task: Any, state: dict[str, Any]) -> str:
+    """Mirror the reminder dialog's default value: sim-now rounded UP to the
+    5-minute step (roundUpToReminderStep in
+    system/Notes/components/dateTimePickerModel.ts). The dialog actually
+    computes it when opened mid-episode, so this episode-start derivation can
+    lag one step behind the saved alarmAt — within the judge's match_time
+    ±5 min tolerance (the judge stays authoritative via the final alarmAt)."""
+    step_ms = 5 * 60 * 1000
+    rounded_ms = math.ceil(now_ms(state["os"]) / step_ms) * step_ms
+    local = dt.datetime.fromtimestamp(rounded_ms / 1000.0)
+    return f"{local.hour:02d}:{local.minute:02d}"
+
+
+DERIVED_PARAMS: dict[str, dict[str, Callable[[Any, dict[str, Any]], Any]]] = {
+    "notes.ReadNotesCount": {
+        "answer": lambda task, state: str(len(_notes(state).visible_notes)),
+        "evidence_title": _top_card_title,
+    },
+    "notes.ChangeViewMode": {
+        "view_mode_label": lambda task, state: _VIEW_MODE_LABELS[str(task.p.mode)],
+    },
+    "notes.ReadNoteContent": {"answer": _note_content_answer},
+    "notes.ReadTodoText": {
+        "todo1": lambda task, state: _incomplete_todo_text(state, 0),
+        "todo2": lambda task, state: _incomplete_todo_text(state, 1),
+        "todo3": lambda task, state: _incomplete_todo_text(state, 2),
+    },
+    "notes.DeleteAllCompletedTodos": {
+        "completed1": lambda task, state: _completed_todo_text(state, 0),
+        "completed2": lambda task, state: _completed_todo_text(state, 1),
+    },
+    "notes.CreateNoteWithReminder": {"answer": _default_reminder_answer},
+    "notes.PrivateNotesWorkflow": {
+        # Mirror PrivateNotesWorkflow.check_goals: the _note sampler guarantees
+        # the target is non-private in init, so expected = init private + 1.
+        "answer": lambda task, state: str(len(_notes(state).private_notes) + 1),
+    },
+    "notes.TodoBatchWorkflow": {
+        # Mirror TodoBatchWorkflow.check_goals: +1 new todo, -1 completed
+        # existing todo — the incomplete count stays at the init value.
+        "answer": lambda task, state: str(len(_notes(state).incomplete_todos)),
+    },
+}
+
+
 PLANS: dict[str, list[Step]] = {
     "notes.ReadNotesCount": [
-        # All 5 default notes fit on the first screen; assert one known title so
-        # the answer is grounded in a rendered list (plan already couples to
-        # defaults via the literal "5").
-        assert_text("购物清单", summary="assert notes list rendered"),
-        *grounded_answer("5", summary="answer visible notes count"),
+        # All default notes fit on the first screen; assert the derived
+        # top-card title so the answer is grounded in a rendered list without
+        # coupling the plan to defaults.json contents.
+        assert_text("{evidence_title}", summary="assert notes list rendered"),
+        *grounded_answer("{answer}", summary="answer visible notes count"),
         complete(),
     ],
     "notes.ChangeViewMode": [
         *open_settings(),
-        click_selector('button:has-text("单列"):visible', summary="select list view mode"),
+        click_selector(
+            'button:has-text("{view_mode_label}"):visible',
+            summary="select target view mode",
+        ),
         complete(),
     ],
     "notes.CreateNewNote": [
@@ -160,6 +281,14 @@ PLANS: dict[str, list[Step]] = {
         complete(),
     ],
     "notes.PinNote": [
+        # Residual hardcode (sampling exemption): entering selection mode
+        # needs a press-hold, and hold() takes a literal coordinate —
+        # [270, 430] is the top-left card of the default grid layout, i.e.
+        # the newest note 购物清单, which is also the default {note_title}.
+        # A resampled {note_title} on another card would long-press the wrong
+        # note; deriving per-card coordinates would hardcode the entire grid
+        # geometry instead, so the fixed-layout coupling is kept and
+        # documented here (validated live with the default target only).
         hold([270, 430], summary="long press first note into selection mode"),
         wait(0.4, summary="wait for note selection mode"),
         click_selector('button:has-text("置顶"):visible', summary="pin selected note"),
@@ -174,20 +303,24 @@ PLANS: dict[str, list[Step]] = {
         assert_answer("{keyword2}", summary="assert content keyword2 on list card"),
         # Open the note so its full content is on screen; the editor skips
         # autosave when nothing changed, so notes state stays clean. No back
-        # needed — grounded_answer starts with home().
+        # needed — grounded_answer starts with home(). {answer} is the derived
+        # init content of {note_title}, so a resampled _note_target (different
+        # note + keywords) stays self-consistent.
         *open_note("{note_title}"),
-        *grounded_answer("牛奶\n鸡蛋\n洗衣液", summary="answer note content"),
+        *grounded_answer("{answer}", summary="answer note content"),
         complete(),
     ],
     "notes.ReadTodoText": [
         # Incomplete todos sort first and all fit on the todo tab's first screen.
         *open_todo_tab(),
         # answer_fields declares one repeatable entry, so field_index stays 0;
-        # one assert per answered todo text.
-        assert_answer("明天去车站", summary="assert todo 1 on screen"),
-        assert_answer("给妈妈打电话", summary="assert todo 2 on screen"),
-        assert_answer("预约牙医", summary="assert todo 3 on screen"),
-        *grounded_answer_repeatable("明天去车站", "给妈妈打电话", "预约牙医", summary="answer incomplete todos"),
+        # one assert per answered todo text. The plan shape fixes three
+        # incomplete todos: fewer in init fails materialization loudly, more
+        # fails the judge's set compare.
+        assert_answer("{todo1}", summary="assert todo 1 on screen"),
+        assert_answer("{todo2}", summary="assert todo 2 on screen"),
+        assert_answer("{todo3}", summary="assert todo 3 on screen"),
+        *grounded_answer_repeatable("{todo1}", "{todo2}", "{todo3}", summary="answer incomplete todos"),
         complete(),
     ],
     "notes.DeleteTodo": [
@@ -195,8 +328,11 @@ PLANS: dict[str, list[Step]] = {
         complete(),
     ],
     "notes.DeleteAllCompletedTodos": [
-        *delete_todo("提交周报", row_y=370),
-        *delete_todo("整理会议纪要", row_y=370),
+        # Completed texts derive from the same init set whose IDs the judge
+        # requires gone. The plan shape fixes two completed todos: fewer in
+        # init fails materialization loudly, more fails the judge.
+        *delete_todo("{completed1}", row_y=370),
+        *delete_todo("{completed2}", row_y=370),
         complete(),
     ],
     "notes.RestoreFromTrash": [
@@ -250,10 +386,10 @@ PLANS: dict[str, list[Step]] = {
         wait(0.4, summary="wait for private route"),
         # Evidence: "set private" replaces the editor with the private-notes
         # page; the note card visible there proves the operation landed and
-        # the plan is on the page the count is read from. The count "1"
+        # the plan is on the page the count is read from. The derived count
         # itself stays un-asserted (short digit, high mismatch risk).
         assert_text("{note_title}", summary="assert note card on private-notes page"),
-        *grounded_answer("1", summary="answer private notes count"),
+        *grounded_answer("{answer}", summary="answer private notes count"),
         complete(),
     ],
     "notes.TodoBatchWorkflow": [
@@ -271,13 +407,13 @@ PLANS: dict[str, list[Step]] = {
         click_selector(todo_checkbox("{existing_todo}"), summary="mark existing todo completed"),
         wait(0.3, summary="wait for todo completion"),
         # Evidence: after the toggle the row moves to the completed section
-        # and its checkbox flips to "取消完成". The count "3" stays
+        # and its checkbox flips to "取消完成". The derived count stays
         # un-asserted (short digit, high mismatch risk).
         assert_visible(
             todo_checkbox("{existing_todo}", completed=True),
             summary="assert existing todo marked completed",
         ),
-        *grounded_answer("3", summary="answer remaining incomplete todo count"),
+        *grounded_answer("{answer}", summary="answer remaining incomplete todo count"),
         complete(),
     ],
 }

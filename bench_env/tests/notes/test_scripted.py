@@ -1,9 +1,21 @@
-"""Live scripted-plan verification for the Notes suite."""
+"""Live scripted-plan verification for the Notes suite.
+
+Single-source policy: answer-sheet values (counts, note content, todo texts,
+the default reminder time) and UI-label lookups (``view_mode_label``,
+``evidence_title``) are **not** injected here — they come from
+``scripted_plans.DERIVED_PARAMS``, computed at materialization time from the
+episode's post-setup initial state through the judge-homologous ``Notes``
+domain class. That is exactly the official ``--agent scripted`` sampling
+path, so these live cases regression-test the derivation itself.
+
+Only *declared* task parameters stay pinned below, for deterministic
+coverage (sampler-covered fields like ReadNoteContent's
+note_title/keyword1/keyword2 are pinned to the defaults; seed-varied
+sampling of the same fields is exercised on the CLI path).
+"""
 
 from __future__ import annotations
 
-import datetime as dt
-import math
 from typing import Callable
 
 import pytest
@@ -18,13 +30,6 @@ from bench_env.tests.scripted_support import (
 )
 
 SUITE = "notes"
-
-
-def _next_reminder_answer() -> str:
-    now = dt.datetime.now()
-    total_minutes = now.hour * 60 + now.minute + (1 if now.second or now.microsecond else 0)
-    rounded = int(math.ceil(total_minutes / 5) * 5) % (24 * 60)
-    return f"{rounded // 60:02d}:{rounded % 60:02d}"
 
 
 SCRIPTED_CASES: list[tuple[str, Callable[[], BaseTask]]] = [
@@ -48,11 +53,7 @@ SCRIPTED_CASES: list[tuple[str, Callable[[], BaseTask]]] = [
     ),
     (
         "CreateNoteWithReminder",
-        lambda: notes_tasks.CreateNoteWithReminder(
-            title="明天开会",
-            content="记得带文件",
-            answer=_next_reminder_answer(),
-        ),
+        lambda: notes_tasks.CreateNoteWithReminder(title="明天开会", content="记得带文件"),
     ),
     ("PrivateNotesWorkflow", lambda: notes_tasks.PrivateNotesWorkflow(note_title="购物清单")),
     (

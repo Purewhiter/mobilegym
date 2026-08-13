@@ -1,4 +1,17 @@
-"""Live scripted-plan verification for the SMS suite."""
+"""Live scripted-plan verification for the SMS suite.
+
+Single-source policy: answers, UI labels and derived reply targets are **not**
+injected here — they come from ``scripted_plans.DERIVED_PARAMS``, computed at
+materialization time from the episode's post-setup initial state through the
+judge-homologous ``Sms`` domain class (``os.providers.sms``). That is exactly
+the official ``--agent scripted`` sampling path, so these live cases
+regression-test the derivation itself: the unread count, the more-messages
+verdict, the latest-unread / keyword-matching reply targets, and the settings
+row / conversation labels are all derived, never pinned.
+
+Only *declared* task parameters stay pinned below, for deterministic
+coverage (fixed senders keep the compared threads and the long-press target
+stable across runs)."""
 
 from __future__ import annotations
 

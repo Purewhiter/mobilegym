@@ -1,6 +1,62 @@
-"""Scripted validation plans for Payment tasks."""
+"""Scripted validation plans for Payment tasks.
+
+All Alipay transfers go through the **transfer-to-account form** typing the
+contact's full display name: ``TransferToAlipayPage.matchedContact`` matches
+``contact.name === inputValue`` exactly (display names are unique in the
+contacts table, and no name collides with another contact's phone /
+bracket-stripped alias), so any sampled contact resolves deterministically.
+The transfer-page contact list is *not* used for contact selection — it only
+shows recent-transfer contacts inside a scroll container, so a sampled
+contact deep in the list would sit outside the viewport and the
+``transfer.amount.open`` trigger tap would time out (selector matches outside
+the viewport are skipped by the env).
+
+Sampling compatibility (``DERIVED_PARAMS``): every plan placeholder that is
+not a declared task parameter is computed at materialization time from the
+episode's post-setup initial state through the *judge-homologous* domain
+classes — calculators build ``Alipay(init_state["apps"]["alipay"])`` /
+``Wechat(init_state["apps"]["wechat"])`` exactly like judges build them from
+``input.apps_init``, so derived values cannot drift from the judge:
+
+- ``wechatId`` — WeChat contact display name → wxid (``chat.open`` trigger
+  param), via the same ``require_contact_wxid`` lookup judges use.
+- ``password`` / ``oldPassword`` — ``userInfo.paymentPassword`` from the
+  initial state (task templates fix it to 123456; ChangePassword's
+  ``_prepare`` pins 000000 before the episode starts).
+- ``balance1..5`` — initial ``balance.total`` minus the running transfer sum
+  (mirrors ``AlipayContinuousPaymentsToContactsRecordBalances.check_goals``:
+  amounts rounded to 2 decimals, floored at 0).
+- ``startBalanceText`` — initial balance rendered like the balance page
+  (``toLocaleString('en-US', {minimumFractionDigits: 2})``).
+
+Explicit test injections would still win over these calculators;
+``test_scripted.py`` deliberately injects declared parameters only, so the
+live cases regression-test this derivation path end to end.
+
+Static literals kept on purpose (not derivable, recorded as exemptions):
+
+- ``bind_bank_card`` types the SMS code ``"111111"``: the code is generated
+  *during* the episode via ``crypto.getRandomValues`` (os/SmsGateway.ts) and
+  cannot be derived from the initial state (plans materialize once, on the
+  first act()). Live tests pin it via the ``DeterministicBindCards`` crypto
+  patch; on the plain ``--agent scripted`` sampling path
+  ``payment.AlipayBindMultipleCardsTransferAndRecordSuccessfulCards`` is a
+  known cannot-pass until the DSL can read runtime values.
+- Step budget: the two L4 multi-transfer plans exceed the sampling-path
+  default budget (``DIFFICULTY_MAX_STEPS[L4] == 60``; ``task.max_steps`` is
+  capped at 60 too) — ContinuousPayments needs ~141 steps, BindMultipleCards
+  ~118. ``bench_env.run`` passes only with an explicit ``--max-steps``
+  override; the live tests run with ``max_steps=180``.
+- ``wechat_pay_password("123456")``: the WeChat pay sheet accepts any 6
+  digits (PaymentConfirmationPage completes on length, no comparison) — a
+  fixed keypad sequence, not task data.
+- Bind-cards card names (建设银行/工商银行/农业银行) are task invariants fixed
+  by the task's ``_prepare`` and the task template, not sampled parameters.
+"""
 
 from __future__ import annotations
+
+from typing import Any, Callable
 
 from bench_env.agent.scripted import (
     Step,
@@ -16,6 +72,8 @@ from bench_env.agent.scripted import (
     type_text,
     wait,
 )
+from bench_env.task.alipay.app import Alipay
+from bench_env.task.wechat.app import Wechat
 
 
 def click_selector(selector: str, *, summary: str) -> Step:
@@ -76,21 +134,6 @@ def open_alipay_transfer() -> list[Step]:
     ]
 
 
-def start_transfer_to_contact(contact_id: str) -> list[Step]:
-    return [
-        *open_alipay_transfer(),
-        trigger_param("transfer.amount.open", "contactId", contact_id, summary=f"open transfer amount for contact {contact_id}"),
-        wait(0.3, summary="wait for amount page"),
-    ]
-
-
-def start_transfer_to_contact_from_transfer_page(contact_id: str) -> list[Step]:
-    return [
-        trigger_param("transfer.amount.open", "contactId", contact_id, summary=f"open transfer amount for contact {contact_id}"),
-        wait(0.3, summary="wait for amount page"),
-    ]
-
-
 def start_transfer_to_account(account: str) -> list[Step]:
     return [
         *open_alipay_transfer(),
@@ -146,38 +189,6 @@ def finish_transfer(password: str = "{password}") -> list[Step]:
         wait(0.4, summary="wait for password sheet"),
         *alipay_password(password),
         wait(0.8, summary="wait for transfer result"),
-    ]
-
-
-def transfer_contact(contact_id: str, amount: str, *, note: str | None = None, password: str = "{password}") -> list[Step]:
-    return [
-        *start_transfer_to_contact(contact_id),
-        *enter_amount_and_note(amount, note),
-        *finish_transfer(password),
-    ]
-
-
-def transfer_contact_from_transfer_page(contact_id: str, amount: str, *, note: str | None = None, password: str = "{password}") -> list[Step]:
-    return [
-        *start_transfer_to_contact_from_transfer_page(contact_id),
-        *enter_amount_and_note(amount, note),
-        *finish_transfer(password),
-    ]
-
-
-def transfer_contact_success(contact_id: str, amount: str, *, note: str | None = None, password: str = "{password}") -> list[Step]:
-    return [
-        *transfer_contact(contact_id, amount, note=note, password=password),
-        tap_trigger("transfer.success.done", summary="finish successful transfer"),
-        wait(0.4, summary="return to transfer page"),
-    ]
-
-
-def transfer_contact_from_transfer_page_success(contact_id: str, amount: str, *, note: str | None = None, password: str = "{password}") -> list[Step]:
-    return [
-        *transfer_contact_from_transfer_page(contact_id, amount, note=note, password=password),
-        tap_trigger("transfer.success.done", summary="finish successful transfer"),
-        wait(0.4, summary="return to transfer page"),
     ]
 
 
@@ -315,6 +326,8 @@ def bind_bank_card(bank_name: str) -> list[Step]:
         click_selector(f'xpath=//div[contains(normalize-space(),"{bank_name}")]/ancestor::div[contains(@class,"px-4")][1]//button[contains(normalize-space(),"添加")]', summary=f"choose {bank_name} add"),
         click_selector('button:has-text("同意协议并添加"):visible, button:has-text("同意并添加"):visible', summary="agree and add selected bank card"),
         wait(0.8, summary="wait for SMS verification page"),
+        # Runtime-generated value, not derivable from the initial state — only
+        # deterministic under the live-test crypto patch (see module docstring).
         type_text("111111", selector='input[type="tel"]:visible', clear=True, summary="enter deterministic bank SMS code"),
         wait(0.8, summary="wait for card-added success"),
         {"op": "click", "point": [500, 80], "summary": "open SMS notification to consume heads-up"},
@@ -405,9 +418,91 @@ def cancel_wechat_subscription() -> list[Step]:
     ]
 
 
+# ---------------------------------------------------------------------------
+# Derived params — sampling-path compatibility
+# ---------------------------------------------------------------------------
+# Each calculator mirrors its task's judge (check_goals in
+# bench_env/task/payment/tasks.py) through the same Alipay / Wechat domain
+# classes over the same initial state, so the derived values are
+# judge-homologous by construction.
+
+def _alipay(state: dict[str, Any]) -> Alipay:
+    """Judge-homologous accessor: ``Alipay(init_state["apps"]["alipay"])``."""
+    return Alipay(state["apps"]["alipay"])
+
+
+def _wechat(state: dict[str, Any]) -> Wechat:
+    """Judge-homologous accessor: ``Wechat(init_state["apps"]["wechat"])``."""
+    return Wechat(state["apps"]["wechat"])
+
+
+def _alipay_password(task: Any, state: dict[str, Any]) -> str:
+    """Current payment password (``userInfo.paymentPassword``) — 123456 from
+    defaults for the fixed-password templates; 000000 where ``_prepare`` pins
+    the old password (mirrors ``check_password_changed``'s old value)."""
+    return _alipay(state).payment_password
+
+
+def _wechat_chat_id(state: dict[str, Any], contact_name: Any) -> str:
+    """``chat.open`` trigger param: contact wxid == chat id — the same
+    ``require_contact_wxid`` lookup the WeChat judges use."""
+    return _wechat(state).require_contact_wxid(str(contact_name))
+
+
+def _money(value: float) -> str:
+    """Amount as a human would write it in a note (no trailing zeros)."""
+    return f"{float(value):.2f}".rstrip("0").rstrip(".")
+
+
+def _balance_after(task: Any, state: dict[str, Any], count: int) -> str:
+    """Balance after the first ``count`` transfers — mirrors the judge's
+    ``expected_balances_seq``: start from initial ``balance.total``, subtract
+    each amount rounded to 2 decimals, floor at 0."""
+    running = float(_alipay(state).total_balance)
+    for index in range(1, count + 1):
+        running = max(0.0, running - round(float(getattr(task.p, f"amount{index}")), 2))
+    return _money(running)
+
+
+def _start_balance_display(task: Any, state: dict[str, Any]) -> str:
+    """Initial balance as the balance page renders it —
+    ``toLocaleString('en-US', {minimumFractionDigits: 2})`` (BalancePage.tsx)."""
+    return f"{float(_alipay(state).total_balance):,.2f}"
+
+
+DERIVED_PARAMS: dict[str, dict[str, Callable[[Any, dict[str, Any]], Any]]] = {
+    "payment.TransferToContactWithNote": {
+        "password": _alipay_password,
+    },
+    "payment.AlipayContinuousPaymentsToContactsRecordBalances": {
+        "password": _alipay_password,
+        "startBalanceText": _start_balance_display,
+        "balance1": lambda task, state: _balance_after(task, state, 1),
+        "balance2": lambda task, state: _balance_after(task, state, 2),
+        "balance3": lambda task, state: _balance_after(task, state, 3),
+        "balance4": lambda task, state: _balance_after(task, state, 4),
+        "balance5": lambda task, state: _balance_after(task, state, 5),
+    },
+    "payment.AlipayBindMultipleCardsTransferAndRecordSuccessfulCards": {
+        "password": _alipay_password,
+    },
+    "payment.AlipayChangePaymentPasswordThenPay": {
+        "oldPassword": _alipay_password,
+    },
+    "payment.AlipayTransferAndNotify": {
+        "wechatId": lambda task, state: _wechat_chat_id(state, task.p.contact),
+        "password": _alipay_password,
+    },
+    "payment.WechatExtractAmountTransfer": {
+        "wechatId": lambda task, state: _wechat_chat_id(state, task.p.contact),
+        "password": _alipay_password,
+    },
+}
+
+
 PLANS: dict[str, list[Step]] = {
     "payment.TransferToContactWithNote": [
-        *transfer_contact_success("{contactId}", "{amount}", note="{note}"),
+        *transfer_account_success("{name}", "{amount}", note="{note}"),
         complete(),
     ],
     "payment.AlipayContinuousPaymentsToContactsRecordBalances": [
@@ -420,16 +515,16 @@ PLANS: dict[str, list[Step]] = {
         wait(0.4, summary="wait for Me tab"),
         tap_trigger("balance.open", summary="open Alipay balance page"),
         wait(0.6, summary="wait for balance page"),
-        assert_text("100,023.46", summary="assert starting balance on screen"),
+        assert_text("{startBalanceText}", summary="assert starting balance on screen"),
         back(summary="leave balance page"),
         wait(0.3, summary="wait for Me tab after balance page"),
         tap_trigger("tab.home", summary="return to Alipay home tab"),
         wait(0.3, summary="wait for Alipay home tab"),
-        *transfer_account_success("13867891288", "{amount1}", note="发工资"),
-        *transfer_account_from_transfer_page_success("13945678909", "{amount2}", note="发工资"),
-        *transfer_account_from_transfer_page_success("13256784311", "{amount3}", note="发工资"),
-        *transfer_account_from_transfer_page_success("15990129012", "{amount4}", note="发工资"),
-        *transfer_account_from_transfer_page_success("13512341234", "{amount5}", note="发工资"),
+        *transfer_account_success("{contact1}", "{amount1}", note="发工资"),
+        *transfer_account_from_transfer_page_success("{contact2}", "{amount2}", note="发工资"),
+        *transfer_account_from_transfer_page_success("{contact3}", "{amount3}", note="发工资"),
+        *transfer_account_from_transfer_page_success("{contact4}", "{amount4}", note="发工资"),
+        *transfer_account_from_transfer_page_success("{contact5}", "{amount5}", note="发工资"),
         *create_note(
             "{noteTitle}",
             "{balance1}\n{balance2}\n{balance3}\n{balance4}\n{balance5}",
@@ -447,12 +542,17 @@ PLANS: dict[str, list[Step]] = {
         *transfer_account_from_transfer_page_with_card("{targetAccount}", "{amount1}", "建设银行", expect_success=True),
         *transfer_account_from_transfer_page_with_card("{targetAccount}", "{amount2}", "工商银行", expect_success=False),
         *transfer_account_from_account_form_with_card("{targetAccount}", "{amount3}", "农业银行", expect_success=True),
-        *create_note("{noteTitle}", "建设银行储蓄卡（5445）\n中国农业银行储蓄卡（0504）"),
+        # Bank names only — no card tails: the newly bound cards get random
+        # last4 digits (AddBankCardVerifyPage generate19Digits), so a literal
+        # tail would be fabricated. The judge's marker groups accept the bank
+        # name alone (successful_transfer_card_marker_groups_to_target markers
+        # include bankName; 中国-prefix stripping is handled by the matcher).
+        *create_note("{noteTitle}", "建设银行储蓄卡\n中国农业银行储蓄卡"),
         complete(),
     ],
     "payment.AlipayChangePaymentPasswordThenPay": [
         *change_alipay_password(),
-        *transfer_contact_success("{contactId}", "{amount}", password="{newPassword}"),
+        *transfer_account_success("{contact}", "{amount}", password="{newPassword}"),
         complete(),
     ],
     "payment.SubscribeMembershipAutoRenewThenCancelInWechat": [
@@ -461,7 +561,7 @@ PLANS: dict[str, list[Step]] = {
         complete(),
     ],
     "payment.AlipayTransferAndNotify": [
-        *transfer_contact_success("{alipayContactId}", "{amount}", note="{note}"),
+        *transfer_account_success("{alipay_contact}", "{amount}", note="{note}"),
         *send_wechat_message("{wechatId}", "已转账{amount}元"),
         complete(),
     ],
@@ -470,7 +570,7 @@ PLANS: dict[str, list[Step]] = {
         trigger_param("chat.open", "id", "{wechatId}", summary="open requester chat"),
         wait(0.5, summary="inspect latest requested amount"),
         home(summary="return to launcher after inspecting WeChat"),
-        *transfer_contact_success("{alipayContactId}", "{requestAmount}"),
+        *transfer_account_success("{alipay_contact}", "{requestAmount}"),
         awake("Wechat", summary="open WeChat requester chat"),
         type_text("{reply}", selector="textarea:visible", clear=True, summary="enter WeChat reply"),
         click_selector('button:has-text("发送"):visible', summary="send WeChat reply"),

@@ -1,4 +1,20 @@
-"""Live scripted-plan verification for the eBay suite."""
+"""Live scripted-plan verification for the eBay suite.
+
+Single-source policy: answer values (cheapest title / totals / filtered
+counts / comparison verdicts) and UI display labels (theme / sort) are
+**not** injected here — they come from ``scripted_plans.DERIVED_PARAMS``,
+computed at materialization time via the judge-homologous
+``bench_env.task.ebay.app`` helpers (``expect_top`` / ``expect_count`` /
+``cheapest_product_answer`` / ``compare_top_totals``) over the same static
+product catalog the judges read. That is exactly the official
+``--agent scripted`` sampling path, so these live cases regression-test the
+derivation itself.
+
+Only *declared* task parameters stay pinned below, for deterministic
+coverage (fixed query/brand/location/price combos keep the filter-drawer
+navigation stable; ``CompareTwoProductPrices`` pins a consistent
+sort_id/extreme/comparison trio — the same coupling its ``_pair`` sampler
+produces)."""
 
 from __future__ import annotations
 

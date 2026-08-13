@@ -1,6 +1,52 @@
-"""Scripted validation plans for eBay tasks."""
+"""Scripted validation plans for eBay tasks.
+
+Sampling compatibility (``DERIVED_PARAMS``): every non-declared plan
+placeholder (``answer`` / ``count*`` / ``cheapest_*`` / ``*_total`` /
+``winner_choice`` / ``theme_label`` / ``sort_label``) is computed at
+materialization time via the *judge-homologous* helpers — calculators import
+``expect_top`` / ``expect_count`` / ``Ebay.cheapest_product_answer`` /
+``Ebay.compare_top_totals`` from ``bench_env.task.ebay.app``, the exact
+functions the judges call in ``bench_env/task/ebay/tasks.py``, over the same
+static ``apps/Ebay/data/products.json`` dataset. Derived values therefore
+cannot drift from the judge under parameter sampling. Explicit test
+injections would still win over these calculators; ``test_scripted.py``
+deliberately injects declared parameters only, exercising this derivation
+path end to end.
+
+Enum params land in ``task.params`` as internal values (``dark`` /
+``priceLow``); the UI renders display labels (深色 / 最低价 + 运费优先), so
+``theme_label`` / ``sort_label`` are reverse lookups over the same
+``EBAY_THEME_PARAM`` / ``EBAY_SORT_PARAM`` tables the tasks declare.
+
+Search strategy note: filtered plans type "{brand} {query}" into the search
+box instead of opening the brand filter. Product titles follow the
+"{brand} {typeLabel} {categoryLabel} {n}" convention, so the combined query
+matches exactly the judge's ``brand AND query`` filter set (verified for
+every sampler candidate), and ``check_has_snapshot`` accepts the brand via
+its combined-query fallback. The filter-drawer footer renders the live
+result count ("显示 N 个结果"), which equals the judge's ``expect_count``
+over the same dataset — asserted before applying.
+
+Screen-evidence note (asserted vs typed values): result cards render the
+bare item price ("¥600.09") and the shipping fee ("+ ¥25.00 运费") on two
+separate lines — the shipping-inclusive total the judges expect is **never
+rendered on screen**. Total-cost asserts therefore certify the on-screen
+*item price* of the judge-selected product (``*_screen_price`` /
+``answer_screen`` derived params), while the AnswerSheet is filled with the
+judge-homologous total. (The original hardcoded plans only passed because
+the default cheapest Dyson vacuum happened to ship free, price == total.)
+
+Task-level constants that stay literal on purpose (not parameters):
+``CompareTwoProductPrices`` pins condition=全新 / location=亚洲 (its judge
+and templates hardcode both), and ``FindCheapestProduct`` /
+``CompareTwoProductPrices`` sort by 最低价/最高价 as a *navigation* device
+(bring the extreme item onto the first card) — the cheapest-task judge
+requires no particular sort.
+"""
 
 from __future__ import annotations
+
+from typing import Any, Callable
 
 from bench_env.agent.scripted import (
     Step,
@@ -16,6 +62,13 @@ from bench_env.agent.scripted import (
     tap_trigger,
     type_text,
     wait,
+)
+from bench_env.task.ebay.app import (
+    EBAY_SORT_PARAM,
+    EBAY_THEME_PARAM,
+    Ebay,
+    expect_count,
+    expect_top,
 )
 
 
@@ -203,6 +256,159 @@ def filtered_search(
     ]
 
 
+# ---------------------------------------------------------------------------
+# Derived params — sampling-path compatibility
+# ---------------------------------------------------------------------------
+# Each calculator mirrors its task's judge (get_answer / check_goals in
+# bench_env/task/ebay/tasks.py) by calling the same bench_env.task.ebay.app
+# helpers over the same static products.json dataset, so the typed/asserted
+# values are judge-homologous by construction. The eBay catalog is static —
+# no calculator needs the episode's initial state.
+
+_THEME_LABELS = {value: label for label, value in EBAY_THEME_PARAM["values"].items()}
+_SORT_LABELS = {value: label for label, value in EBAY_SORT_PARAM["values"].items()}
+
+
+def _first_result_answer(task: Any, state: dict[str, Any]) -> Any:
+    """Mirror SearchFirstResult.get_answer: bestMatch top-1 title or total cost."""
+    product = expect_top(query=task.p.query, sort_id="bestMatch", n=1)[0]
+    if task.p.metric == "title":
+        return product.title
+    return round(product.total_cost, 2)
+
+
+def _first_result_screen(task: Any, state: dict[str, Any]) -> Any:
+    """On-screen evidence for the same top-1 product: the title renders
+    verbatim, but for total_cost only the bare item price is on the card."""
+    product = expect_top(query=task.p.query, sort_id="bestMatch", n=1)[0]
+    if task.p.metric == "title":
+        return product.title
+    return product.price
+
+
+def _brand_filtered_count(task: Any, state: dict[str, Any]) -> int:
+    """Mirror CountSonyHeadphonesEurope.get_answer."""
+    return expect_count(
+        query=task.p.query, brand=task.p.brand,
+        condition=task.p.condition, location=task.p.location,
+    )
+
+
+def _range_filtered_count(task: Any, state: dict[str, Any]) -> int:
+    """Mirror CountNikeSneakersInRange.get_answer (float price bounds)."""
+    return expect_count(
+        query=task.p.query, brand=task.p.brand,
+        condition=task.p.condition, location=task.p.location,
+        min_total=float(task.p.price_min), max_total=float(task.p.price_max),
+    )
+
+
+def _cheapest_answer(task: Any) -> dict[str, Any]:
+    """Mirror FindCheapestProduct.get_answer via the same Ebay answer method
+    (it reads only the static catalog, never app state)."""
+    return Ebay({}).cheapest_product_answer(
+        query=task.p.query, brand=task.p.brand,
+        condition=task.p.condition, location=task.p.location,
+    )
+
+
+def _cheapest_screen_price(task: Any, state: dict[str, Any]) -> float:
+    """Bare item price of the judge-selected cheapest product (the card's
+    only rendered price line — the shipping-inclusive total never is)."""
+    return expect_top(
+        query=task.p.query, brand=task.p.brand,
+        condition=task.p.condition, location=task.p.location,
+        sort_id="priceLow", n=1,
+    )[0].price
+
+
+def _pair_totals(task: Any) -> tuple[float, float]:
+    """Mirror CompareTwoProductPrices.check_goals (condition/location are
+    task-level constants, hardcoded identically in judge and templates)."""
+    return Ebay.compare_top_totals(
+        task.p.item1, task.p.item2,
+        condition="全新", location="亚洲", sort_id=task.p.sort_id,
+    )
+
+
+def _pair_screen_price(task: Any, item: str) -> float:
+    """Bare item price of the judge-selected extreme product for ``item`` —
+    the same expect_top pick compare_top_totals makes, read off the card."""
+    return expect_top(
+        query=item, condition="全新", location="亚洲",
+        sort_id=task.p.sort_id, n=1,
+    )[0].price
+
+
+def _price_winner_choice(task: Any, state: dict[str, Any]) -> str:
+    """AnswerSheet choice-button text for the price comparison verdict.
+
+    Winner logic mirrors CompareTwoProductPrices.check_goals; the button text
+    is the rendered answer_fields option ("{item}{comparison}", tie → 相同).
+    """
+    t1, t2 = _pair_totals(task)
+    if task.p.sort_id == "priceLow":
+        winner = task.p.item1 if t1 < t2 else (task.p.item2 if t2 < t1 else "相同")
+    else:
+        winner = task.p.item1 if t1 > t2 else (task.p.item2 if t2 > t1 else "相同")
+    return winner if winner == "相同" else f"{winner}{task.p.comparison}"
+
+
+def _group_count(task: Any, index: int) -> int:
+    """Mirror CompareTwoGroupCounts.check_goals (int price bounds there)."""
+    p = task.p
+    return expect_count(
+        query=getattr(p, f"query{index}"), brand=getattr(p, f"brand{index}"),
+        condition=getattr(p, f"condition{index}"), location=getattr(p, f"location{index}"),
+        min_total=int(getattr(p, f"price_min{index}")), max_total=int(getattr(p, f"price_max{index}")),
+    )
+
+
+def _count_winner_choice(task: Any, state: dict[str, Any]) -> str:
+    """AnswerSheet choice-button text ("{query}更多", tie → 数量相同) whose
+    winner mirrors CompareTwoGroupCounts.check_goals."""
+    c1, c2 = _group_count(task, 1), _group_count(task, 2)
+    if c1 > c2:
+        return f"{task.p.query1}更多"
+    if c2 > c1:
+        return f"{task.p.query2}更多"
+    return "数量相同"
+
+
+DERIVED_PARAMS: dict[str, dict[str, Callable[[Any, dict[str, Any]], Any]]] = {
+    "ebay.SwitchTheme": {
+        "theme_label": lambda task, state: _THEME_LABELS[task.p.theme],
+    },
+    "ebay.SortSearchResults": {
+        "sort_label": lambda task, state: _SORT_LABELS[task.p.sort],
+    },
+    "ebay.SearchFirstResult": {
+        "answer": _first_result_answer,
+        "answer_screen": _first_result_screen,
+    },
+    "ebay.CountSonyHeadphonesEurope": {"count": _brand_filtered_count},
+    "ebay.CountNikeSneakersInRange": {"count": _range_filtered_count},
+    "ebay.FindCheapestProduct": {
+        "cheapest_title": lambda task, state: _cheapest_answer(task)["title"],
+        "cheapest_total": lambda task, state: _cheapest_answer(task)["price"],
+        "cheapest_screen_price": _cheapest_screen_price,
+    },
+    "ebay.CompareTwoProductPrices": {
+        "sort_label": lambda task, state: _SORT_LABELS[task.p.sort_id],
+        "item1_total": lambda task, state: _pair_totals(task)[0],
+        "item2_total": lambda task, state: _pair_totals(task)[1],
+        "item1_screen_price": lambda task, state: _pair_screen_price(task, task.p.item1),
+        "item2_screen_price": lambda task, state: _pair_screen_price(task, task.p.item2),
+        "winner_choice": _price_winner_choice,
+    },
+    "ebay.CompareTwoGroupCounts": {
+        "count1": lambda task, state: _group_count(task, 1),
+        "count2": lambda task, state: _group_count(task, 2),
+        "count_winner_choice": _count_winner_choice,
+    },
+}
+
+
 PLANS: dict[str, list[Step]] = {
     "ebay.SwitchTheme": [
         tap_trigger("tab.me", summary="open Me tab"),
@@ -210,85 +416,95 @@ PLANS: dict[str, list[Step]] = {
         wait(0.3, summary="wait after scrolling Me page"),
         tap_trigger("me.settings.open", summary="open settings"),
         click_selector('div.px-4.py-4:has-text("主题"):visible', summary="open theme chooser"),
-        click_selector('div.flex.items-start.cursor-pointer:has-text("深色"):visible', summary="choose dark theme"),
+        click_selector(
+            'div.flex.items-start.cursor-pointer:has-text("{theme_label}"):visible',
+            summary="choose {theme_label} theme",
+        ),
         complete(),
     ],
     "ebay.SortSearchResults": [
         *submit_search("{query}", from_home=True),
-        *set_sort("最低价 + 运费优先"),
+        *set_sort("{sort_label}"),
         complete(),
     ],
     "ebay.SearchFirstResult": [
         *submit_search("{query}", from_home=True),
-        assert_answer("Dyson 电风扇 电子产品 1", summary="assert first result title on screen"),
-        *grounded_answer("Dyson 电风扇 电子产品 1", summary="answer first result title"),
+        assert_answer("{answer_screen}", summary="assert first result metric evidence on screen"),
+        *grounded_answer("{answer}", summary="answer first result metric"),
         complete(),
     ],
     "ebay.CountSonyHeadphonesEurope": [
         *filtered_search(
-            "Sony {query}",
+            "{brand} {query}",
             from_home=True,
             condition="{condition}",
             location="{location}",
-            expect_count="10",
+            expect_count="{count}",
         ),
-        *grounded_answer("10", summary="answer filtered Sony headphones count"),
+        *grounded_answer("{count}", summary="answer filtered {brand} {query} count"),
         complete(),
     ],
     "ebay.CountNikeSneakersInRange": [
         *filtered_search(
-            "Nike {query}",
+            "{brand} {query}",
             from_home=True,
             condition="{condition}",
             location="{location}",
             price_min="{price_min}",
             price_max="{price_max}",
-            expect_count="5",
+            expect_count="{count}",
         ),
-        *grounded_answer("5", summary="answer filtered Nike sneakers count"),
+        *grounded_answer("{count}", summary="answer filtered {brand} {query} count in range"),
         complete(),
     ],
     "ebay.FindCheapestProduct": [
-        *filtered_search("Dyson {query}", from_home=True, condition="{condition}", location="{location}"),
+        *filtered_search("{brand} {query}", from_home=True, condition="{condition}", location="{location}"),
         # Cheapest item is not on the first screen under bestMatch; sort so the
-        # answer is read off the first card.
+        # answer is read off the first card (navigation device, not a param).
         *set_sort("最低价 + 运费优先"),
-        assert_text("¥1,141.70", summary="assert cheapest total visible after sort"),
-        *grounded_answer("Dyson 吸尘器 家庭和花园 61", "1141.7", summary="answer cheapest Dyson vacuum"),
+        assert_answer("{cheapest_title}", field_index=0, summary="assert cheapest title visible after sort"),
+        assert_answer("{cheapest_screen_price}", field_index=1, summary="assert cheapest item price visible after sort"),
+        *grounded_answer("{cheapest_title}", "{cheapest_total}", summary="answer cheapest {brand} {query}"),
         complete(),
     ],
     "ebay.CompareTwoProductPrices": [
         *filtered_search("{item1}", from_home=True, condition="全新", location="亚洲"),
-        *set_sort("最低价 + 运费优先"),
-        assert_text("¥3,756.76", summary="assert cheapest {item1} price visible after sort"),
+        *set_sort("{sort_label}"),
+        assert_answer("{item1_screen_price}", field_index=1, summary="assert {item1} extreme item price visible after sort"),
         # Submitting a new query resets sort back to bestMatch — re-sort after
         # the second search + filters.
         *submit_search("{item2}"),
         *set_common_filters(condition="全新", location="亚洲"),
-        *set_sort("最低价 + 运费优先"),
-        assert_text("¥2,653.23", summary="assert cheapest {item2} price visible after sort"),
-        *grounded_choice_answer("电视更便宜", "3756.76", "2653.23", summary="answer two product price comparison"),
+        *set_sort("{sort_label}"),
+        assert_answer("{item2_screen_price}", field_index=2, summary="assert {item2} extreme item price visible after sort"),
+        *grounded_choice_answer(
+            "{winner_choice}", "{item1_total}", "{item2_total}",
+            summary="answer two product price comparison",
+        ),
         complete(),
     ],
     "ebay.CompareTwoGroupCounts": [
         *filtered_search(
-            "Sony {query1}",
+            "{brand1} {query1}",
             from_home=True,
             condition="{condition1}",
             location="{location1}",
             price_min="{price_min1}",
             price_max="{price_max1}",
-            expect_count="6",
+            expect_count="{count1}",
         ),
-        *submit_search("Nike {query2}"),
+        *submit_search("{brand2} {query2}"),
         *set_common_filters(
             condition="{condition2}",
             location="{location2}",
             price_min="{price_min2}",
             price_max="{price_max2}",
-            expect_count="5",
+            expect_count="{count2}",
         ),
-        *grounded_choice_answer("耳机更多", "6", "5", summary="answer two group count comparison"),
+        *grounded_choice_answer(
+            "{count_winner_choice}", "{count1}", "{count2}",
+            summary="answer two group count comparison",
+        ),
         complete(),
     ],
 }

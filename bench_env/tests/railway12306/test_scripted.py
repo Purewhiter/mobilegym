@@ -1,22 +1,35 @@
-"""Live scripted-plan verification for the Railway 12306 suite."""
+"""Live scripted-plan verification for the Railway 12306 suite.
+
+Single-source policy: answers and execution-target values (``area_code``,
+``answer*``, ``city*``, ``verify_status``, ``return_*``, ``train_no``,
+``date_day``, and the tomorrow-fixed ``date``) are **not** injected here —
+they come from ``scripted_plans.DERIVED_PARAMS``, computed at materialization
+time from the episode's post-setup initial state through the judge-homologous
+``Railway12306`` domain class and the judge module's own catalog helpers.
+That is exactly the official ``--agent scripted`` sampling path, so these
+live cases regression-test the derivation itself — including the equivalence
+between the frontend availabilityGenerator PRNG and its Python mirror that
+the catalog-based ``train_no`` / ``answer_train`` picks rely on.
+
+Only *declared* task parameters stay pinned below, for deterministic
+coverage: the 上海→南京 hot route keeps the station-picker and query-result
+geometry stable; ``date`` (where declared) is pinned to tomorrow so the
+date-picker cell sits in the first month view; ``make_default=False`` /
+``direction="from"`` pin the Branch arms with the richer interaction
+(switch tap / 3-row repeatable answer). Sim time equals wall clock in live
+runs, so tomorrow-derived values agree with ``_date_after(1)``.
+"""
 
 from __future__ import annotations
 
 import datetime as dt
-import json
-from pathlib import Path
-from typing import Any, Callable
+from typing import Callable
 
 import pytest
 
 from bench_env.env.mobile_gym import MobileGymEnv
 from bench_env.task.base import BaseTask
 from bench_env.task.railway12306 import tasks as railway_tasks
-from bench_env.task.railway12306.app import (
-    Railway12306,
-    _catalog_available_trains,
-    _catalog_route_candidates,
-)
 from bench_env.tests.scripted_support import (
     format_episode_result,
     run_scripted,
@@ -24,134 +37,57 @@ from bench_env.tests.scripted_support import (
 )
 
 SUITE = "railway12306"
-ROOT = Path(__file__).resolve().parents[3]
-DEFAULTS = json.loads((ROOT / "apps" / "Railway12306" / "data" / "defaults.json").read_text(encoding="utf-8"))
-
-
-def _rail() -> Railway12306:
-    return Railway12306(DEFAULTS)
 
 
 def _date_after(days: int = 1) -> str:
+    """Sim time equals wall-clock in live runs (no scenario overrides)."""
     return (dt.date.today() + dt.timedelta(days=days)).isoformat()
 
 
-def _date_day(date_value: str) -> str:
-    return str(int(date_value.rsplit("-", 1)[1]))
-
-
-def _sim_today() -> str:
-    return dt.date.today().isoformat()
-
-
-def _catalog_train(from_station: str, to_station: str, date: str, pref: str) -> dict[str, Any]:
-    trains = list(_catalog_available_trains(_sim_today(), from_station, to_station, date, True))
-    picked = Railway12306._pick_catalog_train(trains, pref)
-    assert picked is not None
-    return picked
-
-
-def _duration_minutes(value: str) -> int:
-    hour, minute = value.split(":", 1)
-    return int(hour) * 60 + int(minute)
-
-
-def _duration_label(value: str) -> str:
-    minutes = _duration_minutes(value)
-    return f"{minutes // 60}小时{minutes % 60}分"
-
-
-def _route_candidate_train(from_station: str, to_station: str, pref: str) -> dict[str, Any]:
-    trains = list(_catalog_route_candidates(from_station, to_station, False))
-    assert trains
-
-    def _start_minutes(train: dict[str, Any]) -> int:
-        return Railway12306.parse_hhmm(str(train["startTime"]))
-
-    if pref == "earliest":
-        return min(trains, key=lambda t: (_start_minutes(t), str(t["trainCode"])))
-    if pref == "latest":
-        return min(trains, key=lambda t: (-_start_minutes(t), str(t["trainCode"])))
-    if pref == "fastest":
-        return min(trains, key=lambda t: (_duration_minutes(str(t["lishi"])), _start_minutes(t), str(t["trainCode"])))
-    raise ValueError(f"unknown route candidate preference: {pref!r}")
-
-
-def _query_params(
-    from_station: str = "上海",
-    to_station: str = "南京",
-    date: str | None = None,
-    *,
-    answer_pref: str = "latest",
-) -> dict[str, str]:
-    date = date or _date_after(1)
-    answer_train = _route_candidate_train(from_station, to_station, answer_pref)
-    fastest = _route_candidate_train(from_station, to_station, "fastest")
-    return {
-        "from_station": from_station,
-        "to_station": to_station,
-        "date": date,
-        "date_day": _date_day(date),
-        "answer_train": str(answer_train["trainCode"]),
-        "answer_duration": _duration_label(str(fastest["lishi"])),
-        "answer_from": str(fastest["fromStation"]),
-        "answer_arrive": str(fastest["arriveTime"]),
-    }
-
-
-def _booking_params(**overrides: str) -> dict[str, str]:
-    base = {
-        **_query_params(),
-        "schedule_pref": "earliest",
-        "seat_type": "二等",
-        "train_no": str(_catalog_train("上海", "南京", _date_after(1), "earliest")["trainCode"]),
-    }
-    base.update(overrides)
-    return base
+# Declared booking parameters shared by the BuyTicket* tasks: the hot
+# 上海→南京 route with the earliest 二等 preference — the live-verified
+# bookable geometry (availability PRNG keeps this combination sellable).
+_BOOKING_PINS: dict[str, str] = {
+    "from_station": "上海",
+    "to_station": "南京",
+    "schedule_pref": "earliest",
+    "seat_type": "二等",
+}
 
 
 SCRIPTED_CASES: list[tuple[str, Callable[[], BaseTask]]] = [
     ("OpenAllApps", lambda: railway_tasks.OpenAllApps()),
-    ("OpenServicePhone", lambda: railway_tasks.OpenServicePhone(region="上海铁路客户服务中心", area_code="021")),
-    ("OpenInvoice", lambda: railway_tasks.OpenInvoice(name="赵宇轩", make_default=False, email="ticket_demo01@example.com")),
-    ("CheckPassengerCount", lambda: railway_tasks.CheckPassengerCount(answer=str(len(_rail().passengers)))),
-    ("CheckDefaultPassengerName", lambda: railway_tasks.CheckDefaultPassengerName(answer=_rail().get_default_passenger()["name"])),
+    ("OpenServicePhone", lambda: railway_tasks.OpenServicePhone(region="上海铁路客户服务中心")),
     (
-        "CheckStudentVerify",
-        lambda: railway_tasks.CheckStudentVerify(
-            answer_from=_rail().student_verify["from"],
-            answer_to=_rail().student_verify["to"],
+        "OpenInvoice",
+        lambda: railway_tasks.OpenInvoice(
+            name="赵宇轩", make_default=False, email="ticket_demo01@example.com"
         ),
     ),
-    (
-        "CheckRecentTripCities",
-        lambda: railway_tasks.CheckRecentTripCities(
-            direction="from",
-            city1="杭州",
-            city2="苏州",
-            city3="合肥",
-        ),
-    ),
+    ("CheckPassengerCount", lambda: railway_tasks.CheckPassengerCount()),
+    ("CheckDefaultPassengerName", lambda: railway_tasks.CheckDefaultPassengerName()),
+    ("CheckStudentVerify", lambda: railway_tasks.CheckStudentVerify()),
+    ("CheckRecentTripCities", lambda: railway_tasks.CheckRecentTripCities(direction="from")),
     ("CheckIdVerificationStatus", lambda: railway_tasks.CheckIdVerificationStatus()),
+    ("BuyReturnTicketFromLatestOrder", lambda: railway_tasks.BuyReturnTicketFromLatestOrder()),
+    # date is a declared (sampled) param; 2026-02-09 is the only single-ticket
+    # date in the default orders, i.e. exactly what sample_my_ticket_date yields.
+    ("FindTrainByDate", lambda: railway_tasks.FindTrainByDate(date="2026-02-09")),
+    ("CheckTicketPriceByDate", lambda: railway_tasks.CheckTicketPriceByDate(date="2026-02-09")),
     (
-        "BuyReturnTicketFromLatestOrder",
-        lambda: railway_tasks.BuyReturnTicketFromLatestOrder(
-            date=_date_after(1),
-            date_day=_date_day(_date_after(1)),
-            return_train=str(_catalog_train("上海", "杭州", _date_after(1), "earliest")["trainCode"]),
-            name=_rail().user_name,
+        "QueryAndCheckRoute",
+        lambda: railway_tasks.QueryAndCheckRoute(from_station="上海", to_station="南京"),
+    ),
+    (
+        "BuyTicketForPassenger",
+        lambda: railway_tasks.BuyTicketForPassenger(
+            name="赵宇轩", date=_date_after(1), **_BOOKING_PINS
         ),
     ),
-    ("FindTrainByDate", lambda: railway_tasks.FindTrainByDate(date="2026-02-09", answer="G7536")),
-    ("CheckTicketPriceByDate", lambda: railway_tasks.CheckTicketPriceByDate(date="2026-02-09", answer="58")),
-    ("QueryAndCheckRoute", lambda: railway_tasks.QueryAndCheckRoute(**_query_params(answer_pref="latest"))),
-    ("BuyTicketForPassenger", lambda: railway_tasks.BuyTicketForPassenger(name="赵宇轩", **_booking_params())),
     (
         "BuyTicketsForTwoPassengers",
         lambda: railway_tasks.BuyTicketsForTwoPassengers(
-            name="赵宇轩",
-            name2="王思雨",
-            **_booking_params(),
+            name="赵宇轩", name2="王思雨", date=_date_after(1), **_BOOKING_PINS
         ),
     ),
     (
@@ -160,10 +96,16 @@ SCRIPTED_CASES: list[tuple[str, Callable[[], BaseTask]]] = [
             name="周若涵",
             id_no="320106199612183428",
             phone="13912345678",
-            **_booking_params(),
+            date=_date_after(1),
+            **_BOOKING_PINS,
         ),
     ),
-    ("QueryFastestTrainDetails", lambda: railway_tasks.QueryFastestTrainDetails(**_query_params(answer_pref="fastest"))),
+    (
+        "QueryFastestTrainDetails",
+        lambda: railway_tasks.QueryFastestTrainDetails(
+            from_station="上海", to_station="南京", date=_date_after(1)
+        ),
+    ),
 ]
 
 

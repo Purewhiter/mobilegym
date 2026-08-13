@@ -1,8 +1,43 @@
-"""Scripted validation plans for Tencent Meeting tasks."""
+"""Scripted validation plans for Tencent Meeting tasks.
+
+Sampling compatibility (``DERIVED_PARAMS``): every non-declared plan
+placeholder (``answer*`` / ``meeting_id`` / the schedule-duration wheel
+targets) is computed at materialization time from the episode's post-setup
+initial state through the *judge-homologous* domain class — calculators build
+``TencentMeeting(init_state["apps"]["tencent_meeting"])`` exactly like judges
+build ``TencentMeeting(input.apps_init["tencent_meeting"])``, so derived
+values cannot drift from the judge. The app store resolves every relative
+timestamp marker (``-8m`` / ``+2h``) to absolute ms at bootstrap
+(apps/TencentMeeting/data/index.ts → ``resolveDataTimestamp``), so the
+derived calculators see the same absolute times the judge does. Explicit test
+injections still win over these calculators; ``test_scripted.py``
+deliberately injects declared parameters only, exercising the derivation
+path end to end.
+
+Sampled parameter spaces (``type:"enum"`` / custom samplers — ``boolean`` /
+``string`` schema types are never sampled and always keep their defaults,
+so plans may hard-code the default behavior for those):
+
+- ``FindMeetingHistory.topic`` (8 history topics) / ``CheckPendingMeetingId``
+  ``CheckScheduledMeetingEndTime`` ``.topic`` (2 scheduled topics) /
+  ``GetSecondParticipationTime.topic`` (1) — plans are ``{topic}``-driven
+  with derived answers, no structural change per value.
+- ``ScheduleMeeting.topic`` (3) + ``.duration`` (30/60/90) — the form's
+  duration defaults to 30 min; the plan dials the duration picker wheels to
+  the target via derived wheel indices (delta-0 wheels expand to nothing).
+- ``CalculateTotalMeetingDuration.date`` (2026-02-03 / 2026-02-04) — the
+  per-date evidence traversal differs structurally (different meetings and
+  per-meeting durations), hence the restricted ``Branch`` keyed by date.
+- ``CompareParticipationDurations`` topic pairs — plan is fully
+  ``{topic1}``/``{topic2}``-parameterized; the verdict is derived.
+"""
 
 from __future__ import annotations
 
+from typing import Any, Callable
+
 from bench_env.agent.scripted import (
+    Branch,
     Step,
     assert_answer,
     assert_text,
@@ -18,6 +53,7 @@ from bench_env.agent.scripted import (
     type_text,
     wait,
 )
+from bench_env.task.tencent_meeting.app import TencentMeeting
 
 
 def click_selector(selector: str, *, summary: str) -> Step:
@@ -153,6 +189,81 @@ def rename_meeting_self(name: str) -> list[Step]:
     ]
 
 
+def wheel_scroll(selector: str, current: str, target: str, *, summary: str) -> Step:
+    """One picker-wheel dial step (agent-side ``wheel_scroll`` macro).
+
+    ``current``/``target`` are wheel *indices* as strings so they can carry
+    ``{param}`` placeholders; the macro expands after rendering (delta 0 →
+    no swipes at all). Geometry for this picker: 44px items in a 220px
+    viewport → ``delta_y_fraction=0.2`` is exactly one item per unit.
+    ``max_delta_per_swipe=2`` keeps every swipe at 88px — an *integral* item
+    multiple on both directions (start fractions 0.55↓ / 0.45↑ leave ≥0.4
+    headroom before the 0.02/0.98 clamps). 3 items per swipe would clamp the
+    reverse swipe to 116.6px (≠ 132px) and the picker never snaps back
+    (``__SIM_INPUT__.swipe`` drives ``scrollBy`` without pointer-up, so
+    ``handleScrollEnd`` doesn't run), accumulating a ~0.7-item error.
+    """
+    return {
+        "op": "wheel_scroll",
+        "selector": selector,
+        "current": current,
+        "target": target,
+        "modulo": 0,
+        "max_delta_per_swipe": 2,
+        "delta_y_fraction": 0.2,
+        "summary": summary,
+    }
+
+
+def _schedule_picker_column(index: int) -> str:
+    """N-th wheel column inside the schedule form's fixed picker overlay."""
+    return (
+        'xpath=(//div[contains(@class,"fixed") and contains(@class,"z-50")]'
+        '//div[contains(@class,"overflow-y-auto") and contains(@class,"no-scrollbar")])'
+        f'[{index}]'
+    )
+
+
+def _schedule_picker_confirm() -> Step:
+    """The check-mark confirm button of the picker overlay (button #2: close, confirm, …)."""
+    return click_selector(
+        'xpath=(//div[contains(@class,"fixed") and contains(@class,"z-50")]//button)[2]',
+        summary="confirm duration picker",
+    )
+
+
+def set_schedule_duration() -> list[Step]:
+    """Dial the schedule form's 会议时长 from the fixed 30-min default to {duration}.
+
+    表单默认时长固定 30 分钟（ScheduleRegularMeetingPage 的 useState(30)），
+    即小时轮 index 0、分钟轮 index 6（5 分钟/格）——current 因而是常量；
+    目标 index 由 DERIVED_PARAMS 从 task.p.duration 派生（60 → 1/0，90 → 1/6）。
+    duration=30 时两轮 delta=0，wheel_scroll 展开为空，picker 仅开合一次。
+    """
+    return [
+        click_selector(
+            'xpath=//span[normalize-space()="会议时长" or normalize-space()="Duration"]'
+            '/ancestor::div[contains(@class,"px-4") and contains(@class,"py-4")][1]',
+            summary="open meeting duration picker",
+        ),
+        wait(0.3, summary="wait for duration picker"),
+        wheel_scroll(
+            _schedule_picker_column(1),
+            "0",
+            "{schedule_duration_hour_target}",
+            summary="set meeting duration hours",
+        ),
+        wheel_scroll(
+            _schedule_picker_column(2),
+            "6",
+            "{schedule_duration_minute_index_target}",
+            summary="set meeting duration minutes",
+        ),
+        _schedule_picker_confirm(),
+        wait(0.3, summary="wait for duration update"),
+    ]
+
+
 def enable_schedule_password(pin: str) -> list[Step]:
     return [
         click_selector(
@@ -177,6 +288,7 @@ def schedule_new_meeting() -> list[Step]:
         wait(0.4, summary="wait for schedule form"),
         type_text("{topic}", selector="input:visible", clear=True, summary="enter meeting topic"),
         back(summary="dismiss keyboard after entering meeting topic"),
+        *set_schedule_duration(),
         *enable_schedule_password("{pin}"),
         back(summary="dismiss keyboard after entering meeting password"),
         trigger_visible("schedule.complete", summary="complete scheduled meeting"),
@@ -205,7 +317,10 @@ HISTORY_TOPICS_DISPLAY_ORDER: tuple[str, ...] = (
     "周八的个人会议室",
 )
 
-# 2026-02-03 分组的 5 场历史会议（对应 CalculateTotalMeetingDuration 的 date 测试参数）。
+# CalculateTotalMeetingDuration 的 date 参数（enum）两个取值各对应一个静态分组；
+# 分组成员与逐场"参会时长"证据值都随 defaults.json 固定，参数只决定选哪组 →
+# 用受限 Branch（pick=date）在两份可 lint 的静态步表间选择。
+# 2026-02-03 分组的 5 场历史会议（列表展示顺序）。
 HISTORY_TOPICS_2026_02_03: tuple[str, ...] = (
     "张三的快速会议",
     "李四的快速会议",
@@ -214,15 +329,28 @@ HISTORY_TOPICS_2026_02_03: tuple[str, ...] = (
     "项目周会",
 )
 
-# 2026-02-03 各场详情页"参会时长"的屏幕渲染值（HH:MM:SS，= defaults.json 该场
+# 2026-02-04 分组的 3 场历史会议（列表展示顺序）。
+HISTORY_TOPICS_2026_02_04: tuple[str, ...] = (
+    "小明的快速会议",
+    "周例会",
+    "王五的项目讨论",
+)
+
+# 各场详情页"参会时长"的屏幕渲染值（HH:MM:SS，= defaults.json 该场
 # participations duration 之和），供 CalculateTotalMeetingDuration 逐场证据断言。
-# 与 HISTORY_TOPICS_2026_02_03 同源硬编码，数据变更时一并更新。
+# 与 HISTORY_TOPICS_* 同源硬编码，数据变更时一并更新。
 HISTORY_PARTICIPATION_HHMMSS_2026_02_03: dict[str, str] = {
     "张三的快速会议": "00:14:00",
     "李四的快速会议": "00:28:00",
     "长时间研讨会": "01:45:00",
     "王五的快速会议": "00:43:00",
     "项目周会": "00:59:00",
+}
+
+HISTORY_PARTICIPATION_HHMMSS_2026_02_04: dict[str, str] = {
+    "小明的快速会议": "00:45:00",
+    "周例会": "01:30:00",
+    "王五的项目讨论": "00:50:00",
 }
 
 
@@ -296,7 +424,137 @@ def open_scheduled_meeting_detail(topic: str) -> list[Step]:
     ]
 
 
-PLANS: dict[str, list[Step]] = {
+# ---------------------------------------------------------------------------
+# Derived params — sampling-path compatibility
+# ---------------------------------------------------------------------------
+# Each calculator mirrors its task's judge (get_answer / get_expected_response
+# / check_goals in bench_env/task/tencent_meeting/tasks.py) through the same
+# TencentMeeting domain class over the same initial state, so the
+# typed/asserted values are judge-homologous by construction.
+
+def _tm(state: dict[str, Any]) -> TencentMeeting:
+    """判分器同源访问器：``TencentMeeting(init_state["apps"]["tencent_meeting"])``。"""
+    return TencentMeeting(state["apps"]["tencent_meeting"])
+
+
+def _ongoing_meeting_id(task: Any, state: dict[str, Any]) -> str:
+    """按 host_name+topic 定位进行中会议的会议号（join_meeting 的输入）。"""
+    entry = _tm(state).find_ongoing_entry(str(task.p.host_name), str(task.p.topic))
+    return str(entry["meetingId"])
+
+
+def _history_start_time(task: Any, state: dict[str, Any]) -> str:
+    """Mirror FindMeetingHistory.get_answer 的 start_time（HH:MM）。"""
+    return str(_tm(state).history_meeting_start_and_duration(str(task.p.topic))["start_time"])
+
+
+def _history_planned_duration(task: Any, state: dict[str, Any]) -> str:
+    """Mirror FindMeetingHistory.check_goals 的 duration_expected_text（"{N}分钟"）。"""
+    minutes = int(_tm(state).history_meeting_start_and_duration(str(task.p.topic))["duration"])
+    return f"{minutes}分钟"
+
+
+def _longer_participation_choice(task: Any, state: dict[str, Any]) -> str:
+    """Mirror CompareParticipationDurations.get_expected_response（平局 → "一样长"）。"""
+    tm = _tm(state)
+    duration1 = tm.total_participation_minutes(str(task.p.topic1))
+    duration2 = tm.total_participation_minutes(str(task.p.topic2))
+    if duration1 > duration2:
+        return str(task.p.topic1)
+    if duration2 > duration1:
+        return str(task.p.topic2)
+    return "一样长"
+
+
+def _most_participants_meeting(state: dict[str, Any]) -> dict[str, Any]:
+    return _tm(state).hosted_history_meeting_with_most_participants()
+
+
+DERIVED_PARAMS: dict[str, dict[str, Callable[[Any, dict[str, Any]], Any]]] = {
+    "tencent_meeting.CheckPersonalRoomId": {
+        "answer": lambda task, state: str(_tm(state).personal_room["meetingId"]),
+    },
+    "tencent_meeting.CheckContactCount": {
+        # Mirror answer = (".contacts", len)。
+        "answer": lambda task, state: str(len(_tm(state).contacts)),
+    },
+    "tencent_meeting.FindMeetingHistory": {
+        "answer_start": _history_start_time,
+        "answer_duration": _history_planned_duration,
+    },
+    "tencent_meeting.ChatInMeeting": {"meeting_id": _ongoing_meeting_id},
+    "tencent_meeting.CheckPendingMeetingId": {
+        "answer": lambda task, state: str(
+            _tm(state).find_scheduled_meeting(str(task.p.topic))["meetingId"]
+        ),
+    },
+    "tencent_meeting.CheckScheduledMeetingEndTime": {
+        "answer": lambda task, state: _tm(state).scheduled_meeting_end_time(str(task.p.topic)),
+    },
+    "tencent_meeting.JoinMeetingAndRename": {"meeting_id": _ongoing_meeting_id},
+    "tencent_meeting.ScheduleMeeting": {
+        # 会议号在创建前由主题确定性预测（判分层同款算法，见 predicted_meeting_id）。
+        "answer": lambda task, state: TencentMeeting.predicted_meeting_id(str(task.p.topic)),
+        # 时长滚轮目标 index：小时轮 index=小时数，分钟轮 index=分钟/5。
+        "schedule_duration_hour_target": lambda task, state: str(int(task.p.duration) // 60),
+        "schedule_duration_minute_index_target": lambda task, state: str(
+            (int(task.p.duration) % 60) // 5
+        ),
+    },
+    "tencent_meeting.CountFriendMeetings": {
+        "answer": lambda task, state: str(_tm(state).friend_hosted_history_meeting_count()),
+    },
+    "tencent_meeting.GetSecondParticipationTime": {
+        "answer": lambda task, state: _tm(state).second_participation_time(str(task.p.topic)),
+    },
+    "tencent_meeting.FindLongestMeeting": {
+        "answer": lambda task, state: str(_tm(state).longest_history_meeting()["title"]),
+    },
+    "tencent_meeting.FindMeetingWithMostParticipants": {
+        "answer_title": lambda task, state: str(_most_participants_meeting(state)["title"]),
+        "answer_count": lambda task, state: str(len(_most_participants_meeting(state)["participants"])),
+    },
+    "tencent_meeting.ShareScreenAndConfirm": {"meeting_id": _ongoing_meeting_id},
+    "tencent_meeting.ChatWithSpecificUser": {"meeting_id": _ongoing_meeting_id},
+    "tencent_meeting.CalculateTotalMeetingDuration": {
+        "answer": lambda task, state: str(
+            _tm(state).total_participation_minutes_on_date(str(task.p.date))
+        ),
+    },
+    "tencent_meeting.CompareParticipationDurations": {"answer": _longer_participation_choice},
+}
+
+
+def _total_duration_arm(
+    date_label: str, topics: tuple[str, ...], durations: dict[str, str]
+) -> list[Step]:
+    """CalculateTotalMeetingDuration 的单个 date 分支（静态可 lint 步表）。
+
+    就地自证（B类）：总时长不在任何单屏（各详情页只显示本场参会时长
+    HH:MM:SS）。逐场断言该值在屏 —— 全部加数齐备即证明求和所需信息
+    全部读自屏幕，而非任何单一"最后证据"能替代。
+    """
+    return [
+        *open_history_list(),
+        *scroll_history_list(2, summary=f"locate the {date_label} date group"),
+        *visit_history_details(
+            *topics,
+            assert_after={
+                topic: [
+                    assert_text(
+                        durations[topic],
+                        summary=f"assert participation duration of {topic}",
+                    )
+                ]
+                for topic in topics
+            },
+        ),
+        *grounded_answer("{answer}", summary="answer total participation duration"),
+        complete(),
+    ]
+
+
+PLANS: dict[str, list[Step] | Branch] = {
     "tencent_meeting.ConfigAudioSettings": [
         *open_settings(),
         action_visible("settings.audio.micOnJoin.toggle", summary="toggle mic-on-join setting"),
@@ -334,7 +592,7 @@ PLANS: dict[str, list[Step]] = {
         wait(0.3, summary="read start time and planned duration"),
         # 就地自证（A类，仅 field 0）：开始时间在时间行内（time 匹配可从
         # "02月03日14:00-17:00..." 提取 HH:MM）。field 1 预定时长是"结束-开始"
-        # 的推导值，"180分钟" 字样不在屏（match_duration 不解析 HH:MM-HH:MM
+        # 的推导值，"{N}分钟" 字样不在屏（match_duration 不解析 HH:MM-HH:MM
         # 区间，属格式失配），其证据与开始时间同一行，本断言已锁定该行可见。
         assert_answer("{answer_start}", field_index=0, summary="assert start time on detail time row"),
         *grounded_answer("{answer_start}", "{answer_duration}", summary="answer history start and duration"),
@@ -378,7 +636,7 @@ PLANS: dict[str, list[Step]] = {
     "tencent_meeting.CheckPendingMeetingId": [
         *open_scheduled_meeting_detail("{topic}"),
         # 就地自证（A类）：预约详情页"会议号"行在屏；text 匹配剥离空白，
-        # 屏幕渲染与答案（"836 291 475"）的分段差异均可吸收。
+        # 屏幕渲染与答案（如 "836 291 475"）的分段差异均可吸收。
         assert_answer("{answer}", field_index=0, summary="assert scheduled meeting id on screen"),
         *grounded_answer("{answer}", summary="answer scheduled meeting id"),
         complete(),
@@ -505,23 +763,19 @@ PLANS: dict[str, list[Step]] = {
         *send_chat_message("{message}"),
         complete(),
     ],
-    "tencent_meeting.CalculateTotalMeetingDuration": [
-        # 定位 {date}（测试参数 2026-02-03）分组后，5 场逐场进详情读"参会时长"求和。
-        *open_history_list(),
-        *scroll_history_list(2, summary="locate the 2026-02-03 date group"),
-        # 就地自证（B类）：总时长 249 分钟不在任何单屏（各详情页只显示本场
-        # 参会时长 HH:MM:SS）。逐场断言该值在屏 —— 5 个加数齐备即证明求和
-        # 所需信息全部读自屏幕，而非任何单一"最后证据"能替代。
-        *visit_history_details(
-            *HISTORY_TOPICS_2026_02_03,
-            assert_after={
-                topic: [assert_text(value, summary=f"assert participation duration of {topic}")]
-                for topic, value in HISTORY_PARTICIPATION_HHMMSS_2026_02_03.items()
-            },
-        ),
-        *grounded_answer("{answer}", summary="answer total participation duration"),
-        complete(),
-    ],
+    # date（enum: 2026-02-03 / 2026-02-04）决定要遍历哪一组会议与逐场证据值，
+    # 两组均为静态步表 → 受限 Branch，pick 只读采样后的 task.p.date。
+    "tencent_meeting.CalculateTotalMeetingDuration": Branch(
+        pick=lambda task, state: str(task.p.date),
+        branches={
+            "2026-02-03": _total_duration_arm(
+                "2026-02-03", HISTORY_TOPICS_2026_02_03, HISTORY_PARTICIPATION_HHMMSS_2026_02_03
+            ),
+            "2026-02-04": _total_duration_arm(
+                "2026-02-04", HISTORY_TOPICS_2026_02_04, HISTORY_PARTICIPATION_HHMMSS_2026_02_04
+            ),
+        },
+    ),
     "tencent_meeting.CompareParticipationDurations": [
         *open_history_list(),
         # 就地自证（B类）：答案是"哪场更长"的比较结论，不在任何单屏；对两场

@@ -1,5 +1,20 @@
 """Live scripted-plan verification for the WeChat suite.
 
+Single-source policy: answers and derived lookups (``answer``,
+``moment_text``, ``contact_wxid``, ``sports_action``) are **not** injected
+here — they come from ``scripted_plans.DERIVED_PARAMS``, computed at
+materialization time from the episode's post-setup initial state through the
+judge-homologous ``Wechat`` domain class. That is exactly the official
+``--agent scripted`` sampling path, so these live cases regression-test the
+derivation itself. Only *declared* task parameters stay pinned below, for
+deterministic coverage.
+
+Branch coverage: the ``ConditionalReplyToBoss`` cases pin keywords on both
+sides of the judge predicate (present / absent in Boss's initial history) so
+both restricted-Branch arms run live; the extra contact-task variants pin
+contacts on both sides of the Contacts-list fold (rendered index < 6 vs
+deeper) so both visible/scrolled arms run live.
+
 Run against the gateway:
     pytest bench_env/tests/wechat/test_scripted.py --sim-url https://localhost:4180
 """
@@ -21,8 +36,9 @@ from bench_env.tests.scripted_support import (
 
 SUITE = "wechat"
 
-# (ClassName, factory). One entry per task in the suite; the factory's params
-# must match placeholders used by that task's plan in scripted_plans.py.
+# (CaseName, factory). At least one entry per task in the suite (extra
+# param-variant entries carry a suffixed name); the factory's params must
+# match placeholders used by that task's plan in scripted_plans.py.
 SCRIPTED_CASES: list[tuple[str, Callable[[], BaseTask]]] = [
     ("OpenRadarAddFriend", lambda: wechat_tasks.OpenRadarAddFriend()),
     ("OpenNewFriends", lambda: wechat_tasks.OpenNewFriends()),
@@ -67,6 +83,23 @@ SCRIPTED_CASES: list[tuple[str, Callable[[], BaseTask]]] = [
     ),
     ("PostMomentFromChat", lambda: wechat_tasks.PostMomentFromChat(contact="张伟")),
     ("StarAndRestrictFriend", lambda: wechat_tasks.StarAndRestrictFriend(contact="blank.")),
+    # --- Param variants: Branch arms + derived values across values ---
+    # Keyword absent from Boss's initial history → the "no" Branch arm.
+    (
+        "ConditionalReplyToBoss_noBranch",
+        lambda: wechat_tasks.ConditionalReplyToBoss(
+            keyword="团建聚餐",
+            yes_reply="收到，我来安排",
+            no_reply="最近没有相关安排",
+        ),
+    ),
+    # Other enum value → moment_text derives blank.'s latest message ("你好").
+    ("PostMomentFromChat_blank", lambda: wechat_tasks.PostMomentFromChat(contact="blank.")),
+    # Deepest rendered contact (赵敏, index 11) → the "scrolled" Branch arm,
+    # plus a different derived region answer (中国 西安).
+    ("ReadContactRegion_scrolled", lambda: wechat_tasks.ReadContactRegion(contact="赵敏")),
+    # First below-the-fold contact (王芳, index 6) → scrolled-arm boundary.
+    ("SetFriendChatOnly_scrolled", lambda: wechat_tasks.SetFriendChatOnly(contact="王芳")),
 ]
 
 

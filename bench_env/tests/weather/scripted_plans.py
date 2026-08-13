@@ -20,18 +20,53 @@ norm_0_1000 coordinates):
 
 Self-verification asserts (R2): every query plan proves its answer was read
 from the screen before opening the AnswerSheet. Values that render verbatim
-(hero temp, weather text, humidity, AQI, forecast dates/temps) use
-``assert_answer`` — it scans every rendered text inside the foreground
-Activity, so entries inside horizontal scrollers (15-day columns, hourly
-chart) match regardless of the current scroll offset. Comparison verdicts
+(hero temp, humidity, AQI, forecast dates/temps) use ``assert_answer`` — it
+scans every rendered text inside the foreground Activity, so entries inside
+horizontal scrollers (15-day columns, hourly chart) match regardless of the
+current scroll offset. Weather-condition texts are the exception: the app
+canonicalizes them into bucket labels (getLocalizedWeatherText — 雷阵雨→暴雨,
+阵雨→小雨), so condition asserts go through ``_screen_weather_label`` while
+the typed answer keeps the raw judge-aligned textDay. Comparison verdicts
 (hotter/more-humid/least-rainy city, "一样…" ties) are never rendered
 verbatim, so those plans assert *evidence* instead via ``assert_text``
 (each compared city page / card on screen, which is viewport-strict).
+
+Sampling compatibility (``DERIVED_PARAMS``): every non-declared plan
+placeholder (``answer*``, ``unit_action``, ``city_id``, ``cur_temp``) is
+computed at materialization time from the episode's post-setup initial state
+via the *judge-homologous* domain class — calculators build
+``Weather(init_state["apps"]["weather"])`` exactly like judges build
+``Weather(input.apps_init["weather"])``, and both read the same runner
+observation, so derived values cannot drift from the judge. The
+``weatherLibrary`` dates are shifted to sim-today once at store creation and
+stay static within an episode (apps/Weather/state.ts + weatherStore.ts), so
+mid-episode renders/asserts see the same data. Explicit test injections would
+still win over these calculators; ``test_scripted.py`` deliberately injects
+declared parameters only, exercising this derivation path end to end.
+
+``weather.ConditionalAction`` is the restricted-``Branch`` showcase: the
+Weather switch rows carry no ``data-action`` tagging (plain onClick *flip*
+in WeatherSettingsPage.tsx — there is no ``to:true/false`` action variant),
+so branches encode "flip the switch" vs "leave it"; the pure ``pick`` reads
+the {city} temperature and the current ``settings.warningAlert`` from the
+initial state to select among turn_on / turn_off / keep_on / keep_off.
+
+``weather.CheckDetailCard`` is the second ``Branch`` (picked from a declared
+param, no state): the wind card renders direction and scale as two separate
+spans (DetailsGrid.tsx), so the judge's concatenated "北风1级" answer never
+appears in one on-screen text run — the wind arm asserts both source
+readings separately while every other metric keeps the verbatim
+``assert_answer``.
 """
 
 from __future__ import annotations
 
+import datetime as dt
+import math
+from typing import Any, Callable
+
 from bench_env.agent.scripted import (
+    Branch,
     Step,
     assert_answer,
     assert_text,
@@ -47,6 +82,8 @@ from bench_env.agent.scripted import (
     type_text,
     wait,
 )
+from bench_env.task.utils import now_ms
+from bench_env.task.weather.app import Weather
 
 
 def click_selector(selector: str, *, summary: str) -> Step:
@@ -234,7 +271,333 @@ def swipe_hourly_chart(step: int, total: int) -> Step:
     return swipe([700, 430], [300, 430], summary=f"browse hourly temps {step}/{total}")
 
 
-PLANS: dict[str, list[Step]] = {
+# ---------------------------------------------------------------------------
+# Derived params — sampling-path compatibility
+# ---------------------------------------------------------------------------
+# Each calculator mirrors its task's judge (get_answer / get_expected_response
+# / check_goals in bench_env/task/weather/tasks.py) through the same Weather
+# domain class over the same initial state, so the typed/asserted values are
+# judge-homologous by construction.
+
+def _weather(state: dict[str, Any]) -> Weather:
+    """Judge-homologous accessor: ``Weather(init_state["apps"]["weather"])``."""
+    return Weather(state["apps"]["weather"])
+
+
+def _num(value: Any) -> str:
+    """Numeric string as a human would type it (whole floats lose the .0)."""
+    value = float(value)
+    return str(int(value)) if value.is_integer() else str(value)
+
+
+def _date_label(fx_date: Any) -> str:
+    """Absolute "M月D日" label — matched by the judge's date matcher and by
+    ``assert_answer``'s os-state-free ``date_match_labels``."""
+    day = dt.date.fromisoformat(str(fx_date)[:10])
+    return f"{day.month}月{day.day}日"
+
+
+def _screen_weather_label(raw: Any) -> str:
+    """Mirror getLocalizedWeatherText's zh canonicalization chain
+    (apps/Weather/utils/localizedText.ts + res/strings.ts): forecast/hero
+    pages render bucket labels, never the raw textDay/textNight — 雷阵雨→暴雨,
+    阵雨→小雨, 霾→轻度雾霾, …. Assert-only helper: typed answers must keep the
+    raw judge-aligned value (the judge matches raw text, not screen labels)."""
+    text = str(raw or "").strip()
+    if not text:
+        return text
+    rules: list[tuple[Callable[[str], bool], str]] = [
+        (lambda t: "雷" in t and "雨" in t, "暴雨"),
+        (lambda t: "暴雨" in t or "大雨" in t, "大雨"),
+        (lambda t: "中雨" in t, "中雨"),
+        (lambda t: "阵雨" in t or "小雨" in t or "毛毛雨" in t, "小雨"),
+        (lambda t: "暴雪" in t or "大雪" in t, "大雪"),
+        (lambda t: "中雪" in t, "中雪"),
+        (lambda t: "阵雪" in t or "小雪" in t, "小雪"),
+        # TS checks 雾 before the 霾 buckets, so "雾霾" canonicalizes to 雾.
+        (lambda t: "雾" in t, "雾"),
+        (lambda t: "重度" in t and "霾" in t, "重度雾霾"),
+        (lambda t: "中度" in t and "霾" in t, "中度雾霾"),
+        (lambda t: "霾" in t, "轻度雾霾"),
+        (lambda t: "浮尘" in t or "扬尘" in t, "浮尘"),
+        (lambda t: "沙尘" in t, "沙尘"),
+        (lambda t: "大风" in t, "大风"),
+        (lambda t: "阴" in t, "阴"),
+        (lambda t: "多云" in t or "少云" in t, "多云"),
+        (lambda t: "晴" in t, "晴"),
+    ]
+    for test, label in rules:
+        if test(text):
+            return label
+    return text
+
+
+def _warmest_day(state: dict[str, Any], city: str, days: int) -> dict[str, Any]:
+    """First day with the max tempMax — mirrors WarmestDayInWeek (any tied day
+    passes its judge) and AddCityAndFindWarmestDay (judge uses the same max)."""
+    forecast = _weather(state).daily_range(city, 1, days)
+    return max(forecast, key=lambda day: float(day["tempMax"]))
+
+
+def _coldest_day(state: dict[str, Any], city: str, days: int) -> dict[str, Any]:
+    """First day with the min tempMin — mirrors ColdestDayIn14 (ties all pass)."""
+    forecast = _weather(state).daily_range(city, 1, days)
+    return min(forecast, key=lambda day: float(day["tempMin"]))
+
+
+def _hotter_city_choice(task: Any, state: dict[str, Any]) -> str:
+    """Mirror CompareCityTemp.get_expected_response (tie → "一样热")."""
+    winner, _, _ = _weather(state).hotter_city(task.p.city1, task.p.city2)
+    return "一样热" if winner == "一样" else winner
+
+
+def _detail_card_answer(task: Any, state: dict[str, Any]) -> str:
+    """Mirror CheckDetailCard.get_answer + get_expected_response per metric."""
+    weather = _weather(state)
+    city, metric = task.p.city, task.p.metric
+    if metric == "humidity":
+        return _num(weather.current_humidity(city))
+    if metric == "uvIndex":
+        return str(weather.today_uv_index(city))
+    if metric == "sunrise":
+        return str(weather.today_sunrise(city))
+    if metric == "feelsLike":
+        return _num(weather.current_feels_like(city))
+    wind = weather.current_wind_info(city)
+    return f"{wind['dir']}{wind['scale']}级"
+
+
+def _pollutant_answer(task: Any, state: dict[str, Any]) -> str:
+    """Mirror CheckAQIPollutant.get_answer: CO uses toFixed(1), others round."""
+    value = float(_weather(state).pollutant_value(task.p.city, task.p.pollutant))
+    if task.p.pollutant == "co":
+        return str(round(value, 1))
+    return str(int(value + 0.5))
+
+
+def _fahrenheit_answer(task: Any, state: dict[str, Any]) -> str:
+    """Mirror SwitchUnitAndReport.get_answer: round(C * 9/5 + 32)."""
+    return _num(round(_weather(state).current_temp(task.p.city) * 9 / 5 + 32))
+
+
+def _feels_like_diff_answer(task: Any, state: dict[str, Any]) -> str:
+    weather = _weather(state)
+    return _num(abs(weather.current_feels_like(task.p.city) - weather.current_temp(task.p.city)))
+
+
+def _larger_tomorrow_range_choice(task: Any, state: dict[str, Any]) -> str:
+    """Mirror CompareTempRange.get_expected_response (tie → "一样大")."""
+    weather = _weather(state)
+    current_ms = now_ms(state["os"])
+    city1 = weather.city_tomorrow_high_low(task.p.city1, current_ms)
+    city2 = weather.city_tomorrow_high_low(task.p.city2, current_ms)
+    range1 = float(city1["high"]) - float(city1["low"])
+    range2 = float(city2["high"]) - float(city2["low"])
+    if range1 > range2:
+        return task.p.city1
+    if range2 > range1:
+        return task.p.city2
+    return "一样大"
+
+
+def _more_humid_choice(task: Any, state: dict[str, Any]) -> str:
+    """Mirror CompareHumidity.get_expected_response (tie → "一样")."""
+    weather = _weather(state)
+    h1 = weather.current_humidity(task.p.city1)
+    h2 = weather.current_humidity(task.p.city2)
+    if h1 > h2:
+        return task.p.city1
+    if h2 > h1:
+        return task.p.city2
+    return "一样"
+
+
+def _night_low_answer(task: Any, state: dict[str, Any]) -> str:
+    """Mirror NightLowTemp.get_answer: min hourly temp in the 18:00–03:59 window."""
+    night_temps: list[float] = []
+    for item in _weather(state).weather_hourly(task.p.city):
+        hour = Weather.hour_from_fx_time(item["fxTime"])
+        if hour is not None and (hour >= 18 or hour < 4):
+            night_temps.append(float(item["temp"]))
+    return _num(min(night_temps))
+
+
+def _least_rainy_choice(task: Any, state: dict[str, Any]) -> str:
+    """Mirror ThreeCityRainCheck.get_expected_response (tie → "差不多")."""
+    weather = _weather(state)
+    counts = {
+        city: Weather.count_rainy_days(weather.daily_range(city, 1, 7))
+        for city in (task.p.city1, task.p.city2, task.p.city3)
+    }
+    min_days = min(counts.values())
+    winners = [city for city, days in counts.items() if days == min_days]
+    return "差不多" if len(winners) >= 2 else winners[0]
+
+
+def _smallest_weekend_range_choice(task: Any, state: dict[str, Any]) -> str:
+    """Mirror WeekendTempRange3City.get_expected_response (tie → "差不多")."""
+    weather = _weather(state)
+    ranges = {
+        city: Weather.temp_range_of_days(weather.weekend_daily(city)[:2])
+        for city in (task.p.city1, task.p.city2, task.p.city3)
+    }
+    best = min(ranges.values())
+    winners = [city for city, value in ranges.items() if value == best]
+    return "差不多" if len(winners) >= 2 else winners[0]
+
+
+def _wind_dir(task: Any, state: dict[str, Any]) -> str:
+    """Wind-card direction span as rendered (stored windDir, zh locale)."""
+    return str(_weather(state).current_wind_info(task.p.city)["dir"])
+
+
+def _wind_scale_label(task: Any, state: dict[str, Any]) -> str:
+    """Wind-card value span as rendered: "N级". formatWind (beaufort default)
+    recomputes N via beaufortScaleFromKmh(windSpeed); every library city's
+    stored windScale equals that recomputation, so the judge-homologous
+    stored value is also the on-screen value."""
+    return f"{_weather(state).current_wind_info(task.p.city)['scale']}级"
+
+
+def _city_id(task: Any, state: dict[str, Any]) -> str:
+    """Library city id for the add-city tasks (e.g. 南京 → nanjing) — the same
+    Weather.city_id_for_name lookup judges rely on, over the merged
+    bundlesByCityId + weatherLibrary view."""
+    return _weather(state).city_id_for_name(task.p.city)
+
+
+def _current_temp_rounded(task: Any, state: dict[str, Any]) -> str:
+    """The {city} hero temperature as rendered: Math.round(now.temp) (celsius
+    default — convertTemp in apps/Weather/utils/unitConversion.ts)."""
+    return str(math.floor(_weather(state).current_temp(task.p.city) + 0.5))
+
+
+DERIVED_PARAMS: dict[str, dict[str, Callable[[Any, dict[str, Any]], Any]]] = {
+    "weather.CheckCurrentTemp": {
+        "answer": lambda task, state: _num(_weather(state).current_temp(task.p.city)),
+    },
+    "weather.CheckCurrentWeather": {
+        "answer": lambda task, state: _weather(state).current_weather_text(task.p.city),
+    },
+    "weather.SwitchTempUnit": {
+        "unit_action": lambda task, state: f"settings.tempUnit.select.{task.p.unit}",
+    },
+    "weather.SwitchWindUnit": {
+        "unit_action": lambda task, state: f"settings.windUnit.select.{task.p.unit}",
+    },
+    "weather.CompareCityTemp": {"answer": _hotter_city_choice},
+    "weather.CheckDetailCard": {
+        "answer": _detail_card_answer,
+        # wind-arm evidence values (computed for every metric — cheap and
+        # total — but only rendered by the wind branch).
+        "answer_dir": _wind_dir,
+        "answer_scale": _wind_scale_label,
+    },
+    "weather.OpenDailyForecast": {
+        "answer": lambda task, state: Weather.day_text(
+            _weather(state).daily_by_date(task.p.city, task.p.date)
+        ),
+        # Assert-only screen form: the 15-day page renders canonicalized
+        # bucket labels (雷阵雨→暴雨 …), never the raw textDay the judge wants.
+        "answer_screen": lambda task, state: _screen_weather_label(
+            Weather.day_text(_weather(state).daily_by_date(task.p.city, task.p.date))
+        ),
+    },
+    "weather.CheckAQIPollutant": {"answer": _pollutant_answer},
+    "weather.CheckLifeIndex": {
+        "answer": lambda task, state: str(
+            _weather(state).life_index_by_name(task.p.city, task.p.index_type)["category"]
+        ).strip(),
+    },
+    "weather.WarmestDayInWeek": {
+        "answer_date": lambda task, state: _date_label(_warmest_day(state, task.p.city, 5)["fxDate"]),
+        "answer_temp": lambda task, state: _num(_warmest_day(state, task.p.city, 5)["tempMax"]),
+        "answer_weather": lambda task, state: Weather.day_text(_warmest_day(state, task.p.city, 5)),
+        # Assert-only screen form (e.g. 广州's warmest day: 雷阵雨 renders 暴雨).
+        "answer_weather_screen": lambda task, state: _screen_weather_label(
+            Weather.day_text(_warmest_day(state, task.p.city, 5))
+        ),
+    },
+    "weather.SwitchUnitAndReport": {
+        # criteria pins fahrenheit (not parameterized), so the action id is fixed.
+        "unit_action": lambda task, state: "settings.tempUnit.select.fahrenheit",
+        "answer": _fahrenheit_answer,
+    },
+    "weather.FeelsLikeDiff": {"answer": _feels_like_diff_answer},
+    "weather.CompareTempRange": {"answer": _larger_tomorrow_range_choice},
+    "weather.CompareHumidity": {"answer": _more_humid_choice},
+    "weather.ColdestDayIn14": {
+        "answer_date": lambda task, state: _date_label(_coldest_day(state, task.p.city, 14)["fxDate"]),
+        "answer_temp": lambda task, state: _num(_coldest_day(state, task.p.city, 14)["tempMin"]),
+    },
+    "weather.NightLowTemp": {"answer": _night_low_answer},
+    "weather.AddCityAndFindWarmestDay": {
+        "city_id": _city_id,
+        "answer_date": lambda task, state: _date_label(_warmest_day(state, task.p.city, 7)["fxDate"]),
+    },
+    "weather.ThreeCityRainCheck": {"answer": _least_rainy_choice},
+    "weather.ConditionalAction": {"cur_temp": _current_temp_rounded},
+    "weather.AddCityFullReport": {
+        "city_id": _city_id,
+        "answer_temp": lambda task, state: _num(_weather(state).current_temp(task.p.city)),
+        "answer_humidity": lambda task, state: _num(_weather(state).current_humidity(task.p.city)),
+        "answer_aqi": lambda task, state: _num(float(_weather(state).air_quality(task.p.city)["aqi"])),
+    },
+    "weather.WeekendTempRange3City": {"answer": _smallest_weekend_range_choice},
+}
+
+
+# ---------------------------------------------------------------------------
+# weather.ConditionalAction — restricted Branch (two behaviors × two reasons)
+# ---------------------------------------------------------------------------
+
+def _conditional_pick(task: Any, state: dict[str, Any]) -> str:
+    """Mirror ConditionalAction.check_goals: expected = current_temp > {temp};
+    combined with the initial switch value this selects flip vs keep."""
+    weather = _weather(state)
+    should_enable = weather.current_temp(task.p.city) > task.p.temp
+    currently_on = bool(weather.get("settings.warningAlert"))
+    if should_enable:
+        return "keep_on" if currently_on else "turn_on"
+    return "turn_off" if currently_on else "keep_off"
+
+
+def _conditional_action_branch(*, flip: bool) -> list[Step]:
+    """Read {city}'s live temperature (with on-screen evidence asserts), then
+    either flip the 天气预警提醒 row (plain onClick toggle — the app tags no
+    direction-specific action) or just visit settings and leave it."""
+    steps: list[Step] = [
+        *select_city("{city}"),
+        assert_text("{city}", summary="assert {city} hero on screen"),
+        assert_text("{cur_temp}°", summary="assert current temperature {cur_temp}° on hero"),
+        *open_settings(),
+        assert_text("天气预警提醒", summary="assert warning-alert row on settings page"),
+    ]
+    if flip:
+        steps += [
+            click_selector(setting_row("天气预警提醒"), summary="toggle setting 天气预警提醒"),
+            wait(0.2, summary="wait for setting toggle"),
+        ]
+    steps.append(complete())
+    return steps
+
+
+# ---------------------------------------------------------------------------
+# weather.CheckDetailCard — restricted Branch (verbatim value vs split wind)
+# ---------------------------------------------------------------------------
+
+def _check_detail_card_arm(*asserts: Step) -> list[Step]:
+    """Shared navigation + answer steps; arms differ only in evidence asserts."""
+    return [
+        *select_city("{city}"),
+        *scroll_home_down(1, "{city} details grid"),
+        *asserts,
+        *grounded_answer("{answer}", summary="answer weather detail metric"),
+        complete(),
+    ]
+
+
+PLANS: dict[str, list[Step] | Branch] = {
     "weather.CheckCurrentTemp": [
         *select_city("{city}"),
         assert_answer("{answer}", summary="assert current temperature on hero"),
@@ -277,19 +640,30 @@ PLANS: dict[str, list[Step]] = {
         *grounded_choice_answer("{answer}", summary="answer hotter city"),
         complete(),
     ],
-    "weather.CheckDetailCard": [
-        *select_city("{city}"),
-        *scroll_home_down(1, "{city} details grid"),
-        assert_answer("{answer}", summary="assert detail metric value on details grid"),
-        *grounded_answer("{answer}", summary="answer weather detail metric"),
-        complete(),
-    ],
+    # Restricted Branch picked from the declared metric param: the wind card
+    # renders direction and scale as two separate spans, so the judge's
+    # concatenated "北风1级" never appears in one on-screen text run — the
+    # wind arm asserts both source readings; other metrics stay verbatim.
+    "weather.CheckDetailCard": Branch(
+        pick=lambda task, state: "wind" if task.p.metric == "wind" else "value",
+        branches={
+            "value": _check_detail_card_arm(
+                assert_answer("{answer}", summary="assert detail metric value on details grid"),
+            ),
+            "wind": _check_detail_card_arm(
+                assert_text("{answer_dir}", summary="assert wind direction on details grid"),
+                assert_text("{answer_scale}", summary="assert wind scale on details grid"),
+            ),
+        },
+    ),
     "weather.OpenDailyForecast": [
         *select_city("{city}"),
         *open_daily_forecast(),
         swipe_forecast_days(span="days 5-10"),
         swipe_forecast_days(span="days 8-14", gentle=True),
-        assert_answer("{answer}", summary="assert forecast condition on 15-day page"),
+        # Screen shows the canonicalized bucket label (identity for every
+        # currently sampleable date, but keep the honest screen form).
+        assert_answer("{answer_screen}", summary="assert forecast condition (screen label) on 15-day page"),
         *grounded_answer("{answer}", summary="answer daily forecast condition"),
         complete(),
     ],
@@ -314,7 +688,9 @@ PLANS: dict[str, list[Step]] = {
         swipe_forecast_days(span="next 5 days", gentle=True),
         assert_answer("{answer_date}", field_index=0, summary="assert warmest day date on forecast"),
         assert_answer("{answer_temp}", field_index=1, summary="assert warmest day high temp on forecast"),
-        assert_answer("{answer_weather}", field_index=2, summary="assert warmest day condition on forecast"),
+        # Screen shows the canonicalized bucket label; the typed answer below
+        # stays the raw judge-aligned textDay.
+        assert_answer("{answer_weather_screen}", field_index=2, summary="assert warmest day condition (screen label) on forecast"),
         *grounded_answer("{answer_date}", "{answer_temp}", "{answer_weather}", summary="answer warmest day"),
         complete(),
     ],
@@ -403,16 +779,19 @@ PLANS: dict[str, list[Step]] = {
         *grounded_choice_answer("{answer}", summary="answer least rainy city"),
         complete(),
     ],
-    # Read {city}'s current temperature first (select it so the home hero shows
-    # the live reading), then apply the toggle. A static plan covers a single
-    # branch: with the test params (深圳 28°C, threshold 30, warningAlert
-    # defaults to on) the correct action is to turn the alert OFF, which the
-    # one toggle below performs.
-    "weather.ConditionalAction": [
-        *select_city("{city}"),
-        *toggle_setting("天气预警提醒"),
-        complete(),
-    ],
+    # Restricted Branch: pick compares {city}'s initial temperature with the
+    # {temp} threshold and the current warningAlert value; the four keys keep
+    # the audit trail readable ([branch=turn_off] etc.) while collapsing into
+    # two static behaviors — flip the row or leave it untouched.
+    "weather.ConditionalAction": Branch(
+        pick=_conditional_pick,
+        branches={
+            "turn_on": _conditional_action_branch(flip=True),
+            "turn_off": _conditional_action_branch(flip=True),
+            "keep_on": _conditional_action_branch(flip=False),
+            "keep_off": _conditional_action_branch(flip=False),
+        },
+    ),
     "weather.AddCityFullReport": [
         *add_city(),
         assert_answer("{answer_temp}", field_index=0, summary="assert new city temperature on hero"),

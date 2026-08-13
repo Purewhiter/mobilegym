@@ -3,7 +3,23 @@
 Each plan is replayed through ``ScriptedAgent`` via the same
 ``BaseRunner.run_episode`` path as ``bench_env.run --agent scripted`` (grounded
 AnswerSheet, ``COMPLETE``, ``EpisodeResult.success`` = goal + clean diff).
-``{param}`` placeholders in plans render from the matching ``SCRIPTED_CASES`` params.
+
+Single-source policy: values the plans used to hardcode (search-result track
+ids like ``it_536030695``, liked-song ids like ``ls_1``, artist-card names,
+album collection ids, asserted titles/durations/answers) are **not** injected
+here — they come from ``scripted_plans.DERIVED_PARAMS``, computed at
+materialization time from the episode's post-setup initial state through the
+judge-homologous ``Spotify`` domain class and the same offline search tables
+the judges read (``searchResults.json`` / ``albumTracks.json`` /
+``artistTracks.json``). That is exactly the official ``--agent scripted``
+sampling path, so these live cases regression-test the derivation itself.
+
+Only *declared* task parameters stay pinned below, for deterministic branch
+coverage: ``QueueTopArtistSongs(count=2)`` / ``DiscoverSaveAndReport(count=2)``
+/ ``BuildPlaylistFromTwoArtists(count=1)`` pin the small ``Branch`` arms
+(sampling always exercises the default-count arms), and
+``FilterLikedSongsToPlaylist(artist="Taylor Swift")`` pins the ``front3``
+scroll-cadence arm.
 
 Run against the gateway:
     pytest bench_env/tests/spotify/test_scripted.py --sim-url https://localhost:4180
