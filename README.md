@@ -100,7 +100,7 @@ The result is **one environment** that powers both **trustworthy evaluation** an
 | AutoGLM-Phone-9B                                           |      20.0 ± 1.3      |      35.3      |      86.2      |      33.6      |      9.6      |      1.9      | 39.6 | 12.6 |
 | UI-Venus-1.5-8B                                            |      15.4 ± 2.4      |      28.3      |      85.0      |      21.9      |      6.0      |      1.9      | 22.9 | 7.7 |
 | GUI-Owl-1.5-8B-Think                                       |      15.1 ± 0.9      |      28.8      |      76.2      |      26.0      |      4.2      |      1.2      | 30.4 | 14.1 |
-| UI-TARS-1.5-8B                                             |      13.8 ± 1.7      |      26.3      |      77.5      |      21.9      |      3.0      |      1.6      | 38.6 | 11.0 |
+| UI-TARS-1.5-7B                                             |      13.8 ± 1.7      |      26.3      |      77.5      |      21.9      |      3.0      |      1.6      | 38.6 | 11.0 |
 | Step-GUI-4B                                                |      12.9 ± 1.1      |      25.7      |      83.8      |      17.8      |      2.4      |      1.6      | 37.0 | 7.6 |
 | ***Open-source generalist (base for our RL run)*** |                      |                |                |                |                |                |      |      |
 | Qwen3-VL-4B                                                |      9.4 ± 0.6      |      20.1      |      71.2      |      12.3      |      0.6      |      0.3      | 15.9 | 10.0 |
@@ -307,7 +307,7 @@ Plug in any model that speaks one of these schemas — or write your own adapter
 | Adapter        | Prompt style               | Notes                                            |
 | :------------- | :------------------------- | :----------------------------------------------- |
 | `autoglm`    | Open-AutoGLM (zh)          | Tested against AutoGLM-Phone-9B                  |
-| `uitars`     | UI-TARS                    | UI-TARS-1.5-8B                                   |
+| `uitars`     | UI-TARS                    | UI-TARS-1.5-7B                                   |
 | `venus`      | UI-Venus                   | UI-Venus-1.5-8B                                  |
 | `gui_owl`    | GUI-Owl-1.5-Think          | thinking-style outputs                           |
 | `gelab`      | Gelab-Zero                 |                                                  |
@@ -445,7 +445,7 @@ We welcome contributions of all kinds — new and updated apps, new tasks and be
 ## 🙏 Acknowledgements
 
 - Inspired by **AppWorld** (state-based programmatic evaluation), **WebArena** / **VisualWebArena** (controllable web environments), and **AndroidWorld** / **AndroidLab** / **A3** (mobile-agent benchmarks).
-- Reference panel: Gemini 3.1 Pro, Doubao-Seed-2.0-Pro, Qwen3.6-Plus, AutoGLM-Phone-9B, UI-TARS-1.5-8B, UI-Venus-1.5-8B, GUI-Owl-1.5-8B-Think, Step-GUI-4B.
+- Reference panel: Gemini 3.1 Pro, Doubao-Seed-2.0-Pro, Qwen3.6-Plus, AutoGLM-Phone-9B, UI-TARS-1.5-7B, UI-Venus-1.5-8B, GUI-Owl-1.5-8B-Think, Step-GUI-4B.
 - Real-device validation hardware: Redmi Note 12 Turbo (1080×2400).
 - Built with React 19, Vite 6, Zustand 5, Tailwind CSS v4, Playwright. ❤️
 - Huge thanks to every open-source project that taught us how to build this — and to the artists whose theme assets help make the simulated UIs feel real (see in-app credit metadata).
