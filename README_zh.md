@@ -473,7 +473,7 @@ MobileGym 采用**双 license** 设计 —— 再分发前请同时阅读两份�
 
 ## Star 增长曲线
 
-[![Star History Chart](https://api.star-history.com/svg?repos=Purewhiter/mobilegym&type=Date)](https://star-history.com/#Purewhiter/mobilegym&Date)
+[![Star History Chart](https://star-history.dera.page/svg?repos=Purewhiter/mobilegym&type=Date)](https://star-history.dera.page/#Purewhiter/mobilegym&Date)
 
 <br/>
 
