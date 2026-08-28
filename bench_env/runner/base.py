@@ -161,7 +161,13 @@ class Evaluator:
 
 def _action_fingerprint(action) -> str:
     """Extract action behavioral fingerprint (type + normalized data)."""
-    return f"{action.action_type}|{json.dumps(action.data, sort_keys=True, ensure_ascii=False)}"
+    data = action.data
+    if action.action_type == ActionType.WAIT:
+        # WAIT's "value" is a duration in seconds, not behavior: two waits are the
+        # same repeated action for loop-detection purposes regardless of how long
+        # each one slept, so drop it before hashing.
+        data = {k: v for k, v in data.items() if k != "value"}
+    return f"{action.action_type}|{json.dumps(data, sort_keys=True, ensure_ascii=False)}"
 
 
 def _snapshot_stopwatch(sw) -> tuple[float, dict[str, float], list[dict[str, Any]]]:
