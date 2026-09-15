@@ -6,10 +6,12 @@ import { IcBack } from '../res/icons';
 import { strings } from '../res/strings';
 import { stringsEn } from '../res/strings.en';
 import { useAppStrings } from '@/os/useAppStrings';
+import { useLocale } from '@/os/locale';
 import { itemPreview, itemTitle } from './itemText';
 
 export function ScrollLabDetailPage() {
   const s = useAppStrings(strings, stringsEn);
+  const locale = useLocale() === 'en' ? 'en' : 'zh';
   const { itemId = '' } = useParams<{ itemId: string }>();
   const item = findScrollLabItem(itemId);
   const selectedItemId = useScrollLabStore((state) => state.selectedItemId);
@@ -43,10 +45,10 @@ export function ScrollLabDetailPage() {
               {item.code}
             </div>
             <h1 className="mt-4 text-[25px] leading-8 font-semibold" data-scroll-lab-selected-title>
-              {itemTitle(item, s)}
+              {itemTitle(item, locale)}
             </h1>
             <p className="mt-3 text-[14px] leading-6 text-app-text-muted">
-              {itemPreview(item, s)}
+              {itemPreview(item, locale)}
             </p>
 
             <div className="mt-7 pt-5 border-t border-app-border space-y-3 text-[14px]">

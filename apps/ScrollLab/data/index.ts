@@ -14,6 +14,8 @@ export interface ScrollLabItem {
   code: string;
   rowSize: 'compact' | 'regular' | 'expanded';
   target: ScrollLabTarget | null;
+  title: { zh: string; en: string };
+  preview: { zh: string; en: string };
 }
 
 const targetForOrdinal = (ordinal: number): ScrollLabTarget | null => {
@@ -22,9 +24,11 @@ const targetForOrdinal = (ordinal: number): ScrollLabTarget | null => {
   return null;
 };
 
-export const SCROLL_LAB_ITEMS: ScrollLabItem[] = Array.from(
-  { length: SCROLL_LAB_ITEM_COUNT },
-  (_, index) => {
+if (defaults.items.length !== SCROLL_LAB_ITEM_COUNT) {
+  throw new Error(`Scroll Lab fixture must contain exactly ${SCROLL_LAB_ITEM_COUNT} items`);
+}
+
+export const SCROLL_LAB_ITEMS: ScrollLabItem[] = defaults.items.map((entry, index) => {
     const ordinal = index + 1;
     const padded = String(ordinal).padStart(3, '0');
     const rowSize = ordinal % 5 === 0
@@ -38,9 +42,10 @@ export const SCROLL_LAB_ITEMS: ScrollLabItem[] = Array.from(
       code: `SL-${padded}`,
       rowSize,
       target: targetForOrdinal(ordinal),
+      title: entry.title,
+      preview: entry.preview,
     };
-  },
-);
+  });
 
 export const SCROLL_LAB_DEFAULTS = {
   selectedItemId: defaults.selectedItemId as string | null,

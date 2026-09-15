@@ -4,6 +4,7 @@ import { useScrollLabStore } from '../state';
 import { strings } from '../res/strings';
 import { stringsEn } from '../res/strings.en';
 import { useAppStrings } from '@/os/useAppStrings';
+import { useLocale } from '@/os/locale';
 import { itemPreview, itemTitle } from './itemText';
 
 const rowClass = {
@@ -14,6 +15,7 @@ const rowClass = {
 
 export function ScrollLabListPage() {
   const s = useAppStrings(strings, stringsEn);
+  const locale = useLocale() === 'en' ? 'en' : 'zh';
   const { bindTap } = useScrollLabGestures();
 
   return (
@@ -32,7 +34,7 @@ export function ScrollLabListPage() {
         data-scroll-direction="vertical"
       >
         {SCROLL_LAB_ITEMS.map((item) => {
-          const title = itemTitle(item, s);
+          const title = itemTitle(item, locale);
           return (
             <button
               key={item.id}
@@ -46,20 +48,13 @@ export function ScrollLabListPage() {
               })}
             >
               <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-700 flex items-center justify-center text-[12px] font-semibold flex-shrink-0">
-                  {String(item.ordinal).padStart(3, '0')}
+                <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-700 flex items-center justify-center text-[16px] font-semibold flex-shrink-0" aria-hidden="true">
+                  {title.slice(0, 1)}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[16px] font-medium truncate">{title}</span>
-                    {item.target && (
-                      <span className="px-2 py-0.5 rounded-full bg-blue-600 text-white text-[10px] font-semibold flex-shrink-0">
-                        {s.target_badge}
-                      </span>
-                    )}
-                  </div>
+                  <span className="text-[16px] font-medium truncate block">{title}</span>
                   <p className="mt-1 text-[13px] leading-5 text-app-text-muted line-clamp-2">
-                    {itemPreview(item, s)}
+                    {itemPreview(item, locale)}
                   </p>
                 </div>
               </div>

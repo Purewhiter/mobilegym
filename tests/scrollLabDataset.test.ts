@@ -6,9 +6,6 @@ import {
   SCROLL_LAB_TARGET_ORDINALS,
 } from '../apps/ScrollLab/data';
 import { NAVIGATION_DECLARATION } from '../apps/ScrollLab/navigation.declaration';
-import { itemTitle } from '../apps/ScrollLab/pages/itemText';
-import { strings } from '../apps/ScrollLab/res/strings';
-import { stringsEn } from '../apps/ScrollLab/res/strings.en';
 import { useScrollLabStore } from '../apps/ScrollLab/state';
 
 describe('Scroll Lab deterministic long-list fixture', () => {
@@ -31,15 +28,31 @@ describe('Scroll Lab deterministic long-list fixture', () => {
     ]);
   });
 
-  it('keeps target titles exact and unique in both supported locales', () => {
-    const zhTitles = SCROLL_LAB_ITEMS.map((item) => itemTitle(item, strings));
-    const enStrings = { ...strings, ...stringsEn };
-    const enTitles = SCROLL_LAB_ITEMS.map((item) => itemTitle(item, enStrings));
+  it('keeps titles and previews unique in both supported locales', () => {
+    for (const field of ['title', 'preview'] as const) {
+      expect(new Set(SCROLL_LAB_ITEMS.map((item) => item[field].zh)).size).toBe(SCROLL_LAB_ITEM_COUNT);
+      expect(new Set(SCROLL_LAB_ITEMS.map((item) => item[field].en)).size).toBe(SCROLL_LAB_ITEM_COUNT);
+    }
+  });
 
-    expect(zhTitles.filter((title) => title === 'Aiden 滚动目标 024')).toHaveLength(1);
-    expect(zhTitles.filter((title) => title === 'Aiden 滚动目标 083')).toHaveLength(1);
-    expect(enTitles.filter((title) => title === 'Aiden Scroll Target 024')).toHaveLength(1);
-    expect(enTitles.filter((title) => title === 'Aiden Scroll Target 083')).toHaveLength(1);
+  it('uses content-distinct target records with similar distractors', () => {
+    const mid = SCROLL_LAB_ITEMS[23];
+    const deep = SCROLL_LAB_ITEMS[82];
+    expect(mid).toMatchObject({
+      id: 'scroll-item-024',
+      title: { zh: '取回蓝色雨伞' },
+      preview: { zh: expect.stringContaining('尾号 7312') },
+    });
+    expect(deep).toMatchObject({
+      id: 'scroll-item-083',
+      title: { zh: '冷链样品交接' },
+      preview: { zh: expect.stringContaining('银色保温箱') },
+    });
+
+    expect(SCROLL_LAB_ITEMS.some((item) => item.title.zh === '取回黑色雨伞')).toBe(true);
+    expect(SCROLL_LAB_ITEMS.some((item) => item.title.zh === '领取蓝色文件袋')).toBe(true);
+    expect(SCROLL_LAB_ITEMS.some((item) => item.preview.zh.includes('透明冷藏盒'))).toBe(true);
+    expect(SCROLL_LAB_ITEMS.some((item) => item.preview.zh.includes('白色纸箱'))).toBe(true);
   });
 
   it('declares and tags the primary vertical scroll surface', () => {
@@ -52,6 +65,8 @@ describe('Scroll Lab deterministic long-list fixture', () => {
     expect(source).toContain('data-scroll-container="main"');
     expect(source).toContain('data-scroll-direction="vertical"');
     expect(source).toContain("'scroll_lab.list.openItem'");
+    expect(source).not.toContain('target_badge');
+    expect(source).not.toContain('String(item.ordinal).padStart');
   });
 
   it('records the selected item id as judgeable app state', () => {
