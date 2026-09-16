@@ -37,9 +37,18 @@ export function ScrollLabListPage() {
     if (!container) return;
 
     let rafId = 0;
+    // Baseline tracked per mount: the list remounts at scrollTop 0 after a
+    // detail-page round trip, so the store value would look like a scroll-up.
+    let previousScrollTop = container.scrollTop;
+    let lastDirection = 0;
     const update = () => {
       const scrollTop = container.scrollTop;
-      useScrollLabStore.getState().setScrollPosition(scrollTop, firstVisibleOrdinal(container));
+      const firstVisible = firstVisibleOrdinal(container);
+      const direction = scrollTop > previousScrollTop ? 1 : scrollTop < previousScrollTop ? -1 : 0;
+      const upwardReversal = direction === -1 && lastDirection === 1;
+      previousScrollTop = scrollTop;
+      if (direction !== 0) lastDirection = direction;
+      useScrollLabStore.getState().recordScroll(scrollTop, firstVisible, upwardReversal);
     };
     const onScroll = () => {
       if (rafId) return;

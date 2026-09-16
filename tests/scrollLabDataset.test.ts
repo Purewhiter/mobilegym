@@ -10,7 +10,13 @@ import { useScrollLabStore } from '../apps/ScrollLab/state';
 
 describe('Scroll Lab deterministic long-list fixture', () => {
   afterEach(() => {
-    useScrollLabStore.setState({ selectedItemId: null, scrollTop: 0, firstVisibleOrdinal: 1 });
+    useScrollLabStore.setState({
+      selectedItemId: null,
+      scrollTop: 0,
+      firstVisibleOrdinal: 1,
+      maxFirstVisibleOrdinal: 1,
+      upwardReversals: 0,
+    });
   });
 
   it('keeps exactly 100 stable and unique list items', () => {
@@ -78,11 +84,22 @@ describe('Scroll Lab deterministic long-list fixture', () => {
   it('starts at the list top with a single visible first item', () => {
     expect(useScrollLabStore.getState().scrollTop).toBe(0);
     expect(useScrollLabStore.getState().firstVisibleOrdinal).toBe(1);
+    expect(useScrollLabStore.getState().maxFirstVisibleOrdinal).toBe(1);
+    expect(useScrollLabStore.getState().upwardReversals).toBe(0);
   });
 
-  it('tracks scroll position for single-screen precision checks', () => {
-    useScrollLabStore.getState().setScrollPosition(720, 8);
-    expect(useScrollLabStore.getState().scrollTop).toBe(720);
+  it('keeps a monotonic high-water mark of the deepest first visible row', () => {
+    const { recordScroll } = useScrollLabStore.getState();
+
+    recordScroll(720, 8, false);
+    recordScroll(1100, 13, false);
+    // Scrolling back up must not lower the high-water mark: overshooting the
+    // target stays visible to the judge even after a recovery.
+    recordScroll(700, 8, true);
+
+    expect(useScrollLabStore.getState().scrollTop).toBe(700);
     expect(useScrollLabStore.getState().firstVisibleOrdinal).toBe(8);
+    expect(useScrollLabStore.getState().maxFirstVisibleOrdinal).toBe(13);
+    expect(useScrollLabStore.getState().upwardReversals).toBe(1);
   });
 });
