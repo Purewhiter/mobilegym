@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { SCROLL_LAB_ITEMS } from '../data';
 import { useScrollLabGestures } from '../hooks/useScrollLabGestures';
 import { useScrollLabStore } from '../state';
@@ -13,10 +14,48 @@ const rowClass = {
   expanded: 'min-h-[96px]',
 } as const;
 
+function firstVisibleOrdinal(container: HTMLElement): number {
+  const rect = container.getBoundingClientRect();
+  const top = rect.top;
+  const bottom = rect.bottom;
+  const items = container.querySelectorAll<HTMLElement>('[data-scroll-lab-item]');
+  for (let i = 0; i < items.length; i++) {
+    const itemRect = items[i].getBoundingClientRect();
+    if (itemRect.bottom > top && itemRect.top < bottom) return i + 1;
+  }
+  return 1;
+}
+
 export function ScrollLabListPage() {
   const s = useAppStrings(strings, stringsEn);
   const locale = useLocale() === 'en' ? 'en' : 'zh';
   const { bindTap } = useScrollLabGestures();
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const container = scrollRef.current;
+    if (!container) return;
+
+    let rafId = 0;
+    const update = () => {
+      const scrollTop = container.scrollTop;
+      useScrollLabStore.getState().setScrollPosition(scrollTop, firstVisibleOrdinal(container));
+    };
+    const onScroll = () => {
+      if (rafId) return;
+      rafId = requestAnimationFrame(() => {
+        rafId = 0;
+        update();
+      });
+    };
+
+    container.addEventListener('scroll', onScroll, { passive: true });
+    update();
+    return () => {
+      container.removeEventListener('scroll', onScroll);
+      if (rafId) cancelAnimationFrame(rafId);
+    };
+  }, []);
 
   return (
     <div
@@ -29,6 +68,7 @@ export function ScrollLabListPage() {
       </header>
 
       <div
+        ref={scrollRef}
         className="flex-1 overflow-y-auto no-scrollbar bg-app-surface"
         data-scroll-container="main"
         data-scroll-direction="vertical"

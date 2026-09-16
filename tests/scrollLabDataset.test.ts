@@ -10,7 +10,7 @@ import { useScrollLabStore } from '../apps/ScrollLab/state';
 
 describe('Scroll Lab deterministic long-list fixture', () => {
   afterEach(() => {
-    useScrollLabStore.setState({ selectedItemId: null });
+    useScrollLabStore.setState({ selectedItemId: null, scrollTop: 0, firstVisibleOrdinal: 1 });
   });
 
   it('keeps exactly 100 stable and unique list items', () => {
@@ -73,5 +73,16 @@ describe('Scroll Lab deterministic long-list fixture', () => {
     expect(useScrollLabStore.getState().selectedItemId).toBeNull();
     useScrollLabStore.getState().selectItem('scroll-item-083');
     expect(useScrollLabStore.getState().selectedItemId).toBe('scroll-item-083');
+  });
+
+  it('starts at the list top with a single visible first item', () => {
+    expect(useScrollLabStore.getState().scrollTop).toBe(0);
+    expect(useScrollLabStore.getState().firstVisibleOrdinal).toBe(1);
+  });
+
+  it('tracks scroll position for single-screen precision checks', () => {
+    useScrollLabStore.getState().setScrollPosition(720, 8);
+    expect(useScrollLabStore.getState().scrollTop).toBe(720);
+    expect(useScrollLabStore.getState().firstVisibleOrdinal).toBe(8);
   });
 });
