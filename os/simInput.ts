@@ -11,6 +11,7 @@
  */
 import { SIMULATOR_CONFIG } from './data';
 import { getScrollMeta, ScrollMetaMap } from './scrollMeta';
+import { androidFlingDistance, androidFlingDurationMs, androidFlingProgress, ppiForDpr } from './androidFling';
 
 const { dpr: frameworkDpr } = SIMULATOR_CONFIG.framework;
 
@@ -44,9 +45,9 @@ export interface SimInputAPI {
       steps?: number;
       /** 是否开启松手惯性（默认 true） */
       inertia?: boolean;
-      /** 惯性持续时长（ms，默认 450） */
+      /** 惯性时长上限（ms）；省略时使用 Android fling 模型算出的时长 */
       inertiaMs?: number;
-      /** 惯性衰减系数（0~1，越大越“滑”，默认 0.86） */
+      /** @deprecated 旧的固定衰减系数，Android fling 模型不再使用 */
       inertiaDecay?: number;
     },
   ) => Promise<void>;
@@ -639,9 +640,7 @@ export function initSimInput(): void {
           const ms = Math.max(0, opts?.ms ?? 300);
           const steps = Math.max(2, opts?.steps ?? 10);
           const inertia = opts?.inertia ?? true;
-          const inertiaMs = Math.max(0, opts?.inertiaMs ?? 450);
-          const inertiaDecayRaw = opts?.inertiaDecay ?? 0.86;
-          const inertiaDecay = Math.min(0.98, Math.max(0.1, inertiaDecayRaw));
+          const inertiaCapMs = opts?.inertiaMs;
 
           // 先用原始坐标计算方向（避免 normalizePoint 不一致导致方向错误）
           const rawDx = ep.x - sp.x;
@@ -716,24 +715,45 @@ export function initSimInput(): void {
           dispatchTouch(el, 'touchend', e.x, e.y);
           dispatchPointer(el, 'pointerup', e.x, e.y, { buttons: 0 });
 
-          // 惯性滚动（模拟松手后的滑动）
-          if (inertia && scrollTarget && inertiaMs > 0) {
-            const inertiaSteps = Math.max(6, Math.round(steps * 0.8));
-            const tailDt = inertiaMs / inertiaSteps;
-
-            // 初始速度 = 最后一步的滚动速度 * 放大系数
-            let vx = (-dx / steps) * 1.5;
-            let vy = (-dy / steps) * 1.5;
-
-            for (let i = 0; i < inertiaSteps; i++) {
-              vx *= inertiaDecay;
-              vy *= inertiaDecay;
-
-              if (Math.abs(vx) < 0.5 && Math.abs(vy) < 0.5) break;
-
-              scrollTarget.scrollBy({ left: vx, top: vy, behavior: 'auto' });
-  
-              await sleep(tailDt);
+          // 惯性滚动：按 Android SplineOverScroller 模型，松手后的滑行距离由
+          // 松手速度决定。快速轻扫会冲过头，慢拖几乎不滑 —— 真机的“加速度”
+          // 就是这个速度依赖，而不是固定的距离倍数。
+          if (inertia && scrollTarget) {
+            const scrollDX = -dx;
+            const scrollDY = -dy;
+            const travel = Math.hypot(scrollDX, scrollDY);
+            let flingMs = 0;
+            let flingCss = 0;
+            if (travel > 0 && ms > 0) {
+              const velocityCss = travel / (ms / 1000);
+              const ppi = ppiForDpr(dpr);
+              flingCss = androidFlingDistance(velocityCss * dpr, ppi) / dpr;
+              flingMs = androidFlingDurationMs(velocityCss * dpr, ppi);
+              if (inertiaCapMs !== undefined) {
+                flingMs = Math.min(flingMs, Math.max(0, inertiaCapMs));
+              }
+            }
+            if (flingCss > 0 && flingMs > 0) {
+              const unitX = scrollDX / travel;
+              const unitY = scrollDY / travel;
+              const flingStart = performance.now();
+              let appliedX = 0;
+              let appliedY = 0;
+              for (;;) {
+                const progress = Math.min(1, (performance.now() - flingStart) / flingMs);
+                const covered = flingCss * androidFlingProgress(progress);
+                const wantX = unitX * covered;
+                const wantY = unitY * covered;
+                scrollTarget.scrollBy({
+                  left: wantX - appliedX,
+                  top: wantY - appliedY,
+                  behavior: 'auto',
+                });
+                appliedX = wantX;
+                appliedY = wantY;
+                if (progress >= 1) break;
+                await sleep(16);
+              }
             }
           }
         })
