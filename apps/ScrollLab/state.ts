@@ -6,12 +6,11 @@ interface ScrollLabState {
   scrollTop: number;
   firstVisibleOrdinal: number;
   maxFirstVisibleOrdinal: number;
-  upwardReversals: number;
 }
 
 interface ScrollLabActions {
   selectItem: (itemId: string) => void;
-  recordScroll: (scrollTop: number, firstVisibleOrdinal: number, upwardReversal: boolean) => void;
+  recordScroll: (scrollTop: number, firstVisibleOrdinal: number) => void;
 }
 
 export const useScrollLabStore = createVolatileAppStore<ScrollLabState & ScrollLabActions>(
@@ -21,11 +20,10 @@ export const useScrollLabStore = createVolatileAppStore<ScrollLabState & ScrollL
     scrollTop: 0,
     firstVisibleOrdinal: 1,
     maxFirstVisibleOrdinal: 1,
-    upwardReversals: 0,
     selectItem: (itemId: string) => {
       useScrollLabStore.setState({ selectedItemId: itemId });
     },
-    recordScroll: (scrollTop: number, firstVisibleOrdinal: number, upwardReversal: boolean) => {
+    recordScroll: (scrollTop: number, firstVisibleOrdinal: number) => {
       const previous = useScrollLabStore.getState();
       useScrollLabStore.setState({
         scrollTop,
@@ -34,7 +32,6 @@ export const useScrollLabStore = createVolatileAppStore<ScrollLabState & ScrollL
         // while maxFirstVisibleOrdinal <= N, so this turns "scrolled past the
         // target" into a judgeable, irreversible fact.
         maxFirstVisibleOrdinal: Math.max(previous.maxFirstVisibleOrdinal, firstVisibleOrdinal),
-        upwardReversals: previous.upwardReversals + (upwardReversal ? 1 : 0),
       });
     },
   },
