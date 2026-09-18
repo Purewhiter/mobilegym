@@ -5,7 +5,7 @@ Weather app task definitions.
 # 22 tasks | L1×4  L2×9  L3×5  L4×4
 #
 # [L1] CheckCurrentTemp          帮我看看{city}现在多少度
-# [L1] CheckCurrentWeather       {city}当前天气怎么样
+# [L1] CheckCurrentWeather       {city}这个城市当前天气怎么样
 # [L1] EnableNightDnd            打开天气的夜间免打扰
 # [L2] SwitchTempUnit            把天气的温度单位改成{unit}
 # [L2] SwitchWindUnit            把天气的风速单位改成{unit}
@@ -71,7 +71,7 @@ class CheckCurrentTemp(AnswerTask):
 
 
 class CheckCurrentWeather(AnswerTask):
-    templates = ["{city}当前天气怎么样"]
+    templates = ["{city}这个城市当前天气怎么样"]
     apps = ["weather"]
     scope = "S1"
     objective = "query"
