@@ -763,6 +763,22 @@ class CollectLikedRecentAndPlay(BaseTask):
     parameters = {
         "playlist": {"type": "string", "default": "收藏精选"},
     }
+    # `likedSongs` is deliberately absent: this task reads the liked list, it
+    # never asks the agent to change it.
+    #
+    # An agent that unlikes a song and likes it again looks like it undid
+    # itself, and the resulting `likedSongs._relative_order` warning looks like
+    # a false positive worth whitelisting away. It is not. Liked songs are
+    # ordered by when they were added, so re-liking genuinely moves the song to
+    # the top -- a change the user sees and did not ask for. Keep it failing.
+    #
+    # What *was* a false positive, and is fixed in the app rather than here:
+    # the same song carries a different id in every catalog (seed lists,
+    # search results, album / artist pages), and `toggleLike` used to store
+    # whichever record the calling screen passed, so re-liking looked like one
+    # song deleted and another added. `toggleLike` now restores the original
+    # record (`tests/spotifyRelikeIdentity.test.ts`), and the seed lists agree
+    # on ids among themselves (`tests/spotifyTrackIdentity.test.ts`).
     expected_changes = ["customPlaylists", "currentTrack", "currentTrack.cover", "isPlaying", "queue", "recentPlays", "playHistory"]
 
     def check_goals(self, input: JudgeInput) -> list[dict[str, Any]]:

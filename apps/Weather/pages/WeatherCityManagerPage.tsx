@@ -139,7 +139,7 @@ function previewFromBundle(name: string, bundle: any | undefined, tempUnit: Temp
   const now = bundle?.now;
   const day0 = Array.isArray(bundle?.daily) ? bundle.daily[0] : undefined;
   const temp = typeof now?.temp === 'string' && now.temp.length > 0 ? `${convertTemp(now.temp, tempUnit)}\u00B0` : '--\u00B0';
-  const weatherText = getLocalizedWeatherText(now?.text, s);
+  const weatherText = getLocalizedWeatherText(now?.text, s, now?.icon);
   const highLowText = day0?.tempMax && day0?.tempMin
     ? `${convertTemp(day0.tempMax, tempUnit)}\u00B0 / ${convertTemp(day0.tempMin, tempUnit)}\u00B0`
     : '--\u00B0 / --\u00B0';
