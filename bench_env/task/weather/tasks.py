@@ -4,26 +4,26 @@ Weather app task definitions.
 # -- Task Index (auto-generated, do not edit) --
 # 22 tasks | L1×4  L2×9  L3×5  L4×4
 #
-# [L1] CheckCurrentTemp          帮我看看{city}现在多少度
+# [L1] CheckCurrentTemp          帮我看看{city}这个城市现在多少度
 # [L1] CheckCurrentWeather       {city}这个城市当前天气怎么样
 # [L1] EnableNightDnd            打开天气的夜间免打扰
 # [L2] SwitchTempUnit            把天气的温度单位改成{unit}
 # [L2] SwitchWindUnit            把天气的风速单位改成{unit}
 # [L2] CompareCityTemp           帮我看看{city1}和{city2}哪个城市现在更热
-# [L2] CheckDetailCard           帮我看看{city}的{metric}
-# [L2] OpenDailyForecast         看看{city}{date}的天气怎么样
-# [L2] CheckAQIPollutant         查看{city}当前{pollutant}是多少
-# [L2] CheckLifeIndex            {city}今天{index_type}
-# [L3] WarmestDayInWeek          {city}未来五天里哪天的最高温是最高的，这天天气怎么样
-# [L1] SwitchUnitAndReport       把温度单位切到华氏度，然后告诉我{city}现在华氏多少度
-# [L3] FeelsLikeDiff             {city}现在体感温度和实际温度差几度
+# [L2] CheckDetailCard           帮我看看{city}这个城市的{metric}
+# [L2] OpenDailyForecast         看看{city}这个城市{date}的天气怎么样
+# [L2] CheckAQIPollutant         查看{city}这个城市当前{pollutant}是多少
+# [L2] CheckLifeIndex            {city}这个城市今天{index_type}
+# [L3] WarmestDayInWeek          {city}这个城市未来五天里哪天的最高温是最高的，这天天气怎么样
+# [L1] SwitchUnitAndReport       把温度单位切到华氏度，然后告诉我{city}这个城市现在华氏多少度
+# [L3] FeelsLikeDiff             {city}这个城市现在体感温度和实际温度差几度
 # [L3] CompareTempRange          {city1}和{city2}哪个城市明天温差更大
 # [L3] CompareHumidity           {city1}和{city2}哪个城市现在更潮湿
-# [L3] ColdestDayIn14            {city}未来两周最冷的是哪天（当日最低温最低的一天），最低温是多少
-# [L4] NightLowTemp              帮我看看{city}今晚18点到次日4点的最低气温是多少
+# [L3] ColdestDayIn14            {city}这个城市未来两周最冷的是哪天（当日最低温最低的一天），最低温是多少
+# [L4] NightLowTemp              帮我看看{city}这个城市今晚18点到次日4点的最低气温是多少
 # [L2] AddCityAndFindWarmestDay  把{city}加到天气里，然后看看那边未来一周哪天最暖和
 # [L4] ThreeCityRainCheck        {city1}、{city2}和{city3}未来一周哪个城市最不容易下雨
-# [L4] ConditionalAction         如果{city}现在超过{temp}度就把天气预警提醒打开，没超过就关掉
+# [L4] ConditionalAction         如果{city}这个城市现在超过{temp}度就把天气预警提醒打开，没超过就关掉
 # [L2] AddCityFullReport         把{city}加到天气里，告诉我那边现在的温度、湿度和空气质量
 # [L4] WeekendTempRange3City     周末想出去玩，帮我看看{city1}、{city2}、{city3}周末哪个城市温差小
 # -- End Task Index --
@@ -53,7 +53,7 @@ from bench_env.task.weather.app import (
 
 
 class CheckCurrentTemp(AnswerTask):
-    templates = ["帮我看看{city}现在多少度"]
+    templates = ["帮我看看{city}这个城市现在多少度"]
     apps = ["weather"]
     scope = "S1"
     objective = "query"
@@ -180,7 +180,7 @@ class CompareCityTemp(AnswerTask):
 
 
 class CheckDetailCard(AnswerTask):
-    templates = ["帮我看看{city}的{metric}"]
+    templates = ["帮我看看{city}这个城市的{metric}"]
     apps = ["weather"]
     scope = "S1"
     objective = "query"
@@ -230,7 +230,7 @@ class CheckDetailCard(AnswerTask):
 
 
 class OpenDailyForecast(CriteriaTask):
-    templates = ["看看{city}{date}的天气怎么样"]
+    templates = ["看看{city}这个城市{date}的天气怎么样"]
     apps = ["weather"]
     scope = "S1"
     objective = "hybrid"
@@ -272,7 +272,7 @@ class OpenDailyForecast(CriteriaTask):
 
 
 class CheckAQIPollutant(AnswerTask):
-    templates = ["查看{city}当前{pollutant}是多少"]
+    templates = ["查看{city}这个城市当前{pollutant}是多少"]
     apps = ["weather"]
     scope = "S1"
     objective = "query"
@@ -300,7 +300,7 @@ class CheckAQIPollutant(AnswerTask):
 
 
 class CheckLifeIndex(AnswerTask):
-    templates = ["{city}今天{index_type}"]
+    templates = ["{city}这个城市今天{index_type}"]
     apps = ["weather"]
     scope = "S1"
     objective = "query"
@@ -324,7 +324,7 @@ class CheckLifeIndex(AnswerTask):
 
 
 class WarmestDayInWeek(AnswerTask):
-    templates = ["{city}未来五天里哪天的最高温是最高的，这天天气怎么样"]
+    templates = ["{city}这个城市未来五天里哪天的最高温是最高的，这天天气怎么样"]
     apps = ["weather"]
     scope = "S1"
     objective = "query"
@@ -394,7 +394,7 @@ class WarmestDayInWeek(AnswerTask):
 
 
 class SwitchUnitAndReport(CriteriaTask):
-    templates = ["把温度单位切到华氏度，然后告诉我{city}现在华氏多少度"]
+    templates = ["把温度单位切到华氏度，然后告诉我{city}这个城市现在华氏多少度"]
     apps = ["weather"]
     scope = "S1"
     objective = "hybrid"
@@ -421,7 +421,7 @@ class SwitchUnitAndReport(CriteriaTask):
 
 
 class FeelsLikeDiff(AnswerTask):
-    templates = ["{city}现在体感温度和实际温度差几度"]
+    templates = ["{city}这个城市现在体感温度和实际温度差几度"]
     apps = ["weather"]
     scope = "S1"
     objective = "query"
@@ -532,7 +532,7 @@ class CompareHumidity(AnswerTask):
 
 
 class ColdestDayIn14(CriteriaTask):
-    templates = ["{city}未来两周最冷的是哪天（当日最低温最低的一天），最低温是多少"]
+    templates = ["{city}这个城市未来两周最冷的是哪天（当日最低温最低的一天），最低温是多少"]
     apps = ["weather"]
     scope = "S1"
     objective = "hybrid"
@@ -585,7 +585,7 @@ class ColdestDayIn14(CriteriaTask):
 
 
 class NightLowTemp(AnswerTask):
-    templates = ["帮我看看{city}今晚18点到次日4点的最低气温是多少"]
+    templates = ["帮我看看{city}这个城市今晚18点到次日4点的最低气温是多少"]
     apps = ["weather"]
     scope = "S1"
     objective = "query"
@@ -730,7 +730,7 @@ class ThreeCityRainCheck(AnswerTask):
 
 
 class ConditionalAction(BaseTask):
-    templates = ["如果{city}现在超过{temp}度就把天气预警提醒打开，没超过就关掉"]
+    templates = ["如果{city}这个城市现在超过{temp}度就把天气预警提醒打开，没超过就关掉"]
     apps = ["weather"]
     scope = "S1"
     objective = "operate"
