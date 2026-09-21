@@ -24,13 +24,13 @@ npm install
 pip install -r bench_env/requirements.txt
 playwright install chromium
 
-# Companion dataset (~1.4 GB, expands to ~1.7 GB; CC BY-NC 4.0)
+# Companion dataset (~1.9 GB: synthetic Bilibili / RedNote / eBay / Spotify / Maps / themes / wallpapers; CC BY-NC 4.0)
 curl -L -o mobilegym-data.tar.gz \
-  https://github.com/Purewhiter/mobilegym/releases/download/data-v1.0/mobilegym-data-v1.tar.gz
+  https://github.com/Purewhiter/mobilegym/releases/download/data-v0.1.0/mobilegym-data-v0.1.0.tar.gz
 tar -xzf mobilegym-data.tar.gz && rm mobilegym-data.tar.gz
 ```
 
-> Without the dataset, most simulated apps (Bilibili, RedBook, eBay, ThemeStore) will render empty. Alternatively set `VITE_CDN_BASE` to a URL that serves these files (the deployed demo uses a CDN mirror).
+> Without the dataset, most simulated apps (Bilibili, RedNote, eBay, Spotify, Map, ThemeStore) will render empty. Alternatively set `VITE_CDN_BASE` to a URL that serves these files (the deployed demo uses a CDN mirror).
 
 ## Configure simulator keys (optional)
 
@@ -178,7 +178,7 @@ npm install
 pip install -r bench_env/requirements.txt && playwright install chromium
 
 curl -L -o mobilegym-data.tar.gz \
-  https://github.com/Purewhiter/mobilegym/releases/download/data-v1.0/mobilegym-data-v1.tar.gz
+  https://github.com/Purewhiter/mobilegym/releases/download/data-v0.1.0/mobilegym-data-v0.1.0.tar.gz
 tar -xzf mobilegym-data.tar.gz && rm mobilegym-data.tar.gz
 
 npm run dev &                                              # http://localhost:3000
