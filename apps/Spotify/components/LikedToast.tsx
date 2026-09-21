@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { useSpotifyStore } from '../state';
+import { songKey, useSpotifyStore } from '../state';
 import { useSpotifyStrings } from '../hooks/useSpotifyStrings';
 import { useSpotifyGestures } from '../hooks/useSpotifyGestures';
 import { AddToPlaylistSheet } from './AddToPlaylistSheet';
@@ -102,5 +102,11 @@ export function openSaveLocation(
   track: SpotifyTrack,
   setSearchParams: (fn: (p: URLSearchParams) => URLSearchParams) => void,
 ) {
-  setSearchParams(p => { p.set('overlay', 'save_location'); p.set('overlayTrackId', track.id); return p; });
+  // `track` is the calling screen's record; the liked record for the same song
+  // may carry another catalog's id (see `songKey`), and the sheet looks the
+  // track up by id -- so hand it the id that is actually in `likedSongs`.
+  const key = songKey(track);
+  const liked = useSpotifyStore.getState().likedSongs.find(t => t.id === track.id || songKey(t) === key);
+  const trackId = (liked ?? track).id;
+  setSearchParams(p => { p.set('overlay', 'save_location'); p.set('overlayTrackId', trackId); return p; });
 }

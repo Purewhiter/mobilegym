@@ -25,6 +25,7 @@ if TYPE_CHECKING:
 from PIL import Image, ImageDraw, ImageFont
 
 from bench_env.env.base import ActionType
+from bench_env.version import run_provenance
 
 logger = logging.getLogger(__name__)
 
@@ -603,6 +604,7 @@ class RunRecorder:
         self._results_file = (self._run_dir / "results.jsonl").open("w", encoding="utf-8")
         self._errors_file = (self._run_dir / "errors.jsonl").open("w", encoding="utf-8")
 
+        provenance, uncommitted_patch = run_provenance()
         meta = {
             "start_time": self._run_start_time.isoformat(),
             "agent": agent,
@@ -611,9 +613,26 @@ class RunRecorder:
             "save_trajectory": self.save_trajectory,
             "coord_space": self.coord_space,
             "has_pil": True,
+            # Which benchmark produced these numbers. Without this a results
+            # dir cannot be compared against, or reproduced from, anything.
+            **provenance,
             **(extra_meta or {}),
         }
         (self._run_dir / "meta.json").write_text(_safe_json_dump(meta), encoding="utf-8")
+
+        # A dirty run's git_commit names a tree that is not the one that ran.
+        # Saving the patch alongside it closes the gap: applying this to
+        # git_commit reproduces the exact code these results came from.
+        # Written as bytes (it may carry binary hunks), and removed when there
+        # is nothing to write: a fixed run_dir gets reused, and a patch left
+        # over from an earlier dirty run would sit next to a meta.json it does
+        # not describe.
+        patch_path = self._run_dir / "uncommitted.patch"
+        if uncommitted_patch:
+            patch_path.write_bytes(uncommitted_patch)
+        else:
+            patch_path.unlink(missing_ok=True)
+
         return self._run_dir
 
     def start_episode(

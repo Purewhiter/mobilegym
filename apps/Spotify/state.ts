@@ -77,6 +77,8 @@ export interface SpotifyState {
   _temp: {
     queueToast: SpotifyTrack | null;
     likedToast: SpotifyTrack | null;
+    /** Records removed by unliking this session, keyed by `songKey`. See `toggleLike`. */
+    unlikedTracks: Record<string, SpotifyTrack>;
   };
 }
 
@@ -103,6 +105,33 @@ export interface SpotifyActions {
   clearQueueToast: () => void;
   clearLikedToast: () => void;
 }
+
+// ── Track identity ─────────────────────────────────────────────────
+
+/**
+ * A song is its title + artist, not its id. The same song reaches the UI from
+ * several catalogs (seed lists, search results, album and artist pages), and
+ * each catalog numbers it differently -- one song can have half a dozen ids.
+ */
+export function songKey(track: Pick<SpotifyTrack, 'title' | 'artist'>): string {
+  return `${track.title.trim().toLowerCase()}||${track.artist.trim().toLowerCase()}`;
+}
+
+/** The seed record for each song in `data/defaults.json`, first occurrence wins. */
+const SEED_TRACK_BY_SONG: ReadonlyMap<string, SpotifyTrack> = (() => {
+  const config = SPOTIFY_CONFIG as unknown as Record<string, unknown>;
+  const bySong = new Map<string, SpotifyTrack>();
+  for (const list of ['likedSongs', 'recentPlays', 'recommendedTracks', 'startListening', 'trendingForYou', 'extraTracks']) {
+    const tracks = config[list];
+    if (!Array.isArray(tracks)) continue;
+    for (const track of tracks as SpotifyTrack[]) {
+      if (!track?.id || !track.title || !track.artist) continue;
+      const key = songKey(track);
+      if (!bySong.has(key)) bySong.set(key, track);
+    }
+  }
+  return bySong;
+})();
 
 // ── Initial State ──────────────────────────────────────────────────
 
@@ -137,6 +166,7 @@ const initialState: SpotifyState = {
   _temp: {
     queueToast: null,
     likedToast: null,
+    unlikedTracks: {},
   },
 };
 
@@ -209,22 +239,35 @@ export const useSpotifyStore = createAppStoreWithActions<SpotifyState, SpotifyAc
       set({ repeat: next, shuffle: next !== 'off' ? false : s.shuffle });
     },
 
+    // Unliking a song and liking it again must put back the *same record*, no
+    // matter which screen each tap happened on. The caller's `track` comes from
+    // whatever catalog that screen reads, so storing it verbatim would swap the
+    // record's id and cover art on a re-like from, say, search results -- and a
+    // benchmark state diff would read that as one song deleted and a different
+    // one added. So a like stores, in order of preference: the record this
+    // session's unlike removed, the seed record for the song, the caller's.
+    // (Position is not restored: liked songs are ordered by when they were
+    // added, and re-liking genuinely moves the song to the top.)
     toggleLike: (track) => {
       const s = get();
-      const titleNorm = track.title.trim().toLowerCase();
-      const artistNorm = track.artist.trim().toLowerCase();
-      const exists = s.likedSongs.some(t =>
-        t.id === track.id || (t.title.trim().toLowerCase() === titleNorm && t.artist.trim().toLowerCase() === artistNorm)
-      );
-      const patch: Partial<SpotifyState> = {
-        likedSongs: exists
-          ? s.likedSongs.filter(t =>
-              t.id !== track.id && !(t.title.trim().toLowerCase() === titleNorm && t.artist.trim().toLowerCase() === artistNorm)
-            )
-          : [track, ...s.likedSongs],
-      };
-      if (!exists) set({ _temp: { ...get()._temp, likedToast: track } });
-      set(patch);
+      const key = songKey(track);
+      const isSameSong = (t: SpotifyTrack) => t.id === track.id || songKey(t) === key;
+      const removed = s.likedSongs.filter(isSameSong);
+
+      if (removed.length > 0) {
+        set({
+          likedSongs: s.likedSongs.filter(t => !isSameSong(t)),
+          _temp: { ...s._temp, unlikedTracks: { ...s._temp.unlikedTracks, [key]: removed[0] } },
+        });
+        return;
+      }
+
+      const { [key]: restored, ...unlikedTracks } = s._temp.unlikedTracks ?? {};
+      const record = restored ?? SEED_TRACK_BY_SONG.get(key) ?? track;
+      set({
+        likedSongs: [record, ...s.likedSongs],
+        _temp: { ...s._temp, likedToast: record, unlikedTracks },
+      });
     },
 
     toggleFollowArtist: (artistName) => {
@@ -406,11 +449,11 @@ export const selectLikedSongIds = memoSelector(
   (s: SpotifyState & SpotifyActions) => s.likedSongs,
   (likedSongs) => {
     const ids = new Set(likedSongs.map(t => t.id));
-    const keys = new Set(likedSongs.map(t => `${t.title.trim().toLowerCase()}||${t.artist.trim().toLowerCase()}`));
+    const keys = new Set(likedSongs.map(songKey));
     return {
       has(trackId: string, track?: { title: string; artist: string }) {
         if (ids.has(trackId)) return true;
-        if (track) return keys.has(`${track.title.trim().toLowerCase()}||${track.artist.trim().toLowerCase()}`);
+        if (track) return keys.has(songKey(track));
         return false;
       },
     };

@@ -173,10 +173,12 @@ function localizeCityName(input: CityInput, locale: Locale): string {
   return formatIdLabel(input.cityId) || s.unknown_city;
 }
 
-function localizeWeatherText(text: string | undefined, locale: Locale): string {
+function localizeWeatherText(text: string | undefined, locale: Locale, icon?: string | number): string {
   const raw = String(text ?? '').trim();
   if (!raw) return '';
-  return getLocalizedWeatherText(raw, getProviderStrings(locale));
+  // Same arguments as the in-app screens, so a widget never words a condition
+  // differently from the app it mirrors.
+  return getLocalizedWeatherText(raw, getProviderStrings(locale), icon);
 }
 
 function inferAqiLevelByValue(aqi: number): AqiLevel | null {
@@ -332,7 +334,7 @@ function getWeatherAmbient(ctx: VarContext): WmrAmbientAdapterResult {
   const today = daily[0];
   const temphighs = daily.map((d: any) => d.tempMax ?? '--');
   const templows = daily.map((d: any) => d.tempMin ?? '--');
-  const weatherNames = daily.map((d: any) => localizeWeatherText(d.textDay ?? '', locale));
+  const weatherNames = daily.map((d: any) => localizeWeatherText(d.textDay ?? '', locale, d.iconDay));
   const weatherTypes: VarValue[] = [
     String(weatherId),
     ...daily.slice(1, FORECAST_DAYS_VISIBLE).map((d: any) => String(mapWeatherTextToWidgetId(d.textDay ?? ''))),
@@ -344,7 +346,7 @@ function getWeatherAmbient(ctx: VarContext): WmrAmbientAdapterResult {
   vars.weather_location = localizeCityName({ cityId, rawCityName: cityName, city }, locale);
   vars.weather_temperature = temp;
   vars.weather_id = weatherId;
-  vars.weather_description = localizeWeatherText(text, locale);
+  vars.weather_description = localizeWeatherText(text, locale, now?.icon);
   vars.weather_aqi = aqi;
   vars.weather_humidity = humidity;
   vars.weather_pressure = pressure;
@@ -450,7 +452,7 @@ function buildWeatherDataRows(snap: WeatherSnapshot, locale: Locale): Array<Reco
   ];
 
   const cityNameLocalized = localizeCityName({ cityId, rawCityName: cityName, city }, locale);
-  const description = localizeWeatherText(text, locale);
+  const description = localizeWeatherText(text, locale, now?.icon);
   const temperature = parseNumericValue(now?.temp, 0);
   const aqi = parseNumericValue(bundle?.airQuality?.aqi, 0);
   const rowCount = Math.max(weatherTypes.length, temphighs.length, templows.length, 1);
