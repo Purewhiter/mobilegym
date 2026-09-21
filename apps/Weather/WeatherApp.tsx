@@ -886,7 +886,7 @@ const WeatherContent: React.FC = () => {
           >
             <div id="fl_weather_parent" className="ml-[12px]" style={{ height: 24 }}>
               <div id="tv_weather_desc2" className="text-[18px] leading-[24px] font-medium opacity-90">
-                <span>{getLocalizedWeatherText(currentData.weatherNow?.text, s)}</span>
+                <span>{getLocalizedWeatherText(currentData.weatherNow?.text, s, currentData.weatherNow?.icon)}</span>
                 {currentData.dailyForecast[0] && (
                   <span className="ml-2">
                     {s.temp_high}{convertTemp(currentData.dailyForecast[0].tempMax, tempUnit)}° {s.temp_low}{convertTemp(currentData.dailyForecast[0].tempMin, tempUnit)}°
