@@ -15,6 +15,7 @@ import type { AppManifest } from '../types/manifest';
 import NotificationService from '../NotificationService';
 import { useOsStateStore } from '../OsStateStore';
 import * as TimeService from '../TimeService';
+import { useTimeChangeReceiver } from '../useSystemTime';
 import { cdn } from '../utils/cdn';
 import { useLauncherLayout } from './useLauncherLayout';
 import { shouldStartWorkspaceMouseDrag } from './workspaceGesture';
@@ -803,14 +804,16 @@ function LauncherClockWidget(props: { onClick: () => void; onLongPress?: (anchor
     }
   };
 
-  useEffect(() => {
-    const t = window.setInterval(() => {
-      setTimeStr(TimeService.formatTime());
-      setDateStr(TimeService.formatDate());
-      setDayOfWeek(TimeService.getDayOfWeek());
-    }, 1000);
-    return () => window.clearInterval(t);
+  const updateClock = useCallback(() => {
+    setTimeStr(TimeService.formatTime());
+    setDateStr(TimeService.formatDate());
+    setDayOfWeek(TimeService.getDayOfWeek());
   }, []);
+  useEffect(() => {
+    const t = window.setInterval(updateClock, 1000);
+    return () => window.clearInterval(t);
+  }, [updateClock]);
+  useTimeChangeReceiver(updateClock);
 
   useEffect(() => {
     setDateStr(TimeService.formatDate());
