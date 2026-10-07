@@ -6,7 +6,7 @@ import { injectProviderData, handleWmrHostBroadcast } from './engine/contentProv
 import { handleWmrIntent } from './engine/intentResolver';
 import type { WmrDocument, WmrNode } from './engine/types';
 import * as TimeService from '../TimeService';
-import BroadcastBus from '../BroadcastBus';
+import BroadcastBus, { ACTION_TIME_SET } from '../BroadcastBus';
 import QuickSettingsService from '../QuickSettingsService';
 import { useLocale } from '../locale';
 import {
@@ -15,6 +15,7 @@ import {
   type WmrInlineBundleSource,
 } from './WmrBundleCache';
 import { beginWmrPerf } from './WmrPerf';
+import { getPassiveDataUpdateDelayMs } from './passiveRefresh';
 
 interface WmrRendererProps {
   /** URL to the widget's manifest.xml directory, e.g. "/themes/<id>/clock_2x4/" */
@@ -43,27 +44,6 @@ interface WmrRendererProps {
   dataRefreshToken?: unknown;
   onClick?: () => void;
   onLongPress?: (el: HTMLElement) => void;
-}
-
-function getPassiveDataUpdateDelayMs(updaters: string[]): number {
-  const now = TimeService.getDate();
-  const ms = now.getMilliseconds();
-  const sec = now.getSeconds();
-  const minute = now.getMinutes();
-
-  if (updaters.includes('DateTime.Second')) {
-    return Math.max(50, 1000 - ms);
-  }
-  if (updaters.includes('DateTime.Minute')) {
-    return Math.max(50, (59 - sec) * 1000 + (1000 - ms));
-  }
-  if (updaters.includes('DateTime.Hour')) {
-    return Math.max(50, ((59 - minute) * 60 + (59 - sec)) * 1000 + (1000 - ms));
-  }
-
-  // No explicit time updater: keep a very low-frequency heartbeat for provider data
-  // instead of polling every frame.
-  return 60_000;
 }
 
 export const WmrRenderer: React.FC<WmrRendererProps> = ({
@@ -386,7 +366,9 @@ export const WmrRenderer: React.FC<WmrRendererProps> = ({
     let rafId: number | null = null;
     let timerId: number | null = null;
     let lastRender = 0;
-    let lastDataRefresh = 0;
+    let renderRequested = false;
+    // Absolute real time at which provider/time data is next due; 0 = on the first frame.
+    let nextDataRefreshAt = 0;
     const cancelScheduled = () => {
       if (rafId != null) {
         cancelAnimationFrame(rafId);
@@ -405,24 +387,36 @@ export const WmrRenderer: React.FC<WmrRendererProps> = ({
       }
       timerId = window.setTimeout(frame, delayMs);
     };
-    const wake = () => scheduleNext(0);
+    const wake = () => {
+      // Delayed commands can change static widgets before the next passive refresh.
+      renderRequested = true;
+      scheduleNext(0);
+    };
     wakeRenderLoopRef.current = wake;
+    // Like Android widgets on ACTION_TIME_CHANGED: a time change invalidates time-derived data now.
+    const unregisterTimeSet = BroadcastBus.registerReceiver(ACTION_TIME_SET, () => {
+      nextDataRefreshAt = 0;
+      wake();
+    });
 
     function frame() {
       rafId = null;
       timerId = null;
       try {
+        const forceRender = renderRequested;
+        renderRequested = false;
         const now = TimeService.realNow();
         const currentFrameRate = activeVars.getRecommendedFrameRate(activeAnalysis.inferredFrameRate);
         const hasMarquee = hasMarqueeRef.current;
-        const dataRefreshInterval = getPassiveDataUpdateDelayMs(activeDoc.useVariableUpdater);
         const renderInterval = currentFrameRate > 0
           ? Math.max(16, Math.round(1000 / currentFrameRate))
-          : hasMarquee ? 50 : dataRefreshInterval;
+          : hasMarquee ? 50 : Infinity; // static widgets repaint on data refreshes or explicit wakes
 
-        const shouldRefreshData = now - lastDataRefresh >= dataRefreshInterval;
+        const shouldRefreshData = now >= nextDataRefreshAt;
         if (shouldRefreshData) {
-          lastDataRefresh = now;
+          // Pair the delay with the same pre-work clock sample. If provider work crosses
+          // the boundary, this deadline stays due and the next frame catches up.
+          nextDataRefreshAt = now + getPassiveDataUpdateDelayMs(activeDoc.useVariableUpdater);
           const stopRefresh = beginWmrPerf('widget.dataRefresh', sourceKey);
           activeVars.refreshBuiltins();
           injectProviderData(activeVars, {
@@ -433,9 +427,9 @@ export const WmrRenderer: React.FC<WmrRendererProps> = ({
           stopRefresh();
         }
 
-        if (now - lastRender >= renderInterval) {
+        if (forceRender || shouldRefreshData || now - lastRender >= renderInterval) {
           lastRender = now;
-          if (currentFrameRate > 0) {
+          if (currentFrameRate > 0 || forceRender) {
             const stopAnim = beginWmrPerf('widget.animationRefresh', sourceKey);
             activeVars.reevaluateVars(activeDoc.root.children, { includeAnimations: true, includeBinders: false });
             stopAnim();
@@ -446,7 +440,7 @@ export const WmrRenderer: React.FC<WmrRendererProps> = ({
         }
         const nowAfterWork = TimeService.realNow();
         const renderDelay = Math.max(16, renderInterval - (nowAfterWork - lastRender));
-        const dataDelay = Math.max(16, dataRefreshInterval - (nowAfterWork - lastDataRefresh));
+        const dataDelay = Math.max(16, nextDataRefreshAt - nowAfterWork);
         scheduleNext(Math.min(renderDelay, dataDelay));
       } catch (err) {
         reportError('render', err);
@@ -455,6 +449,7 @@ export const WmrRenderer: React.FC<WmrRendererProps> = ({
     scheduleNext(0);
     return () => {
       if (wakeRenderLoopRef.current === wake) wakeRenderLoopRef.current = null;
+      unregisterTimeSet();
       try { activeVars.executeTriggerList(activeDoc.root.externalTriggers, 'pause'); } catch { /* ignore */ }
       cancelScheduled();
     };
