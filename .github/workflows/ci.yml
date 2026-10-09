@@ -1,15 +1,12 @@
 # CI 质量闸门 — Node (lint / typecheck / vitest) + Python (bench_env 离线 pytest)
 #
-# 首跑注意事项（不确定点集中在这里，见各步骤内联注释）：
-# - `npm run test` / `npx tsc --noEmit` 的全仓通过状态在本 PR 编写时无法本地全量验证
-#   （仓库正被并行改造），首跑若红请按输出定位，不代表本 workflow 配置有误。
 name: CI
 
 on:
   push:
-    branches: [dev]
+    branches: [main, dev]
   pull_request:
-    branches: [dev]
+    branches: [main, dev]
 
 concurrency:
   # 同一 PR / 同一分支的旧跑批自动取消，避免堆积
@@ -24,9 +21,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/cache@v4
+        id: dataset
+        with:
+          path: mobilegym-data
+          key: mobilegym-data-v0.1.0
+
+      - name: Fetch pinned companion data
+        if: steps.dataset.outputs.cache-hit != 'true'
+        run: |
+          curl --fail --location --retry 3 -o /tmp/mobilegym-data.tar.gz \
+            https://github.com/Purewhiter/mobilegym/releases/download/data-v0.1.0/mobilegym-data-v0.1.0.tar.gz
+          tar -xzf /tmp/mobilegym-data.tar.gz
+
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - name: Install dependencies
@@ -51,6 +61,19 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+
+      - uses: actions/cache@v4
+        id: dataset
+        with:
+          path: mobilegym-data
+          key: mobilegym-data-v0.1.0
+
+      - name: Fetch pinned companion data
+        if: steps.dataset.outputs.cache-hit != 'true'
+        run: |
+          curl --fail --location --retry 3 -o /tmp/mobilegym-data.tar.gz \
+            https://github.com/Purewhiter/mobilegym/releases/download/data-v0.1.0/mobilegym-data-v0.1.0.tar.gz
+          tar -xzf /tmp/mobilegym-data.tar.gz
 
       - uses: actions/setup-python@v5
         with:

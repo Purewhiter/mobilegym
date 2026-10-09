@@ -45,7 +45,7 @@ export function findMatchingDataSource(dataSources, sourceRoutePath, sourceSearc
 
 /**
  * Expand edges using dataSource - Complete rewrite
- * 
+ *
  * Strategy:
  * 1. For edges with dataSource: expand target params from data
  * 2. For edges where target inherits source params: expand source first, then propagate

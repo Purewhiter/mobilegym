@@ -194,7 +194,7 @@ export function expandFromConstraint(from, stateIndex, routeIndex) {
   // Check if search contains wildcards
   const search = from.search ?? {};
   const hasWildcard = Object.values(search).some(value => value === '*');
-  
+
   if (!hasWildcard) {
     return [from];
   }

@@ -190,8 +190,7 @@ const MediaResultItem: React.FC<{ item: any; type: 'anime' | 'movie' }> = ({ ite
 const RichUserCard: React.FC<{
     user: any;
     videoById: Map<string, any>;
-    onOpenMenu: (mid: string) => void;
-}> = ({ user, videoById, onOpenMenu }) => {
+}> = ({ user, videoById }) => {
     const { bindTap } = useBilibiliGestures();
     const locale = useLocale();
     const str = useBilibiliStrings();
@@ -244,7 +243,7 @@ const RichUserCard: React.FC<{
                     <button
                         {...bindTap('search.user.menu.open', {
                             stopPropagation: true,
-                            beforeTrigger: () => onOpenMenu(String(user.mid)),
+                            params: { mid: String(user.mid) },
                         })}
                         className="h-8 w-[92px] rounded-full bg-[#E3E5E7] text-[#61666D] flex items-center justify-center gap-1 font-medium text-[13px] whitespace-nowrap leading-none active:bg-[#d0d3d6] transition-colors flex-none"
                     >
@@ -350,7 +349,7 @@ const VideoResultItem: React.FC<{ video: any; authorByName: Map<string, any> }> 
     );
 };
 
-const UserResultItem: React.FC<{ user: any; onOpenMenu: (mid: string) => void }> = ({ user, onOpenMenu }) => {
+const UserResultItem: React.FC<{ user: any }> = ({ user }) => {
     const { bindTap } = useBilibiliGestures();
     const locale = useLocale();
     const str = useBilibiliStrings();
@@ -399,7 +398,7 @@ const UserResultItem: React.FC<{ user: any; onOpenMenu: (mid: string) => void }>
                 <button
                     {...bindTap('search.user.menu.open', {
                         stopPropagation: true,
-                        beforeTrigger: () => onOpenMenu(String(user.mid)),
+                        params: { mid: String(user.mid) },
                     })}
                     className="h-7 w-[86px] rounded-full bg-[#E3E5E7] text-[#61666D] flex items-center justify-center gap-1 font-medium text-[12px] whitespace-nowrap leading-none active:bg-[#d0d3d6] transition-colors flex-none"
                 >
@@ -528,7 +527,7 @@ const MovieResultsPane: React.FC<{ items: any[] }> = ({ items }) => {
     );
 };
 
-const UserResultsPane: React.FC<{ items: any[]; onOpenMenu: (mid: string) => void }> = ({ items, onOpenMenu }) => {
+const UserResultsPane: React.FC<{ items: any[] }> = ({ items }) => {
     const str = useBilibiliStrings();
     const userVirtual = useVirtualList({
         items,
@@ -563,7 +562,7 @@ const UserResultsPane: React.FC<{ items: any[]; onOpenMenu: (mid: string) => voi
                                     transform: `translateY(${vItem.start}px)`,
                                 }}
                             >
-                                <UserResultItem user={item} onOpenMenu={onOpenMenu} />
+                                <UserResultItem user={item} />
                             </div>
                         );
                     })}
@@ -581,8 +580,7 @@ const ComprehensiveResultsPane: React.FC<{
     users: any[];
     videoById: Map<string, any>;
     authorByName: Map<string, any>;
-    onOpenMenu: (mid: string) => void;
-}> = ({ videos, users, videoById, authorByName, onOpenMenu }) => {
+}> = ({ videos, users, videoById, authorByName }) => {
     const str = useBilibiliStrings();
     const comprehensiveVirtual = useVirtualList({
         items: videos,
@@ -608,7 +606,7 @@ const ComprehensiveResultsPane: React.FC<{
             </div>
 
             {users.length > 0 && (
-                <RichUserCard user={users[0]} videoById={videoById} onOpenMenu={onOpenMenu} />
+                <RichUserCard user={users[0]} videoById={videoById} />
             )}
 
             {videos.length > 0 && (
@@ -694,10 +692,10 @@ export const SearchPage: React.FC = () => {
     const clearSearchHistory = useBilibiliStore(s => s.clearSearchHistory);
     const toggleFollow = useBilibiliStore(s => s.toggleFollow);
 
-    // 已关注菜单：打开/关闭由 URL（?menu=true）驱动，返回键可关闭；
-    // 菜单操作的目标用户用本地 state 记录（与 UserRelationPage 的 selectedMid 模式一致）
+    // Both visibility and target belong to the history entry, so restoring a
+    // URL or returning to an older entry cannot target the last opened user.
     const showUserMenu = searchParams.get('menu') === 'true';
-    const [menuMid, setMenuMid] = useState<string | null>(null);
+    const menuMid = searchParams.get('mid');
 
     // Keep input value synced with committed query in URL
     useEffect(() => {
@@ -944,7 +942,7 @@ export const SearchPage: React.FC = () => {
         }
 
         if (activeTab === 'user') {
-            return <UserResultsPane key={activeTab} items={searchResults.users} onOpenMenu={setMenuMid} />;
+            return <UserResultsPane key={activeTab} items={searchResults.users} />;
         }
 
         return (
@@ -954,7 +952,7 @@ export const SearchPage: React.FC = () => {
                 users={searchResults.users}
                 videoById={videoById}
                 authorByName={authorByName}
-                onOpenMenu={setMenuMid}
+
             />
         );
     };

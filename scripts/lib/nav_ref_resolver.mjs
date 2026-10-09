@@ -64,7 +64,7 @@ export function parseStaticValue(valueStr) {
 
 /**
  * Resolve parameterized ref and get data
- * 
+ *
  * @param {string} ref - Data reference path with optional [field={param}] or [field=value] syntax
  * @param {Object} boundParams - Bound parameters from source node
  * @param {Object} data - Root config data object
@@ -133,7 +133,7 @@ export function refNeedsParams(ref) {
 
 /**
  * Apply filterFn to data array
- * 
+ *
  * @param {Array} items - Array of items to filter
  * @param {string} filterFnStr - Filter function as string, e.g., "(item, data) => ..."
  * @param {Object} data - Root config data object

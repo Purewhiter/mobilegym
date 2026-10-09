@@ -1195,7 +1195,7 @@ export function getDirectoryDisplayName(path: string): string {
 export function snapshotFileSystem(): { nodes: Omit<FSNode, 'thumbnailUri'>[] } {
   const nodes = Array.from(state.nodes.values())
     .map((node) => {
-      const { ...meta } = node;
+      const { thumbnailUri: _thumbnailUri, ...meta } = node;
       return meta;
     })
     .sort((a, b) => a.path.localeCompare(b.path));

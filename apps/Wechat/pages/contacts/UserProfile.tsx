@@ -84,7 +84,7 @@ export const UserProfile: React.FC = () => {
                 <div className="bg-app-surface px-6 pt-6 pb-6 flex">
                     <div className="w-(--app-avatar-width-64) h-(--app-avatar-height-64) rounded-[6px] mr-5 bg-(--app-c-me-avatar-bg) overflow-hidden flex-shrink-0">
                         <img 
-                            src={contact.avatar || asset('avatars/avatar_default.jpg')} 
+                            src={contact.avatar || asset('avatars/avatar_default.jpg')}
                             className="w-full h-full object-cover" 
                             alt="" 
                         />
@@ -150,7 +150,7 @@ export const UserProfile: React.FC = () => {
             <div className="bg-app-surface px-6 pt-6 pb-6 flex">
                 <div className="w-(--app-avatar-width-64) h-(--app-avatar-height-64) rounded-[6px] mr-5 bg-(--app-c-me-avatar-bg) overflow-hidden flex-shrink-0">
                     <img 
-                        src={contact.avatar || asset('avatars/avatar_default.jpg')} 
+                        src={contact.avatar || asset('avatars/avatar_default.jpg')}
                         className="w-full h-full object-cover" 
                         alt="" 
                     />

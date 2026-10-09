@@ -59,16 +59,16 @@ curl -sI http://localhost:3000 | head -1
 First-time setup (installing dependencies, cloning `mobilegym-data` for default app data) is covered in the [project root README](../README.md#-quick-start), not here.
 
 > 🚀 **For `--parallel ≥ 8` / RL — use the nginx gateway.**
-> `vite preview` is single-process and bottlenecks fast; nginx serves `dist/` over HTTP/2 with 8 workers + a backend gateway. A one-shot script does the whole setup:
+> `vite preview` is single-process and bottlenecks fast; nginx serves `dist/` with automatically sized workers and a backend gateway. A one-shot script does the whole setup:
 >
 > ```bash
 > conda install -c conda-forge nginx                # one-time, if not already installed
 > npm run build                                     # nginx serves dist/ as-is — rebuild after every code change so it isn't stale
-> ./scripts/server/start_nginx_gateway.sh           # → https://localhost:4180  (HTTP/2 + TLS)
+> ./scripts/server/start_nginx_gateway.sh           # → http://localhost:4181 (local evaluation), https://localhost:4180 (TLS)
 > # stop with: ./scripts/server/start_nginx_gateway.sh stop
 > ```
 >
-> Then pass `--env-url https://localhost:4180`. This nginx HTTPS endpoint uses a self-signed localhost certificate; Chromium may reject the Service Worker script fetch for `/map-sw.js` even when the page itself loaded. `bench_env` sets Playwright `ignore_https_errors=True` and launches Chromium with `--ignore-certificate-errors` so Map's local Service Worker cache can register under that TLS setup.
+> For local evaluation, pass `--env-url http://localhost:4181`. The HTTPS endpoint at port 4180 remains available for remote access and uses a self-signed localhost certificate; Chromium may reject the Service Worker script fetch for `/map-sw.js` even when the page itself loaded. `bench_env` sets Playwright `ignore_https_errors=True` and launches Chromium with `--ignore-certificate-errors` so Map's local Service Worker cache can register under that TLS setup.
 
 ---
 

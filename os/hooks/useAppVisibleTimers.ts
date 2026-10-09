@@ -7,10 +7,9 @@
  * tickers accumulate linearly and waste main-thread time re-rendering
  * invisible pages.
  *
- * These hooks read the current `appId` from `ActivityContext` and subscribe to
- * `AppLifecycle` ('foreground' / 'background' / 'destroy'), keeping the timer
- * alive only while the app is in the foreground (i.e. it is the top activity
- * of the active task).
+ * These hooks read the current activity identity from ActivityContext and
+ * subscribe to TaskManager, keeping timers alive only for the visible top
+ * activity. Home, Recents and other instances of the same app pause the timer.
  *
  * When to use:
  * - `useAppVisibleInterval` — UI tickers / pollers that only matter while the
@@ -29,9 +28,9 @@
  */
 import { useEffect, useRef } from 'react';
 import { useActivityContext } from '../ActivityContext';
-import { AppLifecycle } from '../AppLifecycle';
 import { TaskManager } from '../TaskManager';
-import { getActiveAppId } from '../taskUtils';
+import { getActiveTopActivityId } from '../taskUtils';
+import type { OSState } from '../types';
 import { realNow } from '../TimeService';
 
 const degradedWarned = new Set<string>();
@@ -44,17 +43,10 @@ function warnDegradedOnce(hookName: string): void {
   );
 }
 
-/**
- * Best-effort initial foreground check. `AppLifecycle` only emits transitions,
- * so on mount we read the current active app synchronously from TaskManager
- * (window.__OS__.state lags one render behind and must not be used as a
- * source of truth). In standalone hosts without an OS shell the task list is
- * empty, so we assume foreground and behavior degrades to a plain timer.
- */
-function isAppForeground(appId: string): boolean {
-  const activeAppId = getActiveAppId(TaskManager.getState());
-  if (activeAppId === null) return true;
-  return activeAppId === appId;
+/** An app can own multiple activities; only the visible top activity ticks. */
+export function isActivityForeground(state: OSState, activityId: string): boolean {
+  return !state.isLauncherVisible && !state.isRecentsVisible
+    && getActiveTopActivityId(state) === activityId;
 }
 
 export interface UseAppVisibleIntervalOptions {
@@ -70,8 +62,8 @@ export interface UseAppVisibleIntervalOptions {
 
 /**
  * `setInterval` that only runs while the owning app is in the foreground.
- * Pauses automatically on 'background' / 'destroy' and resumes (restarting the
- * interval phase from zero) on 'foreground'.
+ * Pauses when the activity is hidden or removed and resumes (restarting the
+ * interval phase from zero) when that same activity becomes visible.
  *
  * @param callback Tick handler; always reads the latest render's closure (kept
  *   in a ref), so it is safe to reference fresh props/state inside.
@@ -84,7 +76,7 @@ export function useAppVisibleInterval(
   ms: number | null,
   options?: UseAppVisibleIntervalOptions,
 ): void {
-  const { appId } = useActivityContext();
+  const { appId, activityId } = useActivityContext();
   const callbackRef = useRef(callback);
   const onResumeRef = useRef(options?.onResume);
   callbackRef.current = callback;
@@ -104,45 +96,40 @@ export function useAppVisibleInterval(
       intervalId = null;
     };
 
-    if (!appId) {
+    if (!appId || !activityId) {
       warnDegradedOnce('useAppVisibleInterval');
       start();
       return stop;
     }
 
     let backgroundedAt: number | null = null;
-    if (isAppForeground(appId)) {
-      start();
-    } else {
-      backgroundedAt = realNow();
-    }
-
-    const unsubscribe = AppLifecycle.subscribe(appId, (event) => {
-      if (event === 'foreground') {
+    const syncVisibility = () => {
+      if (isActivityForeground(TaskManager.getState(), activityId)) {
         if (backgroundedAt != null) {
           const elapsedMs = realNow() - backgroundedAt;
           backgroundedAt = null;
           onResumeRef.current?.(elapsedMs);
         }
         start();
-        return;
+      } else {
+        if (backgroundedAt == null) backgroundedAt = realNow();
+        stop();
       }
-      // 'background' | 'destroy'
-      if (backgroundedAt == null) backgroundedAt = realNow();
-      stop();
-    });
+    };
+    syncVisibility();
+    const unsubscribe = TaskManager.subscribe(syncVisibility);
 
     return () => {
       stop();
       unsubscribe();
     };
-  }, [appId, ms]);
+  }, [appId, activityId, ms]);
 }
 
 /**
  * `requestAnimationFrame` loop that only runs while the owning app is in the
- * foreground. Cancels the pending frame on 'background' / 'destroy' and
- * restarts the loop on 'foreground'.
+ * foreground. Cancels the pending frame when that activity is hidden/removed
+ * and restarts when it becomes visible.
  *
  * Note for consumers computing per-frame deltas from the rAF timestamp: after
  * a resume the first delta spans the whole background period, so clamp it
@@ -152,7 +139,7 @@ export function useAppVisibleInterval(
  *   the latest render's closure (kept in a ref).
  */
 export function useAppVisibleRaf(callback: (time: DOMHighResTimeStamp) => void): void {
-  const { appId } = useActivityContext();
+  const { appId, activityId } = useActivityContext();
   const callbackRef = useRef(callback);
   callbackRef.current = callback;
 
@@ -174,22 +161,22 @@ export function useAppVisibleRaf(callback: (time: DOMHighResTimeStamp) => void):
       rafId = null;
     };
 
-    if (!appId) {
+    if (!appId || !activityId) {
       warnDegradedOnce('useAppVisibleRaf');
       start();
       return stop;
     }
 
-    if (isAppForeground(appId)) start();
-
-    const unsubscribe = AppLifecycle.subscribe(appId, (event) => {
-      if (event === 'foreground') start();
+    const syncVisibility = () => {
+      if (isActivityForeground(TaskManager.getState(), activityId)) start();
       else stop();
-    });
+    };
+    syncVisibility();
+    const unsubscribe = TaskManager.subscribe(syncVisibility);
 
     return () => {
       stop();
       unsubscribe();
     };
-  }, [appId]);
+  }, [appId, activityId]);
 }

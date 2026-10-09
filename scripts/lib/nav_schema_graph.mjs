@@ -259,7 +259,7 @@ export function buildGraph(declaration) {
 
     // Expand target based on searchParams for all transitions
     // searchParams means runtime-determined target, expand to show all possibilities
-    // 
+    //
     // Key insight: We should match uiStates whose discrete param structure matches
     // the expected structure: (search keys where value != null) + (searchParams keys)
     let targetStates = [];
@@ -272,17 +272,17 @@ export function buildGraph(declaration) {
         const transitionSearch = transition.search ?? {};
         const staticKeys = Object.keys(transitionSearch).filter(k => transitionSearch[k] !== null);
         const expectedKeys = new Set([...staticKeys, ...discreteSearchParamKeys]);
-        
+
         // Also respect queryParams - they are dynamic and shouldn't affect discrete matching
         const routeQueryParams = new Set(Object.keys(targetRoute.queryParams ?? {}));
-        
+
         targetStates = targetRoute.uiStates.filter(state => {
           const stateSearch = state.search ?? {};
           // Get discrete keys (exclude queryParams which are dynamic)
           const stateDiscreteKeys = new Set(
             Object.keys(stateSearch).filter(k => !routeQueryParams.has(k))
           );
-          
+
           // Check if discrete param structure matches exactly
           if (expectedKeys.size !== stateDiscreteKeys.size) return false;
           for (const key of expectedKeys) {
@@ -300,14 +300,14 @@ export function buildGraph(declaration) {
       const effectiveSearchState = normalizeSearch(
         applyPreserveParamsToSearch(searchState, transition.preserveParams ?? [], sourceSearchForPreserve),
       );
-      
+
       if (targetStates.length > 0) {
         // Expand to multiple edges for each target state
         for (const targetState of targetStates) {
           const targetSearch = normalizeSearch({ ...effectiveSearchState, ...targetState.search });
           const targetNodeId = resolveTargetNodeId(target, targetSearch, stateIndex, routeIndex);
           const type = determineEdgeType(sourceId, targetNodeId);
-          
+
           // Self-loops (source node === target node):
           //
           // A route-state edge should represent a meaningful change in the discrete URL state.
@@ -329,14 +329,14 @@ export function buildGraph(declaration) {
               continue;
             }
           }
-          
+
           // Build label with target state description
           const baseLabel = transition.label ?? '';
           const stateDesc = targetState.description || '';
-          const expandedLabel = stateDesc 
+          const expandedLabel = stateDesc
             ? `${baseLabel} → ${stateDesc}`
             : baseLabel;
-          
+
           edges.push({
             source: sourceId,
             sourceNodeId: isNodeId(sourceId) ? sourceId : undefined,
@@ -369,7 +369,7 @@ export function buildGraph(declaration) {
           ? resolveTargetNodeId(target, effectiveSearchState, stateIndex, routeIndex)
           : undefined;
         const type = determineEdgeType(sourceId, targetNodeId || sourceId);
-        
+
         // Self-loops (source node === target node):
         //
         // Same semantics as the branch above (targetStates expansion):
@@ -382,7 +382,7 @@ export function buildGraph(declaration) {
             continue;
           }
         }
-        
+
         edges.push({
           source: sourceId,
           sourceNodeId: isNodeId(sourceId) ? sourceId : undefined,
@@ -519,10 +519,10 @@ export function buildSimplifiedGraph(graph) {
   for (const edge of graph.edges) {
     const sourceRoute = extractRoutePath(edge.source);
     const targetRoute = extractRoutePath(edge.target);
-    
+
     // Skip internal edges (same route)
     if (sourceRoute === targetRoute) continue;
-    
+
     const edgeKey = `${sourceRoute}|${targetRoute}`;
     if (!edgeMap.has(edgeKey)) {
       edgeMap.set(edgeKey, {

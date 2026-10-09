@@ -368,7 +368,7 @@ export const NAVIGATION_DECLARATION = {
           description: '搜索结果-图文（已关注菜单，菜单内可取消关注）',
         },
       ],
-      queryParams: { q: 'string' },
+      queryParams: { q: 'string', mid: 'string' },
       description: '搜索（结果页）',
     },
 
@@ -1002,7 +1002,7 @@ export const NAVIGATION_DECLARATION = {
       to: '/search/results',
       preserveParams: ['q', 'tab'],
       search: { menu: 'true' },
-      searchParams: {},
+      searchParams: { mid: 'string' },
       mode: 'push',
       params: {},
       label: '打开搜索-已关注菜单',

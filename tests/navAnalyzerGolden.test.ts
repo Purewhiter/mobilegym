@@ -2,13 +2,13 @@
  * navigation_declaration_analyzer.mjs — golden CLI 闸门
  *
  * 通过子进程运行 analyzer 本体（CLI 契约），对一小（Compass）一复杂（Alipay）
- * 两个 App 跑 schema 模式，与 public/ 入库产物逐字节比对。不 import 脚本内部
+ * 两个 App 跑 schema 模式，与 tests/fixtures/navigation/ golden fixtures逐字节比对。不 import 脚本内部
  * 函数——实现可以自由重构（如拆分为 scripts/lib/ 模块），只要输出字节不变、
  * CLI 行为不变，本测试就保持绿。
  *
  * 守住两件事：
  *   1. analyzer 重构不得引起任何输出字节漂移（对象键序、pretty 缩进、字段集合）；
- *   2. 声明与 public/ 入库产物不得脱同步（改声明必须重新生成产物）。
+ *   2. 声明与 tests/fixtures/navigation/ golden fixtures不得脱同步（改声明必须重新生成产物）。
  */
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
@@ -46,10 +46,10 @@ const CASES = [
   { app: 'Alipay', lower: 'alipay' },
 ] as const;
 
-describe('navigation_declaration_analyzer golden (schema mode vs public/ artifacts)', () => {
+describe('navigation_declaration_analyzer golden (schema mode vs tests/fixtures/navigation/ artifacts)', () => {
   for (const { app, lower } of CASES) {
     it(
-      `${app}: 图与 simplified 伴生产物均与 public/ 逐字节一致`,
+      `${app}: 图与 simplified 伴生产物均与 tests/fixtures/navigation/ 逐字节一致`,
       () => {
         const outFile = path.join(tmpDir, `${lower}_nav_graph.json`);
         const res = spawnSync(process.execPath, [SCRIPT, app, '-o', outFile], {
@@ -61,7 +61,7 @@ describe('navigation_declaration_analyzer golden (schema mode vs public/ artifac
 
         for (const suffix of ['_nav_graph.json', '_nav_graph_simplified.json']) {
           const actualPath = path.join(tmpDir, `${lower}${suffix}`);
-          const goldenPath = path.join(REPO_ROOT, 'public', `${lower}${suffix}`);
+          const goldenPath = path.join(REPO_ROOT, 'tests', 'fixtures', 'navigation', `${lower}${suffix}`);
           const actual = fs.readFileSync(actualPath);
           const golden = fs.readFileSync(goldenPath);
           expect(
@@ -75,7 +75,7 @@ describe('navigation_declaration_analyzer golden (schema mode vs public/ artifac
   }
 });
 
-// data 模式产物不入库（按需生成），没有 public/ golden 可比；用「确定性双跑 +
+// data 模式产物不入库（按需生成），没有 tests/fixtures/navigation/ golden 可比；用「确定性双跑 +
 // 结构快照」锁 nav_data_expand/prune 的回归：同一声明与数据两次运行必须逐字节
 // 一致，且节点/边规模与 schemaVersion 落在快照锁定的形状上。
 describe('navigation_declaration_analyzer golden (data mode determinism + shape)', () => {

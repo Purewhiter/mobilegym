@@ -16,12 +16,23 @@ const failed = new Set<string>();
 // episode reset 一次）都会全量重发（实测每次 ~80 个 404）。
 // 记入 sessionStorage：同 tab 跨 reload 存活；__SIM__.reset() 只 clear
 // localStorage，不波及；关浏览器/新开 tab 自动失效，数据包更新最迟一个
-// TTL 周期后恢复探测。
+// TTL 周期后恢复探测；只有确认的 HTTP 404 才持久缓存。
 const FAILED_STORE_KEY = '__WMR_IMG_FAILED_V1__';
 const FAILED_TTL_MS = 6 * 60 * 60 * 1000; // 6h
 const FAILED_MAX = 2000;
 
 const failedExpiry = new Map<string, number>(); // url -> expiresAt
+const persistedFailures = new Set<string>();
+const TRANSIENT_FAILURE_TTL_MS = 5_000;
+
+function expireFailure(url: string): void {
+  const expiresAt = failedExpiry.get(url);
+  if (expiresAt === undefined || expiresAt > realNow()) return;
+  failedExpiry.delete(url);
+  persistedFailures.delete(url);
+  failed.delete(url);
+  cache.delete(url);
+}
 
 function restorePersistedFailures(): void {
   try {
@@ -34,6 +45,7 @@ function restorePersistedFailures(): void {
       if (typeof expiresAt === 'number' && expiresAt > now) {
         failed.add(url);
         failedExpiry.set(url, expiresAt);
+        persistedFailures.add(url);
       }
     }
   } catch {
@@ -50,7 +62,7 @@ function flushFailuresToStorage(): void {
   }
   try {
     const now = realNow();
-    let entries = [...failedExpiry].filter(([, exp]) => exp > now);
+    let entries = [...failedExpiry].filter(([url, exp]) => persistedFailures.has(url) && exp > now);
     if (entries.length > FAILED_MAX) entries = entries.slice(entries.length - FAILED_MAX);
     window.sessionStorage.setItem(FAILED_STORE_KEY, JSON.stringify(Object.fromEntries(entries)));
   } catch {
@@ -58,8 +70,10 @@ function flushFailuresToStorage(): void {
   }
 }
 
-function rememberFailure(url: string): void {
-  failedExpiry.set(url, realNow() + FAILED_TTL_MS);
+function rememberFailure(url: string, persistent = true): void {
+  failedExpiry.set(url, realNow() + (persistent ? FAILED_TTL_MS : TRANSIENT_FAILURE_TTL_MS));
+  if (!persistent) return;
+  persistedFailures.add(url);
   if (persistTimer === null) {
     persistTimer = setTimeout(flushFailuresToStorage, 1000);
   }
@@ -81,6 +95,14 @@ const assetIndexRegistry = new Map<string, Set<string>>(); // baseUrl -> relPath
 
 export function registerAssetIndexFiles(baseUrl: string, files: string[]): void {
   assetIndexRegistry.set(baseUrl, new Set(files));
+  // A refreshed inventory supersedes previous negative results in its scope.
+  for (const url of failed) {
+    if (!url.startsWith(baseUrl)) continue;
+    failed.delete(url);
+    failedExpiry.delete(url);
+    persistedFailures.delete(url);
+    cache.delete(url);
+  }
 }
 
 function stripQuery(s: string): string {
@@ -121,6 +143,7 @@ export function createPrefixedAssetUrlResolver(basePath: string): AssetUrlResolv
 }
 
 export function loadImage(url: string): Promise<HTMLImageElement> {
+  expireFailure(url);
   const cached = cache.get(url);
   if (cached) return Promise.resolve(cached);
   if (failed.has(url)) return Promise.resolve(cache.get(url) ?? new Image());
@@ -143,7 +166,9 @@ export function loadImage(url: string): Promise<HTMLImageElement> {
     img.onerror = () => {
       cache.set(url, img);
       failed.add(url);
-      rememberFailure(url);
+      // Image.onerror does not identify a 404; transient failures must not
+      // survive reloads or suppress a recovered image for six hours.
+      rememberFailure(url, false);
       loading.delete(url);
       resolve(img);
     };
@@ -154,16 +179,19 @@ export function loadImage(url: string): Promise<HTMLImageElement> {
 }
 
 export function getImage(url: string): HTMLImageElement | null {
+  expireFailure(url);
   return cache.get(url) ?? null;
 }
 
 export function isImageLoadFailed(url: string): boolean {
+  expireFailure(url);
   return failed.has(url);
 }
 
 // 供 WMR 引擎其他 fetch 型加载器（如 resourceStrings 的 locale XML 探测）
 // 复用同一份失败记忆：确定性 404 只探测一次，跨 reload 不重发。
 export function isKnownFailedUrl(url: string): boolean {
+  expireFailure(url);
   return failed.has(url);
 }
 

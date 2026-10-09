@@ -179,7 +179,7 @@ sleep 0.5
 echo ""
 echo "✅ mobile-gym serving at:"
 echo "   https://0.0.0.0:${PORT}   (HTTP/2 + TLS，远程访问)"
-echo "   http://0.0.0.0:${HTTP_PORT}   (plain HTTP，本机评测推荐)"
+echo "   http://127.0.0.1:${HTTP_PORT}   (plain HTTP，本机评测推荐)"
 echo "   API:     uvicorn + starlette (127.0.0.1:${API_PORT}, ${API_WORKERS} workers)"
 echo ""
 echo "   评测推荐 --env-url http://localhost:${HTTP_PORT}"

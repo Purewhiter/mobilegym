@@ -24,15 +24,6 @@ export const NAVIGATION_DECLARATION = {
           id: 'home.tab.follow',
           search: { tab: 'follow' },
           description: '首页-关注',
-          actions: [
-            {
-              id: 'home.follow.userFollow.toggle',
-              label: '切换关注（关注流-作者）',
-              behavior: 'toggle',
-              scope: 'item',
-              paramsSchema: { userId: 'string', to: 'boolean' },
-            },
-          ],
         },
         { id: 'home.tab.city', search: { tab: 'city' }, description: '首页-同城' },
 

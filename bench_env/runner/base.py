@@ -25,7 +25,6 @@ logger = get_logger(__name__)
 
 # Default wall-clock budget for a single episode's step loop (setup excluded).
 # Prevents one hung episode (slow LLM, stuck page) from stalling a run forever.
-DEFAULT_EPISODE_TIMEOUT_S = 900.0
 
 
 class Evaluator:
@@ -248,7 +247,6 @@ class Controller:
         env, agent, task, initial_obs, max_steps=20, recorder=None, trial_id: int = 0,
         eval_mode: str = "grounded",
         loop_threshold: int = 0,
-        episode_timeout_s: float = DEFAULT_EPISODE_TIMEOUT_S,
     ) -> tuple[ExecutionResult, Any, Any, Any, Any]:
         """
         Run the interaction loop after setup is complete.
@@ -262,9 +260,6 @@ class Controller:
             recorder: Optional recorder for saving trajectory
             trial_id: Trial index for pass@k evaluation
             eval_mode: "text" | "grounded"
-            episode_timeout_s: Wall-clock budget for the step loop; on expiry
-                the episode ends with stop_reason="TIMEOUT" and is recorded
-                as an error episode (0 or negative disables the cap)
 
         Returns:
             tuple: (ExecutionResult, init_obs, final_obs, episode, task)
@@ -378,20 +373,11 @@ class Controller:
                 else:
                     truncated, stop_reason = True, "MAX_STEPS"
 
-            # Steps are capped by count above; the wall-clock cap below keeps a
-            # hung step (LLM call, page evaluate) from stalling the run forever.
-            try:
-                if episode_timeout_s and episode_timeout_s > 0:
-                    await asyncio.wait_for(_step_loop(), timeout=episode_timeout_s)
-                else:
-                    await _step_loop()
-            except asyncio.TimeoutError:
-                done, truncated, stop_reason = False, True, "TIMEOUT"
-                episode_error = (
-                    f"Episode exceeded wall-clock budget of {episode_timeout_s:.0f}s "
-                    f"after {len(trace)} recorded steps"
-                )
-                logger.warning(f"[{task.id}] {episode_error}")
+            # agent.act is synchronous and runs in a thread. Cancelling this
+            # coroutine cannot stop that thread, so do not end/reuse an episode
+            # while inference can still mutate the Agent. Provider request and
+            # browser-operation timeouts retain their own bounded error paths.
+            await _step_loop()
 
             stopwatch_total_s, stopwatch_flat, stopwatch_tree, stopwatch_steps = _snapshot_stopwatch(env.stopwatch)
             exec_result = ExecutionResult(
@@ -445,8 +431,7 @@ class Controller:
     @staticmethod
     async def run_loop(env, agent, task, max_steps=20, recorder=None, trial_id: int = 0,
                        eval_mode: str = "grounded",
-                       loop_threshold: int = 0,
-                       episode_timeout_s: float = DEFAULT_EPISODE_TIMEOUT_S) -> tuple[ExecutionResult, Any, Any, Any, Any]:
+                       loop_threshold: int = 0) -> tuple[ExecutionResult, Any, Any, Any, Any]:
         """
         Run the full interaction loop (setup + run).
 
@@ -481,8 +466,7 @@ class Controller:
             )
             return exec_result, None, None, None, task
         return await Controller.run(env, agent, task, initial_obs, max_steps, recorder, trial_id,
-                                    eval_mode=eval_mode, loop_threshold=loop_threshold,
-                                    episode_timeout_s=episode_timeout_s)
+                                    eval_mode=eval_mode, loop_threshold=loop_threshold)
 
 
 @dataclass
@@ -674,7 +658,6 @@ class BaseRunner(ABC):
         env, agent, task, max_steps=20, recorder=None, trial_id: int = 0,
         evaluator: Optional[Evaluator] = None,
         loop_threshold: int = 0,
-        episode_timeout_s: float = DEFAULT_EPISODE_TIMEOUT_S,
     ) -> EpisodeResult:
         """运行单个 episode (Facade 方法).
         
@@ -686,7 +669,6 @@ class BaseRunner(ABC):
             recorder: Optional recorder for saving trajectory
             trial_id: Trial index for pass@k evaluation (0-indexed)
             evaluator: Evaluator instance for task evaluation
-            episode_timeout_s: Wall-clock budget per episode step loop
         """
         # Use default evaluator if not provided
         if evaluator is None:
@@ -697,7 +679,6 @@ class BaseRunner(ABC):
         exec_result, init_obs, last_obs, episode, task = await Controller.run_loop(
             env, agent, task, max_steps, recorder, trial_id=trial_id, eval_mode=eval_mode,
             loop_threshold=loop_threshold,
-            episode_timeout_s=episode_timeout_s,
         )
         
         # 2. Evaluation Phase (Judge)

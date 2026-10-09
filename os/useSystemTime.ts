@@ -12,7 +12,7 @@
  * ```
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import * as TimeService from './TimeService';
 import { BroadcastBus, ACTION_TIME_SET, ACTION_TIME_TICK } from './BroadcastBus';
 
