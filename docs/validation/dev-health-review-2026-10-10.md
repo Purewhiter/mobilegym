@@ -46,6 +46,10 @@ These are three passes by the same agent, not independent reviewer approvals. Co
 
 No model benchmark, success-rate comparison, latency comparison, or per-page visual certification is claimed. A live-test attempt before the user paused running stopped at browser setup because the Playwright Chromium binary was absent; it produced no task metrics. The browser dependency was subsequently installed, but live/model runs were not resumed after that instruction.
 
+## Clean Linux CI follow-up
+
+The first remote CI run exposed two local-environment assumptions: `requests` was not declared in Python requirements, and two Notes reminder tests used fixed +08:00 expected timestamps while testing host-local calendar logic. Declare requests and the test runtime in the canonical requirements file; use TimeService local-calendar constructors in the reminder tests and verify UTC plus Asia/Shanghai. This changes test portability, not the reminder implementation.
+
 ## Remaining review items
 
 1. Agent success/progress/false-complete/side-effect metrics and throughput must be compared with pinned main before merge. The user explicitly deferred these runs.

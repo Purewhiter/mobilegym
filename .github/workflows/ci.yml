@@ -82,16 +82,10 @@ jobs:
           cache-dependency-path: bench_env/requirements.txt
 
       # 仓库根没有 requirements.txt / pyproject.toml，Python 依赖只在 bench_env/requirements.txt。
-      # 额外补装：
-      # - pytest-asyncio：bench_env/tests/conftest.py 顶层 `import pytest_asyncio`，
-      #   但 requirements.txt 未声明（间接依赖缺口）；requirements.txt 归属另一条改造线，
-      #   这里先在 CI 侧显式补齐。
-      # - pytest：由 pytest-xdist 传递引入，显式声明更稳。
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r bench_env/requirements.txt
-          pip install pytest pytest-asyncio
 
       # 离线测试不启动浏览器（playwright 的 Python 包必须可 import，但 chromium
       # 二进制只有 live 测试需要，故不跑 `playwright install chromium`）。
