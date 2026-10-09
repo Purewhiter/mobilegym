@@ -39,6 +39,8 @@ These are three passes by the same agent, not independent reviewer approvals. Co
 - Production Vite build: passed. Existing large-chunk warnings remain.
 - Lint: **0 errors, 954 ESLint warnings**, plus **17 non-blocking whole-store subscription diagnostics**; the full recommended-rule scope still has substantial existing warning debt. Temporary migration allowances remain visible in `eslint.config.js`.
 - `git diff --check`: passed after scoped whitespace cleanup.
+- Fresh `git archive` checkout: all **3 navigation golden tests passed**, with ignored public graph files absent and tracked fixtures present.
+- CI pinned dataset release and archive name verified via GitHub release metadata.
 - `bash -n scripts/server/start_nginx_gateway.sh scripts/server/serve_dist.sh`: passed.
 - Navigation consistency, same candidate checker on both trees: **34 → 0 errors; 132 → 119 warnings** across 16 changed apps. See [machine-readable comparison](dev-health-navigation-comparison.json).
 
