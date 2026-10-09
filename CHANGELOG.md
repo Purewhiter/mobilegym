@@ -4,7 +4,7 @@ All notable changes to MobileGym are recorded here.
 
 Entries that can change an agent's score on any task are marked **`[score-affecting]`** and name the affected task IDs. Everything else is safe to assume score-neutral. See [`docs/VERSIONING.md`](docs/VERSIONING.md) for what each version number covers and when it bumps.
 
-Versions: `harness` (bench_env runtime) / `taskset` (benchmark content) / `data` (companion dataset).
+Versions: `harness` (bench_env runtime) / `taskset` (benchmark content) / `sim` (the simulated device: `os/`, `apps/`, `system/`) / `data` (companion dataset).
 
 ## [Unreleased]
 
@@ -20,7 +20,7 @@ Versions: `harness` (bench_env runtime) / `taskset` (benchmark content) / `data`
 ### Added
 
 - **Run provenance.** Every run's `meta.json` now records `harness_version`, `taskset_version`, `data_version`, `sim_version`, `git_commit`, `git_dirty`, `git_diff_sha` and `untracked_code_count`, stamped by `RunRecorder.start_run()`, and a dirty run saves its tracked changes as `uncommitted.patch` (binary-safe, independent of the user's git config, re-read on every run start — `git apply` it onto `git_commit` to get the tree that ran). Provenance can never abort a run: without git, every git field is `null`. A results directory is now self-describing: you can tell which benchmark produced a number without reconstructing it from timestamps. `git_dirty: true` marks a run that is not reproducible from any published version.
-- **Version constants** in [`bench_env/version.py`](bench_env/version.py), splitting harness / task set / data into three independently-bumped axes.
+- **Version constants** in [`bench_env/version.py`](bench_env/version.py), splitting harness / task set / simulator / data into four independently-bumped axes.
 - **[`docs/VERSIONING.md`](docs/VERSIONING.md)** — bump rules, the rules that protect published numbers, and the release checklist.
 - This changelog.
 
@@ -30,7 +30,7 @@ Versions: `harness` (bench_env runtime) / `taskset` (benchmark content) / `data`
 
 ## [0.1.0] — 2026-06-26
 
-harness `0.1.0` / taskset `0.1.0` / data `0.1.0`
+harness `0.1.0` / taskset `0.1.0` / sim `0.1.0` / data `0.1.0`
 
 First stable release; the recommended version for running experiments.
 
