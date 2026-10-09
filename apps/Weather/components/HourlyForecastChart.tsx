@@ -163,7 +163,7 @@ export const HourlyForecastChart: React.FC<HourlyForecastChartProps> = ({ now, d
       const weatherVisual = {
         ts: nowTs,
         weatherIcon: getWeatherIconUrl(now.icon, now.text),
-        weatherText: getLocalizedWeatherText(now.text, s),
+        weatherText: getLocalizedWeatherText(now.text, s, now.icon),
         windLabel: formatWind(now.windSpeed, now.windScale, windUnit, s.wind_scale_suffix),
       };
       const { weatherIcon, weatherText, windLabel } = weatherVisual;
@@ -189,7 +189,7 @@ export const HourlyForecastChart: React.FC<HourlyForecastChartProps> = ({ now, d
       const weatherVisual = {
         ts,
         weatherIcon: getWeatherIconUrl(entry.icon, entry.text),
-        weatherText: getLocalizedWeatherText(entry.text, s),
+        weatherText: getLocalizedWeatherText(entry.text, s, entry.icon),
         windLabel: formatWind(entry.windSpeed, entry.windScale, windUnit, s.wind_scale_suffix),
       };
       const { weatherIcon, weatherText, windLabel } = weatherVisual;

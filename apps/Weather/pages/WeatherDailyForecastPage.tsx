@@ -376,8 +376,8 @@ const WeatherDailyForecastPage: React.FC = () => {
                       : day.fxDate === todayDateKey
                         ? normalizeAqiLevel(bundle?.airQuality?.category || '', bundle?.airQuality?.level)
                         : null;
-                    const dayText = getLocalizedWeatherText(day.textDay, s);
-                    const nightText = getLocalizedWeatherText(day.textNight, s);
+                    const dayText = getLocalizedWeatherText(day.textDay, s, day.iconDay);
+                    const nightText = getLocalizedWeatherText(day.textNight, s, day.iconNight);
                     return (
                       <div
                         key={day.fxDate}

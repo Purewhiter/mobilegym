@@ -4,7 +4,7 @@ import { useLocale } from '@/os/locale';
 import { useAppStrings } from '@/os/useAppStrings';
 import { SymbolIcon } from '../components/SymbolIcon';
 import { useContactsGestures } from '../hooks/useContactsGestures';
-import { recordLastContacted, useContactsList, useContactsStore } from '../state';
+import { useContactsList, useContactsStore } from '../state';
 import { ChevronRightIcon, IcSymbolBack, IcSymbolClose2, IcSymbolSearch } from '../res/icons';
 import { strings } from '../res/strings';
 import { stringsEn } from '../res/strings.en';
@@ -66,7 +66,10 @@ export const SearchPage: React.FC = () => {
   const openContact = (contactId: string) => {
     const trimmedQuery = query.trim();
     if (trimmedQuery) addSearchHistory(trimmedQuery);
-    recordLastContacted(contactId);
+    // Opening a contact card is not contacting anyone. `lastContactedAt` is
+    // written by the call / SMS actions on the detail page, where a message
+    // actually goes out -- matching ContactsContract, where LAST_TIME_CONTACTED
+    // tracks communication and browsing leaves no trace.
     go('contact.open', { contactId });
   };
 

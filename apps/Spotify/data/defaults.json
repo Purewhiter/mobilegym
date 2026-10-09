@@ -15,7 +15,7 @@
       "coverLarge": "/cdn/spotify/images/tracks/28dc76b1a1ef07fa.jpg"
     },
     {
-      "id": "rp1",
+      "id": "ls_6",
       "title": "Bad Habits",
       "artist": "Ed Sheeran",
       "cover": "/cdn/spotify/images/tracks/f86742a704b71a12.jpg",
@@ -23,7 +23,7 @@
       "coverLarge": "/cdn/spotify/images/tracks/6e4c4ea3a61359d8.jpg"
     },
     {
-      "id": "rp2",
+      "id": "ls_9",
       "title": "bad guy",
       "artist": "Billie Eilish",
       "cover": "/cdn/spotify/images/categories/8d26fdde1e0cf6d0.jpg",
@@ -31,7 +31,7 @@
       "coverLarge": "/cdn/spotify/images/tracks/4d75a3d2c5941aff.jpg"
     },
     {
-      "id": "rp3",
+      "id": "ls_3",
       "title": "Welcome to New York",
       "artist": "Taylor Swift",
       "cover": "/cdn/spotify/images/tracks/63f08f3e6032a2c3.jpg",
@@ -39,7 +39,7 @@
       "coverLarge": "/cdn/spotify/images/tracks/206b75c51a146f5f.jpg"
     },
     {
-      "id": "rp4",
+      "id": "ls_1",
       "title": "Love Story",
       "artist": "Taylor Swift",
       "cover": "/cdn/spotify/images/tracks/1844214d88601412.jpg",
@@ -47,7 +47,7 @@
       "coverLarge": "/cdn/spotify/images/tracks/16b615b9181a4193.jpg"
     },
     {
-      "id": "rp5",
+      "id": "ls_8",
       "title": "Rolling In the Deep",
       "artist": "Adele",
       "cover": "/cdn/spotify/images/tracks/329411e80a3b215c.jpg",
@@ -646,9 +646,9 @@
       "id": "ls_1",
       "title": "Love Story",
       "artist": "Taylor Swift",
-      "cover": "/cdn/spotify/images/categories/bdf9e98ba2386464.jpg",
+      "cover": "/cdn/spotify/images/tracks/1844214d88601412.jpg",
       "duration": "3:55",
-      "coverLarge": "/cdn/spotify/images/tracks/6bfae25e7844ae68.jpg"
+      "coverLarge": "/cdn/spotify/images/tracks/16b615b9181a4193.jpg"
     },
     {
       "id": "ls_2",

@@ -27,6 +27,7 @@
 
 ## 📰 动态
 
+- **`2026-08-21`** 🎉 我们的论文被 **EMNLP 2026 Main Conference** 接收。
 - **`2026-06-27`** 🚀 发布 `v0.1.0`版本 —— **在线 RL 训练代码**（[`mobilegym-rl/`](mobilegym-rl)）已开源。首个稳定版本，推荐用于实验。
 - **`2026-05`** 🎉 代码、benchmark 与 Sim-to-Real 配方正式开源。
 - **`2026-05`** 📄 论文预印本 arXiv → [arxiv.org/abs/2605.26114](https://arxiv.org/abs/2605.26114)。
@@ -472,7 +473,7 @@ MobileGym 采用**双 license** 设计 —— 再分发前请同时阅读两份�
 
 ## Star 增长曲线
 
-[![Star History Chart](https://api.star-history.com/svg?repos=Purewhiter/mobilegym&type=Date)](https://star-history.com/#Purewhiter/mobilegym&Date)
+[![Star History Chart](https://star-history.dera.page/svg?repos=Purewhiter/mobilegym&type=Date)](https://star-history.dera.page/#Purewhiter/mobilegym&Date)
 
 <br/>
 
