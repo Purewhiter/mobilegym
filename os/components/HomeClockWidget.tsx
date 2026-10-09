@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import * as TimeService from '../TimeService';
+import { useTimeChangeReceiver } from '../useSystemTime';
 import { SIMULATOR_CONFIG } from '../data';
 import { useLocale } from '../locale';
 const { clockFontSize } = SIMULATOR_CONFIG.framework;
@@ -10,16 +11,17 @@ export const HomeClockWidget: React.FC<{ onClick?: () => void }> = ({ onClick })
     const [dateStr, setDateStr] = useState(TimeService.formatDate());
     const [dayOfWeek, setDayOfWeek] = useState(TimeService.getDayOfWeek());
 
+    const update = useCallback(() => {
+        setTimeStr(TimeService.formatTime());
+        setDateStr(TimeService.formatDate());
+        setDayOfWeek(TimeService.getDayOfWeek());
+    }, []);
     useEffect(() => {
-        const update = () => {
-            setTimeStr(TimeService.formatTime());
-            setDateStr(TimeService.formatDate());
-            setDayOfWeek(TimeService.getDayOfWeek());
-        };
         update();
         const interval = setInterval(update, 1000);
         return () => clearInterval(interval);
-    }, []);
+    }, [update]);
+    useTimeChangeReceiver(update);
 
     useEffect(() => {
         setDateStr(TimeService.formatDate());

@@ -14,6 +14,7 @@
 
 import { useState, useEffect } from 'react';
 import * as TimeService from './TimeService';
+import { BroadcastBus, ACTION_TIME_SET, ACTION_TIME_TICK } from './BroadcastBus';
 
 interface UseSystemTimeReturn {
     /** Get current timestamp (ms) */
@@ -32,6 +33,34 @@ interface UseSystemTimeReturn {
     timeString: string;
     /** Current timestamp (auto-updating every second) */
     currentTime: number;
+}
+
+/**
+ * Re-run `update` the moment the minute turns (TIME_TICK) or the time is set (TIME_SET),
+ * the way Android's status-bar clock listens for those broadcasts. Components that also
+ * poll every second still need this: on its own the poll shows a new minute, or a newly set
+ * time, up to a second late, at an instant that depends on when the component mounted.
+ */
+export function useTimeChangeReceiver(update: () => void): void {
+    useEffect(() => {
+        const unregisterTick = BroadcastBus.registerReceiver(ACTION_TIME_TICK, update);
+        const unregisterSet = BroadcastBus.registerReceiver(ACTION_TIME_SET, update);
+        return () => {
+            unregisterTick();
+            unregisterSet();
+        };
+    }, [update]);
+}
+
+/**
+ * The current simulated date, re-read whenever the minute turns or the time is set.
+ * For minute-resolution displays (HH:mm clocks, dates) that must not go stale while mounted.
+ */
+export function useClockDate(): Date {
+    const [date, setDate] = useState(() => TimeService.getDate());
+    const update = useCallback(() => setDate(TimeService.getDate()), []);
+    useTimeChangeReceiver(update);
+    return date;
 }
 
 /**

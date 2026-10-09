@@ -277,7 +277,7 @@ class ParallelRunner(BaseRunner):
                 pbar.update(1)
         
         async def worker(wid: int) -> None:
-            # Safe without lock: asyncio is single-threaded; += between awaits is atomic.
+            # Counter updates have no await between the read and write.
             nonlocal success_count, fail_count
             env = self.env_pool[wid]
             try:

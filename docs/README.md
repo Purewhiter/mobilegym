@@ -15,6 +15,7 @@ All docs here are in English. Pick a track:
 | 🤖 Plug in a new agent (model adapter) | [`guides/add-an-agent.md`](guides/add-an-agent.md) |
 | 📊 Benchmark an agent on MobileGym-Bench | [`guides/bench-an-agent.md`](guides/bench-an-agent.md) |
 | 🔌 Look up the browser-console debug API | [`api/runtime-api.md`](api/runtime-api.md) |
+| 🏷️ Know which benchmark version produced a number | [`VERSIONING.md`](VERSIONING.md) · [`../CHANGELOG.md`](../CHANGELOG.md) |
 | 🤝 Contribute code or report a bug | [`../CONTRIBUTING.md`](../CONTRIBUTING.md) |
 
 ## Platform deep dive

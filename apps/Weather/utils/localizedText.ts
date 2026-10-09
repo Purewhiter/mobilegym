@@ -4,13 +4,77 @@ function isEnglishStrings(s: typeof strings): boolean {
   return s.app_name !== strings.app_name;
 }
 
-export function getLocalizedWeatherText(text: string | undefined, s: typeof strings): string {
+type ConditionKey = Extract<keyof typeof strings, `qw_${string}`>;
+
+/**
+ * QWeather wording -> string key, derived from `res/strings.ts`.
+ *
+ * The snapshot in `data/weatherBundles.json` comes straight from the QWeather
+ * API (see `scripts/fetch_weather_snapshot.mjs`), so its `text` field uses
+ * QWeather's vocabulary. `res/strings.ts` holds that vocabulary under
+ * `qw_<code>` keys and `res/strings.en.ts` holds the English for the same
+ * keys, so there is one table, in the resource files, and extending coverage
+ * is a matter of adding a row there.
+ */
+const CONDITION_KEY_BY_WORDING: ReadonlyMap<string, ConditionKey> = new Map(
+  (Object.keys(strings) as Array<keyof typeof strings>)
+    .filter((key): key is ConditionKey => key.startsWith('qw_'))
+    .map((key) => [strings[key] as string, key]),
+);
+
+/** Night-time QWeather codes and the day code that shares their wording. */
+const NIGHT_TO_DAY_CODE: Record<string, string> = {
+  '150': '100', '151': '101', '152': '102', '153': '103',
+  '350': '300', '351': '301',
+  '456': '406', '457': '407',
+};
+
+function conditionKeyForCode(icon: string | number | undefined): ConditionKey | undefined {
+  const code = String(icon ?? '').trim();
+  if (!code) return undefined;
+  const key = `qw_${NIGHT_TO_DAY_CODE[code] ?? code}`;
+  return key in strings ? (key as ConditionKey) : undefined;
+}
+
+/**
+ * Localize a weather condition for display.
+ *
+ * The rule in both languages: **what the screen shows is a function of
+ * `text`**, because `text` is what benchmark judges read out of state. If the
+ * screen were derived from anything else, a correct reading of the screen
+ * could disagree with the judge and the task would be unpassable.
+ *
+ * - Chinese shows `text` verbatim, so a condition this app has never seen
+ *   still renders exactly as stored.
+ * - English translates `text` by exact match against QWeather's wording.
+ *   `icon` (the QWeather code from the same payload) is consulted only when
+ *   the wording is not in the table -- never to override it. The snapshot does
+ *   contain entries whose code and wording disagree (`多云` with code 104);
+ *   there the wording wins, for the reason above.
+ * - Anything still unrecognised falls through to approximate pattern matching.
+ */
+export function getLocalizedWeatherText(
+  text: string | undefined,
+  s: typeof strings,
+  icon?: string | number,
+): string {
   const raw = String(text ?? '').trim();
   if (!raw) return '--';
 
   const normalized = raw.toLowerCase();
+  const isEnglishTarget = isEnglishStrings(s);
+  const rawIsAscii = /^[A-Za-z0-9\s\-_/]+$/.test(raw);
 
-  if (/^[A-Za-z0-9\s\-_/]+$/.test(raw)) {
+  // Chinese UI + Chinese payload: show exactly what the data says.
+  if (!isEnglishTarget && !rawIsAscii) return raw;
+
+  if (isEnglishTarget && !rawIsAscii) {
+    const key = CONDITION_KEY_BY_WORDING.get(raw) ?? conditionKeyForCode(icon);
+    const label = key ? s[key] : undefined;
+    if (label) return label;
+  }
+
+  if (rawIsAscii) {
     if (normalized.includes('blizzard') || normalized.includes('storm snow')) return s.weather_storm_snow;
     if (normalized.includes('snow')) return normalized.includes('heavy') ? s.weather_heavy_snow : normalized.includes('moderate') ? s.weather_moderate_snow : s.weather_light_snow;
     if (normalized.includes('torrential') || normalized.includes('storm rain')) return s.weather_storm_rain;

@@ -19,7 +19,7 @@ export const CurrentWeather: React.FC<CurrentWeatherProps> = ({ weather, airQual
   const s = useAppStrings(strings, stringsEn);
   const tempUnit = useWeatherStore((st) => st.settings.tempUnit);
   if (!weather) return null;
-  const weatherText = getLocalizedWeatherText(weather.text, s);
+  const weatherText = getLocalizedWeatherText(weather.text, s, weather.icon);
   const airQualityLabel = airQuality
     ? getAqiLevelLabel(normalizeAqiLevel(airQuality.category, airQuality.level), s)
     : '';

@@ -44,7 +44,7 @@ export const DailyForecastShort: React.FC<DailyForecastShortProps> = ({ daily, f
 
   const renderWeatherIcon = (day: WeatherDaily) => {
     const iconUrl = getWeatherIconUrl(day.iconDay, day.textDay);
-    return <img src={iconUrl} alt={getLocalizedWeatherText(day.textDay, s)} className="w-6 h-6 object-contain" />;
+    return <img src={iconUrl} alt={getLocalizedWeatherText(day.textDay, s, day.iconDay)} className="w-6 h-6 object-contain" />;
   };
 
   return (
@@ -55,7 +55,7 @@ export const DailyForecastShort: React.FC<DailyForecastShortProps> = ({ daily, f
       >
         <div className="px-[20px] pt-[6px] pb-[8px]">
           {days.map((day, index) => {
-            const weatherText = getLocalizedWeatherText(day.textDay, s);
+            const weatherText = getLocalizedWeatherText(day.textDay, s, day.iconDay);
             const tMin = tempsMin[index];
             const tMax = tempsMax[index];
             const leftPct = clamp01((tMin - minAll) / totalRange) * 100;

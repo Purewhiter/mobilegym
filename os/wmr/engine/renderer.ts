@@ -564,7 +564,8 @@ export class WmrCanvasRenderer {
   private getMarqueeOffset(enabled: boolean, measuredWidth: number, gap: number, speed: number): number {
     if (!enabled || measuredWidth <= 0 || speed <= 0) return 0;
     const distance = measuredWidth + gap;
-    return (TimeService.now() / 1000 * speed) % distance;
+    // An animation, so real time (AGENTS.md): simulated time may be frozen, sped up or set.
+    return (TimeService.realNow() / 1000 * speed) % distance;
   }
 
   private getCachedTextLayout(cacheNode: object, key: string, factory: () => Omit<CachedTextLayout, 'key'>): CachedTextLayout {

@@ -5,7 +5,7 @@ import { useLocale } from '@/os/locale';
 import { useAppStrings } from '@/os/useAppStrings';
 import { SymbolIcon } from '../components/SymbolIcon';
 import { useContactsGestures } from '../hooks/useContactsGestures';
-import { recordLastContacted, useContactsList } from '../state';
+import { useContactsList } from '../state';
 import type { Contact } from '../types';
 import { colors } from '../res/colors';
 import { IcNavForward, IcSymbolAdd, IcSymbolExpandMore, IcSymbolFavorites, IcSymbolFavoritesFill, IcSymbolSearch, IcSymbolSettings } from '../res/icons';
@@ -252,7 +252,8 @@ export const ContactsPage: React.FC = () => {
                   name={contact.displayName}
                   showDivider={index < list.length - 1}
                   onClick={() => {
-                    recordLastContacted(contact.id);
+                    // Browsing to a contact is not contacting them -- see the
+                    // note in SearchPage.openContact.
                     go('contact.open', { contactId: contact.id });
                   }}
                 />

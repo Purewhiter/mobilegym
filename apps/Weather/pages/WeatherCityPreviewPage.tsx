@@ -52,7 +52,7 @@ const DailyRows: React.FC<{ daily: WeatherDaily[] }> = ({ daily }) => {
   return (
     <div className="px-5">
       {days.map((day, i) => {
-        const weatherText = getLocalizedWeatherText(day.textDay, s);
+        const weatherText = getLocalizedWeatherText(day.textDay, s, day.iconDay);
         const tMin = tempsMin[i];
         const tMax = tempsMax[i];
         const leftPct = clamp((tMin - minAll) / range) * 100;
@@ -202,7 +202,7 @@ const WeatherCityPreviewPage: React.FC = () => {
   const daily = bundle?.daily ?? [];
   const airQuality: AirQuality | null = bundle?.airQuality ?? null;
   const day0 = daily[0];
-  const weatherText = getLocalizedWeatherText(now?.text, s);
+  const weatherText = getLocalizedWeatherText(now?.text, s, now?.icon);
   const airQualityLevel = normalizeAqiLevel(airQuality?.category ?? '', airQuality?.level);
   const cityName = getLocalizedWeatherCityName(cityDef, s);
 

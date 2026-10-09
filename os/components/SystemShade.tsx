@@ -5,6 +5,7 @@ import { useOS } from '../OSContext';
 import { useOsStateStore } from '../OsStateStore';
 import { useTheme } from '../ThemeContext';
 import * as TimeService from '../TimeService';
+import { useClockDate } from '../useSystemTime';
 import { SystemShadeService } from '../SystemShadeService';
 import { NotificationService } from '../NotificationService';
 import { QuickSettingsService } from '../QuickSettingsService';
@@ -225,7 +226,8 @@ const NotificationCenterPanel: React.FC<{
   withBackground?: boolean;
 }> = ({ snapshot, onOpenNotification, withBackground = true }) => {
   const locale = useLocale();
-  const now = useMemo(() => TimeService.getDate(), [snapshot.items.length, snapshot.unreadCount]);
+  // Stays mounted while the shade is closed, so it must follow the clock, not other state.
+  const now = useClockDate();
   const timeText = useMemo(() => `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`, [now]);
   const dateText = useMemo(() => formatShadeDate(now, locale), [locale, now]);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -554,7 +556,8 @@ const ControlCenterPanel: React.FC<{
     : null;
   const batteryBoltCoreColor = sbState.fastCharging ? 'rgba(0,0,0,0.92)' : 'rgba(0,0,0,0.78)';
   const batteryBoltHaloColor = systemTintColor;
-  const now = useMemo(() => TimeService.getDate(), [qs]);
+  // Stays mounted while the shade is closed, so it must follow the clock, not other state.
+  const now = useClockDate();
   const dateText = useMemo(() => formatShadeDate(now, locale), [locale, now]);
   const shadeText = useMemo(() => ({
     connected: locale === 'en' ? 'Connected' : '已连接',

@@ -78,7 +78,9 @@ function resetTimeTickScheduler(): void {
 
     const cur = now();
     const next = Math.floor(cur / 60000) * 60000 + 60000;
-    const delay = Math.max(0, Math.min(60000, next - cur));
+    // Timers use real milliseconds; the boundary above uses simulated milliseconds.
+    // Ceil avoids firing just before a boundary when the speed leaves a fraction.
+    const delay = Math.max(1, Math.min(2_147_483_647, Math.ceil((next - cur) / speedMultiplier)));
 
     timeTickTimer = window.setTimeout(() => {
         timeTickTimer = null;

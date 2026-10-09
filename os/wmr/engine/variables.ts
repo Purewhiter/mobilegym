@@ -1186,15 +1186,19 @@ export class VarContext implements WmrVarContext {
       return state.currentTime;
     }
     const elapsed = TimeService.realNow() - state.startedAt;
+    if (loop && totalDuration > 0 && elapsed >= state.duration) {
+      // Wrap phase-continuously: advance the anchor by whole cycles and keep the overshoot.
+      // Restarting from "now" stretched every cycle by up to one frame interval (so the
+      // phase depended on render cadence) and showed the cycle start for one frame.
+      const cycles = Math.floor(elapsed / state.duration);
+      state.startedAt += cycles * state.duration;
+      const wrapped = (elapsed - cycles * state.duration) / state.duration;
+      state.completed = false;
+      return state.fromTime + (state.toTime - state.fromTime) * wrapped;
+    }
     const progress = Math.min(1, elapsed / state.duration);
     const currentTime = state.fromTime + (state.toTime - state.fromTime) * progress;
     if (progress >= 1) {
-      if (loop && totalDuration > 0) {
-        state.startedAt = TimeService.realNow();
-        state.currentTime = 0;
-        state.completed = false;
-        return 0;
-      }
       state.playing = false;
       state.currentTime = state.toTime;
       state.completed = true;
