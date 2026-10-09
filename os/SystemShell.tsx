@@ -38,6 +38,7 @@ import { IntentChooserSheet } from './components/IntentChooserSheet';
 import { useGlobalLongPress } from './hooks/useGlobalLongPress';
 import { TextSelectionService } from './TextSelectionService';
 import * as TimeService from './TimeService';
+import { useTimeChangeReceiver } from './useSystemTime';
 import { SystemShadeService } from './SystemShadeService';
 import QuickSettingsService from './QuickSettingsService';
 import { useOsT } from './i18n';
@@ -472,14 +473,13 @@ const StatusBar = () => {
   const [qs, setQs] = useState(() => QuickSettingsService.getState());
   const [dyn, setDyn] = useState(() => StatusBarService.getState());
 
+  const updateTime = useCallback(() => setTime(TimeService.formatTime()), []);
   useEffect(() => {
-    const updateTime = () => {
-      setTime(TimeService.formatTime());
-    };
     updateTime();
     const t = setInterval(updateTime, 1000);
     return () => clearInterval(t);
-  }, []);
+  }, [updateTime]);
+  useTimeChangeReceiver(updateTime);
 
   useEffect(() => {
     return SystemShadeService.subscribe(s => setShadeOpen(s.open));
