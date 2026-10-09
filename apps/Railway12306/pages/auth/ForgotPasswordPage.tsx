@@ -10,7 +10,7 @@ export const ForgotPasswordPage: React.FC = () => {
   const { requestResetCode, resetPasswordWithCode } = useRailwayStore();
   const [tab, setTab] = useState<'face' | 'phone' | 'email'>('phone');
   const [phone, setPhone] = useState('');
-  const [idType, setIdType] = useState('中国居民身份证');
+  const [idType] = useState('中国居民身份证');
   const [idNo, setIdNo] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');

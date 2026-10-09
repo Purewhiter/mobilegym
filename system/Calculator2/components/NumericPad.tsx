@@ -24,10 +24,17 @@ export const NumericPad: React.FC<NumericPadProps> = ({ style }) => {
   const onEvaluate = useCalculator2Store(s => s.onEvaluate);
   const { bindAction } = useCalculator2Gestures();
 
-  const digits = [
-    ['7', '8', '9'],
-    ['4', '5', '6'],
-    ['1', '2', '3'],
+  // actionId 必须是字面量（供导航声明一致性检查扫描），不能动态拼接
+  const digits: Array<{ d: string; actionId: string }> = [
+    { d: '7', actionId: 'calc.pad.digit7' },
+    { d: '8', actionId: 'calc.pad.digit8' },
+    { d: '9', actionId: 'calc.pad.digit9' },
+    { d: '4', actionId: 'calc.pad.digit4' },
+    { d: '5', actionId: 'calc.pad.digit5' },
+    { d: '6', actionId: 'calc.pad.digit6' },
+    { d: '1', actionId: 'calc.pad.digit1' },
+    { d: '2', actionId: 'calc.pad.digit2' },
+    { d: '3', actionId: 'calc.pad.digit3' },
   ];
 
   return (
@@ -44,7 +51,7 @@ export const NumericPad: React.FC<NumericPadProps> = ({ style }) => {
         ...style,
       }}
     >
-      {digits.flat().map(d => (
+      {digits.map(({ d, actionId }) => (
         <CalcButton
           key={d}
           label={d}
@@ -52,7 +59,7 @@ export const NumericPad: React.FC<NumericPadProps> = ({ style }) => {
           textColor="var(--app-on-surface)"
           rippleColor={colors.ripple}
           onTrigger={() => inputDigit(d)}
-          {...bindAction(`digit.${d}`)}
+          {...bindAction(actionId)}
         />
       ))}
       {/* 底行: . 0 = */}
@@ -62,7 +69,7 @@ export const NumericPad: React.FC<NumericPadProps> = ({ style }) => {
         textColor="var(--app-on-surface)"
         rippleColor={colors.ripple}
         onTrigger={inputDecimal}
-        {...bindAction('decimal')}
+        {...bindAction('calc.pad.decimal')}
       />
       <CalcButton
         label="0"
@@ -70,7 +77,7 @@ export const NumericPad: React.FC<NumericPadProps> = ({ style }) => {
         textColor="var(--app-on-surface)"
         rippleColor={colors.ripple}
         onTrigger={() => inputDigit('0')}
-        {...bindAction('digit.0')}
+        {...bindAction('calc.pad.digit0')}
       />
       <CalcButton
         label={strings.equals}
@@ -78,7 +85,7 @@ export const NumericPad: React.FC<NumericPadProps> = ({ style }) => {
         textColor="var(--app-on-surface)"
         rippleColor={colors.ripple}
         onTrigger={onEvaluate}
-        {...bindAction('evaluate')}
+        {...bindAction('calc.pad.evaluate')}
       />
     </div>
   );

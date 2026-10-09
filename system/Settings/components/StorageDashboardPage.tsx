@@ -81,7 +81,6 @@ export const StorageDashboardPage: React.FC = () => {
   }, [refreshKey]);
 
   const usedText = `${FileSystem.formatFileSize(stats.used)} / ${FileSystem.formatFileSize(stats.total)}`;
-  const freeText = FileSystem.formatFileSize(stats.free);
 
   return (
     <div className="h-full bg-app-bg flex flex-col">

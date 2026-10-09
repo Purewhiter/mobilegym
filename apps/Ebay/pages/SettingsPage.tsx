@@ -1,7 +1,8 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { IcNavBack } from '../res/icons';
 import { useEbayStore } from '../state';
-import { useEbayGestures } from '../navigation';
+import { useEbayGestures, useEbayNavigation } from '../navigation';
 import { useEbayStrings } from '../hooks/useEbayStrings';
 
 type ThemeOption = {
@@ -13,11 +14,14 @@ type ThemeOption = {
 const THEME_OPTION_IDS: ThemeOption['id'][] = ['light', 'dark', 'battery', 'system'];
 
 const SettingsPage: React.FC = () => {
-  const { bindBack } = useEbayGestures();
+  const { bindBack, bindTap } = useEbayGestures();
+  const { back } = useEbayNavigation();
+  const [searchParams] = useSearchParams();
   const s = useEbayStrings();
   const themeId = useEbayStore(st => st.settings.themeId);
   const updateSettings = useEbayStore(st => st.updateSettings);
-  const [isThemeDialogOpen, setIsThemeDialogOpen] = useState(false);
+  // 主题弹窗为 URL 驱动（?themeDialog=open 入栈，back 关闭），返回键可直接关闭
+  const isThemeDialogOpen = searchParams.get('themeDialog') === 'open';
   const themeOptions = useMemo<ThemeOption[]>(() => THEME_OPTION_IDS.map((id) => {
     switch (id) {
       case 'light':
@@ -35,8 +39,7 @@ const SettingsPage: React.FC = () => {
 
   const handleThemeSelect = (option: ThemeOption) => {
     updateSettings({ themeId: option.id });
-    // setTimeout(() => setIsThemeDialogOpen(false), 200); // Optional delay for effect
-    setIsThemeDialogOpen(false);
+    if (isThemeDialogOpen) back();
   };
 
   return (
@@ -62,7 +65,7 @@ const SettingsPage: React.FC = () => {
         <Item 
           title={s.settings_theme} 
           subtitle={currentTheme.subtitle}
-          onClick={() => setIsThemeDialogOpen(true)}
+          onClickProps={bindTap('settings.theme.open')}
         />
         <Item 
           title={s.settings_country} 
@@ -137,7 +140,7 @@ const SettingsPage: React.FC = () => {
             
             <div className="px-6 py-4 flex justify-end">
               <button 
-                onClick={() => setIsThemeDialogOpen(false)}
+                {...bindBack()}
                 className="text-blue-600 font-medium text-base px-2 py-1"
               >
                 {s.settings_cancel}
@@ -156,10 +159,21 @@ const SectionHeader = ({ title }: { title: string }) => (
   </div>
 );
 
-const Item = ({ title, subtitle, onClick }: { title: string; subtitle?: string; onClick?: () => void }) => (
+const Item = ({
+  title,
+  subtitle,
+  onClick,
+  onClickProps,
+}: {
+  title: string;
+  subtitle?: string;
+  onClick?: () => void;
+  onClickProps?: React.HTMLAttributes<HTMLDivElement>;
+}) => (
   <div 
-    className={`px-4 py-4 ${onClick ? 'active:bg-gray-100 cursor-pointer' : ''}`}
+    className={`px-4 py-4 ${onClick || onClickProps ? 'active:bg-gray-100 cursor-pointer' : ''}`}
     onClick={onClick}
+    {...onClickProps}
   >
     <div className="text-base text-black font-normal">{title}</div>
     {subtitle && <div className="text-sm text-app-text-muted mt-1">{subtitle}</div>}

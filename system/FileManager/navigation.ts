@@ -1,7 +1,7 @@
 import { useCallback, useContext } from 'react';
 import { UNSAFE_NavigationContext, useLocation, useNavigate } from 'react-router-dom';
 import { NAVIGATION_DECLARATION, TransitionId } from './navigation.declaration';
-import type { TransitionDeclaration, FromConstraint } from './navigation.types';
+import type { TransitionDeclaration } from './navigation.types';
 import { memoryHistoryPopTo } from '../../os/utils/memoryHistoryPopTo';
 
 export function useAppNavigate() {

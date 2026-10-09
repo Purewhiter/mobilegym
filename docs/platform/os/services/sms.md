@@ -105,7 +105,7 @@ window.__OS__.sms.receiveMessage({ from: 'Mom', body: 'on my way' });
 
 ## Verification code template storage
 
-The default template lives inside `SmsGateway`. Apps that customize the message (e.g. their own brand wrapper) should keep the literal in `res/strings.ts` + `res/strings.en.ts`, not hardcoded in `state.ts` / page components. (Older apps such as Wechat / Railway12306 still hardcode templates — that's tracked in `docs/pending/`.)
+The default template lives inside `SmsGateway`. Apps that customize the message (e.g. their own brand wrapper) should keep the literal in `res/strings.ts` + `res/strings.en.ts`, not hardcoded in `state.ts` / page components. (Older apps such as Wechat / Railway12306 still hardcode templates — a known legacy inconsistency, not a pattern to copy.)
 
 ## Related Docs
 

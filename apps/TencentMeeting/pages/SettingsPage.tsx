@@ -141,12 +141,12 @@ export const SettingsPage: React.FC = () => {
                     <Item label={s.settings_proxy} right={<span className="text-gray-500 text-sm">{s.settings_proxy_off}</span>} isLink={true} />
                     <Item label={s.settings_cache_clear} isLink={true} />
                     <Item label={s.menu_privacy} isLink={true} />
+                    {/* “关于”页未实现：不打导航标签（规范：不 tag 未实现的占位控件） */}
                     <Item
                         label={s.menu_about}
                         right={<span className="text-gray-500 text-sm">{s.settings_about_version}</span>}
                         isLink={true}
                         border={false}
-                        actionProps={bindTap('settings.about.open' as any)}
                     />
                 </div>
             </div>

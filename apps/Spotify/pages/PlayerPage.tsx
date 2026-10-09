@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useLocale } from '@/os/locale';
+import { useAppVisibleInterval } from '@/os/hooks/useAppVisibleTimers';
 import { useSearchParams } from 'react-router-dom';
-import { IcExpand, IcMoreVertical, IcMore, IcPlay, IcPause, IcSkipPrev, IcSkipNext, IcShuffle, IcRepeat, IcMic, IcShare, IcQueue, IcAddCircle, IcLikedIndicator } from '../res/icons';
+import { IcExpand, IcMoreVertical, IcPlay, IcPause, IcSkipPrev, IcSkipNext, IcShuffle, IcRepeat, IcMic, IcShare, IcQueue, IcAddCircle, IcLikedIndicator } from '../res/icons';
 import { useSpotifyStore, selectLikedSongIds } from '../state';
 import { useShallow } from 'zustand/react/shallow';
-import { PlayingIndicator } from '../components/PlayingIndicator';
 import { useSpotifyGestures } from '../hooks/useSpotifyGestures';
 import { TrackMenuSheet } from '../components/TrackMenuSheet';
 import { AddToPlaylistSheet } from '../components/AddToPlaylistSheet';
@@ -20,11 +20,10 @@ export const PlayerPage: React.FC = () => {
     const [searchParams, setSearchParams] = useSearchParams();
     const { bindTap, bindBack, back } = useSpotifyGestures();
     const s = useSpotifyStrings();
-    const { currentTrack, isPlaying, shuffle, repeat, queue, customPlaylists } = useSpotifyStore(useShallow(s => ({
+    const { currentTrack, isPlaying, shuffle, repeat } = useSpotifyStore(useShallow(s => ({
         currentTrack: s.currentTrack, isPlaying: s.isPlaying, shuffle: s.shuffle, repeat: s.repeat, queue: s.queue, customPlaylists: s.customPlaylists,
     })));
     const togglePlay = useSpotifyStore(s => s.togglePlay);
-    const playTrack = useSpotifyStore(s => s.playTrack);
     const toggleShuffle = useSpotifyStore(s => s.toggleShuffle);
     const toggleRepeat = useSpotifyStore(s => s.toggleRepeat);
     const skipToNext = useSpotifyStore(s => s.skipToNext);
@@ -32,14 +31,11 @@ export const PlayerPage: React.FC = () => {
     const toggleLike = useSpotifyStore(s => s.toggleLike);
     const likedSongIds = useSpotifyStore(selectLikedSongIds);
     const isLiked = (trackId: string, track?: { title: string; artist: string }) => likedSongIds.has(trackId, track);
-    const addTrackToPlaylist = useSpotifyStore(s => s.addTrackToPlaylist);
-    const removeTrackFromPlaylist = useSpotifyStore(s => s.removeTrackFromPlaylist);
     const showQueue = searchParams.get('sheet') === 'queue';
     const showMenu = searchParams.get('sheet') === 'track_menu';
     const showAddPlaylist = searchParams.get('sheet') === 'add_playlist';
     const showSleepTimer = searchParams.get('sheet') === 'timer';
     const menuTrackId = searchParams.get('trackId');
-    const updateSettings = useSpotifyStore(st => st.updateSettings);
     const [progress, setProgress] = useState(0);
     
     // Progressive Image Loading State
@@ -65,16 +61,19 @@ export const PlayerPage: React.FC = () => {
         setImageLoaded(!cachedLargeCover);
     }, [currentTrack?.id, currentTrack?.cover, currentTrack?.coverLarge]);
 
-    // Effect: Progress Timer
-    useEffect(() => {
-        let interval: any;
-        if (isPlaying) {
-            interval = setInterval(() => {
-                setProgress(p => (p >= duration ? 0 : p + 1));
-            }, 1000);
-        }
-        return () => clearInterval(interval);
-    }, [isPlaying, duration]);
+    // Effect: Progress Timer — ticks only while the app is foregrounded.
+    // progress 是本地计数（不从 store/时间戳推导），因此回前台时按真实流逝时间
+    // 补齐后台漏掉的 tick，并复用每秒 tick 相同的回绕规则（周期 = duration + 1）。
+    useAppVisibleInterval(
+        () => setProgress(p => (p >= duration ? 0 : p + 1)),
+        isPlaying ? 1000 : null,
+        {
+            onResume: (elapsedMs) => {
+                const missedTicks = Math.floor(elapsedMs / 1000);
+                if (missedTicks > 0) setProgress(p => (p + missedTicks) % (duration + 1));
+            },
+        },
+    );
 
     // Effect: Redirect if no track
     useEffect(() => {

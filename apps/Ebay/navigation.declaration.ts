@@ -64,8 +64,18 @@ export const NAVIGATION_DECLARATION: NavigationDeclaration = {
              { id: 'search.history.clear', label: '清除记录', behavior: 'other', description: '清除最近搜索记录' }
           ]
         },
+        {
+          id: 'search.sortSheet',
+          search: { sortSheet: 'open' },
+          description: '搜索结果排序方式弹层',
+        },
+        {
+          id: 'search.filterDrawer',
+          search: { filterDrawer: 'open' },
+          description: '搜索结果筛选抽屉',
+        },
       ],
-      queryParams: {},
+      queryParams: { q: 'string' },
       description: '搜索页面',
     },
     {
@@ -149,6 +159,11 @@ export const NAVIGATION_DECLARATION: NavigationDeclaration = {
           search: {},
           description: '设置页面',
         },
+        {
+          id: 'settings.themeDialog',
+          search: { themeDialog: 'open' },
+          description: '主题选择弹窗',
+        },
       ],
       queryParams: {},
       description: '设置页面',
@@ -165,10 +180,10 @@ export const NAVIGATION_DECLARATION: NavigationDeclaration = {
           search: {},
           description: '商品详情页',
           actions: [
-            { id: 'item.addToCart', label: '添加至购物车', behavior: 'other', description: '点击添加至购物车' },
-            { id: 'item.buyNow', label: '立即购买', behavior: 'other', description: '点击立即购买' },
-            { id: 'item.makeOffer', label: '提出议价', behavior: 'other', description: '点击提出议价' },
-            { id: 'item.addToWatchlist', label: '添加至追踪列表', behavior: 'other', description: '点击添加至追踪列表' },
+            { id: 'item.detail.addToCart', label: '添加至购物车', behavior: 'other', description: '点击添加至购物车' },
+            { id: 'item.detail.buyNow', label: '立即购买', behavior: 'other', description: '点击立即购买' },
+            { id: 'item.detail.makeOffer', label: '提出议价', behavior: 'other', description: '点击提出议价' },
+            { id: 'item.detail.addToWatchlist', label: '添加至追踪列表', behavior: 'other', description: '点击添加至追踪列表' },
           ]
         },
       ],
@@ -309,6 +324,63 @@ export const NAVIGATION_DECLARATION: NavigationDeclaration = {
       params: { id: 'string' },
       label: '打开商品详情',
       ui: { placement: 'content', icon: 'package', gesture: 'tap' }
+    },
+    {
+      id: 'search.query.submit',
+      from: '/search',
+      to: '/search',
+      search: {},
+      searchParams: { q: 'string' },
+      mode: 'replace',
+      params: {},
+      label: '提交搜索关键词（进入结果视图）',
+      ui: { placement: 'topbar', icon: 'search_submit', gesture: 'tap' }
+    },
+    {
+      id: 'search.query.edit',
+      from: '/search',
+      to: '/search',
+      search: {},
+      searchParams: {},
+      mode: 'replace',
+      params: {},
+      label: '返回搜索输入（清除关键词）',
+      ui: { placement: 'topbar', icon: 'search', gesture: 'tap' }
+    },
+    {
+      id: 'search.sort.open',
+      from: { path: '/search', search: { sortSheet: null } },
+      to: '/search',
+      preserveParams: ['q'],
+      search: { sortSheet: 'open' },
+      searchParams: {},
+      mode: 'push',
+      params: {},
+      label: '打开排序方式弹层',
+      ui: { placement: 'content', icon: 'sort', gesture: 'tap' }
+    },
+    {
+      id: 'search.filter.open',
+      from: { path: '/search', search: { filterDrawer: null } },
+      to: '/search',
+      preserveParams: ['q'],
+      search: { filterDrawer: 'open' },
+      searchParams: {},
+      mode: 'push',
+      params: {},
+      label: '打开筛选抽屉',
+      ui: { placement: 'content', icon: 'filter', gesture: 'tap' }
+    },
+    {
+      id: 'settings.theme.open',
+      from: { path: '/settings', search: { themeDialog: null } },
+      to: '/settings',
+      search: { themeDialog: 'open' },
+      searchParams: {},
+      mode: 'push',
+      params: {},
+      label: '打开主题选择弹窗',
+      ui: { placement: 'content', icon: 'theme', gesture: 'tap' }
     },
     {
       id: 'home.item.open',

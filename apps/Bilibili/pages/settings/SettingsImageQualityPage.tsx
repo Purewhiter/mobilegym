@@ -1,19 +1,21 @@
 import React from 'react';
 import { SettingLayout, SettingRadioGroup } from './index';
 import { useBilibiliStore } from '../../state';
-
-const OPTIONS = [
-  { id: 'clear', label: '清晰', subtitle: '清晰 (质量高,图片更清晰)' },
-  { id: 'normal', label: '普通', subtitle: '普通 (流量少,速度加载快)' },
-  { id: 'auto', label: '自动', subtitle: '自动 (wifi下使用清晰,流量下使用普通)' },
-];
+import { useBilibiliStrings } from '../../hooks/useBilibiliStrings';
 
 export const SettingsImageQualityPage: React.FC = () => {
-  const value = useBilibiliStore((s) => s.settings.other.imageQuality) ?? 'clear';
-  const setSetting = useBilibiliStore((s) => s.setSetting);
+  const s = useBilibiliStrings();
+  const value = useBilibiliStore((st) => st.settings.other.imageQuality) ?? 'clear';
+  const setSetting = useBilibiliStore((st) => st.setSetting);
+
+  const OPTIONS = [
+    { id: 'clear', label: s.si_clear, subtitle: s.si_clear_sub },
+    { id: 'normal', label: s.si_normal, subtitle: s.si_normal_sub },
+    { id: 'auto', label: s.si_auto, subtitle: s.si_auto_sub },
+  ];
 
   return (
-    <SettingLayout title="默认图片质量">
+    <SettingLayout title={s.si_title}>
       <SettingRadioGroup options={OPTIONS} value={value} onChange={(id) => setSetting('other.imageQuality', id)} />
       <div className="h-8" />
     </SettingLayout>

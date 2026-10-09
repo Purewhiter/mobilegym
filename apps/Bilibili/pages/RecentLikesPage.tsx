@@ -3,20 +3,10 @@ import { IcNavBack, IcSearch, IcMoreVertical, IcMonitorPlay, IcMessageSquareText
 const ChevronLeft = IcNavBack, Search = IcSearch, MoreVertical = IcMoreVertical, MonitorPlay = IcMonitorPlay, MessageSquareText = IcMessageSquareText;
 import { useBilibiliStore } from '../state';
 import { useBilibiliGestures } from '../hooks/useBilibiliGestures';
+import { useBilibiliStrings } from '../hooks/useBilibiliStrings';
+import { useLocale } from '../locale';
+import { formatBilibiliStat } from '../utils/localize';
 import { useVideos } from '../hooks/useData';
-// Helper for formatting stats numbers
-const formatStat = (num: number | string | undefined) => {
-    if (num === undefined || num === null) return '0';
-    if (typeof num === 'string' && (num.includes('万') || num.includes('亿'))) {
-        return num;
-    }
-    const val = typeof num === 'string' ? parseFloat(num) : num;
-    if (isNaN(val)) return '0';
-    if (val >= 100000000) return (val / 100000000).toFixed(1) + '亿';
-    if (val >= 10000) return (val / 10000).toFixed(1) + '万';
-    return val.toString();
-};
-
 const formatDuration = (val: number | string | undefined) => {
     if (!val) return '00:00';
     if (typeof val === 'string' && val.includes(':')) return val;
@@ -36,7 +26,10 @@ const formatDuration = (val: number | string | undefined) => {
 
 export const RecentLikesPage: React.FC = () => {
     const { bindBack, bindTap } = useBilibiliGestures();
-    const user = useBilibiliStore(s => s.user);
+    const s = useBilibiliStrings();
+    const locale = useLocale();
+    const formatStat = (num: number | string | undefined) => formatBilibiliStat(num, locale);
+    const user = useBilibiliStore(st => st.user);
     const VIDEO_DATA = useVideos();
     const likedVideos = VIDEO_DATA.filter(v => user.likedVideoIds?.includes(v.id));
 
@@ -50,7 +43,7 @@ export const RecentLikesPage: React.FC = () => {
                         <button type="button" {...bindBack()} className="active:opacity-80">
                             <ChevronLeft size={24} className="text-app-text" />
                         </button>
-                        <span className="text-[17px] text-app-text font-medium">最近点赞的视频</span>
+                        <span className="text-[17px] text-app-text font-medium">{s.recent_likes_title}</span>
                     </div>
                 </div>
             </div>
@@ -95,7 +88,7 @@ export const RecentLikesPage: React.FC = () => {
                 {/* Footer Text */}
                 <div className="py-10 text-center text-app-text-muted text-[12px] flex flex-col items-center gap-2">
                     <span className="opacity-50 tracking-widest">
-                        ╮( 3 )╭  再怎么找也没有啦
+                        {s.recent_likes_end}
                     </span>
                 </div>
             </div>

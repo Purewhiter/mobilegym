@@ -913,7 +913,7 @@ export class WmrCanvasRenderer {
         };
       },
     );
-    const { lines, metrics, measuredWidth, lineHeight, blockHeight } = layout;
+    const { lines, measuredWidth, lineHeight, blockHeight } = layout;
 
     c.textAlign = this.getTextAlign(node);
     c.textBaseline = lines.length > 1 ? 'top' : this.getTextBaseline(node);
@@ -994,7 +994,6 @@ export class WmrCanvasRenderer {
         };
       },
     );
-    const metrics = layout.metrics[0];
     const textHeight = layout.blockHeight;
     const blockTop = this.getTextBlockTop(node, y, textHeight);
 

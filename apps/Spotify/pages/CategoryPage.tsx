@@ -1,7 +1,7 @@
 import React from 'react';
 import { useLocale } from '@/os/locale';
 import { useParams } from 'react-router-dom';
-import { IcAdd, IcMoreVertical, IcNavBackArrow, IcPlay, IcShare } from '../res/icons';
+import { IcAdd, IcMoreVertical, IcNavBackArrow, IcShare } from '../res/icons';
 import { loadCategories } from '../data/loader';
 import { useSpotifyGestures } from '../hooks/useSpotifyGestures';
 import { useSpotifyStrings } from '../hooks/useSpotifyStrings';

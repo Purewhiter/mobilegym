@@ -458,7 +458,7 @@ class RealDeviceEnv(BaseMobileEnv):
         else:
             logger.warning(f"YADB installed but MD5 mismatch. Expected: {YADB_MD5}, Got: {verify_result.strip()}")
     
-    async def _adb_push(self, local_path: str, remote_path: str) -> str:
+    async def _adb_push(self, local_path: str, remote_path: str, timeout: Optional[float] = None) -> str:
         """Push a file to the device."""
         cmd = [self.adb_path]
         if self.device_serial:
@@ -470,7 +470,10 @@ class RealDeviceEnv(BaseMobileEnv):
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE
         )
-        stdout, stderr = await proc.communicate()
+        result = await self._communicate(proc, cmd, timeout or self.ADB_TIMEOUT_S)
+        if result is None:
+            return ""
+        stdout, stderr = result
         if proc.returncode != 0:
             logger.error(f"[ADB Push Error] {stderr.decode()}")
             return ""
@@ -505,9 +508,12 @@ class RealDeviceEnv(BaseMobileEnv):
 
         # Force-stop every package listed in APP_PACKAGES so each episode starts from
         # a clean background. We only touch apps we explicitly benchmark — system
-        # components (Launcher, IME, SystemUI) are left untouched.
-        for pkg in {p for p in APP_PACKAGES.values() if "." in p}:
-            await self._adb("shell", "am", "force-stop", pkg)
+        # components (Launcher, IME, SystemUI) are left untouched. All stops run
+        # in a single `adb shell` invocation: one round-trip instead of ~100
+        # sequential ones, which added 10-30s to every reset.
+        packages = sorted({p for p in APP_PACKAGES.values() if "." in p})
+        stop_script = "for p in " + " ".join(packages) + "; do am force-stop $p; done"
+        await self._adb("shell", stop_script, timeout=60.0)
         await asyncio.sleep(0.3)
 
         # Second HOME press: most launchers scroll back to the first
@@ -610,8 +616,49 @@ class RealDeviceEnv(BaseMobileEnv):
 
     # ==================== ADB Command Helpers ====================
 
-    async def _adb(self, *args: str) -> str:
-        """Execute ADB command asynchronously."""
+    #: Default timeout for a single adb invocation. Callers wrapping _adb in
+    #: their own asyncio.wait_for get proper child cleanup either way.
+    ADB_TIMEOUT_S: float = 30.0
+
+    @staticmethod
+    async def _kill_proc(proc: asyncio.subprocess.Process) -> None:
+        """Kill and reap a subprocess, tolerating already-exited children."""
+        try:
+            proc.kill()
+        except ProcessLookupError:
+            return
+        try:
+            await proc.wait()
+        except asyncio.CancelledError:
+            # Already unwinding from cancellation; the child has been killed,
+            # the event loop's child watcher will reap it.
+            pass
+
+    async def _communicate(
+        self,
+        proc: asyncio.subprocess.Process,
+        cmd: list[str],
+        timeout: float,
+    ) -> Optional[Tuple[bytes, bytes]]:
+        """proc.communicate() with a timeout and guaranteed child cleanup.
+
+        On timeout the child is killed and None is returned (error marker).
+        On cancellation the child is killed, then CancelledError propagates —
+        without this, a caller's asyncio.wait_for(_adb(...)) would leave an
+        orphan adb / device-side process behind.
+        """
+        try:
+            return await asyncio.wait_for(proc.communicate(), timeout)
+        except asyncio.TimeoutError:
+            await self._kill_proc(proc)
+            logger.error(f"[ADB Timeout] cmd={cmd} did not finish within {timeout}s; killed")
+            return None
+        except asyncio.CancelledError:
+            await self._kill_proc(proc)
+            raise
+
+    async def _adb(self, *args: str, timeout: Optional[float] = None) -> str:
+        """Execute ADB command asynchronously (returns "" on error/timeout)."""
         cmd = [self.adb_path]
         if self.device_serial:
             cmd.extend(["-s", self.device_serial])
@@ -622,7 +669,10 @@ class RealDeviceEnv(BaseMobileEnv):
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE
         )
-        stdout, stderr = await proc.communicate()
+        result = await self._communicate(proc, cmd, timeout or self.ADB_TIMEOUT_S)
+        if result is None:
+            return ""
+        stdout, stderr = result
         if proc.returncode != 0:
             logger.error(f"[ADB Error] cmd={cmd} err={stderr.decode()}")
             return ""
@@ -656,7 +706,10 @@ class RealDeviceEnv(BaseMobileEnv):
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE
         )
-        stdout, stderr = await proc.communicate()
+        result = await self._communicate(proc, cmd, self.ADB_TIMEOUT_S)
+        if result is None:
+            return b""
+        stdout, _stderr = result
         return stdout
 
     def _parse_point(self, point: Any) -> Tuple[int, int]:

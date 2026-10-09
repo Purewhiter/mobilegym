@@ -30,8 +30,8 @@ export const CashierPage: React.FC = () => {
   const locale = useLocale();
   const isEnglish = locale === 'en';
   const isPasswordModalVisible = searchParams.get('modal') === 'password';
+  const isCancelDialogVisible = searchParams.get('dialog') === 'cancel';
   const [selectedMethodId, setSelectedMethodId] = useState<string>('huabei');
-  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
 
   // Password state
   const [password, setPassword] = useState('');
@@ -55,25 +55,17 @@ export const CashierPage: React.FC = () => {
 
   const boundCards = (bankCards || []).filter(c => c.bound);
 
-  const returnResult = (result: ActivityResult) => {
+  const returnResult = (result: ActivityResult, backSteps: number = 1) => {
     if ((os?.getIntentPayload?.(activityId) ?? os?.getIntentPayload?.('alipay')) && os?.setResult) {
       os.setResult(result);
     } else {
-      back();
+      back(backSteps);
     }
   };
 
-  const handleClose = () => {
-      setCancelDialogOpen(true);
-  };
-
   const handleConfirmCancel = () => {
-    setCancelDialogOpen(false);
-    returnResult({ resultCode: 'CANCELED' });
-  };
-
-  const handleContinuePay = () => {
-    setCancelDialogOpen(false);
+    // 弹窗自身占一条历史（?dialog=cancel）；无 Intent 回退路径需连同收银台一起退出
+    returnResult({ resultCode: 'CANCELED' }, 2);
   };
 
   const handlePaymentSuccess = (methodId?: string) => {
@@ -168,7 +160,7 @@ export const CashierPage: React.FC = () => {
   return (
     <div className="w-full h-full bg-[#1A2230] flex flex-col">
       {/* Cancel confirmation dialog */}
-      {cancelDialogOpen && (
+      {isCancelDialogVisible && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40">
           <div className="bg-white rounded-2xl w-[280px] overflow-hidden px-6 pt-6 pb-5">
             <div className="text-center">
@@ -184,7 +176,7 @@ export const CashierPage: React.FC = () => {
               </button>
               <button
                 className="flex-1 py-2.5 rounded-full bg-[#1677FF] text-white text-[15px] font-medium active:bg-[#1266D9]"
-                onClick={handleContinuePay}
+                onClick={() => back()}
               >
                 {s.cashier_continue}
               </button>
@@ -212,7 +204,7 @@ export const CashierPage: React.FC = () => {
         <div className={`flex-1 px-5 pt-4 pb-2 ${isPasswordModalVisible ? 'overflow-hidden' : 'overflow-y-auto'}`}>
           {/* Header */}
           <div className="flex items-center justify-between mb-3 relative">
-            <button onClick={handleClose} className="p-1 -ml-1">
+            <button {...bindTap<HTMLButtonElement>('cashier.cancel.open')} className="p-1 -ml-1">
               <IcClose size={20} className="text-gray-400" />
             </button>
             {isPasswordModalVisible && (

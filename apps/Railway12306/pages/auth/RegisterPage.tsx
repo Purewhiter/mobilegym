@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useRailwayGestures } from '../../hooks/useRailwayGestures';
 import { IcNavBack, IcScan } from '../../res/icons';
 
@@ -78,7 +79,8 @@ const PASSENGER_TYPES = ['成人', '儿童', '学生', '残疾军人'] as const;
 // ── Component ───────────────────────────────────────────────────────
 
 export const RailwayRegisterPage: React.FC = () => {
-  const { go, bindBack } = useRailwayGestures();
+  const { go, back, bindBack } = useRailwayGestures();
+  const location = useLocation();
 
   const [formData, setFormData] = useState<Record<FieldKey, string>>({
     username: '',
@@ -91,10 +93,13 @@ export const RailwayRegisterPage: React.FC = () => {
   });
   const [agreed, setAgreed] = useState(true);
   const [passengerType, setPassengerType] = useState('成人');
-  const [showTypePicker, setShowTypePicker] = useState(false);
   const [errorFields, setErrorFields] = useState<Set<FieldKey>>(new Set());
+  // 弹窗可见性由 URL（?dialog=...）驱动，back 关闭；错误文案本体留在 state（同 AddPassengerPage 的 alertMsg 模式）
   const [dialogMsg, setDialogMsg] = useState<string | null>(null);
-  const [showConfirm, setShowConfirm] = useState(false);
+  const dialog = new URLSearchParams(location.search).get('dialog');
+  const showConfirm = dialog === 'confirm';
+  const showAlert = dialog === 'alert';
+  const showTypePicker = dialog === 'passengerType';
 
   const handleChange = useCallback((key: FieldKey, value: string) => {
     setFormData(prev => ({ ...prev, [key]: value }));
@@ -111,14 +116,15 @@ export const RailwayRegisterPage: React.FC = () => {
     if (errors.length > 0) {
       setErrorFields(new Set(errors.map(e => e.field)));
       setDialogMsg(errors[0].message);
+      go('auth.register.showAlert');
       return;
     }
     setErrorFields(new Set());
-    setShowConfirm(true);
-  }, [formData]);
+    go('auth.register.showConfirm');
+  }, [formData, go]);
 
   const handleConfirmRegister = useCallback(() => {
-    setShowConfirm(false);
+    // auth.register.verify 声明为 replace：verify 页替换掉弹窗历史条目
     go('auth.register.verify', {}, {
       state: {
         username: formData.username,
@@ -257,7 +263,7 @@ export const RailwayRegisterPage: React.FC = () => {
           <div className="px-4 py-2 text-[12px] text-gray-500 bg-[#f2f2f2]">附加信息</div>
           <button
             className="w-full px-4 py-3 flex items-center justify-between"
-            onClick={() => setShowTypePicker(true)}
+            onClick={() => go('auth.register.openTypePicker')}
           >
             <label className="text-[14px] text-gray-800">旅客类型：</label>
             <div className="text-[14px] text-gray-800">{passengerType}</div>
@@ -289,7 +295,7 @@ export const RailwayRegisterPage: React.FC = () => {
       </div>
 
       {/* Error dialog */}
-      {dialogMsg && (
+      {showAlert && dialogMsg && (
         <div className="fixed inset-0 z-[120] bg-black/45 flex items-center justify-center px-10">
           <div className="bg-white rounded-xl w-full max-w-[280px] overflow-hidden">
             <div className="px-5 pt-5 pb-4 text-center">
@@ -298,7 +304,7 @@ export const RailwayRegisterPage: React.FC = () => {
             </div>
             <button
               className="w-full py-3 text-[16px] text-white font-medium bg-[#4B9AFF] rounded-b-xl"
-              onClick={() => setDialogMsg(null)}
+              onClick={() => back()}
             >
               确定
             </button>
@@ -308,13 +314,13 @@ export const RailwayRegisterPage: React.FC = () => {
 
       {/* Passenger type picker */}
       {showTypePicker && (
-        <div className="fixed inset-0 z-[110] bg-black/45 flex items-center justify-center px-10" onClick={() => setShowTypePicker(false)}>
+        <div className="fixed inset-0 z-[110] bg-black/45 flex items-center justify-center px-10" onClick={() => back()}>
           <div className="bg-white rounded-xl w-full max-w-[280px] overflow-hidden" onClick={e => e.stopPropagation()}>
             {PASSENGER_TYPES.map(t => (
               <button
                 key={t}
                 className="w-full px-6 py-4 flex items-center justify-between border-b border-gray-100 last:border-b-0"
-                onClick={() => { setPassengerType(t); setShowTypePicker(false); }}
+                onClick={() => { setPassengerType(t); back(); }}
               >
                 <span className="text-[16px] text-[#333]">{t}</span>
                 <span className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${passengerType === t ? 'border-[#4CD964]' : 'border-gray-300'}`}>
@@ -369,7 +375,7 @@ export const RailwayRegisterPage: React.FC = () => {
             <div className="flex border-t border-[#F0F2F5]">
               <button
                 className="flex-1 py-3 text-[16px] text-[#8C95A3] border-r border-[#F0F2F5]"
-                onClick={() => setShowConfirm(false)}
+                onClick={() => back()}
               >
                 取消
               </button>

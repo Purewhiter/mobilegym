@@ -98,7 +98,6 @@ function resolvePermissionRequest(detail: PermissionRequestResultDetail | undefi
   pendingRequests.delete(detail.requestId);
 
   const mergedResults: PermissionResultMap = { ...pending.baseResults };
-  let changed = false;
 
   for (const permId of pending.permIds) {
     const prev = readStatus(pending.appId, permId);
@@ -111,9 +110,7 @@ function resolvePermissionRequest(detail: PermissionRequestResultDetail | undefi
       next = 'denied_forever';
     }
 
-    if (writeStatus(pending.appId, permId, next)) {
-      changed = true;
-    }
+    writeStatus(pending.appId, permId, next);
     mergedResults[permId] = next;
   }
 

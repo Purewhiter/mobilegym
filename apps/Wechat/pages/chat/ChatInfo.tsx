@@ -3,7 +3,7 @@ import React from 'react';
 import { dimens } from '../../res/dimens';
 import { useWechatStrings } from '../../hooks/useWechatStrings';
 import { useParams } from 'react-router-dom';
-import { IcAdd, IcNavForward } from '../../res/icons';
+import { IcAdd } from '../../res/icons';
 import { useWechatStore } from '../../state';
 import { useShallow } from 'zustand/react/shallow';
 import { SettingsToggle, SettingsItem } from '../settings/Shared';

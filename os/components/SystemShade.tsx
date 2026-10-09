@@ -224,7 +224,7 @@ const NotificationCenterPanel: React.FC<{
   onClose: () => void;
   onOpenNotification: (it: OSNotification) => void;
   withBackground?: boolean;
-}> = ({ snapshot, onClose, onOpenNotification, withBackground = true }) => {
+}> = ({ snapshot, onOpenNotification, withBackground = true }) => {
   const locale = useLocale();
   // Stays mounted while the shade is closed, so it must follow the clock, not other state.
   const now = useClockDate();

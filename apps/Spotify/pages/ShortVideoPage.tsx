@@ -1,6 +1,5 @@
 import React from 'react';
 import { useLocale } from '@/os/locale';
-import { useParams } from 'react-router-dom';
 import { IcHeart, IcMessage, IcMoreVertical, IcMusicNote, IcNavBackArrow, IcShare } from '../res/icons';
 import { useSpotifyGestures } from '../hooks/useSpotifyGestures';
 import { useSpotifyStrings } from '../hooks/useSpotifyStrings';
@@ -10,7 +9,6 @@ export const ShortVideoPage: React.FC = () => {
   const isEnglish = locale === 'en';
   const { bindBack } = useSpotifyGestures();
   const s = useSpotifyStrings();
-  const { id } = useParams<{ id: string }>();
 
   const videoData = isEnglish
     ? {

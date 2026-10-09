@@ -27,6 +27,7 @@ from bench_env.task.calendar.app import (
     build_seed_events,
 )
 from bench_env.tests.conftest import make_judge_input
+from bench_env.tests.fixtures.calendar import BASE_STATE, TEST_OS_STATE, _add_event
 
 ALL_TASK_CLASSES: list[type[BaseTask]] = [
     obj
@@ -36,7 +37,6 @@ ALL_TASK_CLASSES: list[type[BaseTask]] = [
 ALL_TASK_IDS = [cls.__name__ for cls in ALL_TASK_CLASSES]
 ANSWER_TASK_CLASSES = [cls for cls in ALL_TASK_CLASSES if issubclass(cls, AnswerTask)]
 
-TEST_OS_STATE = {"time": {"timestamp": 1742025600000}}
 TEST_TODAY = datetime.date.fromtimestamp(TEST_OS_STATE["time"]["timestamp"] / 1000)
 # Seed event dates (from SEED_DAY_OFFSETS relative to TEST_TODAY)
 SEED_A = (TEST_TODAY + datetime.timedelta(days=SEED_DAY_OFFSETS[0])).isoformat()  # 团队周会, 产品评审
@@ -45,23 +45,6 @@ SEED_C = (TEST_TODAY + datetime.timedelta(days=SEED_DAY_OFFSETS[2])).isoformat()
 SEED_D = (TEST_TODAY + datetime.timedelta(days=SEED_DAY_OFFSETS[3])).isoformat()  # 项目启动会, 部门项目总结
 NO_EVENT_DATE = (TEST_TODAY + datetime.timedelta(days=100)).isoformat()  # A future date with no seed events
 DEFAULT_ROUTE = {"app": "calendar", "path": "/"}
-
-
-def _load_defaults() -> dict[str, Any]:
-    path = Path(__file__).resolve().parents[3] / "system" / "Calendar" / "data" / "defaults.json"
-    return json.loads(path.read_text(encoding="utf-8"))
-
-
-def _make_base_state() -> dict[str, Any]:
-    defaults = _load_defaults()
-    return {
-        "settings": copy.deepcopy(defaults["settings"]),
-        "events": [],
-        "selectedDateTs": TEST_OS_STATE["time"]["timestamp"],
-    }
-
-
-BASE_STATE = _make_base_state()
 
 
 def _make_task_input(
@@ -162,45 +145,6 @@ def _require_event(state: dict[str, Any], title: str) -> dict[str, Any]:
         if str(event["title"]).strip() == title.strip():
             return event
     raise ValueError(f"event not found: {title}")
-
-
-def _add_event(
-    state: dict[str, Any],
-    *,
-    title: str,
-    date_value: str,
-    event_type: str = "event",
-    start: str = "09:00",
-    end: str = "10:00",
-    all_day: bool = False,
-    reminder: int | None = 15,
-    alarm: bool = False,
-    description: str = "",
-) -> dict[str, Any]:
-    next_state = copy.deepcopy(state)
-    if all_day:
-        start_ts = Calendar.start_of_day_ts(date_value)
-        end_ts = Calendar.start_of_day_ts((Calendar.parse_ymd(date_value) + datetime.timedelta(days=1)).isoformat())
-    else:
-        start_ts = Calendar.timestamp(date_value, start)
-        end_ts = Calendar.timestamp(date_value, end)
-    next_state["events"].insert(
-        0,
-        {
-            "id": f"test_{len(next_state['events']) + 1}",
-            "type": event_type,
-            "title": title,
-            "description": description,
-            "allDay": all_day,
-            "startTs": start_ts,
-            "endTs": end_ts,
-            "reminderMinutesBefore": reminder,
-            "alarmEnabled": alarm,
-            "calendarAccount": "小米日历",
-        },
-    )
-    next_state["selectedDateTs"] = Calendar.start_of_day_ts(date_value)
-    return next_state
 
 
 def _remove_title(state: dict[str, Any], title: str) -> dict[str, Any]:

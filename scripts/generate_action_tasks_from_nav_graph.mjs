@@ -27,6 +27,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 import ts from 'typescript';
+import { assertUsableNavGraph } from './lib/nav_graph_schema.mjs';
 
 function usage() {
   console.log(`
@@ -478,7 +479,16 @@ function main() {
 
   const absGraph = path.resolve(graphPath);
   const absOut = path.resolve(outPath);
-  const graph = readJson(absGraph);
+  let graph;
+  try {
+    graph = readJson(absGraph);
+  } catch (err) {
+    console.error(`[ActionTasks] ERROR: failed to read graph JSON ${absGraph}: ${err.message}`);
+    process.exit(1);
+  }
+  // Minimal schema assertions (schemaVersion match, nodes/edges present,
+  // node ids start with '/', simplified graphs rejected). Exits 1 on problems.
+  assertUsableNavGraph(graph, absGraph, { logPrefix: '[ActionTasks]' });
 
   const nodes = Array.isArray(graph.nodes) ? graph.nodes : [];
   const entryNodes = nodes.filter(n => n?.entryPoint === true).map(n => n.id).filter(isNodeId);

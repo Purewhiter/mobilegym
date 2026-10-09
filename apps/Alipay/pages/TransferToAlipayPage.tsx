@@ -1,7 +1,7 @@
 import { useAlipayStrings } from '../hooks/useAlipayStrings';
 import React, { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { IcNavBack, IcHeadphone, IcContact, IcExpand, IcUser } from '../res/icons';
+import { IcNavBack, IcHeadphone, IcExpand, IcUser } from '../res/icons';
 import { useAlipayStore } from '../state';
 import { useAlipayGestures } from '../hooks/useAlipayGestures';
 import { getRecentTransferContacts } from '../utils/transferContacts';

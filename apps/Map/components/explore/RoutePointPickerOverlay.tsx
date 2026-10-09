@@ -218,7 +218,7 @@ export const RoutePointPickerOverlay: React.FC<{
               type="button"
               className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-gray-700 active:bg-gray-100"
               {...bindTap<HTMLButtonElement>(
-                { kind: 'action', id: 'routePicker.close' },
+                { kind: 'action', id: 'routePicker.sheet.close' },
                 { onTrigger: onClose },
               )}
             >
@@ -251,7 +251,7 @@ export const RoutePointPickerOverlay: React.FC<{
                   type="button"
                   className="text-app-text-muted"
                   {...bindTap<HTMLButtonElement>(
-                    { kind: 'action', id: 'routePicker.clearQuery' },
+                    { kind: 'action', id: 'routePicker.query.clear' },
                     {
                       onTrigger: () => {
                         flushSync(() => {
@@ -279,7 +279,7 @@ export const RoutePointPickerOverlay: React.FC<{
                 type="button"
                 className="flex w-full items-center gap-4 px-4 py-4 text-left active:bg-gray-50"
                 {...bindTap<HTMLButtonElement>(
-                  { kind: 'action', id: 'routePicker.chooseOnMap' },
+                  { kind: 'action', id: 'routePicker.option.chooseOnMap' },
                   {
                     onTrigger: () => {
                       KeyboardService.hide();

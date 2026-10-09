@@ -34,30 +34,6 @@ export const PhoneSettingsHomePage: React.FC = () => {
     }
   }, [go, rootPageId]);
 
-  if (PHONE_SETTINGS_PAGES[rootPageId]) {
-    return (
-      <div className="h-full bg-app-bg flex flex-col">
-        <div className="sticky top-0 z-20 bg-app-bg">
-          <div className="h-10" />
-          <div className="flex items-center h-12 px-3">
-            <button
-              type="button"
-              aria-label={isEnglish ? 'Back' : '返回'}
-              {...bindBack<HTMLButtonElement>({ stopPropagation: true })}
-              className="w-10 h-10 flex items-center justify-center rounded-full active:bg-black/5"
-            >
-              <IcNavBack size={24} className="text-app-text" />
-            </button>
-            <div className="flex-1 text-center text-[16px] font-semibold text-app-text">{title}</div>
-            <div className="w-10" />
-          </div>
-        </div>
-
-        <div className="px-6 py-10 text-[13px] text-gray-400">{s.settings_opening}</div>
-      </div>
-    );
-  }
-
   const pageIds = useMemo(() => {
     const extracted = Object.keys(PHONE_SETTINGS_PAGES);
     if (extracted.length > 0) return extracted.sort();
@@ -83,6 +59,30 @@ export const PhoneSettingsHomePage: React.FC = () => {
     }
     return pageIds.filter((id) => id.startsWith('preference_dial_pad_touch_tone') || id.startsWith('preference_privacy_'));
   }, [mode, pageIds]);
+
+  if (PHONE_SETTINGS_PAGES[rootPageId]) {
+    return (
+      <div className="h-full bg-app-bg flex flex-col">
+        <div className="sticky top-0 z-20 bg-app-bg">
+          <div className="h-10" />
+          <div className="flex items-center h-12 px-3">
+            <button
+              type="button"
+              aria-label={isEnglish ? 'Back' : '返回'}
+              {...bindBack<HTMLButtonElement>({ stopPropagation: true })}
+              className="w-10 h-10 flex items-center justify-center rounded-full active:bg-black/5"
+            >
+              <IcNavBack size={24} className="text-app-text" />
+            </button>
+            <div className="flex-1 text-center text-[16px] font-semibold text-app-text">{title}</div>
+            <div className="w-10" />
+          </div>
+        </div>
+
+        <div className="px-6 py-10 text-[13px] text-gray-400">{s.settings_opening}</div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-full bg-app-bg flex flex-col">

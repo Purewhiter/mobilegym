@@ -17,14 +17,11 @@ import { useAppNavigationHandler } from '../../os/hooks/useAppNavigationHandler'
 import { dimensToCssVars, themeToCssVars } from '../../os/utils/themeToCssVars';
 import { applySkinToThemeColors } from '../../os/SkinService';
 import { useDarkMode } from '../../os/hooks/useDarkMode';
-import { useAppStrings } from '../../os/useAppStrings';
 import { manifest } from './manifest';
 import { colors, colorsDark } from './res/colors';
 import { colorStates, colorStatesDark } from './res/colors.states';
 import { dimens } from './res/dimens';
 import { anim } from './res/anim';
-import { strings } from './res/strings';
-import { stringsEn } from './res/strings.en';
 import { useAppNavigate } from './navigation';
 
 /** Handles back navigation and route observation for the OS */
@@ -74,7 +71,6 @@ const NotesNavigationHandler: React.FC = () => {
 /** Notes App root component */
 const NotesApp: React.FC = () => {
   const { isDark } = useDarkMode();
-  const s = useAppStrings(strings, stringsEn);
   const themeColors = isDark
     ? { ...manifest.theme.colors, ...(manifest.theme.colorsDark ?? {}) }
     : manifest.theme.colors;

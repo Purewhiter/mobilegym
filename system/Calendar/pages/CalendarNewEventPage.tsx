@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { IcNavForward, IcCalendarDays, IcCake, IcBookmark, IcTimer } from '../res/icons';
 import { MaskIcon } from '../components/MaskIcon';
 import { Toast } from '@/os/components/Toast';
@@ -45,8 +45,15 @@ export const CalendarNewEventPage: React.FC = () => {
     const [isAllDay, setIsAllDay] = useState(false);
     const [isAlarm, setIsAlarm] = useState(false);
     const [reminderMinutesBefore, setReminderMinutesBefore] = useState<number | null>(0);
-    const [reminderSheetOpen, setReminderSheetOpen] = useState(false);
+    const [searchParams] = useSearchParams();
+    const reminderSheetOpen = searchParams.get('reminderSheet') === 'open';
     const [toast, setToast] = useState<{ visible: boolean; message: string }>({ visible: false, message: '' });
+
+    const openReminderSheet = () => {
+        // 同一组件挂在 /new-event 与 /event/:eventId/edit 两条路由下，各自声明了转移
+        if (eventId) go('event.edit.reminderSheet.open', { eventId });
+        else go('new-event.reminderSheet.open');
+    };
 
     const showToast = (message: string) => {
         setToast({ visible: true, message });
@@ -221,7 +228,7 @@ export const CalendarNewEventPage: React.FC = () => {
             <CalendarActionSheet
                 open={reminderSheetOpen}
                 title={s.label_reminder}
-                onClose={() => setReminderSheetOpen(false)}
+                onClose={() => back()}
                 items={[
                     { id: 'none', title: s.remind_none, onClick: () => setReminderMinutesBefore(null) },
                     { id: '0', title: s.label_at_start, onClick: () => setReminderMinutesBefore(0) },
@@ -342,7 +349,7 @@ export const CalendarNewEventPage: React.FC = () => {
 
                     {/* Reminder */}
                     <Row label={s.label_reminder}>
-                        <button onClick={() => setReminderSheetOpen(true)} className="flex items-center gap-1">
+                        <button onClick={openReminderSheet} className="flex items-center gap-1">
                             <span className="text-gray-400">{reminderLabel}</span>
                             <IcNavForward size={18} className="text-gray-300" />
                         </button>

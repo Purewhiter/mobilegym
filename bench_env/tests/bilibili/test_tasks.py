@@ -18,6 +18,7 @@ from bench_env.task.bilibili import tasks as _tasks_module
 from bench_env.task.bilibili.app import Bilibili, norm_ip_location
 from bench_env.task.common_tasks import AnswerTask, CriteriaTask
 from bench_env.tests.conftest import make_judge_input
+from bench_env.tests.fixtures.bilibili import BASE_STATE, _sanlian_video
 
 ALL_TASK_CLASSES: list[type[BaseTask]] = [
     obj
@@ -29,24 +30,6 @@ ANSWER_TASK_CLASSES = [cls for cls in ALL_TASK_CLASSES if issubclass(cls, Answer
 
 TEST_OS_STATE = {"time": {"timestamp": 1742025600000}}
 DEFAULT_ROUTE = {"app": "bilibili", "path": "/"}
-
-
-def _load_defaults() -> dict[str, Any]:
-    path = Path(__file__).resolve().parents[3] / "apps" / "Bilibili" / "data" / "defaults.json"
-    return json.loads(path.read_text(encoding="utf-8"))
-
-
-def _make_base_state() -> dict[str, Any]:
-    state = copy.deepcopy(_load_defaults())
-    state["recommendedUp"] = [
-        {"id": "800000064982", "name": "_拾光记录者_"},
-        {"id": "800000001054", "name": "流光视界"},
-    ]
-    state["activeVideoId"] = None
-    return state
-
-
-BASE_STATE = _make_base_state()
 
 
 def _make_task_input(
@@ -160,24 +143,6 @@ def _find_unfavorited_rank_entry() -> tuple[str, int, str]:
             if video_id not in favored:
                 return partition, rank, str(entry["title"])
     raise AssertionError("No unfavorited ranking entry available in current Bilibili defaults")
-
-
-def _sanlian_video(state: dict[str, Any], title: str) -> None:
-    video_id = Bilibili.bvid_from_title(title)
-    state["activeVideoId"] = video_id
-    liked = state["user"]["likedVideoIds"]
-    disliked = state["user"]["dislikedVideoIds"]
-    coined_coins = state["user"].setdefault("coinedVideoCoins", {})
-    if video_id not in liked:
-        liked.append(video_id)
-    state["user"]["dislikedVideoIds"] = [item for item in disliked if item != video_id]
-    existing = coined_coins.get(video_id, 0)
-    if existing < 2:
-        coined_coins[video_id] = existing + 1
-        state["user"]["coins"] -= 1
-    for folder in state["user"]["favoritesFolders"]:
-        if folder["id"] == "fav_default" and video_id not in folder["videoIds"]:
-            folder["videoIds"].append(video_id)
 
 
 def _with_open_video(title: str) -> dict[str, Any]:

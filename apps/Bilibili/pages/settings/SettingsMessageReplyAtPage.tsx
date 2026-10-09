@@ -1,19 +1,21 @@
 import React from 'react';
 import { SettingLayout, SettingRadioGroup } from './index';
 import { useBilibiliStore } from '../../state';
-
-const OPTIONS = [
-  { id: 'all', label: '所有人' },
-  { id: 'following', label: '关注的人' },
-  { id: 'none', label: '不接收任何消息提醒' },
-];
+import { useBilibiliStrings } from '../../hooks/useBilibiliStrings';
 
 export const SettingsMessageReplyAtPage: React.FC = () => {
-  const value = useBilibiliStore((s) => s.settings.message.replyAt) ?? 'all';
-  const setSetting = useBilibiliStore((s) => s.setSetting);
+  const s = useBilibiliStrings();
+  const value = useBilibiliStore((st) => st.settings.message.replyAt) ?? 'all';
+  const setSetting = useBilibiliStore((st) => st.setSetting);
+
+  const OPTIONS = [
+    { id: 'all', label: s.opt_all },
+    { id: 'following', label: s.opt_following },
+    { id: 'none', label: s.opt_none },
+  ];
 
   return (
-    <SettingLayout title="回复与@消息提醒">
+    <SettingLayout title={s.smr_title}>
       <SettingRadioGroup options={OPTIONS} value={value} onChange={(id) => setSetting('message.replyAt', id)} />
       <div className="h-8" />
     </SettingLayout>

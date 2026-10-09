@@ -1,18 +1,20 @@
 import React, { useState } from 'react';
 import { SettingLayout } from './index';
-
-const ITEMS: { id: string; label: string; size: string }[] = [
-  { id: 'base', label: 'App 基础组件库', size: '1GB' },
-  { id: 'image', label: '图片缓存、消息记录', size: '19MB' },
-  { id: 'other', label: '其它缓存文件', size: '336MB' },
-  { id: 'account', label: '账号、登录信息', size: '16KB' },
-  { id: 'offline', label: '离线缓存的视频文件', size: '76KB' },
-  { id: 'webview', label: 'webview的缓存文件', size: '68B' },
-  { id: 'game', label: '游戏预下载资源包', size: '0B' },
-];
+import { useBilibiliStrings } from '../../hooks/useBilibiliStrings';
 
 export const SettingsStoragePage: React.FC = () => {
+  const s = useBilibiliStrings();
   const [selected, setSelected] = useState<Set<string>>(new Set());
+
+  const ITEMS: { id: string; label: string; size: string }[] = [
+    { id: 'base', label: s.st_base, size: '1GB' },
+    { id: 'image', label: s.st_image, size: '19MB' },
+    { id: 'other', label: s.st_other, size: '336MB' },
+    { id: 'account', label: s.st_account, size: '16KB' },
+    { id: 'offline', label: s.st_offline, size: '76KB' },
+    { id: 'webview', label: s.st_webview, size: '68B' },
+    { id: 'game', label: s.st_game, size: '0B' },
+  ];
 
   const toggle = (id: string) => {
     setSelected((prev) => {
@@ -24,7 +26,7 @@ export const SettingsStoragePage: React.FC = () => {
   };
 
   return (
-    <SettingLayout title="清理存储空间">
+    <SettingLayout title={s.st_title}>
       {ITEMS.map((item) => (
         <div
           key={item.id}
@@ -44,7 +46,7 @@ export const SettingsStoragePage: React.FC = () => {
       ))}
       <div className="border-t border-gray-100 py-3 mt-2">
         <div className="text-center text-[15px] text-gray-900 py-3 active:bg-gray-50 cursor-pointer bg-[#F5F6F7] mx-4 rounded">
-          清理选中项目
+          {s.st_clean}
         </div>
       </div>
       <div className="h-8" />

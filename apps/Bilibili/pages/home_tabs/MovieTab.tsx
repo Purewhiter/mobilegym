@@ -1,5 +1,7 @@
 import React, { useMemo } from 'react';
 import { useLocale } from '@/apps/Bilibili/locale';
+import { useBilibiliStrings } from '../../hooks/useBilibiliStrings';
+import { localizePartitionLabel } from '../../utils/localize';
 import type { BilibiliVideo } from '../../data';
 import { useRankings, useVideos } from '../../hooks/useData';
 import { useBilibiliGestures } from '../../hooks/useBilibiliGestures';
@@ -17,6 +19,7 @@ const quickLinks = [
 export const MovieTab: React.FC = () => {
   const locale = useLocale();
   const isEnglish = locale === 'en';
+  const s = useBilibiliStrings();
   const { bindTap } = useBilibiliGestures();
   const rankings = useRankings();
   const videos = useVideos();
@@ -58,7 +61,7 @@ export const MovieTab: React.FC = () => {
               )}
               <div className="absolute left-5 top-1/2 -translate-y-1/2 w-[58%] text-white">
                 <div className="mb-2 inline-flex rounded-full bg-white/18 px-2 py-0.5 text-[11px] font-medium">
-                  {item.partition}
+                  {localizePartitionLabel(item.partition, locale)}
                 </div>
                 <div className="line-clamp-2 text-[20px] font-bold leading-snug">{item.title}</div>
                 <div className="mt-2 text-[12px] text-white/80 line-clamp-1">
@@ -89,9 +92,9 @@ export const MovieTab: React.FC = () => {
 
       <div className="px-4 mt-4">
         <div className="flex justify-between items-center mb-3">
-          <h3 className="font-bold text-lg">{isEnglish ? 'Picked for you' : '猜你想追'}</h3>
+          <h3 className="font-bold text-lg">{s.movie_picked}</h3>
           <span className="text-xs text-gray-500">
-            {isEnglish ? 'My watchlist >' : '我的追剧 >'}
+            {s.movie_watchlist}
           </span>
         </div>
 
@@ -117,7 +120,7 @@ export const MovieTab: React.FC = () => {
 
               <div>
                 <div className="font-medium text-sm line-clamp-1">{item.title}</div>
-                <div className="text-xs text-gray-400 line-clamp-1">{item.author || item.partition}</div>
+                <div className="text-xs text-gray-400 line-clamp-1">{item.author || localizePartitionLabel(item.partition, locale)}</div>
               </div>
             </div>
           ))}
@@ -126,7 +129,7 @@ export const MovieTab: React.FC = () => {
 
       <div className="px-4 mt-6">
         <div className="flex justify-between items-center mb-3">
-          <h3 className="font-bold text-lg">{isEnglish ? 'Now streaming' : '正在热播'}</h3>
+          <h3 className="font-bold text-lg">{s.movie_streaming}</h3>
         </div>
       </div>
     </div>

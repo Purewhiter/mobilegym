@@ -1,0 +1,186 @@
+{
+  "baseline_commit": "5fbd3f34be0e9780ae4b1e9d5089963ddbd05d38",
+  "checker": "candidate checker used for both trees",
+  "columns": [
+    "errors",
+    "warnings"
+  ],
+  "apps": [
+    {
+      "app": "Alipay",
+      "main": [
+        0,
+        8
+      ],
+      "candidate": [
+        0,
+        8
+      ]
+    },
+    {
+      "app": "Bilibili",
+      "main": [
+        0,
+        22
+      ],
+      "candidate": [
+        0,
+        22
+      ]
+    },
+    {
+      "app": "Ebay",
+      "main": [
+        4,
+        6
+      ],
+      "candidate": [
+        0,
+        6
+      ]
+    },
+    {
+      "app": "Map",
+      "main": [
+        14,
+        2
+      ],
+      "candidate": [
+        0,
+        2
+      ]
+    },
+    {
+      "app": "Railway12306",
+      "main": [
+        0,
+        21
+      ],
+      "candidate": [
+        0,
+        21
+      ]
+    },
+    {
+      "app": "RedBook",
+      "main": [
+        0,
+        4
+      ],
+      "candidate": [
+        0,
+        4
+      ]
+    },
+    {
+      "app": "Reddit",
+      "main": [
+        1,
+        38
+      ],
+      "candidate": [
+        0,
+        38
+      ]
+    },
+    {
+      "app": "Weather",
+      "main": [
+        1,
+        13
+      ],
+      "candidate": [
+        0,
+        13
+      ]
+    },
+    {
+      "app": "Wechat",
+      "main": [
+        0,
+        12
+      ],
+      "candidate": [
+        0,
+        1
+      ]
+    },
+    {
+      "app": "Calculator2",
+      "main": [
+        1,
+        0
+      ],
+      "candidate": [
+        0,
+        0
+      ]
+    },
+    {
+      "app": "Calendar",
+      "main": [
+        0,
+        1
+      ],
+      "candidate": [
+        0,
+        1
+      ]
+    },
+    {
+      "app": "Clock",
+      "main": [
+        2,
+        0
+      ],
+      "candidate": [
+        0,
+        0
+      ]
+    },
+    {
+      "app": "FileManager",
+      "main": [
+        2,
+        3
+      ],
+      "candidate": [
+        0,
+        3
+      ]
+    },
+    {
+      "app": "Gallery",
+      "main": [
+        9,
+        2
+      ],
+      "candidate": [
+        0,
+        0
+      ]
+    },
+    {
+      "app": "Settings",
+      "main": [
+        0,
+        0
+      ],
+      "candidate": [
+        0,
+        0
+      ]
+    },
+    {
+      "app": "Sms",
+      "main": [
+        0,
+        0
+      ],
+      "candidate": [
+        0,
+        0
+      ]
+    }
+  ]
+}

@@ -5,7 +5,7 @@ import { useXHydratedPosts, useXResolvedPost } from '../data/view';
 import { useXGestures } from '../hooks/useXGestures';
 import { XImage } from '../components/XMedia';
 import { useXStrings } from '../hooks/useXStrings';
-import type { XPost, XUser } from '../types';
+import type { XUser } from '../types';
 import { IcSort } from '../res/icons';
 export const PostActivityPage: React.FC = () => {
   const { id } = useParams();
@@ -14,7 +14,7 @@ export const PostActivityPage: React.FC = () => {
   const toggleFollow = useXStore(s => s.toggleFollow);
   const followedSet = useXStore(selectEffectiveFollowedSet);
   const isFollowing = (userId: string) => followedSet.has(userId);
-  const { bindBack, bindTap, go } = useXGestures();
+  const { bindBack, bindTap } = useXGestures();
   const s = useXStrings();
   const [activeTab, setActiveTab] = React.useState<'quotes' | 'retweets'>('quotes');
   const [showSortMenu, setShowSortMenu] = React.useState(false);

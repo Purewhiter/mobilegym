@@ -5,7 +5,6 @@
  */
 import React from 'react';
 import { IcCloud } from '../res/icons';
-import { dimens } from '../res/dimens';
 import { TabBar } from '../components/TabBar';
 import { strings } from '../res/strings';
 import { stringsEn } from '../res/strings.en';

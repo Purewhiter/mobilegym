@@ -1,43 +1,45 @@
 import React from 'react';
 import { SettingLayout, SettingSection, SettingRadioGroup, SettingItemArrow } from './index';
 import { useBilibiliStore } from '../../state';
-
-const PLAY_MODE_OPTIONS = [
-  { id: 'portrait', label: '竖屏模式', subtitle: '默认用竖屏模式播放视频' },
-  { id: 'auto', label: '自动模式', subtitle: '根据视频类型自动选择播放模式' },
-];
-const AUTO_PLAY_OPTIONS = [
-  { id: 'all', label: 'Wi-Fi/免流/移动网络下自动播放' },
-  { id: 'wifi', label: '仅Wi-Fi下自动播放' },
-  { id: 'off', label: '关闭自动播放' },
-];
-const BIG_CARD_SOUND_OPTIONS = [
-  { id: 'on', label: '默认打开' },
-  { id: 'off', label: '默认静音' },
-];
-const REFRESH_OPTIONS = [
-  { id: 'on', label: '开启' },
-  { id: 'off', label: '关闭' },
-];
+import { useBilibiliStrings } from '../../hooks/useBilibiliStrings';
 
 export const SettingsRecommendPage: React.FC = () => {
-  const setSetting = useBilibiliStore((s) => s.setSetting);
-  const playMode = useBilibiliStore((s) => s.settings.recommend.playMode) ?? 'auto';
-  const autoPlay = useBilibiliStore((s) => s.settings.recommend.autoPlay) ?? 'wifi';
-  const bigCardSound = useBilibiliStore((s) => s.settings.recommend.bigCardSound) ?? 'off';
-  const refresh = useBilibiliStore((s) => s.settings.recommend.refresh) ?? 'on';
+  const s = useBilibiliStrings();
+  const setSetting = useBilibiliStore((st) => st.setSetting);
+  const playMode = useBilibiliStore((st) => st.settings.recommend.playMode) ?? 'auto';
+  const autoPlay = useBilibiliStore((st) => st.settings.recommend.autoPlay) ?? 'wifi';
+  const bigCardSound = useBilibiliStore((st) => st.settings.recommend.bigCardSound) ?? 'off';
+  const refresh = useBilibiliStore((st) => st.settings.recommend.refresh) ?? 'on';
+
+  const PLAY_MODE_OPTIONS = [
+    { id: 'portrait', label: s.sr_portrait, subtitle: s.sr_portrait_sub },
+    { id: 'auto', label: s.sr_auto, subtitle: s.sr_auto_sub },
+  ];
+  const AUTO_PLAY_OPTIONS = [
+    { id: 'all', label: s.sr_opt_all },
+    { id: 'wifi', label: s.sr_opt_wifi },
+    { id: 'off', label: s.sr_opt_off },
+  ];
+  const BIG_CARD_SOUND_OPTIONS = [
+    { id: 'on', label: s.sr_sound_on },
+    { id: 'off', label: s.sr_sound_off },
+  ];
+  const REFRESH_OPTIONS = [
+    { id: 'on', label: s.opt_on },
+    { id: 'off', label: s.opt_off },
+  ];
 
   return (
-    <SettingLayout title="首页推荐设置">
-      <SettingSection title="首页视频播放模式" />
+    <SettingLayout title={s.sr_title}>
+      <SettingSection title={s.sr_sec_mode} />
       <SettingRadioGroup options={PLAY_MODE_OPTIONS} value={playMode} onChange={(id) => setSetting('recommend.playMode', id)} />
-      <SettingSection title="首页自动播放" />
+      <SettingSection title={s.sr_sec_autoplay} />
       <SettingRadioGroup options={AUTO_PLAY_OPTIONS} value={autoPlay} onChange={(id) => setSetting('recommend.autoPlay', id)} />
-      <SettingSection title="大卡默认声音(重启后生效)" />
+      <SettingSection title={s.sr_sec_sound} />
       <SettingRadioGroup options={BIG_CARD_SOUND_OPTIONS} value={bigCardSound} onChange={(id) => setSetting('recommend.bigCardSound', id)} />
-      <SettingSection title="首页推荐自动刷新" />
+      <SettingSection title={s.sr_sec_refresh} />
       <SettingRadioGroup options={REFRESH_OPTIONS} value={refresh} onChange={(id) => setSetting('recommend.refresh', id)} />
-      <SettingItemArrow label="首页单双列切换" />
+      <SettingItemArrow label={s.sr_column} />
       <div className="h-8" />
     </SettingLayout>
   );

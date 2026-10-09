@@ -23,6 +23,10 @@ if TYPE_CHECKING:
 
 logger = get_logger(__name__)
 
+# Default wall-clock budget for a single episode's step loop (setup excluded).
+# Prevents one hung episode (slow LLM, stuck page) from stalling a run forever.
+
+
 class Evaluator:
     """Evaluates task success and side effects."""
 
@@ -33,7 +37,9 @@ class Evaluator:
             judge_mode: "state" | "vlm" | "auto"
                 - state: Use JSON state matching (default)
                 - vlm: Use VLM visual evaluation
-                - auto: Use VLM if no state data available
+                - auto: Use VLM whenever a vlm_judge is configured OR the
+                  final observation has no state data; falls back to state
+                  matching only when neither condition holds
             vlm_judge: VLMJudge instance (required for vlm/auto mode)
             eval_mode: "text" | "grounded"
                 - text: Legacy match_value answer checking
@@ -42,6 +48,7 @@ class Evaluator:
         self.judge_mode = judge_mode
         self.vlm_judge = vlm_judge
         self.eval_mode = eval_mode
+        self._warned_auto_vlm = False
     
     async def evaluate(
         self, task, init_obs, last_obs, exec_result, episode=None
@@ -63,6 +70,13 @@ class Evaluator:
         )
         
         if use_vlm and self.vlm_judge and episode:
+            if self.judge_mode == "auto" and last_obs.state and not self._warned_auto_vlm:
+                self._warned_auto_vlm = True
+                logger.warning(
+                    "judge_mode=auto with a configured vlm_judge always uses VLM "
+                    "evaluation, even though state data is available; "
+                    "pass judge_mode=state to force state-based judging"
+                )
             # Wrap blocking VLM call in thread pool
             return await asyncio.to_thread(
                 self._evaluate_with_vlm, task, exec_result, episode
@@ -170,12 +184,15 @@ def _action_fingerprint(action) -> str:
     return f"{action.action_type}|{json.dumps(data, sort_keys=True, ensure_ascii=False)}"
 
 
-def _snapshot_stopwatch(sw) -> tuple[float, dict[str, float], list[dict[str, Any]]]:
+def _snapshot_stopwatch(
+    sw,
+) -> tuple[float, dict[str, float], list[dict[str, Any]], dict[str, dict[str, float]]]:
     try:
-        return float(sw.total), sw.to_flat(), sw.to_tree()
+        steps = sw.to_step_summary() if hasattr(sw, "to_step_summary") else {}
+        return float(sw.total), sw.to_flat(), sw.to_tree(), steps
     except Exception as err:
         logger.warning(f"stopwatch snapshot failed: {type(err).__name__}: {err}")
-        return 0.0, {}, []
+        return 0.0, {}, [], {}
 
 
 class Controller:
@@ -210,13 +227,15 @@ class Controller:
         ):
             fields = task._resolve_answer_fields()
             question = task._resolve_answer_question() or task.description
+            # strict=True: silent failure here would leave the answer_sheet
+            # app unseeded and every grounded answer judged as missing.
             await env.set_state({"apps": {"answer_sheet": {
                 "question": question,
                 "hint": getattr(task, "answer_hint", None),
                 "fields": fields,
                 "answers": {},
                 "submitted": False,
-            }}}, deep=True, reload=False)
+            }}}, deep=True, reload=False, strict=True)
             # Append answer sheet hint via task_name (instance attribute,
             # highest priority in description property — no ClassVar shadow)
             task.task_name = task.description + " 然后打开 答题卡 APP 在里面回答问题并提交"
@@ -266,93 +285,113 @@ class Controller:
             done, truncated, stop_reason = False, False, None
 
             from bench_env.env.stopwatch import set_current_stopwatch
-            for step in range(max_steps):
-                # Sync agent.act runs in a worker thread (asyncio default executor).
-                # We split the wallclock into two pre-measured sub-phases so the
-                # episode profile shows where infer time goes:
-                #   queue — wait for a free thread (cap = min(32, cpu+4) by default;
-                #           at parallel >= 32 this is what bottlenecks throughput)
-                #   exec  — actual agent.act run (HTTP to vLLM + parsing)
-                # During exec we bind env.stopwatch as the worker's "current"
-                # stopwatch so LLMClient (deep inside agent.act) can record its
-                # own ttft/decode children without plumbing sw through agent API.
-                with env.stopwatch.phase("infer"):
-                    submit_t = time.monotonic()
-                    timing: dict[str, float] = {}
 
-                    def _wrapped_act():
-                        timing["start"] = time.monotonic()
-                        set_current_stopwatch(env.stopwatch)
-                        try:
-                            return agent.act(obs)
-                        finally:
-                            set_current_stopwatch(None)
-                            timing["end"] = time.monotonic()
+            episode_error: Optional[str] = None
 
-                    action = await asyncio.to_thread(_wrapped_act)
-                    env.stopwatch.record("queue", timing["start"] - submit_t)
-                    env.stopwatch.record("exec", timing["end"] - timing["start"])
+            async def _step_loop() -> None:
+                nonlocal obs, done, truncated, stop_reason
+                for step in range(max_steps):
+                    # Sync agent.act runs in a worker thread (asyncio default executor).
+                    # We split the wallclock into two pre-measured sub-phases so the
+                    # episode profile shows where infer time goes:
+                    #   queue — wait for a free thread (cap = min(32, cpu+4) by default;
+                    #           at parallel >= 32 this is what bottlenecks throughput)
+                    #   exec  — actual agent.act run (HTTP to vLLM + parsing)
+                    # During exec we bind env.stopwatch as the worker's "current"
+                    # stopwatch so LLMClient (deep inside agent.act) can record its
+                    # own ttft/decode children without plumbing sw through agent API.
+                    with env.stopwatch.phase("infer"):
+                        submit_t = time.monotonic()
+                        timing: dict[str, float] = {}
 
-                with env.stopwatch.phase("record"):
-                    trace.append({"step": step + 1, "action_type": action.action_type,
-                                  "data": action.data, "thought": action.thought[:200] if action.thought else ""})
-                    if episode:
-                        # 从 agent 历史中获取 prompt（如果有）
-                        prompt = None
-                        if agent.history:
-                            last_record = agent.history[-1]
-                            prompt = getattr(last_record, "llm_prompt", None)
-                        episode.record_step(step_idx=step + 1, obs=obs, action=action,
-                                            route=obs.route, model_response=action.raw_response,
-                                            model_prompt=prompt)
+                        def _wrapped_act():
+                            timing["start"] = time.monotonic()
+                            set_current_stopwatch(env.stopwatch)
+                            try:
+                                return agent.act(obs)
+                            finally:
+                                set_current_stopwatch(None)
+                                timing["end"] = time.monotonic()
 
-                    # ---- Repetitive loop detection ----
-                    if loop_threshold > 0:
-                        fp = _action_fingerprint(action)
-                        _recent_fps.append(fp)
-                        if (len(_recent_fps) >= loop_threshold
-                                and all(f == _recent_fps[-1]
-                                        for f in _recent_fps)):
-                            logger.warning(
-                                "Repetitive loop: action repeated %dx — %s",
-                                loop_threshold, fp)
-                            truncated, stop_reason = True, "REPETITIVE_LOOP"
-                            break
+                        action = await asyncio.to_thread(_wrapped_act)
+                        env.stopwatch.record("queue", timing["start"] - submit_t)
+                        env.stopwatch.record("exec", timing["end"] - timing["start"])
 
-                try:
-                    result = await env.step(action)
-                except (ValueError, TypeError) as e:
-                    # Model output format error (e.g. invalid point coordinates)
-                    # Terminate episode — this is the model's fault
-                    logger.warning("Action format error at step %d: %s", step + 1, e)
-                    done, stop_reason = True, "FORMAT_ERROR"
-                    break
-                obs, done, stop_reason = result.observation, result.done, result.stop_reason
+                    with env.stopwatch.phase("record"):
+                        trace.append({"step": step + 1, "action_type": action.action_type,
+                                      "data": action.data, "thought": action.thought[:200] if action.thought else ""})
+                        if episode:
+                            # 从 agent 历史中获取 prompt（如果有）
+                            prompt = None
+                            if agent.history:
+                                last_record = agent.history[-1]
+                                prompt = getattr(last_record, "llm_prompt", None)
+                            # Image resize/JPEG encode + file writes are blocking —
+                            # run off the event loop (same pattern as agent.act above).
+                            await asyncio.to_thread(
+                                episode.record_step,
+                                step_idx=step + 1, obs=obs, action=action,
+                                route=obs.route, model_response=action.raw_response,
+                                model_prompt=prompt,
+                            )
 
-                # INFO 处理
-                if action.is_info and not done:
-                    config = getattr(agent, "config", None)
-                    info_reply = getattr(config, "info_reply", None) if config else None
-                    if info_reply is not None:
-                        question = action.data.get("value", "")
-                        reply = info_reply(question) if callable(info_reply) else str(info_reply)
-                        if reply:
-                            agent.add_user_comment(reply)
-                
-                if done:
-                    break
-            else:
-                truncated, stop_reason = True, "MAX_STEPS"
+                        # ---- Repetitive loop detection ----
+                        if loop_threshold > 0:
+                            fp = _action_fingerprint(action)
+                            _recent_fps.append(fp)
+                            if (len(_recent_fps) >= loop_threshold
+                                    and all(f == _recent_fps[-1]
+                                            for f in _recent_fps)):
+                                logger.warning(
+                                    "Repetitive loop: action repeated %dx — %s",
+                                    loop_threshold, fp)
+                                truncated, stop_reason = True, "REPETITIVE_LOOP"
+                                break
 
-            stopwatch_total_s, stopwatch_flat, stopwatch_tree = _snapshot_stopwatch(env.stopwatch)
+                    try:
+                        result = await env.step(action)
+                    except (ValueError, TypeError) as e:
+                        # Model output format error (e.g. invalid point coordinates)
+                        # Terminate episode — this is the model's fault
+                        logger.warning("Action format error at step %d: %s", step + 1, e)
+                        done, stop_reason = True, "FORMAT_ERROR"
+                        break
+                    obs, done, stop_reason = result.observation, result.done, result.stop_reason
+
+                    # INFO 处理
+                    if action.is_info and not done:
+                        config = getattr(agent, "config", None)
+                        info_reply = getattr(config, "info_reply", None) if config else None
+                        if info_reply is not None:
+                            question = action.data.get("value", "")
+                            reply = info_reply(question) if callable(info_reply) else str(info_reply)
+                            if reply:
+                                agent.add_user_comment(reply)
+
+                    if done:
+                        break
+                else:
+                    truncated, stop_reason = True, "MAX_STEPS"
+
+            # agent.act is synchronous and runs in a thread. Cancelling this
+            # coroutine cannot stop that thread, so do not end/reuse an episode
+            # while inference can still mutate the Agent. Provider request and
+            # browser-operation timeouts retain their own bounded error paths.
+            await _step_loop()
+
+            stopwatch_total_s, stopwatch_flat, stopwatch_tree, stopwatch_steps = _snapshot_stopwatch(env.stopwatch)
             exec_result = ExecutionResult(
                 steps=len(trace), trace=trace, runtime_s=time.time() - start_time,
                 finished=done, truncated=truncated, stop_reason=stop_reason,
                 agent_message=env.agent_message,
                 agent_answer=env.agent_answer,
+                error=episode_error,
                 stopwatch_total_s=stopwatch_total_s,
                 stopwatch_flat=stopwatch_flat,
                 stopwatch_tree=stopwatch_tree,
+                stopwatch_steps=stopwatch_steps,
+                started_at=start_time,
+                ended_at=time.time(),
             )
             # Re-fetch final state with retry for reliable judging
             try:
@@ -370,7 +409,7 @@ class Controller:
             error_msg = f"{type(e).__name__}: {e}"
             logger.exception(f"Runtime error in episode: {error_msg}")
             
-            stopwatch_total_s, stopwatch_flat, stopwatch_tree = _snapshot_stopwatch(env.stopwatch)
+            stopwatch_total_s, stopwatch_flat, stopwatch_tree, stopwatch_steps = _snapshot_stopwatch(env.stopwatch)
             exec_result = ExecutionResult(
                 steps=len(trace), trace=trace, runtime_s=time.time() - start_time,
                 finished=False, truncated=False, stop_reason="ERROR",
@@ -378,6 +417,9 @@ class Controller:
                 stopwatch_total_s=stopwatch_total_s,
                 stopwatch_flat=stopwatch_flat,
                 stopwatch_tree=stopwatch_tree,
+                stopwatch_steps=stopwatch_steps,
+                started_at=start_time,
+                ended_at=time.time(),
             )
             return exec_result, None, None, episode, task
         finally:
@@ -398,6 +440,7 @@ class Controller:
         Returns:
             tuple: (ExecutionResult, init_obs, final_obs, episode, task)
         """
+        setup_started = time.time()
         try:
             initial_obs, _ = await Controller.setup(env, task, eval_mode=eval_mode)
         except Exception as e:
@@ -409,7 +452,7 @@ class Controller:
             # Return error result (same behavior as original run_loop)
             error_msg = f"{type(e).__name__}: {e}"
             logger.exception(f"Setup error in episode: {error_msg}")
-            stopwatch_total_s, stopwatch_flat, stopwatch_tree = _snapshot_stopwatch(env.stopwatch)
+            stopwatch_total_s, stopwatch_flat, stopwatch_tree, stopwatch_steps = _snapshot_stopwatch(env.stopwatch)
             exec_result = ExecutionResult(
                 steps=0, trace=[], runtime_s=0.0,
                 finished=False, truncated=False, stop_reason="ERROR",
@@ -417,6 +460,9 @@ class Controller:
                 stopwatch_total_s=stopwatch_total_s,
                 stopwatch_flat=stopwatch_flat,
                 stopwatch_tree=stopwatch_tree,
+                stopwatch_steps=stopwatch_steps,
+                started_at=setup_started,
+                ended_at=time.time(),
             )
             return exec_result, None, None, None, task
         return await Controller.run(env, agent, task, initial_obs, max_steps, recorder, trial_id,
@@ -436,8 +482,16 @@ class ExecutionResult:
     agent_answer: Optional[str] = None
     error: Optional[str] = None
     stopwatch_total_s: float = 0.0
+    # 同名 root phase 只保留最后一次（见 StopWatch.to_flat docstring）；
+    # 跨步聚合请读 stopwatch_steps。
     stopwatch_flat: dict[str, float] = field(default_factory=dict)
     stopwatch_tree: list[dict[str, Any]] = field(default_factory=list)
+    # 每个重复 root phase 的 {n, sum_s, p50_s, p95_s, max_s}（StopWatch.to_step_summary）
+    stopwatch_steps: dict[str, dict[str, float]] = field(default_factory=dict)
+    # Episode 墙钟起止（epoch 秒；0.0=未记录），用于并发时间线对齐。
+    # 正常路径 = 步循环起止（runtime_s 的区间）；setup 失败路径 = setup 起始→失败时刻。
+    started_at: float = 0.0
+    ended_at: float = 0.0
 
 
 @dataclass
@@ -546,10 +600,13 @@ class EpisodeResult:
             "agent_message": self.execution.agent_message,
             "agent_answer": self.execution.agent_answer,
             "runtime_s": self.execution.runtime_s,
+            "started_at": self.execution.started_at,
+            "ended_at": self.execution.ended_at,
             "error": self.execution.error,
             "stopwatch_total_s": self.execution.stopwatch_total_s,
             "stopwatch_flat": self.execution.stopwatch_flat,
             "stopwatch_tree": self.execution.stopwatch_tree,
+            "stopwatch_steps": self.execution.stopwatch_steps,
         }
         d: dict[str, Any] = {
             "id": self.task_id,
@@ -661,10 +718,14 @@ class BaseRunner(ABC):
             )
         
         try:
+            # trajectory.json/results.jsonl 落盘是阻塞 IO — 移出事件循环
+            # （与 agent.act / record_step 同一 to_thread 模式）。
+            # RunRecorder._record_result 持 _write_lock，跨线程写安全；
+            # 此处 await 完成后才返回，finish_run 的时序不受影响。
             if episode:
-                episode.finish(result.to_dict())
+                await asyncio.to_thread(episode.finish, result.to_dict())
             elif recorder:
-                recorder.record_result(result.to_dict())
+                await asyncio.to_thread(recorder.record_result, result.to_dict())
 
             try:
                 logger.info(

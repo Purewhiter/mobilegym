@@ -36,16 +36,6 @@ function groupByInitial(passengers: Passenger[]): { letter: string; items: Passe
     .map(([letter, items]) => ({ letter, items }));
 }
 
-// ── Verification badge icons ────────────────────────────────────
-
-/** Small green verification badge icon (similar to 12306 real app) */
-const VerifiedBadge: React.FC<{ className?: string }> = ({ className }) => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className={className}>
-    <rect width="14" height="10" x="1" y="3" rx="2" fill="#4CAF50" />
-    <path d="M4.5 8l2 2 5-4" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-  </svg>
-);
-
 /** Passenger row in manage mode */
 const PassengerCard: React.FC<{ passenger: Passenger }> = ({ passenger }) => (
   <div className="flex items-center px-4 py-3.5 bg-white">
@@ -132,8 +122,8 @@ const SelectPassengersView: React.FC<{
   bindTap: ReturnType<typeof useRailwayGestures>['bindTap'];
   doneBackBinding: Record<string, any>;
 }> = ({ passengers, selectedIds, selectedCount, totalCount, onToggle, bindBack, bindTap, doneBackBinding }) => (
-  <div className="min-h-full bg-[#F5F5F5] pb-[110px]">
-    <div className="bg-[#4FA4F7] pt-12 pb-3 px-4 sticky top-0 z-20 flex items-center justify-between gap-3">
+  <div className="h-full bg-[#F5F5F5] flex flex-col">
+    <div className="bg-[#4FA4F7] pt-12 pb-3 px-4 shrink-0 z-20 flex items-center justify-between gap-3">
       <button className="w-10 shrink-0 flex items-center justify-center p-1" {...bindBack<HTMLButtonElement>()}>
         <IcNavBack size={26} className="text-white" />
       </button>
@@ -141,6 +131,11 @@ const SelectPassengersView: React.FC<{
       <button className="w-10 shrink-0 text-right text-white text-[16px] p-1" {...doneBackBinding}>完成</button>
     </div>
 
+    <div
+      className="flex-1 overflow-y-auto no-scrollbar pb-4"
+      data-scroll-container="main"
+      data-scroll-direction="vertical"
+    >
     <div className="mx-3 mt-3">
       <button
         className="w-full h-[60px] rounded-[10px] bg-white text-[#525C6A] text-[16px] flex items-center justify-center gap-2"
@@ -183,8 +178,9 @@ const SelectPassengersView: React.FC<{
         );
       })}
     </div>
+    </div>
 
-    <div className="fixed bottom-0 left-0 right-0 bg-[#F5F5F5] px-4 pb-[calc(env(safe-area-inset-bottom)+12px)] pt-3">
+    <div className="shrink-0 bg-[#F5F5F5] px-4 pb-[calc(env(safe-area-inset-bottom)+12px)] pt-3">
       <button
         className="w-full h-[46px] rounded-[6px] bg-[#4FA4F7] text-white flex flex-col items-center justify-center active:bg-[#3B8DE5] leading-tight"
         {...doneBackBinding}
@@ -200,7 +196,6 @@ export const PassengerListPage: React.FC = () => {
   const { passengers, selectedTrain } = useRailwayStore(
     useShallow(s => ({ passengers: s.passengers, selectedTrain: s.selectedTrain })),
   );
-  const updatePassengers = useRailwayStore(s => s.updatePassengers);
   const setSelectedTrain = useRailwayStore(s => s.setSelectedTrain);
   const { bindBack, bindTap } = useRailwayGestures();
   const location = useLocation();

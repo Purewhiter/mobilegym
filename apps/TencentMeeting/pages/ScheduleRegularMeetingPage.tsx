@@ -85,7 +85,6 @@ const PickerColumn: React.FC<{
 }> = ({ options, value, onChange }) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const itemHeight = 44;
-    const visibleItems = 5;
 
     const currentIndex = options.findIndex(opt => opt.value === value);
 
@@ -127,8 +126,7 @@ const PickerColumn: React.FC<{
                 ref={containerRef}
                 className="h-full overflow-y-auto no-scrollbar relative z-10"
                 onScroll={handleScroll}
-                onTouchEnd={handleScrollEnd}
-                onMouseUp={handleScrollEnd}
+                onPointerUp={handleScrollEnd}
                 // 禁用 mandatory scroll snap：__SIM_INPUT__.swipe 会分步 scrollBy，
                 // 小位移也会在每一步被浏览器吸附放大，bench_env 容易明显过冲。
                 // 这里改为仅在手势结束时由 handleScrollEnd 统一吸附到最近刻度。
@@ -234,7 +232,7 @@ const DurationPicker: React.FC<{
     onClose: () => void;
     onConfirm: () => void;
     onSwitchToEndTime: () => void;
-}> = ({ startTime, duration, onChange, onClose, onConfirm, onSwitchToEndTime }) => {
+}> = ({ duration, onChange, onClose, onConfirm, onSwitchToEndTime }) => {
     const s = useTencentMeetingStrings();
     const hourOptions = generateDurationHourOptions(s.picker_suffix_hours);
     const minuteOptions = generateDurationMinuteOptions(s.picker_suffix_minutes);

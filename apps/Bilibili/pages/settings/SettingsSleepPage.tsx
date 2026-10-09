@@ -1,16 +1,18 @@
 import React from 'react';
 import { SettingLayout, SettingItemSwitch } from './index';
 import { useBilibiliStore } from '../../state';
+import { useBilibiliStrings } from '../../hooks/useBilibiliStrings';
 
 export const SettingsSleepPage: React.FC = () => {
-  const setSetting = useBilibiliStore((s) => s.setSetting);
-  const enabled = useBilibiliStore((s) => s.settings.sleepReminder) ?? false;
+  const s = useBilibiliStrings();
+  const setSetting = useBilibiliStore((st) => st.setSetting);
+  const enabled = useBilibiliStore((st) => st.settings.sleepReminder) ?? false;
 
   return (
-    <SettingLayout title="睡眠提醒">
+    <SettingLayout title={s.ssl_title}>
       <SettingItemSwitch
-        label="睡眠提醒"
-        subtitle="开启后在睡眠时间将进行提醒"
+        label={s.ssl_label}
+        subtitle={s.ssl_sub}
         checked={enabled}
         onChange={(v) => setSetting('sleepReminder', v)}
       />

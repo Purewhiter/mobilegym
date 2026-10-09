@@ -245,10 +245,6 @@ export const PostCommentsPage: React.FC = () => {
     [commentsTable, user.username],
   );
 
-  const openMoreMenuFor = React.useCallback((c: CommentItem) => {
-    setMoreMenu({ comment: c });
-  }, []);
-
   const deleteOwnComment = React.useCallback(
     (c: CommentItem) => {
       if (!postId) return;

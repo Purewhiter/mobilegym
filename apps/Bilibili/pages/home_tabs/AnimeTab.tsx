@@ -1,6 +1,8 @@
 import React, { useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useLocale } from '@/apps/Bilibili/locale';
+import { useBilibiliStrings } from '../../hooks/useBilibiliStrings';
+import { localizePartitionLabel } from '../../utils/localize';
 import type { BilibiliVideo } from '../../data';
 import { useRankings, useVideos } from '../../hooks/useData';
 import { useBilibiliGestures } from '../../hooks/useBilibiliGestures';
@@ -27,6 +29,7 @@ const isRankingTabKey = (value: string | null): value is RankingTabKey =>
 export const AnimeTab: React.FC = () => {
   const locale = useLocale();
   const isEnglish = locale === 'en';
+  const s = useBilibiliStrings();
   const [searchParams] = useSearchParams();
   const { bindTap } = useBilibiliGestures();
   const rankings = useRankings();
@@ -72,7 +75,7 @@ export const AnimeTab: React.FC = () => {
               )}
               <div className="absolute left-5 top-1/2 -translate-y-1/2 w-[58%] text-white">
                 <div className="mb-2 inline-flex rounded-full bg-white/18 px-2 py-0.5 text-[11px] font-medium">
-                  {item.partition}
+                  {localizePartitionLabel(item.partition, locale)}
                 </div>
                 <div className="line-clamp-2 text-[19px] font-bold leading-snug">{item.title}</div>
                 <div className="mt-2 text-[12px] text-white/80 line-clamp-1">
@@ -103,9 +106,9 @@ export const AnimeTab: React.FC = () => {
 
       <div className="px-4 mt-2">
         <div className="flex justify-between items-center mb-3">
-          <h3 className="font-bold text-lg">{isEnglish ? 'Top rankings' : '热门排行榜'}</h3>
+          <h3 className="font-bold text-lg">{s.anime_hot_rankings}</h3>
           <span className="text-xs text-gray-500">
-            {isEnglish ? 'More rankings >' : '更多榜单 >'}
+            {s.anime_more_rankings}
           </span>
         </div>
 

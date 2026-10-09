@@ -20,7 +20,7 @@ const PickerPopup: React.FC<{
   onClose: () => void;
   bindTap: ReturnType<typeof useWeatherGestures>['bindTap'];
   bindBack: ReturnType<typeof useWeatherGestures>['bindBack'];
-}> = ({ open, options, value, onSelect, onClose, bindTap, bindBack }) => {
+}> = ({ open, options, value, onSelect, bindTap, bindBack }) => {
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-[70] flex items-center justify-center">

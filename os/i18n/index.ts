@@ -4,7 +4,7 @@
  * 提供 useOsT() Hook 和 osT() 函数用于翻译系统级 UI 字符串。
  */
 
-import { useLocale, type Locale, getLocale } from '../locale';
+import { useLocale, getLocale } from '../locale';
 import { OS_EN } from './en';
 
 /**

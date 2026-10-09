@@ -10,10 +10,10 @@ Feature parity with Vite apiGatewayPlugin:
 - Force accept-encoding: identity to upstream
 
 Usage (single worker, dev):
-    python scripts/server/api_gateway.py --port 4181
+    python scripts/server/api_gateway.py --port 4182
 
 Usage (multi-worker, production):
-    uvicorn scripts.server.api_gateway:app --host 127.0.0.1 --port 4181 --workers 8
+    uvicorn scripts.server.api_gateway:app --host 127.0.0.1 --port 4182 --workers 8
 """
 
 import argparse
@@ -325,6 +325,17 @@ app = Starlette(
 
 
 def main():
+    import sys
+    from pathlib import Path
+
+    # uvicorn 用 import string "scripts.server.api_gateway:app" 加载 app（多 worker 必需），
+    # 要求仓库根在 sys.path 上。直接 `python scripts/server/api_gateway.py` 时
+    # sys.path[0] 是 scripts/server —— 这里补仓库根，与启动脚本的 PYTHONPATH 双保险，
+    # 否则每个 worker 都 ModuleNotFoundError 崩溃循环。
+    repo_root = str(Path(__file__).resolve().parents[2])
+    if repo_root not in sys.path:
+        sys.path.insert(0, repo_root)
+
     import uvicorn
     parser = argparse.ArgumentParser()
     parser.add_argument("--port", type=int, default=4174)

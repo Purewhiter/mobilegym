@@ -76,8 +76,8 @@ function getDefaultFolderName(): string {
 }
 
 function makeId(prefix: string): string {
-  const cryptoAny = globalThis.crypto as any;
-  if (cryptoAny?.randomUUID) return `${prefix}_${cryptoAny.randomUUID()}`;
+  const cryptoObj: Crypto | undefined = globalThis.crypto;
+  if (cryptoObj?.randomUUID) return `${prefix}_${cryptoObj.randomUUID()}`;
   return `${prefix}_${TimeService.now().toString(16)}_${Math.random().toString(16).slice(2)}`;
 }
 
@@ -513,7 +513,7 @@ const LauncherAppIcon = React.memo(function LauncherAppIcon(props: {
   const startLongPress = (e: React.PointerEvent<HTMLButtonElement>) => {
     if (!onLongPress && !onLongPressDrag) return;
     // Only primary button (mouse) / touch / pen.
-    if (typeof (e as any).button === 'number' && (e as any).button !== 0) return;
+    if (typeof e.button === 'number' && e.button !== 0) return;
 
     suppressNextClickRef.current = false;
     longPressedRef.current = false;
@@ -521,7 +521,7 @@ const LauncherAppIcon = React.memo(function LauncherAppIcon(props: {
     activePointerIdRef.current = e.pointerId;
     startPosRef.current = { x: e.clientX, y: e.clientY };
     clearTimer();
-    const isTrustedEvent = !!(e as any).isTrusted;
+    const isTrustedEvent = !!e.isTrusted;
     timerRef.current = window.setTimeout(() => {
       timerRef.current = null;
       longPressedRef.current = true;
@@ -565,7 +565,7 @@ const LauncherAppIcon = React.memo(function LauncherAppIcon(props: {
     // Best-effort: release pointer capture if we took it
     try {
       const pid = activePointerIdRef.current;
-      const el = btnRef.current as any;
+      const el = btnRef.current;
       if (pid != null && el?.releasePointerCapture) {
         el.releasePointerCapture(pid);
       }
@@ -656,7 +656,7 @@ const FolderIcon = React.memo(function FolderIcon(props: {
 
   const startLongPress = (e: React.PointerEvent<HTMLButtonElement>) => {
     if (!onLongPress && !onLongPressDrag) return;
-    if (typeof (e as any).button === 'number' && (e as any).button !== 0) return;
+    if (typeof e.button === 'number' && e.button !== 0) return;
 
     suppressNextClickRef.current = false;
     longPressedRef.current = false;
@@ -664,7 +664,7 @@ const FolderIcon = React.memo(function FolderIcon(props: {
     activePointerIdRef.current = e.pointerId;
     startPosRef.current = { x: e.clientX, y: e.clientY };
     clearTimer();
-    const isTrustedEvent = !!(e as any).isTrusted;
+    const isTrustedEvent = !!e.isTrusted;
     timerRef.current = window.setTimeout(() => {
       timerRef.current = null;
       longPressedRef.current = true;
@@ -707,7 +707,7 @@ const FolderIcon = React.memo(function FolderIcon(props: {
     startPosRef.current = null;
     try {
       const pid = activePointerIdRef.current;
-      const el = btnRef.current as any;
+      const el = btnRef.current;
       if (pid != null && el?.releasePointerCapture) {
         el.releasePointerCapture(pid);
       }
@@ -759,7 +759,10 @@ const FolderIcon = React.memo(function FolderIcon(props: {
                 return <div key={i} className="bg-white/10 rounded-[4px]" />;
               }
               const manifest = getAppManifest(appId);
-              const Icon = (manifest?.icon as any) ?? null;
+              // manifest.icon 允许是图片 URL（AppIconSource = ComponentType | string），
+              // 字符串不能当作 JSX 组件渲染，这里只渲染组件型图标。
+              const icon = manifest?.icon;
+              const Icon = typeof icon === 'string' ? null : icon ?? null;
               return (
                 <div key={i} className="bg-white/10 rounded-[4px] flex items-center justify-center">
                   {Icon ? (
@@ -829,7 +832,7 @@ function LauncherClockWidget(props: { onClick: () => void; onLongPress?: (anchor
       style={{ touchAction: onLongPress ? 'pan-x' : undefined }}
       onPointerDown={(e) => {
         if (!onLongPress) return;
-        if (typeof (e as any).button === 'number' && (e as any).button !== 0) return;
+        if (typeof e.button === 'number' && e.button !== 0) return;
         suppressNextClickRef.current = false;
         startPosRef.current = { x: e.clientX, y: e.clientY };
         clearTimer();
@@ -990,17 +993,34 @@ function getLocalizedLauncherWeatherText(
   return formatLauncherPinyinLabel(raw);
 }
 
+/**
+ * Weather App store 状态的结构化投影（launcher 跨层只读，不 import App 层类型）。
+ * 字段全部可选：store.getState() 在类型上是 any，这里只声明本组件实际读取的部分。
+ */
+type LauncherWeatherStateSlice = {
+  selectedCityId?: string;
+  savedCities?: Array<{ id?: string; name?: string }>;
+  bundlesByCityId?: Record<string, {
+    locationName?: string;
+    bundle?: {
+      now?: { temp?: string; text?: string };
+      daily?: Array<{ tempMax?: string; tempMin?: string }>;
+      airQuality?: { aqi?: string } | null;
+    };
+  } | undefined>;
+};
+
 function deriveWeatherSnapshot(store: ReturnType<typeof getStore>): WeatherSnapshot {
   if (!store) return null;
-  const s = store.getState() as any;
+  const s: LauncherWeatherStateSlice | undefined = store.getState();
   const cityId = s?.selectedCityId ?? '';
   const bundle = s?.bundlesByCityId?.[cityId];
   if (!bundle?.bundle?.now) return null;
-  const savedCities: any[] = s?.savedCities ?? [];
+  const savedCities = s?.savedCities ?? [];
   let cityName = '--';
   if (cityId === 'located') cityName = bundle.locationName ?? '定位中';
   else {
-    const city = savedCities.find((c: any) => c.id === cityId);
+    const city = savedCities.find((c) => c.id === cityId);
     cityName = city?.name ?? '--';
   }
   const now = bundle.bundle.now;
@@ -1131,7 +1151,7 @@ function LauncherWeatherWidget(props: { onClick: () => void; onLongPress?: (anch
       style={{ touchAction: onLongPress ? 'pan-x' : undefined }}
       onPointerDown={(e) => {
         if (!onLongPress) return;
-        if (typeof (e as any).button === 'number' && (e as any).button !== 0) return;
+        if (typeof e.button === 'number' && e.button !== 0) return;
         suppressNextClickRef.current = false;
         startPosRef.current = { x: e.clientX, y: e.clientY };
         clearTimer();
@@ -1505,7 +1525,7 @@ export const Launcher: React.FC = () => {
     NotificationService.getState,
   );
   const badgeCountByAppId = useMemo(() => {
-    const prefs = preferences as Record<string, any>;
+    const prefs = preferences;
     const map: Partial<Record<AppId, number>> = {};
     for (const it of notifications.items) {
       const appId = it.appId;
@@ -1522,7 +1542,7 @@ export const Launcher: React.FC = () => {
   }, [preferences, notifications.items]);
 
   const iconSizePct = useMemo(() => {
-    const raw = (preferences as any).icon_size;
+    const raw = preferences.icon_size;
     const n = typeof raw === 'number' ? raw : Number(raw);
     if (!Number.isFinite(n)) return 100;
     return Math.max(80, Math.min(120, Math.round(n)));
@@ -1533,7 +1553,7 @@ export const Launcher: React.FC = () => {
   }, [iconSizePct]);
 
   const preferredGrid = useMemo(() => {
-    const raw = (preferences as any).home_screen_layout;
+    const raw = preferences.home_screen_layout;
     if (typeof raw !== 'string' || !raw.trim()) return null;
     const s = raw.trim().toLowerCase().replace('×', 'x').replace(/\s+/g, '');
     const m = s.match(/^(\d{1,2})x(\d{1,2})$/);
@@ -2041,15 +2061,8 @@ export const Launcher: React.FC = () => {
     setDrag(d);
   };
 
-  const computeDragOver = (clientX: number, clientY: number): DragOver | null => {
-    // Drag drop-target bar (e.g. remove/info) should take priority.
-    const hit = (typeof document !== 'undefined' ? document.elementFromPoint(clientX, clientY) : null) as HTMLElement | null;
-    const dropEl = hit?.closest?.('[data-drop-target]') as HTMLElement | null;
-    const target = dropEl?.getAttribute('data-drop-target');
-    if (target === 'remove' || target === 'info') {
-      return { container: 'dropTarget', target };
-    }
-
+  /** 纯几何的容器命中（workspace cell / hotseat slot），不做投放条的遮挡测试。 */
+  const computeContainerOverAt = (clientX: number, clientY: number): DragOver | null => {
     const l = layoutRef.current;
     const screen = l.screens[currentPageRef.current];
     if (screen) {
@@ -2080,6 +2093,27 @@ export const Launcher: React.FC = () => {
     }
 
     return null;
+  };
+
+  const computeDragOver = (clientX: number, clientY: number): DragOver | null => {
+    // Drag drop-target bar (e.g. remove/info) should take priority.
+    // 命中判定用纯几何（getBoundingClientRect 包含测试），不用 elementFromPoint：
+    // 投放条位于状态栏区域，被系统的通知栏下拉手势层（z-index 更高、
+    // pointer-events:auto）覆盖，elementFromPoint 永远打不中胶囊。
+    if (typeof document !== 'undefined') {
+      const targets = document.querySelectorAll<HTMLElement>('[data-drop-target]');
+      for (const el of targets) {
+        const target = el.getAttribute('data-drop-target');
+        if (target !== 'remove' && target !== 'info') continue;
+        const r = el.getBoundingClientRect();
+        if (r.width <= 0 || r.height <= 0) continue;
+        if (clientX >= r.left && clientX <= r.right && clientY >= r.top && clientY <= r.bottom) {
+          return { container: 'dropTarget', target };
+        }
+      }
+    }
+
+    return computeContainerOverAt(clientX, clientY);
   };
 
   const computeFolderIntentInWorkspace = (args: {
@@ -2275,11 +2309,12 @@ export const Launcher: React.FC = () => {
 
     // Hotseat is full (no space to push into).
     // Only allow swap when we have a valid origin cell on workspace.
-    const originScreenId = (d.origin as any).screenId;
-    const originCellX = Number((d.origin as any).cellX);
-    const originCellY = Number((d.origin as any).cellY);
+    const workspaceOrigin = d.origin.container === 'workspace' ? d.origin : null;
+    const originScreenId = workspaceOrigin?.screenId;
+    const originCellX = Number(workspaceOrigin?.cellX);
+    const originCellY = Number(workspaceOrigin?.cellY);
     const originCanReceive =
-      d.origin.container === 'workspace' &&
+      workspaceOrigin != null &&
       typeof originScreenId === 'string' &&
       Number.isFinite(originCellX) &&
       Number.isFinite(originCellY) &&
@@ -2519,15 +2554,42 @@ export const Launcher: React.FC = () => {
       lastPreviewFolderIntentRef.current = false;
       dragRef.current = null;
       setDrag(null);
-      if (!d.over) return;
-      if (d.over.container === 'dropTarget' && d.over.target === 'info') {
+
+      // 以松手时刻的真实坐标重算 over（pointerup 的落点可能与最后一次
+      // pointermove 不同）；up 点不在任何容器上时回退到拖拽中的最后判定。
+      const liveOver = computeDragOver(e.clientX, e.clientY);
+      let over = liveOver ?? d.over;
+      const clientX = liveOver ? e.clientX : d.clientX;
+      const clientY = liveOver ? e.clientY : d.clientY;
+
+      // 安全复核：松手点被判为"移除"，但同一坐标同时落在某个图标的合并
+      // 半径内时（只会在投放条与图标发生几何重叠的异常情况下出现），把
+      // 意图判给图标。拖拽移动绝不允许因区域重叠把 App 静默移除。
+      if (over && over.container === 'dropTarget' && over.target === 'remove') {
+        const wsOver = computeContainerOverAt(clientX, clientY);
+        if (wsOver && wsOver.container === 'workspace') {
+          const intent = computeFolderIntentInWorkspace({
+            screenId: wsOver.screenId,
+            cellX: wsOver.cellX,
+            cellY: wsOver.cellY,
+            clientX,
+            clientY,
+            draggedItemId: d.itemId,
+            layoutLike: layoutRef.current,
+          });
+          if (intent) over = wsOver;
+        }
+      }
+
+      if (!over) return;
+      if (over.container === 'dropTarget' && over.target === 'info') {
         const item = layoutRef.current.items[d.itemId] ?? d.transientItem;
         if (item?.kind === 'app') {
           openAppInfo(item.appId);
         }
         return;
       }
-      setLayout(prev => applyDrop(prev, d));
+      setLayout(prev => applyDrop(prev, { ...d, over, clientX, clientY }));
     };
 
     const onBlur = () => {
@@ -2849,10 +2911,17 @@ export const Launcher: React.FC = () => {
       ) : null}
 
       {/* Drag drop targets */}
+      {/*
+       * 位置约束：整条投放栏（含 h-10 胶囊）必须位于 workspace grid 顶边
+       * （statusBarHeight + py-6 = statusBarHeight + 24px）之上，绝不能与第一行
+       * 图标重叠——否则 computeDragOver 的 elementFromPoint 会在图标上方优先命中
+       * remove/info 胶囊，把"拖到图标上合并"误判成"移除"，导致 App 被静默删掉。
+       * 拖拽期间盖住状态栏是预期行为（对齐真实 Android 拖拽时顶部投放区）。
+       */}
       {drag ? (
         <div
           className="absolute left-0 right-0 z-[85] pointer-events-none"
-          style={{ top: `${statusBarHeight + 10}px` }}
+          style={{ top: `${Math.max(4, statusBarHeight - 32)}px` }}
           aria-label="拖拽目标栏"
         >
           <div className="mx-auto w-full px-6 flex justify-center gap-3 pointer-events-auto">
@@ -2920,7 +2989,7 @@ export const Launcher: React.FC = () => {
             onPointerDown={(e) => {
               const target = e.target as HTMLElement | null;
               if (target?.closest('button, [role="button"], [data-desktop-interactive="true"]')) return;
-              if (typeof (e as any).button === 'number' && (e as any).button !== 0) return;
+              if (typeof e.button === 'number' && e.button !== 0) return;
               bgStartPosRef.current = { x: e.clientX, y: e.clientY };
               clearBgTimer();
               bgTimerRef.current = window.setTimeout(() => {

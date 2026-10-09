@@ -23,7 +23,16 @@ export const NAVIGATION_DECLARATION = {
       params: {},
       entryPoint: 'none',
       scrollContainers: MAIN_SCROLL,
-      uiStates: [{ id: 'clock.alarm.base', search: {}, description: '闹钟页' }],
+      uiStates: [
+        {
+          id: 'clock.alarm.base',
+          search: {},
+          description: '闹钟页',
+          actions: [
+            { id: 'alarm.item.selection.enter', label: '长按闹钟进入选择模式', behavior: 'other' },
+          ],
+        },
+      ],
       queryParams: {},
       description: '闹钟页',
     },
@@ -33,7 +42,16 @@ export const NAVIGATION_DECLARATION = {
       params: {},
       entryPoint: 'none',
       scrollContainers: MAIN_SCROLL,
-      uiStates: [{ id: 'clock.world.base', search: {}, description: '世界时钟页' }],
+      uiStates: [
+        {
+          id: 'clock.world.base',
+          search: {},
+          description: '世界时钟页',
+          actions: [
+            { id: 'world.city.selection.enter', label: '长按城市进入选择模式', behavior: 'other' },
+          ],
+        },
+      ],
       queryParams: {},
       description: '世界时钟页',
     },

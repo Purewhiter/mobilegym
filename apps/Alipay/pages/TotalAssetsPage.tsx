@@ -124,7 +124,7 @@ export const TotalAssetsPage: React.FC = () => {
                 { label: s.total_assets_page_current_label, main: total, sub: yesterday },
                 { label: s.total_assets_page_stable_label, main: zeroCol.main, sub: zeroCol.sub },
                 { label: s.total_assets_page_advanced_label, main: zeroCol.main, sub: zeroCol.sub },
-              ].map((col, idx) => (
+              ].map((col) => (
                 <div key={col.label} className="flex min-w-0 flex-col px-3 relative z-10">
                   <div className="inline-flex max-w-full items-center gap-0 text-[13px] text-gray-500">
                     <span className="truncate">{col.label}</span>

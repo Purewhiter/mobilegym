@@ -27,13 +27,13 @@ export const AddPassengerPage: React.FC = () => {
   const showIdTypePicker = dialog === 'idType';
   const showTicketTypePicker = dialog === 'ticketType';
   const showAlert = dialog === 'alert';
+  const showConfirm = dialog === 'confirm';
 
   const [idType, setIdType] = useState(ID_TYPES[0]);
   const [name, setName] = useState('');
   const [idNo, setIdNo] = useState('');
   const [ticketType, setTicketType] = useState(TICKET_TYPES[0]);
   const [phone, setPhone] = useState('');
-  const [showConfirm, setShowConfirm] = useState(false);
   const [alertMsg, setAlertMsg] = useState('');
   const [fieldErrors, setFieldErrors] = useState<{ idNo?: boolean; phone?: boolean }>({});
 
@@ -75,7 +75,7 @@ export const AddPassengerPage: React.FC = () => {
       openAlert(s.add_passenger_duplicate);
       return;
     }
-    setShowConfirm(true);
+    go('addPassenger.showConfirm');
   };
 
   const handleConfirm = () => {
@@ -89,8 +89,8 @@ export const AddPassengerPage: React.FC = () => {
       ticketType,
     };
     updatePassengers([...passengers, newPassenger]);
-    setShowConfirm(false);
-    back();
+    // 关弹窗（-1）+ 离开本页回乘车人列表（-1）
+    back(2);
   };
 
   return (
@@ -215,7 +215,7 @@ export const AddPassengerPage: React.FC = () => {
           idNo={idNo.trim()}
           phone={phone.trim()}
           ticketType={ticketType}
-          onCancel={() => setShowConfirm(false)}
+          onCancel={() => back()}
           onConfirm={handleConfirm}
         />
       )}

@@ -26,21 +26,21 @@ export const AdvancedPad: React.FC<AdvancedPadProps> = ({ className = '' }) => {
   const { bindAction } = useCalculator2Gestures();
 
   const buttons = [
-    { label: strings.fun_sin, action: () => inputFunction('sin'), actionId: 'fun.sin' },
-    { label: strings.fun_cos, action: () => inputFunction('cos'), actionId: 'fun.cos' },
-    { label: strings.fun_tan, action: () => inputFunction('tan'), actionId: 'fun.tan' },
+    { label: strings.fun_sin, action: () => inputFunction('sin'), actionId: 'calc.advanced.funSin' },
+    { label: strings.fun_cos, action: () => inputFunction('cos'), actionId: 'calc.advanced.funCos' },
+    { label: strings.fun_tan, action: () => inputFunction('tan'), actionId: 'calc.advanced.funTan' },
 
-    { label: strings.fun_ln, action: () => inputFunction('ln'), actionId: 'fun.ln' },
-    { label: strings.fun_log, action: () => inputFunction('log'), actionId: 'fun.log' },
-    { label: strings.op_fact, action: () => inputOperator('!'), actionId: 'op.fact' },
+    { label: strings.fun_ln, action: () => inputFunction('ln'), actionId: 'calc.advanced.funLn' },
+    { label: strings.fun_log, action: () => inputFunction('log'), actionId: 'calc.advanced.funLog' },
+    { label: strings.op_fact, action: () => inputOperator('!'), actionId: 'calc.advanced.opFact' },
 
-    { label: strings.const_pi, action: () => inputConstant(strings.const_pi), actionId: 'const.pi' },
-    { label: strings.const_e, action: () => inputConstant(strings.const_e), actionId: 'const.e' },
-    { label: strings.op_pow, action: () => inputOperator('^'), actionId: 'op.pow' },
+    { label: strings.const_pi, action: () => inputConstant(strings.const_pi), actionId: 'calc.advanced.constPi' },
+    { label: strings.const_e, action: () => inputConstant(strings.const_e), actionId: 'calc.advanced.constE' },
+    { label: strings.op_pow, action: () => inputOperator('^'), actionId: 'calc.advanced.opPow' },
 
-    { label: strings.paren_left, action: () => inputParen('('), actionId: 'paren.left' },
-    { label: strings.paren_right, action: () => inputParen(')'), actionId: 'paren.right' },
-    { label: strings.op_sqrt, action: () => inputFunction('sqrt'), actionId: 'op.sqrt' },
+    { label: strings.paren_left, action: () => inputParen('('), actionId: 'calc.advanced.parenLeft' },
+    { label: strings.paren_right, action: () => inputParen(')'), actionId: 'calc.advanced.parenRight' },
+    { label: strings.op_sqrt, action: () => inputFunction('sqrt'), actionId: 'calc.advanced.opSqrt' },
   ];
 
   return (

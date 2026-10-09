@@ -1,5 +1,5 @@
 
-import React, { useCallback, useState, useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { useWechatStrings } from './hooks/useWechatStrings';
 import { MemoryRouter as Router, Routes, Route, Outlet, useLocation, useNavigate, UNSAFE_NavigationContext, Navigate } from 'react-router-dom';
 import { IcMessageSquare, IcUserAdd, IcScan, IcQrCode } from './res/icons';
@@ -99,6 +99,7 @@ import { useActivityContext } from '../../os/ActivityContext';
 import { dimensToCssVars, themeToCssVars } from '../../os/utils/themeToCssVars';
 import { applySkinToThemeColors } from '../../os/SkinService';
 import { useDarkMode } from '../../os/hooks/useDarkMode';
+import { useAppVisibleInterval } from '../../os/hooks/useAppVisibleTimers';
 import { manifest } from './manifest';
 import { colors, colorsDark } from './res/colors';
 import { colorStates, colorStatesDark } from './res/colors.states';
@@ -378,31 +379,29 @@ const Layout = () => {
   );
 };
 
-/** 定时检测 session 是否过期，过期时设 showLoginExpiredModal: true 并标记 loggedIn: false */
+/** 定时检测 session 是否过期，过期时设 showLoginExpiredModal: true 并标记 loggedIn: false。
+ * 仅在微信前台时轮询；回前台时先立即补检一次，补偿后台期间发生的过期。 */
 const SessionExpiryWatcher: React.FC = () => {
-  const auth = useWechatStore(s => s.auth);
-  useEffect(() => {
-    const timer = window.setInterval(() => {
-      const s = useWechatStore.getState();
-      const expiresAt = s.auth?.session?.expiresAt;
-      if (!expiresAt || typeof expiresAt !== 'number') return;
-      if (!s.auth?.session?.loggedIn) return;
-      const now = TimeService.now();
-      if (now <= expiresAt) return;
-      useWechatStore.setState({
-        auth: {
-          ...s.auth,
-          session: {
-            ...s.auth.session,
-            loggedIn: false,
-            lastExpiredAt: now,
-          },
-          showLoginExpiredModal: true,
+  const checkSessionExpiry = () => {
+    const s = useWechatStore.getState();
+    const expiresAt = s.auth?.session?.expiresAt;
+    if (!expiresAt || typeof expiresAt !== 'number') return;
+    if (!s.auth?.session?.loggedIn) return;
+    const now = TimeService.now();
+    if (now <= expiresAt) return;
+    useWechatStore.setState({
+      auth: {
+        ...s.auth,
+        session: {
+          ...s.auth.session,
+          loggedIn: false,
+          lastExpiredAt: now,
         },
-      });
-    }, 1000);
-    return () => window.clearInterval(timer);
-  }, []);
+        showLoginExpiredModal: true,
+      },
+    });
+  };
+  useAppVisibleInterval(checkSessionExpiry, 1000, { onResume: checkSessionExpiry });
   return null;
 };
 

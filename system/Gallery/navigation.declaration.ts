@@ -13,7 +13,16 @@ export const NAVIGATION_DECLARATION = {
       params: {},
       entryPoint: 'home',
       scrollContainers: MAIN_SCROLL,
-      uiStates: [{ id: 'gallery.home.base', search: {}, description: '相册首页' }],
+      uiStates: [
+        {
+          id: 'gallery.home.base',
+          search: {},
+          description: '相册首页',
+          actions: [
+            { id: 'gallery.select.share', label: '分享选中的图片', behavior: 'other' },
+          ],
+        },
+      ],
       queryParams: {},
       description: '相册首页',
     },
@@ -44,12 +53,19 @@ export const NAVIGATION_DECLARATION = {
       entryPoint: 'deepLink',
       scrollContainers: MAIN_SCROLL,
       uiStates: [
-        { id: 'gallery.photo.base', search: {}, description: '图片预览页' },
+        {
+          id: 'gallery.photo.base',
+          search: {},
+          description: '图片预览页',
+          actions: [
+            { id: 'gallery.viewer.share', label: '分享当前图片', behavior: 'other' },
+          ],
+        },
         { id: 'gallery.photo.modal.more', search: { modal: 'more' }, description: '图片预览页 - 更多菜单弹窗' },
         { id: 'gallery.photo.modal.details', search: { modal: 'details' }, description: '图片预览页 - 详情弹窗' },
         { id: 'gallery.photo.modal.rename', search: { modal: 'rename' }, description: '图片预览页 - 重命名弹窗' },
       ],
-      queryParams: { album: 'string', from: 'string', modal: 'string' },
+      queryParams: { album: 'string', from: 'string' },
       description: '图片预览页',
     },
     {
@@ -59,12 +75,12 @@ export const NAVIGATION_DECLARATION = {
       entryPoint: 'deepLink',
       scrollContainers: MAIN_SCROLL,
       uiStates: [
-        { id: 'gallery.photo.intent', search: {}, description: '通过 ACTION_VIEW 打开的图片预览页' },
+        { id: 'gallery.photo.intent.base', search: {}, description: '通过 ACTION_VIEW 打开的图片预览页' },
         { id: 'gallery.photo.intent.modal.more', search: { modal: 'more' }, description: 'ACTION_VIEW 图片预览 - 更多菜单' },
         { id: 'gallery.photo.intent.modal.details', search: { modal: 'details' }, description: 'ACTION_VIEW 图片预览 - 详情弹窗' },
         { id: 'gallery.photo.intent.modal.rename', search: { modal: 'rename' }, description: 'ACTION_VIEW 图片预览 - 重命名弹窗' },
       ],
-      queryParams: { modal: 'string' },
+      queryParams: {},
       description: '图片预览页（外部 ACTION_VIEW 入口）',
     },
   ],

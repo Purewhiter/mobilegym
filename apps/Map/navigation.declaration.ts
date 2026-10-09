@@ -18,7 +18,33 @@ export const NAVIGATION_DECLARATION = {
       entryPoint: 'home',
       scrollContainers: [], // Map view itself usually isn't a standard scroll container in this context, but maybe bottom sheet is. keeping empty for now or maybe 'bottomSheet'
       uiStates: [
-        { id: 'explore.base', search: {}, description: '探索首页-地图视图' },
+        {
+          id: 'explore.base',
+          search: {},
+          description: '探索首页-地图视图',
+          actions: [
+            // 路线规划浮层（RouteSetupOverlay，state 驱动）
+            { id: 'routeSetup.open.originPicker', label: '打开起点选择', behavior: 'other' },
+            { id: 'routeSetup.open.destinationPicker', label: '打开终点选择', behavior: 'other' },
+            { id: 'routeSetup.points.swap', label: '交换起终点', behavior: 'other' },
+            { id: 'routeSetup.transport.select', label: '选择出行方式', behavior: 'other' },
+            { id: 'routeSetup.history.select', label: '路线规划-选择历史地点', behavior: 'other' },
+            // 起终点搜索浮层（RoutePointPickerOverlay）
+            { id: 'routePicker.sheet.close', label: '关闭地点选择', behavior: 'other' },
+            { id: 'routePicker.query.clear', label: '清空搜索关键词', behavior: 'other' },
+            { id: 'routePicker.option.chooseOnMap', label: '在地图上选点', behavior: 'other' },
+            { id: 'routePicker.history.select', label: '地点选择-选择历史地点', behavior: 'other' },
+            { id: 'routePicker.prediction.select', label: '选择联想结果', behavior: 'other' },
+            // 图钉选点浮层（PinPickerOverlay）
+            { id: 'pinPicker.sheet.close', label: '关闭图钉选点', behavior: 'other' },
+            { id: 'pinPicker.sheet.confirm', label: '确认图钉选点', behavior: 'other' },
+          ],
+        },
+        {
+          id: 'explore.layers',
+          search: { layers: 'string' },
+          description: '探索-地图图层选择弹窗',
+        },
         {
           id: 'explore.category_search',
           search: { category: 'string' },
@@ -247,7 +273,8 @@ export const NAVIGATION_DECLARATION = {
     // =========================
     {
       id: 'tab.explore',
-      from: ['/me', '/contribute'],
+      // '/search'：SearchPage 选中地点后编程式 go('tab.explore') 回地图
+      from: ['/me', '/contribute', '/search'],
       to: '/',
       search: {},
       searchParams: {},

@@ -75,7 +75,7 @@ Three explicit exceptions to "go through NetworkService":
 2. **Vite dev-server endpoints** that already live under `/api/...`. These resolve same-origin and don't go through the cross-origin gateway path.
 3. **`<img src>` / `<video src>`** for CDN-hosted media. The browser's resource pipeline already handles caching, range requests, and decoding; routing it through the gateway would force everything to RAM-buffer.
 
-Direct `fetch()` calls anywhere else are bugs — see `docs/pending/tofix.md` for the current known violators (Spotify, Map).
+Direct `fetch()` calls anywhere else are bugs — a few known legacy violators remain (Spotify, Map); they should be migrated, not imitated.
 
 ## What's not implemented
 
@@ -83,7 +83,7 @@ Direct `fetch()` calls anywhere else are bugs — see `docs/pending/tofix.md` fo
 - **Network mocks / bench scenario injection**: there's no `__SIM_NET__`-style global to intercept outbound traffic per task.
 - **Gateway-side response cache**: only the 404 cache exists. App-level caches (Weather 5-min, geocoding 10-min) are app responsibility.
 
-These are deliberate gaps — record them in `docs/pending/` if they ever become a blocker.
+These are deliberate gaps — file an issue if one of them ever becomes a blocker.
 
 ## Related Docs
 

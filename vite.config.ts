@@ -6,6 +6,11 @@ import { execFileSync, spawn, type ChildProcess } from 'child_process';
 import { fileURLToPath } from 'url';
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
+import {
+  INDEX_NAME as THEME_INDEX_NAME,
+  buildIndexPayload,
+  isBundleDir,
+} from './scripts/lib/theme_asset_index.mjs';
 
 // Fix for __dirname in ESM
 const __filename = fileURLToPath(import.meta.url);
@@ -16,11 +21,11 @@ const __dirname = path.dirname(__filename);
  * Works for both dev server (npm run dev) and preview server (npm run preview)
  */
 function accessLogPlugin() {
-  const logMiddleware = (req, res, next) => {
+  const logMiddleware = (req: any, res: any, next: any) => {
     const start = Date.now();
     const originalEnd = res.end;
     
-    res.end = function(...args) {
+    res.end = function(...args: any[]) {
       const duration = Date.now() - start;
       const time = new Date().toLocaleTimeString('zh-CN', { hour12: false });
       const status = res.statusCode;
@@ -38,10 +43,12 @@ function accessLogPlugin() {
 
   return {
     name: 'access-log',
-    configureServer(server) {
+    configureServer(server: any) {
       server.middlewares.use(logMiddleware);
     },
-    configurePreviewServer(server) {
+    configurePreviewServer(server: any) {
+      // 逐请求 console.log 在高频评测下有可观 IO 开销；MOBILEGYM_ACCESS_LOG=0 关闭（默认开）
+      if (process.env.MOBILEGYM_ACCESS_LOG === '0') return;
       server.middlewares.use(logMiddleware);
     }
   };
@@ -54,8 +61,8 @@ function accessLogPlugin() {
 function listPublicFilesPlugin() {
   return {
     name: 'list-public-files',
-    configureServer(server) {
-      server.middlewares.use('/api/list-public-files', (req, res) => {
+    configureServer(server: any) {
+      server.middlewares.use('/api/list-public-files', (req: any, res: any) => {
         const publicDir = path.resolve(__dirname, 'public');
         
         try {
@@ -91,7 +98,7 @@ function listPublicFilesPlugin() {
           }
 
           // Sort by filename
-          const sortByFile = (a, b) => a.file.localeCompare(b.file);
+          const sortByFile = (a: any, b: any) => a.file.localeCompare(b.file);
           actionTasks.sort(sortByFile);
           navGraphs.sort(sortByFile);
 
@@ -234,13 +241,13 @@ function fileSystemPlugin() {
       console.log(`[sdcard] Emitted manifest.json (${files.length} files, ${directories.length} dirs)`);
     },
 
-    configureServer(server) {
+    configureServer(server: any) {
       // 初始扫描
       refreshCache();
       
       // 监视文件变化，使缓存失效
       server.watcher.add(SDCARD_DIR);
-      server.watcher.on('all', (event, filePath) => {
+      server.watcher.on('all', (event: any, filePath: any) => {
         if (filePath.startsWith(SDCARD_DIR)) {
           const basename = path.basename(filePath);
           // Only skip known OS-generated noise files, not system dot-directories like .data
@@ -251,7 +258,7 @@ function fileSystemPlugin() {
       });
       
       // API 端点 - 使用缓存
-      server.middlewares.use('/api/sdcard', (_req, res) => {
+      server.middlewares.use('/api/sdcard', (_req: any, res: any) => {
         try {
           // 只在缓存失效时重新扫描
           if (!cacheValid) {
@@ -279,9 +286,9 @@ function runsExplorerPlugin() {
   return {
     name: 'runs-explorer-api',
     
-    configureServer(server) {
+    configureServer(server: any) {
       // GET /api/runs - List all run directories
-      server.middlewares.use('/api/runs', (req, res, next) => {
+      server.middlewares.use('/api/runs', (req: any, res: any, next: any) => {
         const url = new URL(req.url || '/', `http://${req.headers.host}`);
         const pathParts = url.pathname.split('/').filter(Boolean);
         
@@ -518,8 +525,8 @@ function serveAppAssetsPlugin() {
     },
 
     // ── Dev: 中间件伺服 ──
-    configureServer(server) {
-      server.middlewares.use((req, res, next) => {
+    configureServer(server: any) {
+      server.middlewares.use((req: any, res: any, next: any) => {
         const url = req.url;
         if (!url || !url.startsWith(PREFIX)) return next();
 
@@ -596,6 +603,10 @@ function serveAppAssetsPlugin() {
 /**
  * Dev 环境下把 /cdn/ 映射到仓库根的 mobilegym-data/（gitignored），
  * 与生产 nginx 的 alias 行为一致；生产 nginx.source.conf 里的 location /cdn/ 等价。
+ *
+ * assets-index.json（WMR bundle 的文件清单，等价真机 MAML zip 包的 central
+ * directory）在磁盘不存在时按需扫描目录动态生成——dev/preview 无须预生成
+ * 任何文件；nginx 静态路径由 start_nginx_gateway.sh 预生成。
  */
 function serveCdnPlugin() {
   const MIME: Record<string, string> = {
@@ -605,13 +616,27 @@ function serveCdnPlugin() {
     '.json': 'application/json',
   };
   const CDN_ROOT = path.resolve(__dirname, 'mobilegym-data');
-  const serveCdnMiddleware = (req, res, next) => {
+  const serveCdnMiddleware = (req: any, res: any, next: any) => {
     const url = req.url || '/';
     const rel = decodeURIComponent(url.split('?')[0]).replace(/^\/+/, '');
     if (!rel || rel.includes('..')) return next();
 
     const filePath = path.join(CDN_ROOT, rel);
-    if (!filePath.startsWith(CDN_ROOT) || !fs.existsSync(filePath) || !fs.statSync(filePath).isFile()) {
+    if (!filePath.startsWith(CDN_ROOT)) return next();
+
+    // assets-index.json 在 dev/preview 下始终动态生成（磁盘即真相）：
+    // 主题开发迭代时，静态清单文件与 immutable 缓存都会陈旧，导致新加的
+    // 文件被引擎按旧清单短路成"不存在"。动态扫描 + no-cache 保证永远同步；
+    // 数据包里的静态清单（prepare-themes.py 出厂自带）仅服务 nginx 等纯
+    // 静态路径（数据包随部署固定，静态 + immutable 正确且高效）。
+    if (path.basename(filePath) === THEME_INDEX_NAME && isBundleDir(path.dirname(filePath))) {
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Cache-Control', 'no-cache');
+      res.end(buildIndexPayload(path.dirname(filePath)));
+      return;
+    }
+
+    if (!fs.existsSync(filePath) || !fs.statSync(filePath).isFile()) {
       return next();
     }
 
@@ -623,10 +648,10 @@ function serveCdnPlugin() {
 
   return {
     name: 'serve-cdn',
-    configureServer(server) {
+    configureServer(server: any) {
       server.middlewares.use('/cdn/', serveCdnMiddleware);
     },
-    configurePreviewServer(server) {
+    configurePreviewServer(server: any) {
       server.middlewares.use('/cdn/', serveCdnMiddleware);
     },
   };
@@ -842,10 +867,10 @@ function apiGatewayPlugin(mode: string) {
     return allow.includes(host);
   };
 
-  const readJsonBody = (req): Promise<any> =>
+  const readJsonBody = (req: any): Promise<any> =>
     new Promise((resolve, reject) => {
       let data = '';
-      req.on('data', (chunk) => (data += chunk));
+      req.on('data', (chunk: any) => (data += chunk));
       req.on('end', () => {
         if (!data) return resolve({});
         try {
@@ -889,7 +914,7 @@ function apiGatewayPlugin(mode: string) {
     }
   };
 
-  const getSessionId = (req) => {
+  const getSessionId = (req: any) => {
     const h = req.headers?.['x-gw-session'];
     if (!h) return 'anon';
     if (Array.isArray(h)) return h[0] || 'anon';
@@ -964,7 +989,7 @@ function apiGatewayPlugin(mode: string) {
     return pairs.length ? pairs.join('; ') : undefined;
   };
 
-  const forwardHeaders = (upstreamHeaders: Headers, res, allowList?: string[]) => {
+  const forwardHeaders = (upstreamHeaders: Headers, res: any, allowList?: string[]) => {
     // Forward a safe subset of headers. (Hop-by-hop headers must not be forwarded.)
     const allow = allowList ?? [
       'content-type',
@@ -982,7 +1007,7 @@ function apiGatewayPlugin(mode: string) {
     }
   };
 
-  const handler = async (req, res) => {
+  const handler = async (req: any, res: any) => {
     try {
       const incoming = new URL(req.url || '/', `http://${req.headers.host}`);
       /**
@@ -1347,11 +1372,11 @@ function apiGatewayPlugin(mode: string) {
 
   return {
     name: 'api-gateway',
-    configureServer(server) {
+    configureServer(server: any) {
       server.middlewares.use('/api/gw', handler);
       server.middlewares.use('/api/gw/', handler);
     },
-    configurePreviewServer(server) {
+    configurePreviewServer(server: any) {
       server.middlewares.use('/api/gw', handler);
       server.middlewares.use('/api/gw/', handler);
     },
@@ -1362,7 +1387,7 @@ function apiGatewayPlugin(mode: string) {
  * Generate a human-readable label from filename
  * Format: "appName [Type]" or "appName [Type] (suffix)"
  */
-function generateLabel(filename, type) {
+function generateLabel(filename: string, type: string) {
   // Remove extension
   let name = filename.replace(/\.(jsonl?|json)$/, '');
   

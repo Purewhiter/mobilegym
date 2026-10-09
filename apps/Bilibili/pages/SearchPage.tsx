@@ -8,7 +8,8 @@ import { useBilibiliStore } from '../state';
 import { useBilibiliGestures } from '../hooks/useBilibiliGestures';
 import { useVirtualList } from '../../../os/hooks/useVirtualList';
 import { useLocale } from '@/apps/Bilibili/locale';
-import { formatBilibiliSearchDate, formatBilibiliStat } from '../utils/localize';
+import { useBilibiliStrings } from '../hooks/useBilibiliStrings';
+import { formatBilibiliSearchDate, formatBilibiliStat, localizePartitionLabel } from '../utils/localize';
 // ----- Utils -----
 // ----- Utils -----
 const formatDuration = (d: any) => {
@@ -27,6 +28,29 @@ const formatDuration = (d: any) => {
         }
     }
     return d;
+};
+
+// 用 indexOf 切片 + JSX 拼接做关键词高亮（大小写不敏感）。
+// 不能用 new RegExp(query)：用户输入含正则元字符（如 "C++"、"("）会抛 SyntaxError；
+// 也不能拼 HTML 字符串走 dangerouslySetInnerHTML（XSS 面）。
+const renderHighlightedText = (text: string, query: string): React.ReactNode => {
+    if (!text || !query) return text;
+    const lowerText = text.toLowerCase();
+    const lowerQuery = query.toLowerCase();
+    let idx = lowerText.indexOf(lowerQuery);
+    if (idx === -1) return text;
+    const nodes: React.ReactNode[] = [];
+    let start = 0;
+    while (idx !== -1) {
+        if (idx > start) nodes.push(text.slice(start, idx));
+        nodes.push(
+            <span key={idx} className="text-app-primary">{text.slice(idx, idx + query.length)}</span>,
+        );
+        start = idx + query.length;
+        idx = lowerText.indexOf(lowerQuery, start);
+    }
+    if (start < text.length) nodes.push(text.slice(start));
+    return nodes;
 };
 
 // ----- Icons -----
@@ -68,6 +92,7 @@ const DISCOVERY_ITEMS = [
 const MediaResultItem: React.FC<{ item: any; type: 'anime' | 'movie' }> = ({ item, type }) => {
     const { bindTap } = useBilibiliGestures();
     const locale = useLocale();
+    const str = useBilibiliStrings();
     const toggleAnime = useBilibiliStore(s => s.toggleAnime);
     const toggleDrama = useBilibiliStore(s => s.toggleDrama);
     const biliUser = useBilibiliStore(s => s.user);
@@ -75,29 +100,20 @@ const MediaResultItem: React.FC<{ item: any; type: 'anime' | 'movie' }> = ({ ite
     const isDramaSubscribed = (id: string) => (biliUser.subscribedDramas || []).some(d => d.id === id);
 
     const score = item.score ? (typeof item.score === 'number' ? item.score.toFixed(1) : item.score) : '9.4';
-    const participation = item.danmaku
-        ? `${formatBilibiliStat(item.danmaku, locale)}${locale === 'en' ? ' participating' : '人参与'}`
-        : (locale === 'en' ? '12K participating' : '1.2万人参与');
+    const participation = str.search_participating.replace(
+        '{n}',
+        item.danmaku ? formatBilibiliStat(item.danmaku, locale) : str.search_mock_participants,
+    );
 
-    // Use real badge if available
+    // Use real badge if available（数据值保持中文，仅渲染时映射）
     const badgeTextRaw = item.raw?.badge || item.partition || (type === 'anime' ? '番剧' : '电影');
-    const badgeText = locale === 'en'
-        ? ({
-            '番剧': 'Anime',
-            '电影': 'Movie',
-            '电视剧': 'TV',
-            '纪录片': 'Documentary',
-            '国创': 'C-animation',
-          } as Record<string, string>)[badgeTextRaw] ?? badgeTextRaw
-        : badgeTextRaw;
+    const badgeText = localizePartitionLabel(badgeTextRaw, locale);
     const badgeColor = item.raw?.badge_info?.bg_color || '#FB7299';
 
     // Mock Tags/Year/Region (not consistently present in raw data)
-    const tags = locale === 'en'
-        ? (type === 'anime' ? 'Original / Action / Fantasy' : 'Drama / Adventure / Sci-fi')
-        : (type === 'anime' ? '原创/热血/奇幻/战斗' : '剧情/冒险/科幻');
+    const tags = type === 'anime' ? str.search_tags_anime : str.search_tags_movie;
     const year = '2025';
-    const region = locale === 'en' ? 'Mainland China' : '中国大陆';
+    const region = str.search_region_cn;
 
     // Check if subscribed
     const isSubscribed = type === 'anime' ? isAnimeSubscribed(item.id) : isDramaSubscribed(item.id);
@@ -119,12 +135,12 @@ const MediaResultItem: React.FC<{ item: any; type: 'anime' | 'movie' }> = ({ ite
 
             <div className="flex-1 flex flex-col min-w-0 h-[113px] justify-between py-0.5">
                 <div>
-                    <h3 className="text-[14px] font-bold text-app-text leading-snug mb-1 line-clamp-2"
-                        dangerouslySetInnerHTML={{ __html: item.highlightedTitle || item.title }}
-                    />
+                    <h3 className="text-[14px] font-bold text-app-text leading-snug mb-1 line-clamp-2">
+                        {item.highlightedTitle || item.title}
+                    </h3>
                     <div className="text-[11px] text-app-text-muted leading-normal flex flex-col gap-0.5">
                         <div className="flex items-center gap-1">
-                            <span className="border border-[#23C9ED] text-[#23C9ED] text-[9px] px-0.5 rounded-[2px] leading-none">{locale === 'en' ? 'Official' : '出品'}</span>
+                            <span className="border border-[#23C9ED] text-[#23C9ED] text-[9px] px-0.5 rounded-[2px] leading-none">{str.search_produce_badge}</span>
                             <span>{year} | {region}</span>
                         </div>
                         <div>{tags}</div>
@@ -132,14 +148,14 @@ const MediaResultItem: React.FC<{ item: any; type: 'anime' | 'movie' }> = ({ ite
                 </div>
 
                 <div className="flex items-end gap-1">
-                    <span className="text-[#FF6600] text-[16px] font-bold leading-none">{score}{locale === 'en' ? '' : '分'}</span>
+                    <span className="text-[#FF6600] text-[16px] font-bold leading-none">{score}{str.search_score_suffix}</span>
                     <span className="text-app-text-muted text-[11px] relative top-[1px]">{participation}</span>
                 </div>
             </div>
 
             <div className="flex flex-col gap-2 justify-center shrink-0 self-center">
                 <button className="bg-app-primary text-white text-[12px] w-[72px] h-(--app-follow-btn-height) rounded-full font-medium flex items-center justify-center">
-                    {locale === 'en' ? 'Watch now' : '立即观看'}
+                    {str.search_watch_now}
                 </button>
                 <button
                     {...bindTap(
@@ -163,24 +179,27 @@ const MediaResultItem: React.FC<{ item: any; type: 'anime' | 'movie' }> = ({ ite
                 >
                     <Heart size={12} className={isSubscribed ? 'fill-[#9499A0]' : ''} />
                     {isSubscribed
-                        ? (type === 'anime' ? (locale === 'en' ? 'Following anime' : '已追番') : (locale === 'en' ? 'Following drama' : '已追剧'))
-                        : (type === 'anime' ? (locale === 'en' ? 'Follow anime' : '追番') : (locale === 'en' ? 'Follow drama' : '追剧'))}
+                        ? (type === 'anime' ? str.search_following_anime : str.search_following_drama)
+                        : (type === 'anime' ? str.search_follow_anime : str.search_follow_drama)}
                 </button>
             </div>
         </div>
     );
 };
 
-const RichUserCard: React.FC<{ user: any; videoById: Map<string, any> }> = ({ user, videoById }) => {
+const RichUserCard: React.FC<{
+    user: any;
+    videoById: Map<string, any>;
+}> = ({ user, videoById }) => {
     const { bindTap } = useBilibiliGestures();
     const locale = useLocale();
+    const str = useBilibiliStrings();
     const toggleFollow = useBilibiliStore(s => s.toggleFollow);
     const biliUser = useBilibiliStore(s => s.user);
     const isFollowing = (id: string | number) => {
         const mid = String(id);
         return (biliUser.followingList || []).some(u => String(u.mid) === mid);
     };
-    const [showMenu, setShowMenu] = useState(false);
 
     // Hydrate videos
     const recentVideos = (user.videos || []).slice(0, 3).map((v: any) => {
@@ -206,30 +225,30 @@ const RichUserCard: React.FC<{ user: any; videoById: Map<string, any> }> = ({ us
                     </div>
                     <div>
                         <div className="flex items-center gap-1.5 mb-1">
-                            <span className="text-[17px] text-app-primary font-medium" dangerouslySetInnerHTML={{ __html: user.highlightedName || user.name }}></span>
+                            <span className="text-[17px] text-app-primary font-medium">{user.highlightedName || user.name}</span>
                             <span className={`text-[9px] px-1 rounded-[2px] border ${user.level >= 6 ? 'border-[#FF0000] text-[#FF0000]' : 'border-[#9499A0] text-app-text-muted'}`}>
                                 LV{user.level}
                             </span>
                         </div>
                         <div className="text-[12px] text-app-text-muted mb-0.5">
-                            {formatBilibiliStat(user.follower, locale)}{locale === 'en' ? ' followers' : '粉丝'} · {user.videos?.length || 0}{locale === 'en' ? ' videos' : '个视频'}
+                            {str.search_fans_count.replace('{n}', formatBilibiliStat(user.follower, locale))} · {str.search_videos_count.replace('{n}', String(user.videos?.length || 0))}
                         </div>
                         <div className="text-[12px] text-app-text-muted">
-                            {user.official?.title || user.sign || (locale === 'en' ? 'Notable bilibili creator' : 'bilibili 知名UP主')}
+                            {user.official?.title || user.sign || str.search_up_desc}
                         </div>
                     </div>
                 </div>
 
                 {isFollowing(user.mid) ? (
                     <button
-                        {...bindTap(
-                            { kind: 'action', id: 'search.user.menu.open' },
-                            { stopPropagation: true, onTrigger: () => setShowMenu(true) },
-                        )}
+                        {...bindTap('search.user.menu.open', {
+                            stopPropagation: true,
+                            params: { mid: String(user.mid) },
+                        })}
                         className="h-8 w-[92px] rounded-full bg-[#E3E5E7] text-[#61666D] flex items-center justify-center gap-1 font-medium text-[13px] whitespace-nowrap leading-none active:bg-[#d0d3d6] transition-colors flex-none"
                     >
                         <Menu size={14} />
-                        <span style={{ writingMode: 'horizontal-tb' }}>{locale === 'en' ? 'Following' : '已关注'}</span>
+                        <span style={{ writingMode: 'horizontal-tb' }}>{str.common_following}</span>
                     </button>
                 ) : (
                     <button
@@ -243,7 +262,7 @@ const RichUserCard: React.FC<{ user: any; videoById: Map<string, any> }> = ({ us
                         )}
                     className="h-8 w-[92px] rounded-full bg-app-primary text-white flex items-center justify-center font-medium text-[13px] whitespace-nowrap leading-none active:bg-app-primary/90 shadow-sm shadow-[#FB7299]/20 flex-none"
                 >
-                    <span style={{ writingMode: 'horizontal-tb' }}>{locale === 'en' ? '+ Follow' : '+ 关注'}</span>
+                    <span style={{ writingMode: 'horizontal-tb' }}>{str.common_follow_plus}</span>
                 </button>
             )}
             </div>
@@ -285,42 +304,9 @@ const RichUserCard: React.FC<{ user: any; videoById: Map<string, any> }> = ({ us
                 {...bindTap('user.open', { params: { mid: user.mid } })}
                 className="flex items-center justify-center gap-1 text-[13px] text-app-text-muted mt-3 active:bg-gray-50 py-2"
             >
-                {locale === 'en' ? `View all ${user.videos?.length || 0} videos` : `查看全部${user.videos?.length || 0}个视频`}
+                {str.search_view_all_videos.replace('{n}', String(user.videos?.length || 0))}
                 <ChevronRight size={14} />
             </div>
-
-            {/* Unfollow Menu Overlay */}
-            {showMenu && (
-                <div className="fixed inset-0 z-[100] flex flex-col justify-end text-base">
-                    <div
-                        className="absolute inset-0 bg-black/50"
-                        {...bindTap(
-                            { kind: 'action', id: 'search.user.menu.close' },
-                            { stopPropagation: true, onTrigger: () => setShowMenu(false) },
-                        )}
-                    />
-                    <div className="bg-app-surface rounded-t-xl z-20 overflow-hidden" onClick={(e) => e.stopPropagation()}>
-                        <div className="py-3.5 text-center text-app-text border-b border-gray-100 active:bg-gray-50" onClick={() => setShowMenu(false)}>{locale === 'en' ? 'Add to special follows' : '加入特别关注'}</div>
-                        <div className="py-3.5 text-center text-app-text border-b border-gray-100 active:bg-gray-50" onClick={() => setShowMenu(false)}>{locale === 'en' ? 'Set group' : '设置分组'}</div>
-                        <div
-                            className="py-3.5 text-center text-app-primary border-b border-gray-100 active:bg-gray-50"
-                            {...bindTap(
-                                { kind: 'action', id: 'search.user.follow.toggle' },
-                                {
-                                    onTrigger: () => {
-                                        toggleFollow(String(user.mid));
-                                        setShowMenu(false);
-                                    },
-                                },
-                            )}
-                        >
-                            {locale === 'en' ? 'Unfollow' : '取消关注'}
-                        </div>
-                        <div className="h-1.5 bg-app-bg" />
-                        <div className="py-3.5 text-center text-app-text active:bg-gray-50" onClick={() => setShowMenu(false)}>{locale === 'en' ? 'Cancel' : '取消'}</div>
-                    </div>
-                </div>
-            )}
         </div>
     );
 };
@@ -328,6 +314,7 @@ const RichUserCard: React.FC<{ user: any; videoById: Map<string, any> }> = ({ us
 const VideoResultItem: React.FC<{ video: any; authorByName: Map<string, any> }> = ({ video, authorByName }) => {
     const { bindTap } = useBilibiliGestures();
     const locale = useLocale();
+    const str = useBilibiliStrings();
 
     // Find author info if possible, otherwise use video.author
     const authorInfo = authorByName.get(video.author || '');
@@ -345,14 +332,14 @@ const VideoResultItem: React.FC<{ video: any; authorByName: Map<string, any> }> 
                 </div>
             </div>
             <div className="flex-1 flex flex-col justify-between py-0.5">
-                <h3 className="text-[14px] text-app-text line-clamp-2 leading-snug" dangerouslySetInnerHTML={{ __html: video.highlightedTitle || video.title }}></h3>
+                <h3 className="text-[14px] text-app-text line-clamp-2 leading-snug">{video.highlightedTitle || video.title}</h3>
                 <div className="flex flex-col gap-1">
                     <div className="flex items-center gap-1.5 text-[11px] text-app-text-muted">
                         {authorFace && <img referrerPolicy="no-referrer" src={authorFace} className="w-3.5 h-3.5 rounded-full" />}
                         <span>{video.author}</span>
                     </div>
                     <div className="flex items-center gap-2 text-[11px] text-app-text-muted">
-                        <span>{formatBilibiliStat(video.plays, locale)} {locale === 'en' ? 'views' : '播放'}</span>
+                        <span>{formatBilibiliStat(video.plays, locale)} {str.stat_plays}</span>
                         <span>·</span>
                         <span>{formatBilibiliSearchDate(video.date || video.pubdate, locale)}</span>
                     </div>
@@ -365,13 +352,13 @@ const VideoResultItem: React.FC<{ video: any; authorByName: Map<string, any> }> 
 const UserResultItem: React.FC<{ user: any }> = ({ user }) => {
     const { bindTap } = useBilibiliGestures();
     const locale = useLocale();
+    const str = useBilibiliStrings();
     const toggleFollow = useBilibiliStore(s => s.toggleFollow);
     const biliUser = useBilibiliStore(s => s.user);
     const isFollowing = (id: string | number) => {
         const mid = String(id);
         return (biliUser.followingList || []).some(u => String(u.mid) === mid);
     };
-    const [showMenu, setShowMenu] = useState(false);
 
     return (
         <div
@@ -389,15 +376,15 @@ const UserResultItem: React.FC<{ user: any }> = ({ user }) => {
                 </div>
                 <div className="flex flex-col gap-0.5">
                     <div className="flex items-center gap-1.5">
-                        <span className="text-[15px] text-app-text font-medium" dangerouslySetInnerHTML={{ __html: user.highlightedName || user.name }}></span>
+                        <span className="text-[15px] text-app-text font-medium">{user.highlightedName || user.name}</span>
                         <span className={`text-[9px] px-1 rounded-[2px] border ${user.level >= 6 ? 'border-[#FF0000] text-[#FF0000]' : 'border-[#9499A0] text-app-text-muted'}`}>
                             LV{user.level}
                         </span>
                     </div>
                     <div className="text-[11px] text-app-text-muted">
-                        <span>{formatBilibiliStat(user.follower, locale)}{locale === 'en' ? ' followers' : '粉丝'}</span>
+                        <span>{str.search_fans_count.replace('{n}', formatBilibiliStat(user.follower, locale))}</span>
                         <span className="mx-1">·</span>
-                        <span>{user.videos?.length || 0}{locale === 'en' ? ' videos' : '个视频'}</span>
+                        <span>{str.search_videos_count.replace('{n}', String(user.videos?.length || 0))}</span>
                     </div>
                     {user.sign && (
                         <div className="text-[11px] text-app-text-muted line-clamp-1 w-[180px]">
@@ -409,14 +396,14 @@ const UserResultItem: React.FC<{ user: any }> = ({ user }) => {
 
             {isFollowing(user.mid) ? (
                 <button
-                    {...bindTap(
-                        { kind: 'action', id: 'search.user.menu.open' },
-                        { stopPropagation: true, onTrigger: () => setShowMenu(true) },
-                    )}
+                    {...bindTap('search.user.menu.open', {
+                        stopPropagation: true,
+                        params: { mid: String(user.mid) },
+                    })}
                     className="h-7 w-[86px] rounded-full bg-[#E3E5E7] text-[#61666D] flex items-center justify-center gap-1 font-medium text-[12px] whitespace-nowrap leading-none active:bg-[#d0d3d6] transition-colors flex-none"
                 >
                     <Menu size={12} />
-                    <span style={{ writingMode: 'horizontal-tb' }}>{locale === 'en' ? 'Following' : '已关注'}</span>
+                    <span style={{ writingMode: 'horizontal-tb' }}>{str.common_following}</span>
                 </button>
             ) : (
                 <button
@@ -430,41 +417,8 @@ const UserResultItem: React.FC<{ user: any }> = ({ user }) => {
                     )}
                     className="h-7 w-[86px] rounded-full bg-app-primary text-white flex items-center justify-center font-medium text-[12px] whitespace-nowrap leading-none active:bg-app-primary/90 shadow-sm shadow-[#FB7299]/20 flex-none"
                 >
-                    <span style={{ writingMode: 'horizontal-tb' }}>{locale === 'en' ? '+ Follow' : '+ 关注'}</span>
+                    <span style={{ writingMode: 'horizontal-tb' }}>{str.common_follow_plus}</span>
                 </button>
-            )}
-
-            {/* Unfollow Menu Overlay */}
-            {showMenu && (
-                <div className="fixed inset-0 z-[100] flex flex-col justify-end text-base cursor-default">
-                    <div
-                        className="absolute inset-0 bg-black/50"
-                        {...bindTap(
-                            { kind: 'action', id: 'search.user.menu.close' },
-                            { stopPropagation: true, onTrigger: () => setShowMenu(false) },
-                        )}
-                    />
-                    <div className="bg-app-surface rounded-t-xl z-20 overflow-hidden" onClick={(e) => e.stopPropagation()}>
-                        <div className="py-3.5 text-center text-app-text border-b border-gray-100 active:bg-gray-50" onClick={() => setShowMenu(false)}>{locale === 'en' ? 'Add to special follows' : '加入特别关注'}</div>
-                        <div className="py-3.5 text-center text-app-text border-b border-gray-100 active:bg-gray-50" onClick={() => setShowMenu(false)}>{locale === 'en' ? 'Set group' : '设置分组'}</div>
-                        <div
-                            className="py-3.5 text-center text-app-primary border-b border-gray-100 active:bg-gray-50"
-                            {...bindTap(
-                                { kind: 'action', id: 'search.user.follow.toggle' },
-                                {
-                                    onTrigger: () => {
-                                        toggleFollow(String(user.mid));
-                                        setShowMenu(false);
-                                    },
-                                },
-                            )}
-                        >
-                            {locale === 'en' ? 'Unfollow' : '取消关注'}
-                        </div>
-                        <div className="h-1.5 bg-app-bg" />
-                        <div className="py-3.5 text-center text-app-text active:bg-gray-50" onClick={() => setShowMenu(false)}>{locale === 'en' ? 'Cancel' : '取消'}</div>
-                    </div>
-                </div>
             )}
         </div>
     );
@@ -480,7 +434,7 @@ const SearchNotFound: React.FC<{ text: string }> = ({ text }) => (
 );
 
 const AnimeResultsPane: React.FC<{ items: any[] }> = ({ items }) => {
-    const locale = useLocale();
+    const str = useBilibiliStrings();
     const animeVirtual = useVirtualList({
         items,
         estimateSize: () => 136,
@@ -497,7 +451,7 @@ const AnimeResultsPane: React.FC<{ items: any[] }> = ({ items }) => {
             data-scroll-direction="vertical"
         >
             {items.length === 0 ? (
-                <SearchNotFound text={locale === 'en' ? 'No matching anime found' : '没有找到相关番剧'} />
+                <SearchNotFound text={str.search_empty_anime} />
             ) : (
                 <div style={{ height: animeVirtual.totalSize, width: '100%', position: 'relative' }}>
                     {animeVirtual.virtualItems.map((vItem) => {
@@ -527,7 +481,7 @@ const AnimeResultsPane: React.FC<{ items: any[] }> = ({ items }) => {
 };
 
 const MovieResultsPane: React.FC<{ items: any[] }> = ({ items }) => {
-    const locale = useLocale();
+    const str = useBilibiliStrings();
     const movieVirtual = useVirtualList({
         items,
         estimateSize: () => 136,
@@ -544,7 +498,7 @@ const MovieResultsPane: React.FC<{ items: any[] }> = ({ items }) => {
             data-scroll-direction="vertical"
         >
             {items.length === 0 ? (
-                <SearchNotFound text={locale === 'en' ? 'No matching movies or TV found' : '没有找到相关影视'} />
+                <SearchNotFound text={str.search_empty_movie} />
             ) : (
                 <div style={{ height: movieVirtual.totalSize, width: '100%', position: 'relative' }}>
                     {movieVirtual.virtualItems.map((vItem) => {
@@ -574,7 +528,7 @@ const MovieResultsPane: React.FC<{ items: any[] }> = ({ items }) => {
 };
 
 const UserResultsPane: React.FC<{ items: any[] }> = ({ items }) => {
-    const locale = useLocale();
+    const str = useBilibiliStrings();
     const userVirtual = useVirtualList({
         items,
         estimateSize: () => 96,
@@ -615,7 +569,7 @@ const UserResultsPane: React.FC<{ items: any[] }> = ({ items }) => {
                 </div>
             )}
             {items.length === 0 && (
-                <div className="text-center py-10 text-app-text-muted text-[13px]">{locale === 'en' ? 'No matching users found' : '没有找到相关用户'}</div>
+                <div className="text-center py-10 text-app-text-muted text-[13px]">{str.search_empty_user}</div>
             )}
         </div>
     );
@@ -627,7 +581,7 @@ const ComprehensiveResultsPane: React.FC<{
     videoById: Map<string, any>;
     authorByName: Map<string, any>;
 }> = ({ videos, users, videoById, authorByName }) => {
-    const locale = useLocale();
+    const str = useBilibiliStrings();
     const comprehensiveVirtual = useVirtualList({
         items: videos,
         estimateSize: () => 104,
@@ -644,23 +598,11 @@ const ComprehensiveResultsPane: React.FC<{
             data-scroll-direction="vertical"
         >
             <div className="flex items-center gap-2 px-4 py-2 text-[12px] text-[#61666D] overflow-x-auto">
-                {locale === 'en' ? (
-                    <>
-                        <span className="bg-app-bg px-3 py-1 rounded-full text-app-primary font-medium">All</span>
-                        <span className="bg-app-bg px-3 py-1 rounded-full">Movies</span>
-                        <span className="bg-app-bg px-3 py-1 rounded-full">Songs</span>
-                        <span className="bg-app-bg px-3 py-1 rounded-full">Nexus</span>
-                        <span className="bg-app-bg px-3 py-1 rounded-full">Yan Shuangying</span>
-                    </>
-                ) : (
-                    <>
-                        <span className="bg-app-bg px-3 py-1 rounded-full text-app-primary font-medium">全部</span>
-                        <span className="bg-app-bg px-3 py-1 rounded-full">电影</span>
-                        <span className="bg-app-bg px-3 py-1 rounded-full">歌曲</span>
-                        <span className="bg-app-bg px-3 py-1 rounded-full">奈克瑟斯</span>
-                        <span className="bg-app-bg px-3 py-1 rounded-full">燕双鹰</span>
-                    </>
-                )}
+                <span className="bg-app-bg px-3 py-1 rounded-full text-app-primary font-medium">{str.search_chip_all}</span>
+                <span className="bg-app-bg px-3 py-1 rounded-full">{str.search_chip_movie}</span>
+                <span className="bg-app-bg px-3 py-1 rounded-full">{str.search_chip_song}</span>
+                <span className="bg-app-bg px-3 py-1 rounded-full">{str.search_chip_nexus}</span>
+                <span className="bg-app-bg px-3 py-1 rounded-full">{str.search_chip_yan}</span>
             </div>
 
             {users.length > 0 && (
@@ -692,7 +634,7 @@ const ComprehensiveResultsPane: React.FC<{
                 </div>
             )}
             {videos.length === 0 && (
-                <div className="text-center py-10 text-app-text-muted text-[13px]">{locale === 'en' ? 'No matching videos found' : '没有找到相关视频'}</div>
+                <div className="text-center py-10 text-app-text-muted text-[13px]">{str.search_empty_video}</div>
             )}
         </div>
     );
@@ -700,7 +642,7 @@ const ComprehensiveResultsPane: React.FC<{
 
 // ----- Page Component -----
 export const SearchPage: React.FC = () => {
-    const { bindBack, bindTap, go } = useBilibiliGestures();
+    const { bindBack, bindTap, go, back } = useBilibiliGestures();
     const { pathname } = useLocation();
     const locale = useLocale();
     const [searchParams] = useSearchParams();
@@ -725,46 +667,35 @@ export const SearchPage: React.FC = () => {
 
     const committedQuery = searchParams.get('q') || '';
     const isSearching = isResultsPage;
-    const text = locale === 'en'
-        ? {
-            search: 'Search',
-            placeholder: '180 billion lost in 10 years... why?',
-            hotSearches: 'bilibili trending',
-            fullList: 'Full list',
-            meme: 'Meme',
-            history: 'Search history',
-            discovery: 'Discover',
-            tabs: {
-                comprehensive: 'Comprehensive',
-                anime: 'Anime',
-                live: 'Live',
-                user: 'Users',
-                movie: 'Movies & TV',
-                article: 'Articles',
-            },
-        }
-        : {
-            search: '搜索',
-            placeholder: '10年暴跌180亿! 营养快线 为啥...',
-            hotSearches: 'bilibili热搜',
-            fullList: '完整榜单',
-            meme: '梗',
-            history: '搜索历史',
-            discovery: '搜索发现',
-            tabs: {
-                comprehensive: '综合',
-                anime: '番剧',
-                live: '直播',
-                user: '用户',
-                movie: '影视',
-                article: '图文',
-            },
-        };
+    const str = useBilibiliStrings();
+    const text = {
+        search: str.search_action,
+        placeholder: str.search_placeholder,
+        hotSearches: str.search_hot_title,
+        fullList: str.search_full_list,
+        meme: str.search_tag_meme,
+        history: str.search_history,
+        discovery: str.search_discovery,
+        tabs: {
+            comprehensive: str.search_tab_comprehensive,
+            anime: str.search_tab_anime,
+            live: str.search_tab_live,
+            user: str.search_tab_user,
+            movie: str.search_tab_movie,
+            article: str.search_tab_article,
+        },
+    };
 
     const [draftQuery, setDraftQuery] = useState(committedQuery);
     const searchHistory = useBilibiliStore(s => s.user.searchHistory || []);
     const addSearchHistory = useBilibiliStore(s => s.addSearchHistory);
     const clearSearchHistory = useBilibiliStore(s => s.clearSearchHistory);
+    const toggleFollow = useBilibiliStore(s => s.toggleFollow);
+
+    // Both visibility and target belong to the history entry, so restoring a
+    // URL or returning to an older entry cannot target the last opened user.
+    const showUserMenu = searchParams.get('menu') === 'true';
+    const menuMid = searchParams.get('mid');
 
     // Keep input value synced with committed query in URL
     useEffect(() => {
@@ -792,7 +723,7 @@ export const SearchPage: React.FC = () => {
         if (!committedQuery) return { videos: [], users: [], animes: [], movies: [] };
         const q = committedQuery.toLowerCase();
 
-        const highlight = (text: string) => text.replace(new RegExp(committedQuery, 'gi'), match => `<span class="text-app-primary">${match}</span>`);
+        const highlight = (text: string) => renderHighlightedText(text, committedQuery);
 
         // Search Videos
         const videos = VIDEO_DATA.filter(v =>
@@ -907,8 +838,8 @@ export const SearchPage: React.FC = () => {
                                 {idx + 1}
                             </span>
                             <span className="text-[14px] text-app-text truncate flex-1">{locale === 'en' ? item.titleEn : item.titleZh}</span>
-                            {item.tag === 'new' && <NewIcon label={locale === 'en' ? 'New' : '新'} />}
-                            {item.tag === 'hot' && <HotIcon label={locale === 'en' ? 'Hot' : '热'} />}
+                            {item.tag === 'new' && <NewIcon label={str.search_tag_new} />}
+                            {item.tag === 'hot' && <HotIcon label={str.search_tag_hot} />}
                             {item.tag === 'meme' && <span className="bg-app-primary text-white text-[10px] px-1 rounded-[2px] ml-1">{text.meme}</span>}
                         </div>
                     ))}
@@ -1021,6 +952,7 @@ export const SearchPage: React.FC = () => {
                 users={searchResults.users}
                 videoById={videoById}
                 authorByName={authorByName}
+
             />
         );
     };
@@ -1036,6 +968,34 @@ export const SearchPage: React.FC = () => {
                     {renderTabs()}
                     {renderResults()}
                 </>
+            )}
+
+            {/* Unfollow Menu Overlay（URL 驱动，back 关闭） */}
+            {isSearching && showUserMenu && menuMid && (
+                <div className="fixed inset-0 z-[100] flex flex-col justify-end text-base cursor-default">
+                    <div className="absolute inset-0 bg-black/50" {...bindBack()} />
+                    <div className="bg-app-surface rounded-t-xl z-20 overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                        <div className="py-3.5 text-center text-app-text border-b border-gray-100 active:bg-gray-50" {...bindBack()}>{str.menu_add_special}</div>
+                        <div className="py-3.5 text-center text-app-text border-b border-gray-100 active:bg-gray-50" {...bindBack()}>{str.menu_set_group}</div>
+                        <div
+                            className="py-3.5 text-center text-app-primary border-b border-gray-100 active:bg-gray-50"
+                            {...bindTap(
+                                { kind: 'action', id: 'search.user.follow.toggle' },
+                                {
+                                    params: { mid: menuMid },
+                                    onTrigger: () => {
+                                        toggleFollow(menuMid);
+                                        back();
+                                    },
+                                },
+                            )}
+                        >
+                            {str.menu_unfollow}
+                        </div>
+                        <div className="h-1.5 bg-app-bg" />
+                        <div className="py-3.5 text-center text-app-text active:bg-gray-50" {...bindBack()}>{str.common_cancel}</div>
+                    </div>
+                </div>
             )}
         </div>
     );

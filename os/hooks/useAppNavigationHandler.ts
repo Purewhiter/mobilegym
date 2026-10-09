@@ -9,6 +9,7 @@ import { AppLifecycle, type LifecycleEvent } from '../AppLifecycle';
 import { BackDispatcher } from '../BackDispatcher';
 import { useActivityContext } from '../ActivityContext';
 import { TaskManager } from '../TaskManager';
+import { getActiveAppId } from '../taskUtils';
 import { useAppReady } from './useAppReady';
 import { syncTracker, getTracker } from '../utils/memoryHistoryTracker';
 import { memoryHistoryPopTo } from '../utils/memoryHistoryPopTo';
@@ -17,7 +18,6 @@ interface Options {
   onBack: () => boolean;
   onForeground?: () => void;
   onBackground?: () => void;
-  onDestroy?: () => void;
   onNavigate?: (path: string, navigate: (nextPath: string) => void) => void;
 }
 
@@ -91,7 +91,9 @@ export function useAppNavigationHandler(appId: string, options: Options) {
       },
     });
 
-    isForegroundRef.current = window.__OS__?.state.activeAppId === appId;
+    // 直接从 TaskManager 同步取真值 —— window.__OS__.state 在 OSProvider 的
+    // useEffect 中才更新，注册时机早于该 effect 时会读到滞后一拍的旧值。
+    isForegroundRef.current = getActiveAppId(TaskManager.getState()) === appId;
 
     const unregisterBack = BackDispatcher.register(`app.back.${appId}`, () => {
       // foreground 检查：只有当我自己的 own-task 是当前 active task 时才处理 back。
@@ -117,6 +119,9 @@ export function useAppNavigationHandler(appId: string, options: Options) {
     const isInForeignTask = task != null && task.rootAppId !== appId;
     if (isInForeignTask) return;
 
+    // 注：不处理 'destroy' —— OSContext 在 Provider effect 中 emit destroy 时，
+    // 本 hook 所在组件已随任务关闭 unmount，本订阅的 cleanup 先于 emit 执行，
+    // destroy 分支在此处永远收不到（曾有的 onDestroy 选项因此是死代码，已删除）。
     return AppLifecycle.subscribe(appId, (event: LifecycleEvent) => {
       if (event === 'foreground') {
         isForegroundRef.current = true;
@@ -126,12 +131,6 @@ export function useAppNavigationHandler(appId: string, options: Options) {
       if (event === 'background') {
         isForegroundRef.current = false;
         optionsRef.current.onBackground?.();
-        return;
-      }
-      if (event === 'destroy') {
-        isForegroundRef.current = false;
-        AppNavigatorRegistry.setBackOverride(appId);
-        optionsRef.current.onDestroy?.();
       }
     });
   }, [appId, taskId]);

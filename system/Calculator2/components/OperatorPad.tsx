@@ -30,10 +30,10 @@ export const OperatorPad: React.FC<OperatorPadProps> = ({ style }) => {
   const isDelMode = state === 'INPUT' || state === 'EVALUATE';
 
   const operators = [
-    { label: strings.op_div, op: '/', actionId: 'op.div' },
-    { label: strings.op_mul, op: '*', actionId: 'op.mul' },
-    { label: strings.op_sub, op: '-', actionId: 'op.sub' },
-    { label: strings.op_add, op: '+', actionId: 'op.add' },
+    { label: strings.op_div, op: '/', actionId: 'calc.pad.opDiv' },
+    { label: strings.op_mul, op: '*', actionId: 'calc.pad.opMul' },
+    { label: strings.op_sub, op: '-', actionId: 'calc.pad.opSub' },
+    { label: strings.op_add, op: '+', actionId: 'calc.pad.opAdd' },
   ];
 
   return (
@@ -59,7 +59,7 @@ export const OperatorPad: React.FC<OperatorPadProps> = ({ style }) => {
         className="flex-1"
         onTrigger={isDelMode ? onDelete : onClear}
         onLongPress={isDelMode ? onClear : undefined}
-        {...bindAction(isDelMode ? 'delete' : 'clear')}
+        {...bindAction(isDelMode ? 'calc.pad.delete' : 'calc.pad.clear')}
       />
 
       {/* ÷ × − + */}

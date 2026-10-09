@@ -1,7 +1,7 @@
 import React from 'react';
 import { TopBar } from '../components/TopBar';
 import { useRedditGestures } from '../hooks/useRedditGestures';
-import { IcNavForward, IcAddPost, IcTelescope } from '../res/icons';
+import { IcNavForward, IcAddPost } from '../res/icons';
 import { useLocation } from 'react-router-dom';
 import { useRedditStore } from '../state';
 import * as TimeService from '../../../os/TimeService';

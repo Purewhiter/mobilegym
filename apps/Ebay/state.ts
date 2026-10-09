@@ -72,7 +72,7 @@ const initialState: EbayState = {
 export const useEbayStore = createAppStoreWithActions<EbayState, EbayActions>(
   'ebay',
   initialState,
-  (set, get) => ({
+  (set) => ({
     addRecentSearch: (query: string) => {
       const q = query.trim();
       if (!q) return;

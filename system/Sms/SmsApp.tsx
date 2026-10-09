@@ -39,11 +39,13 @@ const SmsNavigationHandler: React.FC = () => {
     const mem = navigator as { index?: number; entries?: unknown[] };
 
     const handleBackPress = useCallback((): boolean => {
-        if (location.pathname === '/') return false;
+        // 根路径且无查询态（如 ?contextMenu=...）才放行给 OS finish；
+        // 只看 pathname 会把 URL 驱动的弹层历史一并吞掉，back 直接退出 App。
+        if (location.pathname === '/' && !location.search) return false;
         if ((mem.index ?? 0) <= 0) return false;
         back();
         return true;
-    }, [back, location.pathname, mem]);
+    }, [back, location.pathname, location.search, mem]);
 
     // Activity-level navigator 注册：用于 OS 在 foreign-task push 时（如 12306 调用 ACTION_VIEW + scheme=sms
     // 把 SMS Activity 推到 12306 task 上）通过 navigateToActivity 把内部路由切到 /new 等目标 route。

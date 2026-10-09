@@ -1,11 +1,9 @@
 import React from 'react';
 import { IcCar, IcBuilding, IcShoppingBag } from '../res/icons';
-import { RAILWAY12306_CONFIG } from '../data';
 import { useRailwayGestures } from '../hooks/useRailwayGestures';
 import { useRailwayStrings } from '../hooks/useRailwayStrings';
 import { localizeRailwayItemTag } from '../utils/localizeRailwayItem';
 export const TravelServicePage: React.FC = () => {
-  const config = RAILWAY12306_CONFIG;
   const { bindTap } = useRailwayGestures();
   const s = useRailwayStrings();
 

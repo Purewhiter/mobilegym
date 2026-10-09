@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback, useMemo, useLayoutEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useSearchParams } from 'react-router-dom';
 import { IcClose } from '../res/icons';
 import { EXPLORE_CATEGORIES } from '../constants';
 import { useMapGestures } from '../hooks/useMapGestures';
@@ -71,12 +71,13 @@ const PLACE_RESULTS_SHEET_CATEGORIES = [
 
 export const ExplorePage: React.FC = () => {
   const routerLocation = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
   const s = useMapStrings();
   const locale = useLocale();
   /** 仅「探索」首页：隐藏与 Tab 页 Sheet 冲突的脉搏/探索周边占位；搜索栏等仍显示 */
   const isExploreMapHome = routerLocation.pathname === '/';
 
-  const { bindTap, go, replaceState } = useMapGestures();
+  const { bindTap, go, back, replaceState } = useMapGestures();
   const currentLocation = useMapStore(selectCurrentLocation);
   const locationLoading = useMapStore(selectLocationLoading);
   const google = useMapStore(selectGoogle);
@@ -379,7 +380,8 @@ export const ExplorePage: React.FC = () => {
   const trafficLayerRef = useRef<google.maps.TrafficLayer | null>(null);
   const transitLayerRef = useRef<google.maps.TransitLayer | null>(null);
   const bikeLayerRef = useRef<google.maps.BicyclingLayer | null>(null);
-  const [layerSheetOpen, setLayerSheetOpen] = useState(false);
+  // URL 驱动的图层选择弹窗（uiState: explore.layers）；关闭统一走 back() 出栈
+  const layerSheetOpen = searchParams.get('layers') === 'open';
   const [mapBaseType, setMapBaseType] = useState<MapBaseTypeId>('roadmap');
   const basemapIdleListenerRef = useRef<google.maps.MapsEventListener | null>(null);
   const [mapLayerDetails, setMapLayerDetails] = useState<MapDetailToggles>({
@@ -1360,13 +1362,13 @@ export const ExplorePage: React.FC = () => {
           <MapLayerFloatingButton
             activeCategory={activeCategory}
             destination={destination}
-            onOpenLayers={() => setLayerSheetOpen(true)}
+            onOpenLayers={() => setSearchParams((p) => { p.set('layers', 'open'); return p; })}
           />
         )}
 
       <MapLayerSheet
         open={layerSheetOpen}
-        onClose={() => setLayerSheetOpen(false)}
+        onClose={() => back()}
         baseMapType={mapBaseType}
         onBaseMapChange={handleBaseMapTypeChange}
         details={mapLayerDetails}

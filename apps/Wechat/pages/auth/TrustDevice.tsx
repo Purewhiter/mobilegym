@@ -18,14 +18,6 @@ export const WechatTrustDevicePage: React.FC = () => {
     return sp.get('phone') || auth?.pendingTrustDevice?.phone || '';
   }, [auth?.pendingTrustDevice?.phone, location.search]);
 
-  const afterTrustPath = useMemo(() => {
-    const from = (location.state as any)?.from as { pathname?: string; search?: string } | undefined;
-    const pathname = String(from?.pathname || '');
-    const search = String(from?.search || '');
-    const target = `${pathname}${search}`;
-    return target && target.startsWith('/') ? target : '/me';
-  }, [location.state]);
-
   const text = isEnglish
     ? {
         back: 'Back',

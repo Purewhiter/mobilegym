@@ -13,6 +13,19 @@
 
 这些是导航图、动作任务、状态 store 检查等正式开发入口。
 
+## lib
+
+导航工具链共享库（无状态纯函数模块，被上面的 CLI 入口 import）：
+
+- `declaration_loader.mjs`：TS 转译 + vm 求值加载 `navigation.declaration.ts` / 数据配置；analyzer 与一致性检查器共用，保证两个读者对声明内容永远一致
+- `nav_graph_schema.mjs`：图 JSON 的 schemaVersion 常量与结构校验（`nav_path_finder.py` 在 Python 侧镜像同一套校验）
+- `nav_ref_resolver.mjs`：dataSource ref 路径 DSL——token 解析、四种取数模式、filterFn 动态求值
+- `nav_condition_eval.mjs`：12-op 条件求值，返回 satisfied/evaluable 三态
+- `nav_graph_core.mjs`：图元语义——search 归一化/序列化、节点 ID 构造与解析、from 约束匹配与通配展开、entryPoint 归一化、边类型
+- `nav_schema_graph.mjs`：声明 → schema 图（buildGraph 含重复边告警与去重）+ 路由级简化图
+- `nav_data_expand.mjs`：数据模式 two-pass 边/节点展开（dataSource + 参数继承）
+- `nav_graph_prune.mjs`：条件裁剪 + 可达性裁剪
+
 ## bench
 
 Benchmark 运行、任务审计、judge 验证工具。

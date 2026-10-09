@@ -9,7 +9,6 @@ import { dimens } from './res/dimens';
 import { anim } from './res/anim';
 import {
   MemoryRouter,
-  useNavigate,
   useLocation,
   UNSAFE_NavigationContext,
 } from 'react-router-dom';
@@ -37,7 +36,6 @@ import { useAppNavigate } from './navigation';
 import { useAppNavigationHandler } from '../../os/hooks/useAppNavigationHandler';
 
 const RedditNavigationHandler: React.FC = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   const { back } = useAppNavigate();
   const { navigator } = useContext(UNSAFE_NavigationContext);

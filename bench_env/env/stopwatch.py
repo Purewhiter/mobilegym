@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 import threading
 import time
 from contextlib import contextmanager
@@ -81,10 +82,50 @@ class StopWatch:
         return [self._entry_to_tree(entry) for entry in (roots or self._roots)]
 
     def to_flat(self, roots: list[_Entry] | None = None) -> dict[str, float]:
+        """Flatten the tree into ``{"a.b.c": elapsed}``.
+
+        已知缺陷：同名 phase 互相覆盖 — dict key 冲突时只保留**最后一次**的
+        elapsed（例如每步都有的 ``infer`` / ``obs`` 只剩最后一步的耗时，
+        既不是求和也不是平均）。跨步聚合请用 :meth:`to_step_summary`；
+        此字段仅为兼容既有消费方保留。
+        """
         flat: dict[str, float] = {}
         for entry in (roots or self._roots):
             self._entry_to_flat(entry, flat, prefix="")
         return flat
+
+    def to_step_summary(self, roots: list[_Entry] | None = None) -> dict[str, dict[str, float]]:
+        """Aggregate repeated root phases into per-phase distribution stats.
+
+        Episode 的 stopwatch tree 里，root phase（``infer`` / ``record`` /
+        ``action`` / ``obs`` …）每步重复出现一次；``to_flat`` 只保留最后
+        一次（见其 docstring），本方法按 root phase 名聚合为::
+
+            {"infer": {"n": 30, "sum_s": 45.2, "p50_s": 1.4,
+                       "p95_s": 3.1, "max_s": 5.0}, ...}
+
+        p50/p95 采用 nearest-rank（对小样本稳定、无插值）。只聚合 root
+        层级；子 phase 的明细仍在 ``to_tree()``。
+        """
+        by_name: dict[str, list[float]] = {}
+        for entry in (roots if roots is not None else self._roots):
+            by_name.setdefault(entry.name, []).append(entry.elapsed)
+
+        def _nearest_rank(sorted_vals: list[float], q: float) -> float:
+            idx = max(0, min(len(sorted_vals) - 1, math.ceil(q * len(sorted_vals)) - 1))
+            return sorted_vals[idx]
+
+        summary: dict[str, dict[str, float]] = {}
+        for name, values in by_name.items():
+            vals = sorted(values)
+            summary[name] = {
+                "n": len(vals),
+                "sum_s": sum(vals),
+                "p50_s": _nearest_rank(vals, 0.50),
+                "p95_s": _nearest_rank(vals, 0.95),
+                "max_s": vals[-1],
+            }
+        return summary
 
     def _entry_to_tree(self, entry: _Entry) -> dict[str, Any]:
         return {

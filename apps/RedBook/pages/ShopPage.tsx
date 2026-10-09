@@ -3,7 +3,7 @@ import { useRedBookStrings } from '../hooks/useRedBookStrings';
 import React from 'react';
 import { IcCart, IcMore } from '../res/icons';
 const ShoppingCart = IcCart, MoreHorizontal = IcMore;
-import { strings, type StringKey } from '../res/strings';
+import { type StringKey } from '../res/strings';
 
 // Assets
 import searchIcon from '../assets/mall/Search_2x.png';

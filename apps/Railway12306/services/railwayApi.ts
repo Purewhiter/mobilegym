@@ -4,7 +4,7 @@
  * 所有请求通过 os/NetworkService 走网关代理，cookie 由网关 cookie jar 自动管理。
  */
 
-import { netFetch, netText } from '../../../os/NetworkService';
+import { netFetch } from '../../../os/NetworkService';
 import { now as timeNow } from '../../../os/TimeService';
 
 // ─── 常量 ───────────────────────────────────────────────────────────

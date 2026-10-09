@@ -7,7 +7,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import {
-  IcNavForward, IcFolder, IcFileText, IcImage,
+  IcNavForward, IcFileText, IcImage,
   IcVideo, IcMusic, IcFolderAdd, IcExpand, IcCheck,
   IcClose, IcList, IcSearch, IcFilter, IcMoreVert
 } from '../res/icons';

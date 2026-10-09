@@ -10,7 +10,7 @@ import { useWechatGestures } from '../../hooks/useWechatGestures';
 export const General: React.FC = () => {
   const t = useWechatStrings();
     const { bindTap } = useWechatGestures();
-    const { user, settings, updateSettings } = useWechatStore(useShallow(s => ({
+    const { settings, updateSettings } = useWechatStore(useShallow(s => ({
         user: s.user,
         settings: s.settings,
         updateSettings: s.updateSettings,
@@ -84,7 +84,7 @@ export const General: React.FC = () => {
 // --- Chat Settings (聊天) ---
 export const ChatSettings: React.FC = () => {
     const t = useWechatStrings();
-    const { user, settings, updateSettings } = useWechatStore(useShallow(s => ({
+    const { settings, updateSettings } = useWechatStore(useShallow(s => ({
         user: s.user,
         settings: s.settings,
         updateSettings: s.updateSettings,
@@ -144,7 +144,7 @@ export const ChatSettings: React.FC = () => {
 export const NotificationSettings: React.FC = () => {
     const t = useWechatStrings();
     const { bindTap } = useWechatGestures();
-    const { user, settings, updateSettings } = useWechatStore(useShallow(s => ({
+    const { settings, updateSettings } = useWechatStore(useShallow(s => ({
         user: s.user,
         settings: s.settings,
         updateSettings: s.updateSettings,

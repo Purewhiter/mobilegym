@@ -37,6 +37,67 @@ export function formatBilibiliRelativeTime(timestampSeconds: number, nowMs: numb
   return `${Math.floor(hours / 24)}d ago`;
 }
 
+/**
+ * 分区/榜单等「中文数据值」的英文显示映射。
+ * 数据层（partition 字段、RANKING_DATA 键、URL 参数）保持中文值不变，
+ * 仅在渲染时经此映射转换；zh locale 下原样返回。
+ */
+const PARTITION_LABELS_EN: Record<string, string> = {
+  全站: 'All',
+  番剧: 'Anime',
+  国创: 'Chinese Animation',
+  纪录片: 'Documentary',
+  电影: 'Movies',
+  电视剧: 'TV Series',
+  综艺: 'Variety',
+  影视: 'Movies & TV',
+  娱乐: 'Entertainment',
+  音乐: 'Music',
+  舞蹈: 'Dance',
+  动画: 'Animation',
+  绘画: 'Art',
+  鬼畜: 'Kichiku',
+  游戏: 'Gaming',
+  资讯: 'News',
+  知识: 'Knowledge',
+  人工智能: 'AI',
+  科技数码: 'Tech',
+  汽车: 'Cars',
+  时尚美妆: 'Style & Beauty',
+  家装房产: 'Home & Property',
+  户外潮流: 'Outdoors',
+  健身: 'Fitness',
+  体育运动: 'Sports',
+  手工: 'Crafts',
+  美食: 'Food',
+  小剧场: 'Sketches',
+  旅游出行: 'Travel',
+  三农: 'Rural Life',
+  动物: 'Animals',
+  亲子: 'Parenting',
+  健康: 'Health',
+  情感: 'Relationships',
+  vlog: 'Vlog',
+  生活兴趣: 'Lifestyle',
+  生活经验: 'Life Tips',
+  全区排行榜: 'All Rankings',
+  新歌热榜: 'New Music Chart',
+  工房集市: 'Workshop Market',
+  小黑屋: 'Banned List',
+  游戏中心: 'Game Center',
+  游戏赛事: 'Esports',
+  漫画: 'Comics',
+  课堂: 'Classes',
+  专栏: 'Articles',
+  超高清专区: 'Ultra HD Zone',
+};
+
+export function localizePartitionLabel(label: string | undefined, locale: Locale): string {
+  if (!label) return '';
+  if (locale !== 'en') return label;
+  return PARTITION_LABELS_EN[label] ?? label;
+}
+
 export function formatBilibiliSearchDate(timestamp: number, locale: Locale): string {
   if (!timestamp) return '';
   const now = TimeService.now();

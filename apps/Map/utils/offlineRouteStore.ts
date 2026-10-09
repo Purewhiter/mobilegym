@@ -3,7 +3,7 @@
  */
 import type { Locale } from '../../../os/locale';
 import type { OfflinePlaceRow } from './offlinePlaceStore';
-import { OFFLINE_SNAPSHOT_MAX_M } from './offlinePlaceStore';
+import { OFFLINE_SNAPSHOT_MAX_M, loadPlacesSnapshot } from './offlinePlaceStore';
 
 /** 内部双语文本对 */
 type BiText = { zh: string; en: string };
@@ -97,24 +97,30 @@ function haversineMeters(lat1: number, lng1: number, lat2: number, lng2: number)
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
+// routes.json 体积大（约 8MB），用 fetch 加载以避开 Vite ESM 转换管线
+// （否则会被打进 JS chunk），模式同 apps/Bilibili/data/loader.ts。
+const routesJsonUrl = new URL('../data/routes.json', import.meta.url).href;
+
 async function loadRoutesSnapshot(): Promise<RoutesSnapshot | null> {
   if (!routesSnapshotPromise) {
-    routesSnapshotPromise = import('../data/routes.json').then(
-      (m) => (m.default ?? m) as RoutesSnapshot,
-      () => null,
-    );
+    routesSnapshotPromise = fetch(routesJsonUrl)
+      .then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status} for ${routesJsonUrl}`);
+        return r.json();
+      })
+      .then(
+        (data) => data as RoutesSnapshot,
+        () => null,
+      );
   }
   return routesSnapshotPromise;
 }
 
 async function loadPlacesForMatch(): Promise<Record<string, OfflinePlaceRow> | null> {
-  try {
-    const m = await import('../data/places.json');
-    const snap = (m.default ?? m) as { places?: Record<string, OfflinePlaceRow> };
-    return snap.places ?? null;
-  } catch {
-    return null;
-  }
+  // 复用 offlinePlaceStore 的 fetch 加载器：places.json 全局只拉取一份，
+  // 与原先两处 `import('../data/places.json')` 共享 ES 模块缓存的行为一致。
+  const snap = await loadPlacesSnapshot();
+  return snap?.places ?? null;
 }
 
 function readRouteCache(): Record<string, OfflineRoutePayloadRaw> {

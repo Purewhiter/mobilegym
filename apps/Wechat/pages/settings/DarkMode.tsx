@@ -8,7 +8,7 @@ import { SettingsToggle } from './Shared';
 import { useWechatGestures } from '../../hooks/useWechatGestures';
 export const DarkModePage: React.FC = () => {
   const t = useWechatStrings();
-    const { user, settings, updateSettings, setRightAction } = useWechatStore(useShallow(s => ({
+    const { settings, updateSettings, setRightAction } = useWechatStore(useShallow(s => ({
         user: s.user,
         settings: s.settings,
         updateSettings: s.updateSettings,

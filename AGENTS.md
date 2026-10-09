@@ -16,7 +16,7 @@ User-facing documentation under `docs/` and `bench_env/docs/` is in **English**.
 ### ESLint
 
 ```bash
-npm run lint          # Lint runtime code under os/ and apps/
+npm run lint          # Lint runtime code under os/, apps/ and system/
 ```
 
 Current rule: bare `Date.now()` and any form of `new Date(...)` (including parameterised forms — they must go through `TimeService`) are forbidden. Config lives in `eslint.config.js`.
@@ -61,12 +61,12 @@ The project has three main layers plus dev tooling. It is a single Vite project 
 
 The simulated Android system:
 
-- **`OSContext.tsx`** — Thin React Context Provider; delegates to TaskManager, BackDispatcher, IntentResolver; exposes `window.__OS__` and `window.__SIM__` global APIs
+- **`OSContext.tsx`** — Composition root (~140 lines): subscribes to TaskManager / IntentResolver, mounts `window.__OS__` / `window.__SIM__` via `buildOsApi` (`osApi.ts`) / `buildSimApi` (`sim/simApi.ts`) in effects, and provides the `useOS` context. OS command functions live in `osActions.ts` (module-level, no render capture); nav-timeout state in `osNavError.ts`; reset orchestration in `sim/simResetCore.ts`; launcher snapshot parsing in `sim/launcherSnapshot.ts`; OS-level back handlers and app lifecycle sync in `hooks/useOsBackHandlers.ts` / `hooks/useAppLifecycleSync.ts`
 - **`TaskManager.ts`** — Task/Activity stack management (volatile — refresh = restart; state is readable via `__SIM__.getState()`). Each Task has `stack: ActivityInstance[]` to support multiple Activities. `finishActivity()`: when stack>1 it pops the top Activity; when stack=1 it **never destroys the Task** — if `launchedByTaskId` is set it activates the caller and consumes the marker, otherwise it calls `goHome()` and the Task stays in Recents (destruction requires an explicit `__OS__.closeApp` or a Recents swipe). The `wasExternallyRouted` flag currently only affects whether `LAUNCH_APP` clears `launchedByTaskId` when reactivating from the desktop (details in `docs/platform/os/task-lifecycle.md`)
 - **`BackDispatcher.ts`** — Priority-based back key handler. Components register with priority (e.g., PermissionDialog:1000, Shade:800, Keyboard:700, App:100). Includes frame-level deduplication to prevent double-back when edge-swipe gesture and backdrop click fire in the same frame
 - **`IntentResolver.ts`** — Intent matching, chooser state management, startActivityForResult
 - **`AppNavigatorRegistry.ts`** — Event-driven app/activity navigator registration. Uses CustomEvent + Promise pattern (replaces polling). Navigator `navigate(path, options?)` accepts optional `{ replace?: boolean }` — OS uses this to control push (existing tasks) vs replace (new tasks) when routing via `openApp`
-- **`SystemShell.tsx`** — Desktop, status bar, gesture handling, app rendering container. Apps stay mounted when backgrounded (hidden via `display:none`), preserving React state. Implements **adjustResize**: wraps each Activity in a `data-adjust-resize` div that shrinks by keyboard height when keyboard is visible, so App flex layouts auto-adapt. When keyboard is active, the container gets `data-keyboard-active` attribute — elements with `data-hide-on-keyboard` are automatically hidden via global CSS
+- **`SystemShell.tsx`** — Composition root for the system chrome: renders the desktop, activity containers and the chrome layers, which live as separate modules under `os/components/` (`StatusBar`, `GestureBar`, `EdgeGestures`, `RecentsOverlay`, `ActivityHost`, `chromeForeground`) plus `os/hooks/useTaskManagerSelector.ts`. Apps stay mounted when backgrounded (kept laid out via `visibility:hidden`), preserving React state and scroll positions. `ActivityHost` implements **adjustResize**: wraps each Activity in a `data-adjust-resize` div that shrinks by keyboard height when keyboard is visible, so App flex layouts auto-adapt. When keyboard is active, the container gets `data-keyboard-active` attribute — elements with `data-hide-on-keyboard` are automatically hidden via global CSS
 - **`AppStateRegistry.ts`** — Dual-layer state: runtime registry (from mounted apps) + persistent readers (localStorage fallback). External access via `getAllAppStates()`
 - **`types.ts`** — Core type definitions (`AppId = string`). `AppId` is a plain string alias — apps are auto-discovered, no manual type union needed
 - **`types/manifest.ts`** — `AppManifest` type definition (id, packageName, displayName, displayNameEn, aliases, version, icon, theme, etc.)

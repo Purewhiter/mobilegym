@@ -11,7 +11,7 @@ from typing import Any
 
 from bench_env.task.wechat import tasks as _tasks_module
 from bench_env.tests.conftest import make_judge_input
-from bench_env.tests.weather.test_tasks import TEST_OS_STATE
+from bench_env.tests.fixtures.weather import TEST_OS_STATE
 
 
 ROOT = Path(__file__).resolve().parents[3]

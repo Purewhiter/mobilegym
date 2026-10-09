@@ -1,7 +1,7 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useLocale } from '@/os/locale';
 import { useParams, useSearchParams } from 'react-router-dom';
-import { IcNavBackArrow, IcClock, IcHeart, IcMoreVertical, IcPlay, IcDownloadCircle, IcShuffle, IcPause } from '../res/icons';
+import { IcNavBackArrow, IcHeart, IcMoreVertical, IcPlay, IcDownloadCircle, IcShuffle, IcPause } from '../res/icons';
 import { SPOTIFY_CONFIG } from '../data';
 import type { SpotifyArtist, SpotifyPlaylist, SpotifyTrack } from '../types';
 import { loadPlaylistTracks } from '../data/loader';
@@ -114,18 +114,6 @@ export const PlaylistPage: React.FC = () => {
                                 type: 'Single'
                             } as any);
                         }
-
-                        // 设置 Tracks
-                        const mappedTracks: SpotifyTrack[] = songResults.map((t: any) => ({
-                            id: t.trackId.toString(),
-                            title: t.trackName,
-                            artist: t.artistName,
-                            cover: t.artworkUrl100, // 列表用小图
-                            coverLarge: inferLargeArtworkUrl(t.artworkUrl100),
-                            duration: Math.floor(t.trackTimeMillis / 1000).toString(), // 简单的转 string，或者 formatting 需要 number? MOCK check defines duration as string '3:20'.
-                            // Wait, Mock tracks have duration string '3:20'. iTunes gives millis. 
-                            // I need to format it.
-                        }));
 
                         // Format duration
                         const fmt = (s: number) => {
@@ -417,7 +405,6 @@ export const PlaylistPage: React.FC = () => {
                             if (!track) return null;
                             const index = vItem.index;
                             const isCurrent = currentTrack?.id === track.id;
-                            const isPlayingCurrent = isCurrent && isPlaying;
 
                             return (
                                 <div

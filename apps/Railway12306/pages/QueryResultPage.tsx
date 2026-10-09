@@ -6,7 +6,7 @@ import { useShallow } from 'zustand/react/shallow';
 import type { TrainFilter, SortMode } from '../services/trainService';
 import { SEAT_FILTER_OPTIONS, TIME_RANGES, applyFilterAndSort } from '../services/trainService';
 import { queryTrainStops, type StopInfo } from '../services/railwayApi';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import * as TimeService from '../../../os/TimeService';
 import { strings } from '../res/strings';
 import { stringsEn } from '../res/strings.en';
@@ -594,9 +594,8 @@ export const QueryResultPage: React.FC = () => {
   const setSelectedTrain = useRailwayStore(s => s.setSelectedTrain);
   const setDate = useRailwayStore(s => s.setDate);
   const swapStations = useRailwayStore(s => s.swapStations);
-  const { bindBack, bindTap } = useRailwayGestures();
+  const { bindBack, bindTap, back } = useRailwayGestures();
   const s = useAppStrings(strings, stringsEn);
-  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = searchParams.get('tab') || 'direct';
   const showFilterPanel = searchParams.get('filterPanel') === 'open';
@@ -1057,7 +1056,7 @@ export const QueryResultPage: React.FC = () => {
       {/* 交换发到站确认弹窗 */}
       {showSwapDialog && (
         <div className="fixed inset-0 z-[80] flex items-center justify-center" data-status-bar-foreground="light">
-          <div className="absolute inset-0 bg-black/40" onClick={() => navigate(-1)} />
+          <div className="absolute inset-0 bg-black/40" onClick={() => back()} />
           <div className="relative bg-app-surface rounded-2xl w-[280px] overflow-hidden shadow-xl">
             <div className="pt-6 pb-3 px-6 text-center">
               <div className="text-base font-semibold text-gray-900 mb-3">{s.swap_dialog_title}</div>
@@ -1066,14 +1065,14 @@ export const QueryResultPage: React.FC = () => {
             <div className="flex border-t border-gray-200">
               <button
                 className="flex-1 py-3 text-center text-gray-600 text-base border-r border-gray-200 active:bg-gray-50"
-                onClick={() => navigate(-1)}
+                onClick={() => back()}
               >
                 {s.swap_dialog_cancel}
               </button>
               <button
                 className="flex-1 py-3 text-center text-app-primary text-base font-medium active:bg-blue-50"
                 onClick={() => {
-                  navigate(-1);
+                  back();
                   swapStations();
                   setExpandedTrainIndex(null);
                 }}

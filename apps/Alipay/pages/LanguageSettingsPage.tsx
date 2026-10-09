@@ -5,13 +5,6 @@ import { useAlipayStore } from '../state';
 import { useAlipayGestures } from '../hooks/useAlipayGestures';
 type Lang = 'zh-CN' | 'zh-TW' | 'zh-HK' | 'en';
 
-const LANG_OPTIONS: { id: Lang; label: string }[] = [
-  { id: 'zh-CN', label: '简体中文' },
-  { id: 'zh-TW', label: '繁体中文(台湾)' },
-  { id: 'zh-HK', label: '繁体中文(香港)' },
-  { id: 'en', label: 'English' },
-];
-
 export const LanguageSettingsPage: React.FC = () => {
   const language = useAlipayStore(s => s.language);
   const setLanguage = useAlipayStore(s => s.setLanguage);

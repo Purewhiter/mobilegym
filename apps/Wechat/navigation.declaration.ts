@@ -1814,7 +1814,8 @@ export const NAVIGATION_DECLARATION = {
     // =========================
     {
       id: 'wallet.open',
-      from: ['/me', '/services'],
+      // 钱包入口仅在「服务」页（/me 页只有进入 /services 的入口，无直达钱包的触点）
+      from: ['/services'],
       to: '/pay/wallet',
       search: {},
       searchParams: {},
@@ -2677,6 +2678,17 @@ export const NAVIGATION_DECLARATION = {
       ui: { placement: 'content', icon: 'address', gesture: 'tap' },
     },
     {
+      id: 'profile.address.add.open',
+      from: ['/me/address'],
+      to: '/me/address/add',
+      search: {},
+      searchParams: {},
+      mode: 'push',
+      params: {},
+      label: '添加地址',
+      ui: { placement: 'content', icon: 'address_add', gesture: 'tap' },
+    },
+    {
       id: 'profile.invoice.open',
       from: ['/my-profile-detail'],
       to: '/me/invoice',
@@ -3316,7 +3328,8 @@ export const NAVIGATION_DECLARATION = {
     },
     {
       id: 'scan.open',
-      from: ['/', '/contacts', '/discover'],
+      // 内容区扫一扫入口仅在「发现」页；/ 与 /contacts 的扫一扫走 plusMenu.scan.open（plus 菜单）
+      from: ['/discover'],
       to: '/scan',
       search: {},
       searchParams: {},

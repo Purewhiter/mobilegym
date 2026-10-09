@@ -14,7 +14,7 @@ export const MePage: React.FC = () => {
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const isDrawerOpen = searchParams.get('menu') === 'drawer';
-  const { bindTap, back } = useRedBookGestures();
+  const { bindTap } = useRedBookGestures();
   const s = useRedBookStrings();
   const [isScrolled, setIsScrolled] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);

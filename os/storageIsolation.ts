@@ -182,6 +182,9 @@ export function makeNamespacedKey(key: string): string {
 
 const PATCH_MARK = '__MG_LOCALSTORAGE_NS_PATCH__';
 
+// Other namespaces can belong to live tabs. Automatic namespace collection must
+// first establish ownership/liveness; startup must not delete another tab's data.
+
 /**
  * Monkey-patch Storage methods so all existing code that uses localStorage
  * automatically becomes namespaced, without touching every app.

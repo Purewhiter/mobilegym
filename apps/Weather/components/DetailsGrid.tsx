@@ -21,7 +21,6 @@ const ARC_SWEEP = 270;
 const ARC_RADIUS = 38;
 const ARC_STROKE = 6;
 const SVG_CENTER = 50;
-const GAUGE_SIZE_PX = 68; // 源: real_time_circle_graph_common_width=68dp
 const detailCardClassName = 'backdrop-blur-lg border rounded-[20px] pl-5 pr-3 pt-4 pb-3 flex h-[92px] text-white relative overflow-hidden';
 const detailCardStyle = { backgroundColor: colors.card_surface_detail, borderColor: colors.card_border };
 
@@ -282,11 +281,8 @@ const FeelsLikeGauge = ({ value }: { value: string }) => {
 
   // 三段弧角度（-225~45，总 270°，中间留 5° 缺口）
   const seg1Start = ARC_START;
-  const seg1End = ARC_START + 135;
   const seg2Start = ARC_START + 140;
-  const seg2End = ARC_START + 195;
   const seg3Start = ARC_START + 200;
-  const seg3End = ARC_START + 270;
 
   const pointerEnd = pointOnArc(SVG_CENTER, SVG_CENTER, ARC_RADIUS, t);
 
@@ -336,7 +332,7 @@ const FeelsLikeGauge = ({ value }: { value: string }) => {
 };
 
 // ── 4. 风向 ─── 罗盘 + 风向指针 ──────────────────────────────
-const WindCompass = ({ dir, deg }: { dir: string; deg: string }) => {
+const WindCompass = ({ deg }: { dir: string; deg: string }) => {
   const s = useAppStrings(strings, stringsEn);
   // 源 App 基于角度旋转（这里用 wind360 更接近）
   const d = clampInt(parseInt(deg) || 0, 0, 360);

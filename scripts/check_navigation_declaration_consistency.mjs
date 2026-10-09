@@ -2,12 +2,26 @@
 /**
  * Static consistency checker between navigation declaration and source code triggers.
  *
- * What it detects (v0.1):
+ * What it detects (v0.2):
  * 1) Used transitionId in code but missing in navigation.declaration.ts transitions[].
  * 2) Usage occurs inside a page component whose route path is NOT included in transition.from (path match only).
+ * 3) Actions declaration schema issues + declaration/code drift (--actions).
+ *
+ * How it reads the declaration (v0.2):
+ * - The declaration itself is loaded by evaluating navigation.declaration.ts in vm
+ *   (scripts/lib/declaration_loader.mjs — same loader as navigation_declaration_analyzer.mjs),
+ *   so SpreadElements, shared constants and cross-file imports are fully expanded.
+ * - The TypeScript AST is only used to locate *usages* in app source files
+ *   (file/line/column of go()/bind*() call sites, data-action attributes, ...).
+ *
+ * Exit codes (see REPORT_LEVEL_MATRIX below for the category -> level mapping):
+ * - 0: no error-level findings (warn-level findings allowed unless --fail-on-warn)
+ * - 1: at least one error-level finding, or warn-level findings with --fail-on-warn
+ * - 2: usage/environment problem (bad args, app dir or declaration file not found)
  *
  * Notes:
- * - This is a best-effort static checker. It does not execute code.
+ * - This is a best-effort static checker. It does not execute app code beyond the
+ *   declaration module itself.
  * - For "from" checks, we only validate route path presence (string '/x' or object {path:'/x', ...}).
  *   We do NOT attempt to prove search constraints correctness (e.g. tab='shelf' vs '*').
  */
@@ -15,19 +29,78 @@ import fs from 'fs';
 import path from 'path';
 import process from 'process';
 import ts from 'typescript';
+import { loadNavigationDeclaration, resolveAppDir } from './lib/declaration_loader.mjs';
 
 const WORKSPACE_ROOT = process.cwd();
+
+// ============================================================================
+// Category -> severity matrix (single source of truth for exit-code semantics)
+// ============================================================================
+//
+// Every category printed as ERROR must be level 'error' here (non-zero exit);
+// every category printed as WARN must be level 'warn' (--fail-on-warn covers all).
+/** @type {{loader: Record<string,'error'|'warn'>, navigation: Record<string,'error'|'warn'>, actions: Record<string,'error'|'warn'>}} */
+const REPORT_LEVEL_MATRIX = {
+  loader: {
+    declarationLoadErrors: 'error',
+  },
+  navigation: {
+    missingInDeclaration: 'error',
+    fromMismatches: 'error',
+    invalidBaseStateIds: 'error',
+    unusedInCode: 'warn',
+    extraFromWarnings: 'warn',
+    gestureMismatches: 'warn',
+    fromSearchTooBroad: 'warn',
+    fromBarePathWithoutBaseState: 'warn',
+    multipleBaseStates: 'warn',
+  },
+  actions: {
+    missingInDeclaration: 'error',
+    schemaErrors: 'error',
+    unusedInCode: 'warn',
+    schemaWarnings: 'warn',
+  },
+};
+
+/**
+ * Count findings per category for a report scope and aggregate by severity level.
+ *
+ * @param {'loader'|'navigation'|'actions'} scope
+ * @param {Record<string, number>} counts category -> finding count
+ * @returns {{errors: number, warnings: number, byCategory: Record<string, {level:string, count:number}>}}
+ */
+function tallySeverity(scope, counts) {
+  const matrix = REPORT_LEVEL_MATRIX[scope];
+  const out = { errors: 0, warnings: 0, byCategory: {} };
+  for (const [category, level] of Object.entries(matrix)) {
+    const count = counts[category] ?? 0;
+    out.byCategory[`${scope}.${category}`] = { level, count };
+    if (count > 0) {
+      if (level === 'error') out.errors += count;
+      else out.warnings += count;
+    }
+  }
+  return out;
+}
 
 function usage() {
   console.log(`
 Usage:
-  node scripts/check_navigation_declaration_consistency.mjs WechatReading
+  node scripts/check_navigation_declaration_consistency.mjs <AppName|AppPath>
+
+  AppName resolves against apps/ then system/ (a direct path also works).
 
 Options:
   --json   Output JSON only
   --actions  Also validate Actions (data-action) consistency
-  --actions-only  Only run Actions checks
-  --fail-on-warn  Exit non-zero on warnings too
+  --actions-only  Only run Actions checks (skips the navigation scan)
+  --fail-on-warn  Exit non-zero on warnings too (covers ALL warn categories)
+
+Exit codes:
+  0  no error-level findings (warn-level findings allowed unless --fail-on-warn)
+  1  error-level findings, or warn-level findings with --fail-on-warn
+  2  usage/environment problem (bad args, app dir / declaration file not found)
 `);
 }
 
@@ -106,186 +179,92 @@ function getStringLiteralValue(node) {
   return null;
 }
 
-function extractNavDeclaration(navDeclPath) {
-  const sf = createSourceFile(navDeclPath);
+function asArray(value) {
+  return Array.isArray(value) ? value : [];
+}
 
-  /** @type {null | ts.ObjectLiteralExpression} */
-  let declObj = null;
-
-  function unwrapExpr(expr) {
-    let cur = expr;
-    // Unwrap common TS wrappers: `as const`, `satisfies`, parentheses
-    // - AsExpression: `{...} as const`
-    // - SatisfiesExpression: `({...}) satisfies T`
-    // - ParenthesizedExpression: `({...})`
-    while (cur) {
-      if (ts.isAsExpression(cur)) {
-        cur = cur.expression;
-        continue;
-      }
-      if (ts.isSatisfiesExpression && ts.isSatisfiesExpression(cur)) {
-        cur = cur.expression;
-        continue;
-      }
-      if (ts.isParenthesizedExpression(cur)) {
-        cur = cur.expression;
-        continue;
-      }
-      break;
-    }
-    return cur;
-  }
-
-  function visit(node) {
-    if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name) && node.name.text === 'NAVIGATION_DECLARATION') {
-      const init = node.initializer ? unwrapExpr(node.initializer) : null;
-      if (init && ts.isObjectLiteralExpression(init)) declObj = init;
-    }
-    ts.forEachChild(node, visit);
-  }
-  visit(sf);
-
-  if (!declObj) {
-    throw new Error(`Cannot find NAVIGATION_DECLARATION object in ${navDeclPath}`);
-  }
-
-  const routesInit = getProp(declObj, 'routes');
-  const transitionsInit = getProp(declObj, 'transitions');
-
+/**
+ * Build the checker's navigation model from the vm-evaluated declaration object.
+ * SpreadElements / shared constants are already expanded by the loader, so this
+ * sees exactly what the analyzer (and the runtime) sees.
+ *
+ * @param {any} declaration evaluated NAVIGATION_DECLARATION
+ */
+function buildNavModel(declaration) {
   /** @type {Array<{path:string, component:string, queryParamKeys:Set<string>, uiStates:Array<{id:string, discreteKeys:Set<string>}> , uiStateDiscreteKeySets:Set<string>[], hasBaseDiscreteState:boolean}>} */
   const routes = [];
-  /** @type {Map<string, {id:string, fromPaths:Set<string>, fromEntries:Array<{path:string, search?:Record<string,string>}>, uiPlacement:null|string, uiGesture:null|string, rawFrom:any}>} */
+  /** @type {Map<string, {id:string, fromPaths:Set<string>, fromEntries:Array<{path:string, search?:Record<string,any>}>, uiPlacement:null|string, uiGesture:null|string, rawFrom:any}>} */
   const transitions = new Map();
 
-  if (routesInit && ts.isArrayLiteralExpression(routesInit)) {
-    for (const el of routesInit.elements) {
-      if (!ts.isObjectLiteralExpression(el)) continue;
-      const p = getStringLiteralValue(getProp(el, 'path'));
-      const c = getStringLiteralValue(getProp(el, 'component'));
-      if (!p || !c) continue;
+  for (const route of asArray(declaration?.routes)) {
+    if (!route || typeof route !== 'object') continue;
+    const p = typeof route.path === 'string' ? route.path : null;
+    const c = typeof route.component === 'string' ? route.component : null;
+    if (!p || !c) continue;
 
-      const queryParamKeys = new Set();
-      const queryParamsInit = getProp(el, 'queryParams');
-      if (queryParamsInit && ts.isObjectLiteralExpression(queryParamsInit)) {
-        for (const prop of queryParamsInit.properties) {
-          if (!ts.isPropertyAssignment(prop)) continue;
-          const key =
-            ts.isIdentifier(prop.name) ? prop.name.text :
-            ts.isStringLiteral(prop.name) ? prop.name.text :
-            null;
-          if (!key) continue;
-          queryParamKeys.add(key);
-        }
-      }
+    const queryParamKeys = new Set(
+      route.queryParams && typeof route.queryParams === 'object' ? Object.keys(route.queryParams) : [],
+    );
 
-      const uiStateDiscreteKeySets = [];
-      const uiStates = [];
-      let hasBaseDiscreteState = false;
-      const uiStatesInit = getProp(el, 'uiStates');
-      if (uiStatesInit && ts.isArrayLiteralExpression(uiStatesInit)) {
-        for (const stateEl of uiStatesInit.elements) {
-          if (!ts.isObjectLiteralExpression(stateEl)) continue;
-          const uiStateId = getStringLiteralValue(getProp(stateEl, 'id')) ?? '<unknown>';
-          const searchInit = getProp(stateEl, 'search');
-          const searchObj = searchInit && ts.isObjectLiteralExpression(searchInit) ? searchInit : null;
-          const discreteKeys = new Set();
-          if (searchObj) {
-            for (const prop of searchObj.properties) {
-              if (!ts.isPropertyAssignment(prop)) continue;
-              const key =
-                ts.isIdentifier(prop.name) ? prop.name.text :
-                ts.isStringLiteral(prop.name) ? prop.name.text :
-                null;
-              if (!key) continue;
-              // queryParams are dynamic; don't count them as discrete keys
-              if (queryParamKeys.has(key)) continue;
-              discreteKeys.add(key);
-            }
-          }
-          uiStateDiscreteKeySets.push(discreteKeys);
-          uiStates.push({ id: uiStateId, discreteKeys });
-          if (discreteKeys.size === 0) hasBaseDiscreteState = true;
-        }
-      }
-
-      routes.push({
-        path: p,
-        component: c,
-        queryParamKeys,
-        uiStates,
-        uiStateDiscreteKeySets,
-        hasBaseDiscreteState,
-      });
+    const uiStateDiscreteKeySets = [];
+    const uiStates = [];
+    let hasBaseDiscreteState = false;
+    for (const state of asArray(route.uiStates)) {
+      if (!state || typeof state !== 'object') continue;
+      const uiStateId = typeof state.id === 'string' ? state.id : '<unknown>';
+      const searchObj = state.search && typeof state.search === 'object' ? state.search : {};
+      // queryParams are dynamic; don't count them as discrete keys
+      const discreteKeys = new Set(Object.keys(searchObj).filter(key => !queryParamKeys.has(key)));
+      uiStateDiscreteKeySets.push(discreteKeys);
+      uiStates.push({ id: uiStateId, discreteKeys });
+      if (discreteKeys.size === 0) hasBaseDiscreteState = true;
     }
+
+    routes.push({
+      path: p,
+      component: c,
+      queryParamKeys,
+      uiStates,
+      uiStateDiscreteKeySets,
+      hasBaseDiscreteState,
+    });
   }
 
-  if (transitionsInit && ts.isArrayLiteralExpression(transitionsInit)) {
-    for (const el of transitionsInit.elements) {
-      if (!ts.isObjectLiteralExpression(el)) continue;
-      const id = getStringLiteralValue(getProp(el, 'id'));
-      if (!id) continue;
+  for (const t of asArray(declaration?.transitions)) {
+    if (!t || typeof t !== 'object') continue;
+    const id = typeof t.id === 'string' ? t.id : null;
+    if (!id) continue;
 
-      const fromInit = getProp(el, 'from');
-      const fromPaths = new Set();
-      const fromEntries = [];
-      const uiInit = getProp(el, 'ui');
-      let uiPlacement = null;
-      let uiGesture = null;
-      if (uiInit && ts.isObjectLiteralExpression(uiInit)) {
-        uiPlacement = getStringLiteralValue(getProp(uiInit, 'placement'));
-        uiGesture = getStringLiteralValue(getProp(uiInit, 'gesture'));
+    const fromPaths = new Set();
+    const fromEntries = [];
+    const addFromEntry = entry => {
+      if (typeof entry === 'string') {
+        fromPaths.add(entry);
+        fromEntries.push({ path: entry });
+        return;
       }
-
-      const parseSearchObj = (searchInit) => {
-        if (!searchInit || !ts.isObjectLiteralExpression(searchInit)) return undefined;
-        const out = {};
-        for (const prop of searchInit.properties) {
-          if (!ts.isPropertyAssignment(prop)) continue;
-          const key =
-            ts.isIdentifier(prop.name) ? prop.name.text :
-            ts.isStringLiteral(prop.name) ? prop.name.text :
-            null;
-          if (!key) continue;
-          const val = getStringLiteralValue(prop.initializer);
-          if (val !== null) out[key] = val;
-        }
-        return out;
-      };
-
-      const addFromNode = node => {
-        const str = getStringLiteralValue(node);
-        if (str) {
-          fromPaths.add(str);
-          fromEntries.push({ path: str });
-          return;
-        }
-        if (node && ts.isObjectLiteralExpression(node)) {
-          const p = getStringLiteralValue(getProp(node, 'path'));
-          if (p) {
-            fromPaths.add(p);
-            const search = parseSearchObj(getProp(node, 'search'));
-            fromEntries.push({ path: p, ...(search ? { search } : {}) });
-          }
-        }
-      };
-
-      if (fromInit) {
-        if (ts.isArrayLiteralExpression(fromInit)) {
-          for (const item of fromInit.elements) addFromNode(item);
-        } else {
-          addFromNode(fromInit);
-        }
+      if (entry && typeof entry === 'object' && typeof entry.path === 'string') {
+        fromPaths.add(entry.path);
+        const search =
+          entry.search && typeof entry.search === 'object' ? { ...entry.search } : undefined;
+        fromEntries.push({ path: entry.path, ...(search ? { search } : {}) });
       }
+    };
 
-      transitions.set(id, {
-        id,
-        fromPaths,
-        fromEntries,
-        uiPlacement,
-        uiGesture,
-        rawFrom: fromInit ? sf.text.slice(fromInit.pos, fromInit.end) : null,
-      });
+    if (Array.isArray(t.from)) {
+      for (const item of t.from) addFromEntry(item);
+    } else if (t.from !== undefined && t.from !== null) {
+      addFromEntry(t.from);
     }
+
+    transitions.set(id, {
+      id,
+      fromPaths,
+      fromEntries,
+      uiPlacement: typeof t.ui?.placement === 'string' ? t.ui.placement : null,
+      uiGesture: typeof t.ui?.gesture === 'string' ? t.ui.gesture : null,
+      rawFrom: t.from === undefined ? null : JSON.stringify(t.from),
+    });
   }
 
   const componentToPaths = new Map();
@@ -878,92 +857,46 @@ function printHuman(report) {
 // Actions consistency (data-action / bindTap({kind:'action'}))
 // ============================================================================
 
-function extractActionsFromNavDeclaration(navDeclPath) {
-  const sf = createSourceFile(navDeclPath);
-
-  /** @type {null | ts.ObjectLiteralExpression} */
-  let declObj = null;
-
-  function unwrapExpr(expr) {
-    let cur = expr;
-    while (cur) {
-      if (ts.isAsExpression(cur)) {
-        cur = cur.expression;
-        continue;
-      }
-      if (ts.isSatisfiesExpression && ts.isSatisfiesExpression(cur)) {
-        cur = cur.expression;
-        continue;
-      }
-      if (ts.isParenthesizedExpression(cur)) {
-        cur = cur.expression;
-        continue;
-      }
-      break;
-    }
-    return cur;
-  }
-
-  function visit(node) {
-    if (
-      ts.isVariableDeclaration(node) &&
-      ts.isIdentifier(node.name) &&
-      node.name.text === 'NAVIGATION_DECLARATION'
-    ) {
-      const init = node.initializer ? unwrapExpr(node.initializer) : null;
-      if (init && ts.isObjectLiteralExpression(init)) declObj = init;
-    }
-    ts.forEachChild(node, visit);
-  }
-  visit(sf);
-
-  if (!declObj) {
-    throw new Error(`Cannot find NAVIGATION_DECLARATION object in ${navDeclPath}`);
-  }
-
-  const routesInit = getProp(declObj, 'routes');
-  /** @type {Array<{id:string,label?:string,behavior?:string,scope?:string,paramsSchema?:Record<string,string>,routePath:string,uiStateId:string}>} */
+/**
+ * Extract declared actions from the vm-evaluated declaration object
+ * (routes[].uiStates[].actions[], spreads/constants already expanded).
+ *
+ * @param {any} declaration evaluated NAVIGATION_DECLARATION
+ * @returns {Array<{id:string,label?:string,behavior?:string,scope?:string,paramsSchema?:Record<string,string>,routePath:string,uiStateId:string}>}
+ */
+function extractDeclaredActions(declaration) {
   const actions = [];
 
-  if (routesInit && ts.isArrayLiteralExpression(routesInit)) {
-    for (const routeEl of routesInit.elements) {
-      if (!ts.isObjectLiteralExpression(routeEl)) continue;
-      const routePath = getStringLiteralValue(getProp(routeEl, 'path')) ?? '<unknown>';
-      const uiStatesInit = getProp(routeEl, 'uiStates');
-      if (!uiStatesInit || !ts.isArrayLiteralExpression(uiStatesInit)) continue;
+  for (const route of asArray(declaration?.routes)) {
+    if (!route || typeof route !== 'object') continue;
+    const routePath = typeof route.path === 'string' ? route.path : '<unknown>';
 
-      for (const uiStateEl of uiStatesInit.elements) {
-        if (!ts.isObjectLiteralExpression(uiStateEl)) continue;
-        const uiStateId = getStringLiteralValue(getProp(uiStateEl, 'id')) ?? '<unknown>';
-        const actionsInit = getProp(uiStateEl, 'actions');
-        if (!actionsInit || !ts.isArrayLiteralExpression(actionsInit)) continue;
+    for (const uiState of asArray(route.uiStates)) {
+      if (!uiState || typeof uiState !== 'object') continue;
+      const uiStateId = typeof uiState.id === 'string' ? uiState.id : '<unknown>';
 
-        for (const actEl of actionsInit.elements) {
-          if (!ts.isObjectLiteralExpression(actEl)) continue;
-          const id = getStringLiteralValue(getProp(actEl, 'id'));
-          if (!id) continue;
-          const label = getStringLiteralValue(getProp(actEl, 'label')) ?? undefined;
-          const behavior = getStringLiteralValue(getProp(actEl, 'behavior')) ?? undefined;
-          const scope = getStringLiteralValue(getProp(actEl, 'scope')) ?? undefined;
+      for (const act of asArray(uiState.actions)) {
+        if (!act || typeof act !== 'object') continue;
+        const id = typeof act.id === 'string' ? act.id : null;
+        if (!id) continue;
 
-          const paramsSchemaInit = getProp(actEl, 'paramsSchema');
-          let paramsSchema = undefined;
-          if (paramsSchemaInit && ts.isObjectLiteralExpression(paramsSchemaInit)) {
-            paramsSchema = {};
-            for (const prop of paramsSchemaInit.properties) {
-              if (!ts.isPropertyAssignment(prop)) continue;
-              const key =
-                ts.isIdentifier(prop.name) ? prop.name.text :
-                ts.isStringLiteral(prop.name) ? prop.name.text :
-                null;
-              if (!key) continue;
-              const val = getStringLiteralValue(prop.initializer);
-              if (val) paramsSchema[key] = val;
-            }
+        let paramsSchema = undefined;
+        if (act.paramsSchema && typeof act.paramsSchema === 'object') {
+          paramsSchema = {};
+          for (const [key, val] of Object.entries(act.paramsSchema)) {
+            if (typeof val === 'string' && val) paramsSchema[key] = val;
           }
-
-          actions.push({ id, label, behavior, scope, paramsSchema, routePath, uiStateId });
         }
+
+        actions.push({
+          id,
+          label: typeof act.label === 'string' ? act.label : undefined,
+          behavior: typeof act.behavior === 'string' ? act.behavior : undefined,
+          scope: typeof act.scope === 'string' ? act.scope : undefined,
+          paramsSchema,
+          routePath,
+          uiStateId,
+        });
       }
     }
   }
@@ -1239,6 +1172,50 @@ function printHumanActions(report) {
   }
 }
 
+/**
+ * Aggregate severity across the reports that actually ran, per REPORT_LEVEL_MATRIX.
+ *
+ * @param {{loadErrors: Array<any>, navReport: any|null, actionsReport: any|null}} input
+ */
+function computeSeverity({ loadErrors, navReport, actionsReport }) {
+  const tallies = [tallySeverity('loader', { declarationLoadErrors: loadErrors.length })];
+
+  if (navReport) {
+    tallies.push(
+      tallySeverity('navigation', {
+        missingInDeclaration: navReport.missingInDeclaration.length,
+        fromMismatches: navReport.fromMismatches.length,
+        invalidBaseStateIds: navReport.invalidBaseStateIds.length,
+        unusedInCode: navReport.unusedInCode.length,
+        extraFromWarnings: navReport.extraFromWarnings.length,
+        gestureMismatches: navReport.gestureMismatches.length,
+        fromSearchTooBroad: navReport.fromSearchTooBroad.length,
+        fromBarePathWithoutBaseState: navReport.fromBarePathWithoutBaseState.length,
+        multipleBaseStates: navReport.multipleBaseStates.length,
+      }),
+    );
+  }
+
+  if (actionsReport) {
+    tallies.push(
+      tallySeverity('actions', {
+        missingInDeclaration: actionsReport.missingInDeclaration.length,
+        schemaErrors: actionsReport.schemaIssues.filter(x => x.level === 'error').length,
+        unusedInCode: actionsReport.unusedInCode.length,
+        schemaWarnings: actionsReport.schemaIssues.filter(x => x.level === 'warn').length,
+      }),
+    );
+  }
+
+  const severity = { errors: 0, warnings: 0, byCategory: {} };
+  for (const t of tallies) {
+    severity.errors += t.errors;
+    severity.warnings += t.warnings;
+    Object.assign(severity.byCategory, t.byCategory);
+  }
+  return severity;
+}
+
 async function main() {
   const { appName, jsonOnly, failOnWarn, actions, actionsOnly } = parseArgs(process.argv);
   if (!appName) {
@@ -1246,59 +1223,84 @@ async function main() {
     process.exit(2);
   }
 
-  const appDir = path.join(WORKSPACE_ROOT, 'apps', appName);
+  let appDir;
+  try {
+    appDir = resolveAppDir(appName, { cwd: WORKSPACE_ROOT });
+  } catch (err) {
+    console.error(`[NavDeclCheck] ${err.message}`);
+    process.exit(2);
+  }
   const navDeclPath = path.join(appDir, 'navigation.declaration.ts');
   if (!fs.existsSync(navDeclPath)) {
-    throw new Error(`navigation.declaration.ts not found: ${navDeclPath}`);
+    console.error(`[NavDeclCheck] navigation.declaration.ts not found: ${navDeclPath}`);
+    process.exit(2);
   }
 
-  const nav = extractNavDeclaration(navDeclPath);
-  const navUsages = extractTransitionUsages(appDir, new Set(nav.transitions.keys()));
-  const navReport = buildReport({ nav, usages: navUsages });
+  // Load the declaration by evaluating the module (spreads/constants expanded).
+  // Failures (syntax error, broken import, missing NAVIGATION_DECLARATION export)
+  // are reported as error-level findings, not bare crashes.
+  /** @type {Array<{file:string, message:string}>} */
+  const loadErrors = [];
+  let declaration = null;
+  try {
+    declaration = loadNavigationDeclaration(navDeclPath);
+  } catch (err) {
+    loadErrors.push({
+      file: path.relative(WORKSPACE_ROOT, navDeclPath),
+      message: err?.message ?? String(err),
+    });
+  }
 
+  let navReport = null;
   let actionsReport = null;
-  if (actions || actionsOnly) {
-    const declaredActions = extractActionsFromNavDeclaration(navDeclPath);
-    const declaredIdSet = new Set(declaredActions.map(a => a.id));
-    const actionUsages = extractActionUsages(appDir, declaredIdSet);
-    actionsReport = buildActionsReport({ declaredActions, usages: actionUsages });
+  if (declaration) {
+    const nav = buildNavModel(declaration);
+    if (!actionsOnly) {
+      const navUsages = extractTransitionUsages(appDir, new Set(nav.transitions.keys()));
+      navReport = buildReport({ nav, usages: navUsages });
+    }
+    if (actions || actionsOnly) {
+      const declaredActions = extractDeclaredActions(declaration);
+      const declaredIdSet = new Set(declaredActions.map(a => a.id));
+      const actionUsages = extractActionUsages(appDir, declaredIdSet);
+      actionsReport = buildActionsReport({ declaredActions, usages: actionUsages });
+    }
   }
+
+  const severity = computeSeverity({ loadErrors, navReport, actionsReport });
+  const exitCode = severity.errors > 0 || (failOnWarn && severity.warnings > 0) ? 1 : 0;
 
   if (jsonOnly) {
-    if (actions || actionsOnly) {
-      console.log(JSON.stringify({ navigation: navReport, actions: actionsReport }, null, 2));
-    } else {
-      console.log(JSON.stringify(navReport, null, 2));
-    }
+    const payload = {
+      ...(loadErrors.length ? { declarationLoadErrors: loadErrors } : {}),
+      ...(actions || actionsOnly
+        ? { navigation: navReport, actions: actionsReport }
+        : navReport ?? {}),
+      severity: { ...severity, exitCode },
+    };
+    console.log(JSON.stringify(payload, null, 2));
   } else {
-    if (!actionsOnly) {
+    if (loadErrors.length) {
+      console.log('--- ERROR: failed to load navigation declaration ---');
+      for (const e of loadErrors) {
+        console.log(`- ${e.file}`);
+        console.log(`  ${e.message}`);
+      }
+      console.log('');
+    }
+    if (navReport) {
       printHuman(navReport);
       console.log(`JSON summary: ${JSON.stringify(navReport.summary)}`);
       console.log('');
     }
-    if (actions || actionsOnly) {
+    if (actionsReport) {
       printHumanActions(actionsReport);
       console.log(`JSON summary: ${JSON.stringify(actionsReport.summary)}`);
     }
+    console.log(`Severity: errors=${severity.errors} warnings=${severity.warnings} failOnWarn=${failOnWarn} exit=${exitCode}`);
   }
 
-  const hasNavError = navReport.missingInDeclaration.length > 0 || navReport.fromMismatches.length > 0;
-  const hasNavWarn = navReport.unusedInCode.length > 0;
-
-  const hasActionsError = actionsReport
-    ? actionsReport.missingInDeclaration.length > 0 ||
-      actionsReport.schemaIssues.some(x => x.level === 'error')
-    : false;
-  const hasActionsWarn = actionsReport
-    ? actionsReport.unusedInCode.length > 0 ||
-      actionsReport.schemaIssues.some(x => x.level === 'warn')
-    : false;
-
-  const hasError = (actionsOnly ? hasActionsError : hasNavError || hasActionsError);
-  const hasWarn = (actionsOnly ? hasActionsWarn : hasNavWarn || hasActionsWarn);
-  if (hasError || (failOnWarn && hasWarn)) {
-    process.exit(1);
-  }
+  process.exit(exitCode);
 }
 
 main().catch(err => {

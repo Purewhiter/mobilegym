@@ -5,9 +5,6 @@ import { useAlipayStore } from '../state';
 import { useAlipayGestures } from '../hooks/useAlipayGestures';
 export const MyPage: React.FC = () => {
   const userInfo = useAlipayStore(s => s.userInfo);
-  const myServicesList = useAlipayStore(s => s.myServicesList);
-  const myServicesGrid = useAlipayStore(s => s.myServicesGrid);
-  const myCivicServices = useAlipayStore(s => s.myCivicServices);
   const { bindTap } = useAlipayGestures();
   const s = useAlipayStrings();
 

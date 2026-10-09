@@ -8,7 +8,6 @@
     "resolveJsonModule": true,
     "composite": true,
     "strict": true,
-    "noImplicitAny": false,
     "skipLibCheck": true,
     "types": ["node"]
   },

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { IcFile, IcCard, IcTicket, IcNavForward, IcExpand, IcCollapse, IcClock, IcWallet, IcReceipt } from '../res/icons';
+import { IcFile, IcCard, IcNavForward, IcExpand, IcCollapse, IcClock, IcWallet, IcReceipt } from '../res/icons';
 import { RAILWAY12306_CONFIG } from '../data';
 import { useRailwayGestures } from '../hooks/useRailwayGestures';
 import { strings } from '../res/strings';

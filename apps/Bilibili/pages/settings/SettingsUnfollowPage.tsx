@@ -1,17 +1,19 @@
 import React from 'react';
 import { SettingLayout, SettingSection, SettingItemSwitch } from './index';
 import { useBilibiliStore } from '../../state';
+import { useBilibiliStrings } from '../../hooks/useBilibiliStrings';
 
 export const SettingsUnfollowPage: React.FC = () => {
-  const setSetting = useBilibiliStore((s) => s.setSetting);
-  const collapse = useBilibiliStore((s) => s.settings.message.unfollowCollapse) ?? false;
+  const s = useBilibiliStrings();
+  const setSetting = useBilibiliStore((st) => st.setSetting);
+  const collapse = useBilibiliStore((st) => st.settings.message.unfollowCollapse) ?? false;
 
   return (
-    <SettingLayout title="未关注人消息">
-      <SettingSection title="未关注人消息提醒" />
+    <SettingLayout title={s.sun_title}>
+      <SettingSection title={s.sun_sec} />
       <SettingItemSwitch
-        label="收起未关注人消息"
-        subtitle="开启后,未关注人消息将被折叠在未关注人消息内"
+        label={s.sun_collapse}
+        subtitle={s.sun_collapse_sub}
         checked={collapse}
         onChange={(v) => setSetting('message.unfollowCollapse', v)}
       />

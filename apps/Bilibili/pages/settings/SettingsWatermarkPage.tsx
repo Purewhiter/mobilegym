@@ -1,20 +1,22 @@
 import React from 'react';
 import { SettingLayout, SettingRadioGroup } from './index';
 import { useBilibiliStore } from '../../state';
-
-const OPTIONS = [
-  { id: 'off', label: '不启用' },
-  { id: 'center', label: '图片中部' },
-  { id: 'bottomRight', label: '图片右下角' },
-];
+import { useBilibiliStrings } from '../../hooks/useBilibiliStrings';
 
 export const SettingsWatermarkPage: React.FC = () => {
-  const value = useBilibiliStore((s) => s.settings.other.watermark) ?? 'off';
-  const setSetting = useBilibiliStore((s) => s.setSetting);
+  const s = useBilibiliStrings();
+  const value = useBilibiliStore((st) => st.settings.other.watermark) ?? 'off';
+  const setSetting = useBilibiliStore((st) => st.setSetting);
+
+  const OPTIONS = [
+    { id: 'off', label: s.sw_off },
+    { id: 'center', label: s.sw_center },
+    { id: 'bottomRight', label: s.sw_br },
+  ];
 
   return (
-    <SettingLayout title="图片水印设置">
-      <div className="px-4 py-2 text-[13px] text-gray-500">开启后,将为动态和评论发布的图片添加水印</div>
+    <SettingLayout title={s.sw_title}>
+      <div className="px-4 py-2 text-[13px] text-gray-500">{s.sw_hint}</div>
       <SettingRadioGroup options={OPTIONS} value={value} onChange={(id) => setSetting('other.watermark', id)} />
       <div className="h-8" />
     </SettingLayout>

@@ -7,7 +7,6 @@ import {
     IcVideoOff,
     IcScreenShare,
     IcParticipants,
-    IcMenu,
     IcVolume,
     IcMinimize,
     IcSmile,
@@ -26,7 +25,6 @@ import {
     IcHand,
     IcUserCog,
     IcMore,
-    IcShare,
     IcStopCircle,
     IcSettings,
     IcUserAdd,
@@ -48,7 +46,7 @@ const formatDuration = (ms: number) => {
 
 export const MeetingPage: React.FC = () => {
     const location = useLocation();
-    const { bindTap, bindBack, back } = useMeetingGestures();
+    const { bindTap, bindBack } = useMeetingGestures();
     const { user, activeMeeting, pendingMeetingConfig } = useMeetingStore(useShallow(s => ({
         user: s.user,
         activeMeeting: s.activeMeeting,

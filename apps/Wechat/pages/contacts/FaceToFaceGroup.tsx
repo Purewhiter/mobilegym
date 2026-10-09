@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { dimens } from '../../res/dimens';
-import { IcNavBack, IcDelete } from '../../res/icons';
+import { IcNavBack } from '../../res/icons';
 import { useSearchParams } from 'react-router-dom';
 import { useWechatStore } from '../../state';
 import { useWechatGestures } from '../../hooks/useWechatGestures';

@@ -20,6 +20,33 @@ export interface XRuntimeMeSlice {
   followerUserIds: string[];
 }
 
+/** hydrate 时内联到 post 上的作者摘要（XUser 子集，缺失作者时以 authorId 兜底）。 */
+export interface XHydratedAuthor {
+  id: string;
+  name: string;
+  avatar?: string;
+  verified?: boolean;
+  banner?: string;
+  bio?: string;
+  location?: string;
+  joinDate?: string;
+  following?: number;
+  followers?: number;
+}
+
+/**
+ * hydratePost / hydrateReplyTree 产出的 view-model：
+ * 原始 XPost 字段 + 内联 author / quotedPost / retweetedPost / replyToUserId。
+ * 嵌套层（quotedPost / retweetedPost）的 author 标为可选——它们可能来自未经
+ * hydrate 的原始 XPost spread。
+ */
+export type XHydratedPost = XPost & {
+  author: XHydratedAuthor;
+  replyToUserId?: string;
+  quotedPost?: XPost & { author?: XHydratedAuthor };
+  retweetedPost?: XPost & { author?: XHydratedAuthor };
+};
+
 export function buildRetweetShell(meUserId: string, source: XPost): XPost {
   return {
     id: `retweet_${source.id}`,
@@ -120,10 +147,20 @@ export function buildPostIndex(
 // ---- Hydration (post -> view-model with author/quotedPost/parent inline) ----
 
 function hydrateInlinePost(
+  post: XPost,
+  users: Record<string, XUser>,
+  postIndex: Map<string, XPost>,
+): XHydratedPost;
+function hydrateInlinePost(
   post: XPost | undefined,
   users: Record<string, XUser>,
   postIndex: Map<string, XPost>,
-): any {
+): XHydratedPost | undefined;
+function hydrateInlinePost(
+  post: XPost | undefined,
+  users: Record<string, XUser>,
+  postIndex: Map<string, XPost>,
+): XHydratedPost | undefined {
   if (!post) return undefined;
 
   const normalizedPost = normalizeXPostTemporalFields(post);
@@ -168,7 +205,7 @@ export function hydratePost(
   post: XPost,
   users: Record<string, XUser>,
   postIndex: Map<string, XPost>,
-): any {
+): XHydratedPost {
   return {
     ...hydrateInlinePost(post, users, postIndex),
     retweetedPost: post.retweetedPostId
@@ -177,13 +214,11 @@ export function hydratePost(
   };
 }
 
-export function hydrateReplyTree(post: XPost, allUsers: Record<string, XUser>): XPost {
-  const hydrate = (p: XPost): XPost => {
+export function hydrateReplyTree(post: XPost, allUsers: Record<string, XUser>): XHydratedPost {
+  const hydrate = (p: XPost): XHydratedPost => {
     const normalizedPost = normalizeXPostTemporalFields(p);
     const author = allUsers[p.authorId];
-    const nested = Array.isArray((p as any).replies)
-      ? ((p as any).replies as XPost[]).map(hydrate)
-      : undefined;
+    const nested = Array.isArray(p.replies) ? p.replies.map(hydrate) : undefined;
     return {
       ...normalizedPost,
       author: {
@@ -193,7 +228,7 @@ export function hydrateReplyTree(post: XPost, allUsers: Record<string, XUser>): 
         verified: author?.verified,
       },
       replies: nested,
-    } as any;
+    };
   };
   return hydrate(post);
 }
@@ -225,7 +260,7 @@ export function resolveReplyById(
   replies: Record<string, XPost[]>,
   postId: string,
   allUsers: Record<string, XUser>,
-): XPost | null {
+): XHydratedPost | null {
   const resolved = resolveRawReplyById(replies, postId);
   return resolved ? hydrateReplyTree(resolved, allUsers) : null;
 }

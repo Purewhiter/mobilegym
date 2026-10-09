@@ -48,6 +48,14 @@ export const ContactDetailPage: React.FC = () => {
     toastTimerRef.current = window.setTimeout(() => setToast({ visible: false, message: '' }), 1400);
   };
 
+  const relatedCallLogs = useMemo(() => {
+    const numbers = (contact?.phones || []).map((phone) => normalizeNumber(phone.number)).filter(Boolean);
+    if (!numbers.length) return [];
+    return CONTACTS_CONFIG.callLogs
+      .filter((entry) => numbers.includes(normalizeNumber(entry.number)))
+      .slice(0, 6);
+  }, [contact?.phones]);
+
   if (!contact) {
     return (
       <div className="h-full w-full bg-app-surface">
@@ -70,14 +78,6 @@ export const ContactDetailPage: React.FC = () => {
 
   const avatarText = (contact.displayName?.trim()?.[0] ?? '#').toUpperCase();
   const primaryPhone = contact.phones?.find((phone) => phone.isPrimary)?.number ?? contact.phones?.[0]?.number ?? '';
-
-  const relatedCallLogs = useMemo(() => {
-    const numbers = (contact.phones || []).map((phone) => normalizeNumber(phone.number)).filter(Boolean);
-    if (!numbers.length) return [];
-    return CONTACTS_CONFIG.callLogs
-      .filter((entry) => numbers.includes(normalizeNumber(entry.number)))
-      .slice(0, 6);
-  }, [contact.phones]);
 
   return (
     <div className="h-full w-full bg-app-bg flex flex-col">

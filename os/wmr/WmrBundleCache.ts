@@ -6,6 +6,7 @@ import {
   loadImage,
   type AssetUrlResolver,
 } from './engine/imageCache';
+import { loadAssetIndex, type WmrAssetIndex } from './engine/assetIndex';
 import { buildWmrResourceStrings, loadWmrResourceStrings } from './engine/resourceStrings';
 import localeApi, { type Locale } from '../locale';
 import type {
@@ -76,18 +77,23 @@ export async function loadWmrBundle(
       let xml = '';
       let resourceStrings: Record<string, VarValue> = {};
       let assetUrlResolver: AssetUrlResolver;
+      let assetIndex: WmrAssetIndex | null = null;
 
       if (typeof source === 'string') {
         const stopFetch = beginWmrPerf('bundle.fetch', sourceKey);
         const xmlUrl = source + 'manifest.xml';
-        const resp = await fetch(xmlUrl);
+        // 清单与 manifest 并行拉取；清单注册后（见 assetIndex.ts / imageCache.ts）
+        // 所有"清单证明不存在"的图片请求都被 loadImage 同步短路，
+        // srcid 基础文件 / 帧边界探测 / 字符图 miss 不再产生网络 404。
+        const [resp, index] = await Promise.all([fetch(xmlUrl), loadAssetIndex(source)]);
         if (!resp.ok) {
           throw new Error(`请求 manifest 失败: ${resp.status} ${resp.statusText}`);
         }
         xml = await resp.text();
         stopFetch();
+        assetIndex = index;
         assetUrlResolver = createPrefixedAssetUrlResolver(source);
-        resourceStrings = await loadWmrResourceStrings(source, locale);
+        resourceStrings = await loadWmrResourceStrings(source, locale, assetIndex);
       } else {
         xml = source.xml;
         resourceStrings = source.resourceStringFiles
@@ -106,7 +112,7 @@ export async function loadWmrBundle(
       await preloadAll(assetUrlResolver, staticImageSrcs);
       stopAssets();
 
-      scheduleIndexedVariantWarmupOnce(sourceKey, xml, assetUrlResolver);
+      scheduleIndexedVariantWarmupOnce(sourceKey, xml, assetUrlResolver, assetIndex);
       return {
         xml,
         doc,
@@ -229,12 +235,13 @@ function scheduleIndexedVariantWarmupOnce(
   cacheKey: string,
   xml: string,
   assetUrlResolver: AssetUrlResolver,
+  assetIndex: WmrAssetIndex | null,
 ): void {
   if (typeof window === 'undefined') return;
   if (indexedWarmupKeys.has(cacheKey)) return;
   indexedWarmupKeys.add(cacheKey);
 
-  const runner = () => { void warmIndexedVariantSources(xml, assetUrlResolver); };
+  const runner = () => { void warmIndexedVariantSources(xml, assetUrlResolver, assetIndex); };
   if ('requestIdleCallback' in window) {
     (window as typeof window & {
       requestIdleCallback?: (cb: IdleRequestCallback, opts?: IdleRequestOptions) => number;
@@ -268,19 +275,36 @@ function getIndexedVariantSrc(src: string, frameIndex: number): string {
 async function warmIndexedVariantSources(
   xml: string,
   assetUrlResolver: AssetUrlResolver,
+  assetIndex: WmrAssetIndex | null,
 ): Promise<void> {
   const sources = extractPotentialIndexedSources(xml);
   const concurrency = 3;
   for (let i = 0; i < sources.length; i += concurrency) {
     const batch = sources.slice(i, i + concurrency);
-    await Promise.all(batch.map((src) => preloadIndexedVariantSequence(src, assetUrlResolver)));
+    await Promise.all(
+      batch.map((src) => preloadIndexedVariantSequence(src, assetUrlResolver, assetIndex)),
+    );
   }
 }
 
 async function preloadIndexedVariantSequence(
   src: string,
   assetUrlResolver: AssetUrlResolver,
+  assetIndex: WmrAssetIndex | null,
 ): Promise<void> {
+  if (assetIndex) {
+    // 清单模式：精确枚举实际存在的帧，零探测、零 404；
+    // 顺带修复旧探测对不连续帧号（如 bg_0 与 bg_20）的漏载。
+    const jobs: Promise<unknown>[] = [];
+    if (assetIndex.has(src)) jobs.push(loadImage(assetUrlResolver(src)));
+    for (const frame of assetIndex.variantFrames(src)) {
+      jobs.push(loadImage(assetUrlResolver(getIndexedVariantSrc(src, frame))));
+    }
+    await Promise.all(jobs);
+    return;
+  }
+
+  // 探测模式（无清单的旧数据包 / 内联 bundle）：逐帧请求直到连续 miss。
   const direct = await loadImage(assetUrlResolver(src));
   if (direct.naturalWidth > 0) return;
 

@@ -4,6 +4,7 @@ import { useLocale } from '@/apps/Bilibili/locale';
 import { useVirtualList } from '../../../os/hooks/useVirtualList';
 import type { BilibiliVideo } from '../data';
 import { useBilibiliGestures } from '../hooks/useBilibiliGestures';
+import { useBilibiliStrings } from '../hooks/useBilibiliStrings';
 import { useVideos } from '../hooks/useData';
 import { BilibiliDanmakuIcon, IcMonitorPlay, IcNavBack } from '../res/icons';
 import {
@@ -43,10 +44,11 @@ function getPartitionGroup(label: string) {
   );
 }
 
-const VideoCard: React.FC<{ video: BilibiliVideo; isEnglish: boolean }> = ({ video, isEnglish }) => {
+const VideoCard: React.FC<{ video: BilibiliVideo }> = ({ video }) => {
   const coverSrc = typeof video.cover === 'string' && !video.cover.startsWith('#') ? video.cover : '';
   const { bindTap } = useBilibiliGestures();
   const locale = useLocale();
+  const s = useBilibiliStrings();
 
   return (
     <div
@@ -92,7 +94,7 @@ const VideoCard: React.FC<{ video: BilibiliVideo; isEnglish: boolean }> = ({ vid
           <div className="flex items-center gap-1">
             {video.isAd && (
               <span className="border border-[#9499A0] rounded px-0.5 text-[9px]">
-                {isEnglish ? 'Ad' : '广告'}
+                {s.common_ad}
               </span>
             )}
             <span className="truncate max-w-[80px]">{video.author}</span>
@@ -108,6 +110,7 @@ export const PartitionDetailPage: React.FC = () => {
   const isEnglish = locale === 'en';
   const { label } = useParams<{ label: string }>();
   const { bindBack } = useBilibiliGestures();
+  const s = useBilibiliStrings();
   const videos = useVideos();
 
   const normalizedLabel = label ? decodeURIComponent(label) : '';
@@ -136,7 +139,7 @@ export const PartitionDetailPage: React.FC = () => {
     ? isEnglish
       ? partitionGroup.en
       : partitionGroup.zh
-    : normalizedLabel || (isEnglish ? 'Partition' : '分区');
+    : normalizedLabel || s.partition_fallback;
 
   const { parentRef, virtualizer, virtualItems, totalSize } = useVirtualList({
     items: videoRows,
@@ -167,7 +170,7 @@ export const PartitionDetailPage: React.FC = () => {
       >
         {filteredVideos.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-gray-400 mt-20">
-            <p>{isEnglish ? 'No related videos yet' : '暂无相关视频'}</p>
+            <p>{s.partition_empty}</p>
           </div>
         ) : (
           <div style={{ height: totalSize, width: '100%', position: 'relative' }}>
@@ -190,7 +193,7 @@ export const PartitionDetailPage: React.FC = () => {
                 >
                   <div className="grid grid-cols-2 gap-2">
                     {row.map((video) => (
-                      <VideoCard key={video.id} video={video} isEnglish={isEnglish} />
+                      <VideoCard key={video.id} video={video} />
                     ))}
                   </div>
                 </div>

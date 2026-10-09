@@ -132,7 +132,7 @@ export const RouteSetupOverlay: React.FC<{
                 type="button"
                 className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-gray-600 active:bg-gray-100"
                 {...bindTap<HTMLButtonElement>(
-                  { kind: 'action', id: 'routeSetup.swap' },
+                  { kind: 'action', id: 'routeSetup.points.swap' },
                   {
                     onTrigger: () => {
                       setAnchorSide(anchorSide === 'origin' ? 'destination' : 'origin');

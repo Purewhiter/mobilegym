@@ -47,7 +47,7 @@ const initialState: ClockState = {
 export const useClockStore = createAppStoreWithActions<ClockState, ClockActions>(
   'clock',
   initialState,
-  (set, get) => ({
+  (set) => ({
     setAlarms: (updater) => {
       set(state => ({
         alarms: typeof updater === 'function' ? updater(state.alarms) : updater,

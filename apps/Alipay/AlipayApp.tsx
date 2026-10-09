@@ -10,7 +10,7 @@ import { colorStates, colorStatesDark } from './res/colors.states';
 import { dimens } from './res/dimens';
 import { anim } from './res/anim';
 import { MemoryRouter, Routes, Route, useLocation, Outlet } from 'react-router-dom';
-import { IcTabHome, IcTabFinance, IcTabVideo, IcTabMessage, IcTabMe, IcScan, IcQrCode, IcBus, IcWalletCards, IcSecureCheck, IcFastPay, IcTicket, IcTaxi, IcMovie, IcTransfer, IcCard, IcPhone, IcGrid, IcApp, IcPiggyBank, IcCoins, IcTrend, IcShield, IcReceive, IcMore, IcNavBack, IcSearch, IcAdd, IcExpand, IcNavForward, IcSettings, IcHeadphone, IcArrow, IcHelp, IcClock, IcClose, IcFile, IcChart, IcWallet, IcCircle, IcDroplet, IcBusiness, IcBank, IcBuilding, IcMedical, IcHeart } from './res/icons';
+import { IcTabHome, IcTabFinance, IcTabVideo, IcTabMessage, IcTabMe } from './res/icons';
 import { useAlipayStore, computeUnread } from './state';
 import { HomePage } from './pages/HomePage';
 import { FinancePage } from './pages/FinancePage';
@@ -65,17 +65,6 @@ import { RechargeCardPage } from './pages/RechargeCardPage';
 import { SubscriptionsPage } from './pages/SubscriptionsPage';
 import { RefundPage } from './pages/RefundPage';
 import { ScanPage } from './pages/ScanPage';
-
-
-// Icon mapping for dynamic icons from config
-const ICON_MAP: Record<string, any> = {
-  IcTabHome, IcTabFinance, IcTabVideo, IcTabMessage, IcTabMe,
-  IcScan, IcQrCode, IcBus, IcWalletCards,
-  IcSecureCheck, IcFastPay, IcTicket, IcTaxi, IcMovie, IcTransfer, IcCard, IcPhone, IcGrid, IcApp,
-  IcPiggyBank, IcCoins, IcTrend, IcShield, IcReceive,
-  IcMore, IcNavBack, IcSearch, IcAdd, IcExpand, IcNavForward, IcSettings, IcHeadphone, IcArrow, IcHelp, IcClock, IcClose,
-  IcFile, IcChart, IcWallet, IcCircle, IcDroplet, IcBusiness, IcBank, IcBuilding, IcMedical, IcHeart,
-};
 
 
 const TAB_PATH_TO_ID: Record<string, string> = { '/': 'home', '/finance': 'finance', '/video': 'video', '/messages': 'messages', '/my': 'my' };

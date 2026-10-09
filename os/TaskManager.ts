@@ -24,8 +24,29 @@ function createInitialState(): OSState {
   };
 }
 
+/**
+ * 注入 tasks 场景（bench 状态恢复）：解析 task_N / act_N 的最大序号并向上校准计数器，
+ * 避免后续 nextTaskId / nextActivityId 生成与注入栈重复的 ID。
+ */
+function syncSeqCountersFromTasks(tasks: any[]): void {
+  let maxTask = 0;
+  let maxActivity = 0;
+  for (const task of tasks) {
+    const taskMatch = /^task_(\d+)$/.exec(String(task?.taskId ?? ''));
+    if (taskMatch) maxTask = Math.max(maxTask, Number(taskMatch[1]));
+    const stack = Array.isArray(task?.stack) ? task.stack : [];
+    for (const activity of stack) {
+      const actMatch = /^act_(\d+)$/.exec(String(activity?.activityId ?? ''));
+      if (actMatch) maxActivity = Math.max(maxActivity, Number(actMatch[1]));
+    }
+  }
+  taskSeq = Math.max(taskSeq, maxTask);
+  activitySeq = Math.max(activitySeq, maxActivity);
+}
+
 function coerceResetState(raw: any): OSState {
   if (raw && Array.isArray(raw.tasks)) {
+    syncSeqCountersFromTasks(raw.tasks);
     return {
       tasks: raw.tasks,
       activeTaskId: raw.activeTaskId ?? null,
@@ -333,6 +354,9 @@ export const TaskManager = {
   },
 
   reset(state?: OSState | any): void {
+    // 上一轮遗留的 startActivityForResult 回调在 reset 后已无意义，
+    // 不清空会在模块级 Map 中跨 reset 滞留（内存泄漏 + 闭包引住旧 App 世界）。
+    pendingCallbacks.clear();
     TaskManager.dispatch({ type: 'RESET', state });
   },
 };

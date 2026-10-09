@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { IcNavBack, IcInfo } from '../res/icons';
 import { RAILWAY12306_CONFIG } from '../data';
 import { useRailwayStore, maskEmail } from '../state';
@@ -6,8 +7,9 @@ import { useRailwayGestures } from '../hooks/useRailwayGestures';
 import { useRailwayStrings } from '../hooks/useRailwayStrings';
 
 export const InvoiceEmailPage: React.FC = () => {
-  const { bindBack, back } = useRailwayGestures();
+  const { bindBack, back, go } = useRailwayGestures();
   const s = useRailwayStrings();
+  const location = useLocation();
   const savedEmail = useRailwayStore(s => s.invoiceEmail);
   const setInvoiceEmail = useRailwayStore(s => s.setInvoiceEmail);
 
@@ -15,17 +17,17 @@ export const InvoiceEmailPage: React.FC = () => {
   const defaultDisplay = maskEmail(savedEmail || rawEmail);
 
   const [email, setEmail] = useState(defaultDisplay);
-  const [showDialog, setShowDialog] = useState(false);
+  const showDialog = new URLSearchParams(location.search).get('dialog') === 'saved';
 
   const handleSave = () => {
     if (!email.trim() || email === defaultDisplay) return;
     setInvoiceEmail(email.trim());
-    setShowDialog(true);
+    go('invoiceEmail.showSavedDialog');
   };
 
+  // 关弹窗（-1）+ 离开本页（-1）
   const handleConfirm = () => {
-    setShowDialog(false);
-    back();
+    back(2);
   };
 
   return (

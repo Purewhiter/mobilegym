@@ -50,48 +50,46 @@ const AnswersMark: React.FC = () => {
   );
 };
 
+// 跑马灯：合成器线程的 CSS 无限动画（内容渲染两份，translateX(-50%) 即无缝回绕），
+// 替代 rAF 改 scrollLeft 的 JS 循环 —— 主线程零成本，App 退后台后天然不产生任何开销。
+const MARQUEE_KEYFRAMES =
+  '@keyframes reddit-answers-marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }';
+
 const AutoMarqueeRow: React.FC<{
   items: string[];
   speedPxPerSec?: number;
   className?: string;
 }> = ({ items, speedPxPerSec = 26, className }) => {
-  const scrollerRef = React.useRef<HTMLDivElement | null>(null);
   const contentRef = React.useRef<HTMLDivElement | null>(null);
+  const [durationSec, setDurationSec] = React.useState(0);
 
-  React.useEffect(() => {
-    const scroller = scrollerRef.current;
+  // JS 只做一次性测量：把内容宽度按 px/s 速度换算成动画时长。ResizeObserver
+  // 覆盖后台挂载（宽度为 0）、字体加载、items 变化等引起的宽度变化。
+  React.useLayoutEffect(() => {
     const content = contentRef.current;
-    if (!scroller || !content) return;
-
-    let raf = 0;
-    let last = performance.now();
-
-    const tick = (now: number) => {
-      const dt = Math.min(50, now - last);
-      last = now;
-
+    if (!content) return;
+    const measure = () => {
       const half = content.scrollWidth / 2;
-      if (half > 0) {
-        scroller.scrollLeft += (speedPxPerSec * dt) / 1000;
-        if (scroller.scrollLeft >= half) {
-          scroller.scrollLeft -= half;
-        }
-      }
-
-      raf = requestAnimationFrame(tick);
+      setDurationSec(half > 0 ? half / speedPxPerSec : 0);
     };
-
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [speedPxPerSec, items.join('|')]);
+    measure();
+    if (typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(measure);
+    observer.observe(content);
+    return () => observer.disconnect();
+  }, [speedPxPerSec]);
 
   return (
-    <div ref={scrollerRef} className={`overflow-x-hidden ${className ?? ''}`}>
-      <div ref={contentRef} className="flex w-max gap-2 pr-6">
+    <div className={`overflow-x-hidden ${className ?? ''}`}>
+      <div
+        ref={contentRef}
+        className="flex w-max"
+        style={durationSec > 0 ? { animation: `reddit-answers-marquee ${durationSec}s linear infinite` } : undefined}
+      >
         {[...items, ...items].map((t, idx) => (
           <div
             key={`${t}_${idx}`}
-            className="px-3 py-2 rounded-full bg-app-surface border border-app-border text-[13px] text-gray-700 shadow-[0_1px_0_rgba(0,0,0,0.02)] whitespace-nowrap"
+            className="mr-2 px-3 py-2 rounded-full bg-app-surface border border-app-border text-[13px] text-gray-700 shadow-[0_1px_0_rgba(0,0,0,0.02)] whitespace-nowrap"
           >
             {t}
           </div>
@@ -155,6 +153,7 @@ export const CommunitiesPage: React.FC = () => {
           </div>
 
           {/* Suggestion chips */}
+          <style>{MARQUEE_KEYFRAMES}</style>
           <div className="mt-5 w-full max-w-[520px] space-y-2">
             <AutoMarqueeRow items={row1} speedPxPerSec={34} />
             <AutoMarqueeRow items={row2} speedPxPerSec={38} />

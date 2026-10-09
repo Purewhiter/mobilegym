@@ -1,18 +1,20 @@
 import React from 'react';
 import { SettingLayout, SettingRadioGroup } from './index';
 import { useBilibiliStore } from '../../state';
-
-const OPTIONS = [
-  { id: 'on', label: '接收提醒' },
-  { id: 'off', label: '永不提醒' },
-];
+import { useBilibiliStrings } from '../../hooks/useBilibiliStrings';
 
 export const SettingsMessageFanPage: React.FC = () => {
-  const value = useBilibiliStore((s) => s.settings.message.fan) ?? 'on';
-  const setSetting = useBilibiliStore((s) => s.setSetting);
+  const s = useBilibiliStrings();
+  const value = useBilibiliStore((st) => st.settings.message.fan) ?? 'on';
+  const setSetting = useBilibiliStore((st) => st.setSetting);
+
+  const OPTIONS = [
+    { id: 'on', label: s.opt_receive },
+    { id: 'off', label: s.opt_never },
+  ];
 
   return (
-    <SettingLayout title="新增粉丝消息提醒">
+    <SettingLayout title={s.smf_title}>
       <SettingRadioGroup options={OPTIONS} value={value} onChange={(id) => setSetting('message.fan', id)} />
       <div className="h-8" />
     </SettingLayout>

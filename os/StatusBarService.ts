@@ -1,6 +1,5 @@
 import BroadcastBus, { ACTION_STATUS_BAR_CHANGED } from './BroadcastBus';
 import { memoSelector } from './createAppStore';
-import { OS_DEFAULTS } from './data';
 import { OsStateStore, useOsStateStore } from './OsStateStore';
 
 export type MobileDataType = 'none' | 'e' | '3g' | '4g' | '4g_lte' | 'lte' | '5g';
@@ -17,20 +16,6 @@ export type StatusBarDynamicState = {
   alarm: boolean;
   silent: boolean;
   headset: boolean;
-};
-
-const defaultState: StatusBarDynamicState = {
-  wifiLevel: OS_DEFAULTS.hardware.wifi.level,
-  signalLevel: OS_DEFAULTS.hardware.cellular.signalLevel,
-  batteryPercent: OS_DEFAULTS.hardware.battery.percent,
-  charging: OS_DEFAULTS.hardware.battery.charging,
-  fastCharging: OS_DEFAULTS.hardware.battery.fastCharging,
-  mobileDataType: OS_DEFAULTS.hardware.cellular.mobileDataType as MobileDataType,
-  noSim: OS_DEFAULTS.hardware.cellular.noSim,
-  vpn: OS_DEFAULTS.hardware.vpnEnabled,
-  alarm: OS_DEFAULTS.hardware.alarmSet,
-  silent: OS_DEFAULTS.settings.global.silentMode,
-  headset: OS_DEFAULTS.hardware.headsetConnected,
 };
 
 const selectStatusBar = memoSelector(

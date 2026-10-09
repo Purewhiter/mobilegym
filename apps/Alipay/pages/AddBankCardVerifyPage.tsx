@@ -14,11 +14,6 @@ function maskPhone(phone: string): string {
   return p.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2');
 }
 
-function extractLast4(cardNumber: string): string {
-  const digits = String(cardNumber || '').replace(/\D/g, '');
-  return digits.slice(-4) || '0000';
-}
-
 function maskCardNumber(input: string): string {
   const digits = String(input || '').replace(/\D/g, '');
   if (!digits) return '';
@@ -48,7 +43,7 @@ const RECHARGE_RETURN_PATH = '/balance/recharge';
 const MULTI_RECHARGE_RETURN_PATH = '/balance/recharge?modal=multi';
 
 export const AddBankCardVerifyPage: React.FC = () => {
-  const { bindBack, go, back } = useAlipayGestures();
+  const { go, back } = useAlipayGestures();
   const s = useAlipayStrings();
   const locale = useLocale();
   const isEnglish = locale === 'en';
@@ -67,8 +62,6 @@ export const AddBankCardVerifyPage: React.FC = () => {
     if (digits.length > 19) return digits.slice(0, 19);
     return generate19Digits(bankName);
   }, [rawCardNumber, bankName]);
-  const last4 = extractLast4(resolvedCardNumber);
-
   const [code, setCode] = React.useState('');
   const [counter, setCounter] = React.useState(54);
   const [expectedCode, setExpectedCode] = React.useState<string | null>(null);

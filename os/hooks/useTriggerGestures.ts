@@ -68,6 +68,15 @@ interface DoubleTapState {
 
 const doubleTapStates = new Map<string, DoubleTapState>();
 
+// params 的稳定序列化（key 排序）。双击状态是模块级共享的，若 key 只含 trigger id，
+// 列表场景下同 id 不同 params 的条目会互相污染（threshold 内点两个不同条目被误判双击）。
+const stableParamsKey = (params?: Record<string, string | number | boolean>): string => {
+  if (!params) return '';
+  const keys = Object.keys(params).sort();
+  if (keys.length === 0) return '';
+  return JSON.stringify(keys.map((key) => [key, params[key]]));
+};
+
 const acquireDoubleTapState = (key: string): DoubleTapState => {
   if (!doubleTapStates.has(key)) {
     doubleTapStates.set(key, {
@@ -309,7 +318,7 @@ export function useTriggerGestures<Id extends string = string>(
   ): GestureProps<T> {
     const isAction = typeof spec === 'object' && spec?.kind === 'action';
     const id = isAction ? spec.id : (spec as Id);
-    const stateKey = `doubletap:${isAction ? 'action' : 'trigger'}:${id}`;
+    const stateKey = `doubletap:${isAction ? 'action' : 'trigger'}:${id}:${stableParamsKey(options?.params)}`;
 
     // Acquire state with reference counting (only once per key)
     if (!activeDoubleTapKeysRef.current.has(stateKey)) {

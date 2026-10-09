@@ -84,7 +84,7 @@ export const NAVIGATION_DECLARATION = {
               id: 'search.query.input',
               label: '搜索-输入关键词',
               behavior: 'input',
-              paramsSchema: { q: 'string' }
+              paramsSchema: { value: 'string' }
             }
           ]
         }

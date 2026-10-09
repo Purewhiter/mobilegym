@@ -175,6 +175,14 @@ export interface NearbyPerson extends ContactItem {
   distance: string;                    // 附近的人特有字段：距离
 }
 
+/**
+ * 联系人资料页（UserProfile）渲染主体的投影类型。
+ * 数据来源有四种 shape：User（自己）/ ContactItem（好友）/ NearbyPerson（附近的人）/ 未知用户兜底字面量。
+ * 交集字段必选，来源间差异字段可选（distance 仅附近的人有，isBlacklisted / permissionMode 仅好友有）。
+ */
+export type ProfileSubject = Pick<ContactItem, 'wxid' | 'name' | 'avatar'> &
+  Partial<Pick<NearbyPerson, 'category' | 'region' | 'gender' | 'signature' | 'distance' | 'isBlacklisted' | 'permissionMode'>>;
+
 export interface ChatItem {
   id: string;
   name: string;

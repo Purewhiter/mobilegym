@@ -71,8 +71,8 @@ export const PaidOrdersPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-full bg-[#f6f8fa] flex flex-col relative pb-20" data-status-bar-foreground="light">
-      <div className="bg-app-primary pt-10 pb-0 px-4 sticky top-0 z-20">
+    <div className="h-full bg-[#f6f8fa] flex flex-col relative" data-status-bar-foreground="light">
+      <div className="bg-app-primary pt-10 pb-0 px-4 shrink-0 z-20">
         <div className="flex items-center relative pb-3 gap-3">
           <button className="absolute left-0 w-10 text-left" {...bindBack<HTMLButtonElement>()}>
             <IcNavBack size={24} className="text-white" />
@@ -99,6 +99,11 @@ export const PaidOrdersPage: React.FC = () => {
         </div>
       </div>
 
+      <div
+        className="flex-1 overflow-y-auto no-scrollbar"
+        data-scroll-container="main"
+        data-scroll-direction="vertical"
+      >
       <div className="bg-[#FFF6ED] px-4 py-2 flex items-start justify-between gap-3">
         <span className="text-[13px] text-[#E77833] flex items-center gap-1 leading-tight">
           <span className="text-base leading-none">🙂</span>
@@ -191,8 +196,9 @@ export const PaidOrdersPage: React.FC = () => {
           </div>
         </div>
       )}
+      </div>
 
-      <div className="fixed bottom-0 left-0 right-0 px-4 pb-6 pt-2 z-10">
+      <div className="shrink-0 px-4 pb-6 pt-2">
         <div className="bg-gradient-to-r from-[#FFF5E6] to-[#FF8D42] rounded-[10px] p-0.5 shadow-md">
           <div className="bg-white rounded-[9px] w-full h-[52px] flex items-center justify-between px-3 relative overflow-hidden">
             <div className="absolute right-1 top-1 text-gray-400 text-[10px] z-10 leading-none p-1">✕</div>

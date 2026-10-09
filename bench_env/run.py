@@ -3,13 +3,16 @@
 
 import argparse
 import asyncio
+import math
 import os
 import sys
 
 from bench_env.runner import ExecRunner, SerialRunner, ParallelRunner
 from bench_env.agent import list_agents
-from bench_env.logger import configure_logging
+from bench_env.logger import configure_logging, get_logger
 from bench_env.task_listing import list_tasks
+
+logger = get_logger(__name__)
 
 
 def create_parser() -> argparse.ArgumentParser:
@@ -210,6 +213,17 @@ def create_parser() -> argparse.ArgumentParser:
     p.add_argument("--no-save-trajectory", action="store_true")
     p.add_argument("--screenshot-scale", type=float, default=1.0, help="Screenshot scale (default: 1.0, JPEG is compact enough)")
     p.add_argument(
+        "--screenshot-wire-scale",
+        choices=["device", "css"],
+        default="device",
+        dest="screenshot_wire_scale",
+        help="Resolution of screenshots sent to the agent (Playwright page.screenshot scale). "
+             "device (default) = physical pixels, identical to current behavior; "
+             "css = CSS viewport pixels (~150KB→36KB per step, ~80ms→33ms browser-side), "
+             "but changes VLM input resolution — A/B validate SR before adopting. "
+             "Independent from --screenshot-scale (on-disk trajectory resize).",
+    )
+    p.add_argument(
         "--list-md",
         type=str,
         help="Write --list output to a Markdown file",
@@ -299,6 +313,40 @@ def _parse_suite(value: str | None) -> list[str] | None:
     return [p for p in parts if p] or None
 
 
+def _topology_warning(
+    parallel: int,
+    processes: int,
+    isolation: str,
+    num_browsers: int,
+) -> str | None:
+    """Detect a pathological pages/contexts topology; return warning text or None.
+
+    KNOWN_ISSUES.md §2: beyond ~8 pages per Chromium process, rendering
+    serializes and stability degrades — keep ``N / B ≤ 8``. Browser count is
+    derived with the same rules as EnvPool._resolve_num_browsers:
+    ``--browsers B>0`` → min(B, N) total; auto (0) → 1 browser per shard,
+    i.e. ``--processes`` total. Warning only — behavior is never changed.
+    """
+    if isolation not in ("pages", "contexts"):
+        return None
+    parallel = max(1, parallel)
+    processes = max(1, processes)
+    actual_browsers = min(num_browsers, parallel) if num_browsers > 0 else processes
+    if parallel <= 8 * actual_browsers:
+        return None
+    rec = math.ceil(parallel / 8)
+    per_browser = math.ceil(parallel / actual_browsers)
+    return (
+        f"Pathological browser topology: --parallel {parallel} --isolation {isolation} "
+        f"resolves to {actual_browsers} browser process(es) "
+        f"(~{per_browser} pages/browser). A single Chromium handles ~8 pages cleanly "
+        f"(KNOWN_ISSUES.md §2: keep N/B ≤ 8); beyond that, every step slows down. "
+        f"Recommended: --processes {rec} --browsers {rec} (1:1 pairing, ≤8 pages each), e.g. "
+        f"`python -m bench_env.run --parallel {parallel} --processes {rec} --browsers {rec} ...`. "
+        f"Proceeding with the requested topology unchanged."
+    )
+
+
 async def async_main(args) -> int:
     # 默认 asyncio thread pool 是 min(32, cpu+4),256 cores 机器上是 32。
     # `await asyncio.to_thread(agent.act, obs)` 把同步 vLLM 请求扔到这个 pool,
@@ -378,6 +426,18 @@ async def async_main(args) -> int:
             print("[ERROR] --env-url is required for simulator mode")
             return 2
         
+        # 拓扑守门：pages/contexts 下 1 个 browser 扛过多 pages 会让每步变慢。
+        # 只警告，不改变任何行为。
+        if device == "sim" and not args.exec:
+            warn = _topology_warning(
+                parallel=args.parallel,
+                processes=args.processes,
+                isolation=args.isolation,
+                num_browsers=getattr(args, "num_browsers", 0),
+            )
+            if warn:
+                logger.warning(warn)
+
         if args.exec:
             runner = await ExecRunner.from_args(args)
         elif args.processes > 1:
@@ -387,7 +447,16 @@ async def async_main(args) -> int:
             runner = await ParallelRunner.from_args(args)
         else:
             runner = await SerialRunner.from_args(args)
-        
+
+        # Serial/Exec 模式的 env 由 factory 直接构建（不经 EnvPool），
+        # 在这里补上 wire-scale；Parallel/MultiProcess 由 ParallelRunner.run()
+        # 对 pool 内每个 env 统一设置。RealDeviceEnv 无此属性，自动跳过。
+        single_env = getattr(runner, "env", None)
+        if single_env is not None and hasattr(single_env, "screenshot_wire_scale"):
+            single_env.screenshot_wire_scale = getattr(
+                args, "screenshot_wire_scale", "device"
+            )
+
         await runner.run()
         return 0
 

@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect, useRef, useCallback } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { IcSearch, IcExpand, IcSwap, IcMessage, IcFlight, IcBus, IcScan, IcSwapAlt, IcTrain } from '../res/icons';
 import { useRailwayStore } from '../state';
 import { useRailwayGestures } from '../hooks/useRailwayGestures';

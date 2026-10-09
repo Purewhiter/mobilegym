@@ -109,41 +109,6 @@ function buildAirForecastMap(days: AirQualityForecastDay[]) {
   );
 }
 
-function normalizeAirQualityCategory(category: string, level?: string) {
-  const raw = category.trim();
-  if (raw.includes('优')) return '优';
-  if (raw.includes('良')) return '良';
-  if (raw.includes('轻')) return '轻度';
-  if (raw.includes('中')) return '中度';
-  if (raw.includes('严重')) return '重度';
-  if (raw.includes('重')) return '重度';
-
-  switch (level) {
-    case '1':
-      return '优';
-    case '2':
-      return '良';
-    case '3':
-      return '轻度';
-    case '4':
-      return '中度';
-    case '5':
-    case '6':
-      return '重度';
-    default:
-      return '--';
-  }
-}
-
-function resolveAirQualityColor(category: string) {
-  if (category === '优') return '#b9e6c9';
-  if (category === '良') return '#e8c77a';
-  if (category === '轻度') return '#f0a86b';
-  if (category === '中度') return '#ea8a8a';
-  if (category === '重度') return '#c37ce6';
-  return '#c6d0db';
-}
-
 const WeatherDailyForecastPage: React.FC = () => {
   const { bindBack } = useWeatherGestures();
   const s = useAppStrings(strings, stringsEn);
@@ -367,7 +332,7 @@ const WeatherDailyForecastPage: React.FC = () => {
                     paddingRight: `${CARD_RIGHT_PADDING_PX}px`,
                   }}
                 >
-                  {days.map((day, index) => {
+                  {days.map((day) => {
                     const meta = getDateMeta(day.fxDate, todayDateKey, s);
                     const isTodayColumn = day.fxDate === todayDateKey;
                     const dayAirQuality = airForecastByDate.get(day.fxDate);

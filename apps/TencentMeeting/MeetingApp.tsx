@@ -1,6 +1,6 @@
 import { useTencentMeetingStrings } from './hooks/useTencentMeetingStrings';
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback } from 'react';
 import { MemoryRouter, Route, Routes, useLocation, Outlet } from 'react-router-dom';
 import { useAppNavigationHandler } from '../../os/hooks/useAppNavigationHandler';
 
@@ -27,7 +27,6 @@ import { MeetingAttendeesPage } from './pages/MeetingAttendeesPage';
 import { useAppNavigate } from './navigation';
 import { useMeetingGestures } from './hooks/useMeetingGestures';
 import { TransitionId } from './navigation.declaration';
-import { useAppStrings } from '../../os/useAppStrings';
 import { dimensToCssVars, themeToCssVars } from '../../os/utils/themeToCssVars';
 import { applySkinToThemeColors } from '../../os/SkinService';
 import { useDarkMode } from '../../os/hooks/useDarkMode';

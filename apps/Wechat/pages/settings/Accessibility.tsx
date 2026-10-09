@@ -5,7 +5,6 @@ import { useWechatStrings } from '../../hooks/useWechatStrings';
 import { IcBell, IcSquareUser, IcMail, IcMessage, IcWallet, IcSparkles } from '../../res/icons';
 import { useWechatStore } from '../../state';
 import { SettingsItem } from './Shared';
-import { UserSettings } from '../../types';
 import { useWechatGestures } from '../../hooks/useWechatGestures';
 
 export const AccessibilityPage: React.FC = () => {

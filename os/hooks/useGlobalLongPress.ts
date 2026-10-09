@@ -187,7 +187,7 @@ function expandWordBoundariesInLine(value: string, caret: number): { start: numb
   // If the current line is blank (or only spaces), do NOT jump to other lines.
   if (!lineText.trim()) return { start: caret, end: caret };
 
-  let i = Math.max(line.start, Math.min(line.end, Math.floor(caret)));
+  const i = Math.max(line.start, Math.min(line.end, Math.floor(caret)));
 
   // If caret is on blank/separator (space, punctuation), do NOT select any word —
   // user likely wants to paste or place cursor; selecting the previous word is confusing.

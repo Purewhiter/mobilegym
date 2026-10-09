@@ -1,6 +1,5 @@
 
 import React, { useEffect, useState } from 'react';
-import { IcUser } from '../../res/icons';
 import { useWechatStore } from '../../state';
 import { useWechatGestures } from '../../hooks/useWechatGestures';
 

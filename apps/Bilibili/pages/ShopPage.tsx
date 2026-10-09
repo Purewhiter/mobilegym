@@ -1,6 +1,5 @@
 import React from 'react';
 import { IcSearch, IcCart, IcTicket, IcGrid, IcClock, IcStar } from '../res/icons';
-import { useLocale } from '@/apps/Bilibili/locale';
 import { useBilibiliStrings } from '../hooks/useBilibiliStrings';
 
 const Search = IcSearch;
@@ -13,15 +12,15 @@ const Star = IcStar;
 const ShopItem = ({
     title,
     price,
-    locale,
     ownedLabel,
     priceLabel,
+    priceSuffix,
 }: {
     title: string;
     price: string;
-    locale: 'zh-Hans' | 'en';
     ownedLabel: string;
     priceLabel: string;
+    priceSuffix: string;
 }) => (
     <div className="bg-app-surface rounded-lg p-3 flex flex-col items-center">
         <div className="w-20 h-20 rounded-lg bg-gray-100 mb-2 relative overflow-hidden">
@@ -33,61 +32,36 @@ const ShopItem = ({
         <div className="w-full text-left">
             <div className="text-xs font-bold text-app-primary border border-app-primary inline-block px-1 rounded-sm scale-90 origin-left mb-1">{ownedLabel}</div>
             <h4 className="text-xs text-app-text font-medium line-clamp-2 leading-tight h-8 overflow-hidden">{title}</h4>
-            <p className="text-xs text-app-primary font-bold mt-1">{priceLabel} ¥<span className="text-sm">{price}</span>{locale === 'en' ? '+' : '起'}</p>
+            <p className="text-xs text-app-primary font-bold mt-1">{priceLabel} ¥<span className="text-sm">{price}</span>{priceSuffix}</p>
         </div>
     </div>
 );
 
 export const ShopPage: React.FC = () => {
-    const locale = useLocale();
     const s = useBilibiliStrings();
-    const text = locale === 'en'
-        ? {
-            title: 'Shop',
-            searchHint: 'Mob Psycho 100',
-            search: 'Search',
-            orders: 'Orders',
-            cart: 'Cart',
-            coupons: 'Coupons',
-            favorites: 'Saved items',
-            history: 'Footprints',
-            ownedLabel: 'Official',
-            priceLabel: 'New-user price',
-            couponPack: 'New user coupons',
-            couponDesc: 'Starting at ¥1 with free shipping',
-            useNow: 'Use now',
-            products: [
-                'BEMOE Hatsune Miku 2025 Spring Collection',
-                'Best-selling merch blind box event',
-                'FURYU Blue Archive Yuuka figure',
-                'APEX Legends Octane collectible',
-                'Genshin Keqing Thunderclap figure',
-                'Arknights Rhodes Island tactical backpack',
-            ],
-        }
-        : {
-            title: '会员购',
-            searchHint: '灵能百分百',
-            search: '搜索',
-            orders: '我的订单',
-            cart: '购物车',
-            coupons: '优惠券',
-            favorites: '商品收藏',
-            history: '商品足迹',
-            ownedLabel: '自营',
-            priceLabel: '新人价',
-            couponPack: '新人券包',
-            couponDesc: '新人包邮1元起',
-            useNow: '去使用',
-            products: [
-                'BEMOE 初音未来 2025新春系列',
-                '会员购爆款周边 抽盲盒赢黄金',
-                'FURYU 碧蓝档案 优香 手办',
-                'APEX 英雄 动力小子',
-                '原神 刻晴 霆霓快雨',
-                '明日方舟 罗德岛 战术背包',
-            ],
-        };
+    const text = {
+        title: s.shop_title,
+        searchHint: s.shop_search_hint,
+        search: s.shop_search,
+        orders: s.shop_orders,
+        cart: s.shop_cart,
+        coupons: s.shop_coupons,
+        favorites: s.shop_favorites,
+        history: s.shop_history,
+        ownedLabel: s.shop_owned_label,
+        priceLabel: s.shop_price_label,
+        couponPack: s.shop_coupon_pack,
+        couponDesc: s.shop_coupon_desc,
+        useNow: s.shop_use_now,
+        products: [
+            s.shop_product_1,
+            s.shop_product_2,
+            s.shop_product_3,
+            s.shop_product_4,
+            s.shop_product_5,
+            s.shop_product_6,
+        ],
+    };
 
     const shopItems = [
         { title: s.shop_figure, icon: '🎨' },
@@ -143,9 +117,9 @@ export const ShopPage: React.FC = () => {
                         key={title}
                         title={title}
                         price={['41', '1', '139', '899', '868', '299'][index]}
-                        locale={locale}
                         ownedLabel={text.ownedLabel}
                         priceLabel={text.priceLabel}
+                        priceSuffix={s.shop_price_suffix}
                     />
                 ))}
             </div>

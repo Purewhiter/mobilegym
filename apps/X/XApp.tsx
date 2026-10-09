@@ -3,7 +3,6 @@ import {
   MemoryRouter,
   Routes,
   Route,
-  useNavigate,
   useLocation,
   Outlet,
   UNSAFE_NavigationContext,
@@ -57,7 +56,6 @@ import { anim } from './res/anim';
 import { useAppNavigationHandler } from '../../os/hooks/useAppNavigationHandler';
 
 const XNavigationHandler: React.FC = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   const { back } = useAppNavigate();
   const { navigator } = useContext(UNSAFE_NavigationContext);

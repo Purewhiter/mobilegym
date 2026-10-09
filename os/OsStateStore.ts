@@ -9,7 +9,7 @@ import type {
 } from './data/types';
 import { createOsStore } from './createOsStore';
 
-export interface OsSystemSettings extends DeviceSettingsPreset {}
+export type OsSystemSettings = DeviceSettingsPreset;
 
 export interface OsGlobalSettings {
   wifiEnabled: boolean;

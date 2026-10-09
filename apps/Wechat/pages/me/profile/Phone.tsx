@@ -1,11 +1,9 @@
 
 import React, { useState } from 'react';
 import { useWechatStrings } from '../../../hooks/useWechatStrings';
-import { useWechatStore } from '../../../state';
 
 export const PhonePage = () => {
     const t = useWechatStrings();
-    const user = useWechatStore(s => s.user);
     const [showRealPhone, setShowRealPhone] = useState(false);
     
     // The actual phone number provided by the user

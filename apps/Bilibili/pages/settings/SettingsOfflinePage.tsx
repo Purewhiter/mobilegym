@@ -1,21 +1,23 @@
 import React from 'react';
 import { SettingLayout, SettingItemSwitch, SettingItemArrow } from './index';
 import { useBilibiliStore } from '../../state';
+import { useBilibiliStrings } from '../../hooks/useBilibiliStrings';
 
 export const SettingsOfflinePage: React.FC = () => {
-  const setSetting = useBilibiliStore((s) => s.setSetting);
-  const autoDownload = useBilibiliStore((s) => s.settings.offline.autoDownload) ?? true;
+  const s = useBilibiliStrings();
+  const setSetting = useBilibiliStore((st) => st.setSetting);
+  const autoDownload = useBilibiliStore((st) => st.settings.offline.autoDownload) ?? true;
 
   return (
-    <SettingLayout title="离线设置">
+    <SettingLayout title={s.so_title}>
       <SettingItemSwitch
-        label="自动下载"
-        subtitle="自动开始未完成的下载任务"
+        label={s.so_auto}
+        subtitle={s.so_auto_sub}
         checked={autoDownload}
         onChange={(v) => setSetting('offline.autoDownload', v)}
       />
-      <SettingItemArrow label="离线诊断" />
-      <SettingItemArrow label="外置存储卡测试" />
+      <SettingItemArrow label={s.so_diagnosis} />
+      <SettingItemArrow label={s.so_sdcard} />
       <div className="h-8" />
     </SettingLayout>
   );

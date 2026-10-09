@@ -2,7 +2,7 @@ import type { AppId, OSState } from '../types';
 import type { IntentPayload, ActivityResult } from './manifest';
 import type { StorageIsolationMode } from '../storageIsolation';
 
-interface OSApi {
+export interface OSApi {
   state: OSState & { activeAppId?: AppId | null };
   getState(): OSState & { activeAppId?: AppId | null };
   getAppRoute(appId?: AppId | string): AppRouteInfo | null;
@@ -141,7 +141,7 @@ interface OSApi {
   sms: typeof import('../SmsGateway').SmsGateway;
 }
 
-interface SimApi {
+export interface SimApi {
   /** Clear all state WITHOUT reloading (for Playwright page.reload() pattern) */
   resetState(): Promise<void>;
   reset(seed?: number): Promise<void>;
@@ -283,6 +283,12 @@ declare global {
     __SIM_FS__?: SimFSApi;
     __SIM_MEDIA__?: SimMediaApi;
     __STORAGE_ISOLATION__?: { mode: StorageIsolationMode; namespace: string | null };
+    /** localStorage 写入失败过（典型为 QuotaExceeded）；由 debouncedPersist 设置 */
+    __STORAGE_QUOTA_EXCEEDED__?: boolean;
+    /** resetAllOsStores 中 reset 失败的 store 名（`service:` / `provider:` 前缀）；空则不存在此键 */
+    __OS_RESET_FAILURES__?: string[];
+    /** snapshotOsStores / snapshotProviders 中 snapshot 失败的 store 名；空则不存在此键 */
+    __OS_SNAPSHOT_FAILURES__?: string[];
 
     __SIM_INPUT__?: import('../simInput').SimInputAPI;
     __SIM_QUERY__?: import('../simInput').SimQueryAPI;

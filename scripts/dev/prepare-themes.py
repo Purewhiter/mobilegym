@@ -1184,6 +1184,37 @@ def extract_selected_component_assets(
     return extracted
 
 
+ASSET_INDEX_NAME = "assets-index.json"
+ASSET_INDEX_IGNORED = {ASSET_INDEX_NAME, ".DS_Store", "Thumbs.db"}
+
+
+def write_asset_indexes_under(root_dir: Path) -> int:
+    """为 root_dir 下每个 WMR bundle 目录（含 manifest.xml）写 assets-index.json。
+
+    真机 MAML 组件以 zip 分发，zip 的 central directory 就是文件清单；解包
+    摊平成 HTTP 目录后清单丢失，引擎只能靠 404 探测发现 srcid 帧数 / locale
+    文件。这里在数据包生成阶段把清单转录回来，作为数据包格式的一部分随包
+    出厂（引擎侧消费见 os/wmr/engine/assetIndex.ts；格式与
+    scripts/lib/theme_asset_index.mjs 逐字节一致，`--check` 可互验）。
+    """
+    count = 0
+    if not root_dir.is_dir():
+        return 0
+    for manifest in sorted(root_dir.rglob("manifest.xml")):
+        bundle_dir = manifest.parent
+        files = sorted(
+            p.relative_to(bundle_dir).as_posix()
+            for p in bundle_dir.rglob("*")
+            if p.is_file()
+            and p.name not in ASSET_INDEX_IGNORED
+            and not any(part.startswith(".") for part in p.relative_to(bundle_dir).parts)
+        )
+        payload = json.dumps({"v": 1, "files": files}, separators=(",", ":"), ensure_ascii=False)
+        (bundle_dir / ASSET_INDEX_NAME).write_text(payload, encoding="utf-8")
+        count += 1
+    return count
+
+
 CLOCK_WIDGET_CODES = ["clock_2x4", "clock_3x4"]
 CLOCK_SPAN: dict[str, tuple[int, int]] = {
     "clock_2x4": (4, 2),
@@ -1303,6 +1334,9 @@ def extract_standalone_wmr_widget(
     preview_out = out_dir / "preview"
     if preview_out.is_dir():
         previews = sorted(p.name for p in preview_out.iterdir() if p.is_file())
+
+    # WMR bundle 资源清单（每个 variant 目录一份）
+    write_asset_indexes_under(out_dir)
 
     return {
         "id": widget_id,
@@ -1824,6 +1858,9 @@ def main() -> None:
 
         entry["capabilities"] = sorted(set(capabilities))
         entry["extracted"] = extracted
+
+        # ---- WMR bundle 资源清单（含后拷贝的 preview.png 等全部文件） ----
+        write_asset_indexes_under(theme_dir)
 
         # ---- componentAssets: index of available PNGs per component dir ----
         component_assets: dict[str, dict[str, str]] = {}

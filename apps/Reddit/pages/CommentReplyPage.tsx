@@ -1,5 +1,5 @@
 import React from 'react';
-import { IcClose, IcLink, IcImage, IcSticker, IcSend } from '../res/icons';
+import { IcClose, IcLink, IcImage, IcSticker } from '../res/icons';
 import { useLocation } from 'react-router-dom';
 import { useRedditStore } from '../state';
 import { useRedditGestures } from '../hooks/useRedditGestures';

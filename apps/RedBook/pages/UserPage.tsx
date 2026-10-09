@@ -2,8 +2,8 @@ import { useRedBookStrings } from '../hooks/useRedBookStrings';
 import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { useRedBookStore } from '../state';
 import { useRedBookView } from '../data/view';
-import { IcHeart, IcNavBack, IcMore, IcShare, IcNavBackArrow, IcSearch, IcScan } from '../res/icons';
-const Heart = IcHeart, ChevronLeft = IcNavBack, MoreHorizontal = IcMore, Share2 = IcShare, ArrowLeft = IcNavBackArrow, Search = IcSearch, ScanLine = IcScan;
+import { IcHeart, IcNavBack, IcMore, IcShare, IcSearch } from '../res/icons';
+const Heart = IcHeart, ChevronLeft = IcNavBack, MoreHorizontal = IcMore, Share2 = IcShare, Search = IcSearch;
 import { useParams, useLocation } from 'react-router-dom';
 import { useRedBookGestures } from '../hooks/useRedBookGestures';
 

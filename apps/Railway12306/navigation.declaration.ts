@@ -62,15 +62,20 @@ export type TransitionId =
   | 'addPassenger.openIdTypePicker'
   | 'addPassenger.openTicketTypePicker'
   | 'addPassenger.showAlert'
+  | 'addPassenger.showConfirm'
   | 'auth.login.success'
   | 'auth.forgotPassword.open'
   | 'auth.register.open'
+  | 'auth.register.showConfirm'
+  | 'auth.register.showAlert'
+  | 'auth.register.openTypePicker'
   | 'auth.register.verify'
   | 'auth.forgotPassword.done'
   | 'refundSuccess.backOrders'
   | 'invoice.invoiceHeaders'
   | 'invoice.addHeader'
   | 'invoice.emailSettings'
+  | 'invoiceEmail.showSavedDialog'
   | 'fontSize.switchNow';
 
 export const NAVIGATION_DECLARATION: NavigationDeclaration = {
@@ -178,7 +183,7 @@ export const NAVIGATION_DECLARATION: NavigationDeclaration = {
     { path: '/invoice', component: 'InvoicePage', params: {}, entryPoint: 'none', uiStates: [{ id: 'invoice.base', search: {}, description: '电子发票' }], queryParams: {}, description: '电子发票', scrollContainers: [{ name: 'main', direction: 'vertical', description: '主滚动' }] },
     { path: '/invoice-headers', component: 'InvoiceHeadersPage', params: {}, entryPoint: 'none', uiStates: [{ id: 'invoiceHeaders.base', search: {}, description: '发票抬头管理' }], queryParams: {}, description: '发票抬头管理', scrollContainers: [{ name: 'main', direction: 'vertical', description: '主滚动' }] },
     { path: '/add-invoice-header', component: 'AddInvoiceHeaderPage', params: {}, entryPoint: 'none', uiStates: [{ id: 'addInvoiceHeader.base', search: {}, description: '添加发票抬头' }], queryParams: {}, description: '添加发票抬头', scrollContainers: [{ name: 'main', direction: 'vertical', description: '主滚动' }] },
-    { path: '/invoice-email', component: 'InvoiceEmailPage', params: {}, entryPoint: 'none', uiStates: [{ id: 'invoiceEmail.base', search: {}, description: '发送邮箱设置' }], queryParams: {}, description: '发送邮箱设置', scrollContainers: [{ name: 'main', direction: 'vertical', description: '主滚动' }] },
+    { path: '/invoice-email', component: 'InvoiceEmailPage', params: {}, entryPoint: 'none', uiStates: [{ id: 'invoiceEmail.base', search: {}, description: '发送邮箱设置' }, { id: 'invoiceEmail.savedDialog', search: { dialog: 'saved' }, description: '保存成功弹窗' }], queryParams: {}, description: '发送邮箱设置', scrollContainers: [{ name: 'main', direction: 'vertical', description: '主滚动' }] },
     { path: '/service-phone', component: 'ServicePhonePage', params: {}, entryPoint: 'none', uiStates: [{ id: 'servicePhone.base', search: {}, description: '客服电话' }], queryParams: {}, description: '客服电话', scrollContainers: [{ name: 'main', direction: 'vertical', description: '主滚动' }] },
     { path: '/my-account', component: 'MyAccountPage', params: {}, entryPoint: 'none', uiStates: [{ id: 'myAccount.base', search: {}, description: '我的账户' }], queryParams: {}, description: '我的账户', scrollContainers: [{ name: 'main', direction: 'vertical', description: '主滚动' }] },
     { path: '/change-password', component: 'ChangePasswordPage', params: {}, entryPoint: 'none', uiStates: [{ id: 'changePassword.base', search: {}, description: '修改密码' }], queryParams: {}, description: '修改密码', scrollContainers: [] },
@@ -196,14 +201,14 @@ export const NAVIGATION_DECLARATION: NavigationDeclaration = {
     { path: '/bus-ticket', component: 'BusTicketPage', params: {}, entryPoint: 'none', uiStates: [{ id: 'busTicket.base', search: {}, description: '汽车票' }], queryParams: {}, description: '汽车票', scrollContainers: [{ name: 'main', direction: 'vertical', description: '主滚动' }] },
     { path: '/order-confirm', component: 'OrderConfirmPage', params: {}, entryPoint: 'none', uiStates: [{ id: 'orderConfirm.base', search: {}, description: '确认订单' }], queryParams: { idx: 'number', seat: 'string' }, description: '确认订单', scrollContainers: [{ name: 'main', direction: 'vertical', description: '主滚动' }] },
     { path: '/passengers', component: 'PassengerListPage', params: {}, entryPoint: 'none', uiStates: [{ id: 'passengers.manage', search: { mode: 'manage' }, description: '乘车人管理' }, { id: 'passengers.select', search: { mode: 'select' }, description: '选择乘车人' }], queryParams: {}, description: '乘车人', scrollContainers: [{ name: 'main', direction: 'vertical', description: '主滚动' }] },
-    { path: '/add-passenger', component: 'AddPassengerPage', params: {}, entryPoint: 'none', uiStates: [{ id: 'addPassenger.base', search: {}, description: '添加乘车人' }, { id: 'addPassenger.idTypePicker', search: { dialog: 'idType' }, description: '证件类型选择' }, { id: 'addPassenger.ticketTypePicker', search: { dialog: 'ticketType' }, description: '优惠类型选择' }, { id: 'addPassenger.alert', search: { dialog: 'alert' }, description: '提示弹窗' }], queryParams: {}, description: '添加乘车人', scrollContainers: [{ name: 'main', direction: 'vertical', description: '主滚动' }] },
+    { path: '/add-passenger', component: 'AddPassengerPage', params: {}, entryPoint: 'none', uiStates: [{ id: 'addPassenger.base', search: {}, description: '添加乘车人' }, { id: 'addPassenger.idTypePicker', search: { dialog: 'idType' }, description: '证件类型选择' }, { id: 'addPassenger.ticketTypePicker', search: { dialog: 'ticketType' }, description: '优惠类型选择' }, { id: 'addPassenger.alert', search: { dialog: 'alert' }, description: '提示弹窗' }, { id: 'addPassenger.confirm', search: { dialog: 'confirm' }, description: '核对乘车人信息弹窗' }], queryParams: {}, description: '添加乘车人', scrollContainers: [{ name: 'main', direction: 'vertical', description: '主滚动' }] },
     { path: '/edit-profile', component: 'EditProfilePage', params: {}, entryPoint: 'none', uiStates: [{ id: 'editProfile.base', search: {}, description: '修改个人信息' }], queryParams: {}, description: '修改个人信息', scrollContainers: [{ name: 'main', direction: 'vertical', description: '主滚动' }] },
     { path: '/payment-platform', component: 'PaymentPlatformPage', params: {}, entryPoint: 'none', uiStates: [{ id: 'paymentPlatform.base', search: {}, description: '请您支付' }], queryParams: {}, description: '支付平台', scrollContainers: [] },
     { path: '/payment-success', component: 'PaymentSuccessPage', params: {}, entryPoint: 'none', uiStates: [{ id: 'paymentSuccess.base', search: {}, description: '支付成功' }], queryParams: {}, description: '支付成功', scrollContainers: [] },
     { path: '/refund-confirm', component: 'RefundConfirmPage', params: {}, entryPoint: 'none', uiStates: [{ id: 'refundConfirm.base', search: {}, description: '退票确认' }, { id: 'refundConfirm.refundNotice', search: { dialog: 'refundNotice' }, description: '退票二次提示弹窗' }], queryParams: { id: 'string' }, description: '退票确认', scrollContainers: [{ name: 'main', direction: 'vertical', description: '主滚动' }] },
     { path: '/refund-success', component: 'RefundSuccessPage', params: {}, entryPoint: 'none', uiStates: [{ id: 'refundSuccess.base', search: {}, description: '退票成功' }], queryParams: {}, description: '退票成功', scrollContainers: [] },
     { path: '/auth/login', component: 'LoginPage', params: {}, entryPoint: 'none', uiStates: [{ id: 'authLogin.base', search: {}, description: '登录' }], queryParams: {}, description: '登录', scrollContainers: [] },
-    { path: '/auth/register', component: 'RegisterPage', params: {}, entryPoint: 'none', uiStates: [{ id: 'authRegister.base', search: {}, description: '注册' }], queryParams: {}, description: '注册', scrollContainers: [{ name: 'main', direction: 'vertical', description: '主滚动' }] },
+    { path: '/auth/register', component: 'RegisterPage', params: {}, entryPoint: 'none', uiStates: [{ id: 'authRegister.base', search: {}, description: '注册' }, { id: 'authRegister.confirm', search: { dialog: 'confirm' }, description: '核对注册信息弹窗' }, { id: 'authRegister.alert', search: { dialog: 'alert' }, description: '提示弹窗' }, { id: 'authRegister.typePicker', search: { dialog: 'passengerType' }, description: '旅客类型选择' }], queryParams: {}, description: '注册', scrollContainers: [{ name: 'main', direction: 'vertical', description: '主滚动' }] },
     { path: '/auth/register-verify', component: 'RegisterVerifyPage', params: {}, entryPoint: 'none', uiStates: [{ id: 'authRegisterVerify.base', search: {}, description: '注册验证' }], queryParams: {}, description: '注册验证', scrollContainers: [] },
     { path: '/auth/forgot-password', component: 'ForgotPasswordPage', params: {}, entryPoint: 'none', uiStates: [{ id: 'authForgotPassword.base', search: {}, description: '找回密码' }], queryParams: {}, description: '找回密码', scrollContainers: [] },
   ],
@@ -240,6 +245,7 @@ export const NAVIGATION_DECLARATION: NavigationDeclaration = {
     { id: 'invoice.invoiceHeaders', from: '/invoice', to: '/invoice-headers', search: {}, searchParams: {}, mode: 'push', params: {}, label: '发票抬头管理', ui: { placement: 'content', icon: '', gesture: 'tap' } },
     { id: 'invoice.addHeader', from: '/invoice-headers', to: '/add-invoice-header', search: {}, searchParams: {}, mode: 'push', params: {}, label: '添加发票抬头', ui: { placement: 'content', icon: '', gesture: 'tap' } },
     { id: 'invoice.emailSettings', from: '/invoice', to: '/invoice-email', search: {}, searchParams: {}, mode: 'push', params: {}, label: '发送邮箱设置', ui: { placement: 'content', icon: '', gesture: 'tap' } },
+    { id: 'invoiceEmail.showSavedDialog', from: '/invoice-email', to: '/invoice-email', search: { dialog: 'saved' }, searchParams: {}, mode: 'push', params: {}, label: '保存成功提示', ui: { placement: 'none', icon: '', gesture: 'tap' } },
     // ── 我的 → 子页面 ──
     { id: 'my.settings', from: '/my', to: '/settings', search: {}, searchParams: {}, mode: 'push', params: {}, label: '系统设置', ui: { placement: 'topbar', icon: 'Settings', gesture: 'tap' } },
     { id: 'my.notifications', from: '/my', to: '/notifications', search: {}, searchParams: {}, mode: 'push', params: {}, label: '通知消息', ui: { placement: 'content', icon: '', gesture: 'tap' } },
@@ -266,11 +272,17 @@ export const NAVIGATION_DECLARATION: NavigationDeclaration = {
     { id: 'addPassenger.openIdTypePicker', from: '/add-passenger', to: '/add-passenger', search: { dialog: 'idType' }, searchParams: {}, mode: 'push', params: {}, label: '证件类型选择', ui: { placement: 'content', icon: '', gesture: 'tap' } },
     { id: 'addPassenger.openTicketTypePicker', from: '/add-passenger', to: '/add-passenger', search: { dialog: 'ticketType' }, searchParams: {}, mode: 'push', params: {}, label: '优惠类型选择', ui: { placement: 'content', icon: '', gesture: 'tap' } },
     { id: 'addPassenger.showAlert', from: '/add-passenger', to: '/add-passenger', search: { dialog: 'alert' }, searchParams: {}, mode: 'push', params: {}, label: '提示弹窗', ui: { placement: 'none', icon: '', gesture: 'tap' } },
+    { id: 'addPassenger.showConfirm', from: '/add-passenger', to: '/add-passenger', search: { dialog: 'confirm' }, searchParams: {}, mode: 'push', params: {}, label: '核对乘车人信息', ui: { placement: 'none', icon: '', gesture: 'tap' } },
     // ── Auth ──
     { id: 'auth.login.success', from: '/auth/login', to: '/', search: {}, searchParams: {}, mode: 'replace', params: {}, label: '登录成功', ui: { placement: 'none', icon: 'home', gesture: 'tap' } },
     { id: 'auth.forgotPassword.open', from: '/auth/login', to: '/auth/forgot-password', search: {}, searchParams: {}, mode: 'push', params: {}, label: '找回密码', ui: { placement: 'content', icon: 'forgot_password', gesture: 'tap' } },
     { id: 'auth.register.open', from: '/auth/login', to: '/auth/register', search: {}, searchParams: {}, mode: 'push', params: {}, label: '注册账号', ui: { placement: 'content', icon: 'register', gesture: 'tap' } },
-    { id: 'auth.register.verify', from: '/auth/register', to: '/auth/register-verify', search: {}, searchParams: {}, mode: 'push', params: {}, label: '注册验证', ui: { placement: 'none', icon: '', gesture: 'tap' } },
+    { id: 'auth.register.showConfirm', from: '/auth/register', to: '/auth/register', search: { dialog: 'confirm' }, searchParams: {}, mode: 'push', params: {}, label: '核对注册信息', ui: { placement: 'none', icon: '', gesture: 'tap' } },
+    { id: 'auth.register.showAlert', from: '/auth/register', to: '/auth/register', search: { dialog: 'alert' }, searchParams: {}, mode: 'push', params: {}, label: '提示弹窗', ui: { placement: 'none', icon: '', gesture: 'tap' } },
+    { id: 'auth.register.openTypePicker', from: '/auth/register', to: '/auth/register', search: { dialog: 'passengerType' }, searchParams: {}, mode: 'push', params: {}, label: '旅客类型选择', ui: { placement: 'content', icon: '', gesture: 'tap' } },
+    // 注：verify 从确认弹窗（?dialog=confirm 历史条目）出发，用 replace 吃掉弹窗条目，
+    // 保持 RegisterVerifyPage 注册成功后连退两步（verify → 注册页 → 登录页）的语义不变。
+    { id: 'auth.register.verify', from: '/auth/register', to: '/auth/register-verify', search: {}, searchParams: {}, mode: 'replace', params: {}, label: '注册验证', ui: { placement: 'none', icon: '', gesture: 'tap' } },
     { id: 'auth.forgotPassword.done', from: '/auth/forgot-password', to: '/auth/login', search: {}, searchParams: {}, mode: 'replace', params: {}, label: '返回登录', ui: { placement: 'none', icon: 'login', gesture: 'tap' } },
     { id: 'refundSuccess.backOrders', from: '/refund-success', to: '/orders', search: {}, searchParams: {}, mode: 'replace', params: {}, label: '返回订单', ui: { placement: 'content', icon: '', gesture: 'tap' } },
     // ── 未完成 → 支付平台 ──

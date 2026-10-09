@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useWechatStrings } from '../hooks/useWechatStrings';
-import { IcNavBack, IcMore, IcCamera, IcSearch, IcAddCircle, IcMessage, IcUserAdd, IcScan, IcQrCode, IcEar } from '../res/icons';
+import { IcNavBack, IcMore, IcCamera, IcSearch, IcAddCircle, IcMessage, IcEar } from '../res/icons';
 import { dimens } from '../res/dimens';
 import { matchPath, useLocation } from 'react-router-dom';
 import { selectMomentDraft, useWechatStore } from '../state';
@@ -42,11 +42,10 @@ const TopBar: React.FC = () => {
     const contacts = useWechatStore(s => s.contacts);
     const rightAction = useWechatStore(s => s._temp.rightAction);
     const momentDraft = useWechatStore(selectMomentDraft);
-    const { bindTap, bindLongPress, bindBack, go } = useWechatGestures();
+    const { bindTap, bindLongPress, bindBack } = useWechatGestures();
     const cameraLongPressTriggeredRef = React.useRef(false);
 
     const searchParams = new URLSearchParams(location.search);
-    const showPlusMenu = searchParams.get('menu') === 'plus';
 
     const path = location.pathname;
     const isMainTab = ['/', '/contacts', '/discover', '/me'].includes(path);

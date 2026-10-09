@@ -571,9 +571,12 @@ class BaseTask(ABC):
         sw = env.stopwatch
         sw.reset()  # fresh stopwatch per episode
         
-        # 1. Reset environment — preload data for involved apps
+        # 1. Reset environment — preload data for involved apps.
+        # Pass self.apps through as-is: [] means "skip preload" (see
+        # MobileGymEnv.reset / __SIM__.waitForData contract); collapsing
+        # it to None would silently upgrade apps=[] tasks to a full preload.
         with sw.phase("reset"):
-            await env.reset(app_ids=self.apps or None)
+            await env.reset(app_ids=self.apps)
 
         # 2. Open / warm apps — creates stores with default data
         with sw.phase("warm"):

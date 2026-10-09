@@ -1,5 +1,7 @@
 import type { VarValue } from './types';
 import localeApi, { type Locale } from '../../locale';
+import { isKnownFailedUrl, rememberFailedUrl } from './imageCache';
+import type { WmrAssetIndex } from './assetIndex';
 
 function normalizeLocaleVariants(locale: string): string[] {
   const normalized = locale.replace('-', '_');
@@ -59,9 +61,15 @@ export function buildWmrResourceStrings(
 }
 
 async function fetchStringsText(url: string): Promise<string | null> {
+  // 无 strings 目录的 widget 每次页面加载都会探测 1+N 个 locale 候选（全 404）；
+  // 复用 imageCache 的跨 reload 失败记忆，确定性 404 只发一次。
+  if (isKnownFailedUrl(url)) return null;
   try {
     const resp = await fetch(url);
-    if (!resp.ok) return null;
+    if (!resp.ok) {
+      if (resp.status === 404) rememberFailedUrl(url);
+      return null;
+    }
     return await resp.text();
   } catch {
     return null;
@@ -71,11 +79,17 @@ async function fetchStringsText(url: string): Promise<string | null> {
 export async function loadWmrResourceStrings(
   xmlBaseUrl: string,
   locale: Locale = localeApi.getLocale(),
+  assetIndex: WmrAssetIndex | null = null,
 ): Promise<Record<string, VarValue>> {
+  // 清单模式：只请求清单中真实存在的 strings 文件，locale 试错探测归零。
+  const exists = (rel: string) => !assetIndex || assetIndex.has(rel);
   const files: Record<string, string> = {};
-  const baseXml = await fetchStringsText(`${xmlBaseUrl}strings/strings.xml`);
-  if (baseXml) files['strings.xml'] = baseXml;
+  if (exists('strings/strings.xml')) {
+    const baseXml = await fetchStringsText(`${xmlBaseUrl}strings/strings.xml`);
+    if (baseXml) files['strings.xml'] = baseXml;
+  }
   for (const localeKey of getLocaleCandidates(locale)) {
+    if (!exists(`strings/strings_${localeKey}.xml`)) continue;
     const url = `${xmlBaseUrl}strings/strings_${localeKey}.xml`;
     const localizedXml = await fetchStringsText(url);
     if (!localizedXml) continue;

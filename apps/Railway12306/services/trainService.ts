@@ -9,7 +9,7 @@
  * 两条路径都失败时直接返回空列表，由上层 UI 呈现"无车次"。
  */
 
-import { initSession, queryTickets, queryTransfer, isSessionValid, type TicketQueryResult, type TransferQueryResult } from './railwayApi';
+import { initSession, queryTickets, queryTransfer, type TicketQueryResult, type TransferQueryResult } from './railwayApi';
 import { getStationCode, getStationName } from './stationService';
 import { loadCatalog, queryDirectFromCatalog, queryTransferFromCatalog, normalizeTrainType } from './catalogService';
 import type { TrainInfo, SeatInfo, TransferPlan, BerthPrice } from '../types';
@@ -245,7 +245,7 @@ function parseTicketResult(result: TicketQueryResult): TrainInfo[] {
       const discountMap = parseDiscountInfo(parts[54]);
 
       // 余票和价格
-      const seats = parseSeatInfo(parts, trainCode);
+      const seats = parseSeatInfo(parts);
 
       // 将铺位分价、折扣、候补信息合并到 seats
       for (const seat of seats) {
@@ -274,7 +274,7 @@ function parseTicketResult(result: TicketQueryResult): TrainInfo[] {
       const nextDay = arriveTime < departTime || arriveTime === '00:00';
 
       // 标签和特性
-      const tags = inferTags(trainCode, parts);
+      const tags = inferTags(trainCode);
       const quiet = tags.includes('复兴号');
       // [36] exchange_train_flag: 1 = 可积分兑换
       const exchangeable = parts[36] === '1';
@@ -396,32 +396,6 @@ function parseDiscountInfo(raw: string | undefined): Record<string, number> {
   return result;
 }
 
-/**
- * 解析 [46] houbu_detail — 提取可候补的席别码集合。
- *
- * 格式: "part0#part1#part2#part3#z#part4#<候补席别码串>#z"
- * 其中 <候补席别码串> 如 "43" 表示席别码 4(软卧) 和 3(硬卧) 可以候补。
- * 值为 "0" 表示无候补席别。
- *
- * 示例: "0#0#0#0#z#0#43#z" → Set {'4', '3'}
- */
-function parseWaitlistSeatCodes(raw: string | undefined): Set<string> {
-  const result = new Set<string>();
-  if (!raw) return result;
-
-  const fields = raw.split('#');
-  // 候补席别码在第 7 个字段（index 6）
-  if (fields.length >= 7) {
-    const codes = fields[6];
-    if (codes && codes !== '0') {
-      for (const c of codes) {
-        result.add(c);
-      }
-    }
-  }
-  return result;
-}
-
 /** 席别名称 → 12306 席别码的反向映射 */
 function getSeatTypeCode(typeName: string): string | undefined {
   const map: Record<string, string> = {
@@ -442,7 +416,7 @@ function getSeatTypeCode(typeName: string): string | undefined {
  * 注意：此函数只解析基础票价和余票数。
  * 铺位分价（[53]）、折扣（[54]）、候补资格（[46]）由调用方在 parseTicketResult 中合并。
  */
-function parseSeatInfo(parts: string[], trainCode: string): SeatInfo[] {
+function parseSeatInfo(parts: string[]): SeatInfo[] {
   // 优先使用 yp_info_cover 解析（真实 12306 APP 的方式）
   // yp_info_cover 在 parts[39] 或附近，每 10 字符一组：
   //   [0]: 席别码, [1-5]: 价格(分/10), [6]: 余票标志位(>=3表示无座), [6-9]: 余票数
@@ -645,7 +619,7 @@ function extractPriceFromYpInfoNew(parts: string[], seatIdx: number, seatType: s
   return MOCK_PRICES[seatType] || 0;
 }
 
-function inferTags(trainCode: string, parts: string[]): string[] {
+function inferTags(trainCode: string): string[] {
   const tags: string[] = [];
   if (trainCode.startsWith('G') || trainCode.startsWith('D')) {
     tags.push('复兴号');

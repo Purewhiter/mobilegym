@@ -1,5 +1,4 @@
 
-import { LucideIcon } from '../../res/icons';
 import { dimens } from '../../res/dimens';
 import React, { useMemo } from 'react';
 import { useParams } from 'react-router-dom';

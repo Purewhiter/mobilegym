@@ -92,7 +92,7 @@ export function appendFunction(
   isEdited: boolean,
 ): [string, boolean] {
   const norm = normalize(formula);
-  let edited = isEdited;
+  const edited = isEdited;
 
   if ((state === 'RESULT' || state === 'ERROR') && !edited) {
     return [localize(funcName + '('), true];

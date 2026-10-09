@@ -6,7 +6,7 @@ import { SettingsToggle } from './Shared';
 import { useWechatGestures } from '../../hooks/useWechatGestures';
 
 export const MediaAndFilesPage: React.FC = () => {
-    const { user, settings, updateSettings } = useWechatStore(useShallow(s => ({
+    const { settings, updateSettings } = useWechatStore(useShallow(s => ({
         user: s.user,
         settings: s.settings,
         updateSettings: s.updateSettings,
@@ -26,8 +26,6 @@ export const MediaAndFilesPage: React.FC = () => {
             {text}
         </div>
     );
-
-    const Spacer = () => <div className="h-2 bg-(--app-c-chat-input-bar-bg)"></div>;
 
     return (
         <div className="bg-(--app-c-chat-input-bar-bg) min-h-full">

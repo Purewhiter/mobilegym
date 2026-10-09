@@ -36,10 +36,9 @@ export const SearchInputPage: React.FC = () => {
   const locale = useLocale();
   const isEnglish = locale === 'en';
   const [searchParams, setSearchParams] = useSearchParams();
-  const { bindBack, bindTap, go, back } = useSpotifyGestures();
+  const { bindBack, bindTap, back } = useSpotifyGestures();
   const s = useSpotifyStrings();
   const inputRef = useRef<HTMLInputElement | null>(null);
-  const currentTrack = useSpotifyStore(state => state.currentTrack);
   const playTrack = useSpotifyStore(state => state.playTrack);
   const addToQueue = useSpotifyStore(state => state.addToQueue);
   const showQueueToast = useSpotifyStore(state => state.showQueueToast);

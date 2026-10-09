@@ -9,7 +9,7 @@ type SoundId = 'followSystem' | 'blocks' | 'cute' | 'ethereal' | 'playful' | 'cr
 
 export const NotificationSoundPage: React.FC = () => {
     const t = useWechatStrings();
-    const { user, settings, updateSettings, setRightAction } = useWechatStore(useShallow(s => ({
+    const { settings, updateSettings, setRightAction } = useWechatStore(useShallow(s => ({
         user: s.user,
         settings: s.settings,
         updateSettings: s.updateSettings,

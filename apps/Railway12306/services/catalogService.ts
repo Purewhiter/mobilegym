@@ -90,13 +90,20 @@ let _nameToCodes: Map<string, string[]> | null = null;
 // 按 OD 组织：`${fromCode}|${toCode}` → entries[]
 let _byOD: Map<string, CatalogEntry[]> | null = null;
 
+// 用 fetch + JSON.parse 加载，而不是 `import(...json)`：24MB JSON 走 Vite ESM 模块
+// 管线会在 dev 首次转换时卡住 dev server、build 时产出巨型 JS chunk。
+// new URL(..., import.meta.url) 在 dev 下解析为源码静态路径、build 下由 Vite 发射为
+// 独立资源文件，两种模式均可达（同 Bilibili/Reddit 的 data loader 模式）。
+const CATALOG_URL = new URL('../data/catalog/trainCatalog.json', import.meta.url).href;
+
 export function loadCatalog(): Promise<void> {
   if (_catalog) return Promise.resolve();
   if (!_loadPromise) {
     _loadPromise = (async () => {
       try {
-        const mod = await import('../data/catalog/trainCatalog.json');
-        _catalog = (mod.default ?? (mod as unknown)) as unknown as CatalogJson;
+        const res = await fetch(CATALOG_URL);
+        if (!res.ok) throw new Error(`HTTP ${res.status} for ${CATALOG_URL}`);
+        _catalog = (await res.json()) as CatalogJson;
         buildIndexes(_catalog);
       } catch (e) {
         // 加载失败时清除缓存的 Promise，允许下次查询重试（否则 rejected Promise 会让 catalog 永久失效）。

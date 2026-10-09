@@ -173,7 +173,7 @@ export const HistoryMeetingDetailPage: React.FC = () => {
                     >
                         <span className="text-[13px] text-gray-400 bg-gray-100 px-2 py-1 rounded">{s.history_detail_participants}</span>
                         <div className="flex items-center -space-x-1">
-                            {meeting.participants.slice(0, 5).map((p, i) => (
+                            {meeting.participants.slice(0, 5).map((p) => (
                                 <div key={p.id} className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center overflow-hidden border-2 border-white">
                                     {p.avatar ? (
                                         <img src={p.avatar} alt="" className="w-full h-full object-cover" />
