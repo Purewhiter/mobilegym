@@ -30,6 +30,7 @@ https://github.com/user-attachments/assets/73bad0c9-7f55-42a2-8e4e-30149b4dfb33
 
 ## 📰 News
 
+- **`2026-08-21`** 🎉 Our paper has been accepted to the **EMNLP 2026 Main Conference**.
 - **`2026-06-27`** 🚀 `v0.1.0` released — our first stable release, now shipping the **online RL training code** ([`mobilegym-rl/`](mobilegym-rl)). Recommended version for running experiments.
 - **`2026-05`** 🎉 Code and benchmark released.
 - **`2026-05`** 📄 Paper preprint on arXiv → [arxiv.org/abs/2605.26114](https://arxiv.org/abs/2605.26114).
@@ -469,11 +470,11 @@ If MobileGym helps your research, please cite us:
 ```
 ## Star History
 
-<a href="https://www.star-history.com/?repos=Purewhiter%2Fmobilegym&type=date&legend=top-left">
+<a href="https://star-history.dera.page/#Purewhiter/mobilegym&type=date&legend=top-left">
  <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=Purewhiter/mobilegym&type=date&theme=dark&legend=top-left" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=Purewhiter/mobilegym&type=date&legend=top-left" />
-   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=Purewhiter/mobilegym&type=date&legend=top-left" />
+   <source media="(prefers-color-scheme: dark)" srcset="https://star-history.dera.page/svg?repos=Purewhiter/mobilegym&type=date&theme=dark&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://star-history.dera.page/svg?repos=Purewhiter/mobilegym&type=date&legend=top-left" />
+   <img alt="Star History Chart" src="https://star-history.dera.page/svg?repos=Purewhiter/mobilegym&type=date&legend=top-left" />
  </picture>
 </a>
 

@@ -269,6 +269,7 @@ class ParallelRunner(BaseRunner):
                 pbar.update(1)
         
         async def worker(wid: int) -> None:
+            nonlocal success_count, fail_count
             env = self.env_pool[wid]
             try:
                 agent = self.agent_factory()
