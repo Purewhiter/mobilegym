@@ -92,4 +92,7 @@ jobs:
       # 没有 pytest.ini / pyproject 提供默认 marker 过滤，`-m "not live"` 必须显式传。
       # 本地实证：2638 passed / 2 skipped（~6s），177 个 live 用例被正确反选。
       - name: Offline tests
+        # Fixed natural-time/world-clock examples are calibrated to +08:00.
+        env:
+          TZ: Asia/Shanghai
         run: python -m pytest bench_env/tests -m "not live" -q

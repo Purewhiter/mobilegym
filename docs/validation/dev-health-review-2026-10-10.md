@@ -48,7 +48,7 @@ No model benchmark, success-rate comparison, latency comparison, or per-page vis
 
 ## Clean Linux CI follow-up
 
-The first remote CI run exposed two local-environment assumptions: `requests` was not declared in Python requirements, and two Notes reminder tests used fixed +08:00 expected timestamps while testing host-local calendar logic. Declare requests and the test runtime in the canonical requirements file; use TimeService local-calendar constructors in the reminder tests and verify UTC plus Asia/Shanghai. This changes test portability, not the reminder implementation.
+The first remote CI run exposed two local-environment assumptions: `requests` was not declared in Python requirements, and two Notes reminder tests used fixed +08:00 expected timestamps while testing host-local calendar logic. The clean collector also needs `flaky`, even when live cases are deselected. Declare these direct dependencies in canonical requirements. All 348 frontend tests passed in UTC and the three reminder cases also passed in Asia/Shanghai after switching to TimeService local-calendar constructors. Python offline examples deliberately encode +08:00 natural-time/world-clock answers, so CI explicitly sets that fixture timezone. Runtime judge helpers still read host-local time; browser/runner timezone alignment is a remaining benchmark protocol limitation, not changed judge logic in this PR.
 
 ## Remaining review items
 
