@@ -47,6 +47,9 @@ import * as SkinService from './SkinService';
 import { themeToCssVars } from './utils/themeToCssVars';
 import { getActiveTopActivityId, getTaskTopActivity, getTasksMRU } from './taskUtils';
 import { ActivityContext } from './ActivityContext';
+import { useDeviceChromeProfile } from './chrome/useDeviceChromeProfile';
+import { DeviceStatusBar } from './chrome/DeviceStatusBar';
+import { THEME_CONFIG } from './data/themeConfig';
 import { KeyboardService } from './keyboard/KeyboardService';
 import { TaskManager } from './TaskManager';
 import type { AppId, OSState } from './types';
@@ -386,6 +389,7 @@ const queryLastForegroundDeclaration = (
 
 type ChromeTaskSnapshot = {
   activeTopActivityId: string | null;
+  activeTopAppId: AppId | null;
   activeRootAppId: AppId | null;
   isLauncherVisible: boolean;
   isRecentsVisible: boolean;
@@ -397,6 +401,7 @@ const getChromeTaskSnapshot = (state: OSState): ChromeTaskSnapshot => {
     : null;
   return {
     activeTopActivityId: getActiveTopActivityId(state),
+    activeTopAppId: getTaskTopActivity(activeTask)?.appId ?? null,
     activeRootAppId: activeTask?.rootAppId ?? null,
     isLauncherVisible: state.isLauncherVisible,
     isRecentsVisible: state.isRecentsVisible,
@@ -405,6 +410,7 @@ const getChromeTaskSnapshot = (state: OSState): ChromeTaskSnapshot => {
 
 const areChromeTaskSnapshotsEqual = (a: ChromeTaskSnapshot, b: ChromeTaskSnapshot): boolean => {
   return a.activeTopActivityId === b.activeTopActivityId
+    && a.activeTopAppId === b.activeTopAppId
     && a.activeRootAppId === b.activeRootAppId
     && a.isLauncherVisible === b.isLauncherVisible
     && a.isRecentsVisible === b.isRecentsVisible;
@@ -460,10 +466,12 @@ const getDeclaredHidden = (
 const StatusBar = () => {
   const {
     activeTopActivityId,
+    activeTopAppId,
     activeRootAppId,
     isLauncherVisible,
     isRecentsVisible,
   } = useTaskManagerSelector(getChromeTaskSnapshot, areChromeTaskSnapshotsEqual);
+  const chromeProfile = useDeviceChromeProfile(!isLauncherVisible && !isRecentsVisible ? activeTopAppId : null);
   const { themeService, version } = useTheme();
   const [time, setTime] = useState('');
   const [isLight, setIsLight] = useState(true); // true = white text, false = black text
@@ -675,6 +683,12 @@ const StatusBar = () => {
   // 快充叠一层更深的内核 + 略大的 halo，让闪电在 25% 这种小填充态也清晰可见。
   const batteryBoltCoreColor = dyn.fastCharging ? 'rgba(0,0,0,0.92)' : 'rgba(0,0,0,0.78)';
   const batteryBoltHaloColor = systemTintColor;
+
+  // The device chrome profile is the system-wide default; an explicitly selected custom statusbar theme still wins.
+  const statusbarTheme = themeService.getActiveComponentThemeId('statusbar');
+  if (chromeProfile && (!statusbarTheme || statusbarTheme === THEME_CONFIG.defaultComponents.statusbar)) {
+    return <DeviceStatusBar profile={chromeProfile} time={time} light={isLight} quickSettings={qs} state={dyn} zIndex={zIndexStatusBar} />;
+  }
 
   return (
     <div
@@ -898,10 +912,12 @@ const StatusBar = () => {
 const GestureBar = () => {
   const {
     activeTopActivityId,
+    activeTopAppId,
     activeRootAppId,
     isLauncherVisible,
     isRecentsVisible,
   } = useTaskManagerSelector(getChromeTaskSnapshot, areChromeTaskSnapshotsEqual);
+  const chromeProfile = useDeviceChromeProfile(!isLauncherVisible && !isRecentsVisible ? activeTopAppId : null);
   const startY = useRef(0);
   const startTime = useRef(0);
   const [swipeProgress, setSwipeProgress] = useState(0);
@@ -973,8 +989,12 @@ const GestureBar = () => {
     return () => observer.disconnect();
   }, [activeTopActivityId, isLauncherVisible, isRecentsVisible, activeRootAppId]);
 
-  const barOpacity = isOnDarkBg ? gestureBarOpacityLight : gestureBarOpacityDark;
-  const barColor = isOnDarkBg ? 'white' : 'black';
+  const barOpacity = chromeProfile
+    ? (isOnDarkBg ? chromeProfile.gesture.opacityLight : chromeProfile.gesture.opacityDark)
+    : (isOnDarkBg ? gestureBarOpacityLight : gestureBarOpacityDark);
+  const barColor = chromeProfile
+    ? (isOnDarkBg ? chromeProfile.gesture.colorLight : chromeProfile.gesture.colorDark)
+    : (isOnDarkBg ? 'white' : 'black');
 
   const clearHold = () => {
     if (holdTimerRef.current !== null) {
@@ -1034,15 +1054,18 @@ const GestureBar = () => {
 
   // 在App内时，减小触摸区域避免遮挡TabBar
   const isInApp = activeTopActivityId !== null && !isLauncherVisible && !isRecentsVisible;
-  const touchAreaHeight = isInApp ? bottomGestureHeight : bottomGestureHeight * 2;
+  const touchHeight = chromeProfile?.gesture.touchHeight ?? bottomGestureHeight;
+  const touchAreaHeight = isInApp ? touchHeight : touchHeight * 2;
 
   return (
     <div
       className="absolute bottom-0 w-full flex justify-center items-end pb-1"
       data-gesture-bar="true"
+      data-device-chrome-profile={chromeProfile?.id}
       style={{
         zIndex: zIndexGestureBar,
         height: `${touchAreaHeight}px`,
+        paddingBottom: chromeProfile?.gesture.bottom,
         touchAction: 'none',
       }}
       onPointerDown={handlePointerDown}
@@ -1051,7 +1074,20 @@ const GestureBar = () => {
       onPointerCancel={event => finishPointer(event, true)}
       onLostPointerCapture={event => finishPointer(event, true)}
     >
-      <div
+      {chromeProfile ? <svg
+        data-native-navigation-handle="true"
+        className="pointer-events-none block"
+        width={chromeProfile.gesture.width}
+        height={Math.ceil(chromeProfile.gesture.height)}
+        viewBox={`0 0 ${chromeProfile.gesture.width} ${Math.ceil(chromeProfile.gesture.height)}`}
+        style={{
+          opacity: barOpacity,
+          transform: `translate3d(${chromeProfile.gesture.rasterOffsetX ?? 0}px, ${chromeProfile.gesture.rasterOffsetY ?? 0}px, 0) scaleX(${1 + swipeProgress * gestureProgressScale})`,
+          transitionDuration: `${transitionDuration}ms`,
+        }}
+      >
+        <rect x={0} y={Math.ceil(chromeProfile.gesture.height) - chromeProfile.gesture.height} width={chromeProfile.gesture.width} height={chromeProfile.gesture.height} rx={chromeProfile.gesture.height / 2} fill={barColor}/>
+      </svg> : <div
         className="rounded-full pointer-events-none"
         style={{
           width: `${gestureBarWidth}px`,
@@ -1061,7 +1097,7 @@ const GestureBar = () => {
           transform: `scaleX(${1 + swipeProgress * gestureProgressScale})`,
           transitionDuration: `${transitionDuration}ms`,
         }}
-      />
+      />}
     </div>
   );
 };

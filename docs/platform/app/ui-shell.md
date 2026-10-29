@@ -21,6 +21,12 @@ Use:
 
 The OS no longer relies on DOM color auto-detection fallback. Declare the foreground when a page differs from the manifest default.
 
+### Device status bar profile
+
+The status bar and gesture bar are drawn from a device profile in `os/chrome/` (`redmi-note12-turbo-hyperos3`): the phone's SystemUI icons, clock font and measured positions (37 dp status bar, 16 dp gesture area). It is the default for the launcher, recents and every app. It shows the current OS state — signal and network type, Wi-Fi level and generation (`hardware.wifi.standard`), battery and charging, NFC, Bluetooth, alarm, headset, silent mode, VPN — and one small icon per app with unread notifications. Set the `device_chrome_profile` preference to `legacy` for the earlier drawn status bar; a non-default status-bar theme also takes precedence.
+
+Apps only declare foreground colors (below) and reserve the 37 dp; they never draw status-bar content themselves.
+
 ### Foreground fallback chain
 
 The system chrome resolves its foreground color from declarative signals only — it never samples the page's background pixels.

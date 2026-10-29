@@ -72,6 +72,8 @@ export type PendingIntentToken = string;
 export interface OSNotification {
   id: string;
   appId?: AppId;              // optional: system notifications may omit appId
+  /** Original owner-supplied status-bar small icon, when known. */
+  smallIcon?: string;
   title: string;
   body?: string;
   timestamp: number;          // ms since epoch
@@ -86,6 +88,8 @@ export interface OSNotification {
 export interface OSNotificationSnapshot {
   items: OSNotification[];
   unreadCount: number;
+  /** A captured overflow indicator whose hidden notification contents are unavailable. */
+  statusBarOverflow?: boolean;
 }
 
 export interface QuickSettingsState {

@@ -32,6 +32,9 @@ function normalizeItem(input: Partial<OSNotification> & Pick<OSNotification, 'ti
     : nowMs();
   const read = typeof input.read === 'boolean' ? input.read : false;
   const appId = (typeof input.appId === 'string' ? input.appId : undefined) as AppId | undefined;
+  const smallIcon = typeof input.smallIcon === 'string' && input.smallIcon.trim()
+    ? input.smallIcon.trim()
+    : undefined;
   const importance = input.importance === 'low' || input.importance === 'high' || input.importance === 'default'
     ? input.importance
     : 'default';
@@ -45,6 +48,7 @@ function normalizeItem(input: Partial<OSNotification> & Pick<OSNotification, 'ti
   return {
     id: typeof input.id === 'string' && input.id ? input.id : genId(),
     appId,
+    smallIcon,
     title: String(input.title ?? ''),
     body,
     timestamp,
@@ -77,7 +81,8 @@ const base = createVolatileOsStore<OSNotificationSnapshot>('notifications', {
 });
 
 function setItems(items: OSNotification[]) {
-  base.setState(computeSnapshot(items), true);
+  const overflow = base.getState().statusBarOverflow;
+  base.setState({ ...computeSnapshot(items), ...(overflow === undefined ? {} : { statusBarOverflow: items.length > 0 && overflow }) }, true);
 }
 
 function emitPush(item: OSNotification) {
@@ -92,6 +97,10 @@ function emitPush(item: OSNotification) {
 
 export const NotificationService = {
   getState: base.getState,
+
+  setStatusBarOverflowHint(value: boolean): void {
+    base.setState({ ...base.getState(), statusBarOverflow: value === true }, true);
+  },
 
   subscribe(listener: (state: OSNotificationSnapshot) => void): () => void {
     listener(base.getState());
@@ -149,7 +158,7 @@ export const NotificationService = {
 
   clearAll(): void {
     const prev = base.getState().items;
-    if (prev.length === 0) return;
+    if (prev.length === 0 && !base.getState().statusBarOverflow) return;
     setItems([]);
     for (const it of prev) {
       BroadcastBus.sendBroadcast({

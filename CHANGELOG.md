@@ -8,6 +8,10 @@ Versions: `harness` (bench_env runtime) / `taskset` (benchmark content) / `sim` 
 
 ## [Unreleased]
 
+### Changed
+
+- **`[score-affecting]` System chrome now matches a real phone for every app.** The status bar and gesture bar use the captured Redmi Note 12 Turbo / HyperOS 3 profile (`os/chrome/`) on the launcher, recents and all apps, instead of the earlier drawn status bar. It is visible in every screenshot, so all tasks are affected. Set the `device_chrome_profile` preference to `legacy` to restore the old bar.
+
 ### Fixed
 
 - **`[score-affecting]` Spotify: unlike + re-like no longer swaps the stored record.** The same song carries a different id in every catalog the app reads (seed lists, search results, album / artist pages), and `toggleLike` stored whichever record the calling screen passed. Unliking a seed song and re-liking it from another screen therefore replaced e.g. `ls_8` with `it_403037877`, which a state diff reads as one song deleted and a different one added — an unexpected-side-effect failure for an agent that changed nothing visible. `toggleLike` now restores the record it removed (falling back to the seed record, then the caller's), and `recentPlays` shares ids with `likedSongs`. Re-liking still moves the song to the top; that reorder is real and still judged. Affects any Spotify task whose `expected_changes` omits `likedSongs`, observed on `spotify` / `CollectLikedRecentAndPlay`. Guarded by `tests/spotifyRelikeIdentity.test.ts` and `tests/spotifyTrackIdentity.test.ts`.

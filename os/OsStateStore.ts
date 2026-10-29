@@ -44,6 +44,8 @@ export interface OsCellularState {
 
 export interface OsWifiState {
   level: number;
+  /** IEEE 802.11 generation (4/5/6/7), when observed; frequency alone cannot determine it. */
+  standard?: number;
   connectedSsid?: string;
   ipAddress?: string;
   macAddress?: string;
