@@ -16,6 +16,8 @@ import {
   UNSAFE_NavigationContext,
 } from 'react-router-dom';
 import { useAppNavigationHandler } from '../../os/hooks/useAppNavigationHandler';
+import { useActivityContext } from '../../os/ActivityContext';
+import { AppNavigatorRegistry } from '../../os/AppNavigatorRegistry';
 import { BottomTabBar } from './components/BottomTabBar';
 import { CallsPage } from './pages/CallsPage';
 import { ContactsPage } from './pages/ContactsPage';
@@ -33,6 +35,7 @@ const ContactsNavigationHandler: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { navigator } = React.useContext(UNSAFE_NavigationContext);
+  const { activityId } = useActivityContext();
   const historyIndexRef = useRef(0);
 
   useEffect(() => {
@@ -69,6 +72,15 @@ const ContactsNavigationHandler: React.FC = () => {
     },
   });
 
+  useEffect(() => {
+    if (!activityId) return;
+    AppNavigatorRegistry.registerActivity(activityId, {
+      navigate: (path, options) => navigate(path, { replace: options?.replace ?? true }),
+      back: handleBackPress,
+    }, 'contacts');
+    return () => AppNavigatorRegistry.unregisterActivity(activityId);
+  }, [activityId, handleBackPress, navigate]);
+
   return null;
 };
 
@@ -102,6 +114,8 @@ const ContactsChrome: React.FC = () => {
 
 /** Contacts (com.android.contacts) App root component */
 const ContactsApp: React.FC = () => {
+  const { activityId, taskId } = useActivityContext();
+  const [initialRoute] = React.useState(() => window.__OS__?.getState().tasks.find(task => task.taskId === taskId)?.stack.find(activity => activity.activityId === activityId)?.initialRoute ?? '/');
   const { isDark } = useDarkMode();
   const themeColors = isDark
     ? { ...manifest.theme.colors, ...(manifest.theme.colorsDark ?? {}) }
@@ -117,7 +131,7 @@ const ContactsApp: React.FC = () => {
   };
   return (
     <div className="h-full w-full" style={cssVars as React.CSSProperties}>
-      <MemoryRouter>
+      <MemoryRouter initialEntries={[initialRoute]}>
         <ContactsNavigationHandler />
         <ContactsChrome />
       </MemoryRouter>

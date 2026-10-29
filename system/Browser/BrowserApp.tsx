@@ -2,7 +2,9 @@ import React, { useCallback, useState, useEffect, useRef, useMemo } from 'react'
 import { dimensToCssVars, themeToCssVars } from '../../os/utils/themeToCssVars';
 import { applySkinToThemeColors } from '../../os/SkinService';
 import { useDarkMode } from '../../os/hooks/useDarkMode';
-import { MemoryRouter, useLocation, UNSAFE_NavigationContext, Routes, Route } from 'react-router-dom';
+import { MemoryRouter, useLocation, useNavigate, UNSAFE_NavigationContext, Routes, Route } from 'react-router-dom';
+import { useActivityContext } from '@/os/ActivityContext';
+import { AppNavigatorRegistry } from '@/os/AppNavigatorRegistry';
 import { IcGlobe, IcBack, IcForward, IcRefresh, IcHome, IcSearch, IcShield, IcNavBack, IcNavForward, IcTabs, IcMoreHoriz, IcClose, IcAdd } from './res/icons';
 import { manifest } from './manifest';
 import { colors, colorsDark } from './res/colors';
@@ -13,9 +15,12 @@ import { useBrowserStore } from './state';
 import type { Tab } from './state';
 import { useAppNavigationHandler } from '../../os/hooks/useAppNavigationHandler';
 import { useBrowserGestures } from './hooks/useBrowserGestures';
+import { useBrowserExternalEntry } from './hooks/useBrowserExternalEntry';
 
 // --- Navigation Handler ---
 const BrowserNavigationHandler: React.FC = () => {
+    const { activityId } = useActivityContext();
+    const navigate = useNavigate();
     const location = useLocation();
     const { back } = useBrowserGestures();
     const { navigator } = React.useContext(UNSAFE_NavigationContext);
@@ -42,6 +47,14 @@ const BrowserNavigationHandler: React.FC = () => {
     }, [back, navigator]);
 
     useAppNavigationHandler('browser', { onBack: handleBackPress });
+    useEffect(() => {
+        if (!activityId) return;
+        AppNavigatorRegistry.registerActivity(activityId, {
+            navigate: (path, options) => navigate(path, { replace: options?.replace ?? true }),
+            back: handleBackPress,
+        }, 'browser');
+        return () => AppNavigatorRegistry.unregisterActivity(activityId);
+    }, [activityId, handleBackPress, navigate]);
 
     return null;
 };
@@ -201,6 +214,7 @@ const TabsOverlay: React.FC<{
 
 // --- Main App Logic ---
 const BrowserContent: React.FC = () => {
+    useBrowserExternalEntry();
     const { go, back, bindBack } = useBrowserGestures();
     const location = useLocation();
     const { navigator } = React.useContext(UNSAFE_NavigationContext);
@@ -350,6 +364,8 @@ const BrowserContent: React.FC = () => {
 };
 
 export const BrowserApp: React.FC = () => {
+    const { activityId, taskId } = useActivityContext();
+    const [initialRoute] = useState(() => window.__OS__?.getState().tasks.find(task => task.taskId === taskId)?.stack.find(activity => activity.activityId === activityId)?.initialRoute ?? '/');
     const { isDark } = useDarkMode();
     const themeColors = isDark
         ? { ...manifest.theme.colors, ...(manifest.theme.colorsDark ?? {}) }
@@ -365,7 +381,7 @@ export const BrowserApp: React.FC = () => {
     };
     return (
         <div className="h-full w-full" style={cssVars as React.CSSProperties}>
-        <MemoryRouter>
+        <MemoryRouter initialEntries={[initialRoute]}>
             <BrowserContent />
         </MemoryRouter>
         </div>

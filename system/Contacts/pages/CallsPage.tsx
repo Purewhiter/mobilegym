@@ -1,5 +1,6 @@
 import React, { useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useActivityContext } from '@/os/ActivityContext';
 import { Toast } from '@/os/components/Toast';
 import { useLocale } from '@/os/locale';
 import { useAppStrings } from '@/os/useAppStrings';
@@ -83,12 +84,13 @@ const CallLogItem: React.FC<{
 const DialpadOverlay: React.FC<{
   sims: SimProfile[];
   onClose: () => void;
-}> = ({ sims, onClose }) => {
+  initialDigits?: string;
+}> = ({ sims, onClose, initialDigits = '' }) => {
   const locale = useLocale();
   const isEnglish = locale === 'en';
   const { themeService, version } = useTheme();
   const s = useAppStrings(strings, stringsEn);
-  const [digits, setDigits] = useState('');
+  const [digits, setDigits] = useState(initialDigits);
 
   const buttons = [
     { key: '1', sub: '' },
@@ -256,9 +258,13 @@ const DialpadOverlay: React.FC<{
 };
 
 export const CallsPage: React.FC = () => {
+  const { activityId } = useActivityContext();
+  const intentData = window.__OS__?.getIntentPayload(activityId)?.data;
+  const requestedNumber = intentData && typeof intentData === 'object' ? intentData.number : undefined;
+  const initialDigits = typeof requestedNumber === 'string' && /^[+0-9*#]{1,40}$/.test(requestedNumber) ? requestedNumber : '';
   const locale = useLocale();
   const isEnglish = locale === 'en';
-  const { bindTap, back } = useContactsGestures();
+  const { bindTap } = useContactsGestures();
   const [searchParams] = useSearchParams();
   const dialpadOpen = searchParams.get('dialpad') === 'true';
   const list = useMemo(() => CONTACTS_CONFIG.callLogs, []);
@@ -341,8 +347,9 @@ export const CallsPage: React.FC = () => {
       {dialpadOpen ? (
         <DialpadOverlay
           sims={sims}
+          initialDigits={initialDigits}
           onClose={() => {
-            back(1);
+            window.__OS__?.handleBack();
           }}
         />
       ) : null}
