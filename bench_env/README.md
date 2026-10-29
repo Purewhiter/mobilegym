@@ -15,6 +15,7 @@ Turns the MobileGym simulator into a **graded gym**: agents run, the runner reco
 | Check hard authoring rules                     | [`docs/task/TASK_CODE_SPEC.md`](docs/task/TASK_CODE_SPEC.md) — PR checklist at the end |
 | Add tests for a task                           | [`docs/task/TASK_TESTING_GUIDE.md`](docs/task/TASK_TESTING_GUIDE.md) |
 | Add a new Agent / Env / Runner                 | [`docs/FRAMEWORK.md`](docs/FRAMEWORK.md)                                      |
+| Run subscription Coding Agents through MCP    | [`docs/MCP.md`](docs/MCP.md) — Generic V2 bridge and shared-session pilot      |
 | Look up CLI flags / type fields / action map   | [`docs/REFERENCE.md`](docs/REFERENCE.md)                                      |
 | Enable grounded evaluation (`answer_fields`)   | [`docs/task/GROUNDED_MODE.md`](docs/task/GROUNDED_MODE.md) |
 | Read the architecture & episode lifecycle      | [`docs/FRAMEWORK.md`](docs/FRAMEWORK.md)                                      |

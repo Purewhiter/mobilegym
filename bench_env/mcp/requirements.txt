@@ -1,0 +1,2 @@
+# Optional transport dependency; core API-based benchmarks do not need MCP.
+mcp>=1.25,<2
