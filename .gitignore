@@ -70,6 +70,9 @@ docs/archive
 
 .phone_shots/
 
+# Local experiment output (emulator images, screenshots, run records)
+/output/
+
 # --- Vendored rLLM training stack (mobilegym-rl/) ---
 mobilegym-rl/logs/
 mobilegym-rl/checkpoints
