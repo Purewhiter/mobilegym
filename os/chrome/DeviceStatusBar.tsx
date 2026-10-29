@@ -66,12 +66,12 @@ export function DeviceStatusBar({ profile, time, light, quickSettings: qs, state
         <span aria-hidden="true" style={{ visibility: 'hidden' }}>{time.replace(/^0(?=\d:)/, '')}</span>
         <svg width="100%" height={metric.clockHeight} style={{ position: 'absolute', left: 0, top: 0, overflow: 'visible' }}><text x="0" y={56 / 3} fill="currentColor">{time.replace(/^0(?=\d:)/, '')}</text></svg>
       </span>
-      {(notificationIcons.length > 0 || notifications.statusBarOverflow) && <div data-native-notification-icons="true" style={{ display: 'flex', alignItems: 'center', marginLeft: 3, gap: 0 }}>
-        {notificationIcons.slice(0, 3).map(({ notification, manifest }) => <span key={notification.appId} style={{ width: 18, height: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{notification.smallIcon ? <img data-native-notification-owner={notification.appId} src={notification.smallIcon} alt="" width={40 / 3} height={40 / 3} style={{ objectFit: 'contain' }} /> : manifest ? <AppIcon manifest={manifest} size={40 / 3} radius={4} showShadow={false} /> : null}</span>)}
-        {(notifications.statusBarOverflow || notificationIcons.length > 3) && <svg data-native-notification-overflow="true" width="18" height="20" viewBox="0 0 54 60" fill="currentColor"><circle cx="15" cy="26.666667" r="3.333333"/><circle cx="28" cy="26.666667" r="3.333333"/><circle cx="41" cy="26.666667" r="3.333333"/></svg>}
+      {(notificationIcons.length > 0 || notifications.statusBarOverflow) && <div data-native-notification-icons="true" style={{ display: 'flex', alignItems: 'center', marginLeft: 11 / 3, gap: 0 }}>
+        {notificationIcons.slice(0, 3).map(({ notification, manifest }) => <span key={notification.appId} style={{ width: 18, height: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', transform: 'translate(0.667px, 0.667px)' }}>{notification.smallIcon ? <img data-native-notification-owner={notification.appId} src={notification.smallIcon} alt="" width={13} height={13} style={{ objectFit: 'contain' }} /> : manifest ? <AppIcon manifest={manifest} size={13} radius={4} showShadow={false} /> : null}</span>)}
+        {(notifications.statusBarOverflow || notificationIcons.length > 3) && <svg data-native-notification-overflow="true" width="18" height="20" viewBox="0 0 54 60" fill="currentColor"><circle cx="16" cy="30.5" r="3.333333"/><circle cx="29" cy="30.5" r="3.333333"/><circle cx="42" cy="30.5" r="3.333333"/></svg>}
       </div>}
     </div>
-    <div data-native-system-icons="true" style={{ position: 'absolute', right: metric.rightInset, top: metric.iconsTop, height: metric.iconSide, display: 'flex', alignItems: 'center' }}>
+    <div data-native-system-icons="true" style={{ position: 'absolute', right: metric.rightInset, transform: 'translateX(0.334px)', top: metric.iconsTop, height: metric.iconSide, display: 'flex', alignItems: 'center' }}>
       {state.vpn && renderIcon('stat_sys_branded_vpn')}
       {state.alarm && renderIcon('stat_sys_alarm')}
       {state.headset && renderIcon('stat_sys_headset')}
