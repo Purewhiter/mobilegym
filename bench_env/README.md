@@ -57,6 +57,8 @@ Starting the simulator (which involves cloning `mobilegym-data` for default app 
 > # stop with: ./scripts/server/start_nginx_gateway.sh stop
 > ```
 >
+> The script also starts the device server (the process that holds RedBook, Bilibili, file system and 12306 catalog data, `device/main.ts`) as `DEVICE_WORKERS` Node shards (default 2, about 1GB of memory each); nginx routes each session's `/__device` requests to the shard that holds it. It needs `node` on `PATH` (or `NODE_BIN`).
+>
 > Then pass `--env-url https://localhost:4180`. This nginx HTTPS endpoint uses a self-signed localhost certificate; Chromium may reject the Service Worker script fetch for `/map-sw.js` even when the page itself loaded. `bench_env` sets Playwright `ignore_https_errors=True` and launches Chromium with `--ignore-certificate-errors` so Map's local Service Worker cache can register under that TLS setup.
 
 ---

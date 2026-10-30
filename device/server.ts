@@ -15,10 +15,12 @@ export interface DeviceServerOptions {
   root: string;
   /** Same value the page uses for `VITE_CDN_BASE` (default `/cdn`). */
   cdnBase: string;
+  /** Shard number when several server processes run behind one proxy. */
+  shard?: number;
 }
 
 export function createDeviceServer(options: DeviceServerOptions) {
-  const server = new DeviceServer(options.root);
+  const server = new DeviceServer(options.root, options.shard);
   server.register(createFsModule());
   server.register(createRedBookModule({ cdnBase: options.cdnBase }));
   server.register(createBilibiliModule({ cdnBase: options.cdnBase }));

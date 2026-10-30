@@ -52,6 +52,7 @@ tsconfig.tsbuildinfo
 !.nginx/nginx.source.conf
 .serve_api.pid
 .api_gateway.pid
+.device_server.pids
 
 # bench_env runtime caches (per-app, regenerated on each run)
 apps/*/data/.bench_*_cache.json

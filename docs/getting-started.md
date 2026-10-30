@@ -71,6 +71,8 @@ Open `http://localhost:3000` in any modern browser. You'll see an Android-style 
 > # stop: ./scripts/server/start_nginx_gateway.sh stop
 > ```
 >
+> The script also starts the device server (`device/main.ts`, which holds app data such as RedBook, Bilibili, the file system and the 12306 train catalog) as `DEVICE_WORKERS` Node shards (default 2, about 1GB of memory each); nginx routes each session's `/__device` requests to the shard that holds it. It needs `node` on `PATH` (or `NODE_BIN`).
+>
 > Then pass `--env-url https://localhost:4180`. This nginx HTTPS endpoint is the specific case where the local certificate issue can appear: the gateway uses a self-signed localhost certificate, and Chromium may reject the Service Worker script fetch for `/map-sw.js` even when the page itself loaded. `bench_env` sets Playwright `ignore_https_errors=True` and launches Chromium with `--ignore-certificate-errors`; both are intentional because the context-level flag alone is not enough for this Service Worker registration path.
 >
 > This matters most when `VITE_GOOGLE_MAPS_API_KEY` is empty: the Map app intentionally uses a placeholder key plus the local Service Worker cache to replay captured Maps JS/resources. If the Service Worker fails to register, the placeholder load can go online and report `InvalidKeyMapError`. With a valid Google key, live map loading can work even without the Service Worker, assuming the key is valid for `localhost`, the required Google APIs are enabled, and network access is available. The key is still optional for benchmark use, but it gives the Map app a better display and a real online fallback when the cache does not cover a place.

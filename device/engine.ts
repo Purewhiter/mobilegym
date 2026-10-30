@@ -126,7 +126,15 @@ export class DeviceServer {
   private readonly sessions = new Map<string, Session>();
   private nextSessionSeq = 1;
 
-  constructor(private readonly root: string) {}
+  /**
+   * `shard`: set when several server processes share one host. Session ids
+   * then start with `s<shard>-`, so a proxy can route every request of a
+   * session to the process that holds it (see scripts/server/start_nginx_gateway.sh).
+   */
+  constructor(
+    private readonly root: string,
+    private readonly shard?: number,
+  ) {}
 
   register<S>(module: AppModule<S>): void {
     this.modules.set(module.appId, module as AppModule<unknown>);
@@ -138,7 +146,8 @@ export class DeviceServer {
 
   createSession(): Session {
     this.evictSessions();
-    const id = `s${Date.now().toString(36)}${(this.nextSessionSeq++).toString(36)}`;
+    const prefix = this.shard === undefined ? 's' : `s${this.shard}-`;
+    const id = `${prefix}${Date.now().toString(36)}${(this.nextSessionSeq++).toString(36)}`;
     const session = new Session(id);
     this.sessions.set(id, session);
     return session;
@@ -167,6 +176,11 @@ export class DeviceServer {
     if (this.sessions.size < MAX_SESSIONS) return;
     const byAge = [...this.sessions.values()].sort((a, b) => a.lastUsedAt - b.lastUsedAt);
     for (const session of byAge.slice(0, this.sessions.size - MAX_SESSIONS + 1)) this.sessions.delete(session.id);
+  }
+
+  /** Load every registered app's catalog now instead of on first use. */
+  warmCatalogs(): void {
+    for (const module of this.modules.values()) this.catalog(module);
   }
 
   /** Whether `appId` has received state in this session yet. */

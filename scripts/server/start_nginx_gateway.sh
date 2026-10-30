@@ -4,7 +4,14 @@
 #
 # 架构:
 #   Nginx (:PORT) ──┬── 静态文件 (dist/)  ← sendfile 零拷贝
-#                   └── /api/gw/* → Python (:PORT+1)
+#                   ├── /api/gw/* → Python (:PORT+1)
+#                   └── /__device/* → 设备服务端 (Node, DEVICE_WORKERS 个分片,
+#                                     :DEVICE_PORT 起; 按会话 id 里的分片号路由)
+#
+# 环境变量:
+#   DEVICE_WORKERS   设备服务端进程数（默认 2；每个进程各加载一份 App 数据，约 1GB 内存）
+#   DEVICE_PORT      第一个分片的端口（默认 PORT+20）
+#   NODE_BIN         node 可执行文件（默认从 PATH 找）
 #
 # 使用:
 #   ./scripts/server/start_nginx_gateway.sh          # 默认 4180
@@ -14,6 +21,8 @@
 
 PORT=${1:-4180}
 API_PORT=$((PORT + 1))
+DEVICE_WORKERS=${DEVICE_WORKERS:-2}
+DEVICE_PORT=${DEVICE_PORT:-$((PORT + 20))}
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$ROOT_DIR" || exit 1
@@ -45,6 +54,7 @@ find_bin() {
 NGINX_BIN="${NGINX_BIN:-$(find_bin nginx)}"
 NGINX_DIR="$ROOT_DIR/.nginx"
 PIDFILE_API="$ROOT_DIR/.api_gateway.pid"
+PIDFILE_DEVICE="$ROOT_DIR/.device_server.pids"
 NGINX_SOURCE_CONFIG="$ROOT_DIR/.nginx/nginx.source.conf"
 
 escape_sed_replacement() {
@@ -63,13 +73,24 @@ render_nginx_config() {
     esc_mime_types="$(escape_sed_replacement "$MIME_TYPES")"
     esc_root="$(escape_sed_replacement "$ROOT_DIR")"
 
+    # 设备服务端：upstream 列出所有分片；map 把 /__device/sessions/s<k>- 映射到分片 k
+    local device_upstream="" device_map="" k
+    for ((k = 0; k < DEVICE_WORKERS; k++)); do
+        device_upstream+="        server 127.0.0.1:$((DEVICE_PORT + k));\n"
+        device_map+="        ~^/__device/sessions/s${k}- 127.0.0.1:$((DEVICE_PORT + k));\n"
+    done
+
     sed \
         -e "s/__NGINX_DIR__/$esc_nginx_dir/g" \
         -e "s/__MIME_TYPES__/$esc_mime_types/g" \
         -e "s/__ROOT__/$esc_root/g" \
         -e "s/__PORT__/$PORT/g" \
         -e "s/__API_PORT__/$API_PORT/g" \
-        "$NGINX_SOURCE_CONFIG" > "$output"
+        "$NGINX_SOURCE_CONFIG" \
+    | awk -v up="$device_upstream" -v map="$device_map" '
+        $0 == "__DEVICE_UPSTREAM__" { printf "%s", up; next }
+        $0 == "__DEVICE_MAP__" { printf "%s", map; next }
+        { print }' > "$output"
 }
 
 stop_servers() {
@@ -86,6 +107,15 @@ stop_servers() {
         kill -- "-$pid" 2>/dev/null || kill "$pid" 2>/dev/null
         echo "  api stopped"
         rm -f "$PIDFILE_API"
+    fi
+    # Stop device server shards
+    if [ -f "$PIDFILE_DEVICE" ]; then
+        local dpid
+        while read -r dpid; do
+            [ -n "$dpid" ] && kill "$dpid" 2>/dev/null
+        done < "$PIDFILE_DEVICE"
+        echo "  device server stopped"
+        rm -f "$PIDFILE_DEVICE"
     fi
 }
 
@@ -139,7 +169,27 @@ else
 fi
 echo $! > "$PIDFILE_API"
 
-# 2. Start Nginx
+# 2. Start device server shards (bundled from device/main.ts)
+NODE_BIN="${NODE_BIN:-$(find_bin node)}"
+DEVICE_BUNDLE="$NGINX_DIR/device-server.mjs"
+"$NODE_BIN" "$SCRIPT_DIR/build_device_server.mjs" "$DEVICE_BUNDLE" || { echo "[error] device server build failed" >&2; exit 1; }
+CDN_BASE="${VITE_CDN_BASE:-$(grep -s '^VITE_CDN_BASE=' "$ROOT_DIR/.env.local" "$ROOT_DIR/.env" | head -1 | cut -d= -f2-)}"
+echo "[start] Device server: ${DEVICE_WORKERS} shard(s) on :${DEVICE_PORT}+"
+: > "$PIDFILE_DEVICE"
+for ((k = 0; k < DEVICE_WORKERS; k++)); do
+    nohup "$NODE_BIN" "$DEVICE_BUNDLE" --port "$((DEVICE_PORT + k))" --shard "$k" --root "$ROOT_DIR" \
+        --cdn-base "${CDN_BASE:-/cdn}" >> "$NGINX_DIR/logs/device_server_$k.log" 2>&1 &
+    echo $! >> "$PIDFILE_DEVICE"
+done
+# 等所有分片加载完 App 数据再接流量
+for ((k = 0; k < DEVICE_WORKERS; k++)); do
+    for _ in $(seq 1 120); do
+        curl -sf "http://127.0.0.1:$((DEVICE_PORT + k))/__device/health" >/dev/null && break
+        sleep 0.5
+    done
+done
+
+# 3. Start Nginx
 echo "[start] Nginx on :${PORT} (workers=8)"
 "$NGINX_BIN" -c "$NGINX_DIR/nginx.run.conf"
 
@@ -148,6 +198,7 @@ echo ""
 echo "✅ mobile-gym serving at https://0.0.0.0:${PORT}  (HTTP/2 + TLS)"
 echo "   Static:  Nginx (sendfile + HTTP/2 + 8 workers)"
 echo "   API:     uvicorn + starlette (:${API_PORT}, ${API_WORKERS} workers)"
+echo "   Device:  ${DEVICE_WORKERS} Node shard(s) (:${DEVICE_PORT}+), routed by session id"
 echo ""
 echo "   Stop:    $0 stop"
-echo "   Logs:    $NGINX_DIR/logs/{error,access,api_gateway}.log"
+echo "   Logs:    $NGINX_DIR/logs/{error,access,api_gateway,device_server_*}.log"
