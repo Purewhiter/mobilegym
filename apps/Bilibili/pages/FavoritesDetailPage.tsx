@@ -4,7 +4,7 @@ const ChevronLeft = IcNavBack, Search = IcSearch, MoreHorizontal = IcMore, MoreV
 import { useParams } from 'react-router-dom';
 import { useBilibiliStore } from '../state';
 import { useBilibiliGestures } from '../hooks/useBilibiliGestures';
-import { useVideos } from '../hooks/useData';
+import { useVideosByIds } from '../hooks/useData';
 // Helper for formatting stats numbers
 const formatStat = (num: number | string | undefined) => {
     if (num === undefined || num === null) return '0';
@@ -39,19 +39,16 @@ export const FavoritesDetailPage: React.FC = () => {
     const { bindBack, bindTap } = useBilibiliGestures();
     const { folderId } = useParams();
     const user = useBilibiliStore(s => s.user);
-    const VIDEO_DATA = useVideos();
 
     // Get folder data
     const folder = user.favoritesFolders?.find(f => f.id === folderId) || user.favoritesFolders?.[0];
 
-    // Get videos
-    const videos = folder?.videoIds
-        ? VIDEO_DATA.filter(v => folder.videoIds!.includes(v.id))
-        : [];
+    // Get videos（按视频库顺序）
+    const { videos, byId: videoById } = useVideosByIds(folder?.videoIds ?? [], 'catalog');
 
     // Folder cover
     const folderCover = (folder?.videoIds && folder.videoIds.length > 0)
-        ? VIDEO_DATA.find(v => v.id === folder.videoIds![folder.videoIds!.length - 1])?.cover
+        ? videoById.get(folder.videoIds[folder.videoIds.length - 1])?.cover
         : folder?.cover;
 
     return (

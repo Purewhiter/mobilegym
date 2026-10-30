@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useMemo } from 'react';
 import { IcSearch, IcGaming, IcMail, IcMenu, IcMonitorPlay, IcMute, IcMoreVertical, IcLike, IcAlignLeft } from '../res/icons';
 const Search = IcSearch, Gamepad2 = IcGaming, Mail = IcMail, Menu = IcMenu, MonitorPlay = IcMonitorPlay, VolumeX = IcMute, MoreVertical = IcMoreVertical, ThumbsUp = IcLike, AlignLeft = IcAlignLeft;
 import type { BilibiliVideo } from '../data';
-import { useVideos } from '../hooks/useData';
+import { useVideosByIds } from '../hooks/useData';
 
 import { RECOMMEND_DATA } from '../data/recommendData';
 import { useBilibiliStore } from '../state';
@@ -153,6 +153,8 @@ const VideoCard: React.FC<{ video: BilibiliVideo; locale: 'zh-Hans' | 'en'; adLa
     );
 };
 
+const RECOMMEND_IDS = RECOMMEND_DATA.map(v => v.id);
+
 interface HomePageProps {
     activeTab?: string;
 }
@@ -160,7 +162,6 @@ interface HomePageProps {
 export const HomePage: React.FC<HomePageProps> = ({ activeTab: urlTab = 'recommend' }) => {
     const user = useBilibiliStore(s => s.user);
     const { bindTap } = useBilibiliGestures();
-    const VIDEO_DATA = useVideos();
     const locale = useLocale();
     const s = useBilibiliStrings();
     const text = locale === 'en'
@@ -186,24 +187,12 @@ export const HomePage: React.FC<HomePageProps> = ({ activeTab: urlTab = 'recomme
     ];
     const activeTab = tabs.some((tab) => tab.key === urlTab) ? urlTab : 'recommend';
 
-    const getUniqueVideos = () => {
-        const sourceData = RECOMMEND_DATA.length > 0 ? RECOMMEND_DATA : VIDEO_DATA;
-        return sourceData.map(v => VIDEO_DATA.find(vd => vd.id === v.id) || v);
-    };
-
-    const [videos, setVideos] = useState<BilibiliVideo[]>(getUniqueVideos());
-
-    // Reset scroll when tab changes
-    // ...
-
-    useEffect(() => {
-        if (activeTab === 'recommend') {
-            setVideos(getUniqueVideos());
-        } else if (activeTab === 'hot') {
-            // 热门也用 V2 data，但在 HotTab 组件里处理展示逻辑
-            setVideos(getUniqueVideos());
-        }
-    }, [activeTab, VIDEO_DATA]);
+    // 推荐流：recommend.json 的条目补全为视频库里的完整记录；加载完成前不渲染
+    const recommended = useVideosByIds(RECOMMEND_IDS);
+    const videos = useMemo<BilibiliVideo[]>(
+        () => (recommended.loading ? [] : RECOMMEND_DATA.map(v => recommended.byId.get(v.id) || v)),
+        [recommended.loading, recommended.byId],
+    );
 
     const renderContent = () => {
         switch (activeTab) {

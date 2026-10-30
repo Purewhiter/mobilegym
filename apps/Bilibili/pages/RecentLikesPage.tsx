@@ -3,7 +3,7 @@ import { IcNavBack, IcSearch, IcMoreVertical, IcMonitorPlay, IcMessageSquareText
 const ChevronLeft = IcNavBack, Search = IcSearch, MoreVertical = IcMoreVertical, MonitorPlay = IcMonitorPlay, MessageSquareText = IcMessageSquareText;
 import { useBilibiliStore } from '../state';
 import { useBilibiliGestures } from '../hooks/useBilibiliGestures';
-import { useVideos } from '../hooks/useData';
+import { useVideosByIds } from '../hooks/useData';
 // Helper for formatting stats numbers
 const formatStat = (num: number | string | undefined) => {
     if (num === undefined || num === null) return '0';
@@ -37,8 +37,7 @@ const formatDuration = (val: number | string | undefined) => {
 export const RecentLikesPage: React.FC = () => {
     const { bindBack, bindTap } = useBilibiliGestures();
     const user = useBilibiliStore(s => s.user);
-    const VIDEO_DATA = useVideos();
-    const likedVideos = VIDEO_DATA.filter(v => user.likedVideoIds?.includes(v.id));
+    const { videos: likedVideos } = useVideosByIds(user.likedVideoIds ?? [], 'catalog');
 
     return (
         <div className="flex flex-col h-full bg-app-surface font-sans">

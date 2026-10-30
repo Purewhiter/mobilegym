@@ -1,7 +1,7 @@
 import React from 'react';
 import { IcChart, IcCalendar, IcAward } from '../../res/icons';
 import { HOT_DATA } from '../../data/hotData';
-import { useVideos } from '../../hooks/useData';
+import { useVideosByIds } from '../../hooks/useData';
 import { useBilibiliGestures } from '../../hooks/useBilibiliGestures';
 import { useLocale } from '@/apps/Bilibili/locale';
 import {
@@ -14,11 +14,13 @@ const BarChart2 = IcChart;
 const Calendar = IcCalendar;
 const Award = IcAward;
 
+const HOT_IDS = HOT_DATA.map((video) => video.id);
+
 export const HotTab: React.FC = () => {
   const locale = useLocale();
   const isEnglish = locale === 'en';
   const { bindTap } = useBilibiliGestures();
-  const videos = useVideos();
+  const { byId: videoById, loading } = useVideosByIds(HOT_IDS);
 
   const iconItems = [
     {
@@ -69,8 +71,8 @@ export const HotTab: React.FC = () => {
       </div>
 
       <div className="flex flex-col gap-2 px-2">
-        {HOT_DATA.map((video, index) => {
-          const displayVideo = videos.find((item) => item.id === video.id) || video;
+        {!loading && HOT_DATA.map((video, index) => {
+          const displayVideo = videoById.get(video.id) || video;
           return (
             <div
               key={displayVideo.id}

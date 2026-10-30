@@ -6,7 +6,7 @@ import {
 } from '../res/icons';
 import { useBilibiliStore } from '../state';
 import { useBilibiliGestures } from '../hooks/useBilibiliGestures';
-import { useVideos } from '../hooks/useData';
+import { useVideosByIds } from '../hooks/useData';
 import { BilibiliDanmakuIcon } from '../res/icons';
 import type { BilibiliVideo } from '../types';
 
@@ -130,13 +130,13 @@ export const FavoritesPage: React.FC = () => {
     const { bindBack, bindTap } = useBilibiliGestures();
     const [searchParams] = useSearchParams();
     const user = useBilibiliStore(s => s.user);
-    const VIDEO_DATA = useVideos();
 
     const activeTab = (searchParams.get('tab') as FavTab) || 'folders';
 
     const allVideoIds = new Set<string>();
     user.favoritesFolders?.forEach(f => f.videoIds?.forEach(id => allVideoIds.add(id)));
-    const allFavVideos = VIDEO_DATA.filter(v => allVideoIds.has(v.id));
+    // 收藏过的视频，按视频库顺序（与过去过滤全量列表的结果一致）
+    const { videos: allFavVideos } = useVideosByIds([...allVideoIds], 'catalog');
 
     const SUB_TABS: { key: FavTab; label: string }[] = [
         { key: 'folders', label: '收藏夹' },
@@ -196,7 +196,7 @@ export const FavoritesPage: React.FC = () => {
                             <FolderCard
                                 key={folder.id}
                                 folder={folder}
-                                videos={VIDEO_DATA}
+                                videos={allFavVideos}
                                 onTap={bindTap('favFolderDetail.open', { params: { folderId: folder.id } })}
                             />
                         ))}

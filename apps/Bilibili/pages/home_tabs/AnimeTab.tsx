@@ -1,8 +1,8 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useLocale } from '@/apps/Bilibili/locale';
 import type { BilibiliVideo } from '../../data';
-import { useRankings, useVideos } from '../../hooks/useData';
+import { useRankings } from '../../hooks/useData';
 import { useBilibiliGestures } from '../../hooks/useBilibiliGestures';
 
 const rankingTabs = [
@@ -24,14 +24,14 @@ type RankingTabKey = 'bangumi' | 'guochuang';
 const isRankingTabKey = (value: string | null): value is RankingTabKey =>
   value === 'bangumi' || value === 'guochuang';
 
+const ANIME_RANKING_KEYS = ['番剧', '国创'];
+
 export const AnimeTab: React.FC = () => {
   const locale = useLocale();
   const isEnglish = locale === 'en';
   const [searchParams] = useSearchParams();
   const { bindTap } = useBilibiliGestures();
-  const rankings = useRankings();
-  const videos = useVideos();
-  const videoById = useMemo(() => new Map(videos.map((video) => [video.id, video])), [videos]);
+  const { rankings, videoById } = useRankings(ANIME_RANKING_KEYS);
   const animeRankParam = searchParams.get('animeRank');
   const activeRankingTabKey = isRankingTabKey(animeRankParam) ? animeRankParam : 'bangumi';
   const activeRankingTab = rankingTabs.find((tab) => tab.key === activeRankingTabKey) || rankingTabs[0];

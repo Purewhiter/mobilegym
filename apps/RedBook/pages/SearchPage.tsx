@@ -173,7 +173,7 @@ export const SearchPage: React.FC = () => {
                       <div className="min-w-0 flex-1 truncate text-[15px] font-medium text-app-text">{s.recent_searches}</div>
                       {showHistoryDelete ? (
                           <div className="flex flex-shrink-0 items-center gap-4 whitespace-nowrap">
-                               <span className="text-[12px] text-app-text-muted" onClick={clearSearchHistory}>{s.delete_all}</span>
+                               <span className="text-[12px] text-app-text-muted" onClick={() => clearSearchHistory()}>{s.delete_all}</span>
                                <span className="text-[12px] text-app-primary border-l border-[#eee] pl-4" onClick={() => setShowHistoryDelete(false)}>{s.searchpage_done}</span>
                           </div>
                       ) : (

@@ -6,7 +6,7 @@ import {
 import { useParams } from 'react-router-dom';
 import { useBilibiliStore } from '../state';
 import { useBilibiliGestures } from '../hooks/useBilibiliGestures';
-import { useVideos } from '../hooks/useData';
+import { useVideosByIds } from '../hooks/useData';
 import { BilibiliDanmakuIcon } from '../res/icons';
 import type { BilibiliVideo } from '../types';
 
@@ -69,12 +69,9 @@ export const FavFolderDetailPage: React.FC = () => {
     const { bindBack, bindTap } = useBilibiliGestures();
     const { folderId } = useParams();
     const user = useBilibiliStore(s => s.user);
-    const VIDEO_DATA = useVideos();
 
     const folder = user.favoritesFolders?.find(f => f.id === folderId) || user.favoritesFolders?.[0];
-    const videos = folder?.videoIds
-        ? VIDEO_DATA.filter(v => folder.videoIds!.includes(v.id))
-        : [];
+    const { videos } = useVideosByIds(folder?.videoIds ?? [], 'catalog');
 
     return (
         <div className="flex flex-col h-full bg-app-surface font-sans">

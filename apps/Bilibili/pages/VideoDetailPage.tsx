@@ -4,9 +4,9 @@ import { IcNavBack, IcNavForward, IcExpand, IcMore, IcLike, IcDislike, IcCoins, 
 const ChevronLeft = IcNavBack, ChevronRight = IcNavForward, ChevronDown = IcExpand, MoreHorizontal = IcMore, ThumbsUp = IcLike, ThumbsDown = IcDislike, Coins = IcCoins, Star = IcStar, Share2 = IcShare, Plus = IcAdd, MonitorPlay = IcMonitorPlay, Play = IcPlay, Pause = IcPause, PlayCircle = IcPlayCircle, PauseCircle = IcPauseCircle, MessageSquare = IcMessage, AlignLeft = IcAlignLeft, Send = IcSend, Ban = IcBan, Menu = IcMenu, Zap = IcLightning, X = IcClose, Check = IcCheck, CircleDollarSign = IcCircleDollarSign;
 import { FavToast, FavSheet } from './FavSheet';
 import { BILIBILI_CONFIG } from '../data';
-import { RECOMMEND_DATA } from '../data/recommendData';
 import { CommentsData, CommentReply } from '../types';
-import { useVideos, useVideoTags, useVideoOnline, useVideoComments, useAuthors } from '../hooks/useData';
+import type { BilibiliVideo } from '../types';
+import { useAuthorsByMid, useVideoDetail } from '../hooks/useData';
 import { useSystemTime } from '../../../os/useSystemTime';
 import { realNow } from '../../../os/TimeService';
 import * as TimeService from '../../../os/TimeService';
@@ -161,6 +161,9 @@ const formatDate = (ts: number | undefined) => {
     return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日 ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
 };
 
+const NO_VIDEOS: BilibiliVideo[] = [];
+const RECOMMENDED_UP_MIDS = BILIBILI_CONFIG.recommendedUp.map(up => String(up.id));
+
 export const VideoDetailPage: React.FC = () => {
     const { bvid } = useParams<{ bvid: string }>();
     const { bindTap, bindLongPress, bindBack, go, back } = useBilibiliGestures();
@@ -169,11 +172,9 @@ export const VideoDetailPage: React.FC = () => {
 
     const { now } = useSystemTime();
 
-    const VIDEO_DATA = useVideos();
-    const VIDEO_TAGS = useVideoTags();
-    const VIDEO_ONLINE = useVideoOnline();
-    const VIDEO_COMMENTS = useVideoComments();
-    const AUTHOR_DATA = useAuthors();
+    // 视频、相关推荐、标签、在线人数、评论、UP 主资料：一次查询；到达前页面留白
+    const detail = useVideoDetail(bvid);
+    const { authors: AUTHOR_DATA } = useAuthorsByMid(RECOMMENDED_UP_MIDS);
 
     const toggleFollow = useBilibiliStore(s => s.toggleFollow);
     const biliUser = useBilibiliStore(s => s.user);
@@ -280,52 +281,14 @@ export const VideoDetailPage: React.FC = () => {
         videoIntroLocalStateByEntryId.set(entryId, { suggestionsOpen: showSuggestionPanel });
     }, [entryId, showSuggestionPanel]);
 
-    // Find video info from consolidated data sources
-    let video = VIDEO_DATA.find(v => v.id === bvid);
+    // 视频不在库里时 server 退回到库里第一条；加载期间用占位记录，页面在 return 前留白
+    const video = React.useMemo<BilibiliVideo>(() => detail?.video ?? { id: bvid ?? '' }, [detail, bvid]);
 
-    // Final fallback
-    if (!video) {
-        video = VIDEO_DATA[0];
-    }
+    // 相关推荐（优先同分区视频，不足时从推荐列表补足）由 server 计算
+    const relatedVideos = detail?.related ?? NO_VIDEOS;
 
-    // 相关推荐：优先同分区视频，分区为空或不足时从 RECOMMEND_DATA 补足
-    const relatedVideos = React.useMemo(() => {
-        const exclude = new Set<string>([video.id]);
-        const result: typeof VIDEO_DATA = [];
-        const partition = video.partition;
-        if (partition) {
-            for (const v of VIDEO_DATA) {
-                if (result.length >= 5) break;
-                if (exclude.has(v.id) || v.partition !== partition) continue;
-                result.push(v);
-                exclude.add(v.id);
-            }
-        }
-        if (result.length < 5) {
-            const fullById = new Map(VIDEO_DATA.map(v => [v.id, v]));
-            for (const r of RECOMMEND_DATA) {
-                if (result.length >= 5) break;
-                if (exclude.has(r.id)) continue;
-                const full = fullById.get(r.id);
-                if (full) {
-                    result.push(full);
-                    exclude.add(r.id);
-                }
-            }
-        }
-        return result;
-    }, [video.id, video.partition, VIDEO_DATA]);
-
-    // Get Author Data if available
-    let mid = video.raw?.owner?.mid;
-
-    // Fallback: search by author name if mid is missing
-    if (!mid && video.author) {
-        const foundAuthor = Object.values(AUTHOR_DATA).find(u => u.name === video.author);
-        if (foundAuthor) {
-            mid = foundAuthor.mid;
-        }
-    }
+    // UP 主资料：server 按作者名在作者库中查找
+    let mid = video.raw?.owner?.mid ?? detail?.author?.mid;
 
     const showToast = (msg: string) => {
         setToast({ show: true, msg });
@@ -370,8 +333,9 @@ export const VideoDetailPage: React.FC = () => {
             if (p >= 100) {
                 isLongPressTriggeredRef.current = true;
                 isPressingRef.current = false; // Stop pressing
-                const res = tripleAction(video!.id);
-                showToast(res.msg);
+                void tripleAction(video!.id).then(res => {
+                    if (res.msg) showToast(res.msg);
+                });
                 setLongPressProgress(0);
                 return;
             }
@@ -431,13 +395,16 @@ export const VideoDetailPage: React.FC = () => {
     }, [showCoinDialog]);
 
     const handleCoinSubmit = () => {
-        const res = addCoin(video!.id, coinDialogSelected, coinDialogAlsoLike);
+        const result = addCoin(video!.id, coinDialogSelected, coinDialogAlsoLike);
         back();
-        if (!res.success) {
-            showToast(res.msg);
-        } else {
-            showToast('投币成功');
-        }
+        void result.then(res => {
+            if (!res.success) {
+                // 空 msg：reset 放弃了这次投币，页面已不在
+                if (res.msg) showToast(res.msg);
+            } else {
+                showToast('投币成功');
+            }
+        });
     };
 
 
@@ -624,10 +591,10 @@ export const VideoDetailPage: React.FC = () => {
 
     const progressPct = totalSec > 0 ? Math.min(100, (currentSec / totalSec) * 100) : 0;
 
-    // Load comments directly from consolidated data
+    // Load comments once this video's detail has arrived
     useEffect(() => {
-        if (bvid && loadedBvid !== bvid) {
-            const videoComments = VIDEO_COMMENTS[bvid];
+        if (bvid && detail && loadedBvid !== bvid) {
+            const videoComments = detail.comments;
             if (videoComments) {
                 setComments(videoComments.comments);
                 setCommentCount(videoComments.count);
@@ -637,7 +604,7 @@ export const VideoDetailPage: React.FC = () => {
             }
             setLoadedBvid(bvid);
         }
-    }, [bvid, loadedBvid, VIDEO_COMMENTS]);
+    }, [bvid, loadedBvid, detail]);
 
     const sortedComments = React.useMemo(() => {
         return [...comments].sort((a, b) => {
@@ -655,11 +622,15 @@ export const VideoDetailPage: React.FC = () => {
         face: video.face || '',
     };
 
-    const authorProfile = mid ? AUTHOR_DATA[mid] : null;
+    const authorProfile = mid ? detail?.author ?? null : null;
     const realFans = authorProfile ? formatStat(authorProfile.follower) : '0';
     const realVideoCount = authorProfile ? authorProfile.videos.length : 0;
 
     const isFollowed = isFollowing(mid || '');
+
+    if (!detail) {
+        return <div className="flex flex-col h-full bg-app-surface" data-status-bar-foreground="light"><div className="w-full bg-black pt-10"><div className="aspect-video w-full bg-black" /></div></div>;
+    }
 
     return (
         // container-type：sticky 的 top 用 cqw 对齐播放器高度；避免用 vw（会按浏览器视口算，zoom 下与内容区宽度不一致导致简介 Tab 吸附错位、中间空白）
@@ -875,7 +846,7 @@ export const VideoDetailPage: React.FC = () => {
                                 <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">
                                     {BILIBILI_CONFIG.recommendedUp.map(up => {
                                         const isUpFollowed = isFollowing(up.id);
-                                        const author = AUTHOR_DATA[Number(up.id)];
+                                        const author = AUTHOR_DATA[up.id];
                                         const face = (author as any)?.face || '';
                                         const label =
                                             (author as any)?.official?.title ||
@@ -945,7 +916,7 @@ export const VideoDetailPage: React.FC = () => {
                                     <div className="flex items-center gap-1"><MonitorPlay size={12} /> {formatStat(video.plays)}</div>
                                     <div className="flex items-center gap-1"><BilibiliDanmakuIcon className="mt-0.5" /> {formatStat(video.danmaku)}</div>
                                     <span>{formatDate(video.raw?.pubdate || video.date)}</span>
-                                    <span>{VIDEO_ONLINE[bvid ?? ''] || '0'}人正在看</span>
+                                    <span>{detail.online || '0'}人正在看</span>
                                 </div>
                             </div>
 
@@ -965,7 +936,7 @@ export const VideoDetailPage: React.FC = () => {
                                             {video.desc || '-'}
                                         </div>
                                         <div className="flex flex-wrap gap-2 mt-1">
-                                            {(VIDEO_TAGS[bvid ?? ''] || []).map(tag => (
+                                            {detail.tags.map(tag => (
                                                 <span key={tag} className="bg-app-bg text-gray-500 px-2 py-1 rounded-full text-[11px]">{tag}</span>
                                             ))}
                                         </div>

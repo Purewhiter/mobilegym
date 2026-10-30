@@ -3,7 +3,7 @@ import { IcEditSquare, IcAdd, IcPlay, IcMoreVertical, IcMessage, IcLike, IcHisto
 import { useLocation, useSearchParams } from 'react-router-dom';
 import { useLocale } from '@/apps/Bilibili/locale';
 import { useBilibiliStore } from '../state';
-import { useAuthors, useVideos } from '../hooks/useData';
+import { useAuthorsByMid, useVideosByIds } from '../hooks/useData';
 import { BILIBILI_CONFIG, resolveBilibiliAssetUrl } from '../data';
 import type { UserInfo } from '../types';
 import { useSystemTime } from '../../../os/useSystemTime';
@@ -20,6 +20,8 @@ const History = IcHistory;
 const Forward = IcForward;
 const DEFAULT_VIDEO_COVER = resolveBilibiliAssetUrl('./images/covers/default.svg') as string;
 
+const RECOMMENDED_UP_MIDS = BILIBILI_CONFIG.recommendedUp.map(up => String(up.id));
+
 export const FollowingPage: React.FC = () => {
     const { bindTap } = useBilibiliGestures();
     const { pathname } = useLocation();
@@ -28,8 +30,23 @@ export const FollowingPage: React.FC = () => {
     const user = useBilibiliStore(s => s.user);
     const toggleFollow = useBilibiliStore(s => s.toggleFollow);
     const { now } = useSystemTime();
-    const AUTHOR_DATA = useAuthors();
-    const VIDEO_DATA = useVideos();
+    // 关注的 UP 主 + 推荐 UP 主的资料；再取他们投稿和追番条目的完整视频记录
+    const authorMids = useMemo(
+        () => [...new Set([...(user.followingList || []).map(u => String(u.mid)), ...RECOMMENDED_UP_MIDS])],
+        [user.followingList],
+    );
+    const { authors: AUTHOR_DATA } = useAuthorsByMid(authorMids);
+    const neededVideoIds = useMemo(() => {
+        const ids = new Set<string>((user.subscribedAnime || []).map(a => a.id));
+        for (const follow of user.followingList || []) {
+            for (const v of AUTHOR_DATA[String(follow.mid)]?.videos || []) ids.add(v.id);
+        }
+        for (const mid of RECOMMENDED_UP_MIDS) {
+            for (const v of (AUTHOR_DATA[mid]?.videos || []).slice(0, 3)) ids.add(v.id);
+        }
+        return [...ids];
+    }, [AUTHOR_DATA, user.followingList, user.subscribedAnime]);
+    const { byId: videoById } = useVideosByIds(neededVideoIds);
     const text = locale === 'en'
         ? {
             title: 'Following',
@@ -75,7 +92,7 @@ export const FollowingPage: React.FC = () => {
     const recommendedUps = useMemo(() => {
         return BILIBILI_CONFIG.recommendedUp.map(rec => {
             const recId = Number(rec.id);
-            const author = AUTHOR_DATA[recId];
+            const author = AUTHOR_DATA[rec.id];
             const fallback: UserInfo = {
                 mid: recId,
                 name: rec.name,
@@ -100,10 +117,10 @@ export const FollowingPage: React.FC = () => {
 
         const allVideos: any[] = [];
         user.followingList.forEach(follow => {
-            const author = AUTHOR_DATA[Number(follow.mid)];
+            const author = AUTHOR_DATA[String(follow.mid)];
             if (author && author.videos) {
                 author.videos.forEach(v => {
-                    const fullVideo = VIDEO_DATA.find(vd => vd.id === v.id);
+                    const fullVideo = videoById.get(v.id);
                     allVideos.push({
                         ...v,
                         ...fullVideo,
@@ -119,7 +136,7 @@ export const FollowingPage: React.FC = () => {
         });
 
         return allVideos.sort((a, b) => b.date - a.date);
-    }, [AUTHOR_DATA, VIDEO_DATA, user.followingList]);
+    }, [AUTHOR_DATA, videoById, user.followingList]);
 
     const hasFollows = user.followingList && user.followingList.length > 0;
     const currentTime = now();
@@ -165,7 +182,7 @@ export const FollowingPage: React.FC = () => {
                             </div>
                             <div className="flex gap-4 overflow-x-auto no-scrollbar">
                                 {user.followingList?.slice(0, 10).map((u, idx) => {
-                                    const author = AUTHOR_DATA[Number(u.mid)] || u;
+                                    const author = AUTHOR_DATA[String(u.mid)] || u;
                                     return (
                                         <div key={idx} className="flex flex-col items-center gap-1.5 shrink-0 w-14" {...bindTap('user.open', { params: { mid: u.mid } })}>
                                             <div className="w-11 h-11 rounded-full bg-gray-100 overflow-hidden border border-gray-100">
@@ -190,7 +207,7 @@ export const FollowingPage: React.FC = () => {
                                 </div>
                                 <div className="flex gap-3 overflow-x-auto no-scrollbar">
                                     {user.subscribedAnime.map(anime => {
-                                        const videoInfo = VIDEO_DATA.find(v => v.id === anime.id);
+                                        const videoInfo = videoById.get(anime.id);
                                         const cover = videoInfo?.raw?.ss_horizontal_cover || videoInfo?.cover || DEFAULT_VIDEO_COVER;
                                         const updateText = videoInfo?.raw?.new_ep?.index_show || (locale === 'en'
                                             ? `Episode ${Math.floor(Math.random() * 200)} now available`
@@ -330,7 +347,7 @@ export const FollowingPage: React.FC = () => {
                                             >
                                                 <div className="w-full aspect-video rounded-md overflow-hidden relative bg-gray-100">
                                                     <img
-                                                        src={video.cover || VIDEO_DATA.find(v => v.id === video.id)?.cover}
+                                                        src={video.cover || videoById.get(video.id)?.cover}
                                                         className="w-full h-full object-cover"
                                                         referrerPolicy="no-referrer"
                                                     />
@@ -338,7 +355,7 @@ export const FollowingPage: React.FC = () => {
                                                     <div className="absolute bottom-1.5 left-1.5 flex items-center gap-1 text-white/90">
                                                         <Play size={10} fill="currentColor" strokeWidth={0} />
                                                         <span className="text-[10px] font-medium leading-none mt-0.5">
-                                                            {formatBilibiliStat(video.plays || VIDEO_DATA.find(v => v.id === video.id)?.plays, locale)}
+                                                            {formatBilibiliStat(video.plays || videoById.get(video.id)?.plays, locale)}
                                                         </span>
                                                     </div>
                                                 </div>

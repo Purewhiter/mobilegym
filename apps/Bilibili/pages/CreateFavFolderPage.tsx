@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { IcNavBack, IcNavForward } from '../res/icons';
 import { useBilibiliStore } from '../state';
 import { useBilibiliGestures } from '../hooks/useBilibiliGestures';
@@ -11,14 +11,32 @@ export const CreateFavFolderPage: React.FC = () => {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [isPublic, setIsPublic] = useState(true);
+  const submittingRef = useRef(false);
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
 
   const canSubmit = name.trim().length > 0;
 
   const handleDone = () => {
-    if (!canSubmit) return;
-    const newId = createFavFolder(name.trim(), description.trim() || undefined, isPublic);
-    setPendingNewFavFolder(newId);
-    back();
+    if (!canSubmit || submittingRef.current) return;
+    submittingRef.current = true;
+    // 等收藏夹建好再返回，回到收藏面板时新收藏夹已在列表里并被选中
+    // 用户在请求期间已离开本页时，不再选中新收藏夹、不再返回
+    createFavFolder(name.trim(), description.trim() || undefined, isPublic)
+      .then((newId) => {
+        if (!newId || !mountedRef.current) return;
+        setPendingNewFavFolder(newId);
+        back();
+      })
+      .catch((err) => console.error('[bilibili] createFavFolder failed', err))
+      .finally(() => {
+        submittingRef.current = false;
+      });
   };
 
   return (

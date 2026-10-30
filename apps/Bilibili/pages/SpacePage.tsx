@@ -7,7 +7,7 @@ const ChevronLeft = IcNavBack, Search = IcSearch, MoreHorizontal = IcMore, Shirt
 import { useSearchParams } from 'react-router-dom';
 import { useBilibiliStore } from '../state';
 import { useBilibiliGestures } from '../hooks/useBilibiliGestures';
-import { useVideos } from '../hooks/useData';
+import { useVideosByIds } from '../hooks/useData';
 import { BilibiliDanmakuIcon } from '../res/icons';
 // Helper functions (matching HomePage)
 const formatStat = (num: number | string | undefined) => {
@@ -44,7 +44,13 @@ export const SpacePage: React.FC = () => {
     const [searchParams] = useSearchParams();
     const user = useBilibiliStore(s => s.user);
     const [isDetailExpanded, setIsDetailExpanded] = useState(false);
-    const VIDEO_DATA = useVideos();
+    // 收藏夹封面（各夹最近加入的视频）、追番信息、最近点赞所需的视频记录
+    const neededVideoIds = [
+        ...(user.favoritesFolders || []).flatMap(f => (f.videoIds?.length ? [f.videoIds[f.videoIds.length - 1]] : [])),
+        ...(user.subscribedAnime || []).map(a => a.id),
+    ];
+    const { byId: videoById } = useVideosByIds(neededVideoIds);
+    const { videos: likedVideos } = useVideosByIds(user.likedVideoIds ?? [], 'catalog');
 
     const hasAnime = (user.subscribedAnime?.length || 0) > 0;
     const activeTabFromUrl = (searchParams.get('tab') as 'home' | 'videos' | 'fav' | 'anime') || 'home';
@@ -60,7 +66,7 @@ export const SpacePage: React.FC = () => {
     const getFolderCover = (folder: { id: string; cover?: string; videoIds?: string[] }) => {
         if (folder.videoIds && folder.videoIds.length > 0) {
             const latestVideoId = folder.videoIds[folder.videoIds.length - 1];
-            const video = VIDEO_DATA.find(v => v.id === latestVideoId);
+            const video = videoById.get(latestVideoId);
             if (video) return video.cover;
         }
         return folder.cover;
@@ -68,7 +74,7 @@ export const SpacePage: React.FC = () => {
 
     // Helper: Get anime info from VIDEO_DATA by ID
     const getAnimeInfo = (anime: { id: string; title?: string; cover?: string; updateInfo?: string }) => {
-        const videoData = VIDEO_DATA.find(v => v.id === anime.id) as any;
+        const videoData = videoById.get(anime.id) as any;
         if (videoData) {
             return {
                 id: anime.id,
@@ -336,7 +342,7 @@ export const SpacePage: React.FC = () => {
                                     </div>
                                     </div>
                                     <div className="grid grid-cols-2 gap-3">
-                                        {VIDEO_DATA.filter(v => user.likedVideoIds?.includes(v.id)).slice(0, 2).map(v => (
+                                        {likedVideos.slice(0, 2).map(v => (
                                             <div key={v.id} className="bg-app-surface rounded-md overflow-hidden border border-app-bg pb-2 cursor-pointer" {...bindTap('video.open', { params: { bvid: v.id } })}>
                                                 <div className="aspect-video bg-app-bg relative">
                                                     <img src={v.cover} className="w-full h-full object-cover" referrerPolicy="no-referrer" />

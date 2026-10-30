@@ -3,7 +3,7 @@ import { IcNavBack, IcShare, IcSearch, IcDownload, IcMonitorPlay, IcMessageSquar
 const ChevronLeft = IcNavBack, Share2 = IcShare, Search = IcSearch, Download = IcDownload, MonitorPlay = IcMonitorPlay, MessageSquareText = IcMessageSquareText, Heart = IcHeart;
 import { useSearchParams } from 'react-router-dom';
 import type { RankingVideo, BilibiliVideo } from '../data';
-import { useVideos, useRankings } from '../hooks/useData';
+import { useRankings } from '../hooks/useData';
 import { useBilibiliGestures } from '../hooks/useBilibiliGestures';
 import { useVirtualList } from '../../../os/hooks/useVirtualList';
 const TABS = [
@@ -192,9 +192,8 @@ export const RankingPage: React.FC = () => {
     const { bindBack, bindTap } = useBilibiliGestures();
     const [searchParams] = useSearchParams();
     const activeTab = searchParams.get('tab') || '全站';
-    const VIDEO_DATA = useVideos();
-    const RANKING_DATA = useRankings();
-    const videoById = useMemo(() => new Map(VIDEO_DATA.map(video => [video.id, video])), [VIDEO_DATA]);
+    const rankingKeys = useMemo(() => [activeTab], [activeTab]);
+    const { rankings: RANKING_DATA, videoById } = useRankings(rankingKeys);
 
     // Safely get data, fallback to empty array
     const videos = RANKING_DATA[activeTab] || [];

@@ -4,7 +4,7 @@ import { useLocale } from '@/apps/Bilibili/locale';
 import { useVirtualList } from '../../../os/hooks/useVirtualList';
 import type { BilibiliVideo } from '../data';
 import { useBilibiliGestures } from '../hooks/useBilibiliGestures';
-import { useVideos } from '../hooks/useData';
+import { usePartitionVideos } from '../hooks/useData';
 import { BilibiliDanmakuIcon, IcMonitorPlay, IcNavBack } from '../res/icons';
 import {
   formatBilibiliDuration,
@@ -108,21 +108,14 @@ export const PartitionDetailPage: React.FC = () => {
   const isEnglish = locale === 'en';
   const { label } = useParams<{ label: string }>();
   const { bindBack } = useBilibiliGestures();
-  const videos = useVideos();
 
   const normalizedLabel = label ? decodeURIComponent(label) : '';
   const partitionGroup = useMemo(() => getPartitionGroup(normalizedLabel), [normalizedLabel]);
-
-  const filteredVideos = useMemo(() => {
-    if (!normalizedLabel) return [];
-
-    const targetNames = partitionGroup ? partitionGroup.aliases : [normalizedLabel];
-    return videos.filter((video) => {
-      if (video.partition && targetNames.includes(video.partition)) return true;
-      if (targetNames.some((name) => video.partition?.includes(name))) return true;
-      return video.desc === normalizedLabel || video.partition === normalizedLabel;
-    });
-  }, [normalizedLabel, partitionGroup, videos]);
+  const targetNames = useMemo(
+    () => (partitionGroup ? [...partitionGroup.aliases] : [normalizedLabel]),
+    [partitionGroup, normalizedLabel],
+  );
+  const { videos: filteredVideos, loading } = usePartitionVideos(normalizedLabel, targetNames);
 
   const videoRows = useMemo(() => {
     const rows: BilibiliVideo[][] = [];
@@ -165,7 +158,7 @@ export const PartitionDetailPage: React.FC = () => {
         data-scroll-container="main"
         data-scroll-direction="vertical"
       >
-        {filteredVideos.length === 0 ? (
+        {loading ? null : filteredVideos.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-gray-400 mt-20">
             <p>{isEnglish ? 'No related videos yet' : '暂无相关视频'}</p>
           </div>

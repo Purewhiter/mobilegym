@@ -3,7 +3,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { IcNavBack, IcNavForward, IcSearch, IcClose, IcDelete, IcRefresh, IcEye, IcFlame, IcPlayCircle, IcHeart, IcMenu } from '../res/icons';
 const ChevronLeft = IcNavBack, ChevronRight = IcNavForward, Search = IcSearch, X = IcClose, Trash2 = IcDelete, RefreshCw = IcRefresh, Eye = IcEye, Flame = IcFlame, PlayCircle = IcPlayCircle, Heart = IcHeart, Menu = IcMenu;
 import { useLocation, useSearchParams } from 'react-router-dom';
-import { useVideos, useAuthors, useRankings } from '../hooks/useData';
+import { useSearch } from '../hooks/useData';
 import { useBilibiliStore } from '../state';
 import { useBilibiliGestures } from '../hooks/useBilibiliGestures';
 import { useVirtualList } from '../../../os/hooks/useVirtualList';
@@ -704,26 +704,19 @@ export const SearchPage: React.FC = () => {
     const { pathname } = useLocation();
     const locale = useLocale();
     const [searchParams] = useSearchParams();
-    const VIDEO_DATA = useVideos();
-    const AUTHOR_DATA = useAuthors();
-    const RANKING_DATA = useRankings();
-    const authorList = useMemo(() => Object.values(AUTHOR_DATA), [AUTHOR_DATA]);
-    const videoById = useMemo(() => new Map(VIDEO_DATA.map(video => [video.id, video])), [VIDEO_DATA]);
-    const authorByName = useMemo(() => {
-        const map = new Map<string, any>();
-        for (const author of authorList) {
-            if (!map.has(author.name)) {
-                map.set(author.name, author);
-            }
-        }
-        return map;
-    }, [authorList]);
 
     type SearchTabKey = 'comprehensive' | 'anime' | 'live' | 'user' | 'movie' | 'article';
     const isResultsPage = pathname === '/search/results';
     const activeTab = (searchParams.get('tab') as SearchTabKey) || 'comprehensive';
 
     const committedQuery = searchParams.get('q') || '';
+    // 搜索在 device server 上对视频库执行；高亮留在页面
+    const { result: searchData } = useSearch(isResultsPage ? committedQuery : '');
+    const videoById = useMemo(() => new Map(Object.entries(searchData?.videosById ?? {})), [searchData]);
+    const authorByName = useMemo(
+        () => new Map(Object.entries(searchData?.authorFaces ?? {}).map(([name, face]) => [name, { face }])),
+        [searchData],
+    );
     const isSearching = isResultsPage;
     const text = locale === 'en'
         ? {
@@ -789,57 +782,24 @@ export const SearchPage: React.FC = () => {
 
     // ----- Search Logic -----
     const searchResults = useMemo(() => {
-        if (!committedQuery) return { videos: [], users: [], animes: [], movies: [] };
-        const q = committedQuery.toLowerCase();
+        if (!committedQuery || !searchData) return { videos: [], users: [], animes: [], movies: [] };
 
         const highlight = (text: string) => text.replace(new RegExp(committedQuery, 'gi'), match => `<span class="text-app-primary">${match}</span>`);
 
-        // Search Videos
-        const videos = VIDEO_DATA.filter(v =>
-            (v.title ?? '').toLowerCase().includes(q) ||
-            v.author?.toLowerCase().includes(q)
-        ).map(v => ({
+        // 匹配（视频标题/作者、用户名、番剧/影视榜单标题）由 server 完成，这里只加高亮
+        const videos = searchData.videos.map(v => ({
             ...v,
             highlightedTitle: highlight(v.title ?? '')
         }));
-
-        // Search Users
-        const users = authorList.filter(u =>
-            u.name.toLowerCase().includes(q)
-        ).map(u => ({
+        const users = searchData.users.map(u => ({
             ...u,
             highlightedName: highlight(u.name)
         }));
-
-        // Search Anime (番剧, 国创)
-        const animeSource = [
-            ...(RANKING_DATA['番剧'] || []),
-            ...(RANKING_DATA['国创'] || [])
-        ];
-        const animes = animeSource.filter(v =>
-            v.title?.toLowerCase().includes(q)
-        ).map(v => {
-            const hydration = videoById.get(v.id);
-            const fullItem = { ...v, ...(hydration || {}), highlightedTitle: highlight(v.title || '') };
-            return fullItem;
-        });
-
-        // Search Movie (电影, 电视剧, 纪录片)
-        const movieSource = [
-            ...(RANKING_DATA['电影'] || []),
-            ...(RANKING_DATA['电视剧'] || []),
-            ...(RANKING_DATA['纪录片'] || [])
-        ];
-        const movies = movieSource.filter(v =>
-            v.title?.toLowerCase().includes(q)
-        ).map(v => {
-            const hydration = videoById.get(v.id);
-            const fullItem = { ...v, ...(hydration || {}), highlightedTitle: highlight(v.title || '') };
-            return fullItem;
-        });
+        const animes = searchData.animes.map(v => ({ ...v, highlightedTitle: highlight(v.title || '') }));
+        const movies = searchData.movies.map(v => ({ ...v, highlightedTitle: highlight(v.title || '') }));
 
         return { videos, users, animes, movies };
-    }, [committedQuery, VIDEO_DATA, authorList, videoById, RANKING_DATA]);
+    }, [committedQuery, searchData]);
 
     // ----- Renders -----
 
@@ -920,7 +880,7 @@ export const SearchPage: React.FC = () => {
                 <div className="mt-8 px-4">
                     <div className="flex justify-between items-center mb-3">
                         <h2 className="text-[14px] font-bold text-app-text">{text.history}</h2>
-                        <Trash2 size={16} className="text-app-text-muted" onClick={clearSearchHistory} />
+                        <Trash2 size={16} className="text-app-text-muted" onClick={() => clearSearchHistory()} />
                     </div>
                     <div className="flex flex-wrap gap-2">
                         {searchHistory.map((h, i) => (
@@ -1002,6 +962,11 @@ export const SearchPage: React.FC = () => {
     };
 
     const renderResults = () => {
+        // 结果未到时留白，不先闪"没有找到"
+        if (committedQuery && !searchData) {
+            return <div className="flex-1 bg-app-surface" />;
+        }
+
         if (activeTab === 'anime') {
             return <AnimeResultsPane key={activeTab} items={searchResults.animes} />;
         }

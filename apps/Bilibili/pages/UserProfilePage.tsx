@@ -6,7 +6,7 @@ import {
     IcPlayCircle, IcFilter, IcPlaySquare, IcMoreVertical
 } from '../res/icons';
 const ChevronLeft = IcNavBack, Search = IcSearch, MoreHorizontal = IcMore, Zap = IcLightning, ZapOff = IcLightningOff, MapPin = IcLocation, BadgeCheck = IcBadgeCheck, CheckCircle2 = IcCheckCircle, ChevronDown = IcExpand, X = IcClose, MonitorPlay = IcMonitorPlay, MessageSquareText = IcMessageSquareText, Video = IcVideo, Play = IcPlay, Forward = IcForward, ThumbsUp = IcLike, MessageSquare = IcMessage, PlayCircle = IcPlayCircle, ListFilter = IcFilter, PlaySquare = IcPlaySquare, MoreVertical = IcMoreVertical;
-import { useAuthors, useCommenters, useVideos } from '../hooks/useData';
+import { useAuthorsByMid, useUserProfile } from '../hooks/useData';
 import { useBilibiliStore } from '../state';
 import { BILIBILI_CONFIG } from '../data';
 import { useBilibiliGestures } from '../hooks/useBilibiliGestures';
@@ -41,14 +41,16 @@ const formatStat = (num: number | string | undefined) => {
     return val.toString();
 };
 
+const RECOMMENDED_UP_MIDS = BILIBILI_CONFIG.recommendedUp.map(up => String(up.id));
+
 export const UserProfilePage: React.FC = () => {
     const { mid } = useParams<{ mid: string }>();
     const { bindBack, bindTap, back } = useBilibiliGestures();
     const [searchParams] = useSearchParams();
 
-    const AUTHOR_DATA = useAuthors();
-    const COMMENTER_DATA = useCommenters();
-    const VIDEO_DATA = useVideos();
+    // 作者（找不到时退回评论用户）及其投稿；投稿已合并视频库里的完整记录
+    const profile = useUserProfile(mid);
+    const { authors: AUTHOR_DATA } = useAuthorsByMid(RECOMMENDED_UP_MIDS);
 
     const toggleFollow = useBilibiliStore(s => s.toggleFollow);
     const biliUser = useBilibiliStore(s => s.user);
@@ -118,12 +120,16 @@ export const UserProfilePage: React.FC = () => {
         closeMenu();
     };
 
-    const author = AUTHOR_DATA[Number(mid)] || COMMENTER_DATA[Number(mid)];
+    const author = profile.user;
 
     // Handle scroll for header transparency
     const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
         setIsScrolled(e.currentTarget.scrollTop > 50);
     };
+
+    if (!author && profile.loading) {
+        return <div className="flex flex-col h-full bg-app-surface" />;
+    }
 
     if (!author) {
         return (
@@ -139,16 +145,9 @@ export const UserProfilePage: React.FC = () => {
         );
     }
 
-    const { name, face, sign, level, vip, official, follower, following, likes, videos, live_room } = author;
+    const { name, face, sign, level, vip, official, follower, following, likes, live_room } = author;
 
-    // Enrich videos with full stats from VIDEO_DATA
-    const enrichedVideos = videos.map(v => {
-        const fullVideo = VIDEO_DATA.find(vd => vd.id === v.id);
-        if (fullVideo) {
-            return { ...v, ...fullVideo };
-        }
-        return v;
-    });
+    const enrichedVideos = profile.videos;
 
     const banner = author.top_photo?.startsWith('/cdn/') ? author.top_photo : '';
 
@@ -262,7 +261,7 @@ export const UserProfilePage: React.FC = () => {
                             <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">
                                 {BILIBILI_CONFIG.recommendedUp.map(up => {
                                     const isUpFollowed = checkIsFollowing(up.id);
-                                    const author = AUTHOR_DATA[Number(up.id)];
+                                    const author = AUTHOR_DATA[up.id];
                                     const face = (author as any)?.face || '';
                                     const label =
                                         (author as any)?.official?.title ||

@@ -64,6 +64,23 @@ const isUninitialized = (err: unknown) => (err as { status?: number })?.status =
 
 // ── Store ──────────────────────────────────────────────────────────
 
+const isUiEvent = (value: unknown) =>
+  typeof Event !== 'undefined'
+  && (value instanceof Event || (typeof value === 'object' && value !== null && (value as { nativeEvent?: unknown }).nativeEvent instanceof Event));
+
+/**
+ * Store actions used to be synchronous and ignored extra arguments, so pages
+ * pass some of them straight to `onClick`. Command args travel as JSON; a UI
+ * event would fail to serialize and drop the command. Cut the args at the
+ * first event.
+ */
+function commandArgs(appId: string, name: string, args: unknown[]): unknown[] {
+  const index = args.findIndex(isUiEvent);
+  if (index === -1) return args;
+  console.warn(`[device] ${appId}.${name}: ignoring a UI event passed as a command argument`);
+  return args.slice(0, index);
+}
+
 export interface DeviceStoreHelpers {
   /** Run a server command; resolves to the command's return value. */
   command: (name: string, ...args: unknown[]) => Promise<unknown>;
@@ -94,7 +111,7 @@ export function createDeviceAppStore<
 
   const store = create<S & A>()((set, get) => ({
     ...initialState,
-    ...actionCreator({ command: (name, ...args) => runCommand(name, args) }, set, get),
+    ...actionCreator({ command: (name, ...args) => runCommand(name, commandArgs(appId, name, args)) }, set, get),
   }));
 
   const adopt = (state: unknown) => {
@@ -211,7 +228,17 @@ function evictQueries(): void {
   }
 }
 
-function fetchQuery(key: string, appId: string, name: string, args: Record<string, unknown>, version: number): void {
+/** Data version a query depends on: catalog queries read only shared read-only data. */
+const queryVersion = (appId: string, catalog: boolean) => (catalog ? 0 : versions.get(appId) ?? 0);
+
+function fetchQuery(
+  key: string,
+  appId: string,
+  name: string,
+  args: Record<string, unknown>,
+  version: number,
+  catalog: boolean,
+): void {
   const entry = queryCache.get(key);
   if (entry?.inflight || entry?.version === version) return;
   const run = async () => {
@@ -232,9 +259,12 @@ function fetchQuery(key: string, appId: string, name: string, args: Record<strin
       queryCache.set(key, { version, data });
       evictQueries();
       notifyQuery(key);
+      // Rendering this result can start dependent queries (ids -> records):
+      // stay busy until they are queued, so whenIdle() covers them.
+      if (typeof requestAnimationFrame === 'function') DeviceClient.hold(afterRerender());
       // Data changed while this request was in flight: refresh again.
-      const latest = versions.get(appId) ?? 0;
-      if (latest !== version) fetchQuery(key, appId, name, args, latest);
+      const latest = queryVersion(appId, catalog);
+      if (latest !== version) fetchQuery(key, appId, name, args, latest, catalog);
     },
     (err) => {
       if (!(err instanceof DeviceStaleError)) console.error(`[device] query ${appId}.${name} failed`, err);
@@ -254,15 +284,20 @@ function fetchQuery(key: string, appId: string, name: string, args: Record<strin
  * (next page of a list), so a growing list never collapses to empty and loses
  * its scroll position. Leave it off where stale data would be wrong (opening a
  * different record).
+ *
+ * `catalog`: the query reads only the app's shared read-only catalog, never
+ * session state, so app commands do not re-run it.
  */
 export function useDeviceQuery<T>(
   appId: string,
   name: string,
   args: Record<string, unknown>,
   enabled = true,
-  options: { keepPrevious?: boolean } = {},
+  options: { keepPrevious?: boolean; catalog?: boolean } = {},
 ): { data: T | undefined; loading: boolean } {
-  const version = useSyncExternalStore(subscribeVersion(appId), getVersion(appId));
+  const catalog = Boolean(options.catalog);
+  const dataVersion = useSyncExternalStore(subscribeVersion(appId), getVersion(appId));
+  const version = catalog ? 0 : dataVersion;
   const key = `${appId}|${name}|${JSON.stringify(args)}`;
   const [, rerender] = useReducer((x: number) => x + 1, 0);
 
@@ -276,7 +311,7 @@ export function useDeviceQuery<T>(
   }, [key]);
 
   useEffect(() => {
-    if (enabled) fetchQuery(key, appId, name, args, version);
+    if (enabled) fetchQuery(key, appId, name, args, version, catalog);
     // `args` is captured through `key`.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key, version, enabled]);

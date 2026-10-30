@@ -1,7 +1,7 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { useLocale } from '@/apps/Bilibili/locale';
 import type { BilibiliVideo } from '../../data';
-import { useRankings, useVideos } from '../../hooks/useData';
+import { useRankings } from '../../hooks/useData';
 import { useBilibiliGestures } from '../../hooks/useBilibiliGestures';
 
 const featuredRankingKeys = ['电影', '电视剧', '纪录片'] as const;
@@ -18,9 +18,7 @@ export const MovieTab: React.FC = () => {
   const locale = useLocale();
   const isEnglish = locale === 'en';
   const { bindTap } = useBilibiliGestures();
-  const rankings = useRankings();
-  const videos = useVideos();
-  const videoById = useMemo(() => new Map(videos.map((video) => [video.id, video])), [videos]);
+  const { rankings, videoById } = useRankings(featuredRankingKeys);
   const bannerItems = featuredRankingKeys.map((key) => {
     const item = rankings[key]?.[0];
     const video = item ? videoById.get(item.id) : undefined;

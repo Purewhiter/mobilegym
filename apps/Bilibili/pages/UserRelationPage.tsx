@@ -3,14 +3,13 @@ import { IcNavBack, IcSearch, IcMenu, IcSortUpDown, IcClose } from '../res/icons
 const ChevronLeft = IcNavBack, Search = IcSearch, Menu = IcMenu, ArrowUpDown = IcSortUpDown, X = IcClose;
 import { useSearchParams } from 'react-router-dom';
 import { useBilibiliStore } from '../state';
-import { useAuthors } from '../hooks/useData';
+import { useAuthorsByMid } from '../hooks/useData';
 import { useBilibiliGestures } from '../hooks/useBilibiliGestures';
 export const UserRelationPage: React.FC = () => {
     const { bindBack, bindTap, back } = useBilibiliGestures();
     const [searchParams] = useSearchParams();
     const user = useBilibiliStore(s => s.user);
     const toggleFollow = useBilibiliStore(s => s.toggleFollow);
-    const AUTHOR_DATA = useAuthors();
 
     // 1. Tab State (URL Param)
     const activeTab = (searchParams.get('tab') as 'follow' | 'fans') || 'follow';
@@ -27,11 +26,12 @@ export const UserRelationPage: React.FC = () => {
     const rawList = activeTab === 'follow'
         ? (user.followingList || [])
         : (user.followersList || []);
+    const { authors: AUTHOR_DATA } = useAuthorsByMid(rawList.map(u => u.mid));
 
     const list = rawList.map(u => {
         // Hybrid logic: If the user exists in our large database (AUTHOR_DATA), use that as the source of truth
         // Note: AUTHOR_DATA keys are numbers, so we convert.
-        const authorData = AUTHOR_DATA[Number(u.mid)];
+        const authorData = AUTHOR_DATA[String(u.mid)];
         if (authorData) {
             return {
                 ...u,
