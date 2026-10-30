@@ -21,7 +21,9 @@ import asyncio
 import json
 import time
 from collections import OrderedDict
+from contextlib import asynccontextmanager
 from http.cookies import SimpleCookie
+from pathlib import Path
 from urllib.parse import urlparse
 
 import httpx
@@ -308,8 +310,11 @@ async def handle_proxy(request: Request) -> Response:
 
 # ── App Setup ─────────────────────────────────────────────────────────────
 
-async def on_shutdown():
+@asynccontextmanager
+async def lifespan(_app):
+    # `lifespan` works on every Starlette version; `on_shutdown=` was removed in 1.0.
     global _client
+    yield
     if _client and not _client.is_closed:
         await _client.aclose()
     _client = None
@@ -320,7 +325,7 @@ app = Starlette(
         Route("/api/gw/fetch", handle_fetch, methods=["POST"]),
         Route("/api/gw/proxy", handle_proxy, methods=["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"]),
     ],
-    on_shutdown=[on_shutdown],
+    lifespan=lifespan,
 )
 
 
@@ -333,7 +338,11 @@ def main():
 
     print(f"[api_gateway] API gateway on :{args.port} (workers={args.workers})")
     uvicorn.run(
-        "scripts.server.api_gateway:app",
+        # Workers import the app by name. Import it from this directory: as
+        # `scripts.server.api_gateway` it can resolve to another installed
+        # top-level `scripts` package.
+        "api_gateway:app",
+        app_dir=str(Path(__file__).resolve().parent),
         host="127.0.0.1",
         port=args.port,
         workers=args.workers,
