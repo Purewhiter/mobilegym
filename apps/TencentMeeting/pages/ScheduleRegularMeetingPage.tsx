@@ -15,6 +15,7 @@ import {
     localizeMeetingTimezone,
     type TencentMeetingStrings,
 } from '../utils/localization';
+import { digits, int, nextStream } from '../../../os/RandomService';
 
 const Switch: React.FC<{ value: boolean; onChange: (value: boolean) => void }> = ({ value, onChange }) => (
     <div
@@ -1380,11 +1381,8 @@ export const ScheduleRegularMeetingPage: React.FC = () => {
 
     // 生成随机4-6位数字密码
     const generateRandomPassword = () => {
-        const length = Math.floor(Math.random() * 3) + 4; // 4-6位
-        let password = '';
-        for (let i = 0; i < length; i++) {
-            password += Math.floor(Math.random() * 10).toString();
-        }
+        const rng = nextStream('meeting.password');
+        const password = digits(rng, int(rng, 4, 7)); // 4-6位
         return password;
     };
 

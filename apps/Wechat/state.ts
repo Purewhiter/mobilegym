@@ -18,6 +18,7 @@ import type {
   WechatAuthState,
   WechatSubscription,
 } from './types';
+import { base36, digits as randomDigits, nextStream } from '../../os/RandomService';
 
 // --- Constants ---
 
@@ -200,7 +201,7 @@ function performCodeVerification(
     reason,
     updatedCodes: codes as any,
     attempt: {
-      id: `vca-${now}-${Math.random().toString(16).slice(2)}`,
+      id: `vca-${now}-${base36(nextStream('wechat.vca'), 10)}`,
       phone,
       code: inputCode,
       at: now,
@@ -600,8 +601,8 @@ export const useWechatStore = createAppStoreWithActions<WechatState, WechatActio
         const override = digits(String(prevAuth.nextVerificationCodeOverride || ''));
         const code = override && override.length === l
           ? override
-          : Array.from({ length: l }).map(() => Math.floor(Math.random() * 10)).join('');
-        const id = `vc-${now}-${Math.random().toString(16).slice(2)}`;
+          : randomDigits(nextStream('wechat.smsCode'), l);
+        const id = `vc-${now}-${base36(nextStream('wechat.vc'), 10)}`;
         SmsGateway.receiveMessage({ from: '腾讯科技', body: `【腾讯科技】验证码：${code}，5分钟内有效` });
         const codes = (prevAuth.verificationCodes || []).map(c => (c.phone === phone ? { ...c, invalidatedByNewer: true } : c));
         set({
@@ -632,7 +633,7 @@ export const useWechatStore = createAppStoreWithActions<WechatState, WechatActio
         // Create account
         const newAccount = { phone, password, createdAt: now, activated: true, realName, idNumber };
         const deviceId = getEffectiveBuildInfo().serialNumber || 'unknown-device';
-        const token = `tok-${now}-${Math.random().toString(16).slice(2)}`;
+        const token = `tok-${now}-${base36(nextStream('wechat.tok'), 10)}`;
         const sessionExpires = expiresInSec > 0 ? now + expiresInSec * 1000 : null;
         const updatedCodes = v.updatedCodes;
         set({
@@ -652,7 +653,7 @@ export const useWechatStore = createAppStoreWithActions<WechatState, WechatActio
         const prev = get();
         const prevAuth = prev.auth ?? EMPTY_AUTH_STATE;
         const account = prevAuth.accounts.find(a => a.phone === phone);
-        const attemptId = `la-${now}-${Math.random().toString(16).slice(2)}`;
+        const attemptId = `la-${now}-${base36(nextStream('wechat.la'), 10)}`;
         const deviceId = getEffectiveBuildInfo().serialNumber || 'unknown-device';
         if (!account) {
           set({ auth: { ...prevAuth, loginAttempts: [...prevAuth.loginAttempts, { id: attemptId, phone, password, at: now, ok: false, reason: 'no_account', deviceId }] } });
@@ -690,7 +691,7 @@ export const useWechatStore = createAppStoreWithActions<WechatState, WechatActio
           return { ok: false, needsTrust: true, reason: 'untrusted_device' };
         }
         // Success
-        const token = `tok-${now}-${Math.random().toString(16).slice(2)}`;
+        const token = `tok-${now}-${base36(nextStream('wechat.tok'), 10)}`;
         const updatedAccounts = prevAuth.accounts.map(a => a.phone === phone ? { ...a, failedAttempts: 0, requireCaptcha: false } : a);
         set({
           auth: {
@@ -708,7 +709,7 @@ export const useWechatStore = createAppStoreWithActions<WechatState, WechatActio
         const prev = get();
         const prevAuth = prev.auth ?? EMPTY_AUTH_STATE;
         const deviceId = getEffectiveBuildInfo().serialNumber || 'unknown-device';
-        const attemptId = `la-${now}-${Math.random().toString(16).slice(2)}`;
+        const attemptId = `la-${now}-${base36(nextStream('wechat.la'), 10)}`;
         const v = performCodeVerification(prevAuth, phone, String(code || '').trim(), now);
         const verificationAttempts = [...(prevAuth.verificationAttempts || []), v.attempt];
         if (!v.ok) {
@@ -748,7 +749,7 @@ export const useWechatStore = createAppStoreWithActions<WechatState, WechatActio
           return { ok: false, needsTrust: true, reason: 'untrusted_device' };
         }
         // Success
-        const token = `tok-${now}-${Math.random().toString(16).slice(2)}`;
+        const token = `tok-${now}-${base36(nextStream('wechat.tok'), 10)}`;
         set({
           auth: {
             ...prevAuth,
@@ -771,7 +772,7 @@ export const useWechatStore = createAppStoreWithActions<WechatState, WechatActio
         const deviceName = getEffectiveBuildInfo().marketName || 'Unknown Device';
         const existingDevices = prevAuth.trustedDevicesByPhone[phone] || [];
         const newDevice = { deviceId, deviceName, trustedAt: now };
-        const token = `tok-${now}-${Math.random().toString(16).slice(2)}`;
+        const token = `tok-${now}-${base36(nextStream('wechat.tok'), 10)}`;
         set({
           auth: {
             ...prevAuth,

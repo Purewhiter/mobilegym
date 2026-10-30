@@ -10,6 +10,7 @@ import {
 } from './permissions';
 import { mutateOsState, useOsStateStore } from './OsStateStore';
 import { now as timeNow } from './TimeService';
+import { base36, nextStream } from './RandomService';
 
 type Listener = (snapshot: PermissionSnapshot) => void;
 
@@ -81,13 +82,7 @@ function normalizeRequestPermissionIds(permIds: PermissionId[]): PermissionId[] 
 }
 
 function genRequestId(): string {
-  try {
-    const c = (globalThis as any).crypto;
-    if (c && typeof c.randomUUID === 'function') return c.randomUUID();
-  } catch {
-    // ignore
-  }
-  return `perm_${timeNow()}_${Math.random().toString(16).slice(2)}`;
+  return `perm_${timeNow()}_${base36(nextStream('os.permission'), 8)}`;
 }
 
 function resolvePermissionRequest(detail: PermissionRequestResultDetail | undefined) {

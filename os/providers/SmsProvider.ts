@@ -7,6 +7,7 @@ import { ensureContactsProviderRegistered } from './ContactsProvider';
 import type { ContentUri, ContentValues, Cursor } from '../types/content';
 import type { Conversation, Message } from '../../system/Sms/types';
 import smsDefaults from './defaults/sms.json';
+import { base36, nextStream, pick } from '../RandomService';
 
 type MessagesByConversationId = Record<string, Message[]>;
 
@@ -16,11 +17,11 @@ export interface SmsProviderState {
 }
 
 const randomId = (prefix: string) =>
-  `${prefix}_${Math.random().toString(36).slice(2, 10)}${TimeService.now().toString(36).slice(-4)}`;
+  `${prefix}_${base36(nextStream(`sms.${prefix}`), 8)}${TimeService.now().toString(36).slice(-4)}`;
 
 const pickAvatarColor = () => {
   const palette = ['#07C160', '#3482FF', '#FF6B00', '#7C3AED', '#06B6D4', '#EF4444', '#F59E0B', '#10B981'];
-  return palette[Math.floor(Math.random() * palette.length)];
+  return pick(nextStream('sms.avatarColor'), palette);
 };
 
 const defaultState: SmsProviderState = {

@@ -28,6 +28,12 @@ def _as_runner_config(config: ConfigType) -> "RunnerConfig":
 _MODEL_FREE_AGENTS = {"human", "replay"}
 
 
+def _env_seed(config: Any) -> Optional[int]:
+    """Base seed for in-app randomness: --env-seed, else --sample-seed."""
+    seed = getattr(config, "env_seed", None)
+    return seed if seed is not None else getattr(config, "sample_seed", None)
+
+
 def create_llm(config: ConfigType) -> Any:
     """Create LLM client (None for model-free agents run without model flags)."""
     from bench_env.llm import LLMClient
@@ -135,6 +141,7 @@ async def create_env(config: ConfigType) -> Any:
             coord_space=coord_space,
             delay_after_action=delay,
             settle=getattr(config, "settle", "fixed"),
+            env_seed=_env_seed(config),
             verbose=verbose,
             viewport_size=(360, 800),
             physical_size=physical_size,

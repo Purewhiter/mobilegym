@@ -12,6 +12,7 @@ import { localizeSpotifyText } from '../utils/localizeSpotifyText';
 import { loadArtistTracks } from '../data/loader';
 import { inferLargeArtworkUrl } from '../utils/artwork';
 import { searchITunes } from '../utils/itunes';
+import { int, stream } from '../../../os/RandomService';
 interface Track {
     id: string;
     title: string;
@@ -64,7 +65,7 @@ export const ArtistPage: React.FC = () => {
     const isLiked = (trackId: string, track?: { title: string; artist: string }) => likedSongIds.has(trackId, track);
 
     useEffect(() => {
-        const randomListeners = Math.floor(Math.random() * (5000000 - 1000000) + 1000000);
+        const randomListeners = int(stream(`spotify.artistListeners|${name ?? ''}`), 1000000, 5000000);
         setListeners(
             isEnglish
                 ? randomListeners.toLocaleString('en-US')
@@ -113,7 +114,7 @@ export const ArtistPage: React.FC = () => {
                     const mappedTracks = results.map((track: any) => {
                         // 离线数据已格式化，直接用；在线数据走原有映射
                         if (track._preformatted) {
-                            return { ...track._preformatted, playCount: Math.floor(Math.random() * 100000000 + 1000000).toLocaleString() };
+                            return { ...track._preformatted, playCount: int(stream(`spotify.playCount|${track._preformatted.id ?? track.trackId}`), 1000000, 101000000).toLocaleString() };
                         }
                         return {
                             id: String(track.trackId),
@@ -123,7 +124,7 @@ export const ArtistPage: React.FC = () => {
                             cover: track.artworkUrl100,
                             coverLarge: track.artworkUrl1000 || inferLargeArtworkUrl(track.artworkUrl100),
                             duration: fmt(track.trackTimeMillis ?? 0),
-                            playCount: Math.floor(Math.random() * 100000000 + 1000000).toLocaleString(),
+                            playCount: int(stream(`spotify.playCount|${track.trackId}`), 1000000, 101000000).toLocaleString(),
                         };
                     });
                     setTracks(mappedTracks);

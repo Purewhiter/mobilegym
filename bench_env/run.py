@@ -200,6 +200,11 @@ def create_parser() -> argparse.ArgumentParser:
         "--settle", choices=["fixed", "idle"], default="fixed",
         help="After each action: sleep --delay-after-action (fixed) or wait for __SIM__.waitForIdle (idle)",
     )
+    p.add_argument(
+        "--env-seed", type=int, default=None,
+        help="Base seed for in-app randomness (seat numbers, verification codes, ids; os/RandomService.ts). "
+             "Each episode's seed is derived from it and the task id. Default: --sample-seed.",
+    )
 
     # Execution
     p.add_argument("--max-steps", type=int, default=None)

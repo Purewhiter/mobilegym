@@ -1,4 +1,5 @@
 import BroadcastBus from './BroadcastBus';
+import { digits, nextStream } from './RandomService';
 
 export interface SmsGatewayIncomingMessage {
   from: string;
@@ -17,23 +18,7 @@ function clampInt(n: unknown, fallback: number, min: number, max: number): numbe
 }
 
 function generateNumericCode(len: number): string {
-  const length = clampInt(len, 6, 4, 10);
-  const digits = '0123456789';
-
-  try {
-    const cryptoAny: any = (globalThis as any).crypto;
-    if (cryptoAny && typeof cryptoAny.getRandomValues === 'function') {
-      const buf = new Uint8Array(length);
-      cryptoAny.getRandomValues(buf);
-      return Array.from(buf, (b) => digits[b % 10]).join('');
-    }
-  } catch {
-    // ignore
-  }
-
-  let out = '';
-  for (let i = 0; i < length; i++) out += digits[Math.floor(Math.random() * 10)];
-  return out;
+  return digits(nextStream('os.smsCode'), clampInt(len, 6, 4, 10));
 }
 
 function renderTemplate(template: string, vars: Record<string, string>): string {

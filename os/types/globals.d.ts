@@ -153,6 +153,9 @@ interface SimApi {
   waitForData(appIds?: string[]): Promise<void>;
   /** Resolve once the screen has caught up with the last input (os/idle.ts). */
   waitForIdle(options?: import('../idle').WaitForIdleOptions): Promise<import('../idle').WaitForIdleResult>;
+  /** Seed for RandomService; set per episode by the benchmark (os/RandomService.ts). */
+  setRandomSeed(seed: number): void;
+  getRandomSeed(): number;
   idleState(): import('../idle').IdleState;
   getState(): { os: Record<string, unknown>; apps: Record<string, unknown> };
   setState(

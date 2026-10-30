@@ -113,6 +113,8 @@ export function getStorageIsolationMode(): StorageIsolationMode {
 }
 
 function genNamespace(): string {
+  // Separates the storage of parallel pages on one origin: must differ per page, so not seeded.
+  // eslint-disable-next-line no-restricted-syntax
   const rand = Math.random().toString(36).slice(2, 10);
   return `ns_${realNow().toString(36)}_${rand}`;
 }

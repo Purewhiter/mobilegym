@@ -1,5 +1,6 @@
 import { createAppStoreWithActions, memoSelector } from '../../os/createAppStore';
 import { BROWSER_CONFIG } from './data';
+import { base36, nextStream } from '../../os/RandomService';
 
 // --- Types ---
 
@@ -59,7 +60,7 @@ export const useBrowserStore = createAppStoreWithActions<BrowserState, BrowserAc
     },
 
     addTab() {
-      const newId = Math.random().toString(36).substr(2, 9);
+      const newId = base36(nextStream('browser.tab'), 9);
       const { tabs } = get();
       set({
         tabs: [...tabs, { id: newId, url: '', title: '主页' }],

@@ -14,6 +14,7 @@ import { localizeSpotifyText } from '../utils/localizeSpotifyText';
 import { loadSearchResults } from '../data/loader';
 import { openSaveLocation } from '../components/LikedToast';
 import { inferLargeArtworkUrl } from '../utils/artwork';
+import { base36, nextStream } from '../../../os/RandomService';
 
 const FILTER_CHIPS = ['歌曲', '歌单', '专辑', '播客', '视频', '艺人'];
 
@@ -23,7 +24,7 @@ function toTrackFromItunes(result: any): SpotifyTrack {
   const minutes = Math.floor(totalSeconds / 60);
   const seconds = totalSeconds % 60;
   return {
-    id: `it_${String(result?.trackId ?? result?.collectionId ?? Math.random())}`,
+    id: `it_${String(result?.trackId ?? result?.collectionId ?? base36(nextStream('spotify.itunesTrack'), 10))}`,
     title: String(result?.trackName ?? ''),
     artist: String(result?.artistName ?? ''),
     cover: String(result?.artworkUrl100 ?? ''),
@@ -133,7 +134,7 @@ export const SearchInputPage: React.FC = () => {
     const query = searchTermRef.current.trim();
     if (!query) return;
 
-    const batchId = `${TimeService.now()}_${Math.floor(Math.random() * 10000)}`;
+    const batchId = `${TimeService.now()}_${base36(nextStream('spotify.searchBatch'), 6)}`;
     lastCallbackRef.current = batchId;
     cleanupPendingRequests();
     setResults([]);
@@ -506,9 +507,9 @@ export const SearchInputPage: React.FC = () => {
                       )}
 
                       {showSongs &&
-                        songResults.map((track: any) => (
+                        songResults.map((track: any, index: number) => (
                           <div
-                            key={String(track.trackId || track.id || Math.random())}
+                            key={String(track.trackId || track.id || `idx-${index}`)}
                             {...bindTap(
                               { kind: 'action', id: 'search.track.play' },
                               {

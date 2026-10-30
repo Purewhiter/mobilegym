@@ -7,6 +7,7 @@ from __future__ import annotations
 import asyncio
 import base64
 import gzip
+import hashlib
 import json as json_mod
 import logging
 import random
@@ -373,6 +374,7 @@ class MobileGymEnv(BaseMobileEnv):
         coord_space: str = "norm_0_1000",
         delay_after_action: float = 0.8,
         settle: str = "fixed",
+        env_seed: Optional[int] = None,
         verbose: bool = True,
         worker_id: int = -1,
     ):
@@ -397,6 +399,9 @@ class MobileGymEnv(BaseMobileEnv):
             raise ValueError(f"settle must be 'fixed' or 'idle', got {settle!r}")
         # "idle": wait for __SIM__.waitForIdle instead of sleeping delay_after_action.
         self.settle = settle
+        # Base seed for in-app randomness (os/RandomService.ts); see apply_random_seed.
+        self.env_seed = env_seed
+        self.random_seed: Optional[int] = None
         self.last_idle: Optional[dict] = None
         self.verbose = verbose
 
@@ -761,6 +766,21 @@ class MobileGymEnv(BaseMobileEnv):
             self._page.on("console", on_console)
 
     # ==================== Environment Interface ====================
+
+    async def apply_random_seed(self, task_id: str) -> int:
+        """Seed the page's in-app randomness (os/RandomService.ts) for this episode.
+
+        The episode seed is derived from the base seed (``env_seed``: --env-seed,
+        else --sample-seed, else 0) and the task id, so every episode of a run is
+        reproducible on its own and different tasks do not share draws. Call it
+        right after ``reset()``: reset clears the previous seed.
+        """
+        base = self.env_seed if self.env_seed is not None else 0
+        digest = hashlib.sha256(f"{base}|{task_id}".encode("utf-8")).digest()
+        seed = int.from_bytes(digest[:4], "big")
+        await self.page.evaluate("(s) => window.__SIM__?.setRandomSeed?.(s)", seed)
+        self.random_seed = seed
+        return seed
 
     async def reset(self, app_ids: list[str] | None = None) -> None:
         """Reset environment and start new episode.

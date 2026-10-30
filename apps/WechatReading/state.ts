@@ -14,6 +14,7 @@ import type {
 } from './data/types';
 import * as TimeService from '../../os/TimeService';
 import { sanitizeReaderPrefs } from './constants';
+import { nextStream, shuffle } from '../../os/RandomService';
 
 // --- Static lookup ---
 const STORE_BY_ID = new Map((WECHAT_READING_CONFIG.store ?? []).map((b: any) => [String(b.id), b]));
@@ -212,7 +213,7 @@ const wechatReadingStore = createAppStoreWithActions<WechatReadingState, WechatR
 
     refreshRecommendedAudiobooks: () => {
       const all = WECHAT_READING_CONFIG.audiobooks;
-      const shuffled = [...all].sort(() => 0.5 - Math.random());
+      const shuffled = shuffle(nextStream('wechatReading.audiobooks'), all);
       const selected = shuffled.slice(0, 6).map(b => b.id);
       set({ recommendedAudiobooks: selected });
     },

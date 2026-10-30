@@ -352,6 +352,7 @@ class Controller:
                 agent_answer=env.agent_answer,
                 stopwatch_total_s=stopwatch_total_s,
                 stopwatch_flat=stopwatch_flat,
+                random_seed=getattr(env, "random_seed", None),
                 stopwatch_tree=stopwatch_tree,
             )
             # Re-fetch final state with retry for reliable judging
@@ -377,6 +378,7 @@ class Controller:
                 agent_message=None, agent_answer=None, error=error_msg,
                 stopwatch_total_s=stopwatch_total_s,
                 stopwatch_flat=stopwatch_flat,
+                random_seed=getattr(env, "random_seed", None),
                 stopwatch_tree=stopwatch_tree,
             )
             return exec_result, None, None, episode, task
@@ -416,6 +418,7 @@ class Controller:
                 agent_message=None, agent_answer=None, error=error_msg,
                 stopwatch_total_s=stopwatch_total_s,
                 stopwatch_flat=stopwatch_flat,
+                random_seed=getattr(env, "random_seed", None),
                 stopwatch_tree=stopwatch_tree,
             )
             return exec_result, None, None, None, task
@@ -438,6 +441,8 @@ class ExecutionResult:
     stopwatch_total_s: float = 0.0
     stopwatch_flat: dict[str, float] = field(default_factory=dict)
     stopwatch_tree: list[dict[str, Any]] = field(default_factory=list)
+    # Episode seed of in-app randomness (MobileGymEnv.apply_random_seed); None on real devices.
+    random_seed: Optional[int] = None
 
 
 @dataclass
@@ -550,6 +555,7 @@ class EpisodeResult:
             "stopwatch_total_s": self.execution.stopwatch_total_s,
             "stopwatch_flat": self.execution.stopwatch_flat,
             "stopwatch_tree": self.execution.stopwatch_tree,
+            "random_seed": self.execution.random_seed,
         }
         d: dict[str, Any] = {
             "id": self.task_id,

@@ -19,7 +19,7 @@ User-facing documentation under `docs/` and `bench_env/docs/` is in **English**.
 npm run lint          # Lint runtime code under os/ and apps/
 ```
 
-Current rule: bare `Date.now()` and any form of `new Date(...)` (including parameterised forms — they must go through `TimeService`) are forbidden. Config lives in `eslint.config.js`.
+Current rule: bare `Date.now()` and any form of `new Date(...)` (including parameterised forms — they must go through `TimeService`) are forbidden, and so are `Math.random()`, `crypto.randomUUID()` and `crypto.getRandomValues()` (they must go through `RandomService`). Config lives in `eslint.config.js`.
 
 ### Navigation Artifact Generation (run after modifying navigation declarations)
 
@@ -77,7 +77,7 @@ The simulated Android system:
 - **`createOsStore.ts`** — OS-layer Zustand store factory. Provides `createOsStore` (persistent) and `createVolatileOsStore` (non-persistent), with a built-in store registry (`resetAllOsStores()` / `snapshotOsStores()`) used by `__SIM__.reset()` and `__SIM__.getState()`. Pass `registerToServiceRegistry: false` to opt out of registration (e.g. OsStateStore, Providers)
 - **`OsStateStore.ts`** — Unified Android data-model store, holding `settings` (global / system / secure / app-specific), `hardware` (battery / wifi / cellular / sensors), `permissions`, `preferences`. Persisted under the `os_state` localStorage key. `build` and `telephony` info are managed via overrides in `managers/registry.ts` (which also supports bench_env scenario injection)
 - **Managers (`os/managers/`)** — `ConnectivityManager`, `BatteryManager`, `AudioManager`, `DisplayManager` are write facades over OsStateStore-specific domains; they encapsulate constraint logic (e.g., airplane mode cascade-disables Wi-Fi / BT / cellular, volume clamping, brightness range) and side effects (broadcast notifications). `managers/registry.ts` handles preference-key → Manager routing and build/telephony overrides
-- **System Services** — **Persistence rule: data persists, UI / runtime state does not (refresh = restart)**. Apps must use OS services in place of native APIs: `Date.now()` → `TimeService`; `navigator.geolocation` → `LocationService`; `fetch` → `NetworkService` (`netJson` / `netFetch`). Services are accessed as sub-properties of `window.__OS__` (e.g. `__OS__.notifications`, `__OS__.keyboard`). `ClipboardService` is persistent; `NotificationService` / `KeyboardService` / `PermissionService` etc. are volatile
+- **System Services** — **Persistence rule: data persists, UI / runtime state does not (refresh = restart)**. Apps must use OS services in place of native APIs: `Date.now()` → `TimeService`; `Math.random()` → `RandomService` (seeded per episode, see `docs/platform/os/services/random.md`); `navigator.geolocation` → `LocationService`; `fetch` → `NetworkService` (`netJson` / `netFetch`). Services are accessed as sub-properties of `window.__OS__` (e.g. `__OS__.notifications`, `__OS__.keyboard`). `ClipboardService` is persistent; `NotificationService` / `KeyboardService` / `PermissionService` etc. are volatile
 - **System Providers** — Shared data such as contacts / SMS / media lives in `os/providers/*Provider.ts`, persisted independently via `createOsStore` (`registerToServiceRegistry: false`, not part of the `os.services` snapshot); Apps access them through `ContentResolver.query / insert / update / delete`. `__SIM__.getState()` exposes Provider snapshots explicitly under `os.providers.*`
 
 ### Apps Layer (`apps/<AppName>/`, `system/<AppName>/`)

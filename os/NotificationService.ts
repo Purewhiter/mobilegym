@@ -6,6 +6,7 @@ import BroadcastBus, {
 import { createVolatileOsStore } from './createOsStore';
 import { routeGetPreference } from './managers/registry';
 import * as TimeService from './TimeService';
+import { base36, nextStream } from './RandomService';
 
 type PushListener = (item: OSNotification) => void;
 
@@ -17,13 +18,7 @@ function nowMs(): number {
 }
 
 function genId(): string {
-  try {
-    const c: any = (globalThis as any).crypto;
-    if (c && typeof c.randomUUID === 'function') return c.randomUUID();
-  } catch {
-    // ignore
-  }
-  return `n_${nowMs()}_${Math.random().toString(16).slice(2)}`;
+  return `n_${nowMs()}_${base36(nextStream('os.notification'), 8)}`;
 }
 
 function normalizeItem(input: Partial<OSNotification> & Pick<OSNotification, 'title'>): OSNotification {

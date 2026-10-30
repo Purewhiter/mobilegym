@@ -4,6 +4,7 @@ import { useAlipayStrings } from '../hooks/useAlipayStrings';
 import { useAlipayStore } from '../state';
 import { useAlipayGestures } from '../hooks/useAlipayGestures';
 import * as TimeService from '../../../os/TimeService';
+import { base36, nextStream } from '../../../os/RandomService';
 
 export const SubscriptionsPage: React.FC = () => {
   const { bindBack } = useAlipayGestures();
@@ -37,7 +38,7 @@ export const SubscriptionsPage: React.FC = () => {
     }
 
     const now = TimeService.now();
-    const id = `sub_${now}_${Math.random().toString(16).slice(2)}`;
+    const id = `sub_${now}_${base36(nextStream('alipay.subscription'), 10)}`;
 
     upsertSubscription({
       id,

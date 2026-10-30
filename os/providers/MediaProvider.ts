@@ -7,6 +7,7 @@ import * as MediaService from '../MediaService';
 import BroadcastBus, { ACTION_MEDIA_SCANNER_SCAN_FILE } from '../BroadcastBus';
 import { now as timeNow } from '../TimeService';
 import mediaDefaults from './defaults/media.json';
+import { base36, nextStream } from '../RandomService';
 
 export interface MediaProviderState {
   favorites: string[];
@@ -33,7 +34,7 @@ function withFavorite(items: MediaItem[], favorites: Set<string>): Array<MediaIt
 }
 
 function genMediaId(): string {
-  return `media_${timeNow()}_${Math.random().toString(36).slice(2, 8)}`;
+  return `media_${timeNow()}_${base36(nextStream('media.id'), 6)}`;
 }
 
 const defaultState: MediaProviderState = {

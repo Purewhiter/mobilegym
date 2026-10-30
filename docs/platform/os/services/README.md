@@ -9,6 +9,7 @@ The complete API surface is declared in [`os/types/globals.d.ts`](../../../../os
 | Service area | Read |
 |---|---|
 | Time and clock determinism | [`time.md`](time.md) |
+| Seeded randomness (seat numbers, codes, ids) | [`random.md`](random.md) |
 | Location and GPS simulation | [`location.md`](location.md) |
 | External HTTP and gateway behavior | [`network.md`](network.md) |
 | Verification SMS and SMS broadcasts | [`sms.md`](sms.md) |
@@ -24,7 +25,7 @@ Three reasons the framework forbids `Date.now()`, `navigator.geolocation`, raw `
 2. **Sandboxing** — Apps shouldn't reach real services or real funds. Network calls route through a same-origin gateway with a per-session cookie jar; geolocation is a preset string; SMS is fabricated by the SMS app.
 3. **Snapshots** — Services that hold state (clipboard, notifications) are part of the env snapshot. Browser APIs aren't.
 
-ESLint enforces the time rules (`Date.now()` and `new Date(...)`). The location, external-network, and clipboard rules are platform conventions enforced by code review and app-module review.
+ESLint enforces the time rules (`Date.now()` and `new Date(...)`) and the randomness rule (`Math.random()`, `crypto.randomUUID()`, `crypto.getRandomValues()` → [`RandomService`](random.md)). The location, external-network, and clipboard rules are platform conventions enforced by code review and app-module review.
 
 ## TimeService
 

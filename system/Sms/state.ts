@@ -6,13 +6,14 @@ import { ensureSmsProviderRegistered } from '../../os/providers/SmsProvider';
 import * as TimeService from '../../os/TimeService';
 import { NotificationService } from '../../os/NotificationService';
 import type { Conversation, Message } from './types';
+import { base36, nextStream } from '../../os/RandomService';
 
 // --- Helper functions ---
 
 type MessagesByConversationId = Record<string, Message[]>;
 
 const randomId = (prefix: string) =>
-  `${prefix}_${Math.random().toString(36).slice(2, 10)}${TimeService.now().toString(36).slice(-4)}`;
+  `${prefix}_${base36(nextStream(`smsApp.${prefix}`), 8)}${TimeService.now().toString(36).slice(-4)}`;
 
 // --- State & Actions interfaces ---
 

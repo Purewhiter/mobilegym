@@ -8,6 +8,7 @@ import { useAlipayGestures } from '../hooks/useAlipayGestures';
 import type { AlipayBankCard } from '../types';
 import { useLocale } from '@/apps/Alipay/locale';
 import { localizeBankName } from '../utils/localizeBankName';
+import { digits, nextStream } from '../../../os/RandomService';
 
 function maskPhone(phone: string): string {
   const p = String(phone || '').replace(/\s/g, '');
@@ -36,12 +37,7 @@ function generate19Digits(bankName: string): string {
     农业银行: '622848',
   };
   const prefix = Object.entries(prefixMap).find(([k]) => bankName.includes(k))?.[1] || '622848';
-  const digits = '0123456789';
-  let mid = '';
-  for (let i = 0; i < 9; i++) mid += digits[Math.floor(Math.random() * 10)];
-  let last4 = '';
-  for (let i = 0; i < 4; i++) last4 += digits[Math.floor(Math.random() * 10)];
-  return `${prefix}${mid}${last4}`;
+  return `${prefix}${digits(nextStream('alipay.cardNumber'), 13)}`;
 }
 
 const RECHARGE_RETURN_PATH = '/balance/recharge';

@@ -9,6 +9,7 @@ import type { UserInfo } from '../types';
 import { useSystemTime } from '../../../os/useSystemTime';
 import { useBilibiliGestures } from '../hooks/useBilibiliGestures';
 import { formatBilibiliRelativeTime, formatBilibiliStat } from '../utils/localize';
+import { int, stream } from '../../../os/RandomService';
 
 const SquarePen = IcEditSquare;
 const Plus = IcAdd;
@@ -209,9 +210,10 @@ export const FollowingPage: React.FC = () => {
                                     {user.subscribedAnime.map(anime => {
                                         const videoInfo = videoById.get(anime.id);
                                         const cover = videoInfo?.raw?.ss_horizontal_cover || videoInfo?.cover || DEFAULT_VIDEO_COVER;
+                                        const episode = int(stream(`bilibili.animeEpisode|${anime.id}`), 0, 200);
                                         const updateText = videoInfo?.raw?.new_ep?.index_show || (locale === 'en'
-                                            ? `Episode ${Math.floor(Math.random() * 200)} now available`
-                                            : `更新至第${Math.floor(Math.random() * 200)}话`);
+                                            ? `Episode ${episode} now available`
+                                            : `更新至第${episode}话`);
 
                                         return (
                                             <div key={anime.id} className="flex flex-col gap-1.5 w-28 shrink-0" {...bindTap('video.open', { params: { bvid: anime.id } })}>

@@ -63,6 +63,8 @@ function getGatewaySessionId() {
   try {
     const existing = window.localStorage.getItem(key);
     if (existing) return existing;
+    // Gateway cookie-jar id for this tab: must be unique per tab, never shown, so not seeded.
+    // eslint-disable-next-line no-restricted-syntax
     const id = crypto?.randomUUID ? crypto.randomUUID() : String(realNow()) + Math.random().toString(16).slice(2);
     immediateSetItem(key, id);
     return id;

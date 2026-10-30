@@ -18,6 +18,7 @@ import {
     buildQuickMeetingTitle,
     DEFAULT_MEETING_TIMEZONE_VALUE,
 } from './utils/meetingDataValue';
+import { int, nextStream } from '../../os/RandomService';
 
 let localSeq = 0;
 function nextId(prefix: string): string {
@@ -28,9 +29,10 @@ function nextId(prefix: string): string {
 // ---- Helper: pure function, no need to be inside a component ----
 
 const generateMeetingId = (): string => {
-    const part1 = Math.floor(100 + Math.random() * 900);
-    const part2 = Math.floor(100 + Math.random() * 900);
-    const part3 = Math.floor(100 + Math.random() * 900);
+    const rng = nextStream('meeting.id');
+    const part1 = int(rng, 100, 1000);
+    const part2 = int(rng, 100, 1000);
+    const part3 = int(rng, 100, 1000);
     return `${part1} ${part2} ${part3}`;
 };
 

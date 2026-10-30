@@ -16,6 +16,7 @@
 import type { ExprNode, BinaryOp, UnaryOp, WmrVarContext } from './types';
 import * as TimeService from '../../TimeService';
 import localeApi from '../../locale';
+import { next } from '../../RandomService';
 
 // ---------------------------------------------------------------------------
 // Tokenizer
@@ -406,7 +407,7 @@ function evalCall(fn: string, args: ExprNode[], ctx: WmrVarContext): unknown {
     case 'abs': return Math.abs(toNum(evalExpr(args[0], ctx)));
     case 'sin': return Math.sin(toNum(evalExpr(args[0], ctx)));
     case 'cos': return Math.cos(toNum(evalExpr(args[0], ctx)));
-    case 'rand': return Math.random();
+    case 'rand': return next('wmr.rand');
     case 'eq': {
       const a = evalExpr(args[0], ctx);
       const b = evalExpr(args[1], ctx);

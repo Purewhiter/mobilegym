@@ -6,6 +6,7 @@ import { DeviceClient } from './device/DeviceClient';
 import { idleState, waitForIdle } from './idle';
 import { flushAll, flushKey } from './debouncedPersist';
 import { getTimeConfig, now, realNow, formatTime, formatDate, getDayOfWeek } from './TimeService';
+import * as RandomService from './RandomService';
 import { getLocationConfig, getSimulatedCoords } from './LocationService';
 import { isValidAppId, dataLoaderByAppId } from './data/appRegistry';
 import { clearFileSystemDB, initFileSystem } from './FileSystemService';
@@ -692,6 +693,9 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
       preloadAppStores: async (_appIds: string[]) => { /* no-op: eager loaded */ },
       /** Resolve once the screen has caught up with the last input (see os/idle.ts). */
       waitForIdle,
+      /** Seed every RandomService draw of this episode (os/RandomService.ts). */
+      setRandomSeed: (seed: number) => RandomService.setSeed(seed),
+      getRandomSeed: () => RandomService.getSeed(),
       idleState,
       waitForData: async (appIds?: string[]) => {
         const all = !appIds || appIds.length === 0;

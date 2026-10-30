@@ -40,6 +40,7 @@ import type {
 import { listWmrWidgets, getWidgetPreviewUrl, getWidgetXmlBaseUrl } from '../wmr/WmrWidgetService';
 import type { WmrWidgetMeta } from '../wmr/WmrWidgetService';
 import { WmrRenderer } from '../wmr/WmrRenderer';
+import { base36, nextStream } from '../RandomService';
 
 function imageWallpaperStyle(imageUrl: string): React.CSSProperties {
   return {
@@ -76,9 +77,7 @@ function getDefaultFolderName(): string {
 }
 
 function makeId(prefix: string): string {
-  const cryptoAny = globalThis.crypto as any;
-  if (cryptoAny?.randomUUID) return `${prefix}_${cryptoAny.randomUUID()}`;
-  return `${prefix}_${TimeService.now().toString(16)}_${Math.random().toString(16).slice(2)}`;
+  return `${prefix}_${TimeService.now().toString(16)}_${base36(nextStream(`launcher.${prefix}`), 8)}`;
 }
 
 type Cell = { cellX: number; cellY: number };

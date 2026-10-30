@@ -13,6 +13,7 @@ import {
   type LauncherScreen,
   type LauncherWallpaper,
 } from './types';
+import { base36, nextStream } from '../RandomService';
 
 export const DEFAULT_LAUNCHER_GRID: LauncherGrid = { columns: 4, rows: 6 };
 
@@ -71,9 +72,7 @@ function getDefaultFolderName(): string {
 }
 
 function makeId(prefix: string): string {
-  const cryptoAny = globalThis.crypto as any;
-  if (cryptoAny?.randomUUID) return `${prefix}_${cryptoAny.randomUUID()}`;
-  return `${prefix}_${timeNow().toString(16)}_${Math.random().toString(16).slice(2)}`;
+  return `${prefix}_${timeNow().toString(16)}_${base36(nextStream(`launcher.${prefix}`), 8)}`;
 }
 
 function keyOfPlacement(p: Pick<LauncherPlacement, 'cellX' | 'cellY'>): string {

@@ -5,6 +5,7 @@ import { useRailwayGestures } from '../hooks/useRailwayGestures';
 import { useRailwayStore } from '../state';
 import { SmsGateway } from '../../../os/SmsGateway';
 import { useLocale } from '../../../os/locale';
+import { digits, nextStream } from '../../../os/RandomService';
 
 export const ChangePasswordPage: React.FC = () => {
   const { bindBack, back } = useRailwayGestures();
@@ -41,8 +42,7 @@ export const ChangePasswordPage: React.FC = () => {
 
   const sendSmsCode = () => {
     if (cooldownSec > 0) return;
-    const digits = '0123456789';
-    const code = Array.from({ length: 6 }).map(() => digits[Math.floor(Math.random() * 10)]).join('');
+    const code = digits(nextStream('railway12306.changePasswordCode'), 6);
     generatedCode.current = code;
     setSmsSent(true);
     SmsGateway.receiveMessage({

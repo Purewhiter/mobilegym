@@ -42,7 +42,19 @@ function parentPath(p: string): string {
 
 const fileName = (p: string) => p.split('/').filter(Boolean).pop() || '';
 
-const randomSuffix = () => Math.random().toString(36).slice(2, 8);
+/**
+ * Id suffix for a new node: a hash of its path and creation time, so the same
+ * actions give the same ids in every run (FNV-1a, 6 base-36 chars).
+ */
+function idSuffix(path: string, now: number): string {
+  let h = 2166136261;
+  const text = `${path}|${now}`;
+  for (let i = 0; i < text.length; i++) {
+    h ^= text.charCodeAt(i);
+    h = Math.imul(h, 16777619) >>> 0;
+  }
+  return h.toString(36).padStart(6, '0').slice(-6);
+}
 
 // ── Seed dates ──────────────────────────────────────────────────────
 
@@ -123,7 +135,7 @@ class Tree {
     const parent = parentPath(dirPath);
     if (parent !== dirPath && parent !== '') this.ensureDirectory(parent, now);
     return this.add({
-      id: `dir_${now}_${randomSuffix()}`,
+      id: `dir_${now}_${idSuffix(dirPath, now)}`,
       name: fileName(dirPath),
       type: 'directory',
       parentId: this.byPath.get(parent) || 'root',
@@ -208,7 +220,7 @@ function writeNode(tree: Tree, p: string, content: FsContentRef | undefined, inp
     return existing;
   }
   return tree.add({
-    id: `file_${now}_${randomSuffix()}`,
+    id: `file_${now}_${idSuffix(filePath, now)}`,
     name: fileName(filePath),
     type: 'file',
     parentId: parent.id,

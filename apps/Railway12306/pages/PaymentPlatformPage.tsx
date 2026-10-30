@@ -5,12 +5,18 @@ import { useRailwayStrings } from '../hooks/useRailwayStrings';
 import type { ActivityResult } from '@/os/types/manifest';
 import type { OrderRecord } from '../types';
 import { getOrderTotalPrice, randomSeatNo } from '../types';
+import { base36, nextStream } from '../../../os/RandomService';
+
+/** Seat for a ticket that reached payment without one (order ids carry the clock, so key by sequence). */
+function lateSeatNo(seatType: string): string {
+  return randomSeatNo(seatType, `late|${base36(nextStream('railway12306.lateSeat'), 8)}`);
+}
 
 function completeOrder(order: OrderRecord): OrderRecord {
   return {
     ...order,
     status: 'completed',
-    tickets: order.tickets.map(t => ({ ...t, seatNo: t.seatNo || randomSeatNo(t.seatType) })),
+    tickets: order.tickets.map(t => ({ ...t, seatNo: t.seatNo || lateSeatNo(t.seatType) })),
   };
 }
 
@@ -31,9 +37,11 @@ export const PaymentPlatformPage: React.FC = () => {
 
   const finishPayment = () => {
     if (!pendingOrder) return;
+    // Fill missing seats once: the stored order and the success page show the same seats.
+    const completed = completeOrder(pendingOrder);
     updateOrder(pendingOrder.id, { status: 'completed' });
-    updateOrderTickets(pendingOrder.id, ts => ts.map(t => ({ ...t, seatNo: t.seatNo || randomSeatNo(t.seatType) })));
-    go('paymentPlatform.paymentSuccess', {}, { state: { order: completeOrder(pendingOrder) } });
+    updateOrderTickets(pendingOrder.id, ts => ts.map((t, i) => ({ ...t, seatNo: t.seatNo || completed.tickets[i]?.seatNo || '' })));
+    go('paymentPlatform.paymentSuccess', {}, { state: { order: completed } });
   };
 
   const handleSubmit = () => {

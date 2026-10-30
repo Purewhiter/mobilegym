@@ -8,6 +8,7 @@ import { useWechatReadingStrings } from '../hooks/useWechatReadingStrings';
 import { dimens } from '../res/dimens';
 import { useLocale } from '../../../os/locale';
 import * as TimeService from '../../../os/TimeService';
+import { nextStream, shuffle } from '../../../os/RandomService';
 
 const ReadingPage: React.FC = () => {
   const shelf = useWechatReadingStore(s => s.shelf);
@@ -39,7 +40,7 @@ const ReadingPage: React.FC = () => {
     : `${TimeService.getDate().getMonth() + 1}${s.reading_monthly_reading}`;
 
   const handleRefresh = () => {
-    const shuffled = [...WECHAT_READING_CONFIG.store].sort(() => 0.5 - Math.random());
+    const shuffled = shuffle(nextStream('wechatReading.store'), WECHAT_READING_CONFIG.store);
     setRecommendedIds(shuffled.slice(0, 6).map(book => book.id));
   };
 

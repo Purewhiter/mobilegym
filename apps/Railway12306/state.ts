@@ -8,6 +8,7 @@ import type {
   OrderRecord, Passenger, RailwaySettings, SelectedTrainDraft,
   TrainInfo, TransferPlan, TicketInfo, InvoiceHeader,
 } from './types';
+import { digits, nextStream } from '../../os/RandomService';
 
 // ── Helpers ─────────────────────────────────────────────────────────
 
@@ -381,7 +382,7 @@ export const useRailwayStore = createAppStoreWithActions<RailwayState, RailwayAc
 
       requestResetCode: (phone) => {
         const p = String(phone ?? '').trim();
-        const code = Array.from({ length: 6 }, () => Math.floor(Math.random() * 10)).join('');
+        const code = digits(nextStream('railway12306.resetCode'), 6);
         SmsGateway.receiveMessage({ from: '铁路12306', body: `【铁路12306】验证码：${code}，5分钟内有效` });
         const s = get();
         set({

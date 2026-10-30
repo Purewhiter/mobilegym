@@ -574,6 +574,9 @@ class BaseTask(ABC):
         # 1. Reset environment — preload data for involved apps
         with sw.phase("reset"):
             await env.reset(app_ids=self.apps or None)
+            # In-app randomness (seat numbers, codes, ids) is seeded per episode.
+            if hasattr(env, "apply_random_seed"):
+                await env.apply_random_seed(self.id)
 
         # 2. Open / warm apps — creates stores with default data
         with sw.phase("warm"):

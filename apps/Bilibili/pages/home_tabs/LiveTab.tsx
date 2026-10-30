@@ -1,5 +1,6 @@
 
 import { IcPlay, IcUser, IcHeart } from '../../res/icons';
+import { int, stream } from '../../../../os/RandomService';
 const Play = IcPlay, User = IcUser, Heart = IcHeart;
 
 export const LiveTab: React.FC = () => {
@@ -37,7 +38,7 @@ export const LiveTab: React.FC = () => {
                             <div className={`w-full h-full bg-gradient-to-br ${i % 2 ? 'from-cyan-100 via-sky-200 to-violet-200' : 'from-amber-100 via-pink-100 to-sky-200'}`} />
                             <div className="absolute bottom-1 left-1 text-[10px] text-white bg-black/40 px-1 rounded flex items-center gap-1">
                                 <User size={10} />
-                                <span>{Math.floor(Math.random() * 10000)}</span>
+                                <span>{int(stream(`bilibili.liveViewers|${i}`), 0, 10000)}</span>
                             </div>
                         </div>
                         <div className="p-2">

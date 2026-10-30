@@ -8,6 +8,7 @@ import type {
   NotesViewMode,
   NotesTodo,
 } from './types';
+import { base36, nextStream } from '../../os/RandomService';
 
 // ---- Helper functions ----
 
@@ -99,7 +100,7 @@ export const useNotesStore = createAppStoreWithActions<NotesState, NotesActions>
     addFolder: (name: string) => {
       const trimmed = name.trim();
       const newFolder: NotesFolder = {
-        id: `xf_${Math.random().toString(36).slice(2, 10)}`,
+        id: `xf_${base36(nextStream('notes.folder'), 8)}`,
         name: trimmed || '新建文件夹',
         system: false,
       };
@@ -136,7 +137,7 @@ export const useNotesStore = createAppStoreWithActions<NotesState, NotesActions>
 
     addNote: (input?) => {
       const newNote: Note = {
-        id: Math.random().toString(36).slice(2, 10),
+        id: base36(nextStream('notes.note'), 8),
         title: input?.title ?? '',
         content: input?.content ?? '',
         updatedAt: TimeService.now(),
@@ -187,7 +188,7 @@ export const useNotesStore = createAppStoreWithActions<NotesState, NotesActions>
     addTodo: (text: string) => {
       const trimmed = text.trim();
       const newTodo: NotesTodo = {
-        id: Math.random().toString(36).slice(2, 10),
+        id: base36(nextStream('notes.todo'), 8),
         text: trimmed,
         completed: false,
         updatedAt: TimeService.now(),

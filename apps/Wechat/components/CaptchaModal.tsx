@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { IcAccessibility, IcClose, IcRotateCcw } from '../res/icons';
+import { next } from '../../../os/RandomService';
 
 interface CaptchaModalProps {
   open: boolean;
@@ -12,7 +13,7 @@ export const CaptchaModal: React.FC<CaptchaModalProps> = ({ open, onClose, onSuc
   const [isDragging, setIsDragging] = useState(false);
   const [success, setSuccess] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
-  const [targetPct, setTargetPct] = useState(() => 35 + Math.random() * 35);
+  const [targetPct, setTargetPct] = useState(() => 35 + next('wechat.captcha') * 35);
   const [trackWidth, setTrackWidth] = useState(0);
   const sliderRef = useRef<HTMLDivElement>(null);
 
@@ -20,7 +21,7 @@ export const CaptchaModal: React.FC<CaptchaModalProps> = ({ open, onClose, onSuc
     if (open) {
       setSliderValue(0);
       setSuccess(false);
-      setTargetPct(35 + Math.random() * 35);
+      setTargetPct(35 + next('wechat.captcha') * 35);
       setRefreshKey(k => k + 1);
     }
   }, [open]);
@@ -74,7 +75,7 @@ export const CaptchaModal: React.FC<CaptchaModalProps> = ({ open, onClose, onSuc
   const handleRefresh = () => {
     setSliderValue(0);
     setSuccess(false);
-    setTargetPct(35 + Math.random() * 35);
+    setTargetPct(35 + next('wechat.captcha') * 35);
     setRefreshKey(k => k + 1);
   };
 

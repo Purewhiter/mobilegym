@@ -4,6 +4,7 @@ import { useRailwayStore } from '../../state';
 import { useRailwayGestures } from '../../hooks/useRailwayGestures';
 import { IcNavBack } from '../../res/icons';
 import SmsGateway from '@/os/SmsGateway';
+import { digits, nextStream } from '../../../../os/RandomService';
 
 export interface RegisterFormState {
   username: string;
@@ -23,7 +24,7 @@ const RegisterVerifyPage: React.FC = () => {
   };
 
   const verifyCode = useMemo(
-    () => Array.from({ length: 6 }, () => Math.floor(Math.random() * 10)).join(''),
+    () => digits(nextStream('railway12306.registerCode'), 6),
     [],
   );
 

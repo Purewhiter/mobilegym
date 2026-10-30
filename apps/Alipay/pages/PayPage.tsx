@@ -3,6 +3,7 @@ import React from 'react';
 import { IcNavBack, IcMore, IcScan, IcPiggyBank, IcPay, IcFastPay, IcTransfer } from '../res/icons';
 import { RealisticQRCode } from '../components/RealisticQRCode';
 import { useAlipayGestures } from '../hooks/useAlipayGestures';
+import { stream } from '../../../os/RandomService';
 export const PayPage: React.FC = () => {
   const s = useAlipayStrings();
   const { bindTap, bindBack } = useAlipayGestures();
@@ -47,7 +48,7 @@ export const PayPage: React.FC = () => {
           {/* Barcode Placeholder */}
           <div className="w-full h-24 flex items-center justify-center space-x-1 mb-2">
              {Array.from({ length: 40 }).map((_, i) => (
-               <div key={i} className="h-16 bg-black" style={{ width: Math.random() * 4 + 1 }}></div>
+               <div key={i} className="h-16 bg-black" style={{ width: stream(`alipay.payBarcode|${i}`)() * 4 + 1 }}></div>
              ))}
           </div>
           <div className="text-xs text-gray-400 mb-6">{s.tap_to_view_payment_code}</div>

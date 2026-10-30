@@ -13,6 +13,7 @@ import type {
   AlipayTransferRecord,
 } from './types';
 import { enrichTransferRecord } from './utils/bills';
+import { base36, int, nextStream } from '../../os/RandomService';
 
 // ── Types ──────────────────────────────────────────────────────────
 
@@ -256,7 +257,7 @@ export const useAlipayStore = createAppStoreWithActions<AlipayStoreState, Alipay
       }
 
       const nextRecord = enrichTransferRecord({
-        id: `tr_${timestamp}_${Math.random().toString(16).slice(2)}`,
+        id: `tr_${timestamp}_${base36(nextStream('alipay.transfer'), 10)}`,
         counterpartyName: params.counterpartyName,
         counterpartyAvatar: params.counterpartyAvatar ?? '',
         delta,
@@ -374,7 +375,7 @@ export const useAlipayStore = createAppStoreWithActions<AlipayStoreState, Alipay
     addBankCard: (params) => {
       const bankName = String(params.bankName || '').trim() || '银行卡';
       const digits = String(params.cardNumber || '').replace(/\D/g, '');
-      const last4 = digits.slice(-4) || String(Math.floor(Math.random() * 10000)).padStart(4, '0');
+      const last4 = digits.slice(-4) || String(int(nextStream('alipay.cardLast4'), 0, 10000)).padStart(4, '0');
       const bankCodeMap: Record<string, string> = {
         建设银行: 'ccb', 工商银行: 'icbc', 农业银行: 'abc', 中国银行: 'boc',
         邮储银行: 'psbc', 邮政储蓄银行: 'psbc', 招商银行: 'cmb', 交通银行: 'bcm',
@@ -466,7 +467,7 @@ export const useAlipayStore = createAppStoreWithActions<AlipayStoreState, Alipay
       const s = get();
       const now = TimeService.now();
       const newMsg: ChatMessage = {
-        id: `cm_${now}_${Math.random().toString(16).slice(2, 8)}`,
+        id: `cm_${now}_${base36(nextStream('alipay.chatMessage'), 6)}`,
         senderId: 'self',
         type: 'text',
         content: text,

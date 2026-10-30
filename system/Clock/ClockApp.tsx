@@ -27,6 +27,7 @@ import { StopwatchPage } from './pages/StopwatchPage';
 import { TimerPage } from './pages/TimerPage';
 import { WorldClockPage } from './pages/WorldClockPage';
 import { CLOCK_CONFIG } from './data';
+import { base36, nextStream } from '../../os/RandomService';
 
 const ClockShell: React.FC = () => {
   const s = useAppStrings(strings, stringsEn);
@@ -54,7 +55,7 @@ const ClockShell: React.FC = () => {
   const [worldClockSelectionMode, setWorldClockSelectionMode] = useState(false);
   const [worldClockSelectedIds, setWorldClockSelectedIds] = useState<string[]>([]);
   const [editingAlarm, setEditingAlarm] = useState<Alarm>(() => ({
-    id: `a-${timeNow()}-${Math.random().toString(36).slice(2, 6)}`,
+    id: `a-${timeNow()}-${base36(nextStream('clock.alarm'), 4)}`,
     hour: 7,
     minute: 0,
     enabled: true,
@@ -135,7 +136,7 @@ const ClockShell: React.FC = () => {
 
   const handleOpenAddAlarm = () => {
     setEditingAlarm({
-      id: `a-${timeNow()}-${Math.random().toString(36).slice(2, 6)}`,
+      id: `a-${timeNow()}-${base36(nextStream('clock.alarm'), 4)}`,
       hour: getDate().getHours(),
       minute: getDate().getMinutes(),
       enabled: true,

@@ -10,6 +10,7 @@ import { MultiCardRechargeModal, type MultiRechargeRow } from '../components/Mul
 import { AmountKeyboard } from '../components/AmountKeyboard';
 import { useLocale } from '@/apps/Alipay/locale';
 import { localizeBankName } from '../utils/localizeBankName';
+import { base36, nextStream } from '../../../os/RandomService';
 
 export const RechargePage: React.FC = () => {
   const { bankCards, recordTransfer } = useAlipayStore();
@@ -69,7 +70,7 @@ export const RechargePage: React.FC = () => {
   const onPasswordSuccess = () => {
     if (!selectedCard) return;
     const val = Number(amount);
-    const batchId = `recharge_${TimeService.now()}_${Math.random().toString(16).slice(2, 8)}`;
+    const batchId = `recharge_${TimeService.now()}_${base36(nextStream('alipay.recharge'), 6)}`;
     recordTransfer({
       counterpartyName: '充值',
       delta: val,
@@ -102,7 +103,7 @@ export const RechargePage: React.FC = () => {
 
     setMultiRows(null);
 
-    const batchId = `recharge_${TimeService.now()}_${Math.random().toString(16).slice(2, 8)}`;
+    const batchId = `recharge_${TimeService.now()}_${base36(nextStream('alipay.recharge'), 6)}`;
     for (const r of parsed) {
       recordTransfer({
         counterpartyName: '充值',

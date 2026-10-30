@@ -17,6 +17,7 @@ import { localizeSpotifyText } from '../utils/localizeSpotifyText';
 import { useVirtualList } from '../../../os/hooks/useVirtualList';
 import { inferLargeArtworkUrl } from '../utils/artwork';
 import { lookupITunes } from '../utils/itunes';
+import { pick, shuffle as shuffleWith, stream } from '../../../os/RandomService';
 // 扩充一些 Mock 歌曲数据以丰富详情页
 const MOCK_TRACKS: SpotifyTrack[] = [
     ...SPOTIFY_CONFIG.startListening,
@@ -62,7 +63,7 @@ export const PlaylistPage: React.FC = () => {
         if (title?.includes('周杰伦') || foundPlaylist?.subtitle?.includes('周杰伦')) {
             pool = pool.filter(t => t.artist === '周杰伦').concat(pool.filter(t => t.artist !== '周杰伦'));
         } else {
-            pool.sort(() => Math.random() - 0.5);
+            pool = shuffleWith(stream(`spotify.playlistMock|${title}`), pool);
         }
         setTracks(pool);
     };
@@ -81,7 +82,7 @@ export const PlaylistPage: React.FC = () => {
                         setPlaylist(cached.playlist as any);
                         setTracks(cached.tracks);
                         const colors = ['from-purple-800', 'from-blue-800', 'from-red-800', 'from-orange-800', 'from-emerald-800', 'from-yellow-800'];
-                        setBgColor(colors[Math.floor(Math.random() * colors.length)]);
+                        setBgColor(pick(stream(`spotify.playlistBg|${id}`), colors));
                         return;
                     }
 
@@ -145,7 +146,7 @@ export const PlaylistPage: React.FC = () => {
 
                         // 随机背景
                         const colors = ['from-purple-800', 'from-blue-800', 'from-red-800', 'from-orange-800', 'from-emerald-800', 'from-yellow-800'];
-                        setBgColor(colors[Math.floor(Math.random() * colors.length)]);
+                        setBgColor(pick(stream(`spotify.playlistBg|${id}`), colors));
                         return;
                     }
                 } catch (e) {
@@ -178,7 +179,7 @@ export const PlaylistPage: React.FC = () => {
                     const resolved = ids.map(tid => sources.find(t => t.id === tid)).filter(Boolean) as SpotifyTrack[];
                     setTracks(resolved);
                     const colors = ['from-purple-800', 'from-blue-800', 'from-red-800', 'from-orange-800', 'from-emerald-800', 'from-yellow-800'];
-                    setBgColor(colors[Math.floor(Math.random() * colors.length)]);
+                    setBgColor(pick(stream(`spotify.playlistBg|${id}`), colors));
                     return;
                 }
             }
@@ -211,7 +212,7 @@ export const PlaylistPage: React.FC = () => {
                 setPlaylist(found);
                 // 简单的随机背景色模拟
                 const colors = ['from-purple-800', 'from-blue-800', 'from-red-800', 'from-orange-800', 'from-emerald-800', 'from-yellow-800'];
-                setBgColor(colors[Math.floor(Math.random() * colors.length)]);
+                setBgColor(pick(stream(`spotify.playlistBg|${id}`), colors));
 
                 // 优先使用预生成的离线数据
                 const seededTracks = id ? playlistTracksMap?.[id] : undefined;

@@ -14,6 +14,7 @@ import {
     localizeMeetingTimezone,
     type TencentMeetingStrings,
 } from '../utils/localization';
+import { digits, int, nextStream } from '../../../os/RandomService';
 
 const Switch: React.FC<{ value: boolean; onChange: (value: boolean) => void }> = ({ value, onChange }) => (
     <div
@@ -494,10 +495,8 @@ export const EditMeetingPage: React.FC = () => {
     const [showInviteesPicker, setShowInviteesPicker] = useState(false);
 
     const generateRandomPassword = () => {
-        const length = Math.floor(Math.random() * 3) + 4;
-        let password = '';
-        for (let i = 0; i < length; i++) password += Math.floor(Math.random() * 10).toString();
-        return password;
+        const rng = nextStream('meeting.password');
+        return digits(rng, int(rng, 4, 7));
     };
 
     const handlePasswordToggle = (enabled: boolean) => {

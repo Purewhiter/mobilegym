@@ -3,6 +3,7 @@ import { IcWarning, IcCalendar, IcCheck, IcNavBack, IcAdd, IcTicket, IcClose } f
 import { useLocation } from 'react-router-dom';
 import { useRailwayStore, maskIdNo } from '../state';
 import { randomSeatNo, supportsPositionPick, buildSeatNosFromPositions, computeSeatReassignProbability } from '../types';
+import { base36, nextStream, stream } from '../../../os/RandomService';
 import { useRailwayGestures } from '../hooks/useRailwayGestures';
 import { useShallow } from 'zustand/react/shallow';
 import { fromTimestamp, getISOString, now as timeNow, parseToTimestamp } from '../../../os/TimeService';
@@ -152,24 +153,28 @@ export const OrderConfirmPage: React.FC = () => {
     const reassignProb = canHonorPositions
       ? computeSeatReassignProbability(seatInfo.count, validPassengers.length)
       : 0;
-    const seatReassigned = canHonorPositions && Math.random() < reassignProb;
+    const orderId = `EK${orderSeed}01`;
+    // The order id carries the clock; seats are keyed by the order's place in the
+    // session instead, so the same booking gets the same seats in every run.
+    const orderKey = base36(nextStream('railway12306.order'), 8);
+    const seatReassigned = canHonorPositions && stream(`railway.reassign|${orderKey}`)() < reassignProb;
 
     const honoredSeatNos = canHonorPositions && !seatReassigned
-      ? buildSeatNosFromPositions(seatInfo.type, selectedSeatPositions)
+      ? buildSeatNosFromPositions(seatInfo.type, selectedSeatPositions, orderKey)
       : [];
 
     const tickets = validPassengers.map((passenger, idx) => ({
       passengerName: passenger.name,
       ticketType: state.isStudent ? '学生票' : '成人票',
       seatType: seatInfo.type,
-      seatNo: honoredSeatNos[idx] ?? randomSeatNo(seatInfo.type),
+      seatNo: honoredSeatNos[idx] ?? randomSeatNo(seatInfo.type, `${orderKey}|${idx}|${passenger.name}`),
       price: seatInfo.price,
     }));
 
     if (tickets.length === 0) return;
 
     addOrder({
-      id: `EK${orderSeed}01`,
+      id: orderId,
       trainNo: train.trainNo,
       fromStation: train.fromStation,
       toStation: train.toStation,

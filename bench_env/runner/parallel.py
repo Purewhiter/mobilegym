@@ -68,6 +68,7 @@ class ParallelRunner(BaseRunner):
             headless=config.headless, proxy=config.proxy, coord_space=config.coord_space,
             delay_after_action=config.delay_after_action,
             settle=config.settle,
+            env_seed=config.env_seed if config.env_seed is not None else config.sample_seed,
             verbose=verbose,
         )
 

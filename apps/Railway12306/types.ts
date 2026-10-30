@@ -1,3 +1,5 @@
+import { int, pick, stream } from '../../os/RandomService';
+
 // ─── 订单类型 ─────────────────────────────────────────────────────────
 
 export interface TicketInfo {
@@ -26,16 +28,21 @@ export interface OrderRecord {
   seatReassignedAcked?: boolean;
 }
 
-/** 根据座位类型生成随机座位号 */
-export function randomSeatNo(seatType: string): string {
+/**
+ * 根据座位类型生成座位号。`key` 标识这张票（订单号 + 乘客），同一种子下同一张票总是
+ * 分到同一个座位（RandomService.stream）。
+ */
+export function randomSeatNo(seatType: string, key: string): string {
+  const rng = stream(`railway.seat|${key}`);
+  const pad = (n: number, width: number) => String(n).padStart(width, '0');
+
   if (seatType === '无座') {
-    const car = String(Math.floor(Math.random() * 16) + 1).padStart(2, '0');
-    return `${car}车`;
+    return `${pad(int(rng, 1, 17), 2)}车`;
   }
 
   if (seatType === '硬座') {
-    const car = String(Math.floor(Math.random() * 18) + 1).padStart(2, '0');
-    const seat = String(Math.floor(Math.random() * 118) + 1).padStart(3, '0');
+    const car = pad(int(rng, 1, 19), 2);
+    const seat = pad(int(rng, 1, 119), 3);
     return `${car}车 ${seat}号`;
   }
 
@@ -43,18 +50,18 @@ export function randomSeatNo(seatType: string): string {
     const isSoft = seatType.includes('软');
     const maxCar = isSoft ? 4 : 18;
     const maxBerth = isSoft ? 36 : 66;
-    const car = String(Math.floor(Math.random() * maxCar) + 1).padStart(2, '0');
-    const berth = String(Math.floor(Math.random() * maxBerth) + 1).padStart(3, '0');
+    const car = pad(int(rng, 1, maxCar + 1), 2);
+    const berth = pad(int(rng, 1, maxBerth + 1), 3);
     return `${car}车 ${berth}号`;
   }
 
-  const car = String(Math.floor(Math.random() * 16) + 1).padStart(2, '0');
+  const car = pad(int(rng, 1, 17), 2);
   let cols: string[];
   if (seatType.includes('商务')) cols = ['A', 'C', 'F'];
   else if (seatType.includes('一等')) cols = ['A', 'C', 'D', 'F'];
   else cols = ['A', 'B', 'C', 'D', 'F'];
-  const row = String(Math.floor(Math.random() * 20) + 1).padStart(2, '0');
-  const col = cols[Math.floor(Math.random() * cols.length)];
+  const row = pad(int(rng, 1, 21), 2);
+  const col = pick(rng, cols);
   return `${car}车 ${row}${col}号`;
 }
 
@@ -71,9 +78,10 @@ export function supportsPositionPick(seatType: string): boolean {
  * 同一订单的多张票共用同一车厢号,picker 行号(0/1)对应连续真实行号,列字母直接沿用。
  * 返回值长度与 positions 相同。
  */
-export function buildSeatNosFromPositions(seatType: string, positions: string[]): string[] {
-  const car = String(Math.floor(Math.random() * 16) + 1).padStart(2, '0');
-  const baseRow = Math.floor(Math.random() * 18) + 1; // 1..18,留两行余量
+export function buildSeatNosFromPositions(seatType: string, positions: string[], orderKey: string): string[] {
+  const rng = stream(`railway.pickedSeats|${orderKey}`);
+  const car = String(int(rng, 1, 17)).padStart(2, '0');
+  const baseRow = int(rng, 1, 19); // 1..18,留两行余量
   return positions.map(pos => {
     const [rawRow, col] = pos.split('-');
     const rowOffset = Number.parseInt(rawRow ?? '0', 10) || 0;

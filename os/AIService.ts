@@ -13,6 +13,7 @@
  */
 
 import { SIMULATOR_CONFIG } from './data';
+import { nextStream, pick } from './RandomService';
 
 // ============================================================================
 // Types
@@ -478,7 +479,7 @@ async function mockResponse(
     case 'random':
     default:
       // Return random response from pool
-      content = MOCK_RESPONSES[Math.floor(Math.random() * MOCK_RESPONSES.length)];
+      content = pick(nextStream('os.ai.mockResponse'), MOCK_RESPONSES);
       break;
   }
 

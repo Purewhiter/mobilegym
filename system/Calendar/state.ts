@@ -2,11 +2,12 @@ import { createAppStoreWithActions, memoSelector } from '../../os/createAppStore
 import { CALENDAR_CONFIG } from './data';
 import * as TimeService from '@/os/TimeService';
 import type { CalendarEvent, CalendarSettings } from './types';
+import { base36, nextStream } from '../../os/RandomService';
 
 // ---- Helper functions ----
 
 function randomId(prefix: string): string {
-  return `${prefix}_${Math.random().toString(36).slice(2, 10)}${TimeService.now().toString(36).slice(-4)}`;
+  return `${prefix}_${base36(nextStream(`calendar.${prefix}`), 8)}${TimeService.now().toString(36).slice(-4)}`;
 }
 
 function startOfDayTs(ts: number): number {

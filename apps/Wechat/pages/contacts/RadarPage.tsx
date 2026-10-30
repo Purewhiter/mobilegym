@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { IcUser } from '../../res/icons';
 import { useWechatStore } from '../../state';
 import { useWechatGestures } from '../../hooks/useWechatGestures';
+import { stream } from '../../../../os/RandomService';
 
 export const RadarPage: React.FC = () => {
     const { bindBack } = useWechatGestures();
@@ -11,11 +12,12 @@ export const RadarPage: React.FC = () => {
 
     useEffect(() => {
         // Generate random stars for the background
+        const rng = stream('wechat.radarStars');
         const newStars = Array.from({ length: 60 }).map(() => ({
-            top: `${Math.random() * 100}%`,
-            left: `${Math.random() * 100}%`,
-            size: `${Math.random() * 2 + 1}px`,
-            opacity: Math.random() * 0.7 + 0.3
+            top: `${rng() * 100}%`,
+            left: `${rng() * 100}%`,
+            size: `${rng() * 2 + 1}px`,
+            opacity: rng() * 0.7 + 0.3
         }));
         setStars(newStars);
     }, []);

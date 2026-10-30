@@ -5,6 +5,7 @@ import * as TimeService from '../TimeService';
 import type { ContentUri, ContentValues, Cursor } from '../types/content';
 import type { Contact, ContactEmail, ContactPhone } from '../../system/Contacts/types';
 import contactsDefaults from './defaults/contacts.json';
+import { base36, nextStream } from '../RandomService';
 
 export interface ContactsProviderState {
   contacts: Contact[];
@@ -50,7 +51,7 @@ function asEmails(v: any): ContactEmail[] {
 }
 
 const randomId = (prefix: string) =>
-  `${prefix}_${Math.random().toString(36).slice(2, 10)}${TimeService.now().toString(36).slice(-4)}`;
+  `${prefix}_${base36(nextStream(`contacts.${prefix}`), 8)}${TimeService.now().toString(36).slice(-4)}`;
 
 function normalizePhoneId(phones: ContactPhone[]) {
   return phones.map((p) => ({ ...p, id: p.id || randomId('phone') }));
