@@ -56,6 +56,12 @@ export interface AppModule<S> {
   exportState(ctx: AppContext<S>): unknown;
   /** Replace the app state from an external snapshot (task setup, client bootstrap). */
   importState(raw: unknown, catalog: Catalog): S;
+  /**
+   * State for a session that was never seeded. Set it for apps whose queries
+   * read only the catalog (their page store is not device-backed), so those
+   * queries work without a sync step.
+   */
+  defaultState?: () => S;
   commands: Record<string, (ctx: AppContext<S>, args: unknown[], input: CommandInput) => unknown>;
   queries: Record<string, (ctx: AppContext<S>, args: Record<string, unknown>) => unknown>;
 }
@@ -243,8 +249,13 @@ export class DeviceServer {
   }
 
   private slot(session: Session, appId: string): AppSlot {
-    const slot = session.apps.get(appId);
-    if (!slot) throw new DeviceError(409, `app ${appId} not initialized in session ${session.id}`);
+    let slot = session.apps.get(appId);
+    if (!slot) {
+      const module = this.module(appId);
+      if (!module.defaultState) throw new DeviceError(409, `app ${appId} not initialized in session ${session.id}`);
+      slot = { state: module.defaultState(), overlay: new Map() };
+      session.apps.set(appId, slot);
+    }
     return slot;
   }
 

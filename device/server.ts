@@ -5,6 +5,7 @@
  */
 
 import { createBilibiliModule } from '../apps/Bilibili/device';
+import { createRailway12306Module } from '../apps/Railway12306/device';
 import { createRedBookModule } from '../apps/RedBook/device';
 import { DeviceServer } from './engine';
 import { createFsModule } from './fs';
@@ -24,5 +25,6 @@ export function createDeviceServer(options: DeviceServerOptions) {
   server.register(createFsModule());
   server.register(createRedBookModule({ cdnBase: options.cdnBase }));
   server.register(createBilibiliModule({ cdnBase: options.cdnBase }));
+  server.register(createRailway12306Module());
   return { server, handler: createDeviceHttpHandler(server) };
 }

@@ -4,13 +4,14 @@
  * 基于 catalog 快照（数据来源 2026-04-23）为任意日期生成拟真余票数量。
  * 使用确定性 PRNG（FNV-1a + mulberry32），相同查询参数始终返回相同结果。
  *
+ * 纯函数：「今天」由调用方传入（YYYY-MM-DD，UTC 日期，同 TimeService.getToday()），
+ * 因此页面和 device server（apps/Railway12306/device）用同一份实现。
+ *
  * 返回值语义与 catalog availability 字段一致：
  *   -1 = "有"（充足，原始 ≥3000 或标记充足）
  *    0 = 售罄 / 未开售 / 已过期
  *   正整数 = 具体余票数
  */
-
-import { getToday, fromTimestamp, parseToTimestamp } from '../../../os/TimeService';
 
 const PRESALE_DAYS = 15;
 
@@ -78,18 +79,25 @@ function clamp(x: number, lo: number, hi: number): number {
 
 // ── 日期工具 ──────────────────────────────────────────────────────────
 
-/** YYYY-MM-DD 距今天模拟日期的天数差（负=过去，0=今天，正=未来） */
-function daysFromToday(dateStr: string): number {
-  const todayTs = parseToTimestamp(getToday());
-  const queryTs = parseToTimestamp(dateStr);
-  if (!queryTs) return -999;
-  return Math.round((queryTs - todayTs) / 86400000);
+/** YYYY-MM-DD → 该日 UTC 零点距纪元的天数；格式不对返回 null */
+function utcDayNumber(dateStr: string): number | null {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateStr);
+  if (!m) return null;
+  return Math.round(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3])) / 86400000);
 }
 
-/** YYYY-MM-DD → weekday（0=Mon..6=Sun，与 Python weekday() 一致） */
+/** YYYY-MM-DD 距 today 的天数差（负=过去，0=今天，正=未来） */
+function daysFromToday(dateStr: string, today: string): number {
+  const todayDay = utcDayNumber(today);
+  const queryDay = utcDayNumber(dateStr);
+  if (todayDay === null || queryDay === null) return -999;
+  return queryDay - todayDay;
+}
+
+/** YYYY-MM-DD → weekday（0=Mon..6=Sun，与 Python weekday() 一致）；1970-01-01 是周四 */
 function getWeekday(dateStr: string): number {
-  const d = fromTimestamp(parseToTimestamp(dateStr));
-  return (d.getUTCDay() + 6) % 7;
+  const day = utcDayNumber(dateStr) ?? 0;
+  return (((day + 3) % 7) + 7) % 7;
 }
 
 // ── 紧张度计算 ────────────────────────────────────────────────────────
@@ -118,6 +126,7 @@ function computeTightness(
  * @param toCode    - 到达站三字码（如 "NJH"）
  * @param dateStr   - 查询日期 YYYY-MM-DD
  * @param seatKey   - 席别键（如 "secondClass"）
+ * @param today     - 模拟今天 YYYY-MM-DD
  * @returns 与 baseCount 语义一致：-1="有", 0=售罄/未开售, 正整数=具体余票
  */
 export function generateSeatCount(
@@ -127,8 +136,9 @@ export function generateSeatCount(
   toCode: string,
   dateStr: string,
   seatKey: string,
+  today: string,
 ): number {
-  const daysUntil = daysFromToday(dateStr);
+  const daysUntil = daysFromToday(dateStr, today);
   // 未开售（预售期外）或已过期，均返回 0；调用方负责设置 saleTime
   if (daysUntil < 0 || daysUntil > PRESALE_DAYS) return 0;
 
@@ -177,6 +187,6 @@ export function getSaleTimeForStation(fromCode: string): string {
  * 指定日期是否尚未开始售票（超出预售期）。
  * 返回 true 时，调用方应将所有席别 count 置 0 并填入 saleTime。
  */
-export function isBeforePresale(dateStr: string): boolean {
-  return daysFromToday(dateStr) > PRESALE_DAYS;
+export function isBeforePresale(dateStr: string, today: string): boolean {
+  return daysFromToday(dateStr, today) > PRESALE_DAYS;
 }

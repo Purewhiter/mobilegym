@@ -2,7 +2,7 @@
  * 列车查询服务。
  *
  * 数据来源优先级：
- *   1. 离线 catalog（catalogService）—— 覆盖 22 个城市、100+ 车站的真实 12306 快照
+ *   1. 离线 catalog（catalogService，在 device server 上执行）—— 覆盖 22 个城市、100+ 车站的真实 12306 快照
  *   2. 真实 12306 API（railwayApi）—— catalog 未覆盖时联网
  *
  * catalog 已是主力数据源，bench 任务的 OD 都落在覆盖范围内；
@@ -11,7 +11,9 @@
 
 import { initSession, queryTickets, queryTransfer, isSessionValid, type TicketQueryResult, type TransferQueryResult } from './railwayApi';
 import { getStationCode, getStationName } from './stationService';
-import { loadCatalog, queryDirectFromCatalog, queryTransferFromCatalog, normalizeTrainType } from './catalogService';
+import { normalizeTrainType, type CatalogClock } from './catalogService';
+import { DeviceClient } from '../../../os/device/DeviceClient';
+import { getDate, getToday } from '../../../os/TimeService';
 import type { TrainInfo, SeatInfo, TransferPlan, BerthPrice } from '../types';
 import { getAllStations } from '../data/stations';
 import type { Station } from '../data/stations';
@@ -77,6 +79,46 @@ function isTimeInRange(time: string, rangeIdx: number): boolean {
 
 // ─── 直达车次查询（支持真实 API） ──────────────────────────────────
 
+// ─── 离线 catalog（device server）────────────────────────────────
+
+/** 本页的模拟时钟：catalog 据此过滤今天已发车的车次、判断预售期 */
+function catalogClock(): CatalogClock {
+  const d = getDate();
+  return {
+    today: getToday(),
+    nowHHmm: `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`,
+  };
+}
+
+/** JSON 把余票充足的 `count: Infinity` 变成 null，这里还原 */
+function restoreSeatCounts(seats: SeatInfo[]): SeatInfo[] {
+  for (const seat of seats) {
+    if (seat.count === null) seat.count = Infinity;
+  }
+  return seats;
+}
+
+/** null = catalog 未覆盖该 OD */
+async function queryDirectFromCatalog(fromName: string, toName: string, date: string): Promise<TrainInfo[] | null> {
+  const trains = await DeviceClient.query<TrainInfo[] | null>('railway12306', 'directTrains', {
+    from: fromName, to: toName, date, ...catalogClock(),
+  });
+  trains?.forEach(t => restoreSeatCounts(t.seats));
+  return trains;
+}
+
+/** null = catalog 未覆盖该 OD */
+async function queryTransferFromCatalog(fromName: string, toName: string, date: string): Promise<TransferPlan[] | null> {
+  const plans = await DeviceClient.query<TransferPlan[] | null>('railway12306', 'transferPlans', {
+    from: fromName, to: toName, date, ...catalogClock(),
+  });
+  plans?.forEach(p => {
+    restoreSeatCounts(p.leg1.seats);
+    restoreSeatCounts(p.leg2.seats);
+  });
+  return plans;
+}
+
 export interface QueryDirectResult {
   trains: TrainInfo[];
 }
@@ -91,8 +133,7 @@ export async function queryDirectTrains(
 ): Promise<QueryDirectResult> {
   // 1) 离线 catalog
   try {
-    await loadCatalog();
-    const hit = queryDirectFromCatalog(fromName, toName, date);
+    const hit = await queryDirectFromCatalog(fromName, toName, date);
     if (hit !== null) {
       console.log(`[trainService] 直达查询 ${fromName}→${toName} @${date} 数据源=离线catalog 车次=${hit.length}`);
       return { trains: hit };
@@ -129,8 +170,7 @@ export async function queryTransferPlans(
 ): Promise<TransferPlan[]> {
   // 1) 离线 catalog
   try {
-    await loadCatalog();
-    const hit = queryTransferFromCatalog(fromName, toName, date);
+    const hit = await queryTransferFromCatalog(fromName, toName, date);
     if (hit !== null) {
       console.log(`[trainService] 中转查询 ${fromName}→${toName} @${date} 数据源=离线catalog 方案=${hit.length}`);
       return hit;
