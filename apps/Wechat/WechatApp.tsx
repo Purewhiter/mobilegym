@@ -1,6 +1,7 @@
 
 import React, { useCallback, useState, useEffect, useRef } from 'react';
 import { useWechatStrings } from './hooks/useWechatStrings';
+import { RouteScrollContainer } from '../../os/components/RouteScrollContainer';
 import { MemoryRouter as Router, Routes, Route, Outlet, useLocation, useNavigate, UNSAFE_NavigationContext, Navigate } from 'react-router-dom';
 import { IcMessageSquare, IcUserAdd, IcScan, IcQrCode } from './res/icons';
 import './styles/index.css';
@@ -292,14 +293,12 @@ const Layout = () => {
 
         {/* Sub-pages: Use Outlet as usual */}
         {!isMainTab && (
-          <div
-            data-scroll-container="main"
-            data-scroll-direction="vertical"
+          <RouteScrollContainer
             className="h-full overflow-y-auto no-scrollbar"
             style={{ paddingTop: (isSpecialFullScreen || isIndividualMomentsPage) ? '0' : '88px' }}
           >
             <Outlet />
-          </div>
+          </RouteScrollContainer>
         )}
       </div>
 

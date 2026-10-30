@@ -129,10 +129,17 @@ export default function HabitsApp() {
 }
 ```
 
-Two non-obvious rules:
+Three non-obvious rules:
 
 1. **`useAppNavigationHandler` must be called inside the `MemoryRouter`.** It registers your app's navigator with `AppNavigatorRegistry` (so the OS can `openApp(id, '/some/path')`), wires the app-level back handler (priority 100) into `BackDispatcher`, broadcasts lifecycle events into `AppLifecycle`, and keeps a shadow `HistoryTracker` in sync so `popTo()` works.
 2. **No `useNavigate()` from `react-router`.** Use the per-app `go()` / `back()` helpers from `navigation.ts`. The reason is in [`../navigation/declaration.md`](../navigation/declaration.md).
+3. **Routed pages that share a layout scroller go in `<RouteScrollContainer>`, never a plain `overflow-y-auto` div** (ESLint blocks `<Outlet />` / `<Routes>` inside one). A plain div survives navigation, so the next page inherits the previous page's `scrollTop`, clamped to its own height. How far it is clamped depends on frame timing (store updates commit at once, react-router commits the route change later in a transition), so identical actions end at different scroll positions from run to run. `RouteScrollContainer` (`os/components/RouteScrollContainer.tsx`) decides the position from the navigation alone: a new page starts at the top, back (POP) returns to where that entry was left, search-only changes (URL dialogs) keep it, and paths in `rememberPaths` (main tabs rendered in the same container) reopen where they were left. It renders `data-scroll-container` (`name`, default `main`) and `data-scroll-direction="vertical"` itself.
+
+```tsx
+<RouteScrollContainer className="h-full overflow-y-auto no-scrollbar">
+  <Outlet />
+</RouteScrollContainer>
+```
 
 ## `navigation.types.ts` and `navigation.declaration.ts`
 

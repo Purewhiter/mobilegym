@@ -21,6 +21,17 @@ const CRYPTO_RANDOM_BAN = {
   message: 'Use RandomService (base36(nextStream(scope), n) for ids) so runs are reproducible from their seed. See os/RandomService.ts.',
 };
 
+// A plain scroll div around routed pages survives navigation: the next page
+// inherits the old scrollTop, clamped by frame timing. See os/components/RouteScrollContainer.tsx.
+const OVERFLOW_SCROLL = '/overflow-(y-)?(auto|scroll)/';
+const SCROLLER = 'JSXElement:not([openingElement.name.name="RouteScrollContainer"]):has(> JSXOpeningElement:has(> '
+  + `:matches(JSXAttribute[name.name="data-scroll-container"], JSXAttribute[name.name="className"]:has(:matches(Literal[value=${OVERFLOW_SCROLL}], TemplateElement[value.raw=${OVERFLOW_SCROLL}])))))`;
+const SHARED_ROUTE_SCROLLER_BAN = {
+  selector: `:matches(${SCROLLER}) JSXElement[openingElement.name.name=/^(Outlet|Routes)$/]`,
+  message: 'Wrap routed pages in <RouteScrollContainer> (os/components/RouteScrollContainer.tsx), not a plain scroll div: '
+    + 'otherwise each page inherits the previous page\'s scroll position, and how far depends on frame timing.',
+};
+
 export default [
   {
     files: ['os/**/*.{ts,tsx}', 'apps/**/*.{ts,tsx}', 'system/**/*.{ts,tsx}'],
@@ -31,7 +42,7 @@ export default [
       'react-hooks': reactHooks,
     },
     rules: {
-      'no-restricted-syntax': ['error', DATE_NOW_BAN, NEW_DATE_BAN, MATH_RANDOM_BAN, CRYPTO_RANDOM_BAN],
+      'no-restricted-syntax': ['error', DATE_NOW_BAN, NEW_DATE_BAN, MATH_RANDOM_BAN, CRYPTO_RANDOM_BAN, SHARED_ROUTE_SCROLLER_BAN],
       'react-hooks/rules-of-hooks': 'error',
       'react-hooks/exhaustive-deps': 'warn',
     },

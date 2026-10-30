@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef } from 'react';
+import { RouteScrollContainer } from '../../os/components/RouteScrollContainer';
 import {
   MemoryRouter, Routes, Route, Navigate, useLocation, useNavigate, Outlet,
   UNSAFE_NavigationContext,
@@ -221,9 +222,9 @@ const Layout: React.FC = () => {
         )}
 
         {!isMainTab && (
-          <div data-scroll-container="main" data-scroll-direction="vertical" className="h-full overflow-y-auto no-scrollbar">
+          <RouteScrollContainer className="h-full overflow-y-auto no-scrollbar">
             <Outlet />
-          </div>
+          </RouteScrollContainer>
         )}
       </div>
 

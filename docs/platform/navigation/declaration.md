@@ -340,7 +340,7 @@ Hard rules:
 - **Navigation with side effect on the same tap is still a transition.** If a single tap both changes the URL and updates state, declare it as a `transition`; the side effect is observed downstream.
 - **Don't tag controls that don't do anything.** A button placeholder waiting for implementation should not carry `data-trigger`.
 - **Tab entries are tagged unconditionally.** Even when the user is already on the active tab, the tab button keeps its `bindTap(...)` — `data-trigger-*` must be present. The "tap to switch to the tab you're already on" no-op self-loop is filtered by the graph analyzer, not by stripping the binding from the UI. Conditionally removing `bindTap` for active tabs hides the entry from static scans and breaks replay.
-- **Scroll containers** need `data-scroll-container="<name>"` and `data-scroll-direction="vertical|horizontal"`, matching their `scrollContainers` declaration.
+- **Scroll containers** need `data-scroll-container="<name>"` and `data-scroll-direction="vertical|horizontal"`, matching their `scrollContainers` declaration. A layout scroller that wraps routed pages (`<Outlet />` / `<Routes>`) must be `<RouteScrollContainer>`, which sets both attributes and resets or restores the position per navigation (see [`../app/module-contract.md`](../app/module-contract.md#nameapptsx)).
 - **When `data-trigger-params` / `data-action-params` is required**: when multiple controls share one `transitionId`/`actionId` but target different parameter values (Tab switch, list item open/delete), the params attribute must be present so the analyzer can distinguish entries. Single-target transitions without operands need no params.
 
 ### Mixing `data-trigger` and `data-action` on one DOM node

@@ -19,7 +19,7 @@ User-facing documentation under `docs/` and `bench_env/docs/` is in **English**.
 npm run lint          # Lint runtime code under os/ and apps/
 ```
 
-Current rule: bare `Date.now()` and any form of `new Date(...)` (including parameterised forms — they must go through `TimeService`) are forbidden, and so are `Math.random()`, `crypto.randomUUID()` and `crypto.getRandomValues()` (they must go through `RandomService`). Config lives in `eslint.config.js`.
+Current rule: bare `Date.now()` and any form of `new Date(...)` (including parameterised forms — they must go through `TimeService`) are forbidden, and so are `Math.random()`, `crypto.randomUUID()` and `crypto.getRandomValues()` (they must go through `RandomService`). `<Outlet />` / `<Routes>` inside a plain scroll div is forbidden too (use `RouteScrollContainer`). Config lives in `eslint.config.js`.
 
 ### Navigation Artifact Generation (run after modifying navigation declarations)
 
@@ -156,6 +156,7 @@ Convention details:
 - Return/close buttons must use `bindBack()` (`system.back`), not custom transitions
 - Only tag controls that actually do something — no tags on unimplemented placeholders
 - Scrollable containers need `data-scroll-container` + `data-scroll-direction` attributes matching `scrollContainers` declarations
+- A layout scroller around routed pages (`<Outlet />` / `<Routes>`) must be `os/components/RouteScrollContainer` (new page starts at top, back restores, `rememberPaths` for main tabs); a plain div lets pages inherit each other's scroll position, which varies with frame timing
 
 ### State and Data
 

@@ -10,6 +10,7 @@ import { colorStates, colorStatesDark } from './res/colors.states';
 import { dimens } from './res/dimens';
 import { anim } from './res/anim';
 import { MemoryRouter, Routes, Route, useLocation, Outlet } from 'react-router-dom';
+import { RouteScrollContainer } from '../../os/components/RouteScrollContainer';
 import { IcTabHome, IcTabFinance, IcTabVideo, IcTabMessage, IcTabMe, IcScan, IcQrCode, IcBus, IcWalletCards, IcSecureCheck, IcFastPay, IcTicket, IcTaxi, IcMovie, IcTransfer, IcCard, IcPhone, IcGrid, IcApp, IcPiggyBank, IcCoins, IcTrend, IcShield, IcReceive, IcMore, IcNavBack, IcSearch, IcAdd, IcExpand, IcNavForward, IcSettings, IcHeadphone, IcArrow, IcHelp, IcClock, IcClose, IcFile, IcChart, IcWallet, IcCircle, IcDroplet, IcBusiness, IcBank, IcBuilding, IcMedical, IcHeart } from './res/icons';
 import { useAlipayStore, computeUnread } from './state';
 import { HomePage } from './pages/HomePage';
@@ -151,42 +152,19 @@ const TabBar: React.FC = () => {
   );
 };
 
+/** Main tabs share the page scroll container; each reopens where it was left. */
+const MAIN_TAB_PATHS = ['/', '/finance', '/video', '/messages', '/my'];
+
 const Layout: React.FC = () => {
   const { pathname } = useLocation();
-  const isMainTab = ['/', '/finance', '/video', '/messages', '/my'].includes(pathname);
+  const isMainTab = MAIN_TAB_PATHS.includes(pathname);
   const showTabBar = isMainTab;
-  const scrollRef = React.useRef<HTMLDivElement | null>(null);
-
-  React.useEffect(() => {
-    const el = scrollRef.current;
-    const key = `alipay_layout_scroll_v1:${pathname}`;
-    try {
-      const raw = window.sessionStorage.getItem(key);
-      const top = raw ? Number(raw) : 0;
-      if (el && Number.isFinite(top) && top > 0) {
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
-            if (scrollRef.current) scrollRef.current.scrollTop = top;
-          });
-        });
-      }
-    } catch {}
-
-    return () => {
-      const el = scrollRef.current;
-      try {
-        if (el) window.sessionStorage.setItem(key, String(el.scrollTop));
-      } catch {}
-    };
-  }, [pathname]);
 
   return (
     <div className="h-full w-full flex flex-col">
-      <div
-        ref={scrollRef}
-        data-scroll-container="main"
-        data-scroll-direction="vertical"
+      <RouteScrollContainer
         className="flex-1 overflow-y-auto overflow-x-hidden no-scrollbar"
+        rememberPaths={MAIN_TAB_PATHS}
       >
         {/* 主 Tab 常驻挂载，使用条件渲染控制显示 */}
         {pathname === '/' && <HomePage />}
@@ -197,7 +175,7 @@ const Layout: React.FC = () => {
 
         {/* 子页面互斥渲染 */}
         {!isMainTab && <Outlet />}
-      </div>
+      </RouteScrollContainer>
       
       {showTabBar && <TabBar />}
     </div>
