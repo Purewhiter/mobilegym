@@ -6,7 +6,7 @@ import { useRailwayStore } from '../state';
 export const SettingsPage: React.FC = () => {
   const { bindBack, bindTap } = useRailwayGestures();
   const settings = useRailwayStore(s => s.settings);
-  const updateSettings = useRailwayStore(s => s.updateSettings);
+  const toggleSetting = useRailwayStore(s => s.toggleSetting);
   const s = useRailwayStrings();
 
   const sections = [
@@ -81,7 +81,7 @@ export const SettingsPage: React.FC = () => {
           <button
  className={`w-12 h-7 rounded-full ${settings.recentRecommend ? 'bg-app-primary' : 'bg-gray-300'}`}
  style={{ transition: 'color var(--app-duration-short) var(--app-easing-standard), background-color var(--app-duration-short) var(--app-easing-standard)' }}
-            onClick={() => updateSettings({ recentRecommend: !settings.recentRecommend })}
+            onClick={() => toggleSetting('recentRecommend')}
           >
  <div className={`w-5 h-5 bg-app-surface rounded-full shadow ${settings.recentRecommend ? 'translate-x-6' : 'translate-x-1'}`}
  style={{ transition: 'transform var(--app-duration-medium) var(--app-easing-standard)' }} />
@@ -95,7 +95,7 @@ export const SettingsPage: React.FC = () => {
           <button
  className={`w-12 h-7 rounded-full ${settings.adRecommend ? 'bg-app-primary' : 'bg-gray-300'}`}
  style={{ transition: 'color var(--app-duration-short) var(--app-easing-standard), background-color var(--app-duration-short) var(--app-easing-standard)' }}
-            onClick={() => updateSettings({ adRecommend: !settings.adRecommend })}
+            onClick={() => toggleSetting('adRecommend')}
           >
  <div className={`w-5 h-5 bg-app-surface rounded-full shadow ${settings.adRecommend ? 'translate-x-6' : 'translate-x-1'}`}
  style={{ transition: 'transform var(--app-duration-medium) var(--app-easing-standard)' }} />

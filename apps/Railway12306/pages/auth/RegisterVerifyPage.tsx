@@ -66,7 +66,7 @@ const RegisterVerifyPage: React.FC = () => {
     );
   }, []);
 
-  const handleComplete = () => {
+  const handleComplete = async () => {
     if (!smsSent) {
       setDialogMsg('请先发送注册短信!');
       return;
@@ -75,7 +75,7 @@ const RegisterVerifyPage: React.FC = () => {
       setDialogMsg('验证码错误，请重新输入!');
       return;
     }
-    const res = registerAccount({
+    const res = await registerAccount({
       username: formData.username,
       password: formData.password,
       name: formData.name,

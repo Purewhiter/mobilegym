@@ -14,10 +14,10 @@ export const RailwayLoginPage: React.FC = () => {
   const [showNotice, setShowNotice] = useState(true);
   const [error, setError] = useState('');
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!username) return;
     setError('');
-    const res = login(username, password || undefined);
+    const res = await login(username, password || undefined);
     if (!res.ok) {
       setError(res.reason === 'wrong_password' ? '密码错误' : res.reason === 'no_account' ? '账号不存在' : '登录失败');
       return;

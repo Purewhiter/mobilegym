@@ -23,7 +23,6 @@ function completeOrder(order: OrderRecord): OrderRecord {
 export const PaymentPlatformPage: React.FC = () => {
   const orders = useRailwayStore(s => s.orders);
   const updateOrder = useRailwayStore(s => s.updateOrder);
-  const updateOrderTickets = useRailwayStore(s => s.updateOrderTickets);
   const { bindTap, go, back } = useRailwayGestures();
   const s = useRailwayStrings();
   const [selectedMethod, setSelectedMethod] = useState<'alipay' | 'jd'>('alipay');
@@ -35,12 +34,12 @@ export const PaymentPlatformPage: React.FC = () => {
 
   const totalPrice = pendingOrder ? getOrderTotalPrice(pendingOrder) : 0;
 
-  const finishPayment = () => {
+  const finishPayment = async () => {
     if (!pendingOrder) return;
     // Fill missing seats once: the stored order and the success page show the same seats.
     const completed = completeOrder(pendingOrder);
-    updateOrder(pendingOrder.id, { status: 'completed' });
-    updateOrderTickets(pendingOrder.id, ts => ts.map((t, i) => ({ ...t, seatNo: t.seatNo || completed.tickets[i]?.seatNo || '' })));
+    // The success page and the judges must see the same order: write it first.
+    await updateOrder(pendingOrder.id, { status: 'completed', tickets: completed.tickets });
     go('paymentPlatform.paymentSuccess', {}, { state: { order: completed } });
   };
 

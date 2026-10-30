@@ -13,6 +13,7 @@ import { initSession, queryTickets, queryTransfer, queryTrainStops, isSessionVal
 import { getStationCode, getStationName } from './stationService';
 import { normalizeTrainType, type CatalogClock } from './catalogService';
 import { DeviceClient } from '../../../os/device/DeviceClient';
+import { ensureDeviceSynced } from '../../../os/device/deviceStore';
 import { getDate, getToday } from '../../../os/TimeService';
 import type { TrainInfo, SeatInfo, TransferPlan, BerthPrice } from '../types';
 import { getAllStations } from '../data/stations';
@@ -99,8 +100,21 @@ function restoreSeatCounts(seats: SeatInfo[]): SeatInfo[] {
 }
 
 /** null = catalog 未覆盖该 OD */
+/** Catalog query on the device server; the session must hold this app's state first. */
+async function catalogQuery<T>(name: string, args: Record<string, unknown>): Promise<T> {
+  await ensureDeviceSynced('railway12306');
+  try {
+    return await DeviceClient.query<T>('railway12306', name, args);
+  } catch (err) {
+    // The server lost this session's state (restart): sync it again, retry once.
+    if ((err as { status?: number })?.status !== 409) throw err;
+    await ensureDeviceSynced('railway12306', true);
+    return DeviceClient.query<T>('railway12306', name, args);
+  }
+}
+
 async function queryDirectFromCatalog(fromName: string, toName: string, date: string): Promise<TrainInfo[] | null> {
-  const trains = await DeviceClient.query<TrainInfo[] | null>('railway12306', 'directTrains', {
+  const trains = await catalogQuery<TrainInfo[] | null>('directTrains', {
     from: fromName, to: toName, date, ...catalogClock(),
   });
   trains?.forEach(t => restoreSeatCounts(t.seats));
@@ -109,7 +123,7 @@ async function queryDirectFromCatalog(fromName: string, toName: string, date: st
 
 /** null = catalog 未覆盖该 OD */
 async function queryTransferFromCatalog(fromName: string, toName: string, date: string): Promise<TransferPlan[] | null> {
-  const plans = await DeviceClient.query<TransferPlan[] | null>('railway12306', 'transferPlans', {
+  const plans = await catalogQuery<TransferPlan[] | null>('transferPlans', {
     from: fromName, to: toName, date, ...catalogClock(),
   });
   plans?.forEach(p => {
@@ -124,7 +138,7 @@ async function queryTransferFromCatalog(fromName: string, toName: string, date: 
  */
 export async function queryTrainStopsWithCatalog(trainNo: string, date: string): Promise<StopInfo[]> {
   try {
-    const stops = await DeviceClient.query<StopInfo[] | null>('railway12306', 'trainStops', { trainNo });
+    const stops = await catalogQuery<StopInfo[] | null>('trainStops', { trainNo });
     if (stops) return stops;
   } catch (e) {
     console.warn('[trainService] catalog 经停站查询失败，尝试真实 API:', e instanceof Error ? e.message : e);

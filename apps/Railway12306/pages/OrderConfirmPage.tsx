@@ -34,7 +34,7 @@ export const OrderConfirmPage: React.FC = () => {
     date: s.date, isStudent: s.isStudent, directTrains: s.directTrains,
   })));
   const addOrder = useRailwayStore(s => s.addOrder);
-  const updateOrder = useRailwayStore(s => s.updateOrder);
+  const cancelPendingOrders = useRailwayStore(s => s.cancelPendingOrders);
   const setSelectedTrain = useRailwayStore(s => s.setSelectedTrain);
   const { bindBack, bindTap, go } = useRailwayGestures();
   const s = useAppStrings(strings, stringsEn);
@@ -138,7 +138,7 @@ export const OrderConfirmPage: React.FC = () => {
   const handleSubmit = () => {
     if (!canSubmit || showProcessing) return;
 
-    state.orders.filter(o => o.status === 'pending').forEach(o => updateOrder(o.id, { status: 'cancelled' }));
+    void cancelPendingOrders();
 
     const createTime = getISOString();
     const orderSeed = String(timeNow()).slice(-8);
@@ -173,7 +173,7 @@ export const OrderConfirmPage: React.FC = () => {
 
     if (tickets.length === 0) return;
 
-    addOrder({
+    void addOrder({
       id: orderId,
       trainNo: train.trainNo,
       fromStation: train.fromStation,

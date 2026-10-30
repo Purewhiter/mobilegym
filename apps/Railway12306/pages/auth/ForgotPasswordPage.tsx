@@ -27,7 +27,7 @@ export const ForgotPasswordPage: React.FC = () => {
     return () => window.clearInterval(t);
   }, [codeCooldownSec]);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setError('');
     if (!phone.trim()) {
       setError('请输入手机号码');
@@ -49,7 +49,7 @@ export const ForgotPasswordPage: React.FC = () => {
       setError('请输入验证码');
       return;
     }
-    const res = resetPasswordWithCode(phone.trim(), idNo.trim(), verificationCode.trim(), newPassword);
+    const res = await resetPasswordWithCode(phone.trim(), idNo.trim(), verificationCode.trim(), newPassword);
     if (res.ok) {
       setError('');
       alert('密码重置成功');
@@ -74,7 +74,7 @@ export const ForgotPasswordPage: React.FC = () => {
       return;
     }
     setError('');
-    requestResetCode(phone.trim());
+    void requestResetCode(phone.trim());
     setCodeSent(true);
     setCodeCooldownSec(60);
   };

@@ -63,10 +63,14 @@ export const getCountriesSync = countries.getSync;
 // ============ 批量预加载 ============
 
 /**
- * 预加载所有 Railway12306 大数据到缓存（供 bench waitForData 使用）
+ * 预加载所有 Railway12306 大数据到缓存（供 bench waitForData 使用），
+ * 并把 store 与本页的 device server 会话同步（订单、乘客、账号在服务端）。
  */
 export async function preload(): Promise<void> {
+  // 动态 import：state → stationService → loader 形成环，静态 import 会在环里拿到未初始化的 store。
+  const { useRailwayStore } = await import('../state');
   await Promise.all([
+    useRailwayStore.ensureSynced(),
     loadStations(),
     loadCityList(),
     loadStationServices(),

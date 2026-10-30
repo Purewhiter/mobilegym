@@ -62,6 +62,14 @@ const readyHooks = new Map<string, (force?: boolean) => Promise<void>>();
 
 const isUninitialized = (err: unknown) => (err as { status?: number })?.status === 409;
 
+/**
+ * Wait until `appId`'s session state is synced, for code that calls
+ * `DeviceClient.query` directly instead of through `useDeviceQuery`.
+ */
+export async function ensureDeviceSynced(appId: string, force = false): Promise<void> {
+  await readyHooks.get(appId)?.(force);
+}
+
 // ── Store ──────────────────────────────────────────────────────────
 
 const isUiEvent = (value: unknown) =>

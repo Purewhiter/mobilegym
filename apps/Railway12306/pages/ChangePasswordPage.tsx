@@ -54,7 +54,7 @@ export const ChangePasswordPage: React.FC = () => {
     setCooldownSec(60);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setError('');
     if (!oldPwd || !newPwd || !confirmPwd) {
       setError(isEnglish ? 'Please fill in all fields.' : '请填写所有字段');
@@ -80,7 +80,7 @@ export const ChangePasswordPage: React.FC = () => {
       openDialog('wrong_code');
       return;
     }
-    const result = changePassword(oldPwd, newPwd);
+    const result = await changePassword(oldPwd, newPwd);
     if (!result.ok) {
       setError(result.reason === 'wrong_password'
         ? (isEnglish ? 'The current password is incorrect.' : '原密码错误')
