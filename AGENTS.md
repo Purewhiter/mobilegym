@@ -170,6 +170,7 @@ Convention details:
   - `TimeService.fromTimestamp(ts)` — replaces `new Date(timestamp)`
   - `TimeService.fromLocalParts(year, month, day, ...)` — replaces `new Date(year, month, day, ...)`
   - `TimeService.parseToTimestamp(str)` — parses a date string into a timestamp (pair it with `fromTimestamp` to replace `new Date(dateString)`)
+- Content media (photos, avatars, videos, large catalogs) goes under `mobilegym-data/<appId>/` and is served at `/cdn/`, never imported into the bundle; data holds typed references and one place (the device server module, or one app resolver before that) turns them into URLs. See `docs/platform/app/media-assets.md`
 - Use `LocationService` instead of `navigator.geolocation`
 - Use `NetworkService` (`netJson`/`netFetch`) for HTTP requests to avoid CORS
 - **Do not define query-style getters inside store actions** (`isLiked`, `isFollowing`, `getXxxById`, etc.), and **do not have components subscribe to store function references** — Zustand function references are stable after creation, `Object.is` is always true, so the component never re-renders. The right approach: **subscribe to data directly** in the component (`s.likedPostIds`) and derive booleans via `.includes()` / `Set.has()`; or use `memoSelector` to build a derived selector (e.g. `selectLikedSongIds` returning a `Set`). Wrapping a getter in `useShallow` + `useMemo` does not work either.

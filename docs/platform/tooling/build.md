@@ -142,7 +142,7 @@ to:
 mobilegym-data/<path>
 ```
 
-The helper in `os/utils/cdn.ts` should be used when runtime code needs URLs for this local/production-compatible data root.
+The helper in `os/utils/cdn.ts` should be used when runtime code needs URLs for this local/production-compatible data root. The middleware answers HTTP Range requests (206 / 416) like nginx, so `<video>` seeking works in dev. What goes under this root, and who resolves references to it, is in [`../app/media-assets.md`](../app/media-assets.md).
 
 ## Virtual SD card
 

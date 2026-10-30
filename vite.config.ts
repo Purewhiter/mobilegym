@@ -528,8 +528,27 @@ function serveCdnPlugin() {
     }
 
     const ext = path.extname(filePath).toLowerCase();
+    const size = fs.statSync(filePath).size;
     res.setHeader('Content-Type', MIME[ext] || 'application/octet-stream');
     res.setHeader('Cache-Control', 'public, max-age=2592000, immutable');
+    res.setHeader('Accept-Ranges', 'bytes');
+
+    // <video> 拖动进度、Safari 播放都要 Range（nginx 默认支持，这里对齐）
+    const range = /^bytes=(\d*)-(\d*)$/.exec(req.headers.range || '');
+    if (range && (range[1] || range[2])) {
+      const start = range[1] ? Number(range[1]) : Math.max(0, size - Number(range[2]));
+      const end = range[1] && range[2] ? Math.min(Number(range[2]), size - 1) : size - 1;
+      if (start >= size || start > end) {
+        res.statusCode = 416;
+        res.setHeader('Content-Range', `bytes */${size}`);
+        return res.end();
+      }
+      res.statusCode = 206;
+      res.setHeader('Content-Range', `bytes ${start}-${end}/${size}`);
+      res.setHeader('Content-Length', end - start + 1);
+      return fs.createReadStream(filePath, { start, end }).pipe(res);
+    }
+    res.setHeader('Content-Length', size);
     fs.createReadStream(filePath).pipe(res);
   };
 
