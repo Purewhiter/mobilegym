@@ -67,6 +67,7 @@ class ParallelRunner(BaseRunner):
             num_browsers=config.num_browsers,
             headless=config.headless, proxy=config.proxy, coord_space=config.coord_space,
             delay_after_action=config.delay_after_action,
+            settle=config.settle,
             verbose=verbose,
         )
 

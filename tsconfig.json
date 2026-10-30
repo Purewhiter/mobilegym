@@ -42,7 +42,8 @@
     "apps/**/*.tsx",
     "apps/**/*.d.ts",
     "system/**/*.ts",
-    "system/**/*.tsx"
+    "system/**/*.tsx",
+    "device/**/*.ts"
   ],
   "exclude": [
     "node_modules",

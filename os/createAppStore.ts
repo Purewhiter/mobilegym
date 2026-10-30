@@ -140,6 +140,35 @@ export function createVolatileAppStore<T extends Record<string, any>>(
 }
 
 /**
+ * 注册由其他模块创建的 store（如 device-backed store：数据在 device server，
+ * store 只是镜像，不走 localStorage persist）。注册后同样参与 getState / reset。
+ */
+export function registerAppStore(appId: string, store: AnyStore, reset: () => void): void {
+  storeRegistry.set(appId, store);
+  resetRegistry.set(appId, reset);
+}
+
+// --- External state setters（__SIM__.setState 写入路由）---
+/** Receives a function that applies the caller's patch to a given current state. */
+export type StateSetter = (applyPatch: (current: Record<string, any>) => Record<string, any>) => Promise<void> | void;
+
+const stateSetters = new Map<string, StateSetter>();
+
+/**
+ * 让 `__SIM__.setState` 对该 App 的写入交给 setter 处理，而不是直接 store.setState。
+ * setter 收到一个"把补丁合并到给定状态"的函数，由它决定在哪份状态上合并
+ * （device-backed store 会先与 device session 同步再合并）。返回 Promise 时，
+ * `__SIM__.setState` 会等它完成。
+ */
+export function registerStateSetter(appId: string, setter: StateSetter): void {
+  stateSetters.set(appId, setter);
+}
+
+export function getStateSetter(appId: string): StateSetter | undefined {
+  return stateSetters.get(appId);
+}
+
+/**
  * 创建带 Actions 的 App Store。
  * Actions 通过 actionCreator 传入，persist 自动排除函数值（不持久化 actions）。
  * @param options.afterHydration - hydration 完成后执行（安全处理同步/异步时序）

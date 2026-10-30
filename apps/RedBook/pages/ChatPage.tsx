@@ -5,7 +5,7 @@ import { useParams } from 'react-router-dom';
 import { IcNavBack, IcMore, IcRefresh } from '../res/icons';
 const ChevronLeft = IcNavBack, MoreHorizontal = IcMore, RotateCcw = IcRefresh;
 import { useRedBookStore } from '../state';
-import { useRedBookView } from '../data/view';
+import { useRedBookUser } from '../data/view';
 import { useShallow } from 'zustand/react/shallow';
 import { useRedBookGestures } from '../hooks/useRedBookGestures';
 import { KeyboardService } from '../../../os/keyboard/KeyboardService';
@@ -91,9 +91,9 @@ export const ChatPage: React.FC = () => {
     sendMessage: s.sendMessage,
     chats: s.chats,
   })));
-  const view = useRedBookView();
   const { bindTap, bindBack } = useRedBookGestures();
-  const targetUser = userId ? (userId === user.id ? user : view.usersById[userId]) : undefined;
+  const { user: otherUser } = useRedBookUser(userId && userId !== user.id ? userId : undefined);
+  const targetUser = userId ? (userId === user.id ? user : otherUser ?? undefined) : undefined;
   
   // Find existing chat or start empty
   const currentChat = chats.find(c => c.userId === userId);
@@ -106,10 +106,11 @@ export const ChatPage: React.FC = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: instant ? 'auto' : 'smooth' });
   };
 
+  // Re-run once the other user has loaded: before that the message list isn't rendered.
+  const targetLoaded = Boolean(targetUser);
   useLayoutEffect(() => {
     scrollToBottom(true);
-
-  }, [currentChat?.messages]);
+  }, [currentChat?.messages, targetLoaded]);
 
   useEffect(() => {
     return KeyboardService.subscribe(() => {
@@ -141,7 +142,11 @@ export const ChatPage: React.FC = () => {
       noteData: undefined as { image: string; title: string; authorAvatar: string; author: string } | undefined
   })), [currentChat?.messages, user.id]);
 
-  if (!targetUser) return <div className="h-full flex items-center justify-center">{s.user_not_found}</div>;
+  if (!targetUser) {
+    // Still loading the other user: blank, not "not found".
+    if (otherUser === undefined) return <div className="h-full bg-app-surface" />;
+    return <div className="h-full flex items-center justify-center">{s.user_not_found}</div>;
+  }
 
   return (
     <div className="h-full flex flex-col bg-app-surface">

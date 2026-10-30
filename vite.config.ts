@@ -3,9 +3,10 @@ import path from 'path';
 import fs from 'fs';
 import { Readable } from 'stream';
 import { execFileSync, spawn, type ChildProcess } from 'child_process';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
+import { scanSdcard } from './device/sdcard';
 
 // Fix for __dirname in ESM
 const __filename = fileURLToPath(import.meta.url);
@@ -116,100 +117,16 @@ function listPublicFilesPlugin() {
 function fileSystemPlugin() {
   const SDCARD_DIR = path.resolve(__dirname, 'public/sdcard');
   
-  // 缓存扫描结果
-  let cachedResult: { 
-    totalFiles: number; 
-    totalDirectories: number;
-    files: any[]; 
-    directories: any[];
-  } | null = null;
+  // 缓存扫描结果（扫描逻辑与 device server 的文件系统 seed 共用 device/sdcard.ts）
+  let cachedResult: ReturnType<typeof scanSdcard> | null = null;
   let cacheValid = false;
-  
-  const MIME_TYPES: Record<string, string> = {
-    '.jpg': 'image/jpeg',
-    '.jpeg': 'image/jpeg',
-    '.png': 'image/png',
-    '.gif': 'image/gif',
-    '.webp': 'image/webp',
-    '.svg': 'image/svg+xml',
-    '.mp4': 'video/mp4',
-    '.webm': 'video/webm',
-    '.mov': 'video/quicktime',
-    '.avi': 'video/x-msvideo',
-    '.mp3': 'audio/mpeg',
-    '.wav': 'audio/wav',
-    '.ogg': 'audio/ogg',
-    '.flac': 'audio/flac',
-    '.pdf': 'application/pdf',
-    '.doc': 'application/msword',
-    '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    '.xls': 'application/vnd.ms-excel',
-    '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    '.ppt': 'application/vnd.ms-powerpoint',
-    '.pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-    '.txt': 'text/plain',
-    '.json': 'application/json',
-    '.zip': 'application/zip',
-    '.apk': 'application/vnd.android.package-archive',
-  };
-  
-  function getMimeType(fileName: string) {
-    const ext = path.extname(fileName).toLowerCase();
-    return MIME_TYPES[ext] || 'application/octet-stream';
-  }
-  
-  function scanDirectory(dir: string, basePath = ''): { files: any[]; directories: any[] } {
-    const result = { files: [] as any[], directories: [] as any[] };
-    if (!fs.existsSync(dir)) return result;
-    
-    const entries = fs.readdirSync(dir, { withFileTypes: true });
-    
-    for (const entry of entries) {
-      const fullPath = path.join(dir, entry.name);
-      const relativePath = basePath ? `${basePath}/${entry.name}` : entry.name;
-      
-      // Do not skip system dot directories (e.g. `.data`, `.cache`).
-      // Only skip known noisy OS/generated files.
-      if (entry.name === '.DS_Store' || entry.name === 'manifest.json') continue;
-      
-      if (entry.isDirectory()) {
-        const stats = fs.statSync(fullPath);
-        // 添加目录本身
-        result.directories.push({
-          path: '/sdcard/' + relativePath,
-          name: entry.name,
-          modifiedAt: stats.mtimeMs,
-        });
-        // 递归扫描子目录
-        const sub = scanDirectory(fullPath, relativePath);
-        result.files.push(...sub.files);
-        result.directories.push(...sub.directories);
-      } else if (entry.isFile()) {
-        const stats = fs.statSync(fullPath);
-        result.files.push({
-          path: '/sdcard/' + relativePath,
-          uri: '/sdcard/' + relativePath,
-          name: entry.name,
-          mimeType: getMimeType(entry.name),
-          size: stats.size,
-          modifiedAt: stats.mtimeMs,
-        });
-      }
-    }
-    return result;
-  }
-  
+
   function refreshCache() {
     if (!fs.existsSync(SDCARD_DIR)) {
       fs.mkdirSync(SDCARD_DIR, { recursive: true });
     }
-    const { files, directories } = scanDirectory(SDCARD_DIR);
-    cachedResult = { 
-      totalFiles: files.length, 
-      totalDirectories: directories.length,
-      files, 
-      directories 
-    };
+    cachedResult = scanSdcard(SDCARD_DIR);
+    const { files, directories } = cachedResult;
     cacheValid = true;
     console.log(`[sdcard] Scanned ${files.length} files, ${directories.length} directories`);
   }
@@ -219,13 +136,8 @@ function fileSystemPlugin() {
 
     // Build: emit static manifest so FileSystemService can discover files without /api/sdcard
     generateBundle() {
-      const { files, directories } = scanDirectory(SDCARD_DIR);
-      const manifest = {
-        totalFiles: files.length,
-        totalDirectories: directories.length,
-        files,
-        directories,
-      };
+      const manifest = scanSdcard(SDCARD_DIR);
+      const { files, directories } = manifest;
       (this as any).emitFile({
         type: 'asset',
         fileName: 'sdcard/manifest.json',
@@ -628,6 +540,61 @@ function serveCdnPlugin() {
     },
     configurePreviewServer(server) {
       server.middlewares.use('/cdn/', serveCdnMiddleware);
+    },
+  };
+}
+
+/**
+ * Device server（device/）挂到 /__device：页面和 Python bench 访问同一个进程。
+ * - dev：ssrLoadModule 直接加载 TS，首个请求时初始化
+ * - preview：启动时用 esbuild 把 device/server.ts 打成单个 ESM 再 import
+ * 两种模式下所有 session 共享同一份 App catalog（只解析一次）。
+ */
+function deviceServerPlugin(mode: string) {
+  const cdnBase = (loadEnv(mode, __dirname, '').VITE_CDN_BASE?.trim() || '/cdn').replace(/\/+$/, '');
+  const options = { root: __dirname, cdnBase };
+  type Handler = (req: any, res: any, next: (err?: unknown) => void) => Promise<void>;
+
+  // Plugin middleware runs before Vite strips `base`, so mount under it too (VITE_BASE=/sim/).
+  const base = (process.env.VITE_BASE || '/').replace(/\/+$/, '');
+  const mountPaths = base ? ['/__device', `${base}/__device`] : ['/__device'];
+
+  const mount = (middlewares: any, load: () => Promise<Handler>) => {
+    let handler: Promise<Handler> | null = null;
+    const serve = (req, res, next) => {
+      handler ??= load().catch((err) => {
+        handler = null;
+        throw err;
+      });
+      handler.then((h) => h(req, res, next)).catch(next);
+    };
+    for (const mountPath of mountPaths) middlewares.use(mountPath, serve);
+  };
+
+  return {
+    name: 'device-server',
+    configureServer(server) {
+      mount(server.middlewares, async () => {
+        const mod = await server.ssrLoadModule('/device/server.ts');
+        return mod.createDeviceServer(options).handler;
+      });
+    },
+    configurePreviewServer(server) {
+      mount(server.middlewares, async () => {
+        const { build } = await import('esbuild');
+        const outfile = path.join(__dirname, 'node_modules', '.cache', 'mobilegym-device', 'server.mjs');
+        await build({
+          entryPoints: [path.join(__dirname, 'device', 'server.ts')],
+          outfile,
+          bundle: true,
+          platform: 'node',
+          format: 'esm',
+          target: 'node20',
+          logLevel: 'warning',
+        });
+        const mod = await import(`${pathToFileURL(outfile).href}?t=${Date.now()}`);
+        return mod.createDeviceServer(options).handler;
+      });
     },
   };
 }
@@ -1445,6 +1412,7 @@ export default defineConfig(({ mode }) => {
       accessLogPlugin(),
       serveAppAssetsPlugin(),
       serveCdnPlugin(),
+      deviceServerPlugin(mode),
       mapServiceWorkerPlugin(),
       listPublicFilesPlugin(),
       fileSystemPlugin(),

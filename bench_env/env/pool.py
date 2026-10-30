@@ -56,6 +56,7 @@ class EnvPool:
         proxy: str | None = None,
         coord_space: str = "norm_0_1000",
         delay_after_action: float = 0.8,
+        settle: str = "fixed",
         viewport_size: tuple[int, int] = (360, 800),
         physical_size: tuple[int, int] = (1080, 2400),
         device_scale_factor: float = 3,
@@ -69,6 +70,7 @@ class EnvPool:
         self.proxy = proxy
         self.coord_space = coord_space
         self.delay_after_action = delay_after_action
+        self.settle = settle
         self.viewport_size = viewport_size
         self.physical_size = physical_size
         self.device_scale_factor = device_scale_factor
@@ -110,6 +112,7 @@ class EnvPool:
             "proxy": self.proxy,
             "coord_space": self.coord_space,
             "delay_after_action": self.delay_after_action,
+            "settle": self.settle,
             "verbose": self.verbose,
         }
 

@@ -196,6 +196,10 @@ def create_parser() -> argparse.ArgumentParser:
         help="Coordinate space: norm_0_1000 | norm_0_1 | physical",
     )
     p.add_argument("--delay-after-action", type=float, default=1.0)
+    p.add_argument(
+        "--settle", choices=["fixed", "idle"], default="fixed",
+        help="After each action: sleep --delay-after-action (fixed) or wait for __SIM__.waitForIdle (idle)",
+    )
 
     # Execution
     p.add_argument("--max-steps", type=int, default=None)

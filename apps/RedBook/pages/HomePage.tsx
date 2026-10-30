@@ -2,7 +2,7 @@ import { useRedBookStrings } from '../hooks/useRedBookStrings';
 import React, { useMemo, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useRedBookStore } from '../state';
-import { useRedBookView, useRedBookAuthor, useIsNoteLiked, useIsFollowingUser } from '../data/view';
+import { useRedBookFeed, useRedBookUsers, useRedBookAuthor, useIsNoteLiked, useIsFollowingUser } from '../data/view';
 import { useShallow } from 'zustand/react/shallow';
 import { REDBOOK_CONFIG } from '../data';
 import { Note } from '../types';
@@ -13,21 +13,6 @@ import { useRedBookGestures } from '../hooks/useRedBookGestures';
 import { strings, type StringKey } from '../res/strings';
 import { RedBookPlayIcon, RedBookHeartFilledIcon, RedBookHeartOutlineIcon, RedBookHeartIcon, RedBookCommentIcon, RedBookPeopleIcon } from '../res/icons';
 import * as TimeService from '../../../os/TimeService';
-// Helper to parse likes/count string to number
-const parseCount = (count: number | string): number => {
-    if (typeof count === 'number') return count;
-    if (!count) return 0;
-    
-    let str = count.toString().replace(/\+/g, '');
-    if (str.includes('万')) {
-        return parseFloat(str.replace('万', '')) * 10000;
-    }
-    if (str.includes('w')) {
-        return parseFloat(str.replace('w', '')) * 10000;
-    }
-    return parseFloat(str) || 0;
-};
-
 // Format time helper
 const formatTime = (timestamp: number, s: typeof strings) => {
     const now = TimeService.now();
@@ -303,15 +288,10 @@ export const DiscoveryFeed: React.FC<{ feed: Note[]; showTime?: boolean }> = ({ 
 };
 
 const FollowUpdates: React.FC = () => {
-    const currentUser = useRedBookStore(s => s.user);
-    const view = useRedBookView();
+    const followingIds = useRedBookStore(s => s.user.followingIds);
     const { bindTap } = useRedBookGestures();
     const s = useRedBookStrings();
-    
-    const followedUsers = useMemo(() => {
-        const set = new Set(currentUser.followingIds || []);
-        return view.userIds.map(id => view.usersById[id]).filter(Boolean).filter(u => set.has(u.id));
-    }, [view.usersById, view.userIds, currentUser.followingIds]);
+    const { users: followedUsers } = useRedBookUsers(followingIds || []);
 
     return (
         <div className="bg-app-surface mb-2 pt-3 pb-3">
@@ -340,16 +320,15 @@ const FollowUpdates: React.FC = () => {
     );
 };
 
-const FollowFeed: React.FC<{ feed: Note[] }> = ({ feed }) => {
-    const { user: currentUser } = useRedBookStore(useShallow(s => ({ user: s.user })));
+const EMPTY_IDS: string[] = [];
+
+const FollowFeed: React.FC = () => {
+    const followedUserIds = useRedBookStore(s => s.user.followingIds) || EMPTY_IDS;
     const s = useRedBookStrings();
-    const followedUserIds = useMemo(() => currentUser.followingIds || [], [currentUser.followingIds]);
-    
-    const followedNotes = useMemo(() => {
-        // Mock: if no followed notes, show some random ones to simulate the screenshot look
-        const realNotes = feed.filter(note => followedUserIds.includes(note.authorId));
-        return realNotes.length > 0 ? realNotes : feed.slice(0, 6);
-    }, [feed, followedUserIds]);
+    const followed = useRedBookFeed({ authorIds: followedUserIds });
+    // Mock: if no followed notes, show some random ones to simulate the screenshot look
+    const fallback = useRedBookFeed({ limit: 6 }, !followed.loading && followed.notes.length === 0);
+    const followedNotes = followed.notes.length > 0 ? followed.notes : fallback.notes;
     
     return (
         <div className="flex flex-col">
@@ -389,7 +368,6 @@ export const HomePage: React.FC = () => {
     updateHomeState: s.updateHomeState,
     user: s.user,
   })));
-  const view = useRedBookView();
   const { activeCategory, citySubTab } = tempNav;
   // displayCount 是纯 UI 滚动状态（"已展开的卡片数"），不属于 app data：
   // - 刷新页面后 React tree 重置、用户重新进入 → 列表当然也从首批开始展开，没必要持久化
@@ -397,13 +375,14 @@ export const HomePage: React.FC = () => {
   //   误把"用户滚了几下"当成"用户改了 state"
   const [displayCount, setDisplayCount] = useState(20);
   const PAGE_SIZE = 20;
-  const feed = useMemo(() => view.feedIds.map(id => view.notesById[id]).filter(Boolean), [view.feedIds, view.notesById]);
   const s = useRedBookStrings();
-
-  // Memoize hot feed to avoid re-sorting on tab switch
-  const hotFeed = useMemo(() => {
-      return [...feed].sort((a, b) => parseCount(b.likes) - parseCount(a.likes));
-  }, [feed]);
+  // activeCategory is a StringKey (e.g. 'recommend'); note.category is Chinese (e.g. '推荐').
+  const activeCategoryLabel = strings[activeCategory as StringKey] || null;
+  // Fetch 10 past the visible window so the next batch's images can be preloaded.
+  const discover = useRedBookFeed({ category: activeCategoryLabel, limit: displayCount + 10 });
+  const hot = useRedBookFeed({ sort: 'likes', limit: displayCount });
+  // Pagination is capped by the whole feed, as before category filtering existed.
+  const feedTotal = hot.total;
   
   const location = useLocation();
   // HomePage is rendered with a persistent-mount layout (display none/block).
@@ -477,11 +456,11 @@ export const HomePage: React.FC = () => {
       scrollRafRef.current = requestAnimationFrame(() => {
           scrollRafRef.current = null;
           const { scrollTop, scrollHeight, clientHeight } = el;
-          if (scrollHeight - scrollTop - clientHeight < 800 && displayCount < feed.length) {
+          if (scrollHeight - scrollTop - clientHeight < 800 && displayCount < feedTotal) {
               const now = performance.now();
               if (now - lastLoadMoreAtRef.current > 200) {
                   lastLoadMoreAtRef.current = now;
-                  setDisplayCount(c => Math.min(c + PAGE_SIZE, feed.length));
+                  setDisplayCount(c => Math.min(c + PAGE_SIZE, feedTotal));
               }
           }
       });
@@ -495,10 +474,10 @@ export const HomePage: React.FC = () => {
   // 但需要触发首批预加载；单 displayCount guard 会漏掉这种情况。
   const lastPreloadedKeyRef = React.useRef<string>('');
   React.useEffect(() => {
-      const key = `${displayCount}:${feed.length}`;
+      const key = `${displayCount}:${discover.notes.length}`;
       if (lastPreloadedKeyRef.current === key) return;
       lastPreloadedKeyRef.current = key;
-      const nextNotes = feed.slice(displayCount, displayCount + 10);
+      const nextNotes = discover.notes.slice(displayCount, displayCount + 10);
       const localMode = (REDBOOK_CONFIG as any).useLocalData;
       for (const n of nextNotes) {
           if (n.images?.[0]) {
@@ -507,7 +486,7 @@ export const HomePage: React.FC = () => {
           }
           if (!localMode) continue;
           const author = n.authorId
-            ? (n.authorId === currentUser.id ? currentUser : view.usersById[n.authorId])
+            ? (n.authorId === currentUser.id ? currentUser : discover.authorsById[n.authorId])
             : undefined;
           if (author?.avatar) {
               const av = new Image();
@@ -526,7 +505,7 @@ export const HomePage: React.FC = () => {
               else setTimeout(preloadComments, 0);
           }
       }
-  }, [displayCount, feed, currentUser, view.usersById]);
+  }, [displayCount, discover.notes, discover.authorsById, currentUser]);
 
   return (
     <div className="h-full flex flex-col bg-[#f8f8f8] relative">
@@ -731,15 +710,7 @@ export const HomePage: React.FC = () => {
             </div>
           )}
           <DiscoveryFeed
-            feed={feed
-              .filter(note => {
-                // activeCategory is a StringKey (e.g. 'recommend'); note.category is Chinese (e.g. '推荐').
-                // Map the key to its Chinese label and compare.
-                const activeCategoryLabel = strings[activeCategory as StringKey];
-                if (!activeCategoryLabel) return true;
-                return note.category === activeCategoryLabel;
-              })
-              .slice(0, displayCount)}
+            feed={discover.notes.slice(0, displayCount)}
           />
           <div className="py-4 text-center text-xs text-gray-300">- THE END -</div>
         </div>
@@ -753,7 +724,7 @@ export const HomePage: React.FC = () => {
           className="h-full overflow-y-auto no-scrollbar px-[5px] pb-4 pt-[76px]"
           style={{ display: activeTab === 'follow' ? 'block' : 'none' }}
         >
-          <FollowFeed feed={feed} />
+          <FollowFeed />
         </div>
 
         {/* City */}
@@ -766,7 +737,7 @@ export const HomePage: React.FC = () => {
           style={{ display: activeTab === 'city' ? 'block' : 'none' }}
           onScroll={handleScroll}
         >
-          <HotFeed feed={hotFeed.slice(0, displayCount)} />
+          <HotFeed feed={hot.notes} />
         </div>
       </div>
 

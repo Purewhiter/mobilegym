@@ -130,8 +130,9 @@ export interface FSNode {
   createdAt: number;            // Timestamp
   modifiedAt: number;           // Timestamp
 
-  // Storage location marker
-  storage: 'preset' | 'indexeddb' | 'memory';
+  // Storage location marker. Files live in the device server session ('device');
+  // 'preset' / 'indexeddb' are left from earlier page-local storage.
+  storage: 'preset' | 'indexeddb' | 'memory' | 'device';
 
   // Media-specific properties
   thumbnailUri?: string;        // Thumbnail for images/videos

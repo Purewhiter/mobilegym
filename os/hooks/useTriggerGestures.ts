@@ -1,6 +1,7 @@
 import { useMemo, useRef, useEffect, useCallback } from 'react';
 import type React from 'react';
 import { realNow } from '../TimeService';
+import { holdBusyFor } from '../idle';
 
 type TriggerParams = Record<string, string | number>;
 type ActionParams = Record<string, string | number | boolean>;
@@ -335,6 +336,8 @@ export function useTriggerGestures<Id extends string = string>(
 
     const scheduleSingleTap = () => {
       clearSingleTapTimer();
+      // The single tap fires only after the double-tap window: not idle until then.
+      holdBusyFor(threshold);
       state.singleTapTimer = window.setTimeout(() => {
         state.singleTapTimer = null;
         state.lastTapTime = 0;

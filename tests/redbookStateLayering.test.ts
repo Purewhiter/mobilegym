@@ -39,23 +39,6 @@ describe('RedBook runtime state layering', () => {
     expect(redbook.user.followers).toBeUndefined();
   });
 
-  it('filters derived relationship count fields from updateUser writes', async () => {
-    const { useRedBookStore } = await import('../apps/RedBook/state');
-    const { getAllStoreStates } = await import('../os/createAppStore');
-
-    useRedBookStore.getState().updateUser({
-      intro: '新的简介',
-      following: 999,
-      followers: 888,
-    } as any);
-
-    const rawUser = useRedBookStore.getState().user as any;
-    const exportedUser = getAllStoreStates().redbook.user as any;
-
-    expect(rawUser.intro).toBe('新的简介');
-    expect(rawUser.following).toBeUndefined();
-    expect(rawUser.followers).toBeUndefined();
-    expect(exportedUser.following).toBeUndefined();
-    expect(exportedUser.followers).toBeUndefined();
-  });
+  // updateUser's filtering of derived counts runs on the device server now:
+  // see redbookDevice.test.ts.
 });

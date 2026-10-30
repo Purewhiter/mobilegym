@@ -26,9 +26,9 @@ export const PublishTextTemplatePage: React.FC = () => {
     updatePublishDraft({ templateId: id });
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     const cardImage = rasterizeTemplateCard(publishDraft.templateId, (publishDraft.text || '').trim());
-    updatePublishDraft({ images: cardImage ? [cardImage] : [] });
+    await updatePublishDraft({ images: cardImage ? [cardImage] : [] });
     go('publish.text.final.open');
   };
 

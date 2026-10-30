@@ -372,6 +372,7 @@ class MobileGymEnv(BaseMobileEnv):
         proxy: Optional[str] = None,
         coord_space: str = "norm_0_1000",
         delay_after_action: float = 0.8,
+        settle: str = "fixed",
         verbose: bool = True,
         worker_id: int = -1,
     ):
@@ -392,6 +393,11 @@ class MobileGymEnv(BaseMobileEnv):
         self.proxy = proxy
         self.coord_space = coord_space
         self.delay_after_action = delay_after_action
+        if settle not in ("fixed", "idle"):
+            raise ValueError(f"settle must be 'fixed' or 'idle', got {settle!r}")
+        # "idle": wait for __SIM__.waitForIdle instead of sleeping delay_after_action.
+        self.settle = settle
+        self.last_idle: Optional[dict] = None
         self.verbose = verbose
 
         self.physical_width, self.physical_height = physical_size
@@ -640,6 +646,12 @@ class MobileGymEnv(BaseMobileEnv):
 
     async def close(self) -> None:
         """Close browser and release resources (only those we own)."""
+        if self._page:
+            # Release this page's device-server session (best effort).
+            try:
+                await self._page.evaluate("() => window.__DEVICE__?.resetSession?.()")
+            except Exception:
+                pass
         try:
             # 总是关闭 page
             if self._page:
@@ -820,10 +832,9 @@ class MobileGymEnv(BaseMobileEnv):
             if result is not None:
                 # Control action - return immediately without delay
                 return result
-            # Physical action - add delay after action
+            # Physical action - let the screen settle before observing
             with sw.phase("delay"):
-                jitter = self.delay_after_action * random.uniform(0.5, 1.125)
-                await asyncio.sleep(jitter)
+                await self._settle()
         else:
             if self.verbose:
                 logger.warning(f"Unknown action type: {action.action_type}")
@@ -836,6 +847,28 @@ class MobileGymEnv(BaseMobileEnv):
             done=False,
             info={}
         )
+
+    async def _settle(self) -> None:
+        """Wait until the screen reflects the last action.
+
+        ``fixed``: sleep ``delay_after_action`` with jitter. ``idle``: wait for
+        the page's idle signal (requests, gesture timers, animations, images,
+        DOM quiet), capped at ``2 * delay_after_action`` (at least 1 s); falls
+        back to the fixed sleep on pages without ``__SIM__.waitForIdle``.
+        """
+        if self.settle == "idle":
+            timeout_ms = int(max(1.0, 2 * self.delay_after_action) * 1000)
+            try:
+                self.last_idle = await self.page.evaluate(
+                    "(o) => window.__SIM__?.waitForIdle ? window.__SIM__.waitForIdle(o) : null",
+                    {"timeoutMs": timeout_ms},
+                )
+            except Exception as e:
+                logger.debug(f"waitForIdle failed: {type(e).__name__}: {e}")
+                self.last_idle = None
+            if self.last_idle is not None:
+                return
+        await asyncio.sleep(self.delay_after_action * random.uniform(0.5, 1.125))
 
     async def get_state(self, *, required_apps: list[str] | None = None) -> dict[str, Any]:
         """Get current environment state (with retry for incomplete data).
@@ -903,19 +936,25 @@ class MobileGymEnv(BaseMobileEnv):
             })
         """
         try:
+            # setState resolves once device-backed apps hold the patch too.
             await self.page.evaluate(
                 """({patch, deep, reload}) => {
                     if (window.__SIM__?.setState) {
-                        window.__SIM__.setState(patch, {deep, reload});
+                        return window.__SIM__.setState(patch, {deep, reload});
                     }
                 }""",
                 {"patch": patch, "deep": deep, "reload": reload}
             )
-            if reload:
-                await self._wait_ready()
         except Exception as e:
-            if self.verbose:
+            # With reload=True the page navigates away mid-evaluate; that is expected.
+            if not reload and self.verbose:
                 logger.warning(f"set_state failed: {e}")
+        if reload:
+            try:
+                await self._wait_ready()
+            except Exception as e:
+                if self.verbose:
+                    logger.warning(f"set_state reload failed: {e}")
 
     async def open_app(self, app_name: str, timeout_ms: int = 8000, wait_stable: bool = False) -> None:
         """

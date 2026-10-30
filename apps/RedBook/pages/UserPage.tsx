@@ -1,7 +1,7 @@
 import { useRedBookStrings } from '../hooks/useRedBookStrings';
-import React, { useMemo, useState, useEffect, useRef } from 'react';
+import React, { useMemo, useState, useRef } from 'react';
 import { useRedBookStore } from '../state';
-import { useRedBookView } from '../data/view';
+import { useRedBookFeed, useRedBookNotes, useRedBookUser } from '../data/view';
 import { IcHeart, IcNavBack, IcMore, IcShare, IcNavBackArrow, IcSearch, IcScan } from '../res/icons';
 const Heart = IcHeart, ChevronLeft = IcNavBack, MoreHorizontal = IcMore, Share2 = IcShare, ArrowLeft = IcNavBackArrow, Search = IcSearch, ScanLine = IcScan;
 import { useParams, useLocation } from 'react-router-dom';
@@ -11,19 +11,18 @@ import { useRedBookGestures } from '../hooks/useRedBookGestures';
 export const UserPagePreview: React.FC<{ userId: string }> = ({ userId }) => {
   const s = useRedBookStrings();
   const currentUser = useRedBookStore(s => s.user);
-  const view = useRedBookView();
+  const isMe = userId === currentUser.id;
+  const { user: fetchedUser } = useRedBookUser(isMe ? undefined : userId);
+  const { notes: userNotes, authorsById } = useRedBookFeed({ authorIds: [userId] }, true, false);
 
-  const user = userId === currentUser.id
+  const user = isMe
     ? {
         ...currentUser,
         following: currentUser.followingIds?.length ?? 0,
         followers: currentUser.followerIds?.length ?? 0,
       }
-    : view.usersById[userId];
+    : fetchedUser;
   if (!user) return <div className="h-full bg-[#1a1a1a]" />;
-
-  const feed = view.feedIds.map(id => view.notesById[id]).filter(Boolean);
-  const userNotes = feed.filter(note => note.authorId === user.id);
 
   return (
     <div className="h-full flex flex-col bg-app-surface overflow-y-auto no-scrollbar relative text-white">
@@ -84,7 +83,7 @@ export const UserPagePreview: React.FC<{ userId: string }> = ({ userId }) => {
               {[0, 1].map(colIndex => (
                 <div key={colIndex} className="flex-1 flex flex-col gap-1">
                   {userNotes.filter((_, i) => i % 2 === colIndex).map((note, idx) => {
-                    const noteAuthor = note.authorId === currentUser.id ? currentUser : view.usersById[note.authorId];
+                    const noteAuthor = note.authorId === currentUser.id ? currentUser : authorsById[note.authorId];
                     return (
                       <div key={note.id + idx} className="bg-app-surface rounded-[4px] overflow-hidden mb-1">
                         <div className="relative overflow-hidden rounded-[4px] max-h-[220px]">
@@ -135,26 +134,30 @@ export const UserPage: React.FC = () => {
 
   const followUser = useRedBookStore(s => s.followUser);
   const currentUser = useRedBookStore(s => s.user);
-  const view = useRedBookView();
   const { bindTap, bindBack, go } = useRedBookGestures();
   const [activeTab, setActiveTab] = useState<'works' | 'collects'>('works');
   const [isScrolled, setIsScrolled] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  const isMe = !!userId && userId === currentUser.id;
+  // `null` once the server says the user does not exist; `undefined` while loading.
+  const { user: fetchedUser } = useRedBookUser(userId && !isMe ? userId : undefined);
+
+  // Check if user is a fallback/mock user (not found in database)
+  const isFallbackUser = !isMe && fetchedUser === null;
+
   const user = useMemo(() => {
-      const existing = userId
-          ? (userId === currentUser.id
-              ? {
-                  ...currentUser,
-                  following: currentUser.followingIds?.length ?? 0,
-                  followers: currentUser.followerIds?.length ?? 0,
-                }
-              : view.usersById[userId])
-          : undefined;
+      const existing = isMe
+          ? {
+              ...currentUser,
+              following: currentUser.followingIds?.length ?? 0,
+              followers: currentUser.followerIds?.length ?? 0,
+            }
+          : fetchedUser;
       if (existing) return existing;
 
       // Fallback mock user if not found in database but details provided via URL params
-      if (userId && (fallbackName || fallbackAvatar)) {
+      if (userId && isFallbackUser && (fallbackName || fallbackAvatar)) {
           return {
               id: userId,
               name: fallbackName || 'Unknown',
@@ -167,45 +170,22 @@ export const UserPage: React.FC = () => {
           };
       }
       return null;
-  }, [currentUser, view.usersById, fallbackAvatar, fallbackName, s, userId]);
+  }, [isMe, currentUser, fetchedUser, isFallbackUser, fallbackAvatar, fallbackName, s, userId]);
 
-  const feed = useMemo(() => view.feedIds.map(id => view.notesById[id]).filter(Boolean), [view.feedIds, view.notesById]);
-
-  // Check if user is a fallback/mock user (not found in database)
-  const isFallbackUser = useMemo(() => {
-      if (!user) return false;
-      return user.id !== currentUser.id && !view.usersById[user.id];
-  }, [currentUser.id, view.usersById, user]);
-
-  // User's notes or collects
-  const displayNotes = useMemo(() => {
-      if (!user) return [];
-
-      if (activeTab === 'works') {
-          // If fallback user, always return empty list (don't show random mock works)
-          if (isFallbackUser) {
-              return [];
-          }
-          // Only show notes authored by this user
-          const userNotes = feed.filter(note => note.authorId === user.id);
-          return userNotes;
-      } else if (activeTab === 'collects') {
-          // If fallback user, always return empty list
-          if (isFallbackUser) {
-              return [];
-          }
-          // For collects tab, show some placeholder notes if it's the current user
-          // For other users, show empty as we don't have their collect data
-          if (user.id === currentUser.id && currentUser.collectedNotes?.length) {
-              return currentUser.collectedNotes
-                  .map(noteId => view.notesById[noteId])
-                  .filter(Boolean)
-                  .slice(0, 10);
-          }
-          return [];
-      }
-      return [];
-  }, [activeTab, feed, user, currentUser, view.notesById, isFallbackUser]);
+  // User's notes or collects. Fallback users never show works or collects.
+  const works = useRedBookFeed(
+      { authorIds: user ? [user.id] : [] },
+      !!user && activeTab === 'works' && !isFallbackUser,
+      false,
+  );
+  // Only the current user's collects are known; other users show an empty tab.
+  const collectIds = isMe ? currentUser.collectedNotes || [] : [];
+  const collects = useRedBookNotes(collectIds, 'ids', activeTab === 'collects' && !isFallbackUser);
+  const shown = activeTab === 'works' ? works : collects;
+  const displayNotes = !user || isFallbackUser
+      ? []
+      : activeTab === 'works' ? works.notes : collects.notes.slice(0, 10);
+  const displayAuthors = shown.authorsById;
 
   const handleScroll = () => {
       if (containerRef.current) {
@@ -214,21 +194,14 @@ export const UserPage: React.FC = () => {
       }
   };
 
-  useEffect(() => {
-      const container = containerRef.current;
-      if (container) {
-          container.addEventListener('scroll', handleScroll);
-          return () => container.removeEventListener('scroll', handleScroll);
-      }
-  }, []);
-
   const likedSet = useMemo(() => new Set(currentUser.likedNotes || []), [currentUser.likedNotes]);
 
   if (!user) {
+      // Still loading: render the empty shell instead of flashing "not found".
+      if (fetchedUser === undefined && !isMe) return <div className="h-full bg-[#1a1a1a]" />;
       return <div className="flex items-center justify-center h-full text-white bg-[#1a1a1a]">{s.user_not_found}</div>;
   }
 
-  const isMe = user.id === currentUser.id;
   const isFollowing = (currentUser.followingIds || []).includes(user.id);
 
   return (
@@ -266,8 +239,10 @@ export const UserPage: React.FC = () => {
       </div>
 
       {/* 滚动容器 */}
+      {/* onScroll, not a mount-time listener: the container only exists once the user has loaded. */}
       <div
         ref={containerRef}
+        onScroll={handleScroll}
         className="h-full bg-app-surface overflow-y-auto no-scrollbar relative text-white"
         data-scroll-container="main"
         data-scroll-direction="vertical"
@@ -380,7 +355,7 @@ export const UserPage: React.FC = () => {
                         {[0, 1].map(colIndex => (
                             <div key={colIndex} className="flex-1 flex flex-col gap-1">
                                 {displayNotes.filter((_, i) => i % 2 === colIndex).map((note, idx) => {
-                                    const author = note.authorId === currentUser.id ? currentUser : view.usersById[note.authorId];
+                                    const author = note.authorId === currentUser.id ? currentUser : displayAuthors[note.authorId];
                                     return (
                                     <div
                                         key={note.id + idx}

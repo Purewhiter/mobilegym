@@ -45,6 +45,12 @@ export const CDN_ROOT = CDN_BASE;
  * Launcher 数据已经在路径里带 themes/、wallpapers/ 顶级 namespace，不传 prefix 即可。
  */
 export function resolveCdnUrl(raw: string, prefix?: string): string {
+  return resolveCdnUrlWithBase(raw, CDN_BASE, prefix);
+}
+
+/** Same as `resolveCdnUrl` with an explicit base — for code that runs outside the
+ *  Vite client bundle (the device server), where `import.meta.env` is absent. */
+export function resolveCdnUrlWithBase(raw: string, base: string, prefix?: string): string {
   if (!raw) return raw;
   if (/^(https?:\/\/|blob:|data:)/.test(raw)) return raw;
 
@@ -57,5 +63,6 @@ export function resolveCdnUrl(raw: string, prefix?: string): string {
     return raw;
   }
 
-  return cdn(prefix ? `${prefix}/${path.replace(/^\/+/, '')}` : path);
+  const cleaned = (prefix ? `${prefix}/${path.replace(/^\/+/, '')}` : path).replace(/^\/+/, '').replace(/\/+$/, '');
+  return cleaned ? `${base}/${cleaned}` : base;
 }

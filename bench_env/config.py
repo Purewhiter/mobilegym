@@ -42,6 +42,7 @@ class RunnerConfig:
     proxy: Optional[str] = None  # Browser proxy server (e.g. "http://127.0.0.1:7890")
     coord_space: str = "norm_0_1000"
     delay_after_action: float = 1.0
+    settle: str = "fixed"
     physical_size: tuple[int, int] = (1080, 2400)  # 设备物理分辨率（sim 下须等于 viewport×scale）
     
     # Execution
@@ -235,6 +236,7 @@ class RunnerConfig:
             proxy=get("proxy"),
             coord_space=get("coord_space", "norm_0_1000"),
             delay_after_action=get("delay_after_action", 1.0),
+            settle=get("settle", "fixed"),
             
             max_steps=(ms := get("max_steps") or _DEFAULT_MAX_STEPS),
             max_steps_explicit=(get("max_steps") is not None),

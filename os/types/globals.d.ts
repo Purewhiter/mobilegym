@@ -151,11 +151,14 @@ interface SimApi {
   /** 定向预加载指定 app 的 state 模块 */
   preloadAppStores(appIds: string[]): Promise<void>;
   waitForData(appIds?: string[]): Promise<void>;
+  /** Resolve once the screen has caught up with the last input (os/idle.ts). */
+  waitForIdle(options?: import('../idle').WaitForIdleOptions): Promise<import('../idle').WaitForIdleResult>;
+  idleState(): import('../idle').IdleState;
   getState(): { os: Record<string, unknown>; apps: Record<string, unknown> };
   setState(
     patch: { apps?: Record<string, unknown>; os?: Record<string, unknown> },
     options?: { deep?: boolean; reload?: boolean },
-  ): void;
+  ): Promise<void>;
 }
 
 interface SimTimeApi {

@@ -1,7 +1,7 @@
 import { useRedBookStrings } from '../hooks/useRedBookStrings';
-import React, { useMemo, useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRedBookStore } from '../state';
-import { useRedBookView } from '../data/view';
+import { useRedBookNotes } from '../data/view';
 import { IcSettings, IcMenu, IcShare, IcScan, IcLock, IcContacts, IcClock, IcLightbulb, IcAdd, IcImage, IcSearch } from '../res/icons';
 const Settings = IcSettings, Menu = IcMenu, Share2 = IcShare, ScanLine = IcScan, Lock = IcLock, Users = IcContacts, Clock = IcClock, Lightbulb = IcLightbulb, Plus = IcAdd, ImageIcon = IcImage, Search = IcSearch;
 import { Drawer } from '../components/Drawer';
@@ -9,8 +9,6 @@ import { useLocation } from 'react-router-dom';
 import { useRedBookGestures } from '../hooks/useRedBookGestures';
 export const MePage: React.FC = () => {
   const user = useRedBookStore(s => s.user);
-  const view = useRedBookView();
-  const feed = useMemo(() => view.feedIds.map(id => view.notesById[id]).filter(Boolean), [view.feedIds, view.notesById]);
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const isDrawerOpen = searchParams.get('menu') === 'drawer';
@@ -44,24 +42,16 @@ export const MePage: React.FC = () => {
   })();
 
 
-  // Filter feed based on active tab
-  const displayNotes = useMemo(() => {
-      if (activeTab === 'notes') {
-          // In a real app, filter by public/private. Here we just show all user's notes for 'public'
-          if (noteSubTab === 'public') {
-              const ids = user.publishedNoteIds || [];
-              return ids.map(id => view.notesById[id]).filter(Boolean);
-          }
-          return []; // Mock empty for private/collection
-      } else if (activeTab === 'collects') {
-          const collected = new Set(user.collectedNotes || []);
-          return feed.filter(note => collected.has(note.id));
-      } else if (activeTab === 'likes') {
-          const liked = new Set(user.likedNotes || []);
-          return feed.filter(note => liked.has(note.id));
-      }
-      return [];
-  }, [activeTab, noteSubTab, feed, user.publishedNoteIds, view.notesById, user.likedNotes, user.collectedNotes]);
+  // Notes for the active tab. Published notes keep the user's own order; liked
+  // and collected notes follow feed order (as they always have).
+  const tabIds = activeTab === 'notes'
+      ? (noteSubTab === 'public' ? user.publishedNoteIds || [] : []) // Mock empty for private/collection
+      : activeTab === 'collects'
+          ? user.collectedNotes || []
+          : activeTab === 'likes'
+              ? user.likedNotes || []
+              : [];
+  const { notes: displayNotes } = useRedBookNotes(tabIds, activeTab === 'notes' ? 'ids' : 'feed');
 
   const handleScroll = () => {
       if (containerRef.current) {

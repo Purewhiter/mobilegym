@@ -38,9 +38,10 @@ export const PublishTextEntryPage: React.FC = () => {
     back();
   };
 
-  const handleNext = () => {
+  // The next pages read the draft from the store: wait for the device write first.
+  const handleNext = async () => {
     if (!text.trim()) return;
-    updatePublishDraft({ text });
+    await updatePublishDraft({ text });
     go('publish.text.template.open');
   };
 

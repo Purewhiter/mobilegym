@@ -1,7 +1,9 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useSyncExternalStore } from 'react';
 import type { AppId, OSState } from './types';
 import type { ActivityResult, AppIntentFilter, IntentPayload } from './types/manifest';
-import { getStore, readPersistedAppState, writePersistedAppState } from './createAppStore';
+import { getStateSetter, getStore, readPersistedAppState, writePersistedAppState } from './createAppStore';
+import { DeviceClient } from './device/DeviceClient';
+import { idleState, waitForIdle } from './idle';
 import { flushAll, flushKey } from './debouncedPersist';
 import { getTimeConfig, now, realNow, formatTime, formatDate, getDayOfWeek } from './TimeService';
 import { getLocationConfig, getSimulatedCoords } from './LocationService';
@@ -634,6 +636,9 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
       //   5) 第二次 sweep 之后到 Python page.goto 之间仍有 effect 窗口, 但 gate 已开,
       //      beforeunload flushAll 会跳过。
       beginPersistReset();
+      // Device-backed app data lives in the device session: drop it so the next
+      // page load starts a fresh phone.
+      await DeviceClient.resetSession();
       resetAllAppStores();
       resetAllOsStores();
       OsStateStore.reset();
@@ -685,6 +690,9 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
       preloadAllAppStores: async () => { /* no-op: eager loaded */ },
       /** 定向预加载指定 app 的 state.ts — no-op: eager loaded */
       preloadAppStores: async (_appIds: string[]) => { /* no-op: eager loaded */ },
+      /** Resolve once the screen has caught up with the last input (see os/idle.ts). */
+      waitForIdle,
+      idleState,
       waitForData: async (appIds?: string[]) => {
         const all = !appIds || appIds.length === 0;
         const has = (id: string) => all || appIds!.includes(id);
@@ -911,21 +919,29 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
           applyOsStatePatch(patch.os, { source: 'external' });
         }
 
+        // Device-backed apps apply patches asynchronously (sync, merge, push to the server).
+        const pending: Promise<void>[] = [];
+
         if (patch.apps && typeof patch.apps === 'object') {
           for (const [appId, appPatch] of Object.entries(patch.apps)) {
             if (appPatch === undefined || appPatch === null) continue;
             const store = getStore(appId);
             if (store) {
-              if (deep) {
-                const current = store.getState();
-                const currentData: Record<string, any> = {};
-                for (const [k, v] of Object.entries(current)) {
-                  if (typeof v !== 'function') currentData[k] = v;
-                }
-                store.setState(deepMerge(currentData, appPatch));
-              } else {
-                store.setState(appPatch as any);
+              const applyPatch = (currentData: Record<string, any>) =>
+                deep ? deepMerge(currentData, appPatch) : { ...currentData, ...appPatch };
+              const setter = getStateSetter(appId);
+              if (setter) {
+                const done = setter(applyPatch);
+                if (done) pending.push(done);
+                continue;
               }
+              const current = store.getState();
+              const currentData: Record<string, any> = {};
+              for (const [k, v] of Object.entries(current)) {
+                if (typeof v !== 'function') currentData[k] = v;
+              }
+              if (deep) store.setState(applyPatch(currentData));
+              else store.setState(appPatch as any);
             } else {
               const current = readPersistedAppState(appId) ?? null;
               const merged = current === null
@@ -938,10 +954,14 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
           }
         }
 
-        if (reload) {
-          flushAll();
-          window.location.reload();
-        }
+        // Resolves once every app (device-backed ones included) holds the patch;
+        // a reload waits for that so the restored state survives it.
+        return Promise.all(pending).then(() => {
+          if (reload) {
+            flushAll();
+            window.location.reload();
+          }
+        });
       },
     };
   }, [state, launchApp, launchTaskById, goHome, showRecents, closeTask, closeApp, finishActivity, setBrightness, setVolume, handleSystemBack, openApp, startActivity, startActivityForResult, setResult]);

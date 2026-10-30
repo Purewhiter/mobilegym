@@ -12,9 +12,9 @@ export const PublishTextFinalPage: React.FC = () => {
   const [title, setTitle] = useState(publishDraft.title || '');
   const [content, setContent] = useState(publishDraft.text || '');
 
-  const handlePublish = () => {
-    updatePublishDraft({ text: content, title });
-    addNote({
+  const handlePublish = async () => {
+    await updatePublishDraft({ text: content, title });
+    await addNote({
       title: title.trim(),
       content: content.trim(),
       images: publishDraft.images,
@@ -22,8 +22,8 @@ export const PublishTextFinalPage: React.FC = () => {
     back(3);
   };
 
-  const handleSaveDraft = () => {
-    updatePublishDraft({ text: content, title });
+  const handleSaveDraft = async () => {
+    await updatePublishDraft({ text: content, title });
     back();
   };
 

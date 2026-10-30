@@ -15,6 +15,7 @@ import { getLocale } from '../locale';
 import PackageManagerService from '../PackageManagerService';
 import { AppErrorBoundary } from '../components/AppErrorBoundary';
 import { AppLaunchSplash } from '../components/AppLaunchSplash';
+import { holdBusy } from '../idle';
 import { runAppDataLoaderModule, type AppDataLoaderModule } from '../appDataLoaderReady';
 
 export const APP_REGISTRY: AppManifest[] = [
@@ -80,12 +81,17 @@ for (const [path, importFn] of Object.entries(appModules)) {
   const appId = dirToAppId.get(m[2]);
   if (appId && !AppComponents[appId]) {
     const dataLoaderFn = dataLoaderByAppId.get(appId);
-    AppComponents[appId] = lazy(async () => {
-      if (dataLoaderFn) {
-        const loaderMod = await dataLoaderFn();
-        await runAppDataLoaderModule(loaderMod);
-      }
-      return importFn();
+    AppComponents[appId] = lazy(() => {
+      const load = (async () => {
+        if (dataLoaderFn) {
+          const loaderMod = await dataLoaderFn();
+          await runAppDataLoaderModule(loaderMod);
+        }
+        return importFn();
+      })();
+      // The launch splash is static while the chunk loads: not idle until the app mounts.
+      holdBusy(load);
+      return load;
     });
   }
 }

@@ -1,10 +1,10 @@
 import { useRedBookStrings } from '../hooks/useRedBookStrings';
-import React, { useMemo } from 'react';
+import React from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { IcNavBack } from '../res/icons';
 const ChevronLeft = IcNavBack;
 import { useRedBookStore } from '../state';
-import { useRedBookView } from '../data/view';
+import { useRedBookUsers } from '../data/view';
 import { useShallow } from 'zustand/react/shallow';
 import { useRedBookGestures } from '../hooks/useRedBookGestures';
 export const FollowListPage: React.FC = () => {
@@ -13,21 +13,11 @@ export const FollowListPage: React.FC = () => {
   const type = searchParams.get('type'); // 0 = fans, 1 = following
   const title = type === '1' ? s.following : s.followers;
   const { user, followUser } = useRedBookStore(useShallow(s => ({ user: s.user, followUser: s.followUser })));
-  const view = useRedBookView();
   const { bindTap, bindBack } = useRedBookGestures();
 
-  // Filter users based on type
-  const userList = useMemo(() => {
-      const users = view.userIds.map(id => view.usersById[id]).filter(Boolean);
-      if (type === '1') {
-          const set = new Set(user.followingIds || []);
-          return users.filter(u => set.has(u.id));
-      } else {
-          // Followers
-          const set = new Set(user.followerIds || []);
-          return users.filter(u => set.has(u.id));
-      }
-  }, [type, view.usersById, view.userIds, user.followingIds, user.followerIds]);
+  // 1 = following, otherwise followers; canonical user order like before.
+  const ids = (type === '1' ? user.followingIds : user.followerIds) || [];
+  const { users: userList } = useRedBookUsers(ids);
 
   return (
     <div className="h-full flex flex-col bg-app-surface">

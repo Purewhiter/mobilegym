@@ -1,10 +1,10 @@
 import { useRedBookStrings } from '../hooks/useRedBookStrings';
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { IcNavBack, IcSearch, IcDelete, IcClose, IcScan, IcCamera, IcSlidersH } from '../res/icons';
 const ChevronLeft = IcNavBack, Search = IcSearch, Trash2 = IcDelete, X = IcClose, ScanLine = IcScan, Camera = IcCamera, SlidersHorizontal = IcSlidersH;
 import { useRedBookStore } from '../state';
-import { useRedBookView } from '../data/view';
+import { useRedBookSearchNotes, useRedBookSearchUsers } from '../data/view';
 import { DiscoveryFeed } from './HomePage';
 import { useRedBookGestures } from '../hooks/useRedBookGestures';
 import { strings, type StringKey } from '../res/strings';
@@ -33,15 +33,12 @@ const getTagText = (item: any): StringKey => {
 
 export const SearchPage: React.FC = () => {
   const [searchParams] = useSearchParams();
-  const view = useRedBookView();
   const history = useRedBookStore(s => s.searchHistory);
   const hotSearch = useRedBookStore(s => s.hotSearch);
   const guessYouLike = useRedBookStore(s => s.guessYouLike);
   const addSearchHistory = useRedBookStore(s => s.addSearchHistory);
   const removeSearchHistory = useRedBookStore(s => s.removeSearchHistory);
   const clearSearchHistory = useRedBookStore(s => s.clearSearchHistory);
-  const feed = useMemo(() => view.feedIds.map(id => view.notesById[id]).filter(Boolean), [view.feedIds, view.notesById]);
-  const users = useMemo(() => view.userIds.map(id => view.usersById[id]).filter(Boolean), [view.userIds, view.usersById]);
   const { bindTap, bindBack, go, back } = useRedBookGestures();
   const s = useRedBookStrings();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -140,24 +137,6 @@ export const SearchPage: React.FC = () => {
       });
   };
 
-  // Filtered Results
-  const toNumber = (value?: number | string) => {
-      if (value === undefined) return 0;
-      if (typeof value === 'number') return value;
-      const parsed = Number(String(value).replace(/[^0-9.]/g, ''));
-      return Number.isNaN(parsed) ? 0 : parsed;
-  };
-
-  const searchResults = useMemo(() => {
-      if (!keyword) return [];
-      const lowerKey = keyword.toLowerCase();
-      return feed.filter(note =>
-          note.title.toLowerCase().includes(lowerKey) ||
-          note.content.toLowerCase().includes(lowerKey) ||
-          note.category?.toLowerCase().includes(lowerKey)
-      );
-  }, [keyword, feed]);
-
   useEffect(() => {
       if (!isSearching) return;
       if (!searchParams.get('tab')) {
@@ -170,34 +149,13 @@ export const SearchPage: React.FC = () => {
       go('search.sort.apply', { sort: sortKey });
   }, [activeTab, isFilterOpen, isSearching, searchParams, sortKey, go]);
 
-  const sortedResults = useMemo(() => {
-      if (activeTab !== 'searchpage_all') return searchResults;
-      if (searchResults.length === 0) return searchResults;
-      const nextResults = [...searchResults];
-      switch (sortKey) {
-          case 'latest':
-              nextResults.sort((a, b) => b.createdAt - a.createdAt);
-              break;
-          case 'likes':
-              nextResults.sort((a, b) => toNumber(b.likes) - toNumber(a.likes));
-              break;
-          case 'comments':
-              nextResults.sort((a, b) => toNumber(b.comments) - toNumber(a.comments));
-              break;
-          case 'collects':
-              nextResults.sort((a, b) => toNumber(b.collections) - toNumber(a.collections));
-              break;
-          default:
-              break;
-      }
-      return nextResults;
-  }, [activeTab, searchResults, sortKey]);
+  // Matching and sorting run on the device server over the merged notes.
+  const { notes: sortedResults } = useRedBookSearchNotes(
+    keyword,
+    activeTab === 'searchpage_all' ? sortKey : 'comprehensive',
+  );
 
-  const userResults = useMemo(() => {
-      if (!keyword) return [];
-      const lowerKey = keyword.toLowerCase();
-      return users.filter(user => user.name.toLowerCase().includes(lowerKey));
-  }, [keyword, users]);
+  const { users: userResults } = useRedBookSearchUsers(keyword);
 
 
   // --- Render Components ---

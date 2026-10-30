@@ -2,7 +2,7 @@ import { useRedBookStrings } from '../hooks/useRedBookStrings';
 import React, { useMemo, useState, useRef } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
 import { useRedBookStore } from '../state';
-import { useRedBookView } from '../data/view';
+import { useRedBookAuthor, useRedBookNote } from '../data/view';
 import { useShallow } from 'zustand/react/shallow';
 import { REDBOOK_CONFIG } from '../data';
 import { IcNavBack, IcShare, IcMore, IcMessageCircle, IcStar, IcHeart, IcSend, IcQuote, IcFrown, IcReply, IcAt, IcSmile, IcImage, IcFilter, IcCheck } from '../res/icons';
@@ -27,13 +27,9 @@ export const DetailPage: React.FC = () => {
     toggleCommentLike: s.toggleCommentLike,
     addToHistory: s.addToHistory,
   })));
-  const view = useRedBookView();
-
-  const note = useMemo(() => (id ? view.notesById[id] : undefined), [view.notesById, id]);
-  const author = useMemo(() => {
-      if (!note) return null;
-      return note.authorId === user.id ? user : view.usersById[note.authorId];
-  }, [view.usersById, note, user]);
+  const { note, loading: noteLoading } = useRedBookNote(id);
+  const noteAuthor = useRedBookAuthor(note?.authorId ?? '');
+  const author = note ? (note.authorId === user.id ? user : noteAuthor) : null;
 
   const isFollowingAuthor = !!author && (user.followingIds || []).includes(author.id);
   const cameFromAuthorPage = !!(location.state as any)?.fromAuthorId && (location.state as any).fromAuthorId === author?.id;
@@ -42,11 +38,13 @@ export const DetailPage: React.FC = () => {
   const likedCommentIds = (note && user.likedCommentsByNote?.[note.id]) || [];
   const isCommentLiked = (commentId: string) => likedCommentIds.includes(commentId);
 
+  // Keyed by id: the note object is re-fetched after every write, including this one.
+  const noteId = note?.id;
   React.useEffect(() => {
-    if (note) {
-      addToHistory(note.id);
+    if (noteId) {
+      addToHistory(noteId);
     }
-  }, [note, addToHistory]);
+  }, [noteId, addToHistory]);
 
   // Optimization: Preload surrounding notes or important assets
   React.useEffect(() => {
@@ -223,6 +221,8 @@ export const DetailPage: React.FC = () => {
   };
 
   if (!note) {
+    // Still loading: blank, not "not found".
+    if (noteLoading) return <div className="h-full w-full bg-app-surface" />;
     return <div className="h-full w-full flex items-center justify-center">{s.note_not_found}</div>;
   }
   const hasMedia = !!note.video || !!(note.images && note.images.length > 0);

@@ -51,11 +51,10 @@ import { HistoryPage } from './pages/HistoryPage';
 
 export const RedBookApp: React.FC = () => {
   const { isDark } = useDarkMode();
-  // base dataset 的加载已经由 OS 的 lazy() + Suspense + AppLaunchSplash 三件套
+  // 与 device session 的同步由 OS 的 lazy() + Suspense + AppLaunchSplash 三件套
   // 在 component mount **之前**完成（见 os/data/appRegistry.tsx 的 lazy 包装）。
-  // 到这里 mount 时 `getBaseDataset()` 必非 null，无需 in-app gate / splash。
   // 保留 useEffect(preload()) 作幂等兜底：极少数路径（hot reload / 直接 mount）
-  // 可能绕过 OS lazy，preload() 内部有 cache 短路，重复调用零成本。
+  // 可能绕过 OS lazy，preload() 每个 session 只同步一次，重复调用零成本。
   useEffect(() => {
     void preload();
   }, []);

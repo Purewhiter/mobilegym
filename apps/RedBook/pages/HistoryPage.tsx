@@ -1,7 +1,7 @@
 import { useRedBookStrings } from '../hooks/useRedBookStrings';
 import React from 'react';
 import { useRedBookStore } from '../state';
-import { useRedBookView } from '../data/view';
+import { useRedBookNotes } from '../data/view';
 import { useShallow } from 'zustand/react/shallow';
 import { IcNavBack, IcDelete } from '../res/icons';
 const ChevronLeft = IcNavBack, Trash2 = IcDelete;
@@ -10,13 +10,9 @@ import { Note } from '../types';
 export const HistoryPage: React.FC = () => {
   const s = useRedBookStrings();
   const { history, clearHistory } = useRedBookStore(useShallow(s => ({ history: s.history, clearHistory: s.clearHistory })));
-  const view = useRedBookView();
   const { bindTap, bindBack } = useRedBookGestures();
-  const notes = React.useMemo(
-    () => history.map(id => view.notesById[id]).filter((n): n is Note => Boolean(n)),
-    [history, view.notesById],
-  );
-  const getAuthor = (note: Note) => view.usersById[note.authorId];
+  const { notes, authorsById } = useRedBookNotes(history);
+  const getAuthor = (note: Note) => authorsById[note.authorId];
 
   return (
     <div className="h-full flex flex-col bg-app-surface">

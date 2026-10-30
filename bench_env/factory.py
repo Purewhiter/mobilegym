@@ -24,8 +24,12 @@ def _as_runner_config(config: ConfigType) -> "RunnerConfig":
     return RunnerConfig.from_args(cast(argparse.Namespace, config))
 
 
+# Agents that never call a model (replay re-issues recorded responses).
+_MODEL_FREE_AGENTS = {"human", "replay"}
+
+
 def create_llm(config: ConfigType) -> Any:
-    """Create LLM client."""
+    """Create LLM client (None for model-free agents run without model flags)."""
     from bench_env.llm import LLMClient
     config = _as_runner_config(config)
     
@@ -34,6 +38,8 @@ def create_llm(config: ConfigType) -> Any:
     api_key = getattr(config, "model_api_key", None)
     
     if not base_url or not model:
+        if getattr(config, "agent", None) in _MODEL_FREE_AGENTS:
+            return None
         raise ValueError("--model-base-url and --model-name required")
     infer_timeout = getattr(config, "infer_timeout", 300.0)
     return LLMClient(
@@ -58,7 +64,7 @@ def create_agent(config: ConfigType, llm: Any = None) -> Any:
     if agent_cls is HumanAgent:
         return agent_cls(AgentConfig(verbose=verbose))
 
-    if llm is None:
+    if llm is None and agent_name not in _MODEL_FREE_AGENTS:
         raise ValueError("LLM required for AI agents")
 
     model_args = {}
@@ -128,6 +134,7 @@ async def create_env(config: ConfigType) -> Any:
             proxy=proxy,
             coord_space=coord_space,
             delay_after_action=delay,
+            settle=getattr(config, "settle", "fixed"),
             verbose=verbose,
             viewport_size=(360, 800),
             physical_size=physical_size,
