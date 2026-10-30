@@ -1,4 +1,5 @@
-import { createAppStoreWithActions, memoSelector } from '../../os/createAppStore';
+import { memoSelector } from '../../os/createAppStore';
+import { createDeviceAppStore } from '../../os/device/deviceStore';
 import { NOTES_CONFIG } from './data';
 import * as TimeService from '../../os/TimeService';
 import type {
@@ -88,10 +89,13 @@ const initialState: NotesState = {
   settings: { ...(NOTES_CONFIG.settings as NotesSettings) },
 };
 
-export const useNotesStore = createAppStoreWithActions<NotesState, NotesActions>(
+// State lives in the device server session (device/stateOnly.ts); the actions
+// below run here as before and every write is saved there.
+export const useNotesStore = createDeviceAppStore<NotesState, NotesActions>(
   'notes',
   initialState,
-  (set, get) => ({
+  { localKeys: [], syncSetState: true },
+  (_device, set, get) => ({
     setSelectedFolderId: (folderId: string) => {
       const ok = get().folders.some(f => f.id === folderId);
       set({ selectedFolderId: ok ? folderId : NOTES_CONFIG.defaultFolderId });

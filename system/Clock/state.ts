@@ -7,7 +7,8 @@ import BroadcastBus, {
   ACTION_TIME_SET,
   ACTION_TIME_TICK,
 } from '../../os/BroadcastBus';
-import { createAppStoreWithActions, memoSelector, registerStateAdapter } from '../../os/createAppStore';
+import { memoSelector, registerStateAdapter } from '../../os/createAppStore';
+import { createDeviceAppStore } from '../../os/device/deviceStore';
 import * as TimeService from '../../os/TimeService';
 import { CLOCK_CONFIG } from './data';
 import type { Alarm, WorldCity } from './types';
@@ -44,10 +45,13 @@ const initialState: ClockState = {
   selectedCityIds: CLOCK_CONFIG.selectedCityIds,
 };
 
-export const useClockStore = createAppStoreWithActions<ClockState, ClockActions>(
+// State lives in the device server session (device/stateOnly.ts); the actions
+// below run here as before and every write is saved there.
+export const useClockStore = createDeviceAppStore<ClockState, ClockActions>(
   'clock',
   initialState,
-  (set, get) => ({
+  { localKeys: [], syncSetState: true },
+  (_device, set, get) => ({
     setAlarms: (updater) => {
       set(state => ({
         alarms: typeof updater === 'function' ? updater(state.alarms) : updater,

@@ -139,11 +139,11 @@ Adding an App **requires no changes to any OS-layer file**. The OS auto-discover
 
 1. **`apps/<AppDir>/manifest.ts`** or **`system/<AppDir>/manifest.ts`** — must `export const manifest: AppManifest`, declaring `id`, `displayName`, `displayNameEn`, icon, theme, etc.
 2. **`apps/<AppDir>/<Name>App.tsx`** or **`system/<AppDir>/<Name>App.tsx`** — entry component; filename must match `*App.tsx`, and **must `export default`**
-3. **`apps/<AppDir>/state.ts`** / **`system/<AppDir>/state.ts`** (optional) — Zustand store, auto-registered via `import.meta.glob(['./apps/*/state.ts', './system/*/state.ts'])`
+3. **`apps/<AppDir>/state.ts`** / **`system/<AppDir>/state.ts`** (optional) — `createDeviceAppStore` mirror of the app's device session, auto-registered via `import.meta.glob(['./apps/*/state.ts', './system/*/state.ts'])`; plus a device module (`apps/<AppDir>/device/` or `createStateOnlyModule`) registered in `device/server.ts` (see `docs/platform/state/device-server.md`)
 
 Convention details:
 
-- `manifest.id` is the `appId` (e.g. `'wechat'`) and also the localStorage key
+- `manifest.id` is the `appId` (e.g. `'wechat'`) and also the app's id in the device session
 - `displayNameEn` is auto-injected into the OS i18n dictionary (`patchAppNames`); no need to edit `os/i18n/en.ts`
 - The `aliases` array is auto-injected into the system-app alias map (e.g. `['通讯录', '联系人']`); no need to edit OS-layer files
 - The directory name (e.g. `Wechat`) does not have to match the `appId` (e.g. `'wechat'`) — the OS builds the mapping automatically from the manifest path
@@ -163,7 +163,7 @@ Convention details:
 > **The full state-and-data-layer spec lives in [`docs/platform/state/model.md`](docs/platform/state/model.md)** (settings naming, nested structure, data-layering criteria, store action patterns, and bench_env path conventions are all there).
 
 - Config-first: constants in `constants.ts`, default data in `data/defaults.json`, unified export via `data/index.ts` as `<APPNAME>_CONFIG`
-- localStorage key must exactly match `manifest.id` (i.e. `appId`)
+- App state lives in the device server session, not `localStorage`: stores use `createDeviceAppStore` (appId = `manifest.id`), page-only keys go in `localKeys`. See `docs/platform/state/device-server.md`
 - **No form of `new Date(...)` or bare `Date.now()` is allowed** — go through `TimeService`:
   - `TimeService.now()` / `TimeService.getDate()` — **simulated time**: on-screen clocks, data timestamps, benchmark state checks
   - `TimeService.realNow()` — **real wall-clock time**: debouncing, animations, gesture detection, cache TTLs, and anywhere you're measuring real physical elapsed time

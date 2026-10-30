@@ -4,12 +4,14 @@ import { useSearchParams } from 'react-router-dom';
 import { useSpotifyStore } from '../state';
 import { useShallow } from 'zustand/react/shallow';
 import { useSpotifyGestures } from '../hooks/useSpotifyGestures';
+import { useSubmitOnce } from '../../../os/hooks/useSubmitOnce';
 import { useSpotifyStrings } from '../hooks/useSpotifyStrings';
 
 export const CreatePage: React.FC = () => {
   const { customPlaylists } = useSpotifyStore(useShallow(s => ({ customPlaylists: s.customPlaylists })));
   const createPlaylist = useSpotifyStore(s => s.createPlaylist);
   const pendingTrack = useSpotifyStore(s => s.pendingPlaylistTrack);
+  const submitOnce = useSubmitOnce();
   const { bindTap, bindBack, back, go } = useSpotifyGestures();
   const s = useSpotifyStrings();
   const [searchParams] = useSearchParams();
@@ -44,12 +46,16 @@ export const CreatePage: React.FC = () => {
       return;
     }
 
-    const newPlaylist = createPlaylist(name, pendingTrack);
+    // The pending track is consumed now, so a slow request cannot clear a newer one.
     if (pendingTrack) {
       useSpotifyStore.setState({ pendingPlaylistTrack: null });
     }
-
-    go('playlist.open', { id: newPlaylist.id }, { mode: 'replace' });
+    let newPlaylistId: string | null = null;
+    void submitOnce(async () => {
+      newPlaylistId = (await createPlaylist(name, pendingTrack))?.id ?? null;
+    }, () => {
+      if (newPlaylistId) go('playlist.open', { id: newPlaylistId }, { mode: 'replace' });
+    });
   };
 
   // ── Drag-to-dismiss (menu view only, but hooks must run every render) ──

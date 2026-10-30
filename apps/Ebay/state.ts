@@ -1,4 +1,4 @@
-import { createAppStoreWithActions } from '../../os/createAppStore';
+import { createDeviceAppStore } from '../../os/device/deviceStore';
 import { EBAY_CONFIG } from './data';
 
 // ---- Types ----
@@ -47,11 +47,11 @@ interface EbayState {
 }
 
 interface EbayActions {
-  addRecentSearch: (query: string) => void;
-  clearRecentSearches: () => void;
-  updateSettings: (patch: Partial<EbayState['settings']>) => void;
-  setSearchCurrent: (patch: Partial<EbaySearchCurrent>) => void;
-  recordSearchSnapshot: () => void;
+  addRecentSearch: (query: string) => Promise<void>;
+  clearRecentSearches: () => Promise<void>;
+  updateSettings: (patch: Partial<EbayState['settings']>) => Promise<void>;
+  setSearchCurrent: (patch: Partial<EbaySearchCurrent>) => Promise<void>;
+  recordSearchSnapshot: () => Promise<void>;
 }
 
 // ---- Store ----
@@ -69,63 +69,26 @@ const initialState: EbayState = {
   },
 };
 
-export const useEbayStore = createAppStoreWithActions<EbayState, EbayActions>(
+// Every field lives in the device server session (apps/Ebay/device); this
+// store mirrors it, so components and `__SIM__.getState().apps.ebay` read the
+// same shape as before. Actions run the matching server command.
+export const useEbayStore = createDeviceAppStore<EbayState, EbayActions>(
   'ebay',
   initialState,
-  (set, get) => ({
-    addRecentSearch: (query: string) => {
-      const q = query.trim();
-      if (!q) return;
-      set(state => ({
-        recentSearches: [
-          { id: `${(state.recentSearches?.length ?? 0) + 1}`, query: q },
-          ...(state.recentSearches ?? []).filter((item: any) => item.query !== q),
-        ],
-      }));
-    },
-
-    clearRecentSearches: () => {
-      set({ recentSearches: [] });
-    },
-
-    updateSettings: (patch) => {
-      set(state => ({ settings: { ...state.settings, ...patch } }));
-    },
-
-    setSearchCurrent: (patch: Partial<EbaySearchCurrent>) => {
-      set(state => ({
-        search: {
-          ...state.search,
-          current: { ...state.search.current, ...patch },
-        },
-      }));
-    },
-
-    recordSearchSnapshot: () => {
-      set(state => {
-        const currentSearch = state.search.current;
-        const prevHistory = state.search.history;
-        const id = `${prevHistory.length + 1}`;
-        const next: EbaySearchSnapshot = { id, ...currentSearch };
-        const nextHistory = [...prevHistory, next];
-        let newLastCompare = state.search.lastCompare;
-        if (nextHistory.length >= 2) {
-          const a = nextHistory[nextHistory.length - 2];
-          const b = nextHistory[nextHistory.length - 1];
-          const at = a.firstTotalCents;
-          const bt = b.firstTotalCents;
-          const cheaper: 'A' | 'B' | 'same' =
-            at == null || bt == null ? 'same' : at < bt ? 'A' : bt < at ? 'B' : 'same';
-          newLastCompare = { a, b, cheaper };
-        }
-        return {
-          search: {
-            ...state.search,
-            history: nextHistory,
-            lastCompare: newLastCompare,
-          },
-        };
-      });
-    },
-  }),
+  { localKeys: [] },
+  ({ command, optimistic }) => {
+    const run = (name: string) => async (...args: unknown[]) => {
+      await command(name, ...args);
+    };
+    return {
+      addRecentSearch: run('addRecentSearch'),
+      clearRecentSearches: run('clearRecentSearches'),
+      // Show the new value at once, so a second tap reads it.
+      updateSettings: async (patch) => {
+        await optimistic((state) => ({ settings: { ...state.settings, ...patch } }), 'updateSettings', patch);
+      },
+      setSearchCurrent: run('setSearchCurrent'),
+      recordSearchSnapshot: run('recordSearchSnapshot'),
+    };
+  },
 );

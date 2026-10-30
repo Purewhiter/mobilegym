@@ -1,4 +1,5 @@
-import { createAppStoreWithActions, memoSelector } from '../../os/createAppStore';
+import { memoSelector } from '../../os/createAppStore';
+import { createDeviceAppStore } from '../../os/device/deviceStore';
 import {
     MEETING_CONFIG,
     ONGOING_MEETINGS,
@@ -117,10 +118,13 @@ const initialState: MeetingState = {
 
 // ---- Store ----
 
-export const useMeetingStore = createAppStoreWithActions<MeetingState, MeetingActions>(
+// State lives in the device server session (device/stateOnly.ts); the actions
+// below run here as before and every write is saved there.
+export const useMeetingStore = createDeviceAppStore<MeetingState, MeetingActions>(
     'tencent_meeting',
     initialState,
-    (set, get) => ({
+    { localKeys: [], syncSetState: true },
+    (_device, set, get) => ({
         addHistory: (record: MeetingRecord) => {
             set(state => ({ history: [record, ...state.history] }));
         },
@@ -488,17 +492,6 @@ export const useMeetingStore = createAppStoreWithActions<MeetingState, MeetingAc
             });
         },
     }),
-    {
-        partialize: (state) => {
-            // Exclude functions from persistence
-            const result: Record<string, any> = {};
-            for (const [k, v] of Object.entries(state)) {
-                if (typeof v === 'function') continue;
-                result[k] = v;
-            }
-            return result as Partial<MeetingState>;
-        },
-    },
 );
 
 // ---- Memoized selectors for derived arrays ----

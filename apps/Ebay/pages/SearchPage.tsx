@@ -5,7 +5,7 @@ import TabBar from '../components/TabBar';
 import SortModal, { type SortOptionType } from '../components/SortModal';
 import FilterDrawer, { type BuyingFormatFilter, type ViewMode } from '../components/FilterDrawer';
 import { useScrollDirection } from '../hooks/useScrollDirection';
-import { loadProducts, getProductsSync, loadCategories, getCategoriesSync, type CategoryDef } from '../data/loader';
+import { useEbayCategories, useEbayProducts } from '../data/loader';
 import type { ProductItem } from '../types';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useEbayStore } from '../state';
@@ -108,12 +108,8 @@ const SearchPage: React.FC = () => {
   const recordSearchSnapshot = useEbayStore(st => st.recordSearchSnapshot);
 
   // Async data
-  const [allProducts, setAllProducts] = useState<ProductItem[]>(getProductsSync() ?? []);
-  const [allCategories, setAllCategories] = useState<CategoryDef[]>(getCategoriesSync() ?? []);
-  useEffect(() => {
-    if (!allProducts.length) loadProducts().then(setAllProducts);
-    if (!allCategories.length) loadCategories().then(setAllCategories);
-  }, []);
+  const allProducts = useEbayProducts();
+  const allCategories = useEbayCategories();
 
   const localizedCategories = useMemo(() => localizeEbayCategories(allCategories, locale), [allCategories, locale]);
   const categoryChips = useMemo(() => localizedCategories.map(c => c.label), [localizedCategories]);
@@ -274,21 +270,24 @@ const SearchPage: React.FC = () => {
     });
   }, [buyingFormat, derived.firstTitle, derived.firstTotalCents, derived.resultsCount, freeShippingOnly, priceRange.max, priceRange.min, searchQuery, selectedBrands, selectedCategoryId, selectedConditions, selectedLocation, setSearchCurrent, sortOption]);
 
+  // Snapshots record result counts: never before the catalog has loaded.
+  const catalogReady = allProducts.length > 0;
+
   const lastRecordedQueryRef = useRef<string>('');
   useEffect(() => {
-    if (searchStep === 'results' && searchQuery.trim() && lastRecordedQueryRef.current !== searchQuery) {
+    if (catalogReady && searchStep === 'results' && searchQuery.trim() && lastRecordedQueryRef.current !== searchQuery) {
       lastRecordedQueryRef.current = searchQuery;
       recordSearchSnapshot();
     }
-  }, [recordSearchSnapshot, searchQuery, searchStep]);
+  }, [catalogReady, recordSearchSnapshot, searchQuery, searchStep]);
 
   const lastRecordedSortRef = useRef<SortOptionType>(sortOption);
   useEffect(() => {
-    if (searchStep === 'results' && lastRecordedSortRef.current !== sortOption) {
+    if (catalogReady && searchStep === 'results' && lastRecordedSortRef.current !== sortOption) {
       lastRecordedSortRef.current = sortOption;
       recordSearchSnapshot();
     }
-  }, [recordSearchSnapshot, searchStep, sortOption]);
+  }, [catalogReady, recordSearchSnapshot, searchStep, sortOption]);
 
   const brandsKey = useMemo(
     () => Array.from(selectedBrands).sort().join(','),
@@ -302,7 +301,7 @@ const SearchPage: React.FC = () => {
   // Debounced: record snapshot whenever query/filters settle on results so ``search.history``
   // contains both searches for compare tasks (current alone only reflects the last view).
   useEffect(() => {
-    if (searchStep !== 'results' || !searchQuery.trim()) return;
+    if (!catalogReady || searchStep !== 'results' || !searchQuery.trim()) return;
     const t = window.setTimeout(() => {
       recordSearchSnapshot();
     }, 500);
@@ -310,6 +309,7 @@ const SearchPage: React.FC = () => {
   }, [
     buyingFormat,
     brandsKey,
+    catalogReady,
     conditionsKey,
     freeShippingOnly,
     priceRange.max,

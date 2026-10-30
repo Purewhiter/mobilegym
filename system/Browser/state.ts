@@ -1,4 +1,5 @@
-import { createAppStoreWithActions, memoSelector } from '../../os/createAppStore';
+import { memoSelector } from '../../os/createAppStore';
+import { createDeviceAppStore } from '../../os/device/deviceStore';
 import { BROWSER_CONFIG } from './data';
 import { base36, nextStream } from '../../os/RandomService';
 
@@ -42,10 +43,13 @@ const initialState: BrowserState = {
 
 // --- Store ---
 
-export const useBrowserStore = createAppStoreWithActions<BrowserState, BrowserActions>(
+// State lives in the device server session (device/stateOnly.ts); the actions
+// below run here as before and every write is saved there.
+export const useBrowserStore = createDeviceAppStore<BrowserState, BrowserActions>(
   'browser',
   initialState,
-  (set, get) => ({
+  { localKeys: [], syncSetState: true },
+  (_device, set, get) => ({
     setActiveTabId(id: string) {
       set({ activeTabId: id });
     },

@@ -1,4 +1,4 @@
-import { createAppStoreWithActions } from '../../os/createAppStore';
+import { createDeviceAppStore } from '../../os/device/deviceStore';
 import type { AnswerSheetState, Field } from './types';
 
 // ── 默认数据（演示用，正式运行时由 Runner 通过 set_state 注入） ──
@@ -40,13 +40,13 @@ interface AnswerSheetActions {
   unsubmit: () => void;
 }
 
-export const useAnswerSheetStore = createAppStoreWithActions<
-  AnswerSheetState,
-  AnswerSheetActions
->(
+// State lives in the device server session (device/stateOnly.ts); the actions
+// below run here as before and every write is saved there.
+export const useAnswerSheetStore = createDeviceAppStore<AnswerSheetState, AnswerSheetActions>(
   'answer_sheet',
   initialState,
-  (set) => ({
+  { localKeys: [], syncSetState: true },
+  (_device, set) => ({
     setAnswer: (fieldIndex, value) => {
       set((state) => ({
         answers: { ...state.answers, [String(fieldIndex)]: value },

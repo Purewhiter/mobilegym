@@ -17,6 +17,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import type { AppModule, Catalog } from '../../../device/engine';
+import { mapStrings, mediaResolver } from '../../../device/media';
 import type { XMeUser } from '../state';
 import type { XConversation, XMessage, XPost, XSettings, XUser } from '../types';
 import type { XRuntimePostTable } from '../utils/runtimePostResolver';
@@ -38,13 +39,16 @@ interface XCatalogExtras {
   replies: Record<string, XPost[]>;
 }
 
-function loadCatalog(root: string): Catalog {
+function loadCatalog(root: string, cdnBase: string): Catalog {
   const dataDir = join(root, 'apps', 'X', 'data');
   const read = <T,>(name: string) => JSON.parse(readFileSync(join(dataDir, name), 'utf8')) as T;
+  // Images were mirrored to the CDN (videos were not): avatars at 128px, the rest at 1080px.
+  const local = mediaResolver(join(dataDir, 'media.json'), `${cdnBase}/x/media`);
+  const localize = <T,>(value: T): T => mapStrings(value, (url, key) => local(url, key === 'avatar' ? 128 : 1080)!);
   const extras: XCatalogExtras = {
-    users: read('users.json'),
-    posts: read('posts.json'),
-    replies: read('replies.json'),
+    users: localize(read('users.json')),
+    posts: localize(read('posts.json')),
+    replies: localize(read('replies.json')),
   };
   return { collections: new Map(), extras: extras as unknown as Record<string, unknown> };
 }
@@ -113,10 +117,10 @@ const queries: AppModule<XDeviceState>['queries'] = {
   replies: (ctx) => extras(ctx).replies,
 };
 
-export function createXModule(): AppModule<XDeviceState> {
+export function createXModule(options: { cdnBase: string }): AppModule<XDeviceState> {
   return {
     appId: 'x',
-    loadCatalog,
+    loadCatalog: root => loadCatalog(root, options.cdnBase),
     materialize() {},
     exportState: ctx => ctx.state,
     importState(raw) {

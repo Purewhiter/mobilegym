@@ -1,4 +1,5 @@
-import { createAppStoreWithActions, registerStateAdapter } from '../../os/createAppStore';
+import { registerStateAdapter } from '../../os/createAppStore';
+import { createDeviceAppStore } from '../../os/device/deviceStore';
 import { COMPASS_CONFIG, getDirectionText } from './data';
 import { getCurrentPosition } from '../../os/LocationService';
 
@@ -28,10 +29,13 @@ const initialState: CompassState = {
   longitude: null,
 };
 
-export const useCompassStore = createAppStoreWithActions<CompassState, CompassActions>(
+// State lives in the device server session (device/stateOnly.ts); the actions
+// below run here as before and every write is saved there.
+export const useCompassStore = createDeviceAppStore<CompassState, CompassActions>(
   'compass',
   initialState,
-  (set) => ({
+  { localKeys: [], syncSetState: true },
+  (_device, set) => ({
     setHeading: (deg: number) => {
       set({ headingDeg: deg, directionText: getDirectionText(deg) });
     },

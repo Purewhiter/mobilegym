@@ -1,4 +1,5 @@
-import { createAppStoreWithActions, memoSelector } from '../../os/createAppStore';
+import { memoSelector } from '../../os/createAppStore';
+import { createDeviceAppStore } from '../../os/device/deviceStore';
 import { getWechatConfig } from './data';
 import * as TimeService from '../../os/TimeService';
 import * as AIService from '../../os/AIService';
@@ -402,10 +403,13 @@ const initialState: WechatState = createInitialWechatState();
 
 // --- Store ---
 
-export const useWechatStore = createAppStoreWithActions<WechatState, WechatActions>(
+// State lives in the device server session (device/stateOnly.ts); the actions
+// below run here as before and every write is saved there.
+export const useWechatStore = createDeviceAppStore<WechatState, WechatActions>(
   'wechat',
   initialState,
-  (set, get) => {
+  { localKeys: ['_temp'], syncSetState: true },
+  (_device, set, get) => {
     // Expose set/get for module-level helpers (addAIMessage, triggerAIReply)
     storeAccessors.set = set;
     storeAccessors.get = get;
@@ -845,15 +849,6 @@ export const useWechatStore = createAppStoreWithActions<WechatState, WechatActio
         });
       },
     };
-  },
-  {
-    partialize: (state) => {
-      const result: Record<string, any> = {};
-      for (const [k, v] of Object.entries(state)) {
-        if (typeof v !== 'function' && !k.startsWith('_')) result[k] = v;
-      }
-      return result as Partial<WechatState>;
-    },
   },
 );
 

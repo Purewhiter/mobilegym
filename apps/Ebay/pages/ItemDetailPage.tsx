@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import {
   IcNavBack,
@@ -18,8 +18,7 @@ import {
 import { useEbayGestures } from '../navigation';
 import { useEbayStrings } from '../hooks/useEbayStrings';
 import { useLocale } from '../../../os/locale';
-import { loadProducts, getProductsSync } from '../data/loader';
-import type { ProductItem } from '../types';
+import { useEbayProduct } from '../data/loader';
 import {
   localizeEbayProductTitle,
   localizeEbayConditionLabel,
@@ -105,15 +104,7 @@ const ItemDetailPage: React.FC = () => {
   const isEn = locale === 'en';
   const numberLocale = isEn ? 'en-US' : 'zh-CN';
 
-  const [allProducts, setAllProducts] = useState<ProductItem[]>(getProductsSync() ?? []);
-  useEffect(() => {
-    if (!allProducts.length) loadProducts().then(setAllProducts);
-  }, []);
-
-  const product = useMemo(
-    () => allProducts.find(p => p.id === id) ?? null,
-    [allProducts, id],
-  );
+  const product = useEbayProduct(id) ?? null;
 
   const [selectedThumbIndex, setSelectedThumbIndex] = useState(0);
 

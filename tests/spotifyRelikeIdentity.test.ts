@@ -4,6 +4,7 @@ import albumTracks from '@/apps/Spotify/data/albumTracks.json';
 import artistTracks from '@/apps/Spotify/data/artistTracks.json';
 import playlistTracks from '@/apps/Spotify/data/playlistTracks.json';
 import searchResults from '@/apps/Spotify/data/searchResults.json';
+import { resetServerStates } from './support/memoryDevice';
 
 /**
  * Unliking a song and liking it again must restore the same record, whichever
@@ -55,14 +56,34 @@ function catalogTracks(): Track[] {
   return out;
 }
 
+// The Spotify store mirrors a device server session; run its commands in memory.
+vi.mock('@/os/device/DeviceClient', async () => {
+  const { createSpotifyModule } = await import('@/apps/Spotify/device');
+  return (await import('./support/memoryDevice')).memoryDeviceClient([createSpotifyModule()]);
+});
+
+async function loadStore() {
+  const { useSpotifyStore } = await import('@/apps/Spotify/state');
+  await useSpotifyStore.ensureSynced();
+  return useSpotifyStore;
+}
+
+/** Replace liked songs in the session and the mirror. */
+async function setLiked(store: Awaited<ReturnType<typeof loadStore>>, likedSongs: Track[]) {
+  const { patchServerState } = await import('./support/memoryDevice');
+  patchServerState('spotify', { likedSongs });
+  await store.ensureSynced(true);
+}
+
 describe('Spotify unlike + re-like', () => {
   beforeEach(() => {
     vi.resetModules();
+    resetServerStates();
     Object.defineProperty(globalThis, 'localStorage', { value: createLocalStorageMock(), configurable: true });
   });
 
   it('restores the identical record from every catalog that lists the song', async () => {
-    const { useSpotifyStore } = await import('@/apps/Spotify/state');
+    const useSpotifyStore = await loadStore();
     const initial = useSpotifyStore.getState().likedSongs;
     const likedKeys = new Set(initial.map(songKey));
     const variants = catalogTracks().filter((t) => likedKeys.has(songKey(t)));
@@ -73,13 +94,13 @@ describe('Spotify unlike + re-like', () => {
 
     const changed: Array<{ via: string; before: unknown; after: unknown }> = [];
     for (const variant of variants) {
-      useSpotifyStore.setState({ likedSongs: initial });
+      await setLiked(useSpotifyStore, initial);
       const before = initial.find((t) => songKey(t) === songKey(variant));
 
-      useSpotifyStore.getState().toggleLike(variant);
+      await useSpotifyStore.getState().toggleLike(variant);
       expect(useSpotifyStore.getState().likedSongs.some((t) => songKey(t) === songKey(variant))).toBe(false);
 
-      useSpotifyStore.getState().toggleLike(variant);
+      await useSpotifyStore.getState().toggleLike(variant);
       const after = useSpotifyStore.getState().likedSongs;
       const restored = after.filter((t) => songKey(t) === songKey(variant));
 
@@ -95,35 +116,49 @@ describe('Spotify unlike + re-like', () => {
   it('restores an injected record that is not in the seed data', async () => {
     // Benchmark scenarios can inject their own likedSongs; the guarantee must
     // not depend on the record being one the app shipped with.
-    const { useSpotifyStore } = await import('@/apps/Spotify/state');
+    const useSpotifyStore = await loadStore();
     const injected: Track = { id: 'custom_42', title: 'Hello', artist: 'Adele', cover: '/x.jpg', duration: '4:55' };
     const fromSearch: Track = { id: 'it_1051332387', title: 'Hello', artist: 'Adele', cover: '/y.jpg', duration: '4:56' };
-    useSpotifyStore.setState({ likedSongs: [injected] });
+    await setLiked(useSpotifyStore, [injected]);
 
-    useSpotifyStore.getState().toggleLike(fromSearch);
-    useSpotifyStore.getState().toggleLike(fromSearch);
+    await useSpotifyStore.getState().toggleLike(fromSearch);
+    await useSpotifyStore.getState().toggleLike(fromSearch);
 
     expect(useSpotifyStore.getState().likedSongs).toEqual([injected]);
   });
 
+  it('restores the record when the re-like comes before the unlike is answered', async () => {
+    const useSpotifyStore = await loadStore();
+    const injected: Track = { id: 'custom_42', title: 'Hello', artist: 'Adele', cover: '/x.jpg', duration: '4:55' };
+    const fromSearch: Track = { id: 'it_1051332387', title: 'Hello', artist: 'Adele', cover: '/y.jpg', duration: '4:56' };
+    await setLiked(useSpotifyStore, [injected]);
+
+    // Both taps before either command returns.
+    await Promise.all([useSpotifyStore.getState().toggleLike(fromSearch), useSpotifyStore.getState().toggleLike(fromSearch)]);
+
+    expect(useSpotifyStore.getState().likedSongs).toEqual([injected]);
+    const { serverState } = await import('./support/memoryDevice');
+    expect(serverState('spotify').likedSongs).toEqual([injected]);
+  });
+
   it('after a reload, falls back to the seed record rather than the caller\'s', async () => {
-    const { useSpotifyStore } = await import('@/apps/Spotify/state');
+    const useSpotifyStore = await loadStore();
     const initial = useSpotifyStore.getState().likedSongs;
     const seed = initial.find((t) => t.title === 'Rolling In the Deep')!;
     const fromSearch: Track = { ...seed, id: 'it_403037877', cover: '/other.jpg' };
 
-    useSpotifyStore.getState().toggleLike(fromSearch);
+    await useSpotifyStore.getState().toggleLike(fromSearch);
     // `_temp` is not persisted, so a reload between the two taps loses it.
     useSpotifyStore.setState({ _temp: { queueToast: null, likedToast: null, unlikedTracks: {} } });
-    useSpotifyStore.getState().toggleLike(fromSearch);
+    await useSpotifyStore.getState().toggleLike(fromSearch);
 
     expect(useSpotifyStore.getState().likedSongs[0]).toEqual(seed);
   });
 
   it('stores a never-before-liked song as given', async () => {
-    const { useSpotifyStore } = await import('@/apps/Spotify/state');
+    const useSpotifyStore = await loadStore();
     const fresh: Track = { id: 'it_999', title: 'A Song Nobody Shipped', artist: 'Nobody', cover: '/z.jpg', duration: '1:00' };
-    useSpotifyStore.getState().toggleLike(fresh);
+    await useSpotifyStore.getState().toggleLike(fresh);
     expect(useSpotifyStore.getState().likedSongs[0]).toEqual(fresh);
   });
 });

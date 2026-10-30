@@ -1,9 +1,13 @@
 import BroadcastBus, { ACTION_BOOT_COMPLETED } from '../../os/BroadcastBus';
-import { createAppStoreWithActions, memoSelector } from '../../os/createAppStore';
+import { memoSelector } from '../../os/createAppStore';
+import { createDeviceAppStore } from '../../os/device/deviceStore';
 import MediaSessionService, { type ActiveMediaSession } from '../../os/MediaSessionService';
 import { SPOTIFY_CONFIG } from './data';
 import type { SpotifyTrack, SpotifyPlaylist, SpotifyArtist, PlaySource, PlayHistoryEntry, SearchHistoryEntry } from './types';
 import * as TimeService from '../../os/TimeService';
+import { songKey } from './utils/songKey';
+import * as logic from './logic';
+import type { SpotifyDeviceState } from './device';
 
 let localSeq = 0;
 function nextId(prefix: string): string {
@@ -83,24 +87,24 @@ export interface SpotifyState {
 }
 
 export interface SpotifyActions {
-  playTrack: (track: SpotifyTrack, source?: PlaySource) => void;
-  setQueueWithTracks: (tracks: SpotifyTrack[], startIndex?: number, source?: PlaySource) => void;
-  togglePlay: () => void;
-  toggleShuffle: () => void;
-  toggleRepeat: () => void;
-  toggleLike: (track: SpotifyTrack) => void;
-  toggleFollowArtist: (artistName: string) => void;
-  addToQueue: (track: SpotifyTrack) => void;
-  createPlaylist: (name: string, initialTrack?: SpotifyTrack | null) => SpotifyPlaylist;
-  skipToNext: () => void;
-  skipToPrevious: () => void;
-  updateTrackCover: (trackId: string, newCover: string) => void;
-  addAccount: (name: string) => void;
-  switchAccount: (userId: string) => void;
-  addTrackToPlaylist: (name: string, track: SpotifyTrack) => void;
-  removeTrackFromPlaylist: (name: string, trackId: string) => void;
-  updateSettings: <K extends keyof SpotifySettings>(category: K, patch: Partial<SpotifySettings[K]>) => void;
-  setSearchResults: (query: string, tracks: SpotifyTrack[]) => void;
+  playTrack: (track: SpotifyTrack, source?: PlaySource) => Promise<void>;
+  setQueueWithTracks: (tracks: SpotifyTrack[], startIndex?: number, source?: PlaySource) => Promise<void>;
+  togglePlay: () => Promise<void>;
+  toggleShuffle: () => Promise<void>;
+  toggleRepeat: () => Promise<void>;
+  toggleLike: (track: SpotifyTrack) => Promise<void>;
+  toggleFollowArtist: (artistName: string) => Promise<void>;
+  addToQueue: (track: SpotifyTrack) => Promise<void>;
+  createPlaylist: (name: string, initialTrack?: SpotifyTrack | null) => Promise<SpotifyPlaylist | null>;
+  skipToNext: () => Promise<void>;
+  skipToPrevious: () => Promise<void>;
+  updateTrackCover: (trackId: string, newCover: string) => Promise<void>;
+  addAccount: (name: string) => Promise<void>;
+  switchAccount: (userId: string) => Promise<void>;
+  addTrackToPlaylist: (name: string, track: SpotifyTrack) => Promise<void>;
+  removeTrackFromPlaylist: (name: string, trackId: string) => Promise<void>;
+  updateSettings: <K extends keyof SpotifySettings>(category: K, patch: Partial<SpotifySettings[K]>) => Promise<void>;
+  setSearchResults: (query: string, tracks: SpotifyTrack[]) => Promise<void>;
   showQueueToast: (track: SpotifyTrack) => void;
   clearQueueToast: () => void;
   clearLikedToast: () => void;
@@ -108,14 +112,7 @@ export interface SpotifyActions {
 
 // ── Track identity ─────────────────────────────────────────────────
 
-/**
- * A song is its title + artist, not its id. The same song reaches the UI from
- * several catalogs (seed lists, search results, album and artist pages), and
- * each catalog numbers it differently -- one song can have half a dozen ids.
- */
-export function songKey(track: Pick<SpotifyTrack, 'title' | 'artist'>): string {
-  return `${track.title.trim().toLowerCase()}||${track.artist.trim().toLowerCase()}`;
-}
+export { songKey };
 
 /** The seed record for each song in `data/defaults.json`, first occurrence wins. */
 const SEED_TRACK_BY_SONG: ReadonlyMap<string, SpotifyTrack> = (() => {
@@ -172,270 +169,142 @@ const initialState: SpotifyState = {
 
 // ── Store ──────────────────────────────────────────────────────────
 
-export const useSpotifyStore = createAppStoreWithActions<SpotifyState, SpotifyActions>(
+// Everything but `_temp` and `pendingPlaylistTrack` lives in the device server
+// session (apps/Spotify/device); this store mirrors it, so components and
+// `__SIM__.getState().apps.spotify` read the same shape as before. Actions run
+// the matching server command; new ids and the record a re-like restores are
+// decided here, as before.
+
+const PAGE_ONLY_KEYS: (keyof SpotifyState)[] = ['_temp', 'pendingPlaylistTrack'];
+
+export const useSpotifyStore = createDeviceAppStore<SpotifyState, SpotifyActions>(
   'spotify',
   initialState,
-  (set, get) => ({
-    playTrack: (track, source) => {
-      const s = get();
-      const inQueue = s.queue.find(t => t.id === track.id);
-      const newQueue = inQueue ? s.queue : [track, ...s.queue];
-      const newRecent = [track, ...s.recentPlays.filter(t => t.id !== track.id)].slice(0, 20);
-      const entry: PlayHistoryEntry = {
-        sourceType: source?.type ?? 'standalone',
-        sourceId: source?.id ?? 'standalone',
-        sourceTitle: source?.title ?? '',
-        sourceCover: source?.cover,
-        track,
-        timestamp: TimeService.now(),
-      };
-      const newHistory = [entry, ...s.playHistory].slice(0, 100);
-      set({
-        currentTrack: track,
-        isPlaying: true,
-        queue: newQueue,
-        recentPlays: newRecent,
-        playHistory: newHistory,
-      });
-    },
+  { localKeys: PAGE_ONLY_KEYS },
+  ({ optimistic }, set, get) => {
+    // Every action shows its transition at once (the same ../logic.ts function
+    // the server runs), so a quick second tap sees the first one's result.
+    const act = (name: string, transition: (s: SpotifyState) => Partial<SpotifyState>, ...args: unknown[]) =>
+      optimistic((s: SpotifyState) => transition(s), name, ...args);
+    const S = (s: SpotifyState) => s as unknown as SpotifyDeviceState;
 
-    setQueueWithTracks: (tracks, startIndex = 0, source) => {
-      const s = get();
-      const safeIndex = Math.max(0, Math.min(startIndex, tracks.length - 1));
-      const playedTrack = tracks[safeIndex] ?? null;
-      const historyEntries: PlayHistoryEntry[] = playedTrack && source ? [{
-        sourceType: source.type,
-        sourceId: source.id,
-        sourceTitle: source.title,
-        sourceCover: source.cover,
-        track: playedTrack,
-        timestamp: TimeService.now(),
-      }] : [];
-      const newRecent = playedTrack
-        ? [playedTrack, ...s.recentPlays.filter(t => t.id !== playedTrack.id)].slice(0, 20)
-        : s.recentPlays;
-      set({
-        queue: tracks.slice(),
-        currentTrack: playedTrack,
-        isPlaying: tracks.length > 0,
-        recentPlays: newRecent,
-        playHistory: [...historyEntries, ...s.playHistory].slice(0, 100),
-      });
-    },
+    return {
+      playTrack: async (track, source) => {
+        const now = TimeService.now();
+        await act('playTrack', (s) => logic.playTrack(S(s), track, source, now), track, source);
+      },
+      setQueueWithTracks: async (tracks, startIndex = 0, source) => {
+        const now = TimeService.now();
+        await act('setQueueWithTracks', (s) => logic.setQueueWithTracks(S(s), tracks, startIndex, source, now), tracks, startIndex, source);
+      },
+      togglePlay: async () => {
+        await act('togglePlay', (s) => logic.togglePlay(S(s)));
+      },
+      toggleShuffle: async () => {
+        await act('toggleShuffle', (s) => logic.toggleShuffle(S(s)));
+      },
+      toggleRepeat: async () => {
+        await act('toggleRepeat', (s) => logic.toggleRepeat(S(s)));
+      },
 
-    togglePlay: () => {
-      set({ isPlaying: !get().isPlaying });
-    },
+      // Unliking a song and liking it again must put back the *same record*, no
+      // matter which screen each tap happened on. The caller's `track` comes from
+      // whatever catalog that screen reads, so storing it verbatim would swap the
+      // record's id and cover art on a re-like from, say, search results -- and a
+      // benchmark state diff would read that as one song deleted and a different
+      // one added. So a like stores, in order of preference: the record this
+      // session's unlike removed, the seed record for the song, the caller's.
+      // (Position is not restored: liked songs are ordered by when they were
+      // added, and re-liking genuinely moves the song to the top.)
+      toggleLike: async (track) => {
+        const key = songKey(track);
+        const record = get()._temp.unlikedTracks?.[key] ?? SEED_TRACK_BY_SONG.get(key) ?? track;
+        await act('toggleLike', (s) => {
+          const { patch, removed, added } = logic.toggleLike(S(s), track, record);
+          const temp = s._temp;
+          if (removed) return { ...patch, _temp: { ...temp, unlikedTracks: { ...temp.unlikedTracks, [key]: removed } } };
+          const { [key]: _restored, ...unlikedTracks } = temp.unlikedTracks ?? {};
+          return { ...patch, _temp: { ...temp, likedToast: added ?? null, unlikedTracks } };
+        }, track, record);
+      },
 
-    toggleShuffle: () => {
-      const nextShuffle = !get().shuffle;
-      // 互斥：开启随机播放则关闭循环模式
-      set({ shuffle: nextShuffle, repeat: nextShuffle ? 'off' : get().repeat });
-    },
+      toggleFollowArtist: async (artistName) => {
+        await act('toggleFollowArtist', (s) => logic.toggleFollowArtist(S(s), artistName), artistName);
+      },
+      addToQueue: async (track) => {
+        await act('addToQueue', (s) => logic.addToQueue(S(s), track), track);
+      },
 
-    toggleRepeat: () => {
-      const s = get();
-      const next = s.repeat === 'off' ? 'context' : s.repeat === 'context' ? 'track' : 'off';
-      set({ repeat: next, shuffle: next !== 'off' ? false : s.shuffle });
-    },
+      showQueueToast: (track) => {
+        set({ _temp: { ...get()._temp, queueToast: track } });
+      },
+      clearQueueToast: () => {
+        set({ _temp: { ...get()._temp, queueToast: null } });
+      },
+      clearLikedToast: () => {
+        set({ _temp: { ...get()._temp, likedToast: null } });
+      },
 
-    // Unliking a song and liking it again must put back the *same record*, no
-    // matter which screen each tap happened on. The caller's `track` comes from
-    // whatever catalog that screen reads, so storing it verbatim would swap the
-    // record's id and cover art on a re-like from, say, search results -- and a
-    // benchmark state diff would read that as one song deleted and a different
-    // one added. So a like stores, in order of preference: the record this
-    // session's unlike removed, the seed record for the song, the caller's.
-    // (Position is not restored: liked songs are ordered by when they were
-    // added, and re-liking genuinely moves the song to the top.)
-    toggleLike: (track) => {
-      const s = get();
-      const key = songKey(track);
-      const isSameSong = (t: SpotifyTrack) => t.id === track.id || songKey(t) === key;
-      const removed = s.likedSongs.filter(isSameSong);
+      skipToNext: async () => {
+        await act('skipToNext', (s) => logic.skip(S(s), 1));
+      },
+      skipToPrevious: async () => {
+        await act('skipToPrevious', (s) => logic.skip(S(s), -1));
+      },
 
-      if (removed.length > 0) {
-        set({
-          likedSongs: s.likedSongs.filter(t => !isSameSong(t)),
-          _temp: { ...s._temp, unlikedTracks: { ...s._temp.unlikedTracks, [key]: removed[0] } },
-        });
-        return;
-      }
-
-      const { [key]: restored, ...unlikedTracks } = s._temp.unlikedTracks ?? {};
-      const record = restored ?? SEED_TRACK_BY_SONG.get(key) ?? track;
-      set({
-        likedSongs: [record, ...s.likedSongs],
-        _temp: { ...s._temp, likedToast: record, unlikedTracks },
-      });
-    },
-
-    toggleFollowArtist: (artistName) => {
-      const s = get();
-      const artistNorm = artistName.trim().toLowerCase();
-      const exists = s.followedArtists.some(name => name.trim().toLowerCase() === artistNorm);
-      set({
-        followedArtists: exists
-          ? s.followedArtists.filter(name => name.trim().toLowerCase() !== artistNorm)
-          : [artistName, ...s.followedArtists],
-      });
-    },
-
-    addToQueue: (track) => {
-      const s = get();
-      if (s.queue.some(t => t.id === track.id)) return;
-      set({ queue: [...s.queue, track] });
-    },
-
-    showQueueToast: (track) => {
-      set({ _temp: { ...get()._temp, queueToast: track } });
-    },
-    clearQueueToast: () => {
-      set({ _temp: { ...get()._temp, queueToast: null } });
-    },
-    clearLikedToast: () => {
-      set({ _temp: { ...get()._temp, likedToast: null } });
-    },
-
-    skipToNext: () => {
-      const s = get();
-      if (!s.currentTrack || s.queue.length === 0) return;
-      const idx = s.queue.findIndex(t => t.id === s.currentTrack?.id);
-      const nextIdx = (idx + 1) % s.queue.length;
-      set({ currentTrack: s.queue[nextIdx], isPlaying: true });
-    },
-
-    skipToPrevious: () => {
-      const s = get();
-      if (!s.currentTrack || s.queue.length === 0) return;
-      const idx = s.queue.findIndex(t => t.id === s.currentTrack?.id);
-      const prevIdx = (idx - 1 + s.queue.length) % s.queue.length;
-      set({ currentTrack: s.queue[prevIdx], isPlaying: true });
-    },
-
-    createPlaylist: (name, initialTrack = null) => {
-      const s = get();
-      const trackIds = initialTrack ? [initialTrack.id] : [];
-      const storedTracks = initialTrack ? [initialTrack] : [];
-      const newPlaylist = {
-        id: nextId('cp'),
-        title: name,
-        subtitle: `歌单 • ${trackIds.length} 首歌曲|en:Playlist • ${trackIds.length} songs`,
-        cover: initialTrack?.cover || '',
-        type: 'playlist' as const,
-        trackIds,
-        storedTracks,
-      } as SpotifyPlaylist & { trackIds: string[]; storedTracks: SpotifyTrack[] };
-      set({ customPlaylists: [newPlaylist, ...(s.customPlaylists || [])] });
-      return newPlaylist;
-    },
-
-    addTrackToPlaylist: (name, track) => {
-      const s = get();
-      const playlists = [...(s.customPlaylists || [])];
-      let pl = playlists.find(p => (p as any).title === name);
-      if (!pl) {
-        pl = {
+      /** Resolves to the new playlist, or `null` if a reset abandoned the command. */
+      createPlaylist: async (name, initialTrack = null) => {
+        const trackIds = initialTrack ? [initialTrack.id] : [];
+        const newPlaylist = {
           id: nextId('cp'),
           title: name,
-          subtitle: '歌单 • 0 首歌曲|en:Playlist • 0 songs',
-          cover: '',
+          subtitle: logic.playlistSubtitle(trackIds.length),
+          cover: initialTrack?.cover || '',
           type: 'playlist' as const,
-        } as any;
-        playlists.unshift(pl!);
-      }
-      const trackIds: string[] = Array.isArray((pl as any).trackIds) ? [...(pl as any).trackIds] : [];
-      const storedTracks: SpotifyTrack[] = Array.isArray((pl as any).storedTracks) ? [...(pl as any).storedTracks] : [];
-      const tNorm = track.title.trim().toLowerCase();
-      const aNorm = track.artist.trim().toLowerCase();
-      const dupById = trackIds.includes(track.id);
-      const dupByName = storedTracks.some(t => t.title.trim().toLowerCase() === tNorm && t.artist.trim().toLowerCase() === aNorm);
-      if (!dupById && !dupByName) {
-        trackIds.push(track.id);
-        storedTracks.push(track);
-      }
-      (pl as any).trackIds = trackIds;
-      (pl as any).storedTracks = storedTracks;
-      if (!((pl as any).cover) && track.cover) {
-        (pl as any).cover = track.cover;
-      }
-      const count = trackIds.length;
-      (pl as any).subtitle = `歌单 • ${count} 首歌曲|en:Playlist • ${count} songs`;
-      set({ customPlaylists: playlists });
-    },
+          trackIds,
+          storedTracks: initialTrack ? [initialTrack] : [],
+        } as SpotifyPlaylist & { trackIds: string[]; storedTracks: SpotifyTrack[] };
+        const created = await act('createPlaylist', (s) => logic.createPlaylist(S(s), newPlaylist), newPlaylist);
+        return created === undefined ? null : newPlaylist;
+      },
 
-    removeTrackFromPlaylist: (name, trackId) => {
-      const s = get();
-      const playlists = [...(s.customPlaylists || [])];
-      const pl = playlists.find(p => (p as any).title === name);
-      if (!pl) return;
-      const trackIds: string[] = Array.isArray((pl as any).trackIds) ? [...(pl as any).trackIds] : [];
-      const storedTracks: SpotifyTrack[] = Array.isArray((pl as any).storedTracks) ? [...(pl as any).storedTracks] : [];
-      const nextIds = trackIds.filter(id => id !== trackId);
-      const nextStored = storedTracks.filter(t => t.id !== trackId);
-      (pl as any).trackIds = nextIds;
-      (pl as any).storedTracks = nextStored;
-      const count = nextIds.length;
-      (pl as any).subtitle = `歌单 • ${count} 首歌曲|en:Playlist • ${count} songs`;
-      // Update cover: use first remaining track's cover, or clear
-      (pl as any).cover = nextStored.length > 0 ? (nextStored[0].cover || '') : '';
-      set({ customPlaylists: playlists });
-    },
+      addTrackToPlaylist: async (name, track) => {
+        const newId = nextId('cp');
+        await act('addTrackToPlaylist', (s) => logic.addTrackToPlaylist(S(s), name, track, newId), name, track, newId);
+      },
+      removeTrackFromPlaylist: async (name, trackId) => {
+        await act('removeTrackFromPlaylist', (s) => logic.removeTrackFromPlaylist(S(s), name, trackId), name, trackId);
+      },
+      updateTrackCover: async (trackId, newCover) => {
+        await act('updateTrackCover', (s) => logic.updateTrackCover(S(s), trackId, newCover), trackId, newCover);
+      },
+      updateSettings: async (category, patch) => {
+        await act('updateSettings', (s) => logic.updateSettings(S(s), category, patch), category, patch);
+      },
 
-    updateTrackCover: (trackId, newCover) => {
-      const s = get();
-      set({
-        currentTrack: s.currentTrack?.id === trackId ? { ...s.currentTrack, cover: newCover } : s.currentTrack,
-      });
-    },
-
-    // ── Settings ──────────────────────────────────────────────
-
-    updateSettings: (category, patch) => {
-      set(state => ({
-        settings: {
-          ...state.settings,
-          [category]: { ...(state.settings[category] as any), ...patch },
-        },
-      }));
-    },
-
-    // ── Accounts ──────────────────────────────────────────────
-
-    addAccount: (name) => {
-      const s = get();
-      const colors = ['bg-pink-500', 'bg-purple-500', 'bg-blue-500', 'bg-green-500', 'bg-red-500'];
-      const newColor = colors[s.accounts.length % colors.length];
-      const newUser = {
-        id: nextId('u'),
-        name,
-        initial: name.charAt(0).toUpperCase(),
-        color: newColor,
-      };
-      set({ accounts: [...s.accounts, newUser], currentUser: newUser });
-    },
-
-    switchAccount: (userId) => {
-      const s = get();
-      const user = s.accounts.find(u => u.id === userId);
-      if (!user) return;
-      set({ currentUser: user });
-    },
-
-    setSearchResults: (query, tracks) => {
-      const s = get();
-      // 追加新搜索记录（同 query 则覆盖最后一条）
-      const history = [...s.searchHistory];
-      if (history.length > 0 && history[history.length - 1].query === query) {
-        history[history.length - 1] = { query, tracks };
-      } else {
-        history.push({ query, tracks });
-      }
-      set({ searchHistory: history });
-    },
-
-  }),
+      addAccount: async (name) => {
+        const colors = ['bg-pink-500', 'bg-purple-500', 'bg-blue-500', 'bg-green-500', 'bg-red-500'];
+        const user = {
+          id: nextId('u'),
+          name,
+          initial: name.charAt(0).toUpperCase(),
+          color: colors[get().accounts.length % colors.length],
+        };
+        await act('addAccount', (s) => logic.addAccount(S(s), user), user);
+      },
+      switchAccount: async (userId) => {
+        await act('switchAccount', (s) => logic.switchAccount(S(s), userId), userId);
+      },
+      setSearchResults: async (query, tracks) => {
+        await act('setSearchResults', (s) => logic.setSearchResults(S(s), query, tracks), query, tracks);
+      },
+    };
+  },
 );
+
+// Sync right away, not only when Spotify opens: the music widget and
+// `__SIM__.getState()` read this store after a reload too.
+void useSpotifyStore.ensureSynced().catch(() => {});
 
 
 // ── Memoized selectors (for derived arrays/objects) ───────────────

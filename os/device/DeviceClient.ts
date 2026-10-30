@@ -100,9 +100,14 @@ const settleOne = () => {
 const isUnknownSession = (err: unknown) =>
   err instanceof DeviceRequestError && err.status === 404 && /unknown session/.test(err.message);
 
-/** Run `fn` after every earlier request to this session has settled. */
-function enqueue<T>(fn: (sid: string) => Promise<T>): Promise<T> {
-  const gen = generation;
+/**
+ * Run `fn` after every earlier request to this session has settled. `origin`:
+ * the generation the work started in, when it awaited something before
+ * getting here; work from an earlier generation is abandoned, not run in the
+ * next episode's session.
+ */
+function enqueue<T>(fn: (sid: string) => Promise<T>, origin = generation): Promise<T> {
+  const gen = origin;
   inFlight += 1;
   const run = queue.then(async () => {
     if (gen !== generation) throw new DeviceStaleError();
@@ -187,9 +192,12 @@ export const DeviceClient = {
     });
   },
 
-  /** Several requests in one queue slot: nothing else for this session runs in between. */
-  exclusive<T>(fn: (api: DeviceSessionApi, sid: string) => Promise<T>): Promise<T> {
-    return enqueue(sid => fn(sessionApi(sid), sid));
+  /**
+   * Several requests in one queue slot: nothing else for this session runs in
+   * between. `origin`: the generation the caller started in (see `enqueue`).
+   */
+  exclusive<T>(fn: (api: DeviceSessionApi, sid: string) => Promise<T>, origin?: number): Promise<T> {
+    return enqueue(sid => fn(sessionApi(sid), sid), origin);
   },
 
   getState<S>(appId: string): Promise<DeviceStateResponse<S>> {

@@ -37,5 +37,7 @@ export function clearPagesCache() {
 }
 
 export async function preload(): Promise<void> {
-  await loadPages();
+  // The app's own state lives in the device server session: sync it too.
+  const { useSettingsStore } = await import('../state');
+  await Promise.all([loadPages(), useSettingsStore.ensureSynced()]);
 }

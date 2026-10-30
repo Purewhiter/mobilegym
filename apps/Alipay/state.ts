@@ -1,4 +1,4 @@
-import { createAppStoreWithActions } from '../../os/createAppStore';
+import { createDeviceAppStore } from '../../os/device/deviceStore';
 import { ALIPAY_CONFIG } from './data';
 import * as TimeService from '../../os/TimeService';
 import type {
@@ -207,10 +207,13 @@ const initialState: AlipayStoreState = {
 
 // ── Store ──────────────────────────────────────────────────────────
 
-export const useAlipayStore = createAppStoreWithActions<AlipayStoreState, AlipayActions>(
+// State lives in the device server session (device/stateOnly.ts); the actions
+// below run here as before and every write is saved there.
+export const useAlipayStore = createDeviceAppStore<AlipayStoreState, AlipayActions>(
   'alipay',
   initialState,
-  (set, get) => ({
+  { localKeys: ['transferDraft', 'transferReceipt'], syncSetState: true },
+  (_device, set, get) => ({
 
     // ── Language ────────────────────────────────────────────────
     setLanguage: (lang) => {
@@ -537,16 +540,4 @@ export const useAlipayStore = createAppStoreWithActions<AlipayStoreState, Alipay
       set({ billSearchHistory: [] });
     },
   }),
-  {
-    partialize: (state) => {
-      const result: Record<string, any> = {};
-      for (const [k, v] of Object.entries(state)) {
-        if (typeof v === 'function') continue;
-        // Exclude ephemeral state from persistence
-        if (k === 'transferDraft' || k === 'transferReceipt') continue;
-        result[k] = v;
-      }
-      return result as Partial<AlipayStoreState>;
-    },
-  },
 );

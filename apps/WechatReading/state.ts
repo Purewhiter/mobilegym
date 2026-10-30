@@ -1,4 +1,5 @@
-import { createAppStoreWithActions, registerStateAdapter, memoSelector } from '../../os/createAppStore';
+import { registerStateAdapter, memoSelector } from '../../os/createAppStore';
+import { createDeviceAppStore } from '../../os/device/deviceStore';
 import { WECHAT_READING_CONFIG } from './data';
 import type {
   ShelfItem,
@@ -34,14 +35,6 @@ export const getWechatReadingUserById = (
 };
 
 let localSeq = 0;
-
-function hasSameReaderPrefs(a: ReaderPrefs, b: ReaderPrefs) {
-  return a.fontSize === b.fontSize
-    && a.themeColor === b.themeColor
-    && a.themeBg === b.themeBg
-    && a.margin === b.margin
-    && a.lineHeight === b.lineHeight;
-}
 
 // --- Helpers ---
 function getTotalWords(bookId: string) {
@@ -113,10 +106,21 @@ const initialState: WechatReadingState = {
 };
 
 // --- Store ---
-const wechatReadingStore = createAppStoreWithActions<WechatReadingState, WechatReadingActions>(
+// State lives in the device server session (device/stateOnly.ts); the actions
+// below run here as before and every write is saved there.
+const wechatReadingStore = createDeviceAppStore<WechatReadingState, WechatReadingActions>(
   'wechat_reading',
   initialState,
-  (set, get) => ({
+  {
+    localKeys: ['_temp'],
+    syncSetState: true,
+    // Older or injected snapshots can lack reader theme fields the reader needs.
+    normalize: (state) => {
+      const readerPrefs = sanitizeReaderPrefs(state.readerPrefs);
+      return JSON.stringify(readerPrefs) === JSON.stringify(state.readerPrefs) ? null : { readerPrefs };
+    },
+  },
+  (_device, set, get) => ({
     updateUserProfile: (updates) => {
       const { user } = get();
       set({ user: { ...user, ...updates } });
@@ -261,26 +265,6 @@ const wechatReadingStore = createAppStoreWithActions<WechatReadingState, WechatR
       set({ likedListSyncToHome: !likedListSyncToHome });
     },
   }),
-  {
-    partialize: (state) => {
-      const result: Record<string, any> = {};
-      for (const [k, v] of Object.entries(state)) {
-        // Exclude functions and ephemeral state
-        if (typeof v === 'function') continue;
-        if (k === '_temp') continue;
-        result[k] = v;
-      }
-      return result as Partial<WechatReadingState>;
-    },
-    afterHydration: () => {
-      queueMicrotask(() => {
-        const { readerPrefs } = wechatReadingStore.getState();
-        const sanitized = sanitizeReaderPrefs(readerPrefs);
-        if (hasSameReaderPrefs(readerPrefs, sanitized)) return;
-        wechatReadingStore.setState({ readerPrefs: sanitized });
-      });
-    },
-  },
 );
 
 export const useWechatReadingStore = wechatReadingStore;

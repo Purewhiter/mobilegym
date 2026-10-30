@@ -16,6 +16,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import type { AppContext, AppModule, Catalog } from '../../../device/engine';
+import { mediaResolver } from '../../../device/media';
 import { getUserAvatar, processPosts } from '../data/catalog';
 import type { RedditUser } from '../state';
 import type { Comment, RedditCommentsOverlay, RedditPost, RedditPostsOverlay, RedditSettings } from '../types';
@@ -61,9 +62,10 @@ const APP_ASSETS = '/@app-assets/';
 const rebase = (url: string | undefined, appAssetsBase: string) =>
   (url?.startsWith(APP_ASSETS) ? appAssetsBase + url.slice(APP_ASSETS.length) : url);
 
-function loadCatalog(root: string, appAssetsBase: string): Catalog {
-  const file = join(root, 'apps', 'Reddit', 'data', 'posts.json');
-  const raw = (JSON.parse(readFileSync(file, 'utf8')) as { posts: any[] }).posts;
+function loadCatalog(root: string, appAssetsBase: string, cdnBase: string): Catalog {
+  const dataDir = join(root, 'apps', 'Reddit', 'data');
+  const raw = (JSON.parse(readFileSync(join(dataDir, 'posts.json'), 'utf8')) as { posts: any[] }).posts;
+  const localImage = mediaResolver(join(dataDir, 'media.json'), `${cdnBase}/reddit/media`);
 
   const commentsByPost = new Map<string, Comment[]>();
   const commentById = new Map<string, Comment>();
@@ -74,6 +76,8 @@ function loadCatalog(root: string, appAssetsBase: string): Catalog {
     for (const comment of comments) commentById.set(String(comment.id), comment);
     return {
       ...post,
+      image: localImage(post.image),
+      images: post.images?.map((url) => localImage(url)!),
       authorAvatar: rebase(post.authorAvatar, appAssetsBase),
       subredditIcon: rebase(post.subredditIcon, appAssetsBase),
     } as RedditPost;
@@ -343,10 +347,10 @@ const queries: AppModule<RedditDeviceState>['queries'] = {
   },
 };
 
-export function createRedditModule(options: { appAssetsBase: string }): AppModule<RedditDeviceState> {
+export function createRedditModule(options: { appAssetsBase: string; cdnBase: string }): AppModule<RedditDeviceState> {
   return {
     appId: 'reddit',
-    loadCatalog: root => loadCatalog(root, options.appAssetsBase),
+    loadCatalog: root => loadCatalog(root, options.appAssetsBase, options.cdnBase),
     materialize() {},
     exportState: ctx => ctx.state,
     importState(raw) {

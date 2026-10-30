@@ -1,4 +1,5 @@
-import { createAppStoreWithActions, memoSelector } from '../../os/createAppStore';
+import { memoSelector } from '../../os/createAppStore';
+import { createDeviceAppStore } from '../../os/device/deviceStore';
 import { CALENDAR_CONFIG } from './data';
 import * as TimeService from '@/os/TimeService';
 import type { CalendarEvent, CalendarSettings } from './types';
@@ -40,10 +41,13 @@ const initialState: CalendarState = {
   selectedDateTs: startOfDayTs(TimeService.now()),
 };
 
-export const useCalendarStore = createAppStoreWithActions<CalendarState, CalendarActions>(
+// State lives in the device server session (device/stateOnly.ts); the actions
+// below run here as before and every write is saved there.
+export const useCalendarStore = createDeviceAppStore<CalendarState, CalendarActions>(
   'calendar',
   initialState,
-  (set, get) => ({
+  { localKeys: [], syncSetState: true },
+  (_device, set, get) => ({
     updateSettings: (patch: Partial<CalendarSettings>) => {
       set(state => ({ settings: { ...state.settings, ...patch } }));
     },

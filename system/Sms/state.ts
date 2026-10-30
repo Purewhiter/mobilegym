@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from 'react';
-import { createAppStoreWithActions } from '../../os/createAppStore';
+import { createDeviceAppStore } from '../../os/device/deviceStore';
 import { SMS_CONFIG } from './data';
 import ContentResolver from '../../os/ContentResolver';
 import { ensureSmsProviderRegistered } from '../../os/providers/SmsProvider';
@@ -40,10 +40,13 @@ const initialState: SmsState = {
 
 // --- Store ---
 
-export const useSmsStore = createAppStoreWithActions<SmsState, SmsActions>(
+// State lives in the device server session (device/stateOnly.ts); the actions
+// below run here as before and every write is saved there.
+export const useSmsStore = createDeviceAppStore<SmsState, SmsActions>(
   'sms',
   initialState,
-  (set, get) => ({
+  { localKeys: ['_temp'], syncSetState: true },
+  (_device, set, get) => ({
     updateSettings(patch: Record<string, boolean>) {
       set(state => ({ settings: { ...state.settings, ...patch } }));
     },
@@ -61,15 +64,6 @@ export const useSmsStore = createAppStoreWithActions<SmsState, SmsActions>(
       set((state) => ({ _temp: { ...state._temp, pendingTimers: [] } }));
     },
   }),
-  {
-    partialize: (state) => {
-      const result: Record<string, any> = {};
-      for (const [k, v] of Object.entries(state)) {
-        if (typeof v !== 'function' && k !== '_temp') result[k] = v;
-      }
-      return result as Partial<SmsState>;
-    },
-  },
 );
 
 function buildSmsSnapshot(): { conversations: Conversation[]; messagesByConversationId: MessagesByConversationId } {

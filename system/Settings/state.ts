@@ -1,5 +1,6 @@
 import { useCallback, useSyncExternalStore } from 'react';
-import { createAppStoreWithActions, memoSelector } from '../../os/createAppStore';
+import { memoSelector } from '../../os/createAppStore';
+import { createDeviceAppStore } from '../../os/device/deviceStore';
 import { ConnectivityManager } from '../../os/managers/ConnectivityManager';
 import { routeGetPreference, routeSetPreference } from '../../os/managers/registry';
 import { useOsStateStore } from '../../os/OsStateStore';
@@ -43,10 +44,13 @@ const initialState: SettingsState = {
 
 // ── Store ──────────────────────────────────────────────────────────
 
-export const useSettingsStore = createAppStoreWithActions<SettingsState, SettingsActions>(
+// State lives in the device server session (device/stateOnly.ts); the actions
+// below run here as before and every write is saved there.
+export const useSettingsStore = createDeviceAppStore<SettingsState, SettingsActions>(
   'settings',
   initialState,
-  (set, get) => ({
+  { localKeys: ['_temp'], syncSetState: true },
+  (_device, set, get) => ({
     // ── Pages data ──
     initPagesData: () => {
       const { _temp } = get();
@@ -109,17 +113,6 @@ export const useSettingsStore = createAppStoreWithActions<SettingsState, Setting
       ConnectivityManager.connectToAP(ssid);
     },
   }),
-  {
-    partialize: (state) => {
-      const result: Record<string, any> = {};
-      for (const [k, v] of Object.entries(state)) {
-        if (typeof v === 'function') continue;
-        if (k === '_temp') continue;
-        result[k] = v;
-      }
-      return result as Partial<SettingsState>;
-    },
-  },
 );
 
 // ── Memoized selectors ─────────────────────────────────────────────

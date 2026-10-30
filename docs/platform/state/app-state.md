@@ -14,7 +14,7 @@ Large world data should stay outside snapshots and be composed with runtime over
 
 ## Store Rules
 
-- localStorage key should match `manifest.id`.
+- App state lives in the device session ([`device-server.md`](device-server.md)); the store's appId matches `manifest.id`.
 - Store semantic fields, not display strings.
 - Do not define query-style getters in Zustand store actions (`getXById`, `isLiked`, etc.).
 - Components should subscribe to data and derive booleans locally or via memoized selectors.

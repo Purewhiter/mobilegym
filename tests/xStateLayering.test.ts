@@ -8,32 +8,7 @@ import users from '../apps/X/data/users.json';
 // The X store mirrors a device server session; run its commands in memory.
 vi.mock('../os/device/DeviceClient', async () => {
   const { createXModule } = await import('../apps/X/device');
-  const { commands } = createXModule();
-  let state: any = null;
-  let queue: Promise<unknown> = Promise.resolve();
-  const api = {
-    getState: async () => ({ initialized: Boolean(state), state }),
-    putState: async (_appId: string, next: any) => ({ state: (state = structuredClone(next)) }),
-    command: async (_appId: string, name: string, args: unknown[], now: number) => {
-      const ctx: any = { state };
-      const result = commands[name]!(ctx, args, { now });
-      state = ctx.state;
-      return { state: structuredClone(state), result };
-    },
-  };
-  return {
-    DeviceClient: {
-      generation: () => 0,
-      sessionId: async () => 'test',
-      hold: () => {},
-      exclusive: <T,>(fn: (a: typeof api) => Promise<T>) => {
-        const result = queue.then(() => fn(api));
-        queue = result.catch(() => {});
-        return result;
-      },
-    },
-    DeviceStaleError: class extends Error {},
-  };
+  return (await import('./support/memoryDevice')).memoryDeviceClient([createXModule({ cdnBase: '/cdn' })]);
 });
 
 const { getAllStoreStates } = await import('../os/createAppStore');

@@ -133,5 +133,7 @@ export async function loadAlbumTracks(): Promise<AlbumTracksMap> {
 }
 
 export async function preload(): Promise<void> {
-  await Promise.all([loadCategories(), loadPlaylistTracks()]);
+  // 用户状态在 device server 上：同步 store 与本页的会话。动态 import 避免 state → loader 成环。
+  const { useSpotifyStore } = await import('../state');
+  await Promise.all([useSpotifyStore.ensureSynced(), loadCategories(), loadPlaylistTracks()]);
 }

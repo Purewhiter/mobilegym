@@ -3,7 +3,8 @@
  *
  * Clipboard state + actions for file copy/cut/paste operations.
  */
-import { createAppStoreWithActions, memoSelector } from '../../os/createAppStore';
+import { memoSelector } from '../../os/createAppStore';
+import { createDeviceAppStore } from '../../os/device/deviceStore';
 import { FSNode } from '../../os/types';
 import * as FileSystem from '../../os/FileSystemService';
 
@@ -30,10 +31,13 @@ const initialState: FileManagerState = {
 
 // ---- Store ----
 
-export const useFileManagerStore = createAppStoreWithActions<FileManagerState, FileManagerActions>(
+// State lives in the device server session (device/stateOnly.ts); the actions
+// below run here as before and every write is saved there.
+export const useFileManagerStore = createDeviceAppStore<FileManagerState, FileManagerActions>(
   'file_manager',
   initialState,
-  (set, get) => ({
+  { localKeys: [], syncSetState: true },
+  (_device, set, get) => ({
     copy(items: FSNode[]) {
       set({ clipboardItems: items, clipboardOperation: 'copy' });
     },

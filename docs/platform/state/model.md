@@ -9,7 +9,7 @@ How MobileGym represents, persists, snapshots, diffs, and resets the entire devi
 ```
 ┌──────────────────────────────────────────────────────────────────┐
 │ Per-app                                                          │
-│   apps/<App>/state.ts             Zustand store, persisted       │
+│   apps/<App>/state.ts             mirror of the device session   │
 │   apps/<App>/data/defaults.json   initial runtime values         │
 │   apps/<App>/data/*.json         "world data" (lazy-loaded,     │
 │                                    NOT in snapshots)             │
@@ -44,7 +44,7 @@ Large public entities the app displays: posts, products, train stations, places,
 
 Per-environment state the agent can affect: the current user's profile and settings, drafts, likes, sent messages, edits to specific world entities, created entities.
 
-- Lives in `apps/<App>/state.ts`, persisted to localStorage at the `<appId>` key.
+- Lives in the app's device server session; `apps/<App>/state.ts` (`createDeviceAppStore`) mirrors it. See [`device-server.md`](device-server.md).
 - Initialized from `apps/<App>/data/defaults.json` (also small — only the seed values).
 - **Persisted.** **Part of `__SIM__.getState().apps.<appId>`.** **Reset by `__SIM__.reset()`.**
 
@@ -426,7 +426,7 @@ Current behavior:
 
 | Property | Behavior |
 |---|---|
-| Persistence | `createAppStoreWithActions` excludes `_temp` from localStorage by default. If you use a custom `partialize`, keep that exclusion. |
+| Persistence | List `_temp` (and any other page-only key) in `createDeviceAppStore`'s `localKeys`: it stays on the page and never enters the device session. |
 | Snapshot | `_temp` is still visible in `__SIM__.getState()` because snapshots read the in-memory store and strip only functions. |
 | Bench diff | `BaseTask.always_ignore` includes `apps.*._temp`, so `_temp` changes are filtered from unexpected-side-effect warnings by default. |
 
@@ -447,11 +447,9 @@ Common mistakes: a `createDraft` field belongs at the top level (it represents i
 
 ### Persistence contract: snapshot tables must survive reload
 
-If a runtime entity table appears in the snapshot (i.e. it's reachable from `__SIM__.getState().apps.<appId>.x`), `partialize` **must keep it**. Excluding a snapshot-visible table from persistence breaks two invariants at once: the bench's init/current diff becomes unstable across reloads, and any user-created content (posts, comments, threads) is lost on refresh.
+If a runtime entity table appears in the snapshot (i.e. it's reachable from `__SIM__.getState().apps.<appId>.x`), it **must live in the device session**, i.e. not be listed in `localKeys`. A snapshot-visible table kept page-only breaks two invariants at once: the bench's init/current diff becomes unstable across reloads, and any user-created content (posts, comments, threads) is lost on refresh.
 
-The default `partialize` from `createAppStoreWithActions` already does the right thing — it strips functions and `_temp`, keeps everything else. If you write a custom `partialize`, make sure every business-entity field is in the allowlist.
-
-The audit rule is simple: **whatever is in the snapshot must be in `partialize`**, except `_temp` and functions.
+The audit rule is simple: **whatever is in the snapshot is session state**, except `_temp`-style UI scratch keys in `localKeys` and functions.
 
 ### Snapshot exposure rules
 
@@ -487,19 +485,14 @@ Inside an app's runtime overlay, some fields are **logically read-only** (curren
 The framework doesn't enforce a distinction — it's a coding convention. But two patterns make life easier:
 
 - Keep **structural constants** (tab definitions, service grids, feature flags) in `constants.ts`, not `defaults.json`. They're the same for every user; bench_env will never write to them.
-- Use a `_temp` field (or skip persistence for specific keys via Zustand `partialize`) for ephemeral UI runtime state (open dialogs, current scroll position) that should not persist and should be ignored by side-effect checks.
+- Use a `_temp` field, listed in `localKeys`, for ephemeral UI runtime state (open dialogs, current scroll position) that should not persist and should be ignored by side-effect checks.
 
 ```ts
-createAppStoreWithActions(
+createDeviceAppStore<HabitsState, HabitsActions>(
   'habits',
   initialState,
-  (set) => ({ /* actions */ }),
-  {
-    partialize: (state) => {
-      const { _temp, ...persisted } = state;
-      return persisted;             // _temp never enters localStorage
-    },
-  },
+  { localKeys: ['_temp'], syncSetState: true }, // _temp never enters the device session
+  (_device, set, get) => ({ /* actions */ }),
 );
 ```
 
@@ -797,11 +790,11 @@ Apps don't explicitly register their store in a central registry file. The OS ea
 import.meta.glob(['../apps/*/state.ts', '../system/*/state.ts'], { eager: true });
 ```
 
-`createAppStore(appId, ...)` and `createAppStoreWithActions(appId, ...)` register the store under `<appId>` and use that same id as the default localStorage key. `AppStateRegistry.getAllAppStates()` collects every registered store and emits the final `apps.<appId>` slice. Bare Zustand `create(...persist(...))` stores are not visible to snapshots unless wrapped by the MobileGym factory.
+`createDeviceAppStore(appId, ...)` (and the older `createAppStore*`, still used by a few stateless system apps) register the store under `<appId>`; device stores also use it as the app id in the device session. `AppStateRegistry.getAllAppStates()` collects every registered store and emits the final `apps.<appId>` slice. Bare Zustand `create(...persist(...))` stores are not visible to snapshots unless wrapped by the MobileGym factory.
 
 Two consequences:
 
-1. **The `createAppStore*` appId must equal `manifest.id`.** Mismatch and your store appears under the wrong snapshot key. The first argument is also the localStorage key — write the bare manifest id (`'wechat'`), not `'wechat-store'`, `'wechat-v2'`, or any other suffix.
+1. **The store's appId must equal `manifest.id`.** Mismatch and your store appears under the wrong snapshot key. It is also the device module's `appId` — write the bare manifest id (`'wechat'`), not `'wechat-store'`, `'wechat-v2'`, or any other suffix.
 2. **`registerStateAdapter`** is the escape hatch — use it when you want a custom selector for snapshot extraction (e.g. you have several stores and want to flatten them into one app slice, or you want to exclude part of the store from snapshots).
 
 ### `registerStateAdapter` rules
@@ -813,12 +806,13 @@ Two consequences:
 
 ### Three app-store factories
 
-`os/createAppStore.ts` exports three factories — pick by lifetime:
+Pick a factory by where the state lives:
 
 | Factory | Persistence | Use for |
 |---|---|---|
-| `createAppStore(appId, initial, options?)` | localStorage | Simple stores with no actions, or where you provide your own action layer. |
-| `createAppStoreWithActions(appId, initial, actions, options?)` | localStorage | The default. Auto-excludes functions and `_temp` from `partialize`. Auto-registers for snapshot. |
+| `createDeviceAppStore(appId, initial, { localKeys, syncSetState? }, actions)` (`os/device/deviceStore.ts`) | device session | **The default for app state.** See [`device-server.md`](device-server.md). |
+| `createAppStore(appId, initial, options?)` | localStorage | Legacy; a few stateless system apps (Gallery, Calculator2). Do not use for new app state. |
+| `createAppStoreWithActions(appId, initial, actions, options?)` | localStorage | Legacy; replaced by `createDeviceAppStore`. |
 | `createVolatileAppStore(appId, initial)` | in-memory only | Runtime caches and UI state that should reset on reload. Still registers for snapshot. |
 
 ### How AppStateRegistry actually works

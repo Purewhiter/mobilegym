@@ -1,10 +1,12 @@
 /**
- * Ebay 数据懒加载器
+ * Ebay 商品目录读取
  *
- * 使用 fetch() + JSON.parse() 加载数据（避开 Vite ESM 转换管线，避免阻塞 dev server）。
- * 单例缓存：首次加载后后续调用直接返回缓存数据。
+ * 商品和分类在 device server 上 (apps/Ebay/device)，页面用 catalog query 读取；
+ * 图片地址依赖本页的 CDN base，在这里解析，每份查询结果只解析一次。
  */
 
+import { useMemo } from 'react';
+import { prefetchDeviceQuery, useDeviceQuery } from '../../../os/device/deviceStore';
 import { cdn, resolveCdnUrl } from '../../../os/utils/cdn';
 import type { ProductItem } from '../types';
 
@@ -49,30 +51,6 @@ function localImageFor(item: ProductItem): string {
   return LOCAL_TYPE_IMAGES[item.typeId] ?? item.image;
 }
 
-// 通用 fetch + 缓存模式（失败时清除 inflight promise 以允许重试）
-function createLoader<T>(url: string) {
-  let cache: T | null = null;
-  let loading: Promise<T> | null = null;
-
-  const load = (): Promise<T> => {
-    if (cache) return Promise.resolve(cache);
-    if (!loading) {
-      loading = fetch(url)
-        .then(r => {
-          if (!r.ok) throw new Error(`HTTP ${r.status} for ${url}`);
-          return r.json();
-        })
-        .then(data => { cache = data as T; return cache; })
-        .catch(err => { loading = null; throw err; });
-    }
-    return loading;
-  };
-
-  const getSync = (): T | null => cache;
-
-  return { load, getSync };
-}
-
 // ============ 各数据类型 ============
 
 export interface CategoryDef {
@@ -81,22 +59,10 @@ export interface CategoryDef {
   types: { id: string; label: string; image: string; brands: string[] }[];
 }
 
-const products = createLoader<ProductItem[]>(productsUrl);
-export const loadProducts = async (): Promise<ProductItem[]> => {
-  const items = await products.load();
-  return items.map((item) => ({
-    ...item,
-    image: localImageFor(item),
-  }));
-};
-export const getProductsSync = (): ProductItem[] | null => {
-  const items = products.getSync();
-  if (!items) return null;
-  return items.map((item) => ({
-    ...item,
-    image: localImageFor(item),
-  }));
-};
+const withImage = (item: ProductItem): ProductItem => ({ ...item, image: localImageFor(item) });
+
+const resolvedProducts = new WeakMap<ProductItem[], ProductItem[]>();
+const resolvedCategories = new WeakMap<CategoryDef[], CategoryDef[]>();
 
 function resolveCategoryImages(cats: CategoryDef[]): CategoryDef[] {
   return cats.map(c => ({
@@ -105,22 +71,46 @@ function resolveCategoryImages(cats: CategoryDef[]): CategoryDef[] {
   }));
 }
 
-const categories = createLoader<CategoryDef[]>(categoriesUrl);
-export const loadCategories = async (): Promise<CategoryDef[]> =>
-  resolveCategoryImages(await categories.load());
-export const getCategoriesSync = (): CategoryDef[] | null => {
-  const items = categories.getSync();
-  return items ? resolveCategoryImages(items) : null;
-};
+const EMPTY_PRODUCTS: ProductItem[] = [];
+const EMPTY_CATEGORIES: CategoryDef[] = [];
 
-// ============ 批量预加载 ============
+/** All catalog products (empty while loading). */
+export function useEbayProducts(): ProductItem[] {
+  const { data } = useDeviceQuery<ProductItem[]>('ebay', 'products', {}, true, { catalog: true });
+  return useMemo(() => {
+    if (!data) return EMPTY_PRODUCTS;
+    let out = resolvedProducts.get(data);
+    if (!out) resolvedProducts.set(data, (out = data.map(withImage)));
+    return out;
+  }, [data]);
+}
 
-/**
- * 预加载所有 Ebay 数据到缓存（供 bench waitForData 使用）
- */
+/** One catalog product; `undefined` while loading, `null` if there is none. */
+export function useEbayProduct(id: string | undefined): ProductItem | null | undefined {
+  const { data, loading } = useDeviceQuery<ProductItem | null>('ebay', 'product', { id }, Boolean(id), { catalog: true });
+  return useMemo(() => (data ? withImage(data) : loading ? undefined : data ?? null), [data, loading]);
+}
+
+/** Category tree (empty while loading). */
+export function useEbayCategories(): CategoryDef[] {
+  const { data } = useDeviceQuery<CategoryDef[]>('ebay', 'categories', {}, true, { catalog: true });
+  return useMemo(() => {
+    if (!data) return EMPTY_CATEGORIES;
+    let out = resolvedCategories.get(data);
+    if (!out) resolvedCategories.set(data, (out = resolveCategoryImages(data)));
+    return out;
+  }, [data]);
+}
+
+// ============ 预加载 ============
+
+/** OS `waitForData` 入口: 同步 store 与本页的 device session, 并预取商品目录（页面挂载时数据已就绪）。 */
 export async function preload(): Promise<void> {
+  // 动态 import: state → data/index → loader 静态 import 会成环。
+  const { useEbayStore } = await import('../state');
+  await useEbayStore.ensureSynced();
   await Promise.all([
-    loadProducts(),
-    loadCategories(),
+    prefetchDeviceQuery('ebay', 'products', {}, { catalog: true }),
+    prefetchDeviceQuery('ebay', 'categories', {}, { catalog: true }),
   ]);
 }

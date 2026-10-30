@@ -107,13 +107,28 @@ export function createDeviceAppStore<
 >(
   appId: string,
   initialState: S,
-  options: { localKeys: (keyof S)[] },
+  options: {
+    localKeys: (keyof S)[];
+    /**
+     * For apps whose state logic stays on the page (device/stateOnly.ts): the
+     * page is the authority and the session stores what it shows. Every write
+     * -- `useXStore.setState(fn)` from a page, or `set` inside an action --
+     * applies here at once (actions stay synchronous) and schedules a save;
+     * the save sends the server fields as they are when it runs (`__replace`),
+     * so writes in quick succession are coalesced and never replayed. The
+     * store also syncs on creation, so readers outside the app (widgets,
+     * `__SIM__.getState()`) see the session's state after a reload.
+     */
+    syncSetState?: boolean;
+    /** Fix up state adopted from the session (old or injected snapshots). */
+    normalize?: (state: S) => Partial<S> | null;
+  },
   actionCreator: (
     helpers: DeviceStoreHelpers,
     set: StoreApi<S & A>['setState'],
     get: () => S & A,
   ) => A,
-): UseBoundStore<StoreApi<S & A>> & { ensureSynced: () => Promise<void> } {
+): UseBoundStore<StoreApi<S & A>> & { ensureSynced: (force?: boolean) => Promise<void> } {
   const localKeys = new Set<string>(options.localKeys as string[]);
 
   const serverData = (state: Record<string, any>): Record<string, any> => {
@@ -124,27 +139,49 @@ export function createDeviceAppStore<
     return out;
   };
 
+  /** With `syncSetState`: apply here, then save what the page shows. */
+  const syncedSet = ((partial: unknown, replace?: boolean) => {
+    localSet(partial as Partial<S & A>, replace as false);
+    // Until a save takes it in, a sync would overwrite this write with the
+    // session's state: keep it to apply again on top of that.
+    unsaved.push({ partial, replace: Boolean(replace) });
+    scheduleSave();
+  }) as StoreApi<S & A>['setState'];
+
   const store = create<S & A>()((set, get) => ({
     ...initialState,
     ...actionCreator({
       command: (name, ...args) => runCommand(name, commandArgs(appId, name, args)),
       optimistic: (apply, name, ...args) => runOptimistic(apply, name, commandArgs(appId, name, args)),
-    }, set, get),
+    }, options.syncSetState ? syncedSet : set, get),
   }));
+
+  /** The store's own setter: changes the mirror only. */
+  const localSet = store.setState;
 
   /** Local updates whose commands have not settled yet, oldest first. */
   let pending: { apply: (state: any) => Record<string, unknown> }[] = [];
   /** The last state the server sent (pending updates not applied). */
   let serverState: Record<string, unknown> | null = null;
+  /** syncSetState: page writes no save has taken in yet, oldest first. */
+  let unsaved: { partial: unknown; replace: boolean }[] = [];
+
+  const plain = (state: Record<string, any>): Record<string, any> => {
+    const out: Record<string, any> = {};
+    for (const [k, v] of Object.entries(state)) if (typeof v !== 'function') out[k] = v;
+    return out;
+  };
 
   const reapplyPending = () => {
-    for (const entry of pending) store.setState(entry.apply(store.getState()) as Partial<S & A>);
+    for (const entry of pending) localSet(entry.apply(store.getState()) as Partial<S & A>);
   };
 
   const adopt = (state: unknown) => {
     if (state && typeof state === 'object') {
       serverState = state as Record<string, unknown>;
-      store.setState(state as Partial<S & A>);
+      localSet(state as Partial<S & A>);
+      const fixed = options.normalize?.(store.getState());
+      if (fixed) localSet(fixed as Partial<S & A>);
       reapplyPending();
     }
     bumpVersion(appId);
@@ -156,24 +193,48 @@ export function createDeviceAppStore<
     return work;
   };
 
-  /** Seed an uninitialized session with the mirror (inside an exclusive slot). */
-  const seed = (api: DeviceSessionApi) => api.putState(appId, serverData(store.getState()));
+  /**
+   * What an uninitialized session is seeded with: the page's state when the
+   * page is the authority (syncSetState); otherwise the last server state
+   * (initially the defaults), never optimistic updates whose commands are
+   * still to run -- they would be applied twice.
+   */
+  const seedState = () =>
+    (options.syncSetState ? serverData(store.getState()) : serverState ?? serverData(initialState));
+  const seed = (api: DeviceSessionApi) => api.putState(appId, seedState());
 
   // ── sync, once per session ──
   let synced: { sid: string; gen: number; promise: Promise<void> } | null = null;
 
   /** Adopt the session's state, or seed the session with this page's state. */
-  const syncNow = () =>
+  const syncNow = (gen: number) =>
     DeviceClient.exclusive(async (api) => {
       const current = await api.getState(appId);
-      return current.initialized ? current.state : (await seed(api)).state;
-    }).then(adopt);
+      if (current.initialized) return { state: current.state, seeded: false };
+      // Seeding saves the page's state, unsaved writes included.
+      const seeded = (await seed(api)).state;
+      if (options.syncSetState) unsaved = [];
+      return { state: seeded, seeded: true };
+    }, gen).then(({ state, seeded }) => {
+      adopt(state);
+      if (seeded || !unsaved.length) return;
+      // Page writes not saved yet are not in the session: apply them again on
+      // top of it. Page-only keys kept their values through the adoption, so
+      // they must not be written a second time.
+      const pageOnly: Record<string, unknown> = {};
+      for (const key of localKeys) pageOnly[key] = (store.getState() as Record<string, unknown>)[key];
+      for (const write of unsaved) localSet(write.partial as Partial<S & A>, write.replace as false);
+      localSet(pageOnly as Partial<S & A>);
+      scheduleSave();
+    });
 
   async function ensureSynced(force = false): Promise<void> {
     const gen = DeviceClient.generation();
     const sid = await DeviceClient.sessionId();
+    // Reset while waiting: `sid` is the next episode's session, not ours to sync.
+    if (DeviceClient.generation() !== gen) throw new DeviceStaleError();
     if (force || !synced || synced.sid !== sid || synced.gen !== gen) {
-      const promise = busy(syncNow());
+      const promise = busy(syncNow(gen));
       synced = { sid, gen, promise };
       promise.catch(() => {
         if (synced?.promise === promise) synced = null;
@@ -183,28 +244,39 @@ export function createDeviceAppStore<
   }
   readyHooks.set(appId, ensureSynced);
 
-  // ── commands ──
-  async function runCommandNow(name: string, args: unknown[], settle?: () => void): Promise<unknown> {
+  /**
+   * Every request below carries the generation its operation started in
+   * (`exclusive(fn, gen)`), so a reset at any `await` abandons it instead of
+   * letting it run in the next episode's session.
+   */
+  async function syncedFor(gen: number): Promise<void> {
+    if (DeviceClient.generation() !== gen) throw new DeviceStaleError();
     await ensureSynced();
+    if (DeviceClient.generation() !== gen) throw new DeviceStaleError();
+  }
+
+  // ── commands ──
+  async function runCommandNow(name: string, args: unknown[], gen: number, settle?: () => void): Promise<unknown> {
+    await syncedFor(gen);
     // Command and its recovery share one slot, so later commands cannot overtake it.
     const response = await DeviceClient.exclusive(async (api) => {
       const call = () => api.command(appId, name, args, TimeService.now());
       try {
         return await call();
       } catch (err) {
-        // The server lost this app's state (restart): reseed from the mirror, retry once.
+        // The server lost this app's state (restart): reseed, retry once.
         if (!isUninitialized(err)) throw err;
         await seed(api);
         return call();
       }
-    });
+    }, gen);
     settle?.();
     adopt(response.state);
     return response.result;
   }
 
-  function runCommand(name: string, args: unknown[], settle?: () => void): Promise<unknown> {
-    return busy(runCommandNow(name, args, settle)).catch((err) => {
+  function runCommand(name: string, args: unknown[], settle?: () => void, gen = DeviceClient.generation()): Promise<unknown> {
+    return busy(runCommandNow(name, args, gen, settle)).catch((err) => {
       // A reset abandoned this command along with its episode.
       if (err instanceof DeviceStaleError) return undefined;
       throw err;
@@ -212,17 +284,21 @@ export function createDeviceAppStore<
   }
 
   function runOptimistic(apply: (state: any) => Record<string, unknown>, name: string, args: unknown[]): Promise<unknown> {
+    const gen = DeviceClient.generation();
     const entry = { apply };
     pending.push(entry);
-    store.setState(apply(store.getState()) as Partial<S & A>);
+    localSet(apply(store.getState()) as Partial<S & A>);
     const drop = () => {
       pending = pending.filter((e) => e !== entry);
     };
-    return runCommand(name, args, drop).catch((err) => {
+    return runCommand(name, args, drop, gen).then((result) => {
+      drop(); // also when a reset abandoned it
+      return result;
+    }, (err) => {
       // Failed: drop this update and show the server's state plus what is still pending.
       drop();
       if (serverState) {
-        store.setState(serverState as Partial<S & A>);
+        localSet(serverState as Partial<S & A>);
         reapplyPending();
         bumpVersion(appId);
       }
@@ -230,29 +306,84 @@ export function createDeviceAppStore<
     });
   }
 
+  // ── saves (syncSetState) ──
+  let saveQueued = false;
+
+  /** Save the page's state once the queue gets there; later writes ride along. */
+  function scheduleSave(): void {
+    if (saveQueued) return;
+    saveQueued = true;
+    const gen = DeviceClient.generation();
+    const save = (async () => {
+      await syncedFor(gen);
+      await DeviceClient.exclusive(async (api) => {
+        saveQueued = false; // writes from here on need another save
+        const snapshot = serverData(store.getState());
+        const taken = unsaved;
+        unsaved = [];
+        try {
+          try {
+            await api.command(appId, '__replace', [snapshot], TimeService.now());
+          } catch (err) {
+            if (!isUninitialized(err)) throw err;
+            await api.putState(appId, snapshot);
+          }
+        } catch (err) {
+          // Still not in the session -- unless a reset dropped them along with it.
+          if (gen === DeviceClient.generation()) unsaved = [...taken, ...unsaved];
+          throw err;
+        }
+      }, gen);
+    })();
+    busy(save).catch((err) => {
+      if (gen === DeviceClient.generation()) saveQueued = false;
+      if (err instanceof DeviceStaleError) return;
+      console.error(`[device] ${appId}: could not save state`, err);
+    });
+  }
+
   registerAppStore(appId, store as unknown as StoreApi<any>, () => {
     synced = null;
+    saveQueued = false;
+    unsaved = [];
     pending = [];
     serverState = null;
-    store.setState({ ...initialState } as Partial<S & A>);
+    localSet({ ...initialState } as Partial<S & A>);
     bumpVersion(appId);
   });
 
   registerStateSetter(appId, (applyPatch) =>
     busy((async () => {
-      // Patch the session's real state: sync first, then merge, then push.
-      await ensureSynced();
-      const current: Record<string, any> = {};
-      for (const [k, v] of Object.entries(store.getState())) if (typeof v !== 'function') current[k] = v;
-      const next = applyPatch(current);
-      store.setState(next as Partial<S & A>);
-      bumpVersion(appId);
-      const pushed = await DeviceClient.putState(appId, serverData(store.getState()));
-      adopt(pushed.state);
+      // Patch the session's real state: sync first, then merge and push in one
+      // queue slot, after the commands queued before it have been adopted.
+      const gen = DeviceClient.generation();
+      await syncedFor(gen);
+      const pushed = await DeviceClient.exclusive(async (api) => {
+        const view = plain(store.getState());
+        localSet(applyPatch(view) as Partial<S & A>);
+        const fixed = options.normalize?.(store.getState());
+        if (fixed) localSet(fixed as Partial<S & A>);
+        const nextView = plain(store.getState());
+        // Optimistic updates still pending stay visible but out of the payload:
+        // their commands will apply them in the session.
+        const payload = options.syncSetState || !pending.length || !serverState
+          ? nextView
+          : applyPatch({ ...view, ...serverState });
+        return api.putState(appId, serverData(payload));
+      }, gen);
+      // The page is the authority (syncSetState): writes made during the PUT
+      // are in the mirror and their save is queued behind it -- keep them.
+      if (options.syncSetState) bumpVersion(appId);
+      else adopt(pushed.state);
     })()),
   );
 
-  return Object.assign(store, { ensureSynced: () => ensureSynced() });
+  if (options.syncSetState) {
+    store.setState = syncedSet;
+    void ensureSynced().catch(() => {});
+  }
+
+  return Object.assign(store, { ensureSynced: (force?: boolean) => ensureSynced(force) });
 }
 
 // ── Queries ────────────────────────────────────────────────────────

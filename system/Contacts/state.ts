@@ -1,5 +1,5 @@
 import { useCallback, useSyncExternalStore } from 'react';
-import { createAppStoreWithActions } from '../../os/createAppStore';
+import { createDeviceAppStore } from '../../os/device/deviceStore';
 import ContentResolver from '../../os/ContentResolver';
 import { ensureContactsProviderRegistered } from '../../os/providers/ContactsProvider';
 import { CONTACTS_CONFIG } from './data';
@@ -31,10 +31,13 @@ const initialState: ContactsState = {
 
 // ---- Store ----
 
-export const useContactsStore = createAppStoreWithActions<ContactsState, ContactsActions>(
+// State lives in the device server session (device/stateOnly.ts); the actions
+// below run here as before and every write is saved there.
+export const useContactsStore = createDeviceAppStore<ContactsState, ContactsActions>(
   'contacts',
   initialState,
-  (set, get) => ({
+  { localKeys: [], syncSetState: true },
+  (_device, set, get) => ({
     addSearchHistory: (query) => {
       const q = query.trim();
       if (!q) return;

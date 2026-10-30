@@ -9,8 +9,11 @@ import { createRailway12306Module } from '../apps/Railway12306/device';
 import { createRedBookModule } from '../apps/RedBook/device';
 import { createRedditModule } from '../apps/Reddit/device';
 import { createXModule } from '../apps/X/device';
+import { createEbayModule } from '../apps/Ebay/device';
+import { createSpotifyModule } from '../apps/Spotify/device';
 import { DeviceServer } from './engine';
 import { createFsModule } from './fs';
+import { createStateOnlyModule } from './stateOnly';
 import { createDeviceHttpHandler } from './http';
 
 export interface DeviceServerOptions {
@@ -35,7 +38,14 @@ export function createDeviceServer(options: DeviceServerOptions) {
   server.register(createRedBookModule({ cdnBase: options.cdnBase, appAssetsBase }));
   server.register(createBilibiliModule({ cdnBase: options.cdnBase }));
   server.register(createRailway12306Module());
-  server.register(createRedditModule({ appAssetsBase }));
-  server.register(createXModule());
+  server.register(createRedditModule({ appAssetsBase, cdnBase: options.cdnBase }));
+  server.register(createXModule({ cdnBase: options.cdnBase }));
+  server.register(createEbayModule());
+  server.register(createSpotifyModule());
+  // Apps whose state logic stays on the page (createDeviceAppStore syncSetState).
+  for (const appId of [
+    'weather', 'wechat_reading', 'tencent_meeting', 'wechat', 'alipay',
+    'browser', 'calendar', 'clock', 'compass', 'contacts', 'file_manager', 'notes', 'settings', 'sms', 'answer_sheet',
+  ]) server.register(createStateOnlyModule(appId));
   return { server, handler: createDeviceHttpHandler(server) };
 }
