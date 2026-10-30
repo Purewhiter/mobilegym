@@ -49,6 +49,10 @@ export function createRailway12306Module(): AppModule<Record<string, never>> {
           String(args.from ?? ''), String(args.to ?? ''), String(args.date ?? ''), clockArg(args),
         );
       },
+      /** Stop list by internal train number; `null` = train not in the catalog. */
+      trainStops(ctx, args) {
+        return trainCatalog(ctx.catalog).trainStops(String(args.trainNo ?? ''));
+      },
       /** Transfer plans; `null` = not covered. */
       transferPlans(ctx, args) {
         return trainCatalog(ctx.catalog).queryTransfer(

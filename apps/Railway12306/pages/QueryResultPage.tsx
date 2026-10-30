@@ -4,8 +4,8 @@ import { useRailwayStore } from '../state';
 import { useRailwayGestures } from '../hooks/useRailwayGestures';
 import { useShallow } from 'zustand/react/shallow';
 import type { TrainFilter, SortMode } from '../services/trainService';
-import { SEAT_FILTER_OPTIONS, TIME_RANGES, applyFilterAndSort } from '../services/trainService';
-import { queryTrainStops, type StopInfo } from '../services/railwayApi';
+import { SEAT_FILTER_OPTIONS, TIME_RANGES, applyFilterAndSort, queryTrainStopsWithCatalog } from '../services/trainService';
+import type { StopInfo } from '../services/railwayApi';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import * as TimeService from '../../../os/TimeService';
 import { strings } from '../res/strings';
@@ -381,7 +381,7 @@ const TrainCard: React.FC<TrainCardProps> = React.memo(({
     if (stops.length > 0) return;
     setStopsLoading(true);
     try {
-      const data = await queryTrainStops(train.trainNoInternal, date);
+      const data = await queryTrainStopsWithCatalog(train.trainNoInternal, date);
       setStops(data);
     } catch { /* ignore */ }
     setStopsLoading(false);

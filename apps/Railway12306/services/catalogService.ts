@@ -18,6 +18,7 @@
  */
 
 import type { TrainInfo, SeatInfo, TrainType, TransferPlan, BerthPrice } from '../types';
+import type { StopInfo } from './railwayApi';
 import { generateSeatCount, getSaleTimeForStation, isBeforePresale } from './availabilityGenerator';
 
 /** 查询时的模拟时钟：today 同 TimeService.getToday()（UTC 日期），nowHHmm 为本地时刻 */
@@ -148,6 +149,8 @@ export interface TrainCatalog {
   queryDirect(fromName: string, toName: string, date: string, clock: CatalogClock): TrainInfo[] | null;
   /** 中转：null = 未覆盖该 OD；[] = 覆盖但当天无中转方案 */
   queryTransfer(fromName: string, toName: string, date: string, clock: CatalogClock): TransferPlan[] | null;
+  /** 经停站（按内部车次编号 trainNo，如 24000000D520）：null = catalog 里没有这趟车 */
+  trainStops(trainNo: string): StopInfo[] | null;
   meta: CatalogJson['meta'];
 }
 
@@ -160,6 +163,9 @@ export function createTrainCatalog(c: CatalogJson): TrainCatalog {
     if (!arr.includes(code)) arr.push(code);
     _nameToCodes.set(name, arr);
   }
+  // 内部车次编号 → 车次号（经停站查询按 trainNo）
+  const _codeByTrainNo = new Map<string, string>();
+  for (const [code, train] of Object.entries(c.trains)) _codeByTrainNo.set(train.trainNo, code);
   // 按 OD 组织：`${fromCode}|${toCode}` → entries[]
   const _byOD = new Map<string, CatalogEntry[]>();
   for (const e of Object.values(c.availability)) {
@@ -454,7 +460,34 @@ export function createTrainCatalog(c: CatalogJson): TrainCatalog {
     return covered ? results : null;
   }
 
-  return { queryDirect, queryTransfer, meta: c.meta };
+  /**
+   * 经停站，格式同 12306 queryTrainInfo 接口（railwayApi.queryTrainStops）：
+   * 无到达/出发时刻的一端填 '----'；running_time 为距始发的 HH:mm。
+   */
+  function trainStops(trainNo: string): StopInfo[] | null {
+    const code = _codeByTrainNo.get(trainNo);
+    const train = code ? _catalog.trains[code] : undefined;
+    if (!code || !train?.stops?.length) return null;
+    const minutes = (hhmm: string | null, day: number) => {
+      if (!hhmm) return null;
+      const [h, m] = hhmm.split(':').map(Number);
+      return day * 1440 + h * 60 + m;
+    };
+    const origin = minutes(train.stops[0].dep, train.stops[0].day) ?? 0;
+    return train.stops.map((stop) => {
+      const at = minutes(stop.arr, stop.day) ?? minutes(stop.dep, stop.day) ?? origin;
+      const run = Math.max(0, at - origin);
+      return {
+        station_name: stop.station,
+        arrive_time: stop.arr ?? '----',
+        start_time: stop.dep ?? '----',
+        running_time: `${String(Math.floor(run / 60)).padStart(2, '0')}:${String(run % 60).padStart(2, '0')}`,
+        station_train_code: code,
+      };
+    });
+  }
+
+  return { queryDirect, queryTransfer, trainStops, meta: c.meta };
 }
 
 /**

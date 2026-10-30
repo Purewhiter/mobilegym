@@ -9,7 +9,7 @@
  * 两条路径都失败时直接返回空列表，由上层 UI 呈现"无车次"。
  */
 
-import { initSession, queryTickets, queryTransfer, isSessionValid, type TicketQueryResult, type TransferQueryResult } from './railwayApi';
+import { initSession, queryTickets, queryTransfer, queryTrainStops, isSessionValid, type StopInfo, type TicketQueryResult, type TransferQueryResult } from './railwayApi';
 import { getStationCode, getStationName } from './stationService';
 import { normalizeTrainType, type CatalogClock } from './catalogService';
 import { DeviceClient } from '../../../os/device/DeviceClient';
@@ -117,6 +117,24 @@ async function queryTransferFromCatalog(fromName: string, toName: string, date: 
     restoreSeatCounts(p.leg2.seats);
   });
   return plans;
+}
+
+/**
+ * 列车经停站。优先离线 catalog（已覆盖 catalog 里的全部车次）→ 没有这趟车才联网。
+ */
+export async function queryTrainStopsWithCatalog(trainNo: string, date: string): Promise<StopInfo[]> {
+  try {
+    const stops = await DeviceClient.query<StopInfo[] | null>('railway12306', 'trainStops', { trainNo });
+    if (stops) return stops;
+  } catch (e) {
+    console.warn('[trainService] catalog 经停站查询失败，尝试真实 API:', e instanceof Error ? e.message : e);
+  }
+  try {
+    return await queryTrainStops(trainNo, date);
+  } catch (e) {
+    console.warn('[trainService] 经停站 API 查询失败，返回空:', e instanceof Error ? e.message : e);
+    return [];
+  }
 }
 
 export interface QueryDirectResult {
