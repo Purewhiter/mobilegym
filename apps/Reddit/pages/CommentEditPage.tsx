@@ -4,6 +4,7 @@ import { useLocation } from 'react-router-dom';
 import { useRedditStore } from '../state';
 import { useShallow } from 'zustand/react/shallow';
 import { useRedditGestures } from '../hooks/useRedditGestures';
+import { useSubmitOnce } from '../../../os/hooks/useSubmitOnce';
 import type { Comment } from '../types';
 
 function getIdsFromPath(pathname: string): { postId: string; commentId: string } | null {
@@ -40,6 +41,7 @@ export const CommentEditPage: React.FC = () => {
 
   const canPost = !!postId && !!commentId && !!target && target.author === myName && text.trim().length > 0;
 
+  const submitOnce = useSubmitOnce();
   const submit = React.useCallback(() => {
     if (!postId || !commentId) return;
     if (!target) return;
@@ -47,10 +49,8 @@ export const CommentEditPage: React.FC = () => {
     const body = text.trim();
     if (!body) return;
 
-    storeEditComment(commentId, body);
-
-    back();
-  }, [back, commentId, myName, postId, storeEditComment, target, text]);
+    void submitOnce(() => storeEditComment(commentId, body), back);
+  }, [back, commentId, myName, postId, storeEditComment, submitOnce, target, text]);
 
   return (
     <div className="flex flex-col h-full bg-app-surface">

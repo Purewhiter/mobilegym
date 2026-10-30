@@ -1,21 +1,19 @@
-import { useMemo, useSyncExternalStore } from 'react';
+import { useMemo } from 'react';
+import { useDeviceQuery } from '../../../os/device/deviceStore';
 import { useRedditStore } from '../state';
 import type { RedditPost } from '../types';
-import { getPostsSync, subscribePosts } from '../data/loader';
 
 function isRedditPost(value: RedditPost | null | undefined): value is RedditPost {
   return Boolean(value);
 }
 
-// Stable empty fallback so useSyncExternalStore's snapshot identity stays
-// fixed before loadPosts() resolves — otherwise React would re-render on
-// every commit (different `[]` reference each call).
+// Stable empty fallback while the catalog query is loading.
 const EMPTY_POSTS: RedditPost[] = Object.freeze([]) as readonly RedditPost[] as RedditPost[];
 
-const getFixtureSnapshot = (): RedditPost[] => getPostsSync() ?? EMPTY_POSTS;
-
+/** Catalog posts in feed order (no comment threads), from the device server. */
 export function useFixturePosts(): RedditPost[] {
-  return useSyncExternalStore(subscribePosts, getFixtureSnapshot, getFixtureSnapshot);
+  const { data } = useDeviceQuery<RedditPost[]>('reddit', 'posts', {}, true, { catalog: true });
+  return data ?? EMPTY_POSTS;
 }
 
 export function useRedditPosts(): RedditPost[] {

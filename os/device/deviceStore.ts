@@ -92,6 +92,13 @@ function commandArgs(appId: string, name: string, args: unknown[]): unknown[] {
 export interface DeviceStoreHelpers {
   /** Run a server command; resolves to the command's return value. */
   command: (name: string, ...args: unknown[]) => Promise<unknown>;
+  /**
+   * Show `apply` at once, then run the command. Until it settles, every server
+   * state adopted in between (earlier commands' answers) gets the still-pending
+   * updates re-applied on top, in order, so a quick second tap reads and keeps
+   * the first one's value. A failed command drops its update again.
+   */
+  optimistic: (apply: (state: any) => Record<string, unknown>, name: string, ...args: unknown[]) => Promise<unknown>;
 }
 
 export function createDeviceAppStore<
@@ -119,11 +126,27 @@ export function createDeviceAppStore<
 
   const store = create<S & A>()((set, get) => ({
     ...initialState,
-    ...actionCreator({ command: (name, ...args) => runCommand(name, commandArgs(appId, name, args)) }, set, get),
+    ...actionCreator({
+      command: (name, ...args) => runCommand(name, commandArgs(appId, name, args)),
+      optimistic: (apply, name, ...args) => runOptimistic(apply, name, commandArgs(appId, name, args)),
+    }, set, get),
   }));
 
+  /** Local updates whose commands have not settled yet, oldest first. */
+  let pending: { apply: (state: any) => Record<string, unknown> }[] = [];
+  /** The last state the server sent (pending updates not applied). */
+  let serverState: Record<string, unknown> | null = null;
+
+  const reapplyPending = () => {
+    for (const entry of pending) store.setState(entry.apply(store.getState()) as Partial<S & A>);
+  };
+
   const adopt = (state: unknown) => {
-    if (state && typeof state === 'object') store.setState(state as Partial<S & A>);
+    if (state && typeof state === 'object') {
+      serverState = state as Record<string, unknown>;
+      store.setState(state as Partial<S & A>);
+      reapplyPending();
+    }
     bumpVersion(appId);
   };
 
@@ -161,7 +184,7 @@ export function createDeviceAppStore<
   readyHooks.set(appId, ensureSynced);
 
   // ── commands ──
-  async function runCommandNow(name: string, args: unknown[]): Promise<unknown> {
+  async function runCommandNow(name: string, args: unknown[], settle?: () => void): Promise<unknown> {
     await ensureSynced();
     // Command and its recovery share one slot, so later commands cannot overtake it.
     const response = await DeviceClient.exclusive(async (api) => {
@@ -175,20 +198,42 @@ export function createDeviceAppStore<
         return call();
       }
     });
+    settle?.();
     adopt(response.state);
     return response.result;
   }
 
-  function runCommand(name: string, args: unknown[]): Promise<unknown> {
-    return busy(runCommandNow(name, args)).catch((err) => {
+  function runCommand(name: string, args: unknown[], settle?: () => void): Promise<unknown> {
+    return busy(runCommandNow(name, args, settle)).catch((err) => {
       // A reset abandoned this command along with its episode.
       if (err instanceof DeviceStaleError) return undefined;
       throw err;
     });
   }
 
+  function runOptimistic(apply: (state: any) => Record<string, unknown>, name: string, args: unknown[]): Promise<unknown> {
+    const entry = { apply };
+    pending.push(entry);
+    store.setState(apply(store.getState()) as Partial<S & A>);
+    const drop = () => {
+      pending = pending.filter((e) => e !== entry);
+    };
+    return runCommand(name, args, drop).catch((err) => {
+      // Failed: drop this update and show the server's state plus what is still pending.
+      drop();
+      if (serverState) {
+        store.setState(serverState as Partial<S & A>);
+        reapplyPending();
+        bumpVersion(appId);
+      }
+      throw err;
+    });
+  }
+
   registerAppStore(appId, store as unknown as StoreApi<any>, () => {
     synced = null;
+    pending = [];
+    serverState = null;
     store.setState({ ...initialState } as Partial<S & A>);
     bumpVersion(appId);
   });

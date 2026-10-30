@@ -3,7 +3,7 @@
  * Node process, for deployments that serve the built page from nginx
  * (scripts/server/start_nginx_gateway.sh). Serves `/__device/*`.
  *
- *   node device-server.mjs --port 4190 --root <repo> [--cdn-base /cdn] [--shard 0]
+ *   node device-server.mjs --port 4190 --root <repo> [--cdn-base /cdn] [--base /sim/] [--shard 0]
  *
  * Bundle first (scripts/server/build_device_server.mjs); app modules are
  * plain TypeScript.
@@ -23,10 +23,12 @@ const port = Number(arg('port') ?? 4190);
 const host = arg('host') ?? '127.0.0.1';
 const root = resolve(arg('root') ?? process.cwd());
 const cdnBase = (arg('cdn-base') ?? process.env.VITE_CDN_BASE ?? '/cdn').trim().replace(/\/+$/, '') || '/cdn';
+// Same as the page's VITE_BASE: app asset URLs the server returns live under it.
+const base = (arg('base') ?? process.env.VITE_BASE ?? '/').trim().replace(/\/+$/, '');
 const shardArg = arg('shard');
 const shard = shardArg === undefined ? undefined : Number(shardArg);
 
-const { server, handler } = createDeviceServer({ root, cdnBase, shard });
+const { server, handler } = createDeviceServer({ root, cdnBase, appAssetsBase: `${base}/@app-assets/`, shard });
 
 // Load every catalog now, so the first page of a run does not pay for it.
 const started = Date.now();

@@ -5,6 +5,7 @@ import { useRedditStore } from '../state';
 import { useShallow } from 'zustand/react/shallow';
 import * as MediaService from '../../../os/MediaService';
 import * as TimeService from '../../../os/TimeService';
+import { useSubmitOnce } from '../../../os/hooks/useSubmitOnce';
 import { getUserAvatar } from '../utils/userIdentity';
 
 /* ── flair data per community ── */
@@ -191,6 +192,7 @@ export const CreatePage: React.FC = () => {
   const { createDraft, user } = useRedditStore(useShallow((s) => ({ createDraft: s.createDraft, user: s.user })));
   const storeAddFlair = useRedditStore((s) => s.addFlair);
   const storeCreatePost = useRedditStore((s) => s.createPost);
+  const submitOnce = useSubmitOnce();
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
   const [showTagSheet, setShowTagSheet] = useState(false);
@@ -231,7 +233,7 @@ export const CreatePage: React.FC = () => {
   const handlePost = () => {
     if (!canPost) return;
     const id = `user_post_${TimeService.now()}`;
-    storeCreatePost({
+    void submitOnce(() => storeCreatePost({
       id,
       subreddit: selectedCommunity?.name ?? 'r/self',
       subredditIcon: undefined,
@@ -247,8 +249,7 @@ export const CreatePage: React.FC = () => {
       shares: 0,
       isAd: false,
       commentsData: [],
-    });
-    back();
+    }), back);
   };
 
   return (

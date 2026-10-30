@@ -5,6 +5,7 @@ import { useRedditStore } from '../state';
 import { useRedditGestures } from '../hooks/useRedditGestures';
 import * as TimeService from '../../../os/TimeService';
 import { useRedditComments } from '../hooks/useRedditComments';
+import { useSubmitOnce } from '../../../os/hooks/useSubmitOnce';
 import type { Comment } from '../types';
 
 function getIdsFromPath(pathname: string): { postId: string; commentId: string } | null {
@@ -50,15 +51,15 @@ export const CommentReplyPage: React.FC = () => {
 
   const canPost = text.trim().length > 0 && !!postId && !!commentId;
 
+  const submitOnce = useSubmitOnce();
   const submit = React.useCallback(() => {
     if (!postId || !commentId) return;
     const body = text.trim();
     if (!body) return;
 
-    storeAddReplyComment(postId, commentId, body);
-
-    back(); // return to comments page
-  }, [back, commentId, postId, storeAddReplyComment, text]);
+    // return to comments page
+    void submitOnce(() => storeAddReplyComment(postId, commentId, body), back);
+  }, [back, commentId, postId, storeAddReplyComment, submitOnce, text]);
 
   return (
     <div className="flex flex-col h-full bg-app-surface">

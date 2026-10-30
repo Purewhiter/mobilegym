@@ -5,6 +5,7 @@ import { useRedditStore } from '../state';
 import { useRedditGestures } from '../hooks/useRedditGestures';
 import { strings } from '../res/strings';
 import { stringsEn } from '../res/strings.en';
+import { useSubmitOnce } from '../../../os/hooks/useSubmitOnce';
 import * as MediaService from '../../../os/MediaService';
 
 const MAX_NAME = 90;
@@ -58,16 +59,16 @@ export const EditProfilePage: React.FC = () => {
     }
   }, [pickingAvatar]);
 
+  const submitOnce = useSubmitOnce();
   const handleSave = React.useCallback(() => {
     if (!canSave) return;
-    storeSaveProfile({
+    void submitOnce(() => storeSaveProfile({
       username: displayName.trim(),
       bio: bio.trim(),
       bannerImage,
       avatarImage,
-    });
-    back();
-  }, [canSave, displayName, bio, bannerImage, avatarImage, storeSaveProfile, back]);
+    }), back);
+  }, [canSave, displayName, bio, bannerImage, avatarImage, storeSaveProfile, back, submitOnce]);
 
   return (
     <div className="flex flex-col h-full bg-app-surface">

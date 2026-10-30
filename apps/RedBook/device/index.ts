@@ -38,7 +38,7 @@ export const REDBOOK_STATE_KEYS = [
 
 const ASSET_EXT_RE = /\.(jpe?g|png|webp|gif|svg|mp4|webm|avif)(\?.*)?$/i;
 
-function assetResolver(cdnBase: string) {
+function assetResolver(cdnBase: string, appAssetsBase: string) {
   return (raw: unknown): unknown => {
     if (typeof raw !== 'string' || !raw) return raw;
     if (raw.startsWith('http') || raw.startsWith('/')) return raw;
@@ -46,13 +46,13 @@ function assetResolver(cdnBase: string) {
       return resolveCdnUrlWithBase(raw, cdnBase, 'redbook');
     }
     if (!ASSET_EXT_RE.test(raw)) return raw;
-    return `/@app-assets/RedBook/${raw}`;
+    return `${appAssetsBase}RedBook/${raw}`;
   };
 }
 
-function loadCatalog(root: string, cdnBase: string): Catalog {
+function loadCatalog(root: string, cdnBase: string, appAssetsBase: string): Catalog {
   const dataDir = join(root, 'apps', 'RedBook', 'data');
-  const resolve = assetResolver(cdnBase);
+  const resolve = assetResolver(cdnBase, appAssetsBase);
   const users = JSON.parse(readFileSync(join(dataDir, 'users.json'), 'utf8')) as User[];
   const notes = JSON.parse(readFileSync(join(dataDir, 'notes.json'), 'utf8')) as Note[];
 
@@ -510,10 +510,10 @@ const queries: AppModule<RedBookDeviceState>['queries'] = {
   },
 };
 
-export function createRedBookModule(options: { cdnBase: string }): AppModule<RedBookDeviceState> {
+export function createRedBookModule(options: { cdnBase: string; appAssetsBase: string }): AppModule<RedBookDeviceState> {
   return {
     appId: 'redbook',
-    loadCatalog: root => loadCatalog(root, options.cdnBase),
+    loadCatalog: root => loadCatalog(root, options.cdnBase, options.appAssetsBase),
     materialize,
     exportState: ctx => ctx.state,
     importState(raw) {

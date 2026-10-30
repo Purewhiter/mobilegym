@@ -13,8 +13,6 @@ import {
   useLocation,
   UNSAFE_NavigationContext,
 } from 'react-router-dom';
-import { useRedditStore } from './state';
-import { preload as preloadRedditPosts } from './data/loader';
 import { HomePage } from './pages/HomePage';
 import { CommunitiesPage } from './pages/CommunitiesPage';
 import { ChatPage } from './pages/ChatPage';
@@ -213,19 +211,6 @@ const RedditLayout: React.FC = () => {
 
 const RedditApp: React.FC = () => {
   const { isDark } = useDarkMode();
-
-  // Side-effect: trim user comments on mount and whenever comments change
-  const commentIds = useRedditStore((s) => s.user.commentIds);
-  const trimUserComments = useRedditStore((s) => s.trimUserComments);
-  useEffect(() => {
-    trimUserComments();
-  }, [commentIds, trimUserComments]);
-
-  // Kick off lazy fixture posts load on mount; the useFixturePosts hooks
-  // subscribe via useSyncExternalStore and re-render when the cache flips.
-  useEffect(() => {
-    void preloadRedditPosts();
-  }, []);
 
   const themeColors = isDark
     ? { ...manifest.theme.colors, ...(manifest.theme.colorsDark ?? {}) }

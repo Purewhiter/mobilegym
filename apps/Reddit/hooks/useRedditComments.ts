@@ -1,21 +1,22 @@
 import { useMemo } from 'react';
 import { useRedditStore } from '../state';
 import type { Comment } from '../types';
-import { useFixturePosts } from './useRedditPosts';
+import { useDeviceQuery } from '../../../os/device/deviceStore';
 
 function isComment(value: Comment | null | undefined): value is Comment {
   return Boolean(value);
 }
 
 export function useRedditComments(postId: string | null | undefined): Comment[] {
-  const fixture = useFixturePosts();
+  const { data: fixture } = useDeviceQuery<Comment[]>(
+    'reddit', 'postComments', { postId }, Boolean(postId), { catalog: true },
+  );
   const commentsTable = useRedditStore((state) => state.comments);
 
   return useMemo(() => {
     if (!postId) return [];
-    const post = fixture.find((item) => item.id === postId);
-    const fixtureComments = Array.isArray(post?.commentsData)
-      ? post.commentsData
+    const fixtureComments = Array.isArray(fixture)
+      ? fixture
         .map((comment) => {
           const id = String(comment.id);
           if (Object.prototype.hasOwnProperty.call(commentsTable, id)) {
@@ -23,7 +24,7 @@ export function useRedditComments(postId: string | null | undefined): Comment[] 
             if (overlay === null) return null;
             return overlay;
           }
-          return { ...comment, postId };
+          return comment;
         })
         .filter(isComment)
       : [];

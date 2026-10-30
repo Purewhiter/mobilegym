@@ -571,12 +571,12 @@ function serveCdnPlugin() {
  */
 function deviceServerPlugin(mode: string) {
   const cdnBase = (loadEnv(mode, __dirname, '').VITE_CDN_BASE?.trim() || '/cdn').replace(/\/+$/, '');
-  const options = { root: __dirname, cdnBase };
   type Handler = (req: any, res: any, next: (err?: unknown) => void) => Promise<void>;
 
   // Plugin middleware runs before Vite strips `base`, so mount under it too (VITE_BASE=/sim/).
   const base = (process.env.VITE_BASE || '/').replace(/\/+$/, '');
   const mountPaths = base ? ['/__device', `${base}/__device`] : ['/__device'];
+  const options = { root: __dirname, cdnBase, appAssetsBase: `${base}/@app-assets/` };
 
   const mount = (middlewares: any, load: () => Promise<Handler>) => {
     let handler: Promise<Handler> | null = null;

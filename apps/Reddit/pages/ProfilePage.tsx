@@ -14,7 +14,8 @@ import { strings } from '../res/strings';
 import { stringsEn } from '../res/strings.en';
 import { useMyRedditComments } from '../hooks/useRedditComments';
 import { useRedditPosts } from '../hooks/useRedditPosts';
-import type { RedditPost } from '../types';
+import type { Comment, RedditPost } from '../types';
+import { useDeviceQuery } from '../../../os/device/deviceStore';
 import * as TimeService from '../../../os/TimeService';
 const asset = (r: unknown) => { const s = String(r ?? '').trim(); return (!s || s.startsWith('http')) ? s : `/@app-assets/Reddit/${s}`; };
 
@@ -138,6 +139,13 @@ export const ProfilePage: React.FC = () => {
       .filter((post): post is RedditPost => Boolean(post));
   }, [postsTable, user.postIds]);
   const myComments = useMyRedditComments();
+  const parentIds = React.useMemo(
+    () => [...new Set(myComments.map((c) => c.parentId).filter((id): id is string => Boolean(id)))].sort(),
+    [myComments],
+  );
+  const { data: datasetParents } = useDeviceQuery<Record<string, Comment>>(
+    'reddit', 'commentsByIds', { ids: parentIds }, parentIds.length > 0, { catalog: true },
+  );
 
   const isOwnPost = React.useCallback(
     (postId: string): boolean => {
@@ -193,8 +201,8 @@ export const ProfilePage: React.FC = () => {
 
       // Reply to a comment: show the parent comment body (black text).
       if (comment.parentId) {
-        const parentFromDataset = post.commentsData?.find((x) => x.id === comment.parentId);
-        if (parentFromDataset?.body) return parentFromDataset.body;
+        const parentFromDataset = datasetParents?.[comment.parentId];
+        if (parentFromDataset?.postId === postId && parentFromDataset.body) return parentFromDataset.body;
 
         const parentFromUser = Object.values(commentsTable).find((x) => x && x.postId === postId && x.id === comment.parentId);
         if (parentFromUser?.body) return parentFromUser.body;
@@ -226,7 +234,7 @@ export const ProfilePage: React.FC = () => {
       .sort((a, b) => b.created - a.created);
 
     return rows;
-  }, [commentsTable, myComments, posts]);
+  }, [commentsTable, datasetParents, myComments, posts]);
 
   return (
     <div className="flex flex-col h-full bg-app-surface">

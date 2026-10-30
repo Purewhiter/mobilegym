@@ -74,7 +74,7 @@ describe('RedBook device module', () => {
 
   beforeEach(() => {
     server = new DeviceServer(root);
-    server.register(createRedBookModule({ cdnBase: '/cdn' }));
+    server.register(createRedBookModule({ cdnBase: '/cdn', appAssetsBase: '/@app-assets/' }));
     session = server.createSession();
     server.importState(session, 'redbook', initialState());
   });
