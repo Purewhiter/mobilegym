@@ -1,12 +1,43 @@
-import { describe, expect, it } from 'vitest';
-import { getAllStoreStates } from '../os/createAppStore';
+import { describe, expect, it, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { act } from 'react';
 import defaults from '../apps/X/data/defaults.json';
 import posts from '../apps/X/data/posts.json';
 import users from '../apps/X/data/users.json';
-import { useXStore } from '../apps/X/state';
+
+// The X store mirrors a device server session; run its commands in memory.
+vi.mock('../os/device/DeviceClient', async () => {
+  const { createXModule } = await import('../apps/X/device');
+  const { commands } = createXModule();
+  let state: any = null;
+  let queue: Promise<unknown> = Promise.resolve();
+  const api = {
+    getState: async () => ({ initialized: Boolean(state), state }),
+    putState: async (_appId: string, next: any) => ({ state: (state = structuredClone(next)) }),
+    command: async (_appId: string, name: string, args: unknown[], now: number) => {
+      const ctx: any = { state };
+      const result = commands[name]!(ctx, args, { now });
+      state = ctx.state;
+      return { state: structuredClone(state), result };
+    },
+  };
+  return {
+    DeviceClient: {
+      generation: () => 0,
+      sessionId: async () => 'test',
+      hold: () => {},
+      exclusive: <T,>(fn: (a: typeof api) => Promise<T>) => {
+        const result = queue.then(() => fn(api));
+        queue = result.catch(() => {});
+        return result;
+      },
+    },
+    DeviceStaleError: class extends Error {},
+  };
+});
+
+const { getAllStoreStates } = await import('../os/createAppStore');
+const { useXStore } = await import('../apps/X/state');
 
 describe('X state layering', () => {
   it('does not expose derived follow counts in raw getState output', () => {
@@ -18,14 +49,11 @@ describe('X state layering', () => {
     expect(x.user.followers).toBeUndefined();
   });
 
-  it('clears pending quoted post after addPost consumes it', () => {
-    act(() => {
-      useXStore.setState({ pendingQuotedPostId: 'p_quote_target', posts: {}, user: defaults.user as any });
-    });
+  it('clears pending quoted post after addPost consumes it', async () => {
+    await useXStore.ensureSynced();
+    useXStore.setState({ pendingQuotedPostId: 'p_quote_target' });
 
-    act(() => {
-      useXStore.getState().addPost('first post');
-    });
+    await useXStore.getState().addPost('first post');
 
     const state = useXStore.getState();
     const created = Object.values(state.posts).find((post: any) => post?.content === 'first post') as any;

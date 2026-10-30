@@ -330,6 +330,23 @@ function fetchQuery(
 }
 
 /**
+ * Load a query into the cache ahead of the first render that reads it, e.g.
+ * from an app's `preload()`, so pages mount with their catalog data the way
+ * they did when it was a bundled JSON file. Same key as `useDeviceQuery`.
+ */
+export function prefetchDeviceQuery(
+  appId: string,
+  name: string,
+  args: Record<string, unknown> = {},
+  options: { catalog?: boolean } = {},
+): Promise<void> {
+  const catalog = Boolean(options.catalog);
+  const key = `${appId}|${name}|${JSON.stringify(args)}`;
+  fetchQuery(key, appId, name, args, queryVersion(appId, catalog), catalog);
+  return queryCache.get(key)?.inflight ?? Promise.resolve();
+}
+
+/**
  * Run a device query and re-run it whenever the app's data changes. While a
  * refresh is in flight the previous result stays visible (`loading` is true).
  *

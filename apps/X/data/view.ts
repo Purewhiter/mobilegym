@@ -14,7 +14,9 @@
 import { useMemo, useSyncExternalStore } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 
-import { getXBaseDataset, subscribeBaseDataset, type XBaseDataset } from './loader';
+import { useDeviceQuery } from '../../../os/device/deviceStore';
+import { areRepliesRequested, subscribeRepliesRequested, type XBaseDataset } from './loader';
+import { normalizeXPostTemporalFields } from '../utils/formatTime';
 import { conversations as baseConversations, notifications as baseNotifications, searchHistory as baseSearchHistory, currentUser } from './';
 import { useXStore, type XStore } from '../state';
 import {
@@ -29,12 +31,49 @@ import type { XMessage, XPost, XUser } from '../types';
 
 // ---- Base dataset subscription ----
 
+const EMPTY_USERS = Object.freeze({}) as Record<string, XUser>;
+const EMPTY_POSTS = Object.freeze([]) as readonly XPost[] as XPost[];
+const EMPTY_REPLIES = Object.freeze({}) as Record<string, XPost[]>;
+
+// Display times follow this page's clock and locale, so the server sends raw
+// posts and they are formatted here, once per query result (shared by every hook).
+const normalizedPosts = new WeakMap<XPost[], XPost[]>();
+const normalizedReplies = new WeakMap<Record<string, XPost[]>, Record<string, XPost[]>>();
+
+function normalizePosts(raw: XPost[]): XPost[] {
+  let out = normalizedPosts.get(raw);
+  if (!out) normalizedPosts.set(raw, (out = raw.map((post) => normalizeXPostTemporalFields(post))));
+  return out;
+}
+
+function normalizeReplies(raw: Record<string, XPost[]>): Record<string, XPost[]> {
+  let out = normalizedReplies.get(raw);
+  if (!out) {
+    out = {};
+    for (const [postId, replies] of Object.entries(raw)) out[postId] = replies.map((r) => normalizeXPostTemporalFields(r));
+    normalizedReplies.set(raw, out);
+  }
+  return out;
+}
+
 /**
- * 订阅 X base dataset (users/posts/replies)。Loader 加载完成时返回的引用会换,
- * useSyncExternalStore 自动触发组件重渲染。
+ * X base dataset (users/posts/replies) from the device server catalog. Posts
+ * appear only once users are there too, so no row renders an "Unknown"
+ * author in between. Replies load after `requestReplies()`.
  */
 export function useXBaseDataset(): XBaseDataset {
-  return useSyncExternalStore(subscribeBaseDataset, getXBaseDataset, getXBaseDataset);
+  const { data: users } = useDeviceQuery<Record<string, XUser>>('x', 'users', {}, true, { catalog: true });
+  const { data: posts } = useDeviceQuery<XPost[]>('x', 'posts', {}, true, { catalog: true });
+  const repliesWanted = useSyncExternalStore(subscribeRepliesRequested, areRepliesRequested, areRepliesRequested);
+  const { data: replies } = useDeviceQuery<Record<string, XPost[]>>('x', 'replies', {}, repliesWanted, { catalog: true });
+  return useMemo(() => {
+    const ready = Boolean(users && posts);
+    return {
+      users: ready ? users! : EMPTY_USERS,
+      posts: ready ? normalizePosts(posts!) : EMPTY_POSTS,
+      replies: ready && replies ? normalizeReplies(replies) : EMPTY_REPLIES,
+    };
+  }, [users, posts, replies]);
 }
 
 /** "Replies 已加载" 信号: replies map 非空即视为已加载。 */

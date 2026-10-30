@@ -1,4 +1,5 @@
-import { createAppStoreWithActions, memoSelector, registerStateAdapter } from '../../os/createAppStore';
+import { memoSelector, registerStateAdapter } from '../../os/createAppStore';
+import { createDeviceAppStore } from '../../os/device/deviceStore';
 import { fromTimestamp, now as timeNow } from '../../os/TimeService';
 import {
   X_CONFIG,
@@ -7,7 +8,7 @@ import {
   defaultFollowedUserIds,
   defaultFollowerUserIds,
 } from './data';
-import { loadReplies, preload } from './data/loader';
+import { requestReplies } from './data/loader';
 import type { XUser, XPost, XConversation, XSettings } from './types';
 import { getJustNowLabel } from './utils/formatTime';
 import type { XRuntimePostTable } from './utils/runtimePostResolver';
@@ -41,28 +42,27 @@ export interface XState {
   conversations: XConversation[];
   settings: XSettings;
 
-  // Ephemeral state (excluded from persistence via partialize)
+  // Page-only state (never sent to the device server)
   currentSearchQuery: string;
   pendingQuotedPostId: string | null;
 }
 
 export interface XActions {
-  toggleLike: (postId: string) => void;
-  toggleRetweet: (postId: string) => void;
-  toggleBookmark: (postId: string) => void;
-  toggleFollow: (userId: string) => void;
+  toggleLike: (postId: string) => Promise<void>;
+  toggleRetweet: (postId: string) => Promise<void>;
+  toggleBookmark: (postId: string) => Promise<void>;
+  toggleFollow: (userId: string) => Promise<void>;
 
-  updateSettings: (patch: Partial<XSettings>) => void;
+  updateSettings: (patch: Partial<XSettings>) => Promise<void>;
   setSearchQuery: (q: string) => void;
   setPendingQuotedPostId: (id: string | null) => void;
 
-  addPost: (content: string, image?: string, quotedPostId?: string) => void;
-  addReply: (postId: string, content: string) => void;
-  sendMessage: (conversationId: string, content: string) => void;
+  addPost: (content: string, image?: string, quotedPostId?: string) => Promise<void>;
+  addReply: (postId: string, content: string) => Promise<void>;
+  sendMessage: (conversationId: string, content: string) => Promise<void>;
 
-  /** Lazy load replies.json (huge); loader 内部 in-flight 去重。 */
+  /** Start the reply-trees query (large; only post details and profiles need it). */
   ensureRepliesLoaded: () => Promise<void>;
-  _loadData: () => void;
 }
 
 // ---- Initial state ----
@@ -87,102 +87,85 @@ const initialState: XState = {
 };
 
 // ---- Store ----
+//
+// `user`, `posts`, `conversations` and `settings` live in the device server
+// session (apps/X/device); this store mirrors them, so components and
+// `__SIM__.getState().apps.x` read the same shape as before. Actions run the
+// matching server command; new posts, replies and messages are built here
+// (ids and "just now" labels follow this page's clock), as before.
 
-const toggleInArray = (ids: string[], id: string): string[] =>
-  ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id];
+const PAGE_ONLY_KEYS: (keyof XState)[] = ['currentSearchQuery', 'pendingQuotedPostId'];
 
-export const useXStore = createAppStoreWithActions<XState, XActions>(
+export const useXStore = createDeviceAppStore<XState, XActions>(
   'x',
   initialState,
-  (set, get) => ({
-    toggleLike: (postId) => set((s) => ({
-      user: { ...s.user, likedPostIds: toggleInArray(s.user.likedPostIds, postId) },
-    })),
-    toggleRetweet: (postId) => set((s) => ({
-      user: { ...s.user, retweetedPostIds: toggleInArray(s.user.retweetedPostIds, postId) },
-    })),
-    toggleBookmark: (postId) => set((s) => ({
-      user: { ...s.user, bookmarkedPostIds: toggleInArray(s.user.bookmarkedPostIds, postId) },
-    })),
-    toggleFollow: (userId) => set((s) => ({
-      user: { ...s.user, followedUserIds: toggleInArray(s.user.followedUserIds, userId) },
-    })),
+  { localKeys: PAGE_ONLY_KEYS },
+  ({ command, optimistic }, set, get) => {
+    const run = (name: string) => async (...args: unknown[]) => {
+      await command(name, ...args);
+    };
+    return {
+      toggleLike: run('toggleLike'),
+      toggleRetweet: run('toggleRetweet'),
+      toggleBookmark: run('toggleBookmark'),
+      toggleFollow: run('toggleFollow'),
 
-    updateSettings: (patch) => set((s) => ({ settings: { ...s.settings, ...patch } })),
-    setSearchQuery: (q) => set({ currentSearchQuery: q }),
-    setPendingQuotedPostId: (id) => set({ pendingQuotedPostId: id }),
+      // Show the new value at once: a second tap before the server answers must
+      // read it (`!settings.x`, or a switch's `!value`), and keep it when earlier answers arrive.
+      updateSettings: async (patch) => {
+        await optimistic((s) => ({ settings: { ...s.settings, ...patch } }), 'updateSettings', patch);
+      },
+      setSearchQuery: (q) => set({ currentSearchQuery: q }),
+      setPendingQuotedPostId: (id) => set({ pendingQuotedPostId: id }),
 
-    addPost: (content, image, quotedPostId) => {
-      // 调用方未传 quotedPostId 时回退到 pendingQuotedPostId, 保证"引用"入口拼出引用关系。
-      const effectiveQuotedPostId = quotedPostId ?? get().pendingQuotedPostId ?? undefined;
-      const createdAt = timeNow();
-      const newPost: XPost = {
-        id: `new_${createdAt}`,
-        authorId: currentUser.id,
-        content,
-        createdAt: fromTimestamp(createdAt).toISOString(),
-        image,
-        time: getJustNowLabel(),
-        stats: { comments: 0, retweets: 0, likes: 0, views: 0 },
-        quotedPostId: effectiveQuotedPostId,
-      };
-      set((s) => ({
-        posts: { ...s.posts, [newPost.id]: newPost },
-        user: { ...s.user, postIds: [newPost.id, ...s.user.postIds] },
-        pendingQuotedPostId: null,
-      }));
-    },
+      addPost: async (content, image, quotedPostId) => {
+        // 调用方未传 quotedPostId 时回退到 pendingQuotedPostId, 保证"引用"入口拼出引用关系。
+        const effectiveQuotedPostId = quotedPostId ?? get().pendingQuotedPostId ?? undefined;
+        const createdAt = timeNow();
+        const newPost: XPost = {
+          id: `new_${createdAt}`,
+          authorId: currentUser.id,
+          content,
+          createdAt: fromTimestamp(createdAt).toISOString(),
+          image,
+          time: getJustNowLabel(),
+          stats: { comments: 0, retweets: 0, likes: 0, views: 0 },
+          quotedPostId: effectiveQuotedPostId,
+        };
+        set({ pendingQuotedPostId: null });
+        await command('addPost', newPost);
+      },
 
-    addReply: (postId, content) => {
-      const reply: XPost = {
-        id: `reply_${timeNow()}`,
-        authorId: currentUser.id,
-        content,
-        createdAt: fromTimestamp(timeNow()).toISOString(),
-        time: getJustNowLabel(),
-        stats: { comments: 0, retweets: 0, likes: 0, views: 0 },
-        threadId: postId,
-      };
-      set((s) => ({
-        posts: { ...s.posts, [reply.id]: reply },
-        user: { ...s.user, replyIds: [reply.id, ...s.user.replyIds] },
-      }));
-    },
+      addReply: async (postId, content) => {
+        const reply: XPost = {
+          id: `reply_${timeNow()}`,
+          authorId: currentUser.id,
+          content,
+          createdAt: fromTimestamp(timeNow()).toISOString(),
+          time: getJustNowLabel(),
+          stats: { comments: 0, retweets: 0, likes: 0, views: 0 },
+          threadId: postId,
+        };
+        await command('addReply', reply);
+      },
 
-    sendMessage: (conversationId, content) => {
-      set((s) => ({
-        conversations: s.conversations.map((conv) => {
-          if (conv.id !== conversationId) return conv;
-          const newMessage = {
-            id: `msg_${timeNow()}`,
-            senderId: currentUser.id,
-            receiverId: conv.participantId,
-            content,
-            time: getJustNowLabel(),
-            read: true,
-          };
-          return { ...conv, messages: [...conv.messages, newMessage], lastMessageId: newMessage.id };
-        }),
-      }));
-    },
+      sendMessage: async (conversationId, content) => {
+        const conv = get().conversations.find((c) => c.id === conversationId);
+        if (!conv) return;
+        await command('sendMessage', conversationId, {
+          id: `msg_${timeNow()}`,
+          senderId: currentUser.id,
+          receiverId: conv.participantId,
+          content,
+          time: getJustNowLabel(),
+          read: true,
+        });
+      },
 
-    ensureRepliesLoaded: async () => {
-      await loadReplies();
-    },
-
-    _loadData: () => {
-      void preload();
-    },
-  }),
-  {
-    // 显式 allowlist: 只持久化用户运行态。新增字段默认不进 localStorage,
-    // 避免无意把 ephemeral / 信号位 / base cache 写盘。
-    partialize: (state) => ({
-      user: stripDerivedUserCounts(state.user) as XMeUser,
-      posts: state.posts,
-      conversations: state.conversations,
-      settings: state.settings,
-    }),
+      ensureRepliesLoaded: async () => {
+        requestReplies();
+      },
+    };
   },
 );
 

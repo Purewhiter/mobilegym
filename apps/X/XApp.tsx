@@ -9,7 +9,6 @@ import {
   UNSAFE_NavigationContext,
 } from 'react-router-dom';
 import { IcTabHome, IcTabSearch, IcTabNotifications, IcTabMessages, IcTabGrok } from './res/icons';
-import { useXStore } from './state';
 import { HomePage } from './pages/HomePage';
 import { SearchPage } from './pages/SearchPage';
 import { MessagesPage } from './pages/MessagesPage';
@@ -297,10 +296,6 @@ export const XApp: React.FC = () => {
     ...dimensToCssVars(dimens),
     ...dimensToCssVars(anim, { prefix: '--app-' }),
   };
-
-  // Trigger async data loading on mount
-  const loadData = useXStore(s => s._loadData);
-  useEffect(() => { loadData(); }, [loadData]);
 
   return (
     <div className="h-full w-full" style={cssVars as React.CSSProperties}>

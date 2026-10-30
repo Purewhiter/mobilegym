@@ -6,6 +6,7 @@ import { useXStore, selectUser } from '../state';
 import { useXResolvedPost } from '../data/view';
 import { useXGestures } from '../hooks/useXGestures';
 import { useXStrings } from '../hooks/useXStrings';
+import { useSubmitOnce } from '../../../os/hooks/useSubmitOnce';
 import { XImage } from '../components/XMedia';
 
 export const ComposePage: React.FC = () => {
@@ -14,6 +15,7 @@ export const ComposePage: React.FC = () => {
 
   const user = useXStore(selectUser);
   const addPost = useXStore(s => s.addPost);
+  const submitOnce = useSubmitOnce();
   const pendingQuotedPostId = useXStore(s => s.pendingQuotedPostId);
   const setPendingQuotedPostId = useXStore(s => s.setPendingQuotedPostId);
   const [content, setContent] = useState('');
@@ -33,13 +35,13 @@ export const ComposePage: React.FC = () => {
     const trimmed = content.trim();
     if (!trimmed) return;
 
-    try {
-      addPost(trimmed, undefined, effectiveQuotedPostId ?? undefined);
+    // A failed post keeps the editor (and the draft) open.
+    submitOnce(async () => {
+      await addPost(trimmed, undefined, effectiveQuotedPostId ?? undefined);
       setPendingQuotedPostId(null);
-      setTimeout(() => back(), 0);
-    } catch (error) {
+    }, () => back()).catch((error) => {
       console.error('Error posting:', error);
-    }
+    });
   };
 
   return (

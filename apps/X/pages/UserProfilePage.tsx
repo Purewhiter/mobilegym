@@ -89,7 +89,8 @@ export const UserProfilePage: React.FC = () => {
       scrollEl.removeEventListener('scroll', updateVisibility);
       window.removeEventListener('resize', measureThreshold);
     };
-  }, [measureThreshold]);
+    // `user`: the page root renders only once the profile is known (users load asynchronously).
+  }, [measureThreshold, user]);
 
   const userReplies = React.useMemo(() => {
     if (activeTab !== 'replies' || !id || !user) return [];

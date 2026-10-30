@@ -8,6 +8,7 @@ import { dimens } from '../res/dimens';
 import { useXStore, selectUser } from '../state';
 import { useXConversations } from '../data/view';
 import { useXGestures } from '../hooks/useXGestures';
+import { useSubmitOnce } from '../../../os/hooks/useSubmitOnce';
 import { useXStrings } from '../hooks/useXStrings';
 
 export const ChatPage: React.FC = () => {
@@ -17,6 +18,7 @@ export const ChatPage: React.FC = () => {
   const user = useXStore(selectUser);
   const [inputValue, setInputValue] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const submitOnce = useSubmitOnce();
   const prevKeyboardHeightRef = useRef(0);
   const { bindBack, bindTap } = useXGestures();
   const { height: keyboardHeight } = useKeyboard();
@@ -59,8 +61,10 @@ export const ChatPage: React.FC = () => {
 
   const handleSend = () => {
     if (!inputValue.trim()) return;
-    sendMessage(conversation.id, inputValue);
-    setInputValue('');
+    // Clear the input once the message is stored; a failed send keeps it.
+    submitOnce(() => sendMessage(conversation.id, inputValue), () => setInputValue('')).catch((error) => {
+      console.error('Error sending message:', error);
+    });
   };
 
   const handleKeyDown = (event: React.KeyboardEvent) => {

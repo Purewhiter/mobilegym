@@ -8,6 +8,7 @@ import { createBilibiliModule } from '../apps/Bilibili/device';
 import { createRailway12306Module } from '../apps/Railway12306/device';
 import { createRedBookModule } from '../apps/RedBook/device';
 import { createRedditModule } from '../apps/Reddit/device';
+import { createXModule } from '../apps/X/device';
 import { DeviceServer } from './engine';
 import { createFsModule } from './fs';
 import { createDeviceHttpHandler } from './http';
@@ -35,5 +36,6 @@ export function createDeviceServer(options: DeviceServerOptions) {
   server.register(createBilibiliModule({ cdnBase: options.cdnBase }));
   server.register(createRailway12306Module());
   server.register(createRedditModule({ appAssetsBase }));
+  server.register(createXModule());
   return { server, handler: createDeviceHttpHandler(server) };
 }

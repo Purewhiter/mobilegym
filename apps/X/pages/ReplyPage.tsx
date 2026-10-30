@@ -5,6 +5,7 @@ import { useXStore, selectUser } from '../state';
 import { useXAllUsers, useXLocalPosts, useXRepliesForPost, useXResolvedPost } from '../data/view';
 import { useXGestures } from '../hooks/useXGestures';
 import { useXStrings } from '../hooks/useXStrings';
+import { useSubmitOnce } from '../../../os/hooks/useSubmitOnce';
 import { XImage, XVideo } from '../components/XMedia';
 
 export const ReplyPage: React.FC = () => {
@@ -15,6 +16,7 @@ export const ReplyPage: React.FC = () => {
   const allUsers = useXAllUsers();
   const original = useXResolvedPost(id || '');
   const addReply = useXStore(s => s.addReply);
+  const submitOnce = useSubmitOnce();
   const { bindBack, bindTap, back } = useXGestures();
   const s = useXStrings();
 
@@ -55,12 +57,13 @@ export const ReplyPage: React.FC = () => {
       params: { postId: original.id, content: trimmed },
       onTrigger: () => {
         if (!trimmed) return;
-        addReply(original.id, trimmed);
-        setContent('');
-        window.requestAnimationFrame(() => {
-          (document.activeElement as HTMLElement | null)?.blur?.();
+        void submitOnce(() => addReply(original.id, trimmed), () => {
+          setContent('');
+          window.requestAnimationFrame(() => {
+            (document.activeElement as HTMLElement | null)?.blur?.();
+          });
+          back(1);
         });
-        back(1);
       },
     },
   );
