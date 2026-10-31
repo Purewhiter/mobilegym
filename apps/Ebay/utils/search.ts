@@ -19,11 +19,15 @@ export interface EbaySearchParams {
   selectedConditions: string[];
   priceRange: { min: string; max: string };
   sortOption: EbaySortOption;
+  /** Return only the first `limit` products (`total` still counts all). */
+  limit?: number;
 }
 
 export interface EbaySearchResult {
-  /** Products passing every filter, in sort order. */
+  /** Products passing every filter, in sort order (the first `limit` when set). */
   products: ProductItem[];
+  /** How many products pass every filter. */
+  total: number;
   buyingFormatCounts: Record<EbayBuyingFormat, number>;
   conditionCounts: Record<string, number>;
   pricePresets: { low: number; high: number };
@@ -137,8 +141,10 @@ export function searchEbayProducts(catalog: ProductItem[], params: EbaySearchPar
     if (p.brand) brandCountMap.set(p.brand, (brandCountMap.get(p.brand) || 0) + 1);
   }
 
+  const products = filterProducts(sorted, params);
   return {
-    products: filterProducts(sorted, params),
+    products: params.limit === undefined ? products : products.slice(0, Math.max(0, params.limit)),
+    total: products.length,
     buyingFormatCounts,
     conditionCounts,
     pricePresets,

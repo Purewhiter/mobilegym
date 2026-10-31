@@ -74,6 +74,7 @@ function resolveCategoryImages(cats: CategoryDef[]): CategoryDef[] {
 
 const EMPTY_SEARCH: EbaySearchResult = {
   products: [],
+  total: 0,
   buyingFormatCounts: { all: 0, auction: 0, buyItNow: 0, offer: 0 },
   conditionCounts: { '全新': 0, '二手': 0, '翻新': 0 },
   pricePresets: { low: 0, high: 0 },

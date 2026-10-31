@@ -81,7 +81,9 @@ const SearchPage: React.FC = () => {
     searchQuery, buyingFormat, selectedCategoryId,
     selectedBrands: Array.from(selectedBrands).sort(),
     selectedLocation, freeShippingOnly, selectedConditions, priceRange, sortOption,
-  }), [buyingFormat, freeShippingOnly, priceRange, searchQuery, selectedBrands, selectedCategoryId, selectedConditions, selectedLocation, sortOption]);
+    // While typing only the count and first item are needed (they go into search.current).
+    ...(searchStep === 'results' ? {} : { limit: 1 }),
+  }), [buyingFormat, freeShippingOnly, priceRange, searchQuery, searchStep, selectedBrands, selectedCategoryId, selectedConditions, selectedLocation, sortOption]);
   const { result: searchResult, ready: resultsReady } = useEbaySearch(searchParams);
   const filteredProducts = searchResult.products;
   const buyingFormatCounts = searchResult.buyingFormatCounts;
@@ -115,11 +117,11 @@ const SearchPage: React.FC = () => {
     const first = filteredProducts.length ? filteredProducts[0] : null;
     const totalCents = first ? Math.round((first.price + first.shipping) * 100) : null;
     return {
-      resultsCount: filteredProducts.length,
+      resultsCount: searchResult.total,
       firstTitle: first?.title ?? null,
       firstTotalCents: totalCents,
     };
-  }, [filteredProducts]);
+  }, [filteredProducts, searchResult.total]);
 
   const resultsDisplayCount = derived.resultsCount.toLocaleString(numberLocale);
 
@@ -139,7 +141,22 @@ const SearchPage: React.FC = () => {
     });
   }, [buyingFormat, derived.firstTitle, derived.firstTotalCents, derived.resultsCount, freeShippingOnly, priceRange.max, priceRange.min, resultsReady, searchQuery, selectedBrands, selectedCategoryId, selectedConditions, selectedLocation, setSearchCurrent, sortOption]);
 
-  // Snapshots record result counts: only once the results for the current params are in.
+  // Snapshots record result counts: only once the results for the current params are in
+  // (search.current has been written for them by the effect above). A snapshot asked for
+  // before that waits for them.
+  const resultsReadyRef = useRef(resultsReady);
+  useEffect(() => { resultsReadyRef.current = resultsReady; });
+  const snapshotPending = useRef(false);
+  const requestSnapshot = React.useCallback(() => {
+    if (resultsReadyRef.current) recordSearchSnapshot();
+    else snapshotPending.current = true;
+  }, [recordSearchSnapshot]);
+  useEffect(() => {
+    if (resultsReady && snapshotPending.current) {
+      snapshotPending.current = false;
+      recordSearchSnapshot();
+    }
+  }, [recordSearchSnapshot, resultsReady]);
 
   const lastRecordedQueryRef = useRef<string>('');
   useEffect(() => {
@@ -168,21 +185,20 @@ const SearchPage: React.FC = () => {
 
   // Debounced: record snapshot whenever query/filters settle on results so ``search.history``
   // contains both searches for compare tasks (current alone only reflects the last view).
+  // The 500 ms run from the change itself; if the results are not in by then, the
+  // snapshot is taken as soon as they are.
   useEffect(() => {
-    if (!resultsReady || searchStep !== 'results' || !searchQuery.trim()) return;
-    const t = window.setTimeout(() => {
-      recordSearchSnapshot();
-    }, 500);
+    if (searchStep !== 'results' || !searchQuery.trim()) return;
+    const t = window.setTimeout(requestSnapshot, 500);
     return () => window.clearTimeout(t);
   }, [
     buyingFormat,
     brandsKey,
-    resultsReady,
     conditionsKey,
     freeShippingOnly,
     priceRange.max,
     priceRange.min,
-    recordSearchSnapshot,
+    requestSnapshot,
     searchQuery,
     searchStep,
     selectedCategoryId,
@@ -230,7 +246,7 @@ const SearchPage: React.FC = () => {
 
   const handleFilterApply = () => {
     setIsFilterDrawerOpen(false);
-    recordSearchSnapshot();
+    requestSnapshot();
   };
 
   // ── Input step ──
@@ -419,7 +435,7 @@ const SearchPage: React.FC = () => {
         viewMode={viewMode}
         setViewMode={setViewMode}
         resultsDisplayCount={resultsDisplayCount}
-        filteredProductsCount={filteredProducts.length}
+        filteredProductsCount={searchResult.total}
       />
     </div>
   );
