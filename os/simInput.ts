@@ -324,7 +324,8 @@ function focusIfFocusable(el: Element, x: number, y: number) {
 }
 
 // Touch 事件分发（用于 swipe，让监听 Touch 事件的组件也能响应）
-function dispatchTouch(el: Element, type: 'touchstart' | 'touchmove' | 'touchend', x: number, y: number) {
+// 返回 false 表示页面调用了 preventDefault（与浏览器一致：此时不发生原生滚动）。
+function dispatchTouch(el: Element, type: 'touchstart' | 'touchmove' | 'touchend', x: number, y: number): boolean {
   assertFinite(x, `clientX for ${type}`);
   assertFinite(y, `clientY for ${type}`);
   const touch = new Touch({
@@ -345,7 +346,7 @@ function dispatchTouch(el: Element, type: 'touchstart' | 'touchmove' | 'touchend
     targetTouches: type === 'touchend' ? [] : [touch],
     changedTouches: [touch],
   });
-  el.dispatchEvent(e);
+  return el.dispatchEvent(e);
 }
 
 function sleep(ms: number) {
@@ -691,6 +692,10 @@ export function initSimInput(): void {
           dispatchPointer(el, 'pointerdown', s.x, s.y, { buttons: 1 });
 
           // 分步发送 touchmove 并同步滚动
+          // 页面一旦对 touchmove 调用 preventDefault，就由它自己处理这次手势
+          // （浏览器此时不滚动）：后续不再 scrollBy，也不做惯性，否则会和页面
+          // 自己的滚动/吸附动画互相打断，最终停在哪页取决于时机。
+          let pageHandlesGesture = false;
           const dt = ms / steps;
           for (let i = 1; i <= steps; i++) {
             const progress = i / steps;
@@ -698,11 +703,11 @@ export function initSimInput(): void {
             const yi = s.y + dy * progress;
 
             // 发送 touch/pointer move 事件
-            dispatchTouch(el, 'touchmove', xi, yi);
+            if (!dispatchTouch(el, 'touchmove', xi, yi)) pageHandlesGesture = true;
             dispatchPointer(el, 'pointermove', xi, yi, { buttons: 1 });
             
             // 同步滚动（如果有滚动容器）
-            if (scrollTarget) {
+            if (scrollTarget && !pageHandlesGesture) {
               // 计算这一步应该滚动多少（滑动距离的反方向）
               const stepScrollX = -dx / steps;
               const stepScrollY = -dy / steps;
@@ -717,7 +722,7 @@ export function initSimInput(): void {
           dispatchPointer(el, 'pointerup', e.x, e.y, { buttons: 0 });
 
           // 惯性滚动（模拟松手后的滑动）
-          if (inertia && scrollTarget && inertiaMs > 0) {
+          if (inertia && scrollTarget && !pageHandlesGesture && inertiaMs > 0) {
             const inertiaSteps = Math.max(6, Math.round(steps * 0.8));
             const tailDt = inertiaMs / inertiaSteps;
 
