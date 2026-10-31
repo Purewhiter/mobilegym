@@ -1,13 +1,13 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useSyncExternalStore } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useSyncExternalStore } from 'react';
 import type { AppId, OSState } from './types';
-import type { ActivityResult, AppIntentFilter, IntentPayload } from './types/manifest';
+import type { AppIntentFilter, IntentPayload } from './types/manifest';
 import { getStateSetter, getStore, readPersistedAppState, writePersistedAppState } from './createAppStore';
 import { idleState, waitForIdle } from './idle';
 import { flushAll } from './debouncedPersist';
-import { getTimeConfig, now, realNow, formatTime, formatDate, getDayOfWeek } from './TimeService';
+import { getTimeConfig, now, formatTime, formatDate, getDayOfWeek } from './TimeService';
 import * as RandomService from './RandomService';
 import { getLocationConfig, getSimulatedCoords } from './LocationService';
-import { isValidAppId, dataLoaderByAppId } from './data/appRegistry';
+import { dataLoaderByAppId } from './data/appRegistry';
 import { initFileSystem } from './FileSystemService';
 import { KeyboardService } from './keyboard/KeyboardService';
 import { ClipboardService } from './ClipboardService';
@@ -33,7 +33,6 @@ import {
 import PackageManagerService from './PackageManagerService';
 import ContentResolver from './ContentResolver';
 import { AppNavigatorRegistry } from './AppNavigatorRegistry';
-import { BackDispatcher } from './BackDispatcher';
 import { TaskManager } from './TaskManager';
 import { IntentResolver } from './IntentResolver';
 import { PendingIntent } from './PendingIntent';
@@ -47,6 +46,24 @@ import {
 import { runAppDataLoaderModule } from './appDataLoaderReady';
 import { useAppLifecycleSync } from './hooks/useAppLifecycleSync';
 import { useOsBackHandlers } from './hooks/useOsBackHandlers';
+import {
+  cancelIntentChooser,
+  chooseIntentActivity,
+  closeApp,
+  closeTask,
+  finishActivity,
+  goHome,
+  handleSystemBack,
+  launchApp,
+  launchTaskById,
+  openApp,
+  setBrightness,
+  setResult,
+  setVolume,
+  showRecents,
+  startActivity,
+  startActivityForResult,
+} from './osActions';
 
 /** 预加载所有 App 的 state.ts（eager: 打进主 bundle，页面加载即执行 createAppStore 副作用） */
 const _eagerAppStateModules = import.meta.glob<unknown>(
@@ -79,18 +96,6 @@ interface OSContextProps {
 
 const OSContext = createContext<OSContextProps | undefined>(undefined);
 
-function buildOsDebugStack(tag: string): string {
-  try {
-    throw new Error(tag);
-  } catch (error) {
-    if (!(error instanceof Error) || !error.stack) return 'n/a';
-    return error.stack
-      .split('\n')
-      .slice(1, 5)
-      .map((line) => line.trim())
-      .join(' <- ');
-  }
-}
 
 export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const state = useSyncExternalStore(
@@ -121,298 +126,7 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
 
   useAppLifecycleSync(state);
 
-  const navigateToActivity = useCallback(async (
-    activityId: string,
-    route: string,
-    opts?: { fallbackAppId?: AppId; replace?: boolean },
-  ) => {
-    const latestState = TaskManager.getState();
-    let appId: AppId | undefined = opts?.fallbackAppId;
-    let isInForeignTask = false;
-    for (const task of latestState.tasks) {
-      const found = task.stack.find((activity) => activity.activityId === activityId);
-      if (found) {
-        appId = found.appId;
-        isInForeignTask = task.rootAppId !== found.appId;
-        break;
-      }
-    }
-    if (!appId) {
-      console.warn(`[OS] navigateToActivity: activity not found (${activityId})`);
-      return;
-    }
-
-    const startTime = realNow();
-    const nav = await AppNavigatorRegistry.waitForNavigator({
-      activityId,
-      appId: isInForeignTask ? undefined : appId,
-      timeoutMs: 5000,
-    });
-    if (!nav) {
-      console.warn(`[OS] Navigate to ${route} timed out after 5000ms (activity=${activityId})`);
-      return;
-    }
-    console.log(
-      `[OSDBG] navigateToActivity activityId=${activityId} appId=${appId} route=${route} `
-      + `replace=${opts?.replace != null ? String(opts.replace) : '-'} foreignTask=${String(isInForeignTask)}`,
-    );
-    nav(route, opts?.replace != null ? { replace: opts.replace } : undefined);
-    console.log(`[OS] Navigate activity ${activityId} -> ${route} in ${realNow() - startTime}ms`);
-  }, []);
-
-  const finishTopActivity = useCallback((taskId: string, result?: ActivityResult) => {
-    const latestState = TaskManager.getState();
-    const task = latestState.tasks.find((t) => t.taskId === taskId);
-    if (!task || task.stack.length === 0) return;
-
-    const top = task.stack[task.stack.length - 1];
-    let callbackToRun: ((payload: ActivityResult) => void) | null = null;
-    let callbackPayload: ActivityResult = { resultCode: 'CANCELED' };
-
-    if (top.requestCode != null) {
-      const pending = TaskManager.takePendingCallback(top.requestCode);
-      if (pending) {
-        callbackToRun = pending.callback;
-        callbackPayload = result ?? { resultCode: 'CANCELED' };
-      }
-    }
-
-    const isInForeignTask = task.rootAppId !== top.appId;
-
-    if (!isInForeignTask) {
-      const targetNav = AppNavigatorRegistry.get(top.appId)?.navigate;
-      if (typeof targetNav === 'function') {
-        try { targetNav('/'); } catch { /* ignore */ }
-      }
-    }
-
-    const activityNav = AppNavigatorRegistry.getActivity(top.activityId)?.navigate;
-    if (typeof activityNav === 'function') {
-      try { activityNav('/'); } catch { /* ignore */ }
-    }
-
-    TaskManager.popActivity(taskId);
-
-    if (callbackToRun) {
-      requestAnimationFrame(() => callbackToRun?.(callbackPayload));
-    }
-  }, []);
-
-  const closeTask = useCallback((taskId: string) => {
-    KeyboardService.hide();
-    const latestState = TaskManager.getState();
-    const task = latestState.tasks.find((t) => t.taskId === taskId);
-    if (!task) return;
-    TaskManager.cancelPendingForTask(task);
-    for (const activity of task.stack) {
-      const nav = AppNavigatorRegistry.getActivity(activity.activityId)?.navigate;
-      if (typeof nav === 'function') {
-        try { nav('/'); } catch { /* ignore */ }
-      }
-    }
-    TaskManager.closeTask(taskId);
-  }, []);
-
-  const finishActivity = useCallback((result?: ActivityResult) => {
-    KeyboardService.hide();
-    const latestState = TaskManager.getState();
-    const activeTask = getActiveTask(latestState);
-    if (!activeTask || activeTask.stack.length === 0) return;
-
-    const top = getTaskTopActivity(activeTask);
-    if (!top) return;
-
-    let callbackToRun: ((payload: ActivityResult) => void) | null = null;
-    let callbackPayload: ActivityResult = { resultCode: 'CANCELED' };
-
-    if (top.requestCode != null) {
-      const pending = TaskManager.takePendingCallback(top.requestCode);
-      if (pending) {
-        callbackToRun = pending.callback;
-        callbackPayload = result ?? { resultCode: 'CANCELED' };
-      }
-    }
-
-    const isInForeignTask = activeTask.rootAppId !== top.appId;
-
-    if (!isInForeignTask) {
-      const targetNav = AppNavigatorRegistry.get(top.appId)?.navigate;
-      if (typeof targetNav === 'function') {
-        try { targetNav('/'); } catch { /* ignore */ }
-      }
-    }
-
-    const activityNav = AppNavigatorRegistry.getActivity(top.activityId)?.navigate;
-    if (typeof activityNav === 'function') {
-      try { activityNav('/'); } catch { /* ignore */ }
-    }
-
-    if (activeTask.stack.length > 1) {
-      // Foreign-task pop（如同 task 上叠加的 Activity finish）：弹掉这个 Activity，回到下层。
-      TaskManager.popActivity(activeTask.taskId);
-      if (top.launchedByTaskId && latestState.tasks.some((t) => t.taskId === top.launchedByTaskId)) {
-        TaskManager.activateTask(top.launchedByTaskId);
-      }
-    } else if (activeTask.launchedByTaskId && latestState.tasks.some((t) => t.taskId === activeTask.launchedByTaskId)) {
-      // 单 Activity in own task + 有 caller：activate caller，但**不销毁** target task。
-      // Android 默认 task 在 recents 里持久保留（除非用户主动划掉或系统 OOM），
-      // 模拟器之前 closeTask 是非真机行为；上面 line 287-290 已经把 App 的 MemoryRouter
-      // 重置到 '/'，用户从 recents 重新进入会看到 App 主页。
-      // 同时消费 launchedByTaskId 指针：它是"启动时记录的来源"，用过一次即作废。
-      // 否则用户从 recents 重新进入此 task 后再 back，会沿原启动链回到旧 caller，
-      // 而不是真机预期的"直接回桌面"。
-      TaskManager.activateTask(activeTask.launchedByTaskId);
-      TaskManager.consumeLaunchedBy(activeTask.taskId);
-    } else {
-      // 单 Activity in own task + 无 caller（如从桌面起的 App 调 finishActivity）：
-      // 同样不销毁，回桌面让用户继续在 recents 看到此 task。
-      // inline 调用 TaskManager.goHome (避免依赖下方还未定义的 goHome useCallback)。
-      TaskManager.goHome();
-    }
-
-    if (callbackToRun) {
-      requestAnimationFrame(() => callbackToRun?.(callbackPayload));
-    }
-  }, []);
-
-  const launchApp = useCallback((appId: AppId) => {
-    KeyboardService.hide();
-    TaskManager.launchApp(appId);
-  }, []);
-
-  const launchTaskById = useCallback((taskId: string) => {
-    KeyboardService.hide();
-    TaskManager.activateTask(taskId);
-  }, []);
-
-  const goHome = useCallback(() => {
-    KeyboardService.hide();
-    TaskManager.goHome();
-  }, []);
-
-  const showRecents = useCallback(() => {
-    KeyboardService.hide();
-    TaskManager.showRecents();
-  }, []);
-
-  const closeApp = useCallback((appId: AppId) => {
-    const latestState = TaskManager.getState();
-    const task = latestState.tasks.find((t) => t.rootAppId === appId);
-    if (!task) return;
-    routeSetPreference('os_recents_closed_app', appId, { source: 'os' });
-    closeTask(task.taskId);
-  }, [closeTask]);
-
-  const setBrightness = useCallback((value: number) => {
-    routeSetPreference('brightness', value, { source: 'os' });
-  }, []);
-
-  const setVolume = useCallback((value: number) => {
-    routeSetPreference('media_volume', value, { source: 'os' });
-  }, []);
-
-  const chooseIntentActivity = useCallback((appId: AppId) => {
-    IntentResolver.chooseIntentActivity(appId);
-  }, []);
-
-  const cancelIntentChooser = useCallback(() => {
-    IntentResolver.cancelIntentChooser();
-  }, []);
-
   useOsBackHandlers(finishActivity, goHome);
-
-  const handleSystemBack = useCallback(() => {
-    BackDispatcher.handleBack();
-  }, []);
-
-  const startActivityForResult = useCallback((
-    appIdOrIntent: AppId | string | IntentPayload,
-    intentOrCallback?: IntentPayload | ((result: ActivityResult) => void),
-    callbackOrUndefined?: (result: ActivityResult) => void,
-  ): boolean => {
-    return IntentResolver.startActivityForResult(appIdOrIntent, intentOrCallback, callbackOrUndefined, {
-      getState: TaskManager.getState,
-      nextActivityId: TaskManager.nextActivityId,
-      allocRequestCode: TaskManager.allocRequestCode,
-      pushActivity: TaskManager.pushActivity,
-      navigateToActivity,
-    });
-  }, [navigateToActivity]);
-
-  const startActivity = useCallback((
-    appIdOrIntent: AppId | string | IntentPayload,
-    intentOrOptions?: IntentPayload | { newTask?: boolean },
-    options?: { newTask?: boolean },
-  ): boolean => {
-    return IntentResolver.startActivity(appIdOrIntent, intentOrOptions, options, {
-      getState: TaskManager.getState,
-      nextActivityId: TaskManager.nextActivityId,
-      pushActivity: TaskManager.pushActivity,
-      popActivity: TaskManager.popActivity,
-      navigateToActivity,
-      launchApp,
-      markExternalRoute: TaskManager.markExternalRoute,
-      setActivityIntent: TaskManager.setActivityIntent,
-    });
-  }, [navigateToActivity, launchApp]);
-
-  const setResult = useCallback((result: ActivityResult) => {
-    const activeTask = getActiveTask(TaskManager.getState());
-    if (!activeTask) {
-      console.warn('[OS] setResult: No active task');
-      return;
-    }
-
-    const top = getTaskTopActivity(activeTask);
-    if (!top) {
-      console.warn('[OS] setResult: No active activity');
-      return;
-    }
-
-    if (top.requestCode == null) {
-      console.warn('[OS] setResult: Top activity is not started for result');
-      return;
-    }
-
-    finishTopActivity(activeTask.taskId, result);
-  }, [finishTopActivity]);
-
-  const openApp = useCallback((appId: AppId | string, initialRoute?: string) => {
-    if (!isValidAppId(appId)) {
-      console.error(`[OS] Invalid appId: ${appId}`);
-      return;
-    }
-
-    const latestState = TaskManager.getState();
-    const taskExisted = latestState.tasks.some((t) => t.rootAppId === appId);
-    const activeAppId = getActiveAppId(latestState);
-    const activeRoute = activeAppId ? AppNavigatorRegistry.getAppRoute(activeAppId)?.path ?? '-' : '-';
-    console.log(
-      `[OSDBG] openApp appId=${appId} initialRoute=${initialRoute ?? '-'} taskExisted=${String(taskExisted)} `
-      + `activeApp=${activeAppId ?? '-'} activeRoute=${activeRoute} stack=${buildOsDebugStack('openApp')}`,
-    );
-    launchApp(appId);
-    if (!initialRoute) return;
-
-    if (!taskExisted) {
-      TaskManager.markExternalRoute(appId);
-    }
-
-    requestAnimationFrame(() => {
-      const latestState = TaskManager.getState();
-      const task = latestState.tasks.find((t) => t.rootAppId === appId);
-      const activity = task
-        ? [...task.stack].reverse().find((act) => act.appId === appId) ?? task.stack[task.stack.length - 1]
-        : null;
-      if (activity) {
-        // 永远 push（不 replace）—— 对应真机 PendingIntent + TaskStackBuilder.addNextIntentWithParentStack 的"合成 back stack"语义：
-        // - 未运行：root 启动于 '/'，push initialRoute → 历史 ['/', initialRoute]，返回回主页
-        // - 已运行：保留用户当前页，push initialRoute → 用户能按返回回到原所在页
-        // 旧逻辑 `replace: !taskExisted` 在 fresh task 场景会 clobber 掉根 '/'，导致按返回直接出 App，与真机不符。
-        void navigateToActivity(activity.activityId, initialRoute, { replace: false });
-      }
-    });
-  }, [launchApp, navigateToActivity]);
 
   const osStateForApi = useMemo(() => ({
     ...state,
@@ -497,22 +211,7 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
       pendingIntent: PendingIntent,
       sms: SmsGateway,
     } as any;
-  }, [
-    osStateForApi,
-    launchApp,
-    launchTaskById,
-    goHome,
-    showRecents,
-    closeTask,
-    closeApp,
-    setBrightness,
-    setVolume,
-    handleSystemBack,
-    openApp,
-    startActivity,
-    startActivityForResult,
-    setResult,
-  ]);
+  }, [osStateForApi]);
 
   useEffect(() => {
     window.__SIM__ = {
@@ -743,7 +442,7 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
         });
       },
     };
-  }, [state, launchApp, launchTaskById, goHome, showRecents, closeTask, closeApp, finishActivity, setBrightness, setVolume, handleSystemBack, openApp, startActivity, startActivityForResult, setResult]);
+  }, [state]);
 
   const contextValue = useMemo<OSContextProps>(() => ({
     state,
@@ -758,20 +457,7 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     intentChooser,
     chooseIntentActivity,
     cancelIntentChooser,
-  }), [
-    state,
-    launchApp,
-    launchTaskById,
-    goHome,
-    showRecents,
-    closeTask,
-    closeApp,
-    setBrightness,
-    setVolume,
-    intentChooser,
-    chooseIntentActivity,
-    cancelIntentChooser,
-  ]);
+  }), [state, intentChooser]);
 
   return (
     <OSContext.Provider value={contextValue}>
