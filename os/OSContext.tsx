@@ -1,16 +1,14 @@
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useSyncExternalStore } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useSyncExternalStore } from 'react';
 import type { AppId, OSState } from './types';
 import type { ActivityResult, AppIntentFilter, IntentPayload } from './types/manifest';
 import { getStateSetter, getStore, readPersistedAppState, writePersistedAppState } from './createAppStore';
-import { DeviceClient } from './device/DeviceClient';
 import { idleState, waitForIdle } from './idle';
-import { flushAll, flushKey } from './debouncedPersist';
+import { flushAll } from './debouncedPersist';
 import { getTimeConfig, now, realNow, formatTime, formatDate, getDayOfWeek } from './TimeService';
 import * as RandomService from './RandomService';
 import { getLocationConfig, getSimulatedCoords } from './LocationService';
 import { isValidAppId, dataLoaderByAppId } from './data/appRegistry';
-import { clearFileSystemDB, initFileSystem } from './FileSystemService';
-import * as MediaService from './MediaService';
+import { initFileSystem } from './FileSystemService';
 import { KeyboardService } from './keyboard/KeyboardService';
 import { ClipboardService } from './ClipboardService';
 import { NotificationService } from './NotificationService';
@@ -21,7 +19,8 @@ import StatusBarService from './StatusBarService';
 import localeApi from './locale';
 import BroadcastBus, { ACTION_BOOT_COMPLETED, BROADCAST_ACTIONS } from './BroadcastBus';
 import { osT } from './i18n';
-import { LAUNCHER_STORAGE_KEY } from './launcher/types';
+import { readLauncherSummary } from './sim/launcherSnapshot';
+import { resetStateCore } from './sim/simResetCore';
 import { SmsGateway } from './SmsGateway';
 import * as SkinService from './SkinService';
 import {
@@ -34,16 +33,11 @@ import {
 import PackageManagerService from './PackageManagerService';
 import ContentResolver from './ContentResolver';
 import { AppNavigatorRegistry } from './AppNavigatorRegistry';
-import { AppLifecycle } from './AppLifecycle';
 import { BackDispatcher } from './BackDispatcher';
 import { TaskManager } from './TaskManager';
 import { IntentResolver } from './IntentResolver';
 import { PendingIntent } from './PendingIntent';
-import { resetAllOsStores } from './createOsStore';
-import { resetAllAppStores } from './createAppStore';
-import { cancelAllPending as cancelAllPendingPersistWrites, beginPersistReset, endPersistReset } from './debouncedPersist';
-import TextSelectionService from './TextSelectionService';
-import { OsStateStore } from './OsStateStore';
+import { endPersistReset } from './debouncedPersist';
 import { ConnectivityManager } from './managers/ConnectivityManager';
 import { routeGetPreference, routeSetPreference } from './managers/registry';
 import {
@@ -51,6 +45,8 @@ import {
   buildSimState,
 } from './simState';
 import { runAppDataLoaderModule } from './appDataLoaderReady';
+import { useAppLifecycleSync } from './hooks/useAppLifecycleSync';
+import { useOsBackHandlers } from './hooks/useOsBackHandlers';
 
 /** 预加载所有 App 的 state.ts（eager: 打进主 bundle，页面加载即执行 createAppStore 副作用） */
 const _eagerAppStateModules = import.meta.glob<unknown>(
@@ -61,10 +57,6 @@ void _eagerAppStateModules; // 确保 tree-shaking 不会移除
 // data loader map 来自 appRegistry，避免在 OSContext 和 appRegistry 两处独立 glob。
 // appRegistry 的 lazy() 也用同一个 map，确保 cold-start 路径和 bench `waitForData`
 // 路径覆盖完全一致的 app 集合。
-
-// --- getState() cache for launcher (rarely changes, expensive to parse) ---
-let _launcherCacheRaw: string | null | undefined = undefined;
-let _launcherCacheParsed: any = null;
 
 interface OSContextProps {
   state: OSState;
@@ -109,8 +101,6 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     (onStoreChange) => IntentResolver.subscribe(() => onStoreChange()),
     IntentResolver.getState,
   );
-  const prevActiveAppIdRef = useRef<AppId | null>(getActiveAppId(state));
-  const prevRunningAppsRef = useRef<AppId[]>(deriveRunningApps(state.tasks));
 
   useEffect(() => {
     initFileSystem().catch(console.error);
@@ -129,29 +119,7 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     };
   }, []);
 
-  useEffect(() => {
-    const previousActiveAppId = prevActiveAppIdRef.current;
-    const currentActiveAppId = getActiveAppId(state);
-    if (previousActiveAppId !== currentActiveAppId) {
-      if (previousActiveAppId) AppLifecycle.emit(previousActiveAppId, 'background');
-      if (currentActiveAppId) AppLifecycle.emit(currentActiveAppId, 'foreground');
-      prevActiveAppIdRef.current = currentActiveAppId;
-    }
-  }, [state.activeTaskId, state.tasks]);
-
-  useEffect(() => {
-    const previousRunningApps = new Set(prevRunningAppsRef.current);
-    const currentRunningApps = deriveRunningApps(state.tasks);
-    const currentRunningSet = new Set(currentRunningApps);
-
-    previousRunningApps.forEach((appId) => {
-      if (!currentRunningSet.has(appId)) {
-        AppLifecycle.emit(appId, 'destroy');
-      }
-    });
-
-    prevRunningAppsRef.current = currentRunningApps;
-  }, [state.tasks]);
+  useAppLifecycleSync(state);
 
   const navigateToActivity = useCallback(async (
     activityId: string,
@@ -351,77 +319,7 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     IntentResolver.cancelIntentChooser();
   }, []);
 
-  useEffect(() => {
-    const unregisters = [
-      BackDispatcher.register('os.intentChooser', () => {
-        if (!IntentResolver.getState().open) return false;
-        IntentResolver.cancelIntentChooser();
-        return true;
-      }, 900),
-      BackDispatcher.register('os.mediaPicker', () => {
-        if (!MediaService.isPickerActive()) return false;
-        MediaService.cancelSelection();
-        return true;
-      }, 600),
-      BackDispatcher.register('os.appBack', () => {
-        const activeAppId = getActiveAppId(TaskManager.getState());
-        if (!activeAppId) return false;
-        const handler = AppNavigatorRegistry.getBackHandler(activeAppId);
-        return !!handler?.();
-      }, 100),
-      BackDispatcher.register('os.activityBack', () => {
-        const activeTask = getActiveTask(TaskManager.getState());
-        const topActivity = getTaskTopActivity(activeTask);
-        if (!topActivity) return false;
-        const handler = AppNavigatorRegistry.getActivityBackHandler(topActivity.activityId);
-        return !!handler?.();
-      }, 50),
-      BackDispatcher.register('os.finishTopActivity', () => {
-        const activeTask = getActiveTask(TaskManager.getState());
-        if (!activeTask || activeTask.stack.length <= 1) return false;
-        finishActivity();
-        return true;
-      }, 25),
-      BackDispatcher.register('os.returnToLauncherTask', () => {
-        const latestState = TaskManager.getState();
-        const activeTask = getActiveTask(latestState);
-        if (!activeTask || activeTask.stack.length > 1) return false;
-        const { launchedByTaskId } = activeTask;
-        if (!launchedByTaskId) return false;
-        if (!latestState.tasks.some((t) => t.taskId === launchedByTaskId)) return false;
-        // 重置 App MemoryRouter 到 '/'，让用户从 recents 重新进入时看到 App 主页（如 SMS inbox）
-        // 而不是上次离开时的子页（如 /new compose）。
-        const top = getTaskTopActivity(activeTask);
-        if (top) {
-          const activityNav = AppNavigatorRegistry.getActivity(top.activityId)?.navigate;
-          try { activityNav?.('/'); } catch { /* ignore */ }
-        }
-        // 不 closeTask —— Android 默认 task 持久保留在 recents，模拟器跟齐这一行为。
-        // 同时消费 launchedByTaskId 指针（一次性）：用户从 recents 重新进入此 task 再 back 时，
-        // 会走 goHomeFallback 回桌面，而非沿原启动链跳回旧 caller。
-        TaskManager.activateTask(launchedByTaskId);
-        TaskManager.consumeLaunchedBy(activeTask.taskId);
-        return true;
-      }, 12),
-      BackDispatcher.register('os.goHomeFallback', () => {
-        const latestState = TaskManager.getState();
-        const activeTask = getActiveTask(latestState);
-        // 同 returnToLauncherTask：不 closeTask，只重置 App 到 '/' 并回桌面。
-        if (activeTask) {
-          const top = getTaskTopActivity(activeTask);
-          if (top) {
-            const activityNav = AppNavigatorRegistry.getActivity(top.activityId)?.navigate;
-            try { activityNav?.('/'); } catch { /* ignore */ }
-          }
-        }
-        goHome();
-        return true;
-      }, 0),
-    ];
-    return () => {
-      unregisters.forEach((unregister) => unregister());
-    };
-  }, [finishActivity, goHome]);
+  useOsBackHandlers(finishActivity, goHome);
 
   const handleSystemBack = useCallback(() => {
     BackDispatcher.handleBack();
@@ -617,68 +515,12 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   ]);
 
   useEffect(() => {
-    const _resetStateCore = async () => {
-      // 顺序很关键 — 解释见 createAppStore.ts:resetAllAppStores 注释。
-      //   0) beginPersistReset: 翻开 reset gate。即便有 effect 在后续异步窗口触发
-      //      setState 排进 pending, 之后 page.goto 触发的 beforeunload → flushAll
-      //      看到 gate 已开 → 直接 clear timer 不写 localStorage。模块级 flag, page
-      //      reload 后新文档重新加载本模块自动回到 false。
-      //   1) 内存 reset: app + OS stores 全部回到 initialState。setState 会触发
-      //      persist 写入排到 debounce 队列。
-      //   2) cancelAllPending: 把 step 1 的 pending 写入丢掉, 否则 page.goto 时
-      //      的 beforeunload → flushAll 会把这些"reset 后的 initial"写入 localStorage,
-      //      同时 X store 在 reset 前残留的 task 末态 setState (如 toggleBookmark)
-      //      若仍在 debounce 队列里也会被一起 flush。
-      //   3) localStorage.clear: 清掉旧持久化, 让新 page hydrate 时拿到 initialState。
-      //   4) clearFileSystemDB 是 await IndexedDB transaction, 期间旧 page 仍存活,
-      //      React effect cleanup / 用户操作可能再次 setState 排入 pending。
-      //      所以在它后面再清一次 pending + localStorage 兜底, 把 await 期间的脏写
-      //      也丢掉。
-      //   5) 第二次 sweep 之后到 Python page.goto 之间仍有 effect 窗口, 但 gate 已开,
-      //      beforeunload flushAll 会跳过。
-      beginPersistReset();
-      // Device-backed app data lives in the device session: drop it so the next
-      // page load starts a fresh phone.
-      await DeviceClient.resetSession();
-      resetAllAppStores();
-      resetAllOsStores();
-      OsStateStore.reset();
-      TaskManager.reset();
-
-      cancelAllPendingPersistWrites();
-      localStorage.clear();
-
-      // TextSelectionService is opted out of the registry (DOM refs in state),
-      // so reset it manually to avoid stale targetElement / menu state.
-      TextSelectionService.hideSelectionMenu();
-      try {
-        await clearFileSystemDB();
-      } catch (error) {
-        console.error('[SIM] clearFileSystemDB failed (non-fatal, reload will reinit):', error);
-      }
-
-      // Second sweep: 关闭 clearFileSystemDB await 窗口期内任何新的 persist 排队。
-      cancelAllPendingPersistWrites();
-      localStorage.clear();
-
-      // resetAllOsStores() wiped the volatile derived services (AlarmManager /
-      // MediaSession) AFTER resetAllAppStores() re-published into them, leaving
-      // them empty. Re-emit BOOT_COMPLETED (as a soft reboot would) so the app
-      // publishers re-publish from their now-default stores. Mirrors how
-      // Android apps re-register alarms / sessions on BOOT_COMPLETED. The
-      // reload() variant gets a fresh BOOT_COMPLETED from the mount effect, so
-      // this only matters for the no-reload resetState() path.
-      BroadcastBus.sendBroadcast({
-        action: ACTION_BOOT_COMPLETED,
-        extras: { now: now() },
-      });
-    };
     window.__SIM__ = {
       /** Clear all state WITHOUT reloading. Use with Playwright page.reload(). */
-      resetState: _resetStateCore,
+      resetState: resetStateCore,
       /** Clear all state AND reload (legacy). */
       reset: async () => {
-        await _resetStateCore();
+        await resetStateCore();
         window.location.reload();
       },
       warmUpAllApps: () => {
@@ -774,75 +616,7 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
           source: clipboardState.current.source,
         } : null;
 
-        flushKey(LAUNCHER_STORAGE_KEY);
-        const rawLauncher = localStorage.getItem(LAUNCHER_STORAGE_KEY);
-        let launcher: any = null;
-        if (rawLauncher) {
-          if (rawLauncher === _launcherCacheRaw) {
-            launcher = _launcherCacheParsed;
-          } else {
-            try {
-              const parsed = JSON.parse(rawLauncher);
-              const items = parsed?.items ?? {};
-              const hotseat = Array.isArray(parsed?.hotseat) ? parsed.hotseat : [];
-              const folders = parsed?.folders ?? {};
-              const screens = Array.isArray(parsed?.screens) ? parsed.screens : [];
-              const summarizeItem = (item: any, slot: any) => {
-                if (item?.kind === 'app') return { slot, kind: 'app', appId: item.appId };
-                if (item?.kind === 'folder') return { slot, kind: 'folder', folderId: item.folderId };
-                if (item?.kind === 'widget') {
-                  const summary: any = { slot, kind: 'widget', widgetType: item.widgetType };
-                  if (item.widgetType === 'wmr') {
-                    summary.widgetId = item.widgetId;
-                    summary.variant = item.variant;
-                    summary.previewUrl = item.previewUrl;
-                    if (item.xmlBaseUrl) summary.xmlBaseUrl = item.xmlBaseUrl;
-                  }
-                  return summary;
-                }
-                return { slot, kind: 'unknown' };
-              };
-              launcher = {
-                version: parsed?.version,
-                grid: parsed?.grid,
-                wallpaper: parsed?.wallpaper,
-                screensCount: screens.length,
-                screens: screens.map((s: any) => ({
-                  id: s?.id,
-                  items: (Array.isArray(s?.placements) ? s.placements : [])
-                    .slice()
-                    .sort((a: any, b: any) => ((a?.cellY ?? 0) - (b?.cellY ?? 0)) || ((a?.cellX ?? 0) - (b?.cellX ?? 0)))
-                    .map((p: any) => {
-                      const item = items?.[p?.itemId];
-                      const slot = { cellX: p?.cellX, cellY: p?.cellY };
-                      return summarizeItem(item, slot);
-                    }),
-                })),
-                hiddenApps: Array.isArray(parsed?.hiddenApps) ? parsed.hiddenApps : [],
-                hotseat: hotseat
-                  .slice()
-                  .sort((a: any, b: any) => (a?.cellX ?? 0) - (b?.cellX ?? 0))
-                  .map((p: any) => {
-                    const item = items?.[p?.itemId];
-                    return summarizeItem(item, p?.cellX);
-                  }),
-                folders: Object.values(folders).map((f: any) => ({
-                  id: f?.id,
-                  name: f?.name,
-                  size: Array.isArray(f?.items) ? f.items.length : 0,
-                  items: Array.isArray(f?.items) ? f.items : [],
-                })),
-              };
-            } catch {
-              launcher = null;
-            }
-            _launcherCacheRaw = rawLauncher;
-            _launcherCacheParsed = launcher;
-          }
-        } else if (_launcherCacheRaw !== null) {
-          _launcherCacheRaw = null;
-          _launcherCacheParsed = null;
-        }
+        const launcher = readLauncherSummary();
 
         return buildSimState({
           tasks: latestState.tasks,
