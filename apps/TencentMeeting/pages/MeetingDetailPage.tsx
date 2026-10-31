@@ -14,7 +14,7 @@ const formatTime = (timestamp: number): string => {
 };
 
 export const MeetingDetailPage: React.FC = () => {
-    const { bindNav, nav } = useMeetingGestures();
+    const { bindNav, bindBack, nav } = useMeetingGestures();
     const user = useMeetingStore(s => s.user);
     const currentScheduledMeeting = useMeetingStore(s => s.currentScheduledMeeting);
     const cancelScheduledMeeting = useMeetingStore(s => s.cancelScheduledMeeting);
@@ -22,16 +22,10 @@ export const MeetingDetailPage: React.FC = () => {
     const [searchParams] = useSearchParams();
     const showActions = searchParams.get('dialog') === 'actions';
 
-    const handleEditMeeting = () => {
-        // Replace dialog entry with edit page (back from edit returns to detail page)
-        nav.replace(routes.meetingEdit);
-    };
-
-    const handleCancelMeeting = () => {
+    const cancelCurrentMeeting = () => {
         if (currentScheduledMeeting) {
             cancelScheduledMeeting(currentScheduledMeeting.id);
         }
-        nav.replace(routes.home);
     };
 
     if (!currentScheduledMeeting) {
@@ -207,14 +201,15 @@ export const MeetingDetailPage: React.FC = () => {
                         <div className="bg-app-surface rounded-t-2xl overflow-hidden">
                             <button
                                 className="w-full py-4 text-center text-[17px] text-gray-900 active:bg-gray-100"
-                                onClick={handleEditMeeting}
+                                // Replace the dialog entry: back from edit returns to the detail page
+                                {...bindNav(routes.meetingEdit, { replace: true })}
                             >
                                 {s.meeting_detail_action_modify}
                             </button>
                             <div className="h-px bg-gray-100"></div>
                             <button
                                 className="w-full py-4 text-center text-[17px] text-red-500 active:bg-gray-100"
-                                onClick={handleCancelMeeting}
+                                {...bindNav(routes.home, { replace: true, beforeTrigger: cancelCurrentMeeting })}
                             >
                                 {s.meeting_detail_action_cancel_meeting}
                             </button>
@@ -223,7 +218,7 @@ export const MeetingDetailPage: React.FC = () => {
                         <div className="bg-app-surface">
                             <button
                                 className="w-full py-4 text-center text-[17px] text-gray-900 active:bg-gray-100"
-                                onClick={() => nav.back()}
+                                {...bindBack()}
                             >
                                 {s.btn_cancel}
                             </button>

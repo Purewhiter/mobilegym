@@ -84,9 +84,10 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     window.__OS__ = buildOsApi(osStateForApi);
   }, [osStateForApi]);
 
+  // __SIM__ reads everything when called, so one instance serves the page.
   useEffect(() => {
     window.__SIM__ = buildSimApi();
-  }, [state]);
+  }, []);
 
   const contextValue = useMemo<OSContextProps>(() => ({
     state,

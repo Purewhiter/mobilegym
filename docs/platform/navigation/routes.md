@@ -45,3 +45,8 @@ nav.back();
 
 - Every one of Tencent Meeting's 41 declared transitions resolves to the same URL and push/replace mode through `buildHref` as through the old `go()`.
 - `explore_nav_graph.py` on the build before and after the migration: the same 36 states and the same tap/back outcomes. The only differences are two elements that were tagged but did nothing (a transition missing from the declaration, and an entry under an open dialog), which are no longer tagged.
+- Against the static graph the old declaration generated: the explored graph has every real edge of it. The static graph missed `/meeting/detail` (not in the declaration's routes, so its 7 edges were broken), a declared transition was never used in code, and the meeting-number join needs typed input, which the explorer does not do. The explorer also finds edges the declaration forbade but the UI allows (switching between the chat and exit dialogs).
+
+## Exploring a graph
+
+`scripts/explore_nav_graph.py <url> <appId> out.json` resets the simulator before reaching each state again (taps change data), freezes simulated time (`--sim-time`) so labels match across reloads, and records `HOME` when system back leaves the app. Elements without a tag are invisible to it — every navigation control must use `bindNav` / `bindBack` (the meeting action sheet's edit and cancel buttons were plain `onClick` until the pilot).

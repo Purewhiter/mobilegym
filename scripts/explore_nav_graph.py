@@ -9,8 +9,9 @@ id, so graphs from two builds can be compared even when ids change:
     python scripts/explore_nav_graph.py http://localhost:3401/ tencent_meeting old.json
     python scripts/explore_nav_graph.py --diff old.json new.json
 
-Taps mutate app data (cancel a meeting, leave a call), so compare graphs taken
-in the same order from the same starting data; both runs follow DOM order.
+Every state is reached again from a reset simulator, so taps that change app
+data (cancel a meeting, leave a call) do not break later paths. Controls that
+need typed input first (a meeting number) are not followed.
 """
 
 from __future__ import annotations
@@ -42,8 +43,12 @@ CLICK_JS = """(i) => {
 }"""
 
 
-async def explore(url: str, app: str, max_states: int, max_taps: int, wait_ms: int) -> dict:
-    route_js = f"() => window.__OS__.getAppRoute('{app}')?.path"
+async def explore(url: str, app: str, max_states: int, max_taps: int, wait_ms: int, sim_time: str) -> dict:
+    # Frozen simulated time: labels such as "in 5 min" stay the same across the reloads.
+    url = url + ("&" if "?" in url else "?") + f"simTime={sim_time}&simTimeFlowing=0"
+    # The app's URL, or HOME once system back has left the app.
+    route_js = (f"() => window.__OS__.state?.activeAppId === '{app}' "
+                f"? window.__OS__.getAppRoute('{app}')?.path : 'HOME'")
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)
         page = await browser.new_page(viewport={"width": 360, "height": 800})
@@ -52,8 +57,12 @@ async def explore(url: str, app: str, max_states: int, max_taps: int, wait_ms: i
         await page.wait_for_timeout(1500)
 
         async def fresh() -> None:
-            await page.evaluate(f"() => window.__OS__.closeApp?.('{app}')")
-            await page.wait_for_timeout(300)
+            # Start from the initial data every time: taps change it (cancel a
+            # meeting, leave a call), which would break the recorded paths.
+            await page.evaluate("() => window.__SIM__.resetState()")
+            await page.goto(url)
+            await page.wait_for_function("() => window.__OS__?.openApp", timeout=60000)
+            await page.wait_for_timeout(800)
             await page.evaluate(f"() => window.__OS__.openApp('{app}')")
             await page.wait_for_timeout(1200)
 
@@ -68,6 +77,7 @@ async def explore(url: str, app: str, max_states: int, max_taps: int, wait_ms: i
 
         async def reach(path: list[str]) -> bool:
             await fresh()
+            await page.wait_for_function(f"() => window.__OS__.state?.activeAppId === '{app}'", timeout=10000)
             for key in path:
                 if not await tap(key):
                     return False
@@ -94,7 +104,7 @@ async def explore(url: str, app: str, max_states: int, max_taps: int, wait_ms: i
                 await page.evaluate("() => window.__OS__.handleBack()")
                 await page.wait_for_timeout(wait_ms)
                 edges[edge] = [after, await page.evaluate(route_js)]
-                if after and after not in states and len(states) < max_states:
+                if after and after != "HOME" and after not in states and len(states) < max_states:
                     states[after] = path + [item["key"]]
                     queue.append(after)
         await browser.close()
@@ -121,11 +131,12 @@ def main() -> int:
     ap.add_argument("--max-states", type=int, default=60)
     ap.add_argument("--max-taps", type=int, default=40, help="taps per state")
     ap.add_argument("--wait-ms", type=int, default=450)
+    ap.add_argument("--sim-time", default="2026-10-30T21:31:00", help="frozen simulated time for every reload")
     a = ap.parse_args()
     if a.diff:
         return diff(*a.args)
     url, app, out = a.args
-    graph = asyncio.run(explore(url, app, a.max_states, a.max_taps, a.wait_ms))
+    graph = asyncio.run(explore(url, app, a.max_states, a.max_taps, a.wait_ms, a.sim_time))
     json.dump(graph, open(out, "w"), ensure_ascii=False, indent=1)
     print(len(graph["states"]), "states", len(graph["edges"]), "edges ->", out)
     return 0
