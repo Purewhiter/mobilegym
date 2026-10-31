@@ -573,6 +573,9 @@ class BaseTask(ABC):
         
         # 1. Reset environment — preload data for involved apps
         with sw.phase("reset"):
+            # The simulated time this episode starts at (--sim-time) is set at page boot.
+            if hasattr(env, "begin_episode"):
+                env.begin_episode(self.id)
             await env.reset(app_ids=self.apps or None)
             # In-app randomness (seat numbers, codes, ids) is seeded per episode.
             if hasattr(env, "apply_random_seed"):

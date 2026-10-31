@@ -12,7 +12,8 @@ import json as json_mod
 import logging
 import random
 from pathlib import Path
-from typing import Any, Optional, Tuple
+from typing import Any, Optional, Tuple, Union
+from urllib.parse import urlencode
 
 from playwright.async_api import async_playwright, Browser, BrowserContext, Page, Playwright
 
@@ -379,6 +380,7 @@ class MobileGymEnv(BaseMobileEnv):
         delay_after_action: float = 0.8,
         settle: str = "fixed",
         env_seed: Optional[int] = None,
+        sim_time: Union[None, str, int, dict] = None,
         verbose: bool = True,
         worker_id: int = -1,
     ):
@@ -409,6 +411,13 @@ class MobileGymEnv(BaseMobileEnv):
         # Base seed for in-app randomness (os/RandomService.ts); see apply_random_seed.
         self.env_seed = env_seed
         self.random_seed: Optional[int] = None
+        # Simulated start time of each episode (see begin_episode): None = real
+        # time; a time ("2026-10-30 21:31:02" or epoch ms) = every episode; a
+        # {task_id: time} dict = per task (replays use the recorded times).
+        self.sim_time = sim_time
+        self._episode_sim_time: Union[None, str, int] = None
+        # Simulated time the page booted at in this episode (__SIM_TIME__.getBootTime).
+        self.sim_boot_time: Optional[int] = None
         self.last_idle: Optional[dict] = None
         self.verbose = verbose
 
@@ -796,6 +805,18 @@ class MobileGymEnv(BaseMobileEnv):
         self.random_seed = seed
         return seed
 
+    def begin_episode(self, task_id: str) -> None:
+        """Pick the simulated time the next ``reset()`` boots the page at (``sim_time``)."""
+        st = self.sim_time
+        self._episode_sim_time = st.get(task_id) if isinstance(st, dict) else st
+
+    def _page_url(self) -> str:
+        """Simulator URL for this episode: ``self.url`` plus ``?simTime=`` when one is set."""
+        if self._episode_sim_time is None:
+            return self.url
+        sep = "&" if "?" in self.url else "?"
+        return f"{self.url}{sep}{urlencode({'simTime': self._episode_sim_time})}"
+
     async def reset(self, app_ids: list[str] | None = None) -> None:
         """Reset environment and start new episode.
 
@@ -824,12 +845,15 @@ class MobileGymEnv(BaseMobileEnv):
         self._agent_answer = None
 
         # First reset after start() — page is already clean, skip reload
-        if self._fresh:
+        # (unless this episode boots at a simulated time the page lacks)
+        if self._fresh and self._page_url() == self.url:
             self._fresh = False
             _log_env_info(self, "reset: skipped (fresh page from start)")
             with self.stopwatch.phase("wait_ready"):
                 await self._wait_ready(app_ids=app_ids)
+            await self._read_boot_time()
             return
+        self._fresh = False
 
         max_retries = 2
         for attempt in range(max_retries + 1):
@@ -838,6 +862,7 @@ class MobileGymEnv(BaseMobileEnv):
                     await self._reset_sim()
                 with self.stopwatch.phase("wait_ready"):
                     await self._wait_ready(app_ids=app_ids)
+                await self._read_boot_time()
                 return  # success
             except Exception as e:
                 logger.warning(
@@ -852,7 +877,7 @@ class MobileGymEnv(BaseMobileEnv):
                 # Retry: goto only (skip resetState in case it caused the failure)
                 logger.info(f"{self._log_prefix}[page#{self._page_seq}] reset retry: goto only (skipping resetState)")
                 try:
-                    await self.page.goto(self.url, wait_until="load", timeout=60000)
+                    await self.page.goto(self._page_url(), wait_until="load", timeout=60000)
                 except Exception as re:
                     logger.warning(f"{self._log_prefix}[page#{self._page_seq}] goto during reset retry failed: {type(re).__name__}: {re}")
 
@@ -1221,10 +1246,10 @@ class MobileGymEnv(BaseMobileEnv):
                 return false;
             }""")
             if not used:
-                await self.page.goto(self.url, wait_until="domcontentloaded")
+                await self.page.goto(self._page_url(), wait_until="domcontentloaded")
         except Exception as e:
             logger.debug(f"__OS__.goHome() failed, navigating to URL: {type(e).__name__}")
-            await self.page.goto(self.url, wait_until="domcontentloaded")
+            await self.page.goto(self._page_url(), wait_until="domcontentloaded")
 
     async def _drag(self, start: Tuple[float, float], end: Tuple[float, float], duration: int = 400) -> None:
         x1, y1 = start
@@ -1321,6 +1346,13 @@ class MobileGymEnv(BaseMobileEnv):
                 f"{self._log_prefix}[page#{self._page_seq}] _open_app('{app_id}') failed: {type(e).__name__}: {e}"
             ) from e
 
+    async def _read_boot_time(self) -> None:
+        try:
+            value = await self.page.evaluate("() => window.__SIM_TIME__?.getBootTime?.() ?? null")
+        except Exception:
+            value = None
+        self.sim_boot_time = int(value) if isinstance(value, (int, float)) else None
+
     async def _reset_sim(self, timeout_ms: int = 60000) -> None:
         """Clear state and reload page. Fail-closed on reload failure."""
         try:
@@ -1351,7 +1383,7 @@ class MobileGymEnv(BaseMobileEnv):
         # would otherwise cause a Chromium cold-context 502 race on static assets.
         # Navigation failure IS fatal — page is in an unknown state.
         try:
-            await self.page.goto(self.url, wait_until="load", timeout=timeout_ms)
+            await self.page.goto(self._page_url(), wait_until="load", timeout=timeout_ms)
         except Exception as e:
             raise RuntimeError(
                 f"{self._log_prefix}[page#{self._page_seq}] _reset_sim() "

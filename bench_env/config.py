@@ -44,6 +44,7 @@ class RunnerConfig:
     delay_after_action: float = 1.0
     settle: str = "fixed"
     env_seed: Optional[int] = None  # base seed for in-app randomness; None = use sample_seed
+    sim_time: Optional[str] = None  # "real" | "replay" | a start time; None = replay for --agent replay, else real
     physical_size: tuple[int, int] = (1080, 2400)  # 设备物理分辨率（sim 下须等于 viewport×scale）
     
     # Execution
@@ -239,6 +240,7 @@ class RunnerConfig:
             delay_after_action=get("delay_after_action", 1.0),
             settle=get("settle", "fixed"),
             env_seed=get("env_seed"),
+            sim_time=get("sim_time"),
             
             max_steps=(ms := get("max_steps") or _DEFAULT_MAX_STEPS),
             max_steps_explicit=(get("max_steps") is not None),

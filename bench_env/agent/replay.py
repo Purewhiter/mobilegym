@@ -36,6 +36,32 @@ def _index_recordings(root: Path) -> dict[str, Path]:
     return index
 
 
+def recorded_start_times(root: Path) -> dict[str, int | str]:
+    """Map each recorded task id to the simulated time its episode booted at.
+
+    Newer recordings store ``sim_boot_time`` (epoch ms) in each trajectory's
+    meta.json; older ones ran on real time, so their episode ``start_time``
+    from results.jsonl is the closest stand-in. The first trial of a task wins.
+    """
+    trajectory_root = root / "trajectory" if (root / "trajectory").is_dir() else root
+    run_root = trajectory_root.parent if trajectory_root.name == "trajectory" else root
+    times: dict[str, int | str] = {}
+    for meta_path in sorted(trajectory_root.glob("*/meta.json")):
+        meta = json.loads(meta_path.read_text(encoding="utf-8"))
+        if isinstance(meta.get("sim_boot_time"), int):
+            times.setdefault(str(meta["task_id"]), meta["sim_boot_time"])
+    results = run_root / "results.jsonl"
+    if results.is_file():
+        for line in results.read_text(encoding="utf-8").splitlines():
+            if not line.strip():
+                continue
+            record = json.loads(line)
+            start = record.get("start_time")
+            if record.get("id") and isinstance(start, str):
+                times.setdefault(str(record["id"]), start.split(".")[0])
+    return times
+
+
 class ReplayAgent(GenericAgentV2):
     def __init__(self, llm=None, config: Optional[AgentConfig] = None):
         super().__init__(llm=llm, config=config)

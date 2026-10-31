@@ -46,3 +46,46 @@ def test_unknown_instruction_is_an_error(tmp_path, monkeypatch):
     agent = ReplayAgent()
     with pytest.raises(ValueError, match="no recording"):
         agent.reset("打开支付宝")
+
+
+def test_recorded_start_times_prefer_boot_time(tmp_path):
+    from bench_env.agent.replay import recorded_start_times
+
+    for name, task_id, meta_extra in (
+        ("a_New", "a.New", {"sim_boot_time": 1793367062000}),
+        ("a_Old", "a.Old", {}),
+    ):
+        episode = tmp_path / "trajectory" / name
+        episode.mkdir(parents=True)
+        (episode / "meta.json").write_text(
+            json.dumps({"task_id": task_id, "task_name": name, **meta_extra}), encoding="utf-8"
+        )
+    (tmp_path / "results.jsonl").write_text(
+        json.dumps({"id": "a.New", "start_time": "2026-10-30T21:31:05.1"}) + "\n"
+        + json.dumps({"id": "a.Old", "start_time": "2026-10-30T21:38:41.649764"}) + "\n",
+        encoding="utf-8",
+    )
+
+    assert recorded_start_times(tmp_path) == {"a.New": 1793367062000, "a.Old": "2026-10-30T21:38:41"}
+    assert recorded_start_times(tmp_path / "trajectory") == recorded_start_times(tmp_path)
+
+
+def test_sim_time_defaults_and_episode_url(tmp_path, monkeypatch):
+    from types import SimpleNamespace
+
+    from bench_env.env.mobile_gym import MobileGymEnv
+    from bench_env.factory import resolve_sim_time
+
+    assert resolve_sim_time(SimpleNamespace(agent="generic_v2", sim_time=None)) is None
+    assert resolve_sim_time(SimpleNamespace(agent="generic_v2", sim_time="2026-01-04 20:00")) == "2026-01-04 20:00"
+    with pytest.raises(ValueError):
+        resolve_sim_time(SimpleNamespace(agent="generic_v2", sim_time="tomorrow"))
+    monkeypatch.delenv(REPLAY_DIR_ENV, raising=False)
+    with pytest.raises(ValueError, match=REPLAY_DIR_ENV):
+        resolve_sim_time(SimpleNamespace(agent="replay", sim_time=None))
+
+    env = MobileGymEnv(url="http://127.0.0.1:9", sim_time={"a.New": 1793367062000})
+    env.begin_episode("a.New")
+    assert env._page_url() == "http://127.0.0.1:9?simTime=1793367062000"
+    env.begin_episode("a.Missing")
+    assert env._page_url() == "http://127.0.0.1:9"

@@ -174,6 +174,8 @@ interface SimTimeApi {
   setSpeed(speed: number): void;
   getSpeed(): number;
   getConfig(): { mode: 'real' | 'simulated'; simulatedTime?: string | number; flowing?: boolean; speed: number };
+  /** Simulated time when the page booted; relative data timestamps are anchored to it. */
+  getBootTime(): number;
 }
 
 interface SimLocationApi {

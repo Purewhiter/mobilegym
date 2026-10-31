@@ -257,7 +257,11 @@ class Controller:
             if recorder:
                 episode = recorder.start_episode(
                     task_id=task.id, task_name=task.description,
-                    extra_meta={"agent": agent.name, "max_steps": max_steps},
+                    extra_meta={
+                        "agent": agent.name, "max_steps": max_steps,
+                        # Simulated boot time, so a replay can boot at the same time.
+                        "sim_boot_time": getattr(env, "sim_boot_time", None),
+                    },
                     trial_id=trial_id,
                 )
 

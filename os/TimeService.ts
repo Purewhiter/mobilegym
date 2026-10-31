@@ -33,19 +33,37 @@ export interface TimeConfig {
     speed?: number;
 }
 
-// Initialize from SIMULATOR_CONFIG at module load time so that eager-loaded app
-// stores (import.meta.glob({ eager })) see the correct time from the start.
-// initTimeService() called later in index.tsx is idempotent (same values + broadcast).
-const _cfgSpeed = SIMULATOR_CONFIG.time.speed ?? 1;
-const _cfgParsedTime = parseTime(SIMULATOR_CONFIG.time.simulatedTime);
-const _cfgIsSimulated = (SIMULATOR_CONFIG.time.mode ?? 'real') === 'simulated' && _cfgParsedTime !== undefined;
+/**
+ * The time configuration the page boots with: SIMULATOR_CONFIG.time, unless the
+ * page URL carries `?simTime=<epoch ms | "2026-10-30 21:31:02">` (and optionally
+ * `simTimeFlowing=0`). bench_env sets these so every episode starts at a chosen
+ * simulated time, before any store or data timestamp reads the clock.
+ */
+export function getBootTimeConfig(): TimeConfig {
+    const base: TimeConfig = {
+        mode: SIMULATOR_CONFIG.time.mode ?? 'real',
+        simulatedTime: SIMULATOR_CONFIG.time.simulatedTime,
+        flowing: SIMULATOR_CONFIG.time.flowing ?? true,
+        speed: SIMULATOR_CONFIG.time.speed ?? 1,
+    };
+    if (typeof window === 'undefined') return base;
+    const params = new URLSearchParams(window.location.search);
+    const raw = params.get('simTime');
+    if (!raw) return base;
+    const simulatedTime = /^\d+$/.test(raw) ? Number(raw) : raw;
+    if (parseTime(simulatedTime) === undefined) return base;
+    return { ...base, mode: 'simulated', simulatedTime, flowing: params.get('simTimeFlowing') !== '0' };
+}
 
-let timeConfig: TimeConfig = {
-    mode: SIMULATOR_CONFIG.time.mode ?? 'real',
-    simulatedTime: SIMULATOR_CONFIG.time.simulatedTime,
-    flowing: SIMULATOR_CONFIG.time.flowing ?? true,
-    speed: _cfgSpeed,
-};
+// Initialize at module load time so that eager-loaded app stores
+// (import.meta.glob({ eager })) see the correct time from the start.
+// initTimeService() called later in index.tsx is idempotent (same values + broadcast).
+const _bootCfg = getBootTimeConfig();
+const _cfgSpeed = _bootCfg.speed ?? 1;
+const _cfgParsedTime = parseTime(_bootCfg.simulatedTime);
+const _cfgIsSimulated = _bootCfg.mode === 'simulated' && _cfgParsedTime !== undefined;
+
+let timeConfig: TimeConfig = { ..._bootCfg, flowing: _bootCfg.flowing ?? true, speed: _cfgSpeed };
 
 let parsedSimulatedTime: number | undefined = _cfgParsedTime;
 
@@ -467,5 +485,6 @@ if (typeof window !== 'undefined') {
         setSpeed,
         getSpeed,
         getConfig: getTimeConfig,
+        getBootTime,
     };
 }

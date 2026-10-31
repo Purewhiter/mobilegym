@@ -69,6 +69,7 @@ class ParallelRunner(BaseRunner):
             delay_after_action=config.delay_after_action,
             settle=config.settle,
             env_seed=config.env_seed if config.env_seed is not None else config.sample_seed,
+            sim_time=factory.resolve_sim_time(config),
             verbose=verbose,
         )
 

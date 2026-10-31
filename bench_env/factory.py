@@ -34,6 +34,32 @@ def _env_seed(config: Any) -> Optional[int]:
     return seed if seed is not None else getattr(config, "sample_seed", None)
 
 
+def resolve_sim_time(config: Any) -> Any:
+    """--sim-time for the env: None (real time), one start time, or {task_id: time}.
+
+    ``replay`` (the default for --agent replay) boots each episode at the time
+    its recording booted, so date-dependent instructions and screens match.
+    """
+    value = getattr(config, "sim_time", None)
+    if value is None:
+        value = "replay" if getattr(config, "agent", None) == "replay" else "real"
+    if value == "real":
+        return None
+    if value == "replay":
+        import os
+        from pathlib import Path
+        from bench_env.agent.replay import REPLAY_DIR_ENV, recorded_start_times
+        root = os.environ.get(REPLAY_DIR_ENV)
+        if not root:
+            raise ValueError(f"--sim-time replay needs {REPLAY_DIR_ENV} pointing at a recorded run")
+        return recorded_start_times(Path(root))
+    if isinstance(value, str) and value.isdigit():
+        return int(value)
+    from datetime import datetime
+    datetime.fromisoformat(value)  # fail early on a malformed time
+    return value
+
+
 def create_llm(config: ConfigType) -> Any:
     """Create LLM client (None for model-free agents run without model flags)."""
     from bench_env.llm import LLMClient
@@ -142,6 +168,7 @@ async def create_env(config: ConfigType) -> Any:
             delay_after_action=delay,
             settle=getattr(config, "settle", "fixed"),
             env_seed=_env_seed(config),
+            sim_time=resolve_sim_time(config),
             verbose=verbose,
             viewport_size=(360, 800),
             physical_size=physical_size,

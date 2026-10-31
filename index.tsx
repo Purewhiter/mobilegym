@@ -31,13 +31,8 @@ import * as TimeService from './os/TimeService';
 import * as LocationService from './os/LocationService';
 import * as SkinService from './os/SkinService';
 
-// Initialize time service based on config
-TimeService.initTimeService({
-  mode: SIMULATOR_CONFIG.time.mode,
-  simulatedTime: SIMULATOR_CONFIG.time.simulatedTime,
-  flowing: SIMULATOR_CONFIG.time.flowing,
-  speed: SIMULATOR_CONFIG.time.speed,
-});
+// Initialize time service based on config (or the page URL's ?simTime=)
+TimeService.initTimeService(TimeService.getBootTimeConfig());
 
 // Initialize location service based on config
 LocationService.initLocationService({

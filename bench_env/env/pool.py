@@ -17,7 +17,7 @@ import asyncio
 import math
 import os
 from enum import Enum
-from typing import TYPE_CHECKING, Iterator
+from typing import TYPE_CHECKING, Any, Iterator
 
 from bench_env.logger import get_logger
 
@@ -58,6 +58,7 @@ class EnvPool:
         delay_after_action: float = 0.8,
         settle: str = "fixed",
         env_seed: int | None = None,
+        sim_time: Any = None,
         viewport_size: tuple[int, int] = (360, 800),
         physical_size: tuple[int, int] = (1080, 2400),
         device_scale_factor: float = 3,
@@ -73,6 +74,7 @@ class EnvPool:
         self.delay_after_action = delay_after_action
         self.settle = settle
         self.env_seed = env_seed
+        self.sim_time = sim_time
         self.viewport_size = viewport_size
         self.physical_size = physical_size
         self.device_scale_factor = device_scale_factor
@@ -116,6 +118,7 @@ class EnvPool:
             "delay_after_action": self.delay_after_action,
             "settle": self.settle,
             "env_seed": self.env_seed,
+            "sim_time": self.sim_time,
             "verbose": self.verbose,
         }
 

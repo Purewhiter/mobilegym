@@ -205,6 +205,12 @@ def create_parser() -> argparse.ArgumentParser:
         help="Base seed for in-app randomness (seat numbers, verification codes, ids; os/RandomService.ts). "
              "Each episode's seed is derived from it and the task id. Default: --sample-seed.",
     )
+    p.add_argument(
+        "--sim-time", type=str, default=None,
+        help="Simulated time each episode boots at: 'real' (the host clock), a time such as "
+             "'2026-10-30 21:31:00', or 'replay' (each task's recorded time). "
+             "Default: replay for --agent replay, else real.",
+    )
 
     # Execution
     p.add_argument("--max-steps", type=int, default=None)

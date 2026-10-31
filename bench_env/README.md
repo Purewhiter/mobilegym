@@ -182,6 +182,11 @@ the task id and recorded as `execution.random_seed` in `results.jsonl`. Pass
 `--env-seed N` to keep the sampled tasks and vary only those in-app draws. See
 [`docs/platform/os/services/random.md`](../docs/platform/os/services/random.md).
 
+`--sim-time` sets the simulated time each episode boots at: `real` (the host
+clock, the default), a fixed time such as `"2026-01-04 20:00"`, or `replay`
+(each task's recorded boot time; the default for `--agent replay`). See
+[`docs/platform/os/services/time.md`](../docs/platform/os/services/time.md).
+
 `--sample-n` vs `--repeat-n` — easy to mix up:
 
 - `--sample-n` generates up to N instances per task with **different parameters** (tests generalization). Tasks without parameters stay at 1 instance; finite enum-only tasks and tasks with `sample_max` may produce fewer than N. So the total is **"up to" `num_tasks × N`, not exactly** — e.g. `--sample-n 4` over 256 tasks can yield ~738, not 1024. This is by design, not a bug.
