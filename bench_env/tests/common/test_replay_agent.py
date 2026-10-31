@@ -89,3 +89,22 @@ def test_sim_time_defaults_and_episode_url(tmp_path, monkeypatch):
     assert env._page_url() == "http://127.0.0.1:9?simTime=1793367062000"
     env.begin_episode("a.Missing")
     assert env._page_url() == "http://127.0.0.1:9"
+
+
+def test_actions_and_boot_time_come_from_the_same_trial(tmp_path, monkeypatch):
+    from bench_env.agent.replay import recorded_start_times
+
+    for trial, (point, boot) in enumerate([([100, 100], 1000), ([900, 900], 2000)]):
+        episode = tmp_path / "trajectory" / f"a_Task_t{trial}"
+        episode.mkdir(parents=True)
+        (episode / "meta.json").write_text(json.dumps(
+            {"task_id": "a.Task", "task_name": "做事", "trial_id": trial, "sim_boot_time": boot}), encoding="utf-8")
+        (episode / "step_001_response.txt").write_text(_answer({"action": "CLICK", "point": point}), encoding="utf-8")
+    # Trial 1's directory sorts first by name here, so order must come from trial_id.
+    (tmp_path / "trajectory" / "a_Task_t1").rename(tmp_path / "trajectory" / "0_a_Task_t1")
+    monkeypatch.setenv(REPLAY_DIR_ENV, str(tmp_path))
+    agent = ReplayAgent()
+    agent.reset("做事")
+
+    assert agent.act(Observation(step_idx=0)).data["point"] == [100, 100]
+    assert recorded_start_times(tmp_path) == {"a.Task": 1000}

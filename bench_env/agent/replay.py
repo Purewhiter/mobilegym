@@ -26,13 +26,20 @@ from bench_env.env.base import Action, ActionType, Observation
 REPLAY_DIR_ENV = "MOBILE_GYM_REPLAY_DIR"
 
 
-def _index_recordings(root: Path) -> dict[str, Path]:
-    """Map each recorded instruction to its trajectory directory."""
+def _recorded_metas(root: Path) -> list[tuple[dict, Path]]:
+    """Every recorded episode's meta.json and directory, lowest trial first."""
     trajectory_root = root / "trajectory" if (root / "trajectory").is_dir() else root
-    index: dict[str, Path] = {}
+    metas = []
     for meta_path in sorted(trajectory_root.glob("*/meta.json")):
-        meta = json.loads(meta_path.read_text(encoding="utf-8"))
-        index[str(meta["task_name"])] = meta_path.parent
+        metas.append((json.loads(meta_path.read_text(encoding="utf-8")), meta_path.parent))
+    return sorted(metas, key=lambda m: int(m[0].get("trial_id") or 0))
+
+
+def _index_recordings(root: Path) -> dict[str, Path]:
+    """Map each recorded instruction to its trajectory directory (its lowest trial)."""
+    index: dict[str, Path] = {}
+    for meta, directory in _recorded_metas(root):
+        index.setdefault(str(meta["task_name"]), directory)
     return index
 
 
@@ -41,21 +48,19 @@ def recorded_start_times(root: Path) -> dict[str, int | str]:
 
     Newer recordings store ``sim_boot_time`` (epoch ms) in each trajectory's
     meta.json; older ones ran on real time, so their episode ``start_time``
-    from results.jsonl is the closest stand-in. The first trial of a task wins.
+    from results.jsonl is the closest stand-in. Like the replayed actions
+    (``_index_recordings``), each task uses its lowest trial.
     """
     trajectory_root = root / "trajectory" if (root / "trajectory").is_dir() else root
     run_root = trajectory_root.parent if trajectory_root.name == "trajectory" else root
     times: dict[str, int | str] = {}
-    for meta_path in sorted(trajectory_root.glob("*/meta.json")):
-        meta = json.loads(meta_path.read_text(encoding="utf-8"))
+    for meta, _ in _recorded_metas(root):
         if isinstance(meta.get("sim_boot_time"), int):
             times.setdefault(str(meta["task_id"]), meta["sim_boot_time"])
     results = run_root / "results.jsonl"
     if results.is_file():
-        for line in results.read_text(encoding="utf-8").splitlines():
-            if not line.strip():
-                continue
-            record = json.loads(line)
+        records = [json.loads(line) for line in results.read_text(encoding="utf-8").splitlines() if line.strip()]
+        for record in sorted(records, key=lambda r: int(r.get("trial_id") or 0)):
             start = record.get("start_time")
             if record.get("id") and isinstance(start, str):
                 times.setdefault(str(record["id"]), start.split(".")[0])
