@@ -520,6 +520,12 @@ class MobileGymEnv(BaseMobileEnv):
                 # Google Maps vector rendering needs WebGL in headless runs.
                 # Recent Chromium requires an explicit opt-in for SwiftShader.
                 "--enable-unsafe-swiftshader",
+                # With subpixel positioning on, Linux Blink may borrow 1px of a
+                # font's ascent for its descent, depending on the render style
+                # cached with each font/size. Which style a size gets varies
+                # between page loads in the same browser, so text baselines
+                # jump 1 CSS px across tasks and replay screenshots differ.
+                "--disable-font-subpixel-positioning",
             ]
         if proxy:
             launch_args["proxy"] = {"server": proxy}
