@@ -260,22 +260,6 @@ function userIds(ctx: Ctx): string[] {
   return out;
 }
 
-const homeCount = (count: unknown): number => {
-  if (typeof count === 'number') return count;
-  if (!count) return 0;
-  const str = String(count).replace(/\+/g, '');
-  if (str.includes('万')) return parseFloat(str.replace('万', '')) * 10000;
-  if (str.includes('w')) return parseFloat(str.replace('w', '')) * 10000;
-  return parseFloat(str) || 0;
-};
-
-const searchCount = (value: unknown): number => {
-  if (value === undefined) return 0;
-  if (typeof value === 'number') return value;
-  const parsed = Number(String(value).replace(/[^0-9.]/g, ''));
-  return Number.isNaN(parsed) ? 0 : parsed;
-};
-
 const strArray = (value: unknown): string[] => (Array.isArray(value) ? value.map(String) : []);
 
 // ── Commands (one per store action) ─────────────────────────────────
@@ -478,7 +462,7 @@ const queries: AppModule<RedBookDeviceState>['queries'] = {
       const authors = new Set(strArray(args.authorIds));
       notes = notes.filter(n => authors.has(n.authorId));
     }
-    if (args.sort === 'likes') notes = [...notes].sort((a, b) => homeCount(b.likes) - homeCount(a.likes));
+    if (args.sort === 'likes') notes = [...notes].sort((a, b) => parseRedBookCount(b.likes) - parseRedBookCount(a.likes));
     const offset = Number(args.offset ?? 0) || 0;
     const limit = args.limit == null ? notes.length : Number(args.limit);
     return { ...withAuthors(ctx, notes.slice(offset, offset + limit)), total: notes.length };
@@ -514,9 +498,9 @@ const queries: AppModule<RedBookDeviceState>['queries'] = {
       ));
     switch (args.sort) {
       case 'latest': matches.sort((a, b) => b.createdAt - a.createdAt); break;
-      case 'likes': matches.sort((a, b) => searchCount(b.likes) - searchCount(a.likes)); break;
-      case 'comments': matches.sort((a, b) => searchCount(b.comments) - searchCount(a.comments)); break;
-      case 'collects': matches.sort((a, b) => searchCount(b.collections) - searchCount(a.collections)); break;
+      case 'likes': matches.sort((a, b) => parseRedBookCount(b.likes) - parseRedBookCount(a.likes)); break;
+      case 'comments': matches.sort((a, b) => parseRedBookCount(b.comments) - parseRedBookCount(a.comments)); break;
+      case 'collects': matches.sort((a, b) => parseRedBookCount(b.collections) - parseRedBookCount(a.collections)); break;
       default: break;
     }
     return withAuthors(ctx, matches);
