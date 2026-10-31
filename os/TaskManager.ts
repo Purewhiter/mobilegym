@@ -237,6 +237,32 @@ function nextMruStamp() {
   return mruCounter;
 }
 
+const idNumber = (id: string, prefix: string) => {
+  const n = id.startsWith(prefix) ? Number(id.slice(prefix.length)) : NaN;
+  return Number.isInteger(n) ? n : 0;
+};
+
+/**
+ * After a reset, continue ids past whatever the state already holds: a fresh
+ * state starts again from task_1 / act_1, a restored one never reuses its ids.
+ * Pending result callbacks belong to the discarded tasks and are dropped.
+ */
+function resetSequences(state: OSState) {
+  taskSeq = 0;
+  activitySeq = 0;
+  mruCounter = 0;
+  requestCode = 0;
+  pendingCallbacks.clear();
+  for (const task of state.tasks) {
+    taskSeq = Math.max(taskSeq, idNumber(task.taskId, 'task_'));
+    mruCounter = Math.max(mruCounter, task.lastActiveAt || 0);
+    for (const activity of task.stack) {
+      activitySeq = Math.max(activitySeq, idNumber(activity.activityId, 'act_'));
+      requestCode = Math.max(requestCode, activity.requestCode ?? 0);
+    }
+  }
+}
+
 export const TaskManager = {
   getState: base.getState,
 
@@ -334,6 +360,7 @@ export const TaskManager = {
 
   reset(state?: OSState | any): void {
     TaskManager.dispatch({ type: 'RESET', state });
+    resetSequences(TaskManager.getState());
   },
 };
 

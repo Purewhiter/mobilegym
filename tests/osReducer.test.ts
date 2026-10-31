@@ -182,4 +182,21 @@ describe('OS state transitions (via TaskManager)', () => {
     expect(called).toBe(true);
     unsub();
   });
+
+  it('reset starts ids again, and a restored state never reuses its ids', async () => {
+    const tm = await getTaskManager();
+    tm.launchApp('notes');
+    tm.launchApp('sms');
+    tm.reset();
+    tm.launchApp('notes');
+    expect(tm.getState().tasks.map((t) => t.taskId)).toEqual(['task_1']);
+    expect(tm.getState().tasks[0].stack[0].activityId).toBe('act_1');
+
+    tm.reset({ ...emptyState(), tasks: [{ ...mkTask('task_7', 'notes', 40), stack: [{ activityId: 'act_9', appId: 'notes', initialRoute: '/' }] }], activeTaskId: 'task_7', isLauncherVisible: false });
+    tm.launchApp('sms');
+    const sms = tm.getState().tasks.find((t) => t.rootAppId === 'sms')!;
+    expect(sms.taskId).toBe('task_8');
+    expect(sms.stack[0].activityId).toBe('act_10');
+    expect(sms.lastActiveAt).toBeGreaterThan(40);
+  });
 });
