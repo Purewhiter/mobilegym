@@ -4,10 +4,11 @@ import React from 'react';
 import { useMeetingStore } from '../state';
 import { IcAdd, IcFastPay, IcCalendar, IcCast, IcUserAdd, IcMail, IcNavForward, IcMonitor, IcLaptop, IcTablet, IcGlobe, IcPhone, IcCalendarDays } from '../res/icons';
 import { useMeetingGestures } from '../hooks/useMeetingGestures';
-import { TransitionId } from '../navigation.declaration';
+import type { AppRoute } from '../../../os/navigation';
 import * as TimeService from '../../../os/TimeService';
 import { DeviceLogin, ScheduledMeeting, OngoingMeeting } from '../data';
 import { useShallow } from 'zustand/react/shallow';
+import { routes } from '../routes';
 // 根据设备类型获取图标
 const getDeviceIcon = (deviceType: DeviceLogin['deviceType']) => {
     switch (deviceType) {
@@ -63,15 +64,15 @@ export const HomePage: React.FC = () => {
     })));
     const setCurrentScheduledMeeting = useMeetingStore(s => s.setCurrentScheduledMeeting);
     const startMeeting = useMeetingStore(s => s.startMeeting);
-    const { bindTap } = useMeetingGestures();
+    const { bindNav } = useMeetingGestures();
     const s = useTencentMeetingStrings();
 
     // Action 按钮配置（需在组件内以访问 s）
-    const HOME_ACTIONS: Array<{ id: string; label: string; color: string; icon: React.ComponentType<any>; transition: TransitionId }> = [
-        { id: 'join', label: s.action_join_meeting, color: 'bg-blue-600', icon: IcAdd, transition: 'home.join.open' },
-        { id: 'quick', label: s.action_quick_meeting, color: 'bg-blue-600', icon: IcFastPay, transition: 'home.quick.open' },
-        { id: 'schedule', label: s.action_schedule_meeting, color: 'bg-blue-600', icon: IcCalendar, transition: 'home.schedule.open' },
-        { id: 'share', label: s.action_share_screen, color: 'bg-blue-600', icon: IcCast, transition: 'home.share.open' },
+    const HOME_ACTIONS: Array<{ id: string; label: string; color: string; icon: React.ComponentType<any>; route: AppRoute }> = [
+        { id: 'join', label: s.action_join_meeting, color: 'bg-blue-600', icon: IcAdd, route: routes.join },
+        { id: 'quick', label: s.action_quick_meeting, color: 'bg-blue-600', icon: IcFastPay, route: routes.quick },
+        { id: 'schedule', label: s.action_schedule_meeting, color: 'bg-blue-600', icon: IcCalendar, route: routes.schedule },
+        { id: 'share', label: s.action_share_screen, color: 'bg-blue-600', icon: IcCast, route: routes.share },
     ];
 
     // 获取设备状态文案
@@ -123,11 +124,11 @@ export const HomePage: React.FC = () => {
                 <div className="flex items-center gap-3">
                     <div
                         className="w-9 h-9 bg-blue-600 rounded-full flex items-center justify-center text-white font-medium text-sm active:opacity-70 transition-opacity cursor-pointer"
-                        {...bindTap('home.profile.open')}
+                        {...bindNav(routes.profile)}
                     >
                         {user.name.slice(0, 2)}
                     </div>
-                    <div {...bindTap('home.profile.open')} className="active:opacity-70 transition-opacity cursor-pointer">
+                    <div {...bindNav(routes.profile)} className="active:opacity-70 transition-opacity cursor-pointer">
                         <div className="text-base font-semibold text-gray-900">{user.name}</div>
                         <div className="text-[10px] text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded flex w-fit items-center">
                             {s.home_upgrade_pro} <IcNavForward size={10} />
@@ -135,10 +136,10 @@ export const HomePage: React.FC = () => {
                     </div>
                 </div>
                 <div className="flex gap-4 text-gray-600">
-                    <div {...bindTap('home.profile.open')} className="active:opacity-50 cursor-pointer">
+                    <div {...bindNav(routes.profile)} className="active:opacity-50 cursor-pointer">
                         <IcUserAdd size={24} strokeWidth={1.5} />
                     </div>
-                    <div {...bindTap('home.messages.open')} className="active:opacity-50 cursor-pointer">
+                    <div {...bindNav(routes.messages, { search: { tab: 'all' } })} className="active:opacity-50 cursor-pointer">
                         <IcMail size={24} strokeWidth={1.5} />
                     </div>
                 </div>
@@ -165,7 +166,7 @@ export const HomePage: React.FC = () => {
                     <div
                         key={action.id}
                         className="flex flex-col items-center gap-2 active:opacity-80 transition-opacity"
-                        {...bindTap(action.transition)}
+                        {...bindNav(action.route)}
                     >
                         <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-white shadow-sm ${action.color}`}>
                             <action.icon size={28} strokeWidth={2.5} />
@@ -186,7 +187,7 @@ export const HomePage: React.FC = () => {
                         </div>
                         <button
                             className="text-xs text-gray-500 bg-gray-50 px-2 py-1 rounded border border-gray-100 flex items-center gap-1 active:bg-gray-100"
-                            {...bindTap('home.history.open')}
+                            {...bindNav(routes.history)}
                         >
                             <span>{s.home_history_meetings}</span>
                             <IcNavForward size={12} />
@@ -204,7 +205,7 @@ export const HomePage: React.FC = () => {
                                     <div
                                         key={meeting.id}
                                         className="mx-4 mt-3 px-4 py-3 bg-app-surface rounded-lg border border-gray-100 active:bg-gray-50"
-                                        {...bindTap('home.meeting.detail', { beforeTrigger: () => handleMeetingClick(meeting) })}
+                                        {...bindNav(routes.meetingDetail, { beforeTrigger: () => handleMeetingClick(meeting) })}
                                     >
                                         <div className="flex items-center justify-between">
                                             <div className="flex-1">
@@ -249,7 +250,7 @@ export const HomePage: React.FC = () => {
                                         </div>
                                     </div>
                                     <button
-                                        {...bindTap('home.ongoing.join', { beforeTrigger: () => prepareJoinMeeting(meeting) })}
+                                        {...bindNav(routes.meeting, { beforeTrigger: () => prepareJoinMeeting(meeting) })}
                                         className="bg-blue-500 text-white text-[13px] px-4 py-1.5 rounded-md active:bg-blue-600"
                                     >
                                         {s.home_btn_join}
@@ -267,7 +268,7 @@ export const HomePage: React.FC = () => {
                         <div className="flex justify-end">
                             <button
                                 className="text-xs text-gray-500 bg-gray-50 px-2 py-1 rounded border border-gray-100 flex items-center gap-1 active:bg-gray-100"
-                                {...bindTap('home.history.open')}
+                                {...bindNav(routes.history)}
                             >
                                 <span>{s.home_history_meetings}</span>
                                 <IcNavForward size={12} />

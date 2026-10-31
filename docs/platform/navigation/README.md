@@ -5,6 +5,7 @@ Use these docs when changing `navigation.declaration.ts`, route helpers, generat
 | Need | Read |
 |---|---|
 | Route/action declaration grammar, runtime contract, tagging rules | [`declaration.md`](declaration.md) |
+| Route tables + `os/navigation` hooks (pilot: Tencent Meeting), exploring a running app's graph | [`routes.md`](routes.md) |
 | Action declarations, DOM action binding, action-vs-transition split | [`actions.md`](actions.md) |
 | Data-mode graph expansion, `dataSource`, `StateCondition`, bound params, unevaluable conditions | [`data-sources.md`](data-sources.md) |
 | Graph generation commands, generated artifacts, validation | [`graph-generation.md`](graph-generation.md) |

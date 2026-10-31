@@ -5,9 +5,10 @@ import { IcNavBack, IcScan, IcNavForward, IcInfo, IcMoon, IcHeadset } from '../r
 import { SERVICE_ITEMS } from '../constants';
 import { useMeetingStore } from '../state';
 import { useMeetingGestures } from '../hooks/useMeetingGestures';
+import { routes } from '../routes';
 export const ProfilePage: React.FC = () => {
     const user = useMeetingStore(s => s.user);
-    const { bindTap, bindBack } = useMeetingGestures();
+    const { bindNav, bindBack } = useMeetingGestures();
     const s = useTencentMeetingStrings();
 
     const MenuItem = ({ label, value, actionProps }: { label: string, value?: React.ReactNode, actionProps?: React.HTMLAttributes<HTMLDivElement> }) => {
@@ -117,7 +118,7 @@ export const ProfilePage: React.FC = () => {
                             key={item.id}
                             icon={item.icon}
                             label={s[item.labelKey]}
-                            actionProps={item.id === 'room' ? bindTap('profile.personal_room.open') : undefined}
+                            actionProps={item.id === 'room' ? bindNav(routes.personalRoom) : undefined}
                         />
                     ))}
                 </div>
@@ -131,9 +132,9 @@ export const ProfilePage: React.FC = () => {
                         </div>
                     } />
                     <Divider />
-                    <MenuItem label={s.menu_account_security} actionProps={bindTap('profile.account_security.open')} />
+                    <MenuItem label={s.menu_account_security} actionProps={bindNav(routes.accountSecurity)} />
                     <Divider />
-                    <MenuItem label={s.menu_settings} actionProps={bindTap('profile.settings.open')} />
+                    <MenuItem label={s.menu_settings} actionProps={bindNav(routes.settings)} />
                     <Divider />
                     <MenuItem label={s.menu_privacy} />
                     <Divider />

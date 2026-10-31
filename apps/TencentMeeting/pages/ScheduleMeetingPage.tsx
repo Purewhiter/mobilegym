@@ -3,9 +3,10 @@ import { useTencentMeetingStrings } from '../hooks/useTencentMeetingStrings';
 import React, { useState } from 'react';
 import { IcNavForward, IcInfo } from '../res/icons';
 import { useMeetingGestures } from '../hooks/useMeetingGestures';
+import { routes } from '../routes';
 export const ScheduleMeetingPage: React.FC = () => {
     const [selectedType, setSelectedType] = useState('regular');
-    const { bindBack, bindTap } = useMeetingGestures();
+    const { bindBack, bindNav } = useMeetingGestures();
     const s = useTencentMeetingStrings();
     const canProceed = selectedType === 'regular';
 
@@ -27,7 +28,7 @@ export const ScheduleMeetingPage: React.FC = () => {
             <div
                 className={`relative p-4 rounded-xl border ${isSelected ? 'bg-[#f0f7ff] border-blue-500' : 'bg-app-surface border-app-border'} mb-3 transition-colors min-h-[72px] ${!subTitle ? 'flex flex-col justify-center' : ''}`}
                 onClick={handleClick}
-                {...(canNavigate && isSelected ? bindTap('schedule.regular.open') : {})}
+                {...(canNavigate && isSelected ? bindNav(routes.scheduleRegular) : {})}
             >
                 {isSelected && (
                     <div className="absolute -top-[1px] -right-[1px] w-5 h-5 overflow-hidden rounded-tr-xl">
@@ -87,7 +88,7 @@ export const ScheduleMeetingPage: React.FC = () => {
             {/* Submit */}
             <div className="px-4 mb-8 pt-4 border-t border-gray-50">
                 <button
-                    {...(canProceed ? bindTap('schedule.regular.open') : {})}
+                    {...(canProceed ? bindNav(routes.scheduleRegular) : {})}
                     disabled={!canProceed}
                     className={`w-full py-3 rounded-lg font-medium text-white ${canProceed ? 'bg-blue-600 active:bg-blue-700' : 'bg-blue-300'}`}
                 >

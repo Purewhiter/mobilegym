@@ -38,6 +38,7 @@ import { useMeetingGestures } from '../hooks/useMeetingGestures';
 import { useMeetingStore } from '../state';
 import { getPersistedMeetingChatRecipientName, shouldShowPrivateChatBadge } from '../utils/meetingDataValue';
 import { useShallow } from 'zustand/react/shallow';
+import { routes } from '../routes';
 // Format duration as MM:SS
 const formatDuration = (ms: number) => {
     const totalSeconds = Math.floor(ms / 1000);
@@ -48,7 +49,7 @@ const formatDuration = (ms: number) => {
 
 export const MeetingPage: React.FC = () => {
     const location = useLocation();
-    const { bindTap, bindBack, back } = useMeetingGestures();
+    const { bindNav, bindBack } = useMeetingGestures();
     const { user, activeMeeting, pendingMeetingConfig } = useMeetingStore(useShallow(s => ({
         user: s.user,
         activeMeeting: s.activeMeeting,
@@ -226,7 +227,7 @@ export const MeetingPage: React.FC = () => {
 
                 {/* Right button - 主持人显示"结束"，参与者显示"离开" */}
                 <button
-                    {...bindTap('meeting.exit.open')}
+                    {...bindNav(routes.meeting, { search: { dialog: 'exit' } })}
                     className={`ml-auto text-sm font-medium ${isHost ? 'text-[#e15555]' : 'text-[#e15555]'}`}
                 >
                     {isHost ? s.meeting_btn_end : s.meeting_btn_leave}
@@ -301,7 +302,7 @@ export const MeetingPage: React.FC = () => {
                 {/* Chat input */}
                 <div
                     className="bg-[#3a3a3a] rounded-full h-10 flex min-w-0 items-center px-3 flex-1 mr-4 active:opacity-70"
-                    {...bindTap('meeting.chat.open')}
+                    {...bindNav(routes.meeting, { search: { dialog: 'chat' } })}
                 >
                     <IcSubtitles size={18} className="text-gray-400 shrink-0" />
                     <div className="w-px h-4 bg-gray-500 mx-2" />
@@ -919,14 +920,14 @@ export const MeetingPage: React.FC = () => {
                                 {s.exit_ai_delegate} {isHost && <IcExternalLink size={14} className="text-gray-400 ml-0.5" />}
                             </button>
                             <button
-                                {...bindTap('meeting.leave', { beforeTrigger: () => endMeeting() })}
+                                {...bindNav(routes.home, { replace: true, beforeTrigger: () => endMeeting() })}
                                 className={`h-(--app-meeting-exit-button-height) flex items-center justify-center text-[16px] border-b border-gray-100 active:bg-gray-50 ${isHost ? 'text-app-text' : 'text-[#e15555]'}`}
                             >
                                 {s.exit_leave_meeting}
                             </button>
                             {isHost && (
                                 <button
-                                    {...bindTap('meeting.end', { beforeTrigger: () => endMeeting() })}
+                                    {...bindNav(routes.home, { replace: true, beforeTrigger: () => endMeeting() })}
                                     className="h-(--app-meeting-exit-button-height) flex items-center justify-center text-[16px] text-[#e15555] active:bg-gray-50 font-medium"
                                 >
                                     {s.exit_end_meeting}

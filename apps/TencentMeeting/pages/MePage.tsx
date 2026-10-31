@@ -5,9 +5,10 @@ import { IcScan, IcNavForward, IcInfo, IcMoon, IcHeadset } from '../res/icons';
 import { SERVICE_ITEMS } from '../constants';
 import { useMeetingStore } from '../state';
 import { useMeetingGestures } from '../hooks/useMeetingGestures';
+import { routes } from '../routes';
 export const MePage: React.FC = () => {
     const user = useMeetingStore(s => s.user);
-    const { bindTap } = useMeetingGestures();
+    const { bindNav } = useMeetingGestures();
     const s = useTencentMeetingStrings();
 
     const MenuItem = ({ label, value, actionProps }: { label: string, value?: React.ReactNode, actionProps?: React.HTMLAttributes<HTMLDivElement> }) => {
@@ -105,7 +106,7 @@ export const MePage: React.FC = () => {
             {/* Services Grid */}
             <div className="mx-4 bg-app-surface rounded-xl p-6 grid grid-cols-3 gap-y-6 mb-4 shadow-sm">
                 {SERVICE_ITEMS.map(item => (
-                    <div key={item.id} {...(item.id === 'room' ? bindTap('me.personal_room.open') : {})}>
+                    <div key={item.id} {...(item.id === 'room' ? bindNav(routes.personalRoom) : {})}>
                         <ServiceIcon icon={item.icon} label={s[item.labelKey]} />
                     </div>
                 ))}
@@ -120,9 +121,9 @@ export const MePage: React.FC = () => {
                     </div>
                 } />
                 <Divider />
-                <MenuItem label={s.menu_account_security} actionProps={bindTap('me.account_security.open')} />
+                <MenuItem label={s.menu_account_security} actionProps={bindNav(routes.accountSecurity)} />
                 <Divider />
-                <MenuItem label={s.menu_settings} actionProps={bindTap('me.settings.open')} />
+                <MenuItem label={s.menu_settings} actionProps={bindNav(routes.settings)} />
                 <Divider />
                 <MenuItem label={s.menu_privacy} />
                 <Divider />

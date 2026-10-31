@@ -5,10 +5,11 @@ import { IcNavForward, IcAudio, IcVideo, IcMessage, IcSettings } from '../res/ic
 import { useMeetingStore } from '../state';
 import { useMeetingGestures } from '../hooks/useMeetingGestures';
 import { ActionSpec } from '../../../os/hooks/useTriggerGestures';
+import { routes } from '../routes';
 export const SettingsPage: React.FC = () => {
     const settings = useMeetingStore(s => s.settings);
     const updateSettings = useMeetingStore(s => s.updateSettings);
-    const { bindBack, bindTap } = useMeetingGestures();
+    const { bindBack, bindTap, bindNav } = useMeetingGestures();
     const s = useTencentMeetingStrings();
 
     const Toggle = ({ value, actionId, onChange }: { value: boolean; actionId: string; onChange: () => void }) => (
@@ -82,7 +83,7 @@ export const SettingsPage: React.FC = () => {
                         label={s.menu_account_security}
                         isLink={true}
                         border={false}
-                        actionProps={bindTap('settings.account_security.open')}
+                        actionProps={bindNav(routes.accountSecurity)}
                     />
                 </div>
 
@@ -146,7 +147,6 @@ export const SettingsPage: React.FC = () => {
                         right={<span className="text-gray-500 text-sm">{s.settings_about_version}</span>}
                         isLink={true}
                         border={false}
-                        actionProps={bindTap('settings.about.open' as any)}
                     />
                 </div>
             </div>

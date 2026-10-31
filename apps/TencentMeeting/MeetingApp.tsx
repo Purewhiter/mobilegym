@@ -24,9 +24,9 @@ import { MeetingDetailPage } from './pages/MeetingDetailPage';
 import { EditMeetingPage } from './pages/EditMeetingPage';
 import { IcTabMeeting, IcTabContacts, IcTabMe } from './res/icons';
 import { MeetingAttendeesPage } from './pages/MeetingAttendeesPage';
-import { useAppNavigate } from './navigation';
 import { useMeetingGestures } from './hooks/useMeetingGestures';
-import { TransitionId } from './navigation.declaration';
+import { routes } from './routes';
+import { useNav } from '../../os/navigation';
 import { useAppStrings } from '../../os/useAppStrings';
 import { dimensToCssVars, themeToCssVars } from '../../os/utils/themeToCssVars';
 import { applySkinToThemeColors } from '../../os/SkinService';
@@ -38,7 +38,7 @@ import { anim } from './res/anim';
 import { dimens } from './res/dimens';
 
 const MeetingNavigationHandler = () => {
-    const { back } = useAppNavigate();
+    const { back } = useNav();
     const location = useLocation();
 
     const handleBack = useCallback(() => {
@@ -56,15 +56,15 @@ const MeetingNavigationHandler = () => {
 };
 
 const TabBar = () => {
-    const { bindTap } = useMeetingGestures();
+    const { bindNav } = useMeetingGestures();
     const location = useLocation();
     const currentPath = location.pathname;
     const s = useTencentMeetingStrings();
 
     const tabs = [
-        { id: 'home', label: s.tab_meeting, path: '/', icon: IcTabMeeting, transition: 'tab.home' as TransitionId },
-        { id: 'contacts', label: s.tab_contacts, path: '/contacts', icon: IcTabContacts, transition: 'tab.contacts' as TransitionId },
-        { id: 'me', label: s.tab_me, path: '/me', icon: IcTabMe, transition: 'tab.me' as TransitionId },
+        { id: 'home', label: s.tab_meeting, path: '/', icon: IcTabMeeting, route: routes.home },
+        { id: 'contacts', label: s.tab_contacts, path: '/contacts', icon: IcTabContacts, route: routes.contacts },
+        { id: 'me', label: s.tab_me, path: '/me', icon: IcTabMe, route: routes.me },
     ];
 
     return (
@@ -74,7 +74,7 @@ const TabBar = () => {
                 return (
                     <div
                         key={tab.id}
-                        {...bindTap(tab.transition)}
+                        {...bindNav(tab.route, { replace: true })}
                         className={`flex flex-col items-center justify-center flex-1 h-full active:scale-95 transition-transform ${isActive ? 'text-app-primary' : 'text-gray-400'}`}
                     >
                         <tab.icon size={24} fill={isActive && tab.id === 'me' ? 'currentColor' : 'none'} strokeWidth={isActive ? 2.5 : 2} />

@@ -4,9 +4,10 @@ import React, { useState } from 'react';
 import { IcCopy } from '../res/icons';
 import { useMeetingGestures } from '../hooks/useMeetingGestures';
 import { useMeetingStore } from '../state';
+import { routes } from '../routes';
 
 export const QuickMeetingPage: React.FC = () => {
-    const { bindTap, bindBack } = useMeetingGestures();
+    const { bindNav, bindBack } = useMeetingGestures();
     const personalRoom = useMeetingStore(s => s.personalRoom);
     const setPendingMeetingConfig = useMeetingStore(s => s.setPendingMeetingConfig);
     const [videoOn, setVideoOn] = useState(false);
@@ -82,7 +83,7 @@ export const QuickMeetingPage: React.FC = () => {
             {/* Submit */}
             <div className="px-4 mt-auto mb-8">
                 <button
-                    {...bindTap('quick.meeting.open', { beforeTrigger: handleEnterMeeting })}
+                    {...bindNav(routes.meeting, { beforeTrigger: handleEnterMeeting })}
                     className="w-full py-3 rounded-lg font-medium text-white bg-blue-600 active:bg-blue-700"
                 >
                     {s.quick_btn_enter}

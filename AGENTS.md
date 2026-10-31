@@ -122,6 +122,7 @@ Python-based evaluation framework using Playwright. Tasks are organized into sui
 ### Navigation
 
 - Every app maintains `navigation.declaration.ts` with routes (including `uiStates`, `queryParams`, `scrollContainers`) and transitions
+  - Exception (pilot): Tencent Meeting uses a route table (`apps/TencentMeeting/routes.ts`) and the shared `os/navigation` hooks instead; see `docs/platform/navigation/routes.md`
 - All discrete UI state changes (tabs, modals, menus) must go through `go()` + URL update — never purely via React setState
 - Main TabBar tabs use separate pathname routes (`/`, `/contacts`, `/me`), not query params
 - Tab/subtab switching uses `mode: 'replace'`; modals/drawers use `mode: 'push'` (closed via `back()`)

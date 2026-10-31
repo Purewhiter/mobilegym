@@ -6,6 +6,7 @@ import { useMeetingStore } from '../state';
 import * as TimeService from '../../../os/TimeService';
 import { MeetingRecord } from '../data';
 import { formatMeetingHistoryDate, type TencentMeetingStrings } from '../utils/localization';
+import { routes } from '../routes';
 // 用于持久化搜索状态的 key
 const SEARCH_STATE_KEY = 'history_search_state';
 
@@ -84,7 +85,7 @@ const convertToDisplayFormat = (records: MeetingRecord[], s: TencentMeetingStrin
 };
 
 export const HistoryMeetingsPage: React.FC = () => {
-    const { bindBack, bindTap } = useMeetingGestures();
+    const { bindBack, bindNav } = useMeetingGestures();
     const history = useMeetingStore(s => s.history);
     const inputRef = useRef<HTMLInputElement>(null);
     const s = useTencentMeetingStrings();
@@ -253,7 +254,7 @@ export const HistoryMeetingsPage: React.FC = () => {
                                 {group.meetings.map((meeting, meetingIndex) => (
                                     <div 
                                         key={meeting.id}
-                                        {...bindTap('history.detail.open', { params: { meetingId: meeting.id } })}
+                                        {...bindNav(routes.historyDetail, { params: { meetingId: meeting.id } })}
                                         className={`flex items-center px-4 py-4 active:bg-gray-50 transition-colors ${
                                             meetingIndex !== group.meetings.length - 1 ? 'border-b border-gray-100' : ''
                                         }`}

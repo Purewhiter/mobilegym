@@ -13,6 +13,7 @@ import {
     localizeMeetingTimezone,
     type TencentMeetingStrings,
 } from '../utils/localization';
+import { routes } from '../routes';
 // 格式化时间为 "00:00"
 const formatTime = (timestamp: number): string => {
     const date = TimeService.fromTimestamp(timestamp);
@@ -63,7 +64,7 @@ const getHostName = (record: MeetingRecord, s: TencentMeetingStrings): string =>
 };
 
 export const HistoryMeetingDetailPage: React.FC = () => {
-    const { bindBack, bindTap } = useMeetingGestures();
+    const { bindBack, bindNav } = useMeetingGestures();
     const history = useMeetingStore(s => s.history);
     const startMeeting = useMeetingStore(s => s.startMeeting);
     const user = useMeetingStore(s => s.user);
@@ -169,7 +170,7 @@ export const HistoryMeetingDetailPage: React.FC = () => {
                 {isHost && meeting.participants.length > 0 && (
                     <div 
                         className="flex items-center gap-2 mb-6 active:opacity-70"
-                        {...bindTap('history.detail.attendees.open', { params: { id: meeting.id } })}
+                        {...bindNav(routes.attendees, { params: { id: meeting.id } })}
                     >
                         <span className="text-[13px] text-gray-400 bg-gray-100 px-2 py-1 rounded">{s.history_detail_participants}</span>
                         <div className="flex items-center -space-x-1">
@@ -226,7 +227,7 @@ export const HistoryMeetingDetailPage: React.FC = () => {
                 {isOngoing ? (
                     // 会议进行中：重新入会
                     <button
-                        {...bindTap('history.detail.rejoin', { beforeTrigger: prepareRejoin })}
+                        {...bindNav(routes.meeting, { beforeTrigger: prepareRejoin })}
                         className="w-full py-3.5 rounded-lg font-medium text-white bg-blue-600 active:bg-blue-700"
                     >
                         {s.history_detail_rejoin}
@@ -234,7 +235,7 @@ export const HistoryMeetingDetailPage: React.FC = () => {
                 ) : canReschedule ? (
                     // 自己预定的会议已结束：再次预定
                     <button
-                        {...bindTap('history.detail.reschedule')}
+                        {...bindNav(routes.scheduleRegular)}
                         className="w-full py-3.5 rounded-lg font-medium text-gray-700 border border-gray-300 active:bg-gray-50"
                     >
                         {s.history_detail_reschedule}

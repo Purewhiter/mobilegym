@@ -6,12 +6,13 @@ import { IcNavBack, IcNavForward, IcInfo, IcBadge } from '../res/icons';
 import { useMeetingStore } from '../state';
 import { useMeetingGestures } from '../hooks/useMeetingGestures';
 import { ActionSpec } from '../../../os/hooks/useTriggerGestures';
+import { routes } from '../routes';
 export const AccountSecurityPage: React.FC = () => {
     const location = useLocation();
     const user = useMeetingStore(s => s.user);
     const settings = useMeetingStore(s => s.settings);
     const updateSettings = useMeetingStore(s => s.updateSettings);
-    const { bindBack, bindTap } = useMeetingGestures();
+    const { bindBack, bindTap, bindNav } = useMeetingGestures();
     const s = useTencentMeetingStrings();
 
     const searchParams = new URLSearchParams(location.search);
@@ -159,7 +160,7 @@ export const AccountSecurityPage: React.FC = () => {
 
                 {/* Deactivation */}
                 <div className="bg-app-surface mx-4 rounded-xl overflow-hidden mb-8">
-                    <Item label={s.account_deactivate} border={false} isLink={true} actionProps={bindTap('accountSecurity.dialog.delete.open')} />
+                    <Item label={s.account_deactivate} border={false} isLink={true} actionProps={showDeleteDialog ? undefined : bindNav(routes.accountSecurity, { search: { dialog: 'delete-account' } })} />
                 </div>
 
                 {/* Bottom Logo */}

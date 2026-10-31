@@ -1,12 +1,12 @@
 import { useTencentMeetingStrings } from '../hooks/useTencentMeetingStrings';
 import React from 'react';
-import { useNavigate as useRouterNavigate, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { IcNavForward, IcExternalLink, IcMore, IcCopy, IcQrCode, IcInfo } from '../res/icons';
 import { useMeetingGestures } from '../hooks/useMeetingGestures';
 import * as TimeService from '../../../os/TimeService';
 import { useMeetingStore } from '../state';
-import { useAppNavigate } from '../navigation';
 import { formatMeetingFullDate, localizeMeetingTimezone } from '../utils/localization';
+import { routes } from '../routes';
 // 格式化时间为 "00:00"
 const formatTime = (timestamp: number): string => {
     const date = TimeService.fromTimestamp(timestamp);
@@ -14,9 +14,7 @@ const formatTime = (timestamp: number): string => {
 };
 
 export const MeetingDetailPage: React.FC = () => {
-    const { bindTap } = useMeetingGestures();
-    const { go, back } = useAppNavigate();
-    const routerNavigate = useRouterNavigate();
+    const { bindNav, nav } = useMeetingGestures();
     const user = useMeetingStore(s => s.user);
     const currentScheduledMeeting = useMeetingStore(s => s.currentScheduledMeeting);
     const cancelScheduledMeeting = useMeetingStore(s => s.cancelScheduledMeeting);
@@ -26,14 +24,14 @@ export const MeetingDetailPage: React.FC = () => {
 
     const handleEditMeeting = () => {
         // Replace dialog entry with edit page (back from edit returns to detail page)
-        routerNavigate('/meeting/edit', { replace: true });
+        nav.replace(routes.meetingEdit);
     };
 
     const handleCancelMeeting = () => {
         if (currentScheduledMeeting) {
             cancelScheduledMeeting(currentScheduledMeeting.id);
         }
-        go('meeting.detail.cancel');
+        nav.replace(routes.home);
     };
 
     if (!currentScheduledMeeting) {
@@ -55,7 +53,7 @@ export const MeetingDetailPage: React.FC = () => {
             {/* Header */}
             <div className="bg-app-surface pt-10 shrink-0">
                 <div className="flex items-center justify-between px-2 py-2">
-                    <button className="p-2" {...bindTap('meeting.detail.back')}>
+                    <button className="p-2" {...bindNav(routes.home, { replace: true })}>
                         <IcNavForward size={24} className="text-gray-900 transform rotate-180" />
                     </button>
                     <h1 className="text-[17px] font-medium text-gray-900">{s.meeting_detail_title}</h1>
@@ -63,7 +61,7 @@ export const MeetingDetailPage: React.FC = () => {
                         <button className="p-2">
                             <IcExternalLink size={20} className="text-gray-700" />
                         </button>
-                        <button className="p-2" {...bindTap('meeting.detail.actions.open')}>
+                        <button className="p-2" {...bindNav(routes.meetingDetail, { search: { dialog: 'actions' } })}>
                             <IcMore size={20} className="text-gray-700" />
                         </button>
                     </div>
@@ -194,7 +192,7 @@ export const MeetingDetailPage: React.FC = () => {
                     {s.meeting_detail_btn_ai}
                 </button>
                 <button
-                    {...bindTap('meeting.detail.join')}
+                    {...bindNav(routes.meeting)}
                     className="flex-1 py-3 rounded-lg font-medium text-white bg-blue-600 active:bg-blue-700"
                 >
                     {s.meeting_detail_btn_enter}
@@ -204,7 +202,7 @@ export const MeetingDetailPage: React.FC = () => {
             {/* 操作底部弹窗 */}
             {showActions && (
                 <div className="fixed inset-0 z-50 flex flex-col justify-end">
-                    <div className="absolute inset-0 bg-black/30" onClick={() => back()}></div>
+                    <div className="absolute inset-0 bg-black/30" onClick={() => nav.back()}></div>
                     <div className="relative">
                         <div className="bg-app-surface rounded-t-2xl overflow-hidden">
                             <button
@@ -225,7 +223,7 @@ export const MeetingDetailPage: React.FC = () => {
                         <div className="bg-app-surface">
                             <button
                                 className="w-full py-4 text-center text-[17px] text-gray-900 active:bg-gray-100"
-                                onClick={() => back()}
+                                onClick={() => nav.back()}
                             >
                                 {s.btn_cancel}
                             </button>

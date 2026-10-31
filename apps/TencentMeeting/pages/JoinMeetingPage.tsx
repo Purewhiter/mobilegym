@@ -2,6 +2,7 @@ import { useTencentMeetingStrings } from '../hooks/useTencentMeetingStrings';
 import React, { useState, useEffect } from 'react';
 import { useMeetingStore } from '../state';
 import { useMeetingGestures } from '../hooks/useMeetingGestures';
+import { routes } from '../routes';
 
 // Toast 组件
 const Toast: React.FC<{ message: string; visible: boolean }> = ({ message, visible }) => {
@@ -21,7 +22,7 @@ export const JoinMeetingPage: React.FC = () => {
     const ongoingMeetings = useMeetingStore(s => s.ongoingMeetings);
     const settings = useMeetingStore(s => s.settings);
     const validateMeetingId = (id: string) => ongoingMeetings.find(m => m.meetingId === id.replace(/\s/g, '')) ?? null;
-    const { bindBack, go } = useMeetingGestures();
+    const { bindBack, nav } = useMeetingGestures();
     const s = useTencentMeetingStrings();
 
     const [meetingId, setMeetingId] = useState('');
@@ -73,7 +74,7 @@ export const JoinMeetingPage: React.FC = () => {
         });
 
         // 使用声明式导航
-        go('join.meeting.open');
+        nav.push(routes.meeting);
     };
 
     // Toast 自动消失

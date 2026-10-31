@@ -4,6 +4,7 @@ import { useSearchParams } from 'react-router-dom';
 import { IcNavBack, IcSettings, IcBell, IcGift, IcNavForward } from '../res/icons';
 import { useMeetingStore } from '../state';
 import { useMeetingGestures } from '../hooks/useMeetingGestures';
+import { routes } from '../routes';
 const MessageList: React.FC<{ type: 'todo' | 'all' | 'system' | 'welfare' }> = ({ type }) => {
     const messages = useMeetingStore(s => s.messages);
     const s = useTencentMeetingStrings();
@@ -75,7 +76,7 @@ const MessageList: React.FC<{ type: 'todo' | 'all' | 'system' | 'welfare' }> = (
 };
 
 const MessagesLayout: React.FC = () => {
-    const { bindBack, bindTap } = useMeetingGestures();
+    const { bindBack, bindNav } = useMeetingGestures();
     const [searchParams] = useSearchParams();
     const s = useTencentMeetingStrings();
 
@@ -106,7 +107,7 @@ const MessagesLayout: React.FC = () => {
                     {/* Top Tabs (.switch 模式) */}
                     <div className="flex gap-6">
                         <button
-                            {...bindTap('messages.tab.switch', { params: { tab: 'todo' } })}
+                            {...bindNav(routes.messages, { replace: true, search: { tab: 'todo' } })}
                             className={`text-base font-medium relative ${isTodo ? 'text-gray-900' : 'text-gray-500'}`}
                         >
                             {s.messages_tab_todo}
@@ -115,7 +116,7 @@ const MessagesLayout: React.FC = () => {
                             )}
                         </button>
                         <button
-                            {...bindTap('messages.tab.switch', { params: { tab: 'all' } })}
+                            {...bindNav(routes.messages, { replace: true, search: { tab: 'all' } })}
                             className={`text-base font-medium relative ${isAll ? 'text-gray-900' : 'text-gray-500'}`}
                         >
                             {s.messages_tab_all}
@@ -143,11 +144,11 @@ const MessagesLayout: React.FC = () => {
 };
 
 const SubTabsBar: React.FC<{ currentSub: string | null }> = ({ currentSub }) => {
-    const { bindTap } = useMeetingGestures();
+    const { bindNav } = useMeetingGestures();
     const s = useTencentMeetingStrings();
 
     // 消息子标签配置（.switch 模式）
-    const MESSAGE_SUB_TABS: Array<{ sub: string | undefined; label: string }> = [
+    const MESSAGE_SUB_TABS: Array<{ sub: 'system' | 'welfare' | undefined; label: string }> = [
         { sub: undefined, label: s.messages_sub_all },
         { sub: 'system', label: s.messages_sub_system },
         { sub: 'welfare', label: s.messages_sub_welfare },
@@ -157,11 +158,11 @@ const SubTabsBar: React.FC<{ currentSub: string | null }> = ({ currentSub }) => 
         <div className="flex items-center gap-6 px-4 py-3 bg-app-surface border-b border-gray-100">
             {MESSAGE_SUB_TABS.map(tab => {
                 const isActive = tab.sub === undefined ? currentSub === null : currentSub === tab.sub;
-                // 子 Tab 使用 messages.sub.switch，传入 sub 参数
-                // 注意："全部"按钮不传 sub，使用 messages.tab.switch 切换到 tab=all
-                const bindProps = tab.sub
-                    ? bindTap('messages.sub.switch', { params: { sub: tab.sub } })
-                    : bindTap('messages.tab.switch', { params: { tab: 'all' } });
+                // "全部"按钮清掉 sub，只留 tab=all
+                const bindProps = bindNav(routes.messages, {
+                    replace: true,
+                    search: tab.sub ? { tab: 'all', sub: tab.sub } : { tab: 'all' },
+                });
                 return (
                     <button
                         key={tab.sub ?? 'all'}

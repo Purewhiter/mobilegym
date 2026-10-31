@@ -7,6 +7,8 @@ Every screen, transition, dialog, and discrete UI state in every MobileGym app i
 - Graph generation (BFS, shortest path, trajectory enumeration).
 - Task authoring (which buttons exist, what they do, what data they consume).
 
+Tencent Meeting is migrating to a route table instead (pilot): see [`routes.md`](routes.md).
+
 This document is the formal reference. For the minimal walkthrough, see [`../../guides/add-an-app.md`](../../guides/add-an-app.md).
 
 > 🧱 **Why declarative.** Without static declaration, "what can the user do here" is buried across `<button onClick>` handlers and route definitions. Declarative navigation reifies it. The benchmark, the linter, the task generator, and your IDE all read the same file.

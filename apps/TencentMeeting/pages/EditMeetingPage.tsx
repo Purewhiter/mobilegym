@@ -15,6 +15,7 @@ import {
     type TencentMeetingStrings,
 } from '../utils/localization';
 import { digits, int, nextStream } from '../../../os/RandomService';
+import { routes } from '../routes';
 
 const Switch: React.FC<{ value: boolean; onChange: (value: boolean) => void }> = ({ value, onChange }) => (
     <div
@@ -450,7 +451,7 @@ const formatDurationDisplay = (minutes: number, s: TencentMeetingStrings): strin
 };
 
 export const EditMeetingPage: React.FC = () => {
-    const { bindBack, bindTap } = useMeetingGestures();
+    const { bindBack, bindNav } = useMeetingGestures();
     const currentScheduledMeeting = useMeetingStore(s => s.currentScheduledMeeting);
     const updateScheduledMeeting = useMeetingStore(s => s.updateScheduledMeeting);
     const contacts = useMeetingStore(s => s.contacts);
@@ -554,7 +555,7 @@ export const EditMeetingPage: React.FC = () => {
                     <h1 className="text-[17px] font-medium text-gray-900">{s.edit_meeting_title}</h1>
                     <button
                         className="text-blue-600 text-[15px] px-2 py-2"
-                        {...bindTap('meeting.edit.complete', { beforeTrigger: handleComplete })}
+                        {...bindNav(routes.meetingDetail, { replace: true, beforeTrigger: handleComplete })}
                     >
                         {s.edit_meeting_confirm}
                     </button>
