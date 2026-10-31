@@ -576,7 +576,7 @@ class BaseTask(ABC):
             # The simulated time this episode starts at (--sim-time) is set at page boot.
             if hasattr(env, "begin_episode"):
                 env.begin_episode(self.id)
-            await env.reset(app_ids=self.apps or None)
+            await env.reset(app_ids=list(self.apps or []))
             # In-app randomness (seat numbers, codes, ids) is seeded per episode.
             if hasattr(env, "apply_random_seed"):
                 await env.apply_random_seed(self.id)

@@ -697,8 +697,9 @@ export const OSProvider: React.FC<{ children: React.ReactNode }> = ({ children }
       setRandomSeed: (seed: number) => RandomService.setSeed(seed),
       getRandomSeed: () => RandomService.getSeed(),
       idleState,
+      // No list = every app; an empty list = none (home-screen tasks).
       waitForData: async (appIds?: string[]) => {
-        const all = !appIds || appIds.length === 0;
+        const all = !appIds;
         const has = (id: string) => all || appIds!.includes(id);
 
         const loadApp = async (importFn: () => Promise<any>) => {
