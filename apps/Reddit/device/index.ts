@@ -21,7 +21,13 @@ import { getUserAvatar, processPosts } from '../data/catalog';
 import type { RedditUser } from '../state';
 import type { Comment, RedditCommentsOverlay, RedditPost, RedditPostsOverlay, RedditSettings } from '../types';
 import { collectRedditCommentDeletionIds } from '../utils/commentTree';
-import { resolveRedditComment, resolveRedditComments, resolveRedditPost, resolveRedditPosts } from '../utils/view';
+import {
+  resolveRedditComment,
+  resolveRedditComments,
+  resolveRedditPost,
+  resolveRedditPosts,
+  searchRedditPosts,
+} from '../utils/view';
 
 export type ChatMessage = {
   id: string;
@@ -342,12 +348,33 @@ const catalogComment = (ctx: Ctx, id: string, postId?: string): Comment | undefi
 
 const optionalId = (value: unknown) => (value === undefined || value === null ? undefined : String(value));
 
+const viewPosts = (ctx: Ctx) =>
+  resolveRedditPosts(extras(ctx).posts, ctx.state.posts ?? {}, ctx.state.user?.postIds ?? []);
+
 const queries: AppModule<RedditDeviceState>['queries'] = {
+  // What the pages show: the feed a page at a time, search hits, posts by id.
+  feedPage(ctx, args) {
+    const posts = viewPosts(ctx);
+    const offset = Math.max(0, Number(args.offset ?? 0) || 0);
+    const limit = Math.max(0, Number(args.limit ?? 20) || 0);
+    return { posts: posts.slice(offset, offset + limit), total: posts.length };
+  },
+  searchPosts(ctx, args) {
+    return searchRedditPosts(viewPosts(ctx), String(args.query ?? ''), Number(args.limit ?? 50) || 50);
+  },
+  viewPostsByIds(ctx, args) {
+    const byId = extras(ctx).postsById;
+    const out: Record<string, RedditPost> = {};
+    for (const id of Array.isArray(args.ids) ? args.ids.map(String) : []) {
+      const post = resolveRedditPost(ctx.state.posts ?? {}, byId, id);
+      if (post) out[id] = post;
+    }
+    return out;
+  },
+
   // Catalog merged with this session's state (judges and samplers), through
   // the same functions as the page hooks.
-  viewPosts(ctx) {
-    return resolveRedditPosts(extras(ctx).posts, ctx.state.posts ?? {}, ctx.state.user?.postIds ?? []);
-  },
+  viewPosts,
   viewPost(ctx, args) {
     return resolveRedditPost(ctx.state.posts ?? {}, extras(ctx).postsById, String(args.id ?? ''));
   },
@@ -371,11 +398,6 @@ const queries: AppModule<RedditDeviceState>['queries'] = {
   /** Catalog post ids in feed order, or in `posts.json` order with `order: 'file'`. */
   catalogPostIds(ctx, args) {
     return args.order === 'file' ? extras(ctx).fileOrder : extras(ctx).posts.map((post) => String(post.id));
-  },
-
-  /** Every catalog post in feed order, without comment threads. */
-  posts(ctx) {
-    return extras(ctx).posts;
   },
 
   /** A catalog post's own comments (with `postId`). */

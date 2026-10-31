@@ -1,12 +1,13 @@
 /**
- * X view 层的纯函数视图合并 / hydrate 工具。
+ * X view assembly: merge the catalog with the session's posts and attach
+ * authors, quoted / retweeted posts and reply trees.
  *
- * 所有函数都是纯函数 — 输入 base dataset + runtime slice, 输出视图对象。
- * 不读模块全局 (loader cache / store), 不持外部状态; data/view.ts 负责把 hook
- * 订阅源 (useSyncExternalStore + useXStore) 与这些函数串起来。
+ * Pure: the device server's view queries run these. Display times depend on
+ * the page's clock and locale, so they stay out of here: callers pass the
+ * "just now" label, and the page fills in times on the result
+ * (`withDisplayTimes` in data/view.ts).
  */
 import type { XPost, XUser } from '../types';
-import { normalizeXPostTemporalFields, getJustNowLabel } from './formatTime';
 import {
   resolveXRuntimePosts,
   runtimeCommentCounts,
@@ -19,12 +20,12 @@ export type { XRuntimeMeSlice };
 
 const REPLY_ROOT_ID_PATTERN = /^r_(p_[0-9]+)/;
 
-export function buildRetweetShell(meUserId: string, source: XPost): XPost {
+export function buildRetweetShell(meUserId: string, source: XPost, justNow: string): XPost {
   return {
     id: `retweet_${source.id}`,
     authorId: meUserId,
     content: '',
-    time: getJustNowLabel(),
+    time: justNow,
     stats: { ...source.stats },
     retweetedPostId: source.id,
   };
@@ -38,6 +39,7 @@ export function mergeLocalPosts(
   runtimePosts: XRuntimePostTable,
   me: XRuntimeMeSlice,
   basePosts: XPost[],
+  justNow: string,
 ): XPost[] {
   const combined = resolveXRuntimePosts(runtimePosts, basePosts);
   const commentCounts = runtimeCommentCounts(runtimePosts);
@@ -60,7 +62,7 @@ export function mergeLocalPosts(
     if (!sourceId || emitted.has(sourceId)) continue;
     const source = byId.get(sourceId);
     if (!source) continue;
-    retweetShells.push(buildRetweetShell(me.id, source));
+    retweetShells.push(buildRetweetShell(me.id, source, justNow));
     emitted.add(sourceId);
   }
 
@@ -85,19 +87,18 @@ function hydrateInlinePost(
 ): any {
   if (!post) return undefined;
 
-  const normalizedPost = normalizeXPostTemporalFields(post);
-  const author = users[normalizedPost.authorId];
+  const author = users[post.authorId];
 
-  const quotedPost = normalizedPost.quotedPostId ? postIndex.get(normalizedPost.quotedPostId) : undefined;
+  const quotedPost = post.quotedPostId ? postIndex.get(post.quotedPostId) : undefined;
   const quotedAuthor = quotedPost ? users[quotedPost.authorId] : undefined;
 
-  const parentPost = normalizedPost.threadId ? postIndex.get(normalizedPost.threadId) : undefined;
+  const parentPost = post.threadId ? postIndex.get(post.threadId) : undefined;
   const replyToUser = parentPost ? users[parentPost.authorId] : undefined;
 
   return {
-    ...normalizedPost,
+    ...post,
     author: {
-      id: author?.id ?? normalizedPost.authorId,
+      id: author?.id ?? post.authorId,
       name: author?.name || 'Unknown',
       avatar: author?.avatar,
       verified: author?.verified,
@@ -111,7 +112,7 @@ function hydrateInlinePost(
     replyToUserId: replyToUser?.id,
     quotedPost: quotedPost
       ? {
-          ...normalizeXPostTemporalFields(quotedPost),
+          ...quotedPost,
           author: {
             id: quotedAuthor?.id ?? quotedPost.authorId,
             name: quotedAuthor?.name || 'Unknown',
@@ -138,13 +139,12 @@ export function hydratePost(
 
 export function hydrateReplyTree(post: XPost, allUsers: Record<string, XUser>): XPost {
   const hydrate = (p: XPost): XPost => {
-    const normalizedPost = normalizeXPostTemporalFields(p);
     const author = allUsers[p.authorId];
     const nested = Array.isArray((p as any).replies)
       ? ((p as any).replies as XPost[]).map(hydrate)
       : undefined;
     return {
-      ...normalizedPost,
+      ...p,
       author: {
         id: author?.id ?? p.authorId,
         name: author?.name || 'Unknown',

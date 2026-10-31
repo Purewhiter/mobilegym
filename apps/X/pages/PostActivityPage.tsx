@@ -1,7 +1,7 @@
 import React from 'react';
 import { useParams } from 'react-router-dom';
 import { useXStore, selectEffectiveFollowedSet } from '../state';
-import { useXHydratedPosts, useXResolvedPost } from '../data/view';
+import { useXHydratedPosts, useXResolvedPostQuery } from '../data/view';
 import { useXGestures } from '../hooks/useXGestures';
 import { XImage } from '../components/XMedia';
 import { useXStrings } from '../hooks/useXStrings';
@@ -10,7 +10,7 @@ import { IcSort } from '../res/icons';
 export const PostActivityPage: React.FC = () => {
   const { id } = useParams();
   const posts = useXHydratedPosts();
-  const post = useXResolvedPost(id || '');
+  const { post, loading: postLoading } = useXResolvedPostQuery(id || '');
   const toggleFollow = useXStore(s => s.toggleFollow);
   const followedSet = useXStore(selectEffectiveFollowedSet);
   const isFollowing = (userId: string) => followedSet.has(userId);
@@ -48,7 +48,7 @@ export const PostActivityPage: React.FC = () => {
           <button className="text-app-text mr-4" {...bindBack()}>←</button>
           <div className="font-bold text-lg">{s.post_activity_title}</div>
         </div>
-        <div className="mt-6 text-gray-500">{s.post_not_found}</div>
+        {!postLoading && <div className="mt-6 text-gray-500">{s.post_not_found}</div>}
       </div>
     );
   }

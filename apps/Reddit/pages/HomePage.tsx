@@ -3,7 +3,7 @@ import { TopBar } from '../components/TopBar';
 import type { RedditPost } from '../types';
 import { useRedditStore } from '../state';
 import { useShallow } from 'zustand/react/shallow';
-import { useRedditPosts } from '../hooks/useRedditPosts';
+import { useRedditFeed } from '../hooks/useRedditPosts';
 import {
   IcUpvote,
   IcDownvote,
@@ -117,7 +117,7 @@ interface PostCardProps {
 // 注意：bindTap 不能作为 prop 传入——`useTriggerGestures` 内的 bindTap 是普通函数
 // 声明，每次 HomePage rerender 都是新引用，会让 React.memo 的浅比较失败导致全表卡片
 // 重渲染。改为在卡片内部调用 useRedditGestures()，让 prop 集合保持稳定（post 引用
-// 由 useRedditPosts useMemo 保证、voted/isJoined 是原始值、其他 callback 已 useCallback
+// 由 useRedditFeed 的查询结果保证、voted/isJoined 是原始值、其他 callback 已 useCallback
 // 化或是 Zustand action）。
 const PostCard: React.FC<PostCardProps> = React.memo(({
   post, voted, isJoined, onVote, onToggleJoin, onMoreMenu, onPostClick,
@@ -243,7 +243,8 @@ const PostCard: React.FC<PostCardProps> = React.memo(({
 /* ── Main page ── */
 
 export const HomePage: React.FC = () => {
-  const posts = useRedditPosts();
+  const [displayCount, setDisplayCount] = React.useState(PAGE_SIZE);
+  const { posts: visiblePosts, total: totalPosts } = useRedditFeed(displayCount);
   const { joinedCommunityIds, postVotes } = useRedditStore(useShallow((s) => ({
     joinedCommunityIds: s.user.joinedCommunityIds,
     postVotes: s.user.postVotes,
@@ -253,7 +254,6 @@ export const HomePage: React.FC = () => {
   const { go } = useRedditGestures();
   const [postMoreMenuPostId, setPostMoreMenuPostId] = React.useState<string | null>(null);
 
-  const [displayCount, setDisplayCount] = React.useState(PAGE_SIZE);
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
   const loadingRef = React.useRef(false);
 
@@ -278,11 +278,12 @@ export const HomePage: React.FC = () => {
       if (rafId) return;
       rafId = requestAnimationFrame(() => {
         rafId = 0;
-        if (loadingRef.current || displayCount >= posts.length) return;
+        // Ask for the next page only once the current one has arrived.
+        if (loadingRef.current || displayCount >= totalPosts || visiblePosts.length < displayCount) return;
         const { scrollTop, scrollHeight, clientHeight } = container;
         if (scrollHeight - scrollTop - clientHeight < 800) {
           loadingRef.current = true;
-          setDisplayCount(prev => Math.min(prev + PAGE_SIZE, posts.length));
+          setDisplayCount(prev => Math.min(prev + PAGE_SIZE, totalPosts));
           loadingRef.current = false;
         }
       });
@@ -292,7 +293,7 @@ export const HomePage: React.FC = () => {
       container.removeEventListener('scroll', handleScroll);
       if (rafId) cancelAnimationFrame(rafId);
     };
-  }, [displayCount, posts.length]);
+  }, [displayCount, totalPosts, visiblePosts.length]);
 
   return (
     <div className="flex flex-col h-full bg-[#DAE0E6] relative">
@@ -348,7 +349,7 @@ export const HomePage: React.FC = () => {
         data-scroll-container="main"
         data-scroll-direction="vertical"
       >
-        {posts.slice(0, displayCount).map((post) => (
+        {visiblePosts.map((post) => (
           <PostCard
             key={post.id}
             post={post}
@@ -361,7 +362,7 @@ export const HomePage: React.FC = () => {
           />
         ))}
 
-        {displayCount < posts.length && (
+        {visiblePosts.length < totalPosts && (
           <div className="flex justify-center items-center py-6">
             <div className="w-8 h-8 border-4 border-gray-300 border-t-[#FF4500] rounded-full animate-spin" />
           </div>

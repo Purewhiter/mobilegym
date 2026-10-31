@@ -8,7 +8,6 @@ import {
   defaultFollowedUserIds,
   defaultFollowerUserIds,
 } from './data';
-import { requestReplies } from './data/loader';
 import type { XUser, XPost, XConversation, XSettings } from './types';
 import { getJustNowLabel } from './utils/formatTime';
 import type { XRuntimePostTable } from './utils/runtimePostResolver';
@@ -60,9 +59,6 @@ export interface XActions {
   addPost: (content: string, image?: string, quotedPostId?: string) => Promise<void>;
   addReply: (postId: string, content: string) => Promise<void>;
   sendMessage: (conversationId: string, content: string) => Promise<void>;
-
-  /** Start the reply-trees query (large; only post details and profiles need it). */
-  ensureRepliesLoaded: () => Promise<void>;
 }
 
 // ---- Initial state ----
@@ -160,10 +156,6 @@ export const useXStore = createDeviceAppStore<XState, XActions>(
           time: getJustNowLabel(),
           read: true,
         });
-      },
-
-      ensureRepliesLoaded: async () => {
-        requestReplies();
       },
     };
   },

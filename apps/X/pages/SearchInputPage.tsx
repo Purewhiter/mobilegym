@@ -2,7 +2,7 @@ import React from 'react';
 import { useLocale } from '@/os/locale';
 import { IcRepost, IcTabSearch } from '../res/icons';
 import { useXStore, selectEffectiveFollowedSet } from '../state';
-import { useXAllUsers, useXRecentSearches, useXSearchPosts } from '../data/view';
+import { useXMatchUsers, useXRecentSearches, useXSearchPosts } from '../data/view';
 import { useXGestures } from '../hooks/useXGestures';
 import { useXStrings } from '../hooks/useXStrings';
 import { BookmarkToast } from '../components/BookmarkToast';
@@ -14,7 +14,6 @@ type SearchTab = 'hot' | 'latest' | 'people' | 'video' | 'photo';
 
 export const SearchInputPage: React.FC = () => {
   const recentSearches = useXRecentSearches();
-  const users = useXAllUsers();
   const followedSet = useXStore(selectEffectiveFollowedSet);
   const toggleFollow = useXStore(s => s.toggleFollow);
   const toggleRetweet = useXStore(s => s.toggleRetweet);
@@ -33,45 +32,9 @@ export const SearchInputPage: React.FC = () => {
     return () => setSearchQuery('');
   }, [inputValue, setSearchQuery]);
 
-  // People Search: user-input fuzzy match, 不属于 data contract 范围, 允许 case-insensitive。
-  // 这是除 selectSearchPosts 之外的另一个合法 lowercase 例外, 都仅用于 query/content 文本匹配。
-  const matchedUsers = React.useMemo(() => {
-    if (!query) return [];
-
-    const list = Object.values(users) as Array<{
-      id: string;
-      name?: string;
-      restId?: string;
-      followers?: number;
-      avatar?: string;
-      verified?: boolean;
-      bio?: string;
-    }>;
-
-    const scored = list
-      .map(user => {
-        const name = (user.name || '').toLowerCase();
-        const id = (user.id || '').toLowerCase();
-        const restId = (user.restId || '').toLowerCase();
-        const normalizedQuery = query.replace(/^@/, '');
-        const hit =
-          name.includes(query) ||
-          id.includes(normalizedQuery) ||
-          restId.includes(query);
-
-        if (!hit) return null;
-
-        const exactId = id === normalizedQuery;
-        const starts = id.startsWith(normalizedQuery) || name.startsWith(query);
-
-        const score = (exactId ? 300 : 0) + (starts ? 50 : 0);
-        return { user, score };
-      })
-      .filter(Boolean) as { user: any; score: number }[];
-
-    scored.sort((a, b) => b.score - a.score || (b.user.followers ?? 0) - (a.user.followers ?? 0));
-    return scored.slice(0, 20).map(item => item.user);
-  }, [query, users]);
+  // People Search: user-input fuzzy match (device server `matchUsers`), 不属于 data contract 范围,
+  // 允许 case-insensitive。与 searchPosts 一样仅用于 query/content 文本匹配。
+  const matchedUsers = useXMatchUsers(query);
 
   const matchedPosts = useXSearchPosts(query);
 

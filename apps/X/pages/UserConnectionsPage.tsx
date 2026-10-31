@@ -2,11 +2,10 @@ import React from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { currentUser } from '../data';
 import { useXStore, selectEffectiveFollowedSet } from '../state';
-import { useXAllUsers } from '../data/view';
+import { useXConnections, useXUser } from '../data/view';
 import { useXGestures } from '../hooks/useXGestures';
 import { useXStrings } from '../hooks/useXStrings';
 import { XImage } from '../components/XMedia';
-import { XUser } from '../types';
 
 const meUserId: string = currentUser.id;
 
@@ -15,46 +14,18 @@ export const UserConnectionsPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const type = (searchParams.get('type') as 'following' | 'followers') || 'following';
 
-  const users = useXAllUsers();
   const followedSet = useXStore(selectEffectiveFollowedSet);
   const toggleFollow = useXStore(s => s.toggleFollow);
   const { bindBack, bindTap, go } = useXGestures();
   const s = useXStrings();
 
-  const user = id ? users[id] : null;
+  const user = useXUser(id || '') ?? null;
   const isFollowing = React.useCallback(
     (userId: string) => followedSet.has(userId),
     [followedSet],
   );
 
-  const connections = React.useMemo(() => {
-    if (!id) return [];
-
-    const allUsers = Object.values(users) as XUser[];
-
-    if (type === 'following') {
-      if (id === meUserId) {
-        return allUsers.filter(item => followedSet.has(item.id));
-      }
-      return allUsers.slice(0, 15);
-    }
-
-    if (id === meUserId) {
-      return allUsers.slice(5, 20);
-    }
-
-    const simulated = allUsers.slice(10, 25);
-    if (followedSet.has(id)) {
-      const me = users[meUserId];
-      if (me && !simulated.find(item => item.id === me.id)) {
-        simulated.unshift(me);
-      }
-    } else {
-      const index = simulated.findIndex(item => item.id === meUserId);
-      if (index !== -1) simulated.splice(index, 1);
-    }
-    return simulated;
-  }, [id, followedSet, type, users]);
+  const connections = useXConnections(id || '', type);
 
   if (!user) return null;
 

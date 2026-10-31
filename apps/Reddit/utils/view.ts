@@ -80,3 +80,47 @@ export function resolveRedditComments(
     });
   return [...catalogComments, ...sessionComments];
 }
+
+// ── Search ──────────────────────────────────────────────────────────
+
+/** Lowercase, without spaces, punctuation and symbols (for CJK and multi-word queries). */
+const normalizeForSearch = (value: string): string =>
+  (value || '')
+    .toLowerCase()
+    .replace(/[\s\p{P}\p{S}]+/gu, '');
+
+/** Word-prefix match for ASCII queries, substring match on normalized text otherwise. */
+export const matchesWord = (text: string, query: string): boolean => {
+  if (!text || !query) return false;
+  const trimmed = query.trim();
+  if (!trimmed) return false;
+
+  const hasNonAscii = /[^\x00-\x7F]/.test(trimmed);
+  if (hasNonAscii || /\s/.test(trimmed)) {
+    const normalizedText = normalizeForSearch(text);
+    const normalizedQuery = normalizeForSearch(trimmed);
+    return normalizedQuery.length > 0 && normalizedText.includes(normalizedQuery);
+  }
+
+  const escapedQuery = trimmed.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return new RegExp(`\\b${escapedQuery}`, 'i').test(text);
+};
+
+/** Posts whose title, body, author or community matches `query`, in order; at most `limit`. */
+export function searchRedditPosts(posts: RedditPost[], query: string, limit = 50): RedditPost[] {
+  const q = query.trim();
+  if (!q) return [];
+  const results: RedditPost[] = [];
+  for (const post of posts) {
+    if (
+      matchesWord(post.title || '', q) ||
+      matchesWord(post.content || '', q) ||
+      matchesWord(post.author || '', q) ||
+      matchesWord(post.subreddit || '', q)
+    ) {
+      results.push(post);
+      if (results.length >= limit) break;
+    }
+  }
+  return results;
+}

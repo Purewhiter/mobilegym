@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { useLocale } from '@/os/locale';
 import { IcCalendar, IcBalloon, IcClose, IcLocation, IcRepost, IcStar, IcTabNotifications, IcUserMinus } from '../res/icons';
 import { useXStore, selectEffectiveFollowedSet } from '../state';
-import { useXAllUsers, useXRepliesLoaded, useXUserProfilePosts, useXUserReplies } from '../data/view';
+import { useXUserProfilePosts, useXUserQuery, useXUserReplies } from '../data/view';
 import { useXGestures } from '../hooks/useXGestures';
 import { useXStrings } from '../hooks/useXStrings';
 import { XImage } from '../components/XMedia';
@@ -15,19 +15,17 @@ import { shouldShowProfileTopBar } from '../utils/topBarVisibility';
 
 export const UserProfilePage: React.FC = () => {
   const { id } = useParams();
-  const users = useXAllUsers();
+  const { user: profileUser, loading: userLoading } = useXUserQuery(id || '');
   const userPosts = useXUserProfilePosts(id || '', 80);
   const toggleFollow = useXStore(s => s.toggleFollow);
   const followedSet = useXStore(selectEffectiveFollowedSet);
-  const ensureRepliesLoaded = useXStore(s => s.ensureRepliesLoaded);
-  const repliesLoaded = useXRepliesLoaded();
-  const rawUserReplies = useXUserReplies(id || '', 80);
+  const { items: rawUserReplies, loading: userRepliesLoading } = useXUserReplies(id || '', 80);
   const toggleRetweet = useXStore(s => s.toggleRetweet);
   const { bindBack, bindTap, go } = useXGestures();
   const s = useXStrings();
   const locale = useLocale();
 
-  const user = (id ? users[id] : undefined) ?? null;
+  const user = profileUser ?? null;
   const isFollowing = (userId: string) => followedSet.has(userId);
   const isFollowed = id ? isFollowing(id) : false;
   const [showFollowMenu, setShowFollowMenu] = React.useState(false);
@@ -42,13 +40,8 @@ export const UserProfilePage: React.FC = () => {
   const topBarHeight = useElementHeight(topBarRef, 96);
   const [isTopBarVisible, setIsTopBarVisible] = React.useState(false);
 
-  // Loading 派生于 activeTab + repliesLoaded; effect 只触发懒加载, 不维护额外 state。
-  const repliesLoading = activeTab === 'replies' && !!id && !repliesLoaded;
-
-  React.useEffect(() => {
-    if (!repliesLoading) return;
-    ensureRepliesLoaded().catch(() => {});
-  }, [ensureRepliesLoaded, repliesLoading]);
+  // Loading 派生于 activeTab + 回复查询状态。
+  const repliesLoading = activeTab === 'replies' && !!id && userRepliesLoading;
 
   const measureThreshold = React.useCallback(() => {
     const scrollEl = scrollElRef.current;
@@ -94,10 +87,9 @@ export const UserProfilePage: React.FC = () => {
 
   const userReplies = React.useMemo(() => {
     if (activeTab !== 'replies' || !id || !user) return [];
-    if (!repliesLoaded && repliesLoading) return [];
-    if (!repliesLoaded) return [];
+    if (repliesLoading) return [];
     return rawUserReplies;
-  }, [activeTab, id, rawUserReplies, repliesLoaded, repliesLoading, user]);
+  }, [activeTab, id, rawUserReplies, repliesLoading, user]);
 
   const tabs = [
     { id: 'posts', label: s.profile_tab_posts },
@@ -115,9 +107,10 @@ export const UserProfilePage: React.FC = () => {
           <div className="w-8 h-8 bg-white/70 rounded-full flex items-center justify-center cursor-pointer" {...bindBack()}>
             ←
           </div>
-          <div className="font-bold text-lg">{s.user_not_found_title}</div>
+          {/* 资料还在加载时只留返回按钮, 不闪 "用户不存在" */}
+          {!userLoading && <div className="font-bold text-lg">{s.user_not_found_title}</div>}
         </div>
-        <div className="text-gray-400 mt-6">{s.user_not_found_desc}</div>
+        {!userLoading && <div className="text-gray-400 mt-6">{s.user_not_found_desc}</div>}
       </div>
     );
   }

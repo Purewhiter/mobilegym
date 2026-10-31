@@ -1,237 +1,126 @@
 /**
- * X view 层 — base dataset 订阅 + 视图 hook。
+ * X view layer: the device server assembles each page's posts and users
+ * (`apps/X/device/views.ts`, one query per hook here); the page fetches only
+ * what it shows instead of the whole catalog.
  *
- * 设计与 RedBook (`apps/RedBook/data/view.ts`) 对齐:
- *   - base 数据(users/posts/replies)只在 loader 模块缓存里, 不进 zustand store
- *   - 组件通过 useSyncExternalStore 订阅 loader, 通过 useXStore 订阅 runtime overlay
- *   - 视图合并由本文件内 hook 用 useMemo + utils/hydrate.ts 纯函数完成
- *
- * 每个 hook 内部:
- *   1. 订阅 base dataset (loader snapshot)
- *   2. 订阅 store runtime slice (useShallow 保证引用稳定)
- *   3. useMemo 合并 (依赖只在 base / runtime slice 任一变更时重算)
+ * Display times follow this page's clock and locale, so the server returns raw
+ * times: hooks fill them in (`withDisplayTimes`) and pass the "just now" label
+ * used by retweet shells. Results refresh when the X session's state changes.
  */
-import { useMemo, useSyncExternalStore } from 'react';
-import { useShallow } from 'zustand/react/shallow';
+import { useMemo } from 'react';
 
 import { useDeviceQuery } from '../../../os/device/deviceStore';
-import { areRepliesRequested, subscribeRepliesRequested, type XBaseDataset } from './loader';
-import { normalizeXPostTemporalFields } from '../utils/formatTime';
+import { getJustNowLabel, normalizeXPostTemporalFields } from '../utils/formatTime';
 import { conversations as baseConversations, notifications as baseNotifications, searchHistory as baseSearchHistory, currentUser } from './';
 import { useXStore, type XStore } from '../state';
-import {
-  buildPostIndex,
-  hydratePost,
-  hydrateReplyTree,
-  mergeLocalPosts,
-  resolveReplyById,
-  type XRuntimeMeSlice,
-} from '../utils/hydrate';
 import type { XMessage, XPost, XUser } from '../types';
 
-// ---- Base dataset subscription ----
-
+const EMPTY: any[] = Object.freeze([]) as unknown as any[];
 const EMPTY_USERS = Object.freeze({}) as Record<string, XUser>;
-const EMPTY_POSTS = Object.freeze([]) as readonly XPost[] as XPost[];
-const EMPTY_REPLIES = Object.freeze({}) as Record<string, XPost[]>;
 
-// Display times follow this page's clock and locale, so the server sends raw
-// posts and they are formatted here, once per query result (shared by every hook).
-const normalizedPosts = new WeakMap<XPost[], XPost[]>();
-const normalizedReplies = new WeakMap<Record<string, XPost[]>, Record<string, XPost[]>>();
-
-function normalizePosts(raw: XPost[]): XPost[] {
-  let out = normalizedPosts.get(raw);
-  if (!out) normalizedPosts.set(raw, (out = raw.map((post) => normalizeXPostTemporalFields(post))));
+/** Display times on a hydrated post and everything nested in it (quoted, retweeted, replies). */
+function withDisplayTimes<T>(post: T): T {
+  if (!post || typeof post !== 'object') return post;
+  const p = post as any;
+  const out: any = normalizeXPostTemporalFields(p);
+  if (p.quotedPost) out.quotedPost = withDisplayTimes(p.quotedPost);
+  if (p.retweetedPost) out.retweetedPost = withDisplayTimes(p.retweetedPost);
+  if (Array.isArray(p.replies)) out.replies = p.replies.map(withDisplayTimes);
   return out;
 }
 
-function normalizeReplies(raw: Record<string, XPost[]>): Record<string, XPost[]> {
-  let out = normalizedReplies.get(raw);
-  if (!out) {
-    out = {};
-    for (const [postId, replies] of Object.entries(raw)) out[postId] = replies.map((r) => normalizeXPostTemporalFields(r));
-    normalizedReplies.set(raw, out);
-  }
-  return out;
-}
+const timed = new WeakMap<object, any>();
 
-/**
- * X base dataset (users/posts/replies) from the device server catalog. Posts
- * appear only once users are there too, so no row renders an "Unknown"
- * author in between. Replies load after `requestReplies()`.
- */
-export function useXBaseDataset(): XBaseDataset {
-  const { data: users } = useDeviceQuery<Record<string, XUser>>('x', 'users', {}, true, { catalog: true });
-  const { data: posts } = useDeviceQuery<XPost[]>('x', 'posts', {}, true, { catalog: true });
-  const repliesWanted = useSyncExternalStore(subscribeRepliesRequested, areRepliesRequested, areRepliesRequested);
-  const { data: replies } = useDeviceQuery<Record<string, XPost[]>>('x', 'replies', {}, repliesWanted, { catalog: true });
+/** `withDisplayTimes` over a query result, once per result object. */
+function useTimed<T extends object>(data: T | undefined, map: (data: T) => any): any {
   return useMemo(() => {
-    const ready = Boolean(users && posts);
-    return {
-      users: ready ? users! : EMPTY_USERS,
-      posts: ready ? normalizePosts(posts!) : EMPTY_POSTS,
-      replies: ready && replies ? normalizeReplies(replies) : EMPTY_REPLIES,
-    };
-  }, [users, posts, replies]);
+    if (!data) return undefined;
+    let out = timed.get(data);
+    if (!out) timed.set(data, (out = map(data)));
+    return out;
+  }, [data, map]);
 }
 
-/** "Replies 已加载" 信号: replies map 非空即视为已加载。 */
-export function useXRepliesLoaded(): boolean {
-  const base = useXBaseDataset();
-  return Object.keys(base.replies).length > 0;
+const timeList = (list: any[]) => list.map(withDisplayTimes);
+
+/** A view query; `keepPrevious` keeps the last answer on screen while new args load (typing). */
+function useXView<T>(name: string, args: Record<string, unknown>, enabled = true, keepPrevious = false) {
+  return useDeviceQuery<T>('x', name, args, enabled, { keepPrevious });
 }
-
-// ---- Internal slice selectors ----
-
-const selectMeSlice = (s: XStore): XRuntimeMeSlice => ({
-  id: s.user.id,
-  likedPostIds: s.user.likedPostIds,
-  retweetedPostIds: s.user.retweetedPostIds,
-  followedUserIds: s.user.followedUserIds,
-  followerUserIds: s.user.followerUserIds,
-});
-
-const selectRuntimePosts = (s: XStore) => s.posts;
-const selectConversationsSlice = (s: XStore) => s.conversations;
 
 // ---- Users ----
 
-/**
- * 把 me user 投影成 user 字典里的一条 entry。like/bookmark/post 等不影响展示形态的
- * runtime 变更不会改变这个 slice (useShallow + 字段级浅比较), 避免下游字典重算。
- */
-const selectMeUserEntry = (s: XStore): XUser => ({
-  id: s.user.id,
-  name: s.user.name,
-  avatar: s.user.avatar,
-  banner: s.user.banner,
-  verified: s.user.verified,
-  bio: s.user.bio,
-  location: s.user.location,
-  website: s.user.website,
-  birthDate: s.user.birthDate,
-  joinDate: s.user.joinDate,
-  restId: s.user.restId,
-  following: s.user.followedUserIds.length,
-  followers: s.user.followerUserIds.length,
-});
-
-/** Base users + 当前 me user (合并后字典)。 */
-export function useXAllUsers(): Record<string, XUser> {
-  const base = useXBaseDataset();
-  const meEntry = useXStore(useShallow(selectMeUserEntry));
-  return useMemo(
-    () => ({ ...base.users, [meEntry.id]: meEntry }),
-    [base.users, meEntry],
-  );
+/** Users by id (the current user included). */
+export function useXUsers(ids: string[]): Record<string, XUser> {
+  const key = useMemo(() => [...new Set(ids.filter(Boolean))].sort(), [ids]);
+  const { data } = useXView<Record<string, XUser>>('usersByIds', { ids: key }, key.length > 0, true);
+  return data ?? EMPTY_USERS;
 }
 
-// ---- Local posts (runtime overlay + base, with relationship-derived stats + retweet shells) ----
-
-export function useXLocalPosts(): XPost[] {
-  const base = useXBaseDataset();
-  const runtimePosts = useXStore(selectRuntimePosts);
-  const me = useXStore(useShallow(selectMeSlice));
-  return useMemo(
-    () => mergeLocalPosts(runtimePosts, me, base.posts),
-    [runtimePosts, me, base.posts],
-  );
+/** One user; `loading` until the first answer for this id. */
+export function useXUserQuery(id: string): { user: XUser | undefined; loading: boolean } {
+  const { data, loading } = useXView<Record<string, XUser>>('usersByIds', { ids: id ? [id] : [] }, Boolean(id));
+  return { user: id ? data?.[id] : undefined, loading: Boolean(id) && loading && data === undefined };
 }
 
-function useXPostIndex(): Map<string, XPost> {
-  const base = useXBaseDataset();
-  const runtimePosts = useXStore(selectRuntimePosts);
-  return useMemo(() => buildPostIndex(base.posts, runtimePosts), [base.posts, runtimePosts]);
+export function useXUser(id: string): XUser | undefined {
+  return useXUserQuery(id).user;
 }
 
-// ---- Hydrated timelines ----
+/** People search (`query` already lowercased and trimmed). */
+export function useXMatchUsers(query: string): XUser[] {
+  const { data } = useXView<XUser[]>('matchUsers', { query }, Boolean(query), true);
+  return query ? data ?? EMPTY : EMPTY;
+}
 
-const HYDRATED_FOR_YOU_LIMIT = 200;
-const HYDRATED_FOLLOWING_LIMIT = 100;
+/** Following / followers list shown on a profile. */
+export function useXConnections(id: string, type: 'following' | 'followers'): XUser[] {
+  const { data } = useXView<XUser[]>('connections', { id, type }, Boolean(id));
+  return data ?? EMPTY;
+}
+
+// ---- Timelines ----
+
+const justNowArgs = () => ({ justNow: getJustNowLabel() });
 
 export function useXHydratedPosts(): any[] {
-  const localPosts = useXLocalPosts();
-  const allUsers = useXAllUsers();
-  const postIndex = useXPostIndex();
-  return useMemo(
-    () => localPosts.slice(0, HYDRATED_FOR_YOU_LIMIT).map((p) => hydratePost(p, allUsers, postIndex)),
-    [localPosts, allUsers, postIndex],
-  );
+  const { data } = useXView<any[]>('hydratedPosts', justNowArgs());
+  return useTimed(data, timeList) ?? EMPTY;
 }
 
-export function useXHydratedFollowingPosts(): any[] {
-  const localPosts = useXLocalPosts();
-  const allUsers = useXAllUsers();
-  const postIndex = useXPostIndex();
-  const followedUserIds = useXStore((s) => s.user.followedUserIds);
-  return useMemo(() => {
-    const followSet = new Set(followedUserIds);
-    followSet.add(currentUser.id);
-    return localPosts
-      .filter((p) => followSet.has(p.authorId))
-      .slice(0, HYDRATED_FOLLOWING_LIMIT)
-      .map((p) => hydratePost(p, allUsers, postIndex));
-  }, [localPosts, allUsers, postIndex, followedUserIds]);
-}
-
-/**
- * Home 页一次性产出 "For You" + "Following" 两条 timeline。比分别调用
- * useXHydratedPosts + useXHydratedFollowingPosts 共享一次 localPosts/allUsers/postIndex,
- * 避免重复 mergeLocalPosts / buildPostIndex。
- */
+/** Home: "For you" + "Following". */
 export function useXHomeTimelines(): { forYou: any[]; following: any[] } {
-  const localPosts = useXLocalPosts();
-  const allUsers = useXAllUsers();
-  const postIndex = useXPostIndex();
-  const followedUserIds = useXStore((s) => s.user.followedUserIds);
-  return useMemo(() => {
-    const forYou = localPosts
-      .slice(0, HYDRATED_FOR_YOU_LIMIT)
-      .map((p) => hydratePost(p, allUsers, postIndex));
-    const followSet = new Set(followedUserIds);
-    followSet.add(currentUser.id);
-    const following = localPosts
-      .filter((p) => followSet.has(p.authorId))
-      .slice(0, HYDRATED_FOLLOWING_LIMIT)
-      .map((p) => hydratePost(p, allUsers, postIndex));
-    return { forYou, following };
-  }, [localPosts, allUsers, postIndex, followedUserIds]);
+  const { data } = useXView<{ forYou: any[]; following: any[] }>('homeTimelines', justNowArgs());
+  const mapTimelines = useMemo(
+    () => (d: { forYou: any[]; following: any[] }) => ({ forYou: timeList(d.forYou), following: timeList(d.following) }),
+    [],
+  );
+  return useTimed(data, mapTimelines) ?? { forYou: EMPTY, following: EMPTY };
 }
 
 // ---- Single-post resolvers ----
 
-/** 按 id 解析单个 post (本地 timeline -> postIndex -> replies)。 */
+/** One post by id (timeline post, indexed post, or a reply); `loading` until the first answer. */
+export function useXResolvedPostQuery(postId: string): { post: any | null; loading: boolean } {
+  const { data, loading } = useXView<any | null>('resolvedPost', { id: postId, ...justNowArgs() }, Boolean(postId));
+  const post = useTimed(data ?? undefined, withDisplayTimes);
+  return { post: postId ? post ?? null : null, loading: Boolean(postId) && loading && data === undefined };
+}
+
 export function useXResolvedPost(postId: string): any | null {
-  const localPosts = useXLocalPosts();
-  const postIndex = useXPostIndex();
-  const allUsers = useXAllUsers();
-  const base = useXBaseDataset();
-  return useMemo(() => {
-    if (!postId) return null;
-    const localPost = localPosts.find((p) => p.id === postId);
-    if (localPost) return hydratePost(localPost, allUsers, postIndex);
-    const indexedPost = postIndex.get(postId);
-    if (indexedPost) return hydratePost(indexedPost, allUsers, postIndex);
-    return resolveReplyById(base.replies, postId, allUsers);
-  }, [postId, localPosts, postIndex, allUsers, base.replies]);
+  return useXResolvedPostQuery(postId).post;
+}
+
+/** The user's own replies to `postId` on the timeline (raw posts, as the timeline holds them). */
+export function useXThreadPosts(postId: string): XPost[] {
+  const { data } = useXView<XPost[]>('threadPosts', { id: postId, ...justNowArgs() }, Boolean(postId));
+  return postId ? data ?? EMPTY : EMPTY;
 }
 
 export function useXUserProfilePosts(userId: string, limit = 80): any[] {
-  const localPosts = useXLocalPosts();
-  const allUsers = useXAllUsers();
-  const postIndex = useXPostIndex();
-  return useMemo(() => {
-    if (!userId) return [];
-    const filtered: XPost[] = [];
-    for (const p of localPosts) {
-      if (p.authorId === userId) {
-        filtered.push(p);
-        if (filtered.length >= limit) break;
-      }
-    }
-    return filtered.map((p) => hydratePost(p, allUsers, postIndex));
-  }, [userId, limit, localPosts, allUsers, postIndex]);
+  const { data } = useXView<any[]>('userProfilePosts', { userId, limit, ...justNowArgs() }, Boolean(userId));
+  const posts = useTimed(data, timeList);
+  return userId ? posts ?? EMPTY : EMPTY;
 }
 
 /**
@@ -239,35 +128,20 @@ export function useXUserProfilePosts(userId: string, limit = 80): any[] {
  * id 也走 lowercase 让 "openai" 匹中 id=OpenAI。
  */
 export function useXSearchPosts(query: string, limit = 1000): any[] {
-  const localPosts = useXLocalPosts();
-  const allUsers = useXAllUsers();
-  const postIndex = useXPostIndex();
-  return useMemo(() => {
-    const q = query.trim().toLowerCase().replace(/\s+/g, ' ').replace(/^@/, '');
-    if (!q) return [];
-    const hits: XPost[] = [];
-    for (const p of localPosts) {
-      const content = (p.content || '').toLowerCase().replace(/\s+/g, ' ');
-      const author = allUsers[p.authorId];
-      const name = (author?.name || '').toLowerCase();
-      const handle = (author?.id || '').toLowerCase();
-      if (content.includes(q) || name.includes(q) || handle.includes(q)) {
-        hits.push(p);
-        if (hits.length >= limit) break;
-      }
-    }
-    return hits.map((p) => hydratePost(p, allUsers, postIndex));
-  }, [query, limit, localPosts, allUsers, postIndex]);
+  const q = query.trim();
+  const { data } = useXView<any[]>('searchPosts', { query: q, limit, ...justNowArgs() }, Boolean(q), true);
+  const posts = useTimed(data, timeList);
+  return q ? posts ?? EMPTY : EMPTY;
 }
 
 // ---- Notifications / Conversations / Search history ----
 
 export function useXNotifications(): any[] {
-  const allUsers = useXAllUsers();
+  const users = useXUsers(useMemo(() => baseNotifications.map((n: any) => String(n.actorId)), []));
   return useMemo(
     () =>
       baseNotifications.map((n: any) => {
-        const actor = allUsers[n.actorId];
+        const actor = users[n.actorId];
         return {
           ...n,
           actor: {
@@ -277,7 +151,7 @@ export function useXNotifications(): any[] {
           },
         };
       }),
-    [allUsers],
+    [users],
   );
 }
 
@@ -286,13 +160,15 @@ export function useXMentionNotifications(): any[] {
   return useMemo(() => notifications.filter((n) => n.type === 'mention'), [notifications]);
 }
 
+const selectConversationsSlice = (s: XStore) => s.conversations;
+
 export function useXConversations(): any[] {
   const conversations = useXStore(selectConversationsSlice);
-  const allUsers = useXAllUsers();
+  const list = conversations.length > 0 ? conversations : baseConversations;
+  const users = useXUsers(useMemo(() => list.map((c) => c.participantId), [list]));
   return useMemo(() => {
-    const list = conversations.length > 0 ? conversations : baseConversations;
     return list.map((c) => {
-      const participant = allUsers[c.participantId];
+      const participant = users[c.participantId];
       const lastMsg = c.messages[c.messages.length - 1];
       return {
         ...c,
@@ -314,72 +190,53 @@ export function useXConversations(): any[] {
         })),
       };
     });
-  }, [conversations, allUsers]);
+  }, [list, users]);
 }
 
 export function useXRecentSearches(): any[] {
-  const allUsers = useXAllUsers();
+  const users = useXUsers(useMemo(
+    () => baseSearchHistory.filter((h: any) => h.type === 'user' && h.userId).map((h: any) => String(h.userId)),
+    [],
+  ));
   return useMemo(
     () =>
       baseSearchHistory.map((h: any) => {
         if (h.type === 'user' && h.userId) {
-          return { ...h, user: allUsers[String(h.userId)] };
+          return { ...h, user: users[String(h.userId)] };
         }
         return h;
       }),
-    [allUsers],
+    [users],
   );
 }
 
 // ---- Replies ----
 
-export function useXRepliesForPost(postId: string): XPost[] {
-  const base = useXBaseDataset();
-  return useMemo(() => {
-    if (!postId) return [];
-    const raw = base.replies[postId];
-    if (!Array.isArray(raw)) return [];
-    return raw.map((r) => hydrateReplyTree(r, base.users));
-  }, [postId, base.replies, base.users]);
+/** Reply trees under a post; `loading` until the first answer for this post. */
+export function useXRepliesForPost(postId: string): { replies: XPost[]; loading: boolean } {
+  const { data, loading } = useDeviceQuery<XPost[]>('x', 'repliesForPost', { postId }, Boolean(postId), { catalog: true });
+  const replies = useTimed(data, timeList);
+  return { replies: postId ? replies ?? EMPTY : EMPTY, loading: Boolean(postId) && loading && !data };
 }
 
 /**
- * 用户 profile -> Replies tab: 收集该 user 在所有 replies 树里的回复,
+ * 用户 profile -> Replies tab: 该 user 在所有 replies 树里的回复,
  * 同时附上 hydrated parent post (从 timeline / 关注流里查).
  */
-export function useXUserReplies(userId: string, limit = 80): Array<{ reply: XPost; parent?: any }> {
-  const base = useXBaseDataset();
-  const localPosts = useXLocalPosts();
-  const allUsers = useXAllUsers();
-  const postIndex = useXPostIndex();
-  const followedUserIds = useXStore((s) => s.user.followedUserIds);
-  return useMemo(() => {
-    if (!userId) return [];
-    if (Object.keys(base.replies).length === 0) return [];
-
-    const hydratedPosts = localPosts.slice(0, HYDRATED_FOR_YOU_LIMIT).map((p) => hydratePost(p, allUsers, postIndex));
-    const followSet = new Set(followedUserIds);
-    const hydratedFollowing = localPosts
-      .filter((p) => followSet.has(p.authorId))
-      .slice(0, HYDRATED_FOLLOWING_LIMIT)
-      .map((p) => hydratePost(p, allUsers, postIndex));
-
-    const hydratedPostById = new Map<string, any>();
-    for (const p of hydratedPosts) hydratedPostById.set(p.id, p);
-    for (const p of hydratedFollowing) if (!hydratedPostById.has(p.id)) hydratedPostById.set(p.id, p);
-
-    const items: Array<{ reply: XPost; parent?: any }> = [];
-    outer: for (const [parentId, replies] of Object.entries(base.replies)) {
-      if (!Array.isArray(replies)) continue;
-      for (const r of replies as any[]) {
-        if (!r || r.authorId !== userId) continue;
-        items.push({
-          reply: hydrateReplyTree(r as XPost, allUsers),
-          parent: hydratedPostById.get(parentId),
-        });
-        if (items.length >= limit) break outer;
-      }
-    }
-    return items;
-  }, [userId, limit, base.replies, localPosts, allUsers, postIndex, followedUserIds]);
+export function useXUserReplies(
+  userId: string,
+  limit = 80,
+  enabled = true,
+): { items: Array<{ reply: XPost; parent?: any }>; loading: boolean } {
+  const on = Boolean(userId) && enabled;
+  const { data, loading } = useXView<Array<{ reply: XPost; parent?: any }>>(
+    'userReplies', { userId, limit, ...justNowArgs() }, on,
+  );
+  const mapItems = useMemo(
+    () => (list: Array<{ reply: XPost; parent?: any }>) =>
+      list.map((item) => ({ reply: withDisplayTimes(item.reply), parent: withDisplayTimes(item.parent) })),
+    [],
+  );
+  const items = useTimed(data, mapItems);
+  return { items: on ? items ?? EMPTY : EMPTY, loading: on && loading && !data };
 }

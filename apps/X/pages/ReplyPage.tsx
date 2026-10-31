@@ -2,7 +2,7 @@ import React from 'react';
 import { useParams } from 'react-router-dom';
 import { IcCamera, IcChart, IcImage, IcLocation, IcSmile } from '../res/icons';
 import { useXStore, selectUser } from '../state';
-import { useXAllUsers, useXLocalPosts, useXRepliesForPost, useXResolvedPost } from '../data/view';
+import { useXRepliesForPost, useXResolvedPostQuery, useXThreadPosts, useXUsers } from '../data/view';
 import { useXGestures } from '../hooks/useXGestures';
 import { useXStrings } from '../hooks/useXStrings';
 import { useSubmitOnce } from '../../../os/hooks/useSubmitOnce';
@@ -11,17 +11,16 @@ import { XImage, XVideo } from '../components/XMedia';
 export const ReplyPage: React.FC = () => {
   const { id } = useParams();
   const user = useXStore(selectUser);
-  const localPosts = useXLocalPosts();
-  const importedReplies = useXRepliesForPost(id || '');
-  const allUsers = useXAllUsers();
-  const original = useXResolvedPost(id || '');
+  const threadPosts = useXThreadPosts(id || '');
+  const { replies: importedReplies } = useXRepliesForPost(id || '');
+  const { post: original, loading: originalLoading } = useXResolvedPostQuery(id || '');
   const addReply = useXStore(s => s.addReply);
   const submitOnce = useSubmitOnce();
   const { bindBack, bindTap, back } = useXGestures();
   const s = useXStrings();
 
   const replies = React.useMemo(() => {
-    const dynamicReplies = localPosts.filter(post => post.threadId === id);
+    const dynamicReplies = threadPosts;
     const inlineReplies = Array.isArray(original?.replies) ? original.replies : [];
     const combined = [...importedReplies, ...inlineReplies, ...dynamicReplies];
     const seen = new Set<string>();
@@ -31,7 +30,9 @@ export const ReplyPage: React.FC = () => {
       seen.add(reply.id);
       return true;
     });
-  }, [id, importedReplies, localPosts, original]);
+  }, [importedReplies, threadPosts, original]);
+
+  const replyUsers = useXUsers(React.useMemo(() => replies.map(reply => String(reply.authorId)), [replies]));
 
   const [content, setContent] = React.useState('');
   const trimmed = content.trim();
@@ -46,7 +47,7 @@ export const ReplyPage: React.FC = () => {
           <div className="font-bold text-lg">{s.reply_title}</div>
           <div className="w-12" />
         </div>
-        <div className="mt-6 text-gray-500">{s.reply_not_found}</div>
+        {!originalLoading && <div className="mt-6 text-gray-500">{s.reply_not_found}</div>}
       </div>
     );
   }
@@ -140,7 +141,7 @@ export const ReplyPage: React.FC = () => {
           {replies.length > 0 && (
             <div className="mt-6 pt-4 border-t border-app-border">
               {replies.map(reply => {
-                const replyAuthor = (reply as any).author ?? allUsers[reply.authorId];
+                const replyAuthor = (reply as any).author ?? replyUsers[reply.authorId];
                 return (
                   <div key={reply.id} className="flex gap-3 mb-6">
                     <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden shrink-0">

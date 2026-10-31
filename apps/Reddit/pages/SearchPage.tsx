@@ -8,7 +8,8 @@ import { strings } from '../res/strings';
 import { stringsEn } from '../res/strings.en';
 import type { RedditCommunity, RedditPost } from '../types';
 import { REDDIT_COMMUNITIES } from '../data';
-import { useRedditPosts } from '../hooks/useRedditPosts';
+import { useRedditSearchPosts } from '../hooks/useRedditPosts';
+import { matchesWord } from '../utils/view';
 
 const TRENDING_TOPICS = [
   { title: 'Arc Raiders Shrouded Sky Update', subtitle: 'Based on your interests' },
@@ -19,31 +20,10 @@ const TRENDING_TOPICS = [
   { title: 'Puerto Vallarta Cartel Violence', subtitle: 'Based on your interests' },
 ];
 
-const normalizeForSearch = (value: string): string =>
-  (value || '')
-    .toLowerCase()
-    .replace(/[\s\p{P}\p{S}]+/gu, '');
-
-const matchesWord = (text: string, query: string): boolean => {
-  if (!text || !query) return false;
-  const trimmed = query.trim();
-  if (!trimmed) return false;
-
-  const hasNonAscii = /[^\x00-\x7F]/.test(trimmed);
-  if (hasNonAscii || /\s/.test(trimmed)) {
-    const normalizedText = normalizeForSearch(text);
-    const normalizedQuery = normalizeForSearch(trimmed);
-    return normalizedQuery.length > 0 && normalizedText.includes(normalizedQuery);
-  }
-
-  const escapedQuery = trimmed.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  return new RegExp(`\\b${escapedQuery}`, 'i').test(text);
-};
 
 export const SearchPage: React.FC = () => {
   const s = useAppStrings(strings, stringsEn);
   const { bindBack, bindTap } = useRedditGestures();
-  const posts = useRedditPosts();
   const communities = REDDIT_COMMUNITIES;
   const { user } = useRedditStore(useShallow((state) => ({
     user: state.user,
@@ -72,23 +52,7 @@ export const SearchPage: React.FC = () => {
     inputRef.current?.focus();
   }, []);
 
-  const searchedPosts = useMemo(() => {
-    if (!debouncedQuery.trim()) return [];
-    const query = debouncedQuery.trim();
-    const results: RedditPost[] = [];
-    for (const post of posts) {
-      if (
-        matchesWord(post.title || '', query) ||
-        matchesWord(post.content || '', query) ||
-        matchesWord(post.author || '', query) ||
-        matchesWord(post.subreddit || '', query)
-      ) {
-        results.push(post);
-        if (results.length >= 50) break;
-      }
-    }
-    return results;
-  }, [debouncedQuery, posts]);
+  const searchedPosts = useRedditSearchPosts(debouncedQuery);
 
   const searchedCommunities = useMemo(() => {
     if (!debouncedQuery.trim()) return [];

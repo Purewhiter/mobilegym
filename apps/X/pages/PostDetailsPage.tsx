@@ -1,7 +1,7 @@
 import React from 'react';
 import { useParams, useLocation } from 'react-router-dom';
 import { useXStore, selectUser } from '../state';
-import { useXHydratedPosts, useXAllUsers, useXRepliesForPost, useXRepliesLoaded, useXResolvedPost } from '../data/view';
+import { useXHydratedPosts, useXRepliesForPost, useXResolvedPostQuery, useXUsers } from '../data/view';
 import { useXGestures } from '../hooks/useXGestures';
 import { XImage, XVideo } from '../components/XMedia';
 import { BookmarkToast } from '../components/BookmarkToast';
@@ -18,29 +18,18 @@ export const PostDetailsPage: React.FC = () => {
   const { id } = useParams();
   const location = useLocation();
   const posts = useXHydratedPosts();
-  const resolvedPost = useXResolvedPost(id || '');
+  const { post: resolvedPost, loading: postLoading } = useXResolvedPostQuery(id || '');
   const user = useXStore(selectUser);
-  // 顶层一次订阅 user 字典, 传给所有 ReplyItem, 避免每条回复独立订阅。
-  const allUsers = useXAllUsers();
   const toggleRetweet = useXStore(s => s.toggleRetweet);
-  const repliesLoaded = useXRepliesLoaded();
-  const ensureRepliesLoaded = useXStore(s => s.ensureRepliesLoaded);
-  const repliesForRoutePost = useXRepliesForPost(id || '');
+  const { replies: repliesForRoutePost, loading: repliesQueryLoading } = useXRepliesForPost(id || '');
   const { bindBack, bindTap, go } = useXGestures();
   const s = useXStrings();
   const [sortMethod, setSortMethod] = React.useState<'relevant' | 'recent' | 'likes'>('relevant');
   const [showSortMenu, setShowSortMenu] = React.useState(false);
   const [retweetMenuPostId, setRetweetMenuPostId] = React.useState<string | null>(null);
   const [showBookmarkToast, setShowBookmarkToast] = React.useState(false);
-  // Loading 完全派生于 (id 形态 + loader cache 状态), 不引入额外 useState 状态,
-  // 因此路由参数切换时不会有 stale loading/empty 闪现。
-  const repliesLoading = !!id && !id.startsWith('mock_') && !repliesLoaded;
-
-  React.useEffect(() => {
-    if (!repliesLoading) return;
-    // loader 内部有 in-flight 去重 + 加载完 bump baseSnapshot 触发 useXRepliesLoaded() 重渲染。
-    ensureRepliesLoaded().catch(() => {});
-  }, [ensureRepliesLoaded, repliesLoading]);
+  // Loading 派生于查询状态: 帖子 (reply 深链也走这里) 或它的回复还没到。
+  const repliesLoading = !!id && !id.startsWith('mock_') && (postLoading || repliesQueryLoading);
 
   const post = React.useMemo(() => {
     if (resolvedPost) return resolvedPost;
@@ -98,6 +87,9 @@ export const PostDetailsPage: React.FC = () => {
     }
     return unique;
   }, [post, posts, repliesForRoutePost]);
+
+  // 回复一般已带 author; 个别没带的 (自己的新回复) 再按 id 查。
+  const replyUsers = useXUsers(React.useMemo(() => mergedReplies.map((r: any) => String(r.authorId)), [mergedReplies]));
 
   const sortedReplies = React.useMemo(() => {
     const replies = [...mergedReplies];
@@ -247,11 +239,11 @@ export const PostDetailsPage: React.FC = () => {
 
         {/* Replies List — loading / list / empty 三态互斥 */}
         <div className="pb-20">
-          {!repliesLoaded && repliesLoading ? (
+          {repliesLoading ? (
             <div className="p-6 text-center text-gray-500">{s.post_loading_replies}</div>
           ) : sortedReplies.length > 0 ? (
             sortedReplies.map((reply: XPost) => (
-              <ReplyItem key={reply.id} reply={reply} onRetweet={setRetweetMenuPostId} users={allUsers} />
+              <ReplyItem key={reply.id} reply={reply} onRetweet={setRetweetMenuPostId} users={replyUsers} />
             ))
           ) : (
             <div className="p-8 text-center text-gray-500">{s.post_no_replies}</div>

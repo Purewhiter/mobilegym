@@ -11,8 +11,8 @@
  * `__SIM__.getState().apps.x` and every bench judge keep working unchanged.
  * Commands are the former store actions; new posts, replies and messages are
  * built on the page (ids and "just now" labels come from its clock), as before.
- * The `view*` queries merge catalog and state for judges and samplers, with the
- * same pure functions the page timeline uses.
+ * Pages read assembled views (`./views.ts`), never the whole catalog; the
+ * `view*` queries below give judges and samplers the merged posts and users.
  */
 
 import { readFileSync } from 'node:fs';
@@ -22,6 +22,7 @@ import type { AppContext, AppModule, Catalog } from '../../../device/engine';
 import { mapStrings, mediaResolver } from '../../../device/media';
 import type { XMeUser } from '../state';
 import type { XConversation, XMessage, XPost, XSettings, XUser } from '../types';
+import { createXViewQueries } from './views';
 import {
   resolveXRuntimePost,
   resolveXRuntimePosts,
@@ -149,10 +150,8 @@ function viewPosts(ctx: Ctx): XPost[] {
 }
 
 const queries: AppModule<XDeviceState>['queries'] = {
-  // Catalog only (the page merges its own state over these).
-  users: (ctx) => extras(ctx).users,
-  posts: (ctx) => extras(ctx).posts,
-  replies: (ctx) => extras(ctx).replies,
+  // What each page shows (apps/X/data/view.ts).
+  ...createXViewQueries((ctx) => extras(ctx)),
 
   // Catalog merged with this session's state (judges and samplers).
   viewPosts,

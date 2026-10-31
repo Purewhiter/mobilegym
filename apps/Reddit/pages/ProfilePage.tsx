@@ -13,7 +13,7 @@ import { useRedditGestures } from '../hooks/useRedditGestures';
 import { strings } from '../res/strings';
 import { stringsEn } from '../res/strings.en';
 import { useMyRedditComments } from '../hooks/useRedditComments';
-import { useRedditPosts } from '../hooks/useRedditPosts';
+import { useRedditPostsByIds } from '../hooks/useRedditPosts';
 import type { Comment, RedditPost } from '../types';
 import { useDeviceQuery } from '../../../os/device/deviceStore';
 import * as TimeService from '../../../os/TimeService';
@@ -104,7 +104,6 @@ const ProfilePostImageCarousel: React.FC<{ images: string[] }> = ({ images }) =>
 
 export const ProfilePage: React.FC = () => {
   const s = useAppStrings(strings, stringsEn);
-  const posts = useRedditPosts();
   const { user, postsTable, commentsTable, postVotes, joinedCommunityIds } = useRedditStore(useShallow((st) => ({
     user: st.user,
     postsTable: st.posts,
@@ -139,6 +138,7 @@ export const ProfilePage: React.FC = () => {
       .filter((post): post is RedditPost => Boolean(post));
   }, [postsTable, user.postIds]);
   const myComments = useMyRedditComments();
+  const commentedPosts = useRedditPostsByIds(React.useMemo(() => myComments.map((c) => c.postId), [myComments]));
   const parentIds = React.useMemo(
     () => [...new Set(myComments.map((c) => c.parentId).filter((id): id is string => Boolean(id)))].sort(),
     [myComments],
@@ -192,7 +192,7 @@ export const ProfilePage: React.FC = () => {
   };
 
   const commentFeed = React.useMemo(() => {
-    const postById = new Map(posts.map((p) => [p.id, p]));
+    const postById = new Map(Object.entries(commentedPosts));
     const all = myComments.map((comment) => ({ postId: comment.postId, comment }));
 
     const findContextBody = (postId: string, comment: (typeof all)[number]['comment']): string => {
@@ -234,7 +234,7 @@ export const ProfilePage: React.FC = () => {
       .sort((a, b) => b.created - a.created);
 
     return rows;
-  }, [commentsTable, datasetParents, myComments, posts]);
+  }, [commentsTable, commentedPosts, datasetParents, myComments]);
 
   return (
     <div className="flex flex-col h-full bg-app-surface">
