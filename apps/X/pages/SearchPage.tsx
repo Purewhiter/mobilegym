@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { useXStore, selectTrends, selectUser } from '../state';
 import { useXGestures } from '../hooks/useXGestures';
 import { useXStrings } from '../hooks/useXStrings';
+import globalTrendsImage from '../assets/global_trends.jpg';
 
 export const SearchPage: React.FC<{ isActive?: boolean }> = ({ isActive = true }) => {
   const trends = selectTrends();
@@ -125,7 +126,7 @@ export const SearchPage: React.FC<{ isActive?: boolean }> = ({ isActive = true }
           <div>
             {activeTab === 'trending' && (
               <div className="border-b border-app-border relative h-40 bg-app-bg flex items-end p-4 overflow-hidden mx-4 mt-4 rounded-xl border border-app-border">
-                <img src="https://pbs.twimg.com/media/GhV3RrObsAAEetk.jpg" alt="Global trends" className="absolute inset-0 w-full h-full object-cover opacity-40" />
+                <img src={globalTrendsImage} alt="Global trends" className="absolute inset-0 w-full h-full object-cover opacity-40" />
                 <div className="relative z-10">
                   <div className="text-xl font-bold">{s.search_global_trends_title}</div>
                   <div className="text-sm text-gray-500">{s.search_global_trends_subtitle}</div>

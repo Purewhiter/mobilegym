@@ -4,9 +4,9 @@ import { AppRow, Header, SectionHeader, ToggleRow } from '../../components/Setti
 import { useSpotifyGestures } from '../../hooks/useSpotifyGestures';
 import { useSpotifyStrings } from '../../hooks/useSpotifyStrings';
 import { useSpotifyStore } from '../../state';
+import GoogleMapIcon from '../../assets/google_maps.svg';
+import WazeIcon from '../../assets/waze.svg';
 
-const GoogleMapIcon = 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Google_Maps_icon_%282020%29.svg/240px-Google_Maps_icon_%282020%29.svg.png';
-const WazeIcon = 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Waze_logo_2020.svg/240px-Waze_logo_2020.svg.png';
 
 export const AppsDevicesPage: React.FC = () => {
   const locale = useLocale();

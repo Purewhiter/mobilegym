@@ -37,6 +37,7 @@ import {
   normalizeLineHeightIndex,
   normalizeMarginIndex,
 } from '../constants';
+import paperTexture from '../assets/paper.png';
 
 function getSteppedIndex(clientX: number, rect: DOMRect, stopCount: number): number {
   const pct = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
@@ -434,7 +435,7 @@ export const LocalizedReaderMenu: React.FC<{
                     className={`relative aspect-[1.6] flex-1 rounded-3xl border-2 ${themeBg === 'matchTheme' ? 'border-blue-500' : 'border-transparent'}`}
                     style={{ backgroundColor: resolveReaderTheme(themeColor, 'matchTheme').pageBg }}
                   >
-                    <div className="absolute inset-0 rounded-3xl opacity-10 bg-[url('https://www.transparenttextures.com/patterns/paper.png')]" />
+                    <div className="absolute inset-0 rounded-3xl opacity-10" style={{ backgroundImage: `url(${paperTexture})` }} />
                   </button>
                   <button
                     type="button"

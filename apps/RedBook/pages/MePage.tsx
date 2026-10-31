@@ -281,7 +281,6 @@ export const MePage: React.FC = () => {
                         <div className="bg-gray-50 rounded-lg p-3 flex items-center justify-between">
                             <div className="flex items-center gap-2">
                                 <div className="w-10 h-10 bg-blue-100 rounded-md overflow-hidden">
-                                    <img src="https://images.unsplash.com/photo-1544551763-46a42a46180b?w=100&h=100&fit=crop" className="w-full h-full object-cover" />
                                 </div>
                                 <div className="flex flex-col">
                                     <span className="text-[13px] font-medium text-app-text">{s.share_your_diving_diary}</span>

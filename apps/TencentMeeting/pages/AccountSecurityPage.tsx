@@ -7,6 +7,7 @@ import { useMeetingStore } from '../state';
 import { useMeetingGestures } from '../hooks/useMeetingGestures';
 import { ActionSpec } from '../../../os/hooks/useTriggerGestures';
 import { routes } from '../routes';
+import avatarAnnie from '../assets/avatar_annie.svg';
 export const AccountSecurityPage: React.FC = () => {
     const location = useLocation();
     const user = useMeetingStore(s => s.user);
@@ -105,7 +106,7 @@ export const AccountSecurityPage: React.FC = () => {
                         <div className="relative bg-[#f5f7fa] rounded-lg p-4 border border-gray-100 flex items-center justify-center overflow-hidden">
                              <div className="w-full flex items-center gap-3 bg-app-surface rounded-xl p-4 shadow-sm border border-gray-50 relative z-10">
                                 <div className="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center overflow-hidden border border-blue-100">
-                                     <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Annie" alt="avatar" />
+                                     <img src={avatarAnnie} alt="avatar" />
                                 </div>
                                 <div className="flex-1">
                                     <div className="flex items-center gap-2">

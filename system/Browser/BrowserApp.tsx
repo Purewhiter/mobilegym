@@ -13,6 +13,14 @@ import { useBrowserStore } from './state';
 import type { Tab } from './state';
 import { useAppNavigationHandler } from '../../os/hooks/useAppNavigationHandler';
 import { useBrowserGestures } from './hooks/useBrowserGestures';
+import faviconWikipedia from './assets/favicons/wikipedia.ico';
+import faviconGithub from './assets/favicons/github.ico';
+import faviconBaidu from './assets/favicons/baidu.ico';
+import faviconBilibili from './assets/favicons/bilibili.ico';
+import faviconZhihu from './assets/favicons/zhihu.ico';
+import faviconReact from './assets/favicons/react.ico';
+import faviconGoogle from './assets/favicons/google.ico';
+import faviconBing from './assets/favicons/bing.ico';
 
 // --- Navigation Handler ---
 const BrowserNavigationHandler: React.FC = () => {
@@ -51,14 +59,14 @@ const BrowserHome: React.FC<{ onNavigate: (url: string) => void }> = ({ onNaviga
     const [input, setInput] = useState('');
 
     const recommendations = [
-        { name: '维基百科', url: 'https://zh.m.wikipedia.org', icon: 'https://zh.wikipedia.org/favicon.ico', color: 'bg-white' },
-        { name: 'GitHub', url: 'https://github.com', icon: 'https://github.com/favicon.ico', color: 'bg-black' },
-        { name: '百度', url: 'https://www.baidu.com', icon: 'https://www.baidu.com/favicon.ico', color: 'bg-blue-500' },
-        { name: 'Bilibili', url: 'https://m.bilibili.com', icon: 'https://www.bilibili.com/favicon.ico', color: 'bg-pink-400' },
-        { name: '知乎', url: 'https://www.zhihu.com', icon: 'https://www.zhihu.com/favicon.ico', color: 'bg-blue-600' },
-        { name: 'React', url: 'https://react.dev', icon: 'https://react.dev/favicon.ico', color: 'bg-sky-400' },
-        { name: 'Google', url: 'https://www.google.com', icon: 'https://www.google.com/favicon.ico', color: 'bg-white' },
-        { name: 'Bing', url: 'https://www.bing.com', icon: 'https://www.bing.com/favicon.ico', color: 'bg-white' },
+        { name: '维基百科', url: 'https://zh.m.wikipedia.org', icon: faviconWikipedia, color: 'bg-white' },
+        { name: 'GitHub', url: 'https://github.com', icon: faviconGithub, color: 'bg-black' },
+        { name: '百度', url: 'https://www.baidu.com', icon: faviconBaidu, color: 'bg-blue-500' },
+        { name: 'Bilibili', url: 'https://m.bilibili.com', icon: faviconBilibili, color: 'bg-pink-400' },
+        { name: '知乎', url: 'https://www.zhihu.com', icon: faviconZhihu, color: 'bg-blue-600' },
+        { name: 'React', url: 'https://react.dev', icon: faviconReact, color: 'bg-sky-400' },
+        { name: 'Google', url: 'https://www.google.com', icon: faviconGoogle, color: 'bg-white' },
+        { name: 'Bing', url: 'https://www.bing.com', icon: faviconBing, color: 'bg-white' },
     ];
 
     const handleSubmit = (e: React.FormEvent) => {
