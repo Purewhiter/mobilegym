@@ -23,6 +23,9 @@ from bench_env.task import TaskRegistry, JudgeInput, JudgeResult, BaseTask
 
 logger = get_logger(__name__)
 
+# Seed of the per-episode settle jitter (fixed mode).
+_SETTLE_JITTER_SEED = 0
+
 
 def _env_message(env: "MobileGymEnv", message: str) -> str:
     prefix = getattr(env, "_log_prefix", "").strip()
@@ -438,6 +441,7 @@ class MobileGymEnv(BaseMobileEnv):
         self._page: Optional[Page] = None
 
         self._step_count = 0
+        self._settle_rng = random.Random(_SETTLE_JITTER_SEED)
         self._done = False
         self._agent_message: Optional[str] = None
         self._agent_answer: Optional[str] = None
@@ -812,6 +816,9 @@ class MobileGymEnv(BaseMobileEnv):
                      传 None 则加载全部（旧行为）；传 [] 则跳过预加载。
         """
         self._step_count = 0
+        # Same settle jitter sequence every episode, so replays of the same
+        # actions wait the same times.
+        self._settle_rng = random.Random(_SETTLE_JITTER_SEED)
         self._done = False
         self._agent_message = None
         self._agent_answer = None
@@ -881,7 +888,8 @@ class MobileGymEnv(BaseMobileEnv):
     async def _settle(self) -> None:
         """Wait until the screen reflects the last action.
 
-        ``fixed``: sleep ``delay_after_action`` with jitter. ``idle``: wait for
+        ``fixed``: sleep ``delay_after_action`` with jitter (seeded per episode,
+        see ``reset``). ``idle``: wait for
         the page's idle signal (requests, gesture timers, animations, images,
         DOM quiet), capped at ``2 * delay_after_action`` (at least 1 s); falls
         back to the fixed sleep on pages without ``__SIM__.waitForIdle``.
@@ -898,7 +906,7 @@ class MobileGymEnv(BaseMobileEnv):
                 self.last_idle = None
             if self.last_idle is not None:
                 return
-        await asyncio.sleep(self.delay_after_action * random.uniform(0.5, 1.125))
+        await asyncio.sleep(self.delay_after_action * self._settle_rng.uniform(0.5, 1.125))
 
     async def get_state(self, *, required_apps: list[str] | None = None) -> dict[str, Any]:
         """Get current environment state (with retry for incomplete data).
