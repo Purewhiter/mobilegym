@@ -8,8 +8,11 @@ The `os/` directory is the simulated Android operating system that hosts every a
 
 ```
 os/
-├── OSContext.tsx                # Thin React Provider — exposes window.__SIM__ / __OS__
-├── SystemShell.tsx              # Launcher, status bar, recents, gesture surface, app container
+├── OSContext.tsx                # Thin React Provider — assigns window.__SIM__ / __OS__
+├── osActions.ts                 # OS actions: launch, finish, close, home, recents, intents, openApp
+├── osApi.ts                     # Builds window.__OS__
+├── sim/                         # Builds window.__SIM__ (simApi), reset (simResetCore), launcher summary
+├── SystemShell.tsx              # Launcher, chrome layers and activity containers (components/StatusBar, GestureBar, EdgeGestures, RecentsOverlay, ActivityHost)
 ├── TaskManager.ts               # Task and Activity stacks (volatile)
 ├── BackDispatcher.ts            # Priority-based back-key dispatch
 ├── IntentResolver.ts            # Intent matching, choosers, startActivityForResult
@@ -199,7 +202,7 @@ The OSContext Provider attaches these to `window` at startup:
 | `window.__SIM_MEDIA__` | `os/types/globals.d.ts` | Media-library control and picker simulation |
 | `window.__SIM_AI__` | `os/types/globals.d.ts` | Optional simulated AI service hooks |
 | `window.__STORAGE_ISOLATION__` | `os/storageIsolation.ts` | Current storage-isolation mode metadata |
-| `window.__getScrollMeta__` | `os/SystemShell.tsx` | Auto-detect scrollable containers and read their position/extent |
+| `window.__getScrollMeta__` | `os/scrollMeta.ts` (initialized by `os/SystemShell.tsx`) | Auto-detect scrollable containers and read their position/extent |
 
 These are **debug / orchestration** APIs, not part of the agent's observation. The agent sees screenshots; everything above is for you, the human operator (or the benchmark).
 

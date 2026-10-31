@@ -10,7 +10,7 @@ For service API signatures, see [`README.md`](README.md). For app UI rules, see 
 |---|---|---|
 | Soft keyboard state | `os/keyboard/KeyboardService.ts` | Volatile store for visibility, height, and mode. |
 | Keyboard overlay UI | `os/components/KeyboardOverlay.tsx` | Renders the keyboard, handles focus, text insertion, dismissal, and smart scroll. |
-| Activity resize | `os/SystemShell.tsx` | Wraps each Activity in `data-adjust-resize` and shrinks the active one by keyboard height. |
+| Activity resize | `os/components/ActivityHost.tsx` (`AdjustResizeContainer`) | Wraps each Activity in `data-adjust-resize` and shrinks the active one by keyboard height. |
 | Global hide rule | `app.css` | Hides `[data-hide-on-keyboard]` inside an active resize container. |
 | IME dictionary | `os/keyboard/pinyinData.ts`, `os/keyboard/pinyinLargeDict.ts`, `os/keyboard/pinyinIme.ts` | Chinese pinyin candidate generation. |
 | IME build script | `scripts/ime/build_pinyin_dict.mjs` | Generates the large pinyin dictionary from source dictionaries. |

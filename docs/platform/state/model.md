@@ -705,7 +705,7 @@ await window.__SIM__.reset();        // factory reset + page reload
 await window.__SIM__.resetState();   // factory reset, no reload
 ```
 
-Both go through `_resetStateCore()` in `os/OSContext.tsx`, which runs in a deliberate order so the cleared in-memory state can't be re-persisted by the browser's beforeunload flush. The full sequence:
+Both go through `resetStateCore()` in `os/sim/simResetCore.ts`, which runs in a deliberate order so the cleared in-memory state can't be re-persisted by the browser's beforeunload flush. The full sequence:
 
 1. **`beginPersistReset()`** — set a guard so any pending zustand-persist writes are dropped instead of racing with the clear.
 2. **`resetAllAppStores()`** — reset every app-store registered via `createAppStore*` to its initial state.
