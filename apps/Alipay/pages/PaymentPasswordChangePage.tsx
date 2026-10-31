@@ -45,7 +45,7 @@ function PasswordBoxes(props: { value: string; activeIndex: number }) {
 type Step = 'choose' | 'verify' | 'set' | 'done' | 'forgot';
 
 export const PaymentPasswordChangePage: React.FC = () => {
-  const { back, bindBack } = useAlipayGestures();
+  const { bindBack } = useAlipayGestures();
   const s = useAlipayStrings();
   const userInfo = useAlipayStore(s => s.userInfo);
   const paymentPassword = useAlipayStore(s => s.userInfo.paymentPassword);
@@ -94,9 +94,10 @@ export const PaymentPasswordChangePage: React.FC = () => {
     }
     setError('');
     setPaymentPassword(currentPwd, v);
+    // Stays until the user taps Done: a timed auto-return made what the next
+    // screenshot shows depend on how long the observer waited.
     setStep('done');
-    window.setTimeout(() => back(), 800);
-  }, [newPwd, currentPwd, back, setPaymentPassword]);
+  }, [newPwd, currentPwd, setPaymentPassword]);
 
   const renderBody = () => {
     if (step === 'choose') {
@@ -196,6 +197,12 @@ export const PaymentPasswordChangePage: React.FC = () => {
         <div className="flex-1 flex flex-col items-center justify-center px-6">
           <div className="text-5xl">✓</div>
           <div className="mt-4 text-xl font-medium text-gray-900">{s.payment_password_change_done}</div>
+          <button
+            {...bindBack()}
+            className="mt-10 w-full h-11 rounded-lg bg-app-primary text-white font-medium active:bg-app-primary/90"
+          >
+            {s.payment_password_change_finish}
+          </button>
         </div>
       );
     }

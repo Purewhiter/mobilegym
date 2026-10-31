@@ -809,6 +809,7 @@ export const strings = {
   payment_password_change_set_title: '设置新支付密码',
   payment_password_change_set_hint: '请输入6位数字作为新支付密码',
   payment_password_change_done: '支付密码已更新',
+  payment_password_change_finish: '完成',
   payment_password_change_wrong_password: '支付密码错误，请重试',
   payment_password_change_same_password: '新支付密码不能与原密码相同',
   payment_password_change_invalid_password: '支付密码不能是重复、连续的数字',

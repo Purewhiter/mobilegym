@@ -199,18 +199,23 @@ export const BillsPage: React.FC = () => {
   }, [currentYear, groups, isEnglish, s.month_suffix]);
 
   const pickerJustOpened = React.useRef(false);
+  // The wheels are positioned once, when the picker opens. Re-positioning on
+  // every selection change would yank a wheel back mid-swipe and leave the
+  // selection one row behind where the wheel snaps.
+  const pickerOpenedAt = React.useRef({ year: currentYear, month: currentMonth });
   React.useEffect(() => {
     if (!isMonthPickerOpen) {
       pickerJustOpened.current = false;
       return;
     }
     pickerJustOpened.current = true;
+    const { year, month } = pickerOpenedAt.current;
     requestAnimationFrame(() => {
-      yearRef.current?.scrollTo({ top: Math.max(0, yearOptions.indexOf(selectedYear)) * 36, behavior: 'instant' });
-      monthRef.current?.scrollTo({ top: Math.max(0, monthOptions.indexOf(selectedMonth)) * 36, behavior: 'instant' });
+      yearRef.current?.scrollTo({ top: Math.max(0, yearOptions.indexOf(year)) * 36, behavior: 'instant' });
+      monthRef.current?.scrollTo({ top: Math.max(0, monthOptions.indexOf(month)) * 36, behavior: 'instant' });
       setTimeout(() => { pickerJustOpened.current = false; }, 350);
     });
-  }, [isMonthPickerOpen, monthOptions, selectedMonth, selectedYear, yearOptions]);
+  }, [isMonthPickerOpen, monthOptions, yearOptions]);
 
   const hasPrimaryCard = primaryMonthList.length > 0;
 
@@ -277,6 +282,7 @@ export const BillsPage: React.FC = () => {
 
   const openMonthPickerFor = (year: number, month: number) => {
     pickerJustOpened.current = true;
+    pickerOpenedAt.current = { year, month };
     setSelectedYear(year);
     setSelectedMonth(month);
     setIsMonthPickerOpen(true);

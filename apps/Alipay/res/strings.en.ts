@@ -786,6 +786,7 @@ export const stringsEn: Partial<Record<StringKey, string>> = {
   payment_password_change_set_title: 'Set New Payment Password',
   payment_password_change_set_hint: 'Enter a 6-digit number as your new payment password',
   payment_password_change_done: 'Payment password updated',
+  payment_password_change_finish: 'Done',
   payment_password_change_wrong_password: 'Incorrect payment password. Please try again.',
   payment_password_change_same_password: 'The new payment password cannot match the current one.',
   payment_password_change_invalid_password: 'The payment password cannot be repeating or sequential digits.',
