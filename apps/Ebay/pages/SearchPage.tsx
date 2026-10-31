@@ -5,7 +5,7 @@ import TabBar from '../components/TabBar';
 import SortModal, { type SortOptionType } from '../components/SortModal';
 import FilterDrawer, { type BuyingFormatFilter, type ViewMode } from '../components/FilterDrawer';
 import { useScrollDirection } from '../hooks/useScrollDirection';
-import { useEbayCategories, useEbayProducts } from '../data/loader';
+import { useEbayCategories, useEbaySearch } from '../data/loader';
 import type { ProductItem } from '../types';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useEbayStore } from '../state';
@@ -20,76 +20,6 @@ import {
   localizeEbayLocationLabel,
   localizeEbayProductTitle,
 } from '../utils/localize';
-
-// ── Location → continent mapping (Bug A fix) ──────────────────
-
-const COUNTRY_TO_CONTINENT: Record<string, string> = {
-  '中国': '亚洲',
-  '日本': '亚洲',
-  '韩国': '亚洲',
-  '印度': '亚洲',
-  '美国': '北美洲',
-  '加拿大': '北美洲',
-  '墨西哥': '北美洲',
-  '英国': '欧洲',
-  '德国': '欧洲',
-  '法国': '欧洲',
-  '意大利': '欧洲',
-  '西班牙': '欧洲',
-  '澳大利亚': '大洋洲',
-  '新西兰': '大洋洲',
-  '巴西': '南美洲',
-};
-
-function matchesLocation(productLocation: string, selectedLocation: string): boolean {
-  if (selectedLocation === productLocation) return true;
-  return COUNTRY_TO_CONTINENT[productLocation] === selectedLocation;
-}
-
-function normalizeSearchText(text: string): string {
-  return text.toLowerCase().replace(/\s+/g, '');
-}
-
-// ── Unified filter utility (replaces 3 near-identical useMemos) ──
-
-interface FilterState {
-  buyingFormat: BuyingFormatFilter;
-  selectedCategoryId: string | null;
-  selectedBrands: Set<string>;
-  selectedLocation: string | null;
-  freeShippingOnly: boolean;
-  selectedConditions: string[];
-  priceRange: { min: string; max: string };
-  searchQuery: string;
-}
-
-function filterProducts(
-  products: ProductItem[],
-  filters: FilterState,
-  exclude?: keyof FilterState,
-): ProductItem[] {
-  return products.filter(p => {
-    if (exclude !== 'buyingFormat' && filters.buyingFormat !== 'all' && p.buyingFormat !== filters.buyingFormat) return false;
-    if (exclude !== 'selectedCategoryId' && filters.selectedCategoryId && p.categoryId !== filters.selectedCategoryId) return false;
-    if (exclude !== 'selectedBrands' && filters.selectedBrands.size && !filters.selectedBrands.has(p.brand)) return false;
-    if (exclude !== 'selectedLocation' && filters.selectedLocation && !matchesLocation(p.location, filters.selectedLocation)) return false;
-    if (exclude !== 'freeShippingOnly' && filters.freeShippingOnly && !p.freeShipping) return false;
-    if (exclude !== 'selectedConditions' && filters.selectedConditions.length && !filters.selectedConditions.includes(p.condition)) return false;
-    if (exclude !== 'priceRange') {
-      const min = filters.priceRange.min ? parseFloat(filters.priceRange.min) : undefined;
-      const max = filters.priceRange.max ? parseFloat(filters.priceRange.max) : undefined;
-      const priceWithShip = p.price + p.shipping;
-      if (min !== undefined && priceWithShip < min) return false;
-      if (max !== undefined && priceWithShip > max) return false;
-    }
-    if (exclude !== 'searchQuery' && filters.searchQuery) {
-      const q = normalizeSearchText(filters.searchQuery);
-      const hay = normalizeSearchText(`${p.title} ${p.brand} ${p.typeLabel} ${p.categoryLabel}`);
-      if (!hay.includes(q)) return false;
-    }
-    return true;
-  });
-}
 
 // ── Main component ────────────────────────────────────────────
 
@@ -108,7 +38,6 @@ const SearchPage: React.FC = () => {
   const recordSearchSnapshot = useEbayStore(st => st.recordSearchSnapshot);
 
   // Async data
-  const allProducts = useEbayProducts();
   const allCategories = useEbayCategories();
 
   const localizedCategories = useMemo(() => localizeEbayCategories(allCategories, locale), [allCategories, locale]);
@@ -147,79 +76,17 @@ const SearchPage: React.FC = () => {
     if (queryParam) { setSearchQuery(queryParam); setSearchStep('results'); }
   }, [locationRouter.search]);
 
-  // Shared filter state object
-  const filters: FilterState = useMemo(() => ({
-    buyingFormat, selectedCategoryId, selectedBrands, selectedLocation,
-    freeShippingOnly, selectedConditions, priceRange, searchQuery,
-  }), [buyingFormat, selectedCategoryId, selectedBrands, selectedLocation, freeShippingOnly, selectedConditions, priceRange, searchQuery]);
-
-  // Sorted products
-  const sortedProducts = useMemo(() => {
-    const sorted = [...allProducts];
-    switch (sortOption) {
-      case 'priceLow':  sorted.sort((a, b) => (a.price + a.shipping) - (b.price + b.shipping)); break;
-      case 'priceHigh': sorted.sort((a, b) => (b.price + b.shipping) - (a.price + a.shipping)); break;
-      case 'newlyListed': sorted.sort((a, b) => b.dateListed - a.dateListed); break;
-      case 'endingSoon':  sorted.sort((a, b) => a.endingSoon - b.endingSoon); break;
-      case 'distance':    sorted.sort((a, b) => a.distanceKm - b.distanceKm); break;
-    }
-    return sorted;
-  }, [sortOption, allProducts]);
-
-  // Filtered products (all filters applied)
-  const filteredProducts = useMemo(
-    () => filterProducts(sortedProducts, filters),
-    [sortedProducts, filters],
-  );
-
-  // Excluding buyingFormat → for buying format counts
-  const baseFilteredProducts = useMemo(
-    () => filterProducts(sortedProducts, filters, 'buyingFormat'),
-    [sortedProducts, filters],
-  );
-
-  // Excluding brands → for brand list counts
-  const brandBaseProducts = useMemo(
-    () => filterProducts(sortedProducts, filters, 'selectedBrands'),
-    [sortedProducts, filters],
-  );
-
-  // Buying format counts
-  const buyingFormatCounts = useMemo(() => {
-    const counts: Record<BuyingFormatFilter, number> = { all: baseFilteredProducts.length, auction: 0, buyItNow: 0, offer: 0 };
-    for (const p of baseFilteredProducts) {
-      if (p.buyingFormat === 'auction') counts.auction += 1;
-      else if (p.buyingFormat === 'buyItNow') counts.buyItNow += 1;
-      else if (p.buyingFormat === 'offer') counts.offer += 1;
-    }
-    return counts;
-  }, [baseFilteredProducts]);
-
-  // Condition counts (excluding condition filter)
-  const conditionCountsByValue = useMemo(() => {
-    const condBase = filterProducts(sortedProducts, filters, 'selectedConditions');
-    const counts: Record<string, number> = { '全新': 0, '二手': 0, '翻新': 0 };
-    for (const p of condBase) {
-      if (p.condition in counts) counts[p.condition] += 1;
-      else counts['翻新'] += 1;
-    }
-    return counts;
-  }, [sortedProducts, filters]);
-
-  // Price presets (excluding price filter)
-  const pricePresets = useMemo(() => {
-    const priceBase = filterProducts(sortedProducts, filters, 'priceRange');
-    const values = priceBase.map(p => p.price + p.shipping).sort((a, b) => a - b);
-    if (!values.length) return { low: 0, high: 0 };
-    const percentile = (q: number) => {
-      const idx = Math.floor(q * (values.length - 1));
-      return values[Math.max(0, Math.min(values.length - 1, idx))];
-    };
-    let low = percentile(0.1);
-    let high = percentile(0.45);
-    if (!(high > low)) { low = values[0]; high = values[values.length - 1]; }
-    return { low, high };
-  }, [sortedProducts, filters]);
+  // Results and filter-drawer counts come from the device server (utils/search.ts).
+  const searchParams = useMemo(() => ({
+    searchQuery, buyingFormat, selectedCategoryId,
+    selectedBrands: Array.from(selectedBrands).sort(),
+    selectedLocation, freeShippingOnly, selectedConditions, priceRange, sortOption,
+  }), [buyingFormat, freeShippingOnly, priceRange, searchQuery, selectedBrands, selectedCategoryId, selectedConditions, selectedLocation, sortOption]);
+  const { result: searchResult, ready: resultsReady } = useEbaySearch(searchParams);
+  const filteredProducts = searchResult.products;
+  const buyingFormatCounts = searchResult.buyingFormatCounts;
+  const conditionCountsByValue = searchResult.conditionCounts;
+  const pricePresets = searchResult.pricePresets;
 
   // Display labels
   const buyingFormatLabel = useMemo(() => {
@@ -256,8 +123,10 @@ const SearchPage: React.FC = () => {
 
   const resultsDisplayCount = derived.resultsCount.toLocaleString(numberLocale);
 
-  // Store sync
+  // Store sync: only once the results for exactly these params are in, so the
+  // recorded count and first item never belong to the previous params.
   useEffect(() => {
+    if (!resultsReady) return;
     setSearchCurrent({
       query: searchQuery, sortOption, buyingFormat,
       categoryId: selectedCategoryId,
@@ -268,26 +137,25 @@ const SearchPage: React.FC = () => {
       resultsCount: derived.resultsCount,
       firstTitle: derived.firstTitle, firstTotalCents: derived.firstTotalCents,
     });
-  }, [buyingFormat, derived.firstTitle, derived.firstTotalCents, derived.resultsCount, freeShippingOnly, priceRange.max, priceRange.min, searchQuery, selectedBrands, selectedCategoryId, selectedConditions, selectedLocation, setSearchCurrent, sortOption]);
+  }, [buyingFormat, derived.firstTitle, derived.firstTotalCents, derived.resultsCount, freeShippingOnly, priceRange.max, priceRange.min, resultsReady, searchQuery, selectedBrands, selectedCategoryId, selectedConditions, selectedLocation, setSearchCurrent, sortOption]);
 
-  // Snapshots record result counts: never before the catalog has loaded.
-  const catalogReady = allProducts.length > 0;
+  // Snapshots record result counts: only once the results for the current params are in.
 
   const lastRecordedQueryRef = useRef<string>('');
   useEffect(() => {
-    if (catalogReady && searchStep === 'results' && searchQuery.trim() && lastRecordedQueryRef.current !== searchQuery) {
+    if (resultsReady && searchStep === 'results' && searchQuery.trim() && lastRecordedQueryRef.current !== searchQuery) {
       lastRecordedQueryRef.current = searchQuery;
       recordSearchSnapshot();
     }
-  }, [catalogReady, recordSearchSnapshot, searchQuery, searchStep]);
+  }, [resultsReady, recordSearchSnapshot, searchQuery, searchStep]);
 
   const lastRecordedSortRef = useRef<SortOptionType>(sortOption);
   useEffect(() => {
-    if (catalogReady && searchStep === 'results' && lastRecordedSortRef.current !== sortOption) {
+    if (resultsReady && searchStep === 'results' && lastRecordedSortRef.current !== sortOption) {
       lastRecordedSortRef.current = sortOption;
       recordSearchSnapshot();
     }
-  }, [catalogReady, recordSearchSnapshot, searchStep, sortOption]);
+  }, [resultsReady, recordSearchSnapshot, searchStep, sortOption]);
 
   const brandsKey = useMemo(
     () => Array.from(selectedBrands).sort().join(','),
@@ -301,7 +169,7 @@ const SearchPage: React.FC = () => {
   // Debounced: record snapshot whenever query/filters settle on results so ``search.history``
   // contains both searches for compare tasks (current alone only reflects the last view).
   useEffect(() => {
-    if (!catalogReady || searchStep !== 'results' || !searchQuery.trim()) return;
+    if (!resultsReady || searchStep !== 'results' || !searchQuery.trim()) return;
     const t = window.setTimeout(() => {
       recordSearchSnapshot();
     }, 500);
@@ -309,7 +177,7 @@ const SearchPage: React.FC = () => {
   }, [
     buyingFormat,
     brandsKey,
-    catalogReady,
+    resultsReady,
     conditionsKey,
     freeShippingOnly,
     priceRange.max,
@@ -543,7 +411,7 @@ const SearchPage: React.FC = () => {
         allCategories={localizedCategories}
         selectedBrands={selectedBrands}
         setSelectedBrands={setSelectedBrands}
-        brandBaseProducts={brandBaseProducts}
+        brandCounts={searchResult.brandCounts}
         selectedLocation={selectedLocation}
         setSelectedLocation={setSelectedLocation}
         freeShippingOnly={freeShippingOnly}

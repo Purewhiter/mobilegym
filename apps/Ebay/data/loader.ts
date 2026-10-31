@@ -1,14 +1,15 @@
 /**
  * Ebay 商品目录读取
  *
- * 商品和分类在 device server 上 (apps/Ebay/device)，页面用 catalog query 读取；
- * 图片地址依赖本页的 CDN base，在这里解析，每份查询结果只解析一次。
+ * 商品和分类在 device server 上 (apps/Ebay/device)，页面按需查询（搜索结果、单个商品、分类），
+ * 不拉整份目录；图片地址依赖本页的 CDN base，在这里解析，每份查询结果只解析一次。
  */
 
 import { useMemo } from 'react';
 import { prefetchDeviceQuery, useDeviceQuery } from '../../../os/device/deviceStore';
 import { cdn, resolveCdnUrl } from '../../../os/utils/cdn';
 import type { ProductItem } from '../types';
+import type { EbaySearchParams, EbaySearchResult } from '../utils/search';
 
 // 使用 new URL() + import.meta.url 让 Vite 正确解析资源路径（dev 和 build 均兼容）
 const productsUrl = new URL('./products.json', import.meta.url).href;
@@ -61,7 +62,7 @@ export interface CategoryDef {
 
 const withImage = (item: ProductItem): ProductItem => ({ ...item, image: localImageFor(item) });
 
-const resolvedProducts = new WeakMap<ProductItem[], ProductItem[]>();
+const resolvedSearches = new WeakMap<EbaySearchResult, EbaySearchResult>();
 const resolvedCategories = new WeakMap<CategoryDef[], CategoryDef[]>();
 
 function resolveCategoryImages(cats: CategoryDef[]): CategoryDef[] {
@@ -71,18 +72,31 @@ function resolveCategoryImages(cats: CategoryDef[]): CategoryDef[] {
   }));
 }
 
-const EMPTY_PRODUCTS: ProductItem[] = [];
+const EMPTY_SEARCH: EbaySearchResult = {
+  products: [],
+  buyingFormatCounts: { all: 0, auction: 0, buyItNow: 0, offer: 0 },
+  conditionCounts: { '全新': 0, '二手': 0, '翻新': 0 },
+  pricePresets: { low: 0, high: 0 },
+  brandCounts: [],
+};
 const EMPTY_CATEGORIES: CategoryDef[] = [];
 
-/** All catalog products (empty while loading). */
-export function useEbayProducts(): ProductItem[] {
-  const { data } = useDeviceQuery<ProductItem[]>('ebay', 'products', {}, true, { catalog: true });
-  return useMemo(() => {
-    if (!data) return EMPTY_PRODUCTS;
-    let out = resolvedProducts.get(data);
-    if (!out) resolvedProducts.set(data, (out = data.map(withImage)));
+/**
+ * Search results and filter counts for `params` (from the device server);
+ * `ready` once the answer for exactly these params has arrived. While new
+ * params load, the previous answer stays on screen.
+ */
+export function useEbaySearch(params: EbaySearchParams): { result: EbaySearchResult; ready: boolean } {
+  const { data, loading } = useDeviceQuery<EbaySearchResult>(
+    'ebay', 'search', params as unknown as Record<string, unknown>, true, { catalog: true, keepPrevious: true },
+  );
+  const result = useMemo(() => {
+    if (!data) return EMPTY_SEARCH;
+    let out = resolvedSearches.get(data);
+    if (!out) resolvedSearches.set(data, (out = { ...data, products: data.products.map(withImage) }));
     return out;
   }, [data]);
+  return { result, ready: Boolean(data) && !loading };
 }
 
 /** One catalog product; `undefined` while loading, `null` if there is none. */
@@ -104,13 +118,10 @@ export function useEbayCategories(): CategoryDef[] {
 
 // ============ 预加载 ============
 
-/** OS `waitForData` 入口: 同步 store 与本页的 device session, 并预取商品目录（页面挂载时数据已就绪）。 */
+/** OS `waitForData` 入口: 同步 store 与本页的 device session, 并预取分类（页面挂载时数据已就绪）。 */
 export async function preload(): Promise<void> {
   // 动态 import: state → data/index → loader 静态 import 会成环。
   const { useEbayStore } = await import('../state');
   await useEbayStore.ensureSynced();
-  await Promise.all([
-    prefetchDeviceQuery('ebay', 'products', {}, { catalog: true }),
-    prefetchDeviceQuery('ebay', 'categories', {}, { catalog: true }),
-  ]);
+  await prefetchDeviceQuery('ebay', 'categories', {}, { catalog: true });
 }

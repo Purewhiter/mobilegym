@@ -111,7 +111,8 @@ export interface FilterDrawerProps {
 
   selectedBrands: Set<string>;
   setSelectedBrands: (v: Set<string>) => void;
-  brandBaseProducts: ProductItem[];
+  /** [brand, count] ignoring the brand filter, in order of first appearance. */
+  brandCounts: Array<[string, number]>;
 
   selectedLocation: string | null;
   setSelectedLocation: (v: string | null) => void;
@@ -136,7 +137,7 @@ const FilterDrawer: React.FC<FilterDrawerProps> = (props) => {
     selectedConditions, setSelectedConditions, conditionLabel, conditionCountsByValue,
     priceRange, setPriceRange, priceLabel, priceLow, priceHigh,
     selectedCategoryId, setSelectedCategoryId, categoryLabel, allCategories,
-    selectedBrands, setSelectedBrands, brandBaseProducts,
+    selectedBrands, setSelectedBrands, brandCounts,
     selectedLocation, setSelectedLocation,
     freeShippingOnly, setFreeShippingOnly,
     viewMode, setViewMode,
@@ -179,11 +180,7 @@ const FilterDrawer: React.FC<FilterDrawerProps> = (props) => {
   if (!isOpen) return null;
 
   // ── Brand sub-page data ──
-  const brandCounts = new Map<string, number>();
-  for (const p of brandBaseProducts) {
-    if (p.brand) brandCounts.set(p.brand, (brandCounts.get(p.brand) || 0) + 1);
-  }
-  const allBrands = Array.from(brandCounts.entries()).sort((a, b) => b[1] - a[1]);
+  const allBrands = [...brandCounts].sort((a, b) => b[1] - a[1]);
 
   const filteredBrands = brandSearchQuery
     ? allBrands.filter(([name]) => name.toLowerCase().includes(brandSearchQuery.toLowerCase()))

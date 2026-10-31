@@ -17,6 +17,7 @@ import { join } from 'node:path';
 import type { AppModule, Catalog } from '../../../device/engine';
 import type { EbaySearchSnapshot } from '../state';
 import type { ProductItem } from '../types';
+import { searchEbayProducts, type EbaySearchParams } from '../utils/search';
 
 export type EbayDeviceState = Record<string, any> & {
   recentSearches: { id: string; query: string }[];
@@ -96,7 +97,8 @@ const commands: AppModule<EbayDeviceState>['commands'] = {
 // ── Queries (catalog only) ──────────────────────────────────────────
 
 const queries: AppModule<EbayDeviceState>['queries'] = {
-  products: (ctx) => extras(ctx).products,
+  /** Search results and filter-drawer counts (the search page never fetches the whole catalog). */
+  search: (ctx, args) => searchEbayProducts(extras(ctx).products, args as unknown as EbaySearchParams),
   product: (ctx, args) => extras(ctx).productById.get(String(args.id ?? '')) ?? null,
   categories: (ctx) => extras(ctx).categories,
 };
