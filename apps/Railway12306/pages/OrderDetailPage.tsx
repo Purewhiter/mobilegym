@@ -8,6 +8,7 @@ import { parseToTimestamp, now as timeNow, fromTimestamp } from '../../../os/Tim
 import { localizeRailwayText } from '../utils/localizeRailwayItem';
 import { useLocale } from '../../../os/locale';
 import { RefundNoticeDialog } from '../components/RefundNoticeDialog';
+import { routes } from '../routes';
 
 function formatWeekday(dateStr: string, isEnglish: boolean): string {
   const timestamp = parseToTimestamp(`${dateStr}T00:00:00`);
@@ -24,7 +25,7 @@ function getOrderStatusLabel(status: string, s: ReturnType<typeof useRailwayStri
 }
 
 export const OrderDetailPage: React.FC = () => {
-  const { bindBack, bindTap } = useRailwayGestures();
+  const { bindBack, bindNav } = useRailwayGestures();
   const [searchParams] = useSearchParams();
   const [showAllPassengers, setShowAllPassengers] = useState(false);
   const orderId = searchParams.get('id');
@@ -137,9 +138,7 @@ export const OrderDetailPage: React.FC = () => {
             <button
               className={`flex-1 py-3 text-[14px] ${isCancelled ? 'text-[#999999]' : 'text-[#333333]'}`}
               disabled={!canRefund}
-              {...bindTap<HTMLButtonElement>('orderDetail.openRefundNotice', {
-                params: { id: order.id },
-              })}
+              {...bindNav(routes.orderDetail, { search: { dialog: 'refundNotice', id: order.id } })}
             >
               {s.order_detail_refund}
             </button>
@@ -305,9 +304,7 @@ export const OrderDetailPage: React.FC = () => {
           cancelLabel={s.action_cancel}
           confirmLabel={s.action_confirm}
           cancelProps={bindBack<HTMLButtonElement>()}
-          confirmProps={bindTap<HTMLButtonElement>('orderDetail.refundConfirm', {
-            params: { id: order.id },
-          })}
+          confirmProps={bindNav(routes.refundConfirm, { search: { id: order.id }, replace: true })}
         />
       )}
     </div>

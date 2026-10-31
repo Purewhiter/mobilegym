@@ -34,7 +34,7 @@ import SearchPage from './pages/SearchPage';
 import CategoryListPage from './pages/CategoryListPage';
 import CategoryDetailPage from './pages/CategoryDetailPage';
 import TabBar from './components/TabBar';
-import { useAppNavigate } from './navigation';
+import { useNav } from '../../os/navigation';
 import { dimensToCssVars, themeToCssVars } from '../../os/utils/themeToCssVars';
 import { applySkinToThemeColors } from '../../os/SkinService';
 import { useDarkMode } from '../../os/hooks/useDarkMode';
@@ -49,7 +49,7 @@ const MAIN_TAB_PATHS = ['/', '/bookshelf', '/audiobooks', '/me'];
 const NavigationHandler: React.FC = () => {
     const location = useLocation();
     const [searchParams] = useSearchParams();
-    const { back } = useAppNavigate();
+    const nav = useNav(); const back = nav.back;
 
     // Sync audioSubTab ephemeral state from URL
     useEffect(() => {

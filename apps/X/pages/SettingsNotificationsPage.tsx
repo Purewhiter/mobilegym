@@ -3,10 +3,11 @@ import { useLocale } from '@/os/locale';
 import { useXStore, selectUser } from '../state';
 import { useXGestures } from '../hooks/useXGestures';
 import { IcChevronRight, IcCog, IcSliders } from '../res/icons';
+import { routes } from '../routes';
 
 export const SettingsNotificationsPage: React.FC = () => {
   const user = useXStore(selectUser);
-  const { bindBack, go } = useXGestures();
+  const { bindBack, nav } = useXGestures();
   const isEnglish = useLocale() === 'en';
 
   const items = [
@@ -14,13 +15,13 @@ export const SettingsNotificationsPage: React.FC = () => {
       icon: <IcSliders size={22} />,
       title: isEnglish ? 'Filters' : '过滤器',
       description: isEnglish ? 'Choose which notifications you want to see and which ones you want to hide.' : '选择你想看到和不想看到的通知。',
-      tapId: 'settings.notifications.filter.open',
+      tapId: routes.settingsNotificationsFilter,
     },
     {
       icon: <IcCog size={22} />,
       title: isEnglish ? 'Preferences' : '偏好设置',
       description: isEnglish ? 'Choose your preferred notification delivery methods.' : '选择你偏好的通知接收方式。',
-      tapId: 'settings.notifications.preferences.open',
+      tapId: routes.settingsNotificationsPreferences,
     },
   ];
 
@@ -42,7 +43,7 @@ export const SettingsNotificationsPage: React.FC = () => {
 
       <div className="flex-1">
         {items.map((item, idx) => (
-          <div key={idx} className="flex cursor-pointer items-start px-4 py-4 transition-colors active:bg-gray-50" onClick={() => go(item.tapId as Parameters<typeof go>[0])}>
+          <div key={idx} className="flex cursor-pointer items-start px-4 py-4 transition-colors active:bg-gray-50" onClick={() => item.tapId && nav.push(item.tapId)}>
             <div className="mr-4 mt-0.5 shrink-0 text-gray-500">{item.icon}</div>
             <div className="mr-2 flex-1">
               <div className="mb-0.5 text-[15px] font-medium text-app-text">{item.title}</div>

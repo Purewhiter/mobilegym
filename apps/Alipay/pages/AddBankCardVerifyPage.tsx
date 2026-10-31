@@ -9,6 +9,7 @@ import type { AlipayBankCard } from '../types';
 import { useLocale } from '@/apps/Alipay/locale';
 import { localizeBankName } from '../utils/localizeBankName';
 import { digits, nextStream } from '../../../os/RandomService';
+import { routes } from '../routes';
 
 function maskPhone(phone: string): string {
   const p = String(phone || '').replace(/\s/g, '');
@@ -44,7 +45,7 @@ const RECHARGE_RETURN_PATH = '/balance/recharge';
 const MULTI_RECHARGE_RETURN_PATH = '/balance/recharge?modal=multi';
 
 export const AddBankCardVerifyPage: React.FC = () => {
-  const { bindBack, go, back } = useAlipayGestures();
+  const { bindBack, nav, back } = useAlipayGestures();
   const s = useAlipayStrings();
   const locale = useLocale();
   const isEnglish = locale === 'en';
@@ -114,20 +115,18 @@ export const AddBankCardVerifyPage: React.FC = () => {
       available: returnTo && returnTo.includes('/balance/recharge') ? 50000 : 1000,
     });
     setAddedCard(card);
-  }, [code, expectedCode, addBankCard, bankName, resolvedCardNumber, returnTo, go]);
+  }, [code, expectedCode, addBankCard, bankName, resolvedCardNumber, returnTo, nav]);
 
   const handleDone = () => {
     if (returnTo === MULTI_RECHARGE_RETURN_PATH) {
-      go('bankCards.add.verify.doneReturnMulti', {}, { popTo: MULTI_RECHARGE_RETURN_PATH });
+      nav.replace(routes.balanceRecharge, {}, { search: { modal: 'multi' }, popTo: MULTI_RECHARGE_RETURN_PATH });
       return;
     }
     if (returnTo === RECHARGE_RETURN_PATH) {
-      go('bankCards.add.verify.doneReturnRecharge', {}, { popTo: RECHARGE_RETURN_PATH });
+      nav.replace(routes.balanceRecharge, {}, { popTo: RECHARGE_RETURN_PATH });
       return;
     }
-    go('bankCards.add.verify.done', {}, {
-      popTo: ['/settings/payment/bank-cards', '/bank-cards'],
-    });
+    nav.replace(routes.bankCards, {}, { search: { toast: 'card_added' }, popTo: ['/settings/payment/bank-cards', '/bank-cards'] });
   };
 
   if (addedCard) {

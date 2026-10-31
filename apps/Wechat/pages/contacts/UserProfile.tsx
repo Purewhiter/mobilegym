@@ -8,13 +8,14 @@ import { useWechatStore } from '../../state';
 import { useShallow } from 'zustand/react/shallow';
 import { useWechatGestures } from '../../hooks/useWechatGestures';
 import { useLocale } from '@/os/locale';
+import { routes } from '../../routes';
 const asset = (r: unknown) => { const str = String(r ?? '').trim(); return (!str || str.startsWith('http')) ? str : `/@app-assets/Wechat/${str}`; };
 
 export const UserProfile: React.FC = () => {
   const t = useWechatStrings();
     const locale = useLocale();
     const isEnglish = locale === 'en';
-    const { bindTap } = useWechatGestures();
+    const { bindNav } = useWechatGestures();
     const { id: targetWxid } = useParams<{ id: string }>();
     const { user, contacts, nearbyPeople, moments } = useWechatStore(useShallow(s => ({
         user: s.user,
@@ -177,7 +178,7 @@ export const UserProfile: React.FC = () => {
             {!isMe && (
                 <div 
                     className="bg-app-surface flex items-center px-4 py-4 active:bg-(--app-c-tw-bg-gray-50) cursor-pointer min-h-(--app-item-height-72) border-t border-(--app-c-misc-border-light)"
-                    {...bindTap<HTMLDivElement>('friendInfo.open', { params: { id: (contact as any).wxid } })}
+                    {...bindNav(routes.friendInfo, { params: { id: (contact as any).wxid } })}
                 >
                     <div className="flex-1 flex flex-col justify-center">
                         <div className="text-(--app-settings-item-text-size) text-app-text font-normal mb-0.5">{t.contacts_friend_info}</div>
@@ -200,7 +201,7 @@ export const UserProfile: React.FC = () => {
             {!isBlacklisted && (
                 <div 
                     className={`bg-app-surface flex items-center px-4 py-3 active:bg-(--app-c-tw-bg-gray-50) cursor-pointer h-(--app-settings-item-height) border-b border-gray-100/50 ${isMe ? 'mt-2 border-t' : ''}`} 
-                    {...bindTap<HTMLDivElement>('moments.user.open', { params: { wxid: (contact as any).wxid } })}
+                    {...bindNav(routes.momentsByWxid, { params: { wxid: (contact as any).wxid } })}
                 >
                     <span className="text-(--app-settings-item-text-size) text-app-text w-24 flex-shrink-0">{t.discover_moments}</span>
                     <div className="flex-1 flex items-center overflow-hidden">
@@ -224,7 +225,7 @@ export const UserProfile: React.FC = () => {
                 <div className="bg-app-surface">
                     <button 
                         className="w-full h-(--app-settings-item-height) text-(--app-c-address-link-text) font-bold text-(--app-settings-item-text-size) flex justify-center items-center active:bg-(--app-c-tw-bg-gray-50)" style={{ transition: 'color var(--app-duration-short) var(--app-easing-standard), background-color var(--app-duration-short) var(--app-easing-standard), border-color var(--app-duration-short) var(--app-easing-standard)' }}
-                        {...bindTap<HTMLButtonElement>('chat.open', { params: { id: (contact as any).wxid } })}
+                        {...bindNav(routes.chat, { params: { id: (contact as any).wxid } })}
                     >
                         <IcMessage size={dimens.icSizeToolbar} className="mr-2" strokeWidth={1.5} /> {text.sendMessage}
                     </button>

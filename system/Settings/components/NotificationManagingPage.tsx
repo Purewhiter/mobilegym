@@ -12,6 +12,7 @@ import { strings } from '../res/strings';
 import { stringsEn } from '../res/strings.en';
 import { useAppStrings } from '@/os/useAppStrings';
 import { useSettingsGestures } from '../hooks/useSettingsGestures';
+import { routes } from '../routes';
 function prefKey(appId: string, field: string): string {
   return `notif.app.${appId}.${field}`;
 }
@@ -55,7 +56,7 @@ const AppRow: React.FC<{
 };
 
 export const NotificationManagingPage: React.FC = () => {
-  const { bindTap } = useSettingsGestures();
+  const { bindNav } = useSettingsGestures();
   const s = useAppStrings(strings, stringsEn);
   const prefs = useOsStateStore((state) => state.preferences);
 
@@ -99,9 +100,7 @@ export const NotificationManagingPage: React.FC = () => {
                 manifest={app}
                 value={value}
                 showDivider={idx < apps.length - 1}
-                rowProps={bindTap<HTMLDivElement>('page.open', {
-                  params: { pageId: `notification_app__${encodeURIComponent(app.id)}` },
-                })}
+                rowProps={bindNav(routes.page, { params: { pageId: `notification_app__${encodeURIComponent(app.id)}` } })}
               />
             );
           })}

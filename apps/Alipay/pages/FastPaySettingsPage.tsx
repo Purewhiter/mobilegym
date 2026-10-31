@@ -5,6 +5,7 @@ import { IcNavBack, IcNavForward, IcSecureCheck, IcFastPay, IcClose } from '../r
 import { SimplePaymentPasswordModal } from '../components/SimplePaymentPasswordModal';
 import { useAlipayStore } from '../state';
 import { useAlipayGestures } from '../hooks/useAlipayGestures';
+import { routes } from '../routes';
 const Toggle: React.FC<{ checked: boolean; tapProps: any }> = ({ checked, tapProps }) => {
   return (
     <button
@@ -32,7 +33,7 @@ const PhoneMock: React.FC<{ label: string; payLabel: string }> = ({ label, payLa
 
 export const FastPaySettingsPage: React.FC = () => {
   const s = useAlipayStrings();
-  const { bindTap, bindBack, back } = useAlipayGestures();
+  const { bindTap, bindBack, back, bindNav } = useAlipayGestures();
   const settings = useAlipayStore(s => s.settings);
   const setSettings = useAlipayStore(s => s.setSettings);
   const enabled = settings.payment.fastPay.enabled;
@@ -85,7 +86,7 @@ export const FastPaySettingsPage: React.FC = () => {
             </div>
             <button
               className="mt-4 w-full bg-app-primary text-white text-base font-medium py-3.5 rounded-full shadow-sm"
-              {...bindTap<HTMLButtonElement>('fastPay.noPwd.password.open', { stopPropagation: true })}
+              {...bindNav(routes.settingsPaymentFastPay, { search: { modal: 'password' }, replace: true, stopPropagation: true })}
             >
               {s.agree_and_enable}
             </button>
@@ -238,7 +239,7 @@ export const FastPaySettingsPage: React.FC = () => {
               <div className="divide-y divide-gray-100">
                 <div
                   className="px-4 py-4 flex items-start justify-between active:bg-gray-50"
-                  {...(noPwdEnabled ? bindTap<HTMLDivElement>('fastPay.noPwd.disableConfirm.open') : bindTap<HTMLDivElement>('fastPay.noPwd.agreement.open'))}
+                  {...(noPwdEnabled ? bindNav(routes.settingsPaymentFastPay, { search: { modal: 'noPwdDisableConfirm' } }) : bindNav(routes.settingsPaymentFastPay, { search: { modal: 'agreement' } }))}
                 >
                   <div className="min-w-0 pr-3">
                     <div className="flex items-center gap-2">
@@ -251,8 +252,8 @@ export const FastPaySettingsPage: React.FC = () => {
                     checked={noPwdEnabled}
                     tapProps={
                       noPwdEnabled
-                        ? bindTap<HTMLButtonElement>('fastPay.noPwd.disableConfirm.open', { stopPropagation: true })
-                        : bindTap<HTMLButtonElement>('fastPay.noPwd.agreement.open', { stopPropagation: true })
+                        ? bindNav(routes.settingsPaymentFastPay, { search: { modal: 'noPwdDisableConfirm' }, stopPropagation: true })
+                        : bindNav(routes.settingsPaymentFastPay, { search: { modal: 'agreement' }, stopPropagation: true })
                     }
                   />
                 </div>
@@ -276,7 +277,7 @@ export const FastPaySettingsPage: React.FC = () => {
 
                 <div
                   className="px-4 py-4 flex items-center justify-between active:bg-gray-50"
-                  {...bindTap<HTMLDivElement>('fastPay.payOrder.open')}
+                  {...bindNav(routes.settingsPaymentOrder)}
                 >
                   <div className="min-w-0 pr-3">
                     <div className="text-sm font-medium text-gray-900">{s.preferred_payment}</div>
@@ -380,7 +381,7 @@ export const FastPaySettingsPage: React.FC = () => {
         ) : (
           <button
             className="w-full border border-app-primary text-app-primary bg-app-surface text-base font-medium py-3.5 rounded-full shadow-sm"
-            {...bindTap<HTMLButtonElement>('fastPay.disableConfirm.open')}
+            {...bindNav(routes.settingsPaymentFastPay, { search: { modal: 'disableFastPayConfirm' } })}
           >
             {s.disable_quick_pay_2}
           </button>

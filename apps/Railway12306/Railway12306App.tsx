@@ -4,7 +4,7 @@ import {
   MemoryRouter, Routes, Route, Navigate, useLocation, useNavigate, Outlet,
   UNSAFE_NavigationContext,
 } from 'react-router-dom';
-import { useAppNavigate } from './navigation';
+import { useNav } from '../../os/navigation';
 import { useRailwayGestures } from './hooks/useRailwayGestures';
 import { useAppNavigationHandler } from '../../os/hooks/useAppNavigationHandler';
 import { AppNavigatorRegistry } from '../../os/AppNavigatorRegistry';
@@ -84,12 +84,13 @@ import { useAppStrings } from '../../os/useAppStrings';
 import { strings } from './res/strings';
 import { stringsEn } from './res/strings.en';
 import { initStations } from './services/stationService';
+import { routes } from './routes';
 
 // ─── NavigationHandler ──────────────────────────────────────────
 const RailwayNavigationHandler: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { back } = useAppNavigate();
+  const nav = useNav(); const back = nav.back;
   const { activityId } = useActivityContext();
   const { navigator } = React.useContext(UNSAFE_NavigationContext);
   const historyIndexRef = useRef(0);
@@ -127,7 +128,7 @@ const RailwayNavigationHandler: React.FC = () => {
 // ─── TabBar ─────────────────────────────────────────────────────
 const TabBar: React.FC = () => {
   const { pathname } = useLocation();
-  const { bindTap } = useRailwayGestures();
+  const { bindNav } = useRailwayGestures();
   const s = useAppStrings(strings, stringsEn);
 
   const TAB_ICON_MAP: Record<string, { normal: string; active: string }> = {
@@ -139,11 +140,11 @@ const TabBar: React.FC = () => {
   };
 
   const tabs = [
-    { id: 'tab.home' as const, name: s.tab_home, key: 'home', path: '/' },
-    { id: 'tab.travel' as const, name: s.tab_travel, key: 'travel', path: '/travel' },
-    { id: 'tab.orders' as const, name: s.tab_orders, key: 'orders', path: '/orders' },
-    { id: 'tab.member' as const, name: s.tab_member, key: 'member', path: '/member' },
-    { id: 'tab.my' as const, name: s.tab_my, key: 'my', path: '/my' },
+    { route: routes.home, name: s.tab_home, key: 'home', path: '/' },
+    { route: routes.travel, name: s.tab_travel, key: 'travel', path: '/travel' },
+    { route: routes.orders, name: s.tab_orders, key: 'orders', path: '/orders' },
+    { route: routes.member, name: s.tab_member, key: 'member', path: '/member' },
+    { route: routes.my, name: s.tab_my, key: 'my', path: '/my' },
   ];
 
   return (
@@ -154,9 +155,9 @@ const TabBar: React.FC = () => {
           const active = pathname === tab.path;
           return (
             <button
-              key={tab.id}
+              key={tab.key}
               className="flex flex-col items-center justify-center flex-1"
-              {...bindTap<HTMLButtonElement>(tab.id)}
+              {...bindNav(tab.route, { replace: true })}
             >
               <img
                 src={active ? TAB_ICON_MAP[tab.key].active : TAB_ICON_MAP[tab.key].normal}

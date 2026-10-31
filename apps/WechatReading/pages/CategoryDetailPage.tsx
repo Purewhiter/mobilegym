@@ -9,6 +9,7 @@ import { BOOK_BADGE_COLOR_MAP } from '../constants';
 import { formatWechatReadingCount } from '../utils/localization';
 import { useLocale } from '../../../os/locale';
 import { TOP_CATEGORIES } from './CategoryListPage';
+import { routes } from '../routes';
 
 function getRecommendationTag(book: any): { label: string; className: string } | null {
   if (book.recommendationTag) {
@@ -26,7 +27,7 @@ const SUB_ALL = '__all__';
 
 const CategoryDetailPage: React.FC = () => {
   const { categoryName } = useParams<{ categoryName: string }>();
-  const { bindBack, bindTap } = useWechatReadingGestures();
+  const { bindBack, bindNav } = useWechatReadingGestures();
   const s = useWechatReadingStrings();
   const locale = useLocale();
 
@@ -104,7 +105,7 @@ const CategoryDetailPage: React.FC = () => {
           return (
             <div
               key={book.id}
-              {...bindTap<HTMLDivElement>('book.detail.open', { params: { bookId: book.id } })}
+              {...bindNav(routes.book, { params: { bookId: book.id } })}
               className="flex gap-4 px-4 py-4 bg-white border-b border-(--app-c-tw-bg-gray-50) active:bg-(--app-c-tw-bg-gray-50) cursor-pointer relative"
             >
               {/* Cover */}

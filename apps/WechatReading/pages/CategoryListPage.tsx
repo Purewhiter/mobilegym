@@ -4,6 +4,7 @@ import { dimens } from '../res/dimens';
 import { WECHAT_READING_CONFIG } from '../data';
 import { useWechatReadingGestures } from '../hooks/useWechatReadingGestures';
 import { useWechatReadingStrings } from '../hooks/useWechatReadingStrings';
+import { routes } from '../routes';
 
 // 顶级分类（参照微信读书真实 UI，完整 31 项）
 // coverBookId: 指定封面书籍 id；未指定时自动从 dataCategories 匹配
@@ -57,7 +58,7 @@ function getCoverBook(cat: typeof TOP_CATEGORIES[number]) {
 }
 
 const CategoryListPage: React.FC = () => {
-  const { bindBack, bindTap } = useWechatReadingGestures();
+  const { bindBack, bindNav } = useWechatReadingGestures();
   const s = useWechatReadingStrings();
 
   return (
@@ -79,7 +80,7 @@ const CategoryListPage: React.FC = () => {
             return (
               <div
                 key={cat.name}
-                {...bindTap<HTMLDivElement>('category.detail.open', { params: { categoryName: cat.name } })}
+                {...bindNav(routes.categoriesByCategoryName, { params: { categoryName: cat.name } })}
                 className="bg-app-surface rounded-xl p-3 flex items-center gap-3 active:scale-[0.98] cursor-pointer"
                 style={{ transition: 'transform 120ms ease' }}
               >

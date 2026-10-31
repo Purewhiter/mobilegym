@@ -5,9 +5,10 @@ import { useWechatStrings } from '../../hooks/useWechatStrings';
 import { IcAperture, IcInfinity, IcDisc, IcScan, IcMusic, IcSparkles, IcSearch, IcLocation, IcGamepad } from '../../res/icons';
 import { SettingsItem } from './Shared';
 import { useWechatGestures } from '../../hooks/useWechatGestures';
+import { routes } from '../../routes';
 export const DiscoverManagementPage: React.FC = () => {
   const t = useWechatStrings();
-    const { bindTap } = useWechatGestures();
+    const { bindNav } = useWechatGestures();
 
     const items = [
         { id: 'moments', label: t.discover_moments, icon: <IcAperture size={dimens.icSizeToolbar} className="text-(--app-c-me-icon-collection)" /> },
@@ -38,7 +39,7 @@ export const DiscoverManagementPage: React.FC = () => {
                         key={item.id}
                         label={item.label}
                         icon={item.icon} // 图标放在左侧
-                        tapProps={bindTap<HTMLDivElement>('settings.discover.item.open', { params: { id: item.id } })}
+                        tapProps={bindNav(routes.settingsGeneralDiscoverById, { params: { id: item.id } })}
                         isLast={item.isLast}
                     />
                 ))}

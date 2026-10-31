@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { IcArrowBack, IcSearch, IcShare, IcMore, IcNavForward, IcFilter, IcEye, IcSend } from '../res/icons';
 import { useRedditGestures } from '../hooks/useRedditGestures';
 import { getUserAvatar } from '../utils/userIdentity';
+import { routes } from '../routes';
 
 const asset = (r: unknown) => { const s = String(r ?? '').trim(); return (!s || s.startsWith('http')) ? s : `/@app-assets/Reddit/${s}`; };
 
@@ -29,7 +30,7 @@ function getUsernameFromPath(pathname: string): string | null {
 
 export const UserProfilePage: React.FC = () => {
   const location = useLocation();
-  const { bindTap, bindBack } = useRedditGestures();
+  const { bindNav, bindBack } = useRedditGestures();
 
   const profileUsername = getUsernameFromPath(location.pathname) ?? 'unknown';
   const sp = new URLSearchParams(location.search);
@@ -162,7 +163,7 @@ export const UserProfilePage: React.FC = () => {
                   <div
                     key={t.key}
                     className="flex flex-col items-center cursor-pointer select-none"
-                    {...bindTap('profile.user.tab.switch', { params: { username: profileUsername, tab: t.key } })}
+                    {...bindNav(routes.user, { params: { username: profileUsername }, search: { tab: t.key }, replace: true })}
                   >
                     <div className={`py-3 text-[15px] font-bold ${active ? 'text-black' : 'text-gray-400'}`}>
                       {t.label}

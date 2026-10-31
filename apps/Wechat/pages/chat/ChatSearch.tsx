@@ -8,6 +8,7 @@ import { useWechatStore } from '../../state';
 import { useShallow } from 'zustand/react/shallow';
 import * as TimeService from '../../../../os/TimeService';
 import type { Message } from '../../types';
+import { routes } from '../../routes';
 const CATEGORY_KEYS = [
   'search_date', 'search_photo_video', 'search_file', 'search_link',
   'search_music_audio', 'search_transaction', 'search_mini_program',
@@ -72,7 +73,7 @@ export const ChatSearch: React.FC = () => {
   const t = useWechatStrings();
   const { id } = useParams<{ id: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { bindBack, go } = useWechatGestures();
+  const { bindBack, nav } = useWechatGestures();
   const { user, chats, contacts } = useWechatStore(useShallow(s => ({
     user: s.user,
     chats: s.chats,
@@ -236,18 +237,14 @@ export const ChatSearch: React.FC = () => {
                       tabIndex={0}
                       onClick={() => {
                         if (id) {
-                          go('chatSearch.openChat', { id }, {
-                            state: { scrollToMessageId: msg.id },
-                          });
+                          nav.push(routes.chat, { id }, { state: { scrollToMessageId: msg.id } });
                         }
                       }}
                       onKeyDown={e => {
                         if (e.key === 'Enter' || e.key === ' ') {
                           e.preventDefault();
                           if (id) {
-                            go('chatSearch.openChat', { id }, {
-                              state: { scrollToMessageId: msg.id },
-                            });
+                            nav.push(routes.chat, { id }, { state: { scrollToMessageId: msg.id } });
                           }
                         }
                       }}

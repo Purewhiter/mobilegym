@@ -7,10 +7,11 @@ import { useAppStrings } from '../../../os/useAppStrings';
 import { strings } from '../res/strings';
 import { stringsEn } from '../res/strings.en';
 import { useNotesGestures } from '../hooks/useNotesGestures';
+import { routes } from '../routes';
 export type NotesTab = 'notes' | 'todo';
 
 export const BottomTabBar: React.FC<{ active: NotesTab }> = ({ active }) => {
-  const { go } = useNotesGestures();
+  const { nav } = useNotesGestures();
   const bottomPad = bottomGestureHeight;
   const s = useAppStrings(strings, stringsEn);
 
@@ -41,12 +42,12 @@ export const BottomTabBar: React.FC<{ active: NotesTab }> = ({ active }) => {
         <Tab
           tab="notes"
           label={s.notes}
-          onClick={() => go('tab.notes')}
+          onClick={() => nav.replace(routes.home)}
         />
         <Tab
           tab="todo"
           label={s.todo}
-          onClick={() => go('tab.todo')}
+          onClick={() => nav.replace(routes.todo)}
         />
       </div>
     </div>

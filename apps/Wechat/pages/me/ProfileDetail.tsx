@@ -5,10 +5,11 @@ import { useWechatStrings } from '../../hooks/useWechatStrings';
 import { IcNavForward, IcQrCode } from '../../res/icons';
 import { useWechatStore } from '../../state';
 import { useWechatGestures } from '../../hooks/useWechatGestures';
+import { routes } from '../../routes';
 
 export const ProfileDetail: React.FC = () => {
   const t = useWechatStrings();
-    const { bindTap } = useWechatGestures();
+    const { bindNav } = useWechatGestures();
     const user = useWechatStore(s => s.user);
 
     const Item = ({ 
@@ -65,14 +66,14 @@ export const ProfileDetail: React.FC = () => {
             {/* Main Information Block: Grouped together without gaps as per screenshot */}
             <div className="bg-app-surface">
                 <Item label={t.profile_avatar} isAvatar={true} />
-                <Item label={t.profile_name} value={user.name} tapProps={bindTap<HTMLDivElement>('profile.name.open')} />
-                <Item label={t.profile_gender} value={user.gender || ''} tapProps={bindTap<HTMLDivElement>('profile.gender.open')} />
-                <Item label={t.profile_region} value={user.region} tapProps={bindTap<HTMLDivElement>('profile.region.open')} />
-                <Item label={t.contacts_phone} value={user.phone} tapProps={bindTap<HTMLDivElement>('profile.phone.open')} />
-                <Item label={t.profile_wxid} value={user.wxid} tapProps={bindTap<HTMLDivElement>('profile.wxid.open')} />
-                <Item label={t.profile_qrcode} isQr={true} tapProps={bindTap<HTMLDivElement>('me.qrcode.open')} />
-                <Item label={t.profile_pat} value={user.pat} tapProps={bindTap<HTMLDivElement>('profile.pat.open')} />
-                <Item label={t.profile_signature} value={user.signature || t.profile_not_set} isLast={true} tapProps={bindTap<HTMLDivElement>('profile.signature.open')} />
+                <Item label={t.profile_name} value={user.name} tapProps={bindNav(routes.meName)} />
+                <Item label={t.profile_gender} value={user.gender || ''} tapProps={bindNav(routes.meGender)} />
+                <Item label={t.profile_region} value={user.region} tapProps={bindNav(routes.meRegion)} />
+                <Item label={t.contacts_phone} value={user.phone} tapProps={bindNav(routes.mePhone)} />
+                <Item label={t.profile_wxid} value={user.wxid} tapProps={bindNav(routes.meWxid)} />
+                <Item label={t.profile_qrcode} isQr={true} tapProps={bindNav(routes.meQrcode)} />
+                <Item label={t.profile_pat} value={user.pat} tapProps={bindNav(routes.mePat)} />
+                <Item label={t.profile_signature} value={user.signature || t.profile_not_set} isLast={true} tapProps={bindNav(routes.meSignature)} />
             </div>
 
             <Spacer />
@@ -86,15 +87,15 @@ export const ProfileDetail: React.FC = () => {
 
             {/* Block 3: Address and Invoice */}
             <div className="bg-app-surface">
-                <Item label={t.profile_address} tapProps={bindTap<HTMLDivElement>('profile.address.open')} />
-                <Item label={t.profile_invoice} isLast={true} tapProps={bindTap<HTMLDivElement>('profile.invoice.open')} />
+                <Item label={t.profile_address} tapProps={bindNav(routes.meAddress)} />
+                <Item label={t.profile_invoice} isLast={true} tapProps={bindNav(routes.meInvoice)} />
             </div>
 
             <Spacer />
 
             {/* Block 4: Beans */}
             <div className="bg-app-surface">
-                <Item label={t.settings_wechat_beans} isLast={true} tapProps={bindTap<HTMLDivElement>('profile.beans.open')} />
+                <Item label={t.settings_wechat_beans} isLast={true} tapProps={bindNav(routes.meBeans)} />
             </div>
         </div>
     );

@@ -13,6 +13,7 @@ import {
 } from '../res/icons';
 import type { XPost } from '../types';
 import { parseXTimeToMinutes } from '../utils/formatTime';
+import { routes } from '../routes';
 
 export const PostDetailsPage: React.FC = () => {
   const { id } = useParams();
@@ -22,7 +23,7 @@ export const PostDetailsPage: React.FC = () => {
   const user = useXStore(selectUser);
   const toggleRetweet = useXStore(s => s.toggleRetweet);
   const { replies: repliesForRoutePost, loading: repliesQueryLoading } = useXRepliesForPost(id || '');
-  const { bindBack, bindTap, go } = useXGestures();
+  const { bindBack, bindNav, nav } = useXGestures();
   const s = useXStrings();
   const [sortMethod, setSortMethod] = React.useState<'relevant' | 'recent' | 'likes'>('relevant');
   const [showSortMenu, setShowSortMenu] = React.useState(false);
@@ -143,7 +144,7 @@ export const PostDetailsPage: React.FC = () => {
             <div className="flex items-center">
               <div
                 className="w-10 h-10 rounded-full bg-gray-200 mr-3 overflow-hidden"
-                {...bindTap('user.open.fromPost', { params: { id: post.authorId } })}
+                {...bindNav(routes.user, { params: { id: post.authorId } })}
               >
                 {post.author.avatar
                   ? <XImage src={post.author.avatar} alt={post.author.name} className="w-full h-full object-cover" />
@@ -179,7 +180,7 @@ export const PostDetailsPage: React.FC = () => {
           {post.quotedPost && (
             <div
               className="mb-3 rounded-xl overflow-hidden border border-app-border w-full p-3 cursor-pointer active:bg-gray-100/50"
-              {...bindTap('status.open', { params: { id: post.quotedPost.id } })}
+              {...bindNav(routes.status, { params: { id: post.quotedPost.id } })}
             >
               <div className="flex items-center gap-1 mb-1">
                 <div className="w-5 h-5 rounded-full bg-gray-200 overflow-hidden">
@@ -197,7 +198,7 @@ export const PostDetailsPage: React.FC = () => {
 
           <div
             className="text-gray-500 text-sm py-3 border-b border-app-border active:bg-black/5 cursor-pointer"
-            {...bindTap('status.activity.open', { params: { id: post.id } })}
+            {...bindNav(routes.statusActivity, { params: { id: post.id }, search: { tab: 'quotes' } })}
           >
             {post.time} · {post.stats.views} {s.post_views_suffix}
           </div>
@@ -298,16 +299,16 @@ export const PostDetailsPage: React.FC = () => {
         onClose={() => setRetweetMenuPostId(null)}
         onRetweet={toggleRetweet}
         onQuote={(postId) => {
-          go('compose.open', { quotedPostId: postId });
+          nav.push(routes.compose, {}, { search: { quotedPostId: postId } });
         }}
-        onViewActivity={(postId) => go('status.activity.open', { id: postId })}
+        onViewActivity={(postId) => nav.push(routes.statusActivity, { id: postId }, { search: { tab: 'quotes' } })}
       />
 
       {/* Fixed Bottom Reply Bar */}
       <div className="fixed bottom-0 left-0 right-0 border-t border-app-border bg-app-bg z-40">
         <div
           className="flex items-center px-4 py-2"
-          {...bindTap('reply.open', { params: { id: post.id } })}
+          {...bindNav(routes.reply, { params: { id: post.id } })}
         >
           <div className="w-8 h-8 rounded-full bg-gray-200 overflow-hidden mr-3 shrink-0">
             {user.avatar
@@ -333,14 +334,14 @@ interface ReplyItemProps {
 }
 
 const ReplyItem: React.FC<ReplyItemProps> = ({ reply, onRetweet, users }) => {
-  const { bindTap } = useXGestures();
+  const { bindNav, nav } = useXGestures();
   const author = reply.author ?? users[reply.authorId];
 
   return (
     <div className="border-b border-app-border p-4 flex">
       <div
         className="w-10 h-10 rounded-full bg-gray-200 mr-3 overflow-hidden shrink-0"
-        {...bindTap('user.open.fromPost', { params: { id: reply.authorId } })}
+        {...bindNav(routes.user, { params: { id: reply.authorId } })}
       >
         {author?.avatar
           ? <XImage src={author.avatar} alt={author.name} className="w-full h-full object-cover" />

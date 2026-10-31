@@ -9,6 +9,7 @@ import { useShallow } from 'zustand/react/shallow';
 import * as TimeService from '../../../../os/TimeService';
 import { useWechatGestures } from '../../hooks/useWechatGestures';
 import { WechatSmartImage } from '../../components/WechatSmartImage';
+import { routes } from '../../routes';
 
 export const UserMoments: React.FC = () => {
   const t = useWechatStrings();
@@ -19,7 +20,7 @@ export const UserMoments: React.FC = () => {
         moments: s.moments,
         momentDraft: s.momentDraft,
     })));
-    const { bindTap } = useWechatGestures();
+    const { bindNav } = useWechatGestures();
 
     const isMe = wxid === user.wxid;
     const profileUser = isMe
@@ -82,7 +83,7 @@ export const UserMoments: React.FC = () => {
                         <div
                             className="w-(--app-item-width-84) h-(--app-item-height-84) bg-app-surface p-(--app-card-padding-1) rounded-[10px] shadow-lg cursor-pointer active:opacity-80"
                             {...(wxid
-                                ? bindTap<HTMLDivElement>('userProfile.open', { params: { id: wxid } })
+                                ? bindNav(routes.userProfile, { params: { id: wxid } })
                                 : {})}
                         >
                             <img src={profileUser.avatar} className="w-full h-full rounded-[8px] object-cover" alt="" />
@@ -121,12 +122,8 @@ export const UserMoments: React.FC = () => {
 
                                     const tapProps = wxid
                                         ? hasMomentDraft
-                                            ? bindTap<HTMLDivElement>('userMoments.post.open.fromDraft', {
-                                                params: { wxid },
-                                              })
-                                            : bindTap<HTMLDivElement>('userMoments.menu.camera.open', {
-                                                params: { wxid },
-                                              })
+                                            ? bindNav(routes.postMoment)
+                                            : bindNav(routes.momentsByWxid, { params: { wxid }, search: { menu: 'camera' } })
                                         : {};
 
                                     return (

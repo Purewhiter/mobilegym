@@ -21,6 +21,7 @@ vi.mock('../apps/Wechat/hooks/useWechatStrings', () => ({
 vi.mock('../apps/Wechat/hooks/useWechatGestures', () => ({
   useWechatGestures: () => ({
     bindTap: () => ({}),
+    bindNav: () => ({}),
   }),
 }));
 

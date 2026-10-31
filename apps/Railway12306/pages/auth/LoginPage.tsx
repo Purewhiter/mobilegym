@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
-import { useAppNavigate } from '../../navigation';
 import { useRailwayStore } from '../../state';
 import { useRailwayGestures } from '../../hooks/useRailwayGestures';
 import { IcNavBack } from '../../res/icons';
+import { routes } from '../../routes';
 
 export const RailwayLoginPage: React.FC = () => {
-  const { go } = useAppNavigate();
-  const { bindBack } = useRailwayGestures();
+  const { bindBack, nav } = useRailwayGestures();
   const { login } = useRailwayStore();
   const [tab, setTab] = useState<'account' | 'fingerprint'>('account');
   const [username, setUsername] = useState('');
@@ -22,7 +21,7 @@ export const RailwayLoginPage: React.FC = () => {
       setError(res.reason === 'wrong_password' ? '密码错误' : res.reason === 'no_account' ? '账号不存在' : '登录失败');
       return;
     }
-    go('auth.login.success');
+    nav.replace(routes.home);
   };
 
   const canSubmit = tab === 'account' ? Boolean(username.trim() && password) : Boolean(username.trim());
@@ -92,7 +91,7 @@ export const RailwayLoginPage: React.FC = () => {
             </div>
 
             <div className="flex justify-end">
-              <button className="text-[12px] text-gray-400" onClick={() => go('auth.forgotPassword.open')}>忘记密码？</button>
+              <button className="text-[12px] text-gray-400" onClick={() => nav.push(routes.authForgotPassword)}>忘记密码？</button>
             </div>
           </div>
 
@@ -105,7 +104,7 @@ export const RailwayLoginPage: React.FC = () => {
               登录
             </button>
             <button
-              onClick={() => go('auth.register.open')}
+              onClick={() => nav.push(routes.authRegister)}
               className="w-full h-11 rounded-md text-[15px] font-medium bg-white border border-gray-200 text-gray-600 active:bg-gray-50"
             >
               注册

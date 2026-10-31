@@ -15,6 +15,7 @@ import { loadSearchResults } from '../data/loader';
 import { openSaveLocation } from '../components/LikedToast';
 import { inferLargeArtworkUrl } from '../utils/artwork';
 import { base36, nextStream } from '../../../os/RandomService';
+import { routes } from '../routes';
 
 const FILTER_CHIPS = ['歌曲', '歌单', '专辑', '播客', '视频', '艺人'];
 
@@ -37,7 +38,7 @@ export const SearchInputPage: React.FC = () => {
   const locale = useLocale();
   const isEnglish = locale === 'en';
   const [searchParams, setSearchParams] = useSearchParams();
-  const { bindBack, bindTap, go, back } = useSpotifyGestures();
+  const { bindBack, bindTap, nav, back, bindNav } = useSpotifyGestures();
   const s = useSpotifyStrings();
   const inputRef = useRef<HTMLInputElement | null>(null);
   const currentTrack = useSpotifyStore(state => state.currentTrack);
@@ -396,7 +397,7 @@ export const SearchInputPage: React.FC = () => {
                           {artistResults.slice(0, 3).map((artist: any) => (
                             <div
                               key={artist.artistId}
-                              {...bindTap('artist.open', { params: { name: String(artist.artistName) } })}
+                              {...bindNav(routes.artist, { params: { name: String(artist.artistName) } })}
                               className="mx-[-8px] flex cursor-pointer items-center justify-between rounded-md p-2 hover:bg-white/10"
                             >
                               <div className="flex items-center gap-3">
@@ -423,7 +424,7 @@ export const SearchInputPage: React.FC = () => {
                           ))}
                           {showInferredArtistCard && (
                             <div
-                              {...bindTap('artist.open', { params: { name: topArtistName } })}
+                              {...bindNav(routes.artist, { params: { name: topArtistName } })}
                               className="mx-[-8px] flex cursor-pointer items-center justify-between rounded-md p-2 hover:bg-white/10"
                             >
                               <div className="flex items-center gap-3">
@@ -463,7 +464,7 @@ export const SearchInputPage: React.FC = () => {
                               {albumResults.slice(0, 6).map((album: any) => (
                                 <div
                                   key={album.collectionId}
-                                  {...bindTap('playlist.open', { params: { id: String(album.collectionId) } })}
+                                  {...bindNav(routes.playlist, { params: { id: String(album.collectionId) } })}
                                   className="w-36 flex-shrink-0 cursor-pointer"
                                 >
                                   <div className="mb-2 h-36 w-36 overflow-hidden rounded bg-gray-800">
@@ -482,7 +483,7 @@ export const SearchInputPage: React.FC = () => {
                             albumResults.map((album: any) => (
                               <div
                                 key={album.collectionId}
-                                {...bindTap('playlist.open', { params: { id: String(album.collectionId) } })}
+                                {...bindNav(routes.playlist, { params: { id: String(album.collectionId) } })}
                                 className="mx-[-8px] flex cursor-pointer items-center justify-between rounded-md p-2 hover:bg-white/10"
                               >
                                 <div className="flex min-w-0 flex-1 items-center gap-3">
@@ -540,10 +541,7 @@ export const SearchInputPage: React.FC = () => {
                             </div>
                             <div className="flex items-center gap-5 pl-2 text-gray-400">
                               <button
-                                {...bindTap('search.input.trackMenu.open', {
-                                  params: { trackId: String(track.trackId || track.id) },
-                                  stopPropagation: true,
-                                })}
+                                {...bindNav(routes.searchInput, { search: { sheet: 'track_menu', trackId: String(track.trackId || track.id) }, keep: ['q'], stopPropagation: true })}
                                 className="hover:text-white"
                               >
                                 <IcMoreVertical size={22} />
@@ -604,15 +602,11 @@ export const SearchInputPage: React.FC = () => {
               back();
             },
           }}
-          addToPlaylistProps={bindTap('search.input.addPlaylist.open', {
-            params: { trackId: menuTrack.id },
-            stopPropagation: true,
-            beforeTrigger: () => {
+          addToPlaylistProps={bindNav(routes.searchInput, { search: { sheet: 'add_playlist', trackId: menuTrack.id }, keep: ['q'], replace: true, stopPropagation: true, beforeTrigger: () => {
               setAddPlaylistTitleVariant(
                 isLiked(menuTrack.id, menuTrack) ? 'saveLocation' : 'default',
               );
-            },
-          })}
+            } })}
           createJamProps={{ onClick: () => back() }}
           addToQueueProps={{
             onClick: () => {
@@ -621,8 +615,8 @@ export const SearchInputPage: React.FC = () => {
               back();
             },
           }}
-          goToAlbumProps={bindTap('playlist.open', { params: { id: String(menuTrack.id) } })}
-          goToArtistProps={bindTap('artist.open', { params: { name: String(menuTrack.artist) } })}
+          goToAlbumProps={bindNav(routes.playlist, { params: { id: String(menuTrack.id) } })}
+          goToArtistProps={bindNav(routes.artist, { params: { name: String(menuTrack.artist) } })}
         />
       )}
 

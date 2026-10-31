@@ -6,6 +6,7 @@ import { useWechatReadingStore } from '../state';
 import { useWechatReadingGestures } from '../hooks/useWechatReadingGestures';
 import { useWechatReadingStrings } from '../hooks/useWechatReadingStrings';
 import { dimens } from '../res/dimens';
+import { routes } from '../routes';
 
 function isLightColor(hex: string): boolean {
   const color = hex.replace('#', '');
@@ -20,7 +21,7 @@ const AudiobooksPage: React.FC = () => {
   const audioSubTab = useWechatReadingStore(s => s._temp.audioSubTab);
   const recommendedAudiobooks = useWechatReadingStore(s => s.recommendedAudiobooks) ?? [];
   const refreshRecommendedAudiobooks = useWechatReadingStore(s => s.refreshRecommendedAudiobooks);
-  const { bindTap, go } = useWechatReadingGestures();
+  const { bindTap, nav, bindNav } = useWechatReadingGestures();
   const s = useWechatReadingStrings();
   const location = useLocation();
 
@@ -28,9 +29,9 @@ const AudiobooksPage: React.FC = () => {
     if (location.pathname !== '/audiobooks') return;
     const raw = new URLSearchParams(location.search).get('sub');
     if (raw !== 'audio' && raw !== 'community') {
-      go('audiobooks.tab.switch', { sub: 'audio' });
+      nav.replace(routes.audiobooks, {}, { search: { sub: 'audio' } });
     }
-  }, [go, location.pathname, location.search]);
+  }, [nav, location.pathname, location.search]);
 
   const communityTabs = [
     s.audiobooks_community_recommended,
@@ -45,14 +46,14 @@ const AudiobooksPage: React.FC = () => {
       <div className="pt-10 pb-2 px-4 bg-app-surface/95 backdrop-blur-sm sticky top-0 z-40 flex flex-col gap-3">
         <div className="flex items-center justify-center gap-8 text-lg font-medium pt-2">
           <button
-            {...bindTap<HTMLButtonElement>('audiobooks.tab.switch', { params: { sub: 'audio' } })}
+            {...bindNav(routes.audiobooks, { search: { sub: 'audio' }, replace: true })}
             className={`${audioSubTab === 'audio' ? 'text-app-primary scale-105' : 'text-(--app-c-tw-text-slate-500)'}`}
             style={{ transition: 'all var(--app-duration-short) var(--app-easing-standard)' }}
           >
             {s.audiobooks_tab_audiobook}
           </button>
           <button
-            {...bindTap<HTMLButtonElement>('audiobooks.tab.switch', { params: { sub: 'community' } })}
+            {...bindNav(routes.audiobooks, { search: { sub: 'community' }, replace: true })}
             className={`${audioSubTab === 'community' ? 'text-app-primary scale-105' : 'text-(--app-c-tw-text-slate-500)'}`}
             style={{ transition: 'all var(--app-duration-short) var(--app-easing-standard)' }}
           >
@@ -101,7 +102,7 @@ const AudiobooksPage: React.FC = () => {
                       key={book.id}
                       className="flex flex-col gap-2 active:opacity-70"
                       style={{ transition: 'opacity var(--app-duration-short) var(--app-easing-standard)' }}
-                      {...bindTap<HTMLDivElement>('book.detail.open', { params: { bookId: book.id } })}
+                      {...bindNav(routes.book, { params: { bookId: book.id } })}
                     >
                       <div className="aspect-[3/4] rounded-lg shadow-sm relative overflow-hidden flex items-center justify-center text-center p-2" style={{ backgroundColor: book.coverColor }}>
                         <span className={`${isLightColor(book.coverColor) ? 'text-(--app-c-tw-text-slate-800)' : 'text-white'} font-bold text-sm leading-tight drop-shadow-sm`}>
@@ -153,7 +154,7 @@ const AudiobooksPage: React.FC = () => {
                           key={book.id}
                           className="flex items-center gap-3 bg-app-surface p-3 rounded-xl shadow-sm border border-(--app-c-tw-border-slate-50) active:bg-(--app-c-tw-bg-slate-50)"
                           style={{ transition: 'color var(--app-duration-short) var(--app-easing-standard), background-color var(--app-duration-short) var(--app-easing-standard), border-color var(--app-duration-short) var(--app-easing-standard)' }}
-                          {...bindTap<HTMLDivElement>('book.detail.open', { params: { bookId: book.id } })}
+                          {...bindNav(routes.book, { params: { bookId: book.id } })}
                         >
                           <div className={`w-14 h-14 rounded-lg shrink-0 flex items-center justify-center text-(--app-audiobook-chart-thumb-text-size) text-center p-1 leading-tight font-bold overflow-hidden ${isLightColor(book.coverColor) ? 'text-(--app-c-tw-text-slate-700) border border-(--app-c-tw-border-slate-100)' : 'text-white'}`} style={{ backgroundColor: book.coverColor }}>
                             <span className="line-clamp-4">{book.title}</span>

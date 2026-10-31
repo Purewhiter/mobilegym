@@ -10,6 +10,7 @@ import { useSettingsStrings } from '../res/useSettingsStrings';
 import { ChevronRightIcon } from '../res/icons';
 import { useSettingsGestures } from '../hooks/useSettingsGestures';
 import { useLocale } from '../../../os/locale';
+import { routes } from '../routes';
 /** Mock dynamic summaries for certain items */
 const DYNAMIC_SUMMARY_KEYS: Record<string, string> = {
   mi_account_settings: 'mi_account_settings_summary',
@@ -52,7 +53,7 @@ const HIDDEN_ITEMS = new Set([
 ]);
 
 export const SettingsMainPage: React.FC = () => {
-  const { bindTap, go } = useSettingsGestures();
+  const { bindTap, nav, bindNav } = useSettingsGestures();
   const { s, t } = useSettingsStrings();
   const locale = useLocale();
   const data = useSettingsStore(selectPagesData);
@@ -157,15 +158,15 @@ export const SettingsMainPage: React.FC = () => {
     const candidate = getTargetPageId(itemId, targetPage);
     const hasPage = !!(pages as any)[candidate] || !!(SETTINGS_PAGE_OVERRIDES as any)[candidate];
     if (hasPage) {
-      go('page.open', { pageId: candidate });
+      nav.push(routes.page, { pageId: candidate });
       return;
     }
     showToast(s.this_setting_would_open_a_system_page_on_a_real);
-  }, [getTargetPageId, go, loading, pages, s]);
+  }, [getTargetPageId, nav, loading, pages, s]);
 
   const bindOpenPage = React.useCallback(
     (itemId: string, targetPage?: string) =>
-      bindTap<HTMLDivElement>('page.open', {
+      bindTap<HTMLDivElement>('nav.page', {
         params: { pageId: getTargetPageId(itemId, targetPage) },
         onTrigger: () => handleItemClick(itemId, targetPage),
       }),
@@ -205,7 +206,7 @@ export const SettingsMainPage: React.FC = () => {
             <button
               type="button"
               className="w-full bg-white/80 backdrop-blur rounded-full flex items-center px-4 py-2.5 gap-2 active:bg-gray-50"
-              {...bindTap<HTMLButtonElement>('search.open')}
+              {...bindNav(routes.search)}
             >
               <IcSearch size={16} className="text-gray-400 flex-shrink-0" />
               <span className="text-[14px] text-gray-400">{s.search_settings}</span>

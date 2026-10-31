@@ -34,6 +34,7 @@ import { stringsEn } from '../res/strings.en';
 import { useAppStrings } from '../../../os/useAppStrings';
 import { useNotesGestures } from '../hooks/useNotesGestures';
 import { getFolderDisplayName } from '../utils';
+import { routes } from '../routes';
 
 // 智能字数统计：中文按字符，英文按单词
 function countWords(text: string): number {
@@ -55,7 +56,7 @@ function formatHeaderTime(timestamp: number, s: typeof strings) {
 
 export const NoteEditorPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const { back, bindBack, go, navigateTo } = useNotesGestures();
+  const { back, bindBack, nav } = useNotesGestures();
   const {
     notes,
     folders,
@@ -180,7 +181,7 @@ export const NoteEditorPage: React.FC = () => {
       if (isNew) {
         if (!t && !c) return;
         const created = addNote({ title, content, folderId });
-        navigateTo(`/note/${created.id}`, { replace: true });
+        nav.replace(routes.note, { id: created.id });
         return;
       }
 
@@ -191,7 +192,7 @@ export const NoteEditorPage: React.FC = () => {
     return () => {
       if (saveTimerRef.current) window.clearTimeout(saveTimerRef.current);
     };
-  }, [addNote, content, existing, folderId, id, isNew, isTrashed, navigateTo, title, updateNote]);
+  }, [addNote, content, existing, folderId, id, isNew, isTrashed, nav, title, updateNote]);
 
   useEffect(() => {
     return () => {
@@ -345,7 +346,7 @@ export const NoteEditorPage: React.FC = () => {
                     const ok = window.confirm(s.confirm_permanent_delete);
                     if (!ok) return;
                     deleteNoteForever(existing.id);
-                    go('trash.open', {}, { mode: 'replace' });
+                    nav.replace(routes.trash);
                   }}
                 >
                   {s.action_permanent_delete}
@@ -572,7 +573,7 @@ export const NoteEditorPage: React.FC = () => {
                       if (!ok) return;
                       deleteNoteForever(existing.id);
                       setMenuOpen(false);
-                      go('trash.open', {}, { mode: 'replace' });
+                      nav.replace(routes.trash);
                     },
                   },
                 ]
@@ -593,7 +594,7 @@ export const NoteEditorPage: React.FC = () => {
                       else hideNote(existing.id);
                       setMenuOpen(false);
                       showToast(isPrivate ? s.toast_unset_private : s.toast_set_private);
-                      if (!isPrivate) go('private.open', {}, { mode: 'replace' });
+                      if (!isPrivate) nav.replace(routes.private);
                     },
                   },
                   {

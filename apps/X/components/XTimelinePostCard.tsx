@@ -4,6 +4,7 @@ import { useXStrings } from '../hooks/useXStrings';
 import { XImage, XVideo } from './XMedia';
 import { XPostActionBar, type XPostActionIds } from './XPostActionBar';
 import type { XPost } from '../types';
+import { routes } from '../routes';
 
 type TimelineAuthor = {
   id?: string;
@@ -46,22 +47,19 @@ export const XTimelinePostCard: React.FC<XTimelinePostCardProps> = ({
   onBookmarkAdded,
   showCounts,
 }) => {
-  const { bindTap } = useXGestures(isActive);
+  const { bindNav } = useXGestures(isActive);
   const s = useXStrings();
   const authorName = post.author?.name ?? 'Unknown';
   const authorHandle = post.author?.id ? `@${post.author.id}` : '@unknown';
 
   return (
-    <div className="border-b border-app-border p-4 active:bg-black/5 cursor-pointer transition-colors" {...bindTap('post.open', { params: { id: post.id } })}>
+    <div className="border-b border-app-border p-4 active:bg-black/5 cursor-pointer transition-colors" {...bindNav(routes.status, { params: { id: post.id } })}>
       {topContent}
 
       <div className="flex">
         <div
           className="w-10 h-10 rounded-full bg-gray-200 mr-3 overflow-hidden shrink-0 cursor-pointer relative z-10"
-          {...bindTap('user.open.fromPost', {
-            params: { id: post.authorId },
-            stopPropagation: true,
-          })}
+          {...bindNav(routes.user, { params: { id: post.authorId }, stopPropagation: true })}
         >
           {post.author?.avatar ? (
             <XImage src={post.author.avatar} alt={authorName} className="w-full h-full object-cover" />

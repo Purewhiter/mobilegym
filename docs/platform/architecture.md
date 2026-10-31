@@ -57,7 +57,7 @@ A minimal app is three files, automatically discovered by the OS via `import.met
 apps/MyApp/
 ├── manifest.ts                 # id, displayName, icon, theme, intentFilters
 ├── MyAppApp.tsx                # entry component (MemoryRouter + useAppNavigationHandler)
-└── navigation.declaration.ts   # routes + transitions + actions (the FSM)
+└── routes.ts                   # route table: pages + URL UI states
 ```
 
 Most apps add a few more standard files — `res/`, `data/`, `pages/`, `state.ts`, etc. The full contract is in [`app/module-contract.md`](app/module-contract.md), and the layered state rules are in [`state/model.md`](state/model.md).
@@ -73,16 +73,11 @@ App views compose the two at render time, with the runtime overlay taking preced
 
 See the architecture figure on the README or [`state/model.md`](state/model.md) for details.
 
-### Declarative navigation
+### Navigation
 
-Every screen, transition, and discrete UI state is declared in `navigation.declaration.ts` as a finite-state machine. The same file drives:
+Each app keeps a route table (`routes.ts`): its pages and the discrete UI states each keeps in its URL. Jumps are typed code against it (`bindNav(routes.x, ...)`, `nav.push / replace / back` from `os/navigation`), and every bound control is tagged in the DOM. There is no static transition graph: `scripts/explore_nav_graph.py` builds the graph from a running simulator by tapping every tagged control.
 
-- **Runtime navigation** via `navigation.ts`'s `go()` / `back()` helpers.
-- **Static analysis** — consistency checks between code and declaration.
-- **Graph generation** — BFS, shortest path, action enumeration via `scripts/build_nav_artifacts.mjs`.
-- **Task authoring** — reachable trajectories surface candidate tasks.
-
-See [`navigation/declaration.md`](navigation/declaration.md).
+See [`navigation/routes.md`](navigation/routes.md).
 
 ## Benchmark layer (`bench_env/`)
 

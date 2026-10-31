@@ -4,9 +4,10 @@ import { RAILWAY12306_CONFIG } from '../data';
 import { useRailwayGestures } from '../hooks/useRailwayGestures';
 import { useRailwayStrings } from '../hooks/useRailwayStrings';
 import { localizeRailwayItemTag } from '../utils/localizeRailwayItem';
+import { routes } from '../routes';
 export const TravelServicePage: React.FC = () => {
   const config = RAILWAY12306_CONFIG;
-  const { bindTap } = useRailwayGestures();
+  const { bindNav } = useRailwayGestures();
   const s = useRailwayStrings();
 
   const quickEntries = [
@@ -38,7 +39,7 @@ export const TravelServicePage: React.FC = () => {
         <span className="text-sm text-gray-400 mb-4">{s.travel_service_empty_desc}</span>
         <button
           className="bg-app-primary text-white px-16 py-2.5 rounded-lg text-sm font-medium"
-          {...bindTap<HTMLButtonElement>('travel.goHome')}
+          {...bindNav(routes.home, { replace: true })}
         >
           {s.travel_service_book_now}
         </button>

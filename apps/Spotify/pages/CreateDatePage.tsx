@@ -3,6 +3,7 @@ import * as TimeService from '../../../os/TimeService';
 import { IcNavBack } from '../res/icons';
 import { useSpotifyGestures } from '../hooks/useSpotifyGestures';
 import { useSpotifyStrings } from '../hooks/useSpotifyStrings';
+import { routes } from '../routes';
 
 const ScrollPicker = ({
   items,
@@ -56,7 +57,7 @@ const ScrollPicker = ({
 };
 
 export const CreateDatePage: React.FC = () => {
-  const { bindBack, bindTap } = useSpotifyGestures();
+  const { bindBack, bindNav } = useSpotifyGestures();
   const s = useSpotifyStrings();
 
   const currentYear = TimeService.getDate().getFullYear();
@@ -97,7 +98,7 @@ export const CreateDatePage: React.FC = () => {
         <div className="flex items-center justify-center mt-12 mb-8">
           <button
             className="px-8 py-3 rounded-full text-base font-bold bg-white text-black transition-transform active:scale-95"
-            {...bindTap('auth.signup.gender.open')}
+            {...bindNav(routes.signupGender)}
           >
             {s.create_account_next}
           </button>

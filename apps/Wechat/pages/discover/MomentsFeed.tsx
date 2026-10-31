@@ -8,6 +8,7 @@ import * as TimeService from '../../../../os/TimeService';
 import { useWechatGestures } from '../../hooks/useWechatGestures';
 import { WechatSmartImage } from '../../components/WechatSmartImage';
 import { useWechatStrings } from '../../hooks/useWechatStrings';
+import { routes } from '../../routes';
 
 export const MomentsFeed: React.FC = () => {
     const t = useWechatStrings();
@@ -16,7 +17,7 @@ export const MomentsFeed: React.FC = () => {
         moments: s.moments,
         contacts: s.contacts,
     })));
-    const { bindTap } = useWechatGestures();
+    const { bindNav } = useWechatGestures();
 
     const filteredMoments = moments.filter(m => {
         // If it's me, show
@@ -54,7 +55,7 @@ export const MomentsFeed: React.FC = () => {
                     <span className="mr-4 mb-2 text-(--app-me-username-size) font-bold text-white drop-shadow-md">{user.name}</span>
                     <div
                         className="w-(--app-card-width-78) h-(--app-card-height-78) bg-app-surface p-(--app-card-padding-3) rounded-[10px] shadow-sm cursor-pointer"
-                        {...bindTap<HTMLDivElement>('userProfile.open', { params: { id: user.wxid } })}
+                        {...bindNav(routes.userProfile, { params: { id: user.wxid } })}
                     >
                         <img src={user.avatar} className="w-full h-full rounded-[8px] object-cover" alt="" />
                     </div>
@@ -70,7 +71,7 @@ export const MomentsFeed: React.FC = () => {
                             {/* 左侧头像 */}
                             <div
                                 className="mr-3 flex-shrink-0 cursor-pointer"
-                                {...bindTap<HTMLDivElement>('userProfile.open', { params: { id: moment.wxid } })}
+                                {...bindNav(routes.userProfile, { params: { id: moment.wxid } })}
                             >
                                 <img src={moment.userAvatar} className="w-(--app-avatar-width-44) h-(--app-avatar-height-44) rounded-[4px] object-cover bg-(--app-c-tw-bg-gray-100)" alt="" />
                             </div>

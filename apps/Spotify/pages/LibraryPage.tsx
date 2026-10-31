@@ -9,6 +9,7 @@ import { useSpotifyGestures } from '../hooks/useSpotifyGestures';
 import { useSpotifyStrings } from '../hooks/useSpotifyStrings';
 import { localizeSpotifyArtistName, localizeSpotifyText } from '../utils/localizeSpotifyText';
 import { searchITunes } from '../utils/itunes';
+import { routes } from '../routes';
 interface LibraryItem {
   id: string;
   name: string;
@@ -54,7 +55,7 @@ const localArtistImage = (name: string) => LOCAL_ARTIST_IMAGES[name.trim()];
 const AddArtistView: React.FC<{ onAdd: (items: LibraryItem[]) => void, existingNames: string[] }> = ({ onAdd, existingNames }) => {
   const locale = useLocale();
   const isEnglish = locale === 'en';
-  const { bindBack, bindTap, back } = useSpotifyGestures();
+  const { bindBack, bindTap, back, bindNav } = useSpotifyGestures();
   const s = useSpotifyStrings();
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [searchTerm, setSearchTerm] = useState('');
@@ -220,7 +221,7 @@ export const LibraryPage: React.FC = () => {
   const locale = useLocale();
   const isEnglish = locale === 'en';
   const [searchParams, setSearchParams] = useSearchParams();
-  const { bindTap } = useSpotifyGestures();
+  const { bindTap, bindNav } = useSpotifyGestures();
   const s = useSpotifyStrings();
   const { likedSongs, customPlaylists, followedArtists } = useSpotifyStore(useShallow(s => ({
     likedSongs: s.likedSongs, customPlaylists: s.customPlaylists, followedArtists: s.followedArtists,
@@ -273,7 +274,7 @@ export const LibraryPage: React.FC = () => {
         <header className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <div
-              {...bindTap('library.sidebar.open')}
+              {...bindNav(routes.library, { search: { drawer: 'sidebar' } })}
               className="w-9 h-9 rounded-full bg-amber-700 flex items-center justify-center text-sm font-bold cursor-pointer active:scale-95 transition-transform"
             >
               {SPOTIFY_CONFIG.user.initial}
@@ -284,7 +285,7 @@ export const LibraryPage: React.FC = () => {
             <IcSearch size={26} />
             <IcAdd
               size={28}
-              {...(bindTap('library.create.open') as unknown as Record<string, unknown>)}
+              {...(bindNav(routes.create, { search: { view: 'menu', source: 'library' } }) as unknown as Record<string, unknown>)}
               className="cursor-pointer active:scale-95 transition-transform"
             />
           </div>
@@ -349,7 +350,7 @@ export const LibraryPage: React.FC = () => {
         {/* Liked Songs */}
         {activeFilter !== 'artist' && (
         <div
-          {...bindTap('likedSongs.open')}
+          {...bindNav(routes.likedSongs)}
           className="flex items-center gap-4 p-2 -mx-2 active:bg-black/20 rounded-md cursor-pointer transition-colors hover:bg-white/10"
         >
           <div className="w-[76px] h-[76px] bg-gradient-to-br from-[#450af5] to-[#c4efd9] flex items-center justify-center flex-shrink-0">
@@ -369,7 +370,7 @@ export const LibraryPage: React.FC = () => {
         {activeFilter !== 'artist' && customPlaylists?.map((playlist) => (
           <div
             key={playlist.id}
-            {...bindTap('playlist.open', { params: { id: playlist.id } })}
+            {...bindNav(routes.playlist, { params: { id: playlist.id } })}
             className="flex items-center gap-4 p-2 -mx-2 active:bg-black/20 rounded-md cursor-pointer transition-colors hover:bg-white/10"
           >
             <div className="w-[76px] h-[76px] bg-[#282828] flex items-center justify-center flex-shrink-0">
@@ -386,7 +387,7 @@ export const LibraryPage: React.FC = () => {
         {activeFilter !== 'playlist' && (followedArtists || []).map((name, idx) => (
           <div
             key={`artist-${name}-${idx}`}
-            {...bindTap('artist.open', { params: { name } })}
+            {...bindNav(routes.artist, { params: { name } })}
             className="flex items-center gap-4 p-2 -mx-2 active:bg-black/20 rounded-md cursor-pointer transition-colors hover:bg-white/10"
           >
             <div className="w-[76px] h-[76px] rounded-full overflow-hidden bg-[#2A2A2A] flex-shrink-0">

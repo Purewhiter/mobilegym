@@ -15,6 +15,7 @@ import { realNow } from '../../../../os/TimeService';
 import { WechatSmartImage } from '../../components/WechatSmartImage';
 import type { Message } from '../../types';
 import { resolveChatPeerByWxid } from '../../utils/resolveChatPeer';
+import { routes } from '../../routes';
 
 const { keyboardHeight } = SIMULATOR_CONFIG.framework;
 
@@ -155,7 +156,7 @@ export const ChatDetail: React.FC = () => {
     sendMessage: s.sendMessage,
     sendPat: s.sendPat,
   })));
-  const { bindDoubleTap, bindTap, bindBack, go } = useWechatGestures();
+  const { bindTap, bindDoubleTap, bindNav, bindBack, nav } = useWechatGestures();
 
   const chat = useMemo(() => {
     if (!targetWxid) return null;
@@ -275,9 +276,7 @@ export const ChatDetail: React.FC = () => {
   };
 
   const buildAvatarGestureProps = useCallback((wxid: string) => {
-    const userProfileTriggerProps = bindTap<HTMLImageElement>('userProfile.open', {
-      params: { id: wxid },
-    });
+    const userProfileTriggerProps = bindNav(routes.userProfile, { params: { id: wxid } });
 
     const patActionProps = bindDoubleTap<HTMLImageElement>(
       { kind: 'action', id: 'chat.pat.send' },
@@ -288,27 +287,23 @@ export const ChatDetail: React.FC = () => {
             sendPat(targetWxid);
           }
         },
-        onSingleTap: () => go('userProfile.open', { id: wxid }),
+        onSingleTap: () => nav.push(routes.userProfile, { id: wxid }),
       },
     );
 
     return { ...userProfileTriggerProps, ...patActionProps };
-  }, [bindDoubleTap, bindTap, go, sendPat, targetWxid]);
+  }, [bindDoubleTap, bindTap, nav, sendPat, targetWxid]);
 
   const buildImageGestureProps = useCallback((msg: Message) => {
     if (!targetWxid) return {};
-    return bindTap<HTMLButtonElement>('chat.imagePreview.open', {
-      params: { id: targetWxid, preview: msg.id },
-    });
+    return bindNav(routes.chat, { params: { id: targetWxid }, search: { view: 'preview', preview: msg.id } });
   }, [bindTap, targetWxid]);
 
   const buildFileGestureProps = useCallback((msg: Message) => {
     if (!targetWxid) return {};
     const isImage = msg.mimeType?.startsWith('image/');
     if (!isImage) return {};
-    return bindTap<HTMLButtonElement>('chat.imagePreview.open', {
-      params: { id: targetWxid, preview: msg.id },
-    });
+    return bindNav(routes.chat, { params: { id: targetWxid }, search: { view: 'preview', preview: msg.id } });
   }, [bindTap, targetWxid]);
 
   if (!chat) {
@@ -433,13 +428,9 @@ export const ChatDetail: React.FC = () => {
                       const isFileEntry = pageIndex === 1 && i === 2 && Boolean(targetWxid);
                       let entryProps: Record<string, any> = {};
                       if (isAlbumEntry && targetWxid) {
-                        entryProps = bindTap<HTMLButtonElement>('chat.mediaPicker.open', {
-                          params: { id: targetWxid, albumId: 'all' },
-                        });
+                        entryProps = bindNav(routes.chatMediaPicker, { params: { id: targetWxid }, search: { albumId: 'all' } });
                       } else if (isFileEntry && targetWxid) {
-                        entryProps = bindTap<HTMLButtonElement>('chat.selectFile.open', {
-                          params: { id: targetWxid },
-                        });
+                        entryProps = bindNav(routes.chatSelectFile, { params: { id: targetWxid } });
                       }
 
                       return (

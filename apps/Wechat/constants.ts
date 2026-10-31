@@ -79,10 +79,6 @@ export interface FeatureGate {
   whenEnabledRoute: string;
   /** 未启用时跳转的路径(通常是启用设置页) */
   whenDisabledRoute: string;
-  /** 已启用分支的 transition id(bench 可消费,Search.tsx 内部以字面量再次引用) */
-  enabledTransitionId: string;
-  /** 未启用分支的 transition id */
-  disabledTransitionId: string;
 }
 
 export interface SearchableFeature {
@@ -97,11 +93,10 @@ export interface SearchableFeature {
   /**
    * 入口路由策略:
    * - 声明了 gate 则按 enabled 分流
-   * - 否则使用 route + routeTransitionId 直接跳转
+   * - 否则使用 route 直接跳转
    */
   gate?: FeatureGate;
   route?: string;
-  routeTransitionId?: string;
 }
 
 export const SEARCHABLE_FEATURES: SearchableFeature[] = [
@@ -114,8 +109,6 @@ export const SEARCHABLE_FEATURES: SearchableFeature[] = [
       enabledRef: 'settings.accessibility.wechatSports.enabled',
       whenEnabledRoute: '/wechat-sports',
       whenDisabledRoute: '/settings/general/accessibility/wechatSports',
-      enabledTransitionId: 'discover.search.feature.wechatSports.open',
-      disabledTransitionId: 'discover.search.feature.wechatSports.enable.open',
     },
   },
 ];

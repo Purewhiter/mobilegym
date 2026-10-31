@@ -7,13 +7,14 @@ import { IcUser } from '../../res/icons';
 import { useWechatGestures } from '../../hooks/useWechatGestures';
 import { useWechatStore } from '../../state';
 import { WechatSmartImage } from '../../components/WechatSmartImage';
+import { routes } from '../../routes';
 
 export const NearbyPeople: React.FC = () => {
   const t = useWechatStrings();
   const navigationType = useNavigationType();
   const shouldShowLoading = navigationType === 'PUSH';
   const [loading, setLoading] = useState(shouldShowLoading);
-  const { bindTap } = useWechatGestures();
+  const { bindNav } = useWechatGestures();
   const nearbyUsers = useWechatStore(s => s.nearbyPeople) || []; // 从全局数据获取
 
   useEffect(() => {
@@ -41,7 +42,7 @@ export const NearbyPeople: React.FC = () => {
               <div
                 key={user.wxid}
                 className="flex items-start px-4 py-3 border-b border-(--app-c-tw-border-gray-100) active:bg-(--app-c-tw-bg-gray-50)"
-                {...bindTap<HTMLDivElement>('nearbyPeople.user.profile', { params: { id: user.wxid } })}
+                {...bindNav(routes.userProfile, { params: { id: user.wxid } })}
               >
                 {/* 头像 */}
                 <div className="w-(--app-chat-list-item-avatar-size) h-(--app-chat-list-item-avatar-size) rounded-[6px] overflow-hidden flex-shrink-0 mr-3">

@@ -5,12 +5,13 @@ import { useWechatStrings } from '../../hooks/useWechatStrings';
 import { IcNavForward, IcSearch, IcAperture, IcInfinity, IcDisc, IcScan, IcMusic, IcSparkles, IcLocation, IcGamepad } from '../../res/icons';
 import { useWechatStore } from '../../state';
 import { useWechatGestures } from '../../hooks/useWechatGestures';
+import { routes } from '../../routes';
 const asset = (r: unknown) => { const s = String(r ?? '').trim(); return (!s || s.startsWith('http')) ? s : `/@app-assets/Wechat/${s}`; };
 
 export const DiscoverPage = () => {
     const t = useWechatStrings();
     const settings = useWechatStore(s => s.settings.discover);
-    const { bindTap } = useWechatGestures();
+    const { bindNav } = useWechatGestures();
 
     // Helper components
     const DiscoveryItem = ({ icon, label, rightContent, isLast = false, tapProps }: any) => (
@@ -58,7 +59,7 @@ export const DiscoverPage = () => {
                     id: 'moments',
                     label: t.discover_moments,
                     icon: <IcAperture size={dimens.icSizeToolbar} className="text-blue-500" />,
-                    tapProps: bindTap<HTMLDivElement>('discover.moments.open'),
+                    tapProps: bindNav(routes.moments),
                 }
             ]} />
 
@@ -83,7 +84,7 @@ export const DiscoverPage = () => {
 
             {/* Group 3: Scan & Listen */}
             <Group items={[
-                { id: 'scan', label: t.discover_scan, icon: <IcScan size={dimens.icSizeToolbar} className="text-(--app-c-me-icon-settings)" />, tapProps: bindTap<HTMLDivElement>('scan.open') },
+                { id: 'scan', label: t.discover_scan, icon: <IcScan size={dimens.icSizeToolbar} className="text-(--app-c-me-icon-settings)" />, tapProps: bindNav(routes.scan) },
                 { id: 'listen', label: t.discover_listen, icon: <IcMusic size={dimens.icSizeToolbar} className="text-(--app-c-common-red)" /> }
             ]} />
 
@@ -95,7 +96,7 @@ export const DiscoverPage = () => {
 
             {/* Group 5: Nearby */}
             <Group items={[
-                { id: 'nearby', label: t.discover_nearby, icon: <IcLocation size={dimens.icSizeToolbar} className="text-(--app-c-me-icon-settings)" />, tapProps: bindTap<HTMLDivElement>('discover.nearby.open') }
+                { id: 'nearby', label: t.discover_nearby, icon: <IcLocation size={dimens.icSizeToolbar} className="text-(--app-c-me-icon-settings)" />, tapProps: bindNav(routes.discoverNearby) }
             ]} />
 
             {/* Group 6: Games */}

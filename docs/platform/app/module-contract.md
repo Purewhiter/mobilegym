@@ -10,9 +10,8 @@ An app lives under `apps/<Name>/` (third-party / daily app) or `system/<Name>/` 
 apps/<Name>/
 ├── manifest.ts                   # required — identity, theme, intent filters
 ├── <Name>App.tsx                 # required — entry component, *App.tsx pattern, default export
-├── navigation.declaration.ts     # required — FSM of routes / transitions / actions
-├── navigation.ts                 # required — go() / back() helpers
-├── navigation.types.ts           # required — local NavigationDeclaration type
+├── routes.ts                     # required — route table: pages + URL UI states
+├── hooks/use<Name>Gestures.ts    # required — wraps useNavGestures (bindNav / bindBack / nav)
 ├── state.ts                      # optional — Zustand store (auto-discovered)
 ├── res/                          # resources — colors, dimens, strings, icons
 │   ├── icons.tsx                 # required if you use any icons by name
@@ -96,13 +95,13 @@ The entry component. The filename **must** end in `App.tsx` and the component **
 import { MemoryRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { useAppNavigationHandler } from '@/os/hooks/useAppNavigationHandler';
 import { manifest } from './manifest';
-import { useAppNavigate } from './navigation';
+import { useNav } from '@/os/navigation';
 import HomePage from './pages/HomePage';
 import NewHabitPage from './pages/NewHabitPage';
 
 function HabitsAppInner() {
   const location = useLocation();
-  const { back } = useAppNavigate();
+  const { back } = useNav();
 
   useAppNavigationHandler(manifest.id, {
     onBack: () => {
@@ -132,7 +131,7 @@ export default function HabitsApp() {
 Three non-obvious rules:
 
 1. **`useAppNavigationHandler` must be called inside the `MemoryRouter`.** It registers your app's navigator with `AppNavigatorRegistry` (so the OS can `openApp(id, '/some/path')`), wires the app-level back handler (priority 100) into `BackDispatcher`, broadcasts lifecycle events into `AppLifecycle`, and keeps a shadow `HistoryTracker` in sync so `popTo()` works.
-2. **No `useNavigate()` from `react-router`.** Use the per-app `go()` / `back()` helpers from `navigation.ts`. The reason is in [`../navigation/declaration.md`](../navigation/declaration.md).
+2. **No `useNavigate()` from `react-router` in pages.** Use `bindNav` / `nav` from `os/navigation` with the app's route table, so every jump is typed and every control is tagged. See [`../navigation/routes.md`](../navigation/routes.md).
 3. **Routed pages that share a layout scroller go in `<RouteScrollContainer>`, never a plain `overflow-y-auto` div** (ESLint blocks `<Outlet />` / `<Routes>` inside one). A plain div survives navigation, so the next page inherits the previous page's `scrollTop`, clamped to its own height. How far it is clamped depends on frame timing (store updates commit at once, react-router commits the route change later in a transition), so identical actions end at different scroll positions from run to run. `RouteScrollContainer` (`os/components/RouteScrollContainer.tsx`) decides the position from the navigation alone: a new page starts at the top, back (POP) returns to where that entry was left, search-only changes (URL dialogs) keep it, and paths in `rememberPaths` (main tabs rendered in the same container) reopen where they were left. It renders `data-scroll-container` (`name`, default `main`) and `data-scroll-direction="vertical"` itself.
 
 ```tsx
@@ -141,69 +140,22 @@ Three non-obvious rules:
 </RouteScrollContainer>
 ```
 
-## `navigation.types.ts` and `navigation.declaration.ts`
+## `routes.ts`
 
-Each app keeps a **local copy** of the `NavigationDeclaration` type. Decoupling per app: when the type evolves, you migrate apps one at a time instead of breaking the world.
-
-```ts
-// apps/Habits/navigation.types.ts
-export interface NavigationDeclaration {
-  app: string;
-  routes: RouteDeclaration[];
-  transitions: TransitionDeclaration[];
-  capabilities: { historyBack: boolean };
-  // ...
-}
-```
-
-Then:
+The route table lists every page and the discrete UI states it keeps in its URL:
 
 ```ts
-// apps/Habits/navigation.declaration.ts
-import type { NavigationDeclaration } from './navigation.types';
+// apps/Habits/routes.ts
+import { defineRoutes } from '../../os/navigation/routes';
 
-export const HabitsNavigation = {
-  app: 'habits',
-  routes: [
-    {
-      path: '/',
-      component: 'HomePage',
-      params: {},
-      entryPoint: 'home',
-      uiStates: [{ id: 'habits.home', search: {}, description: 'Home' }],
-      queryParams: {},
-      description: 'Home',
-    },
-    {
-      path: '/new',
-      component: 'NewHabitPage',
-      params: {},
-      entryPoint: 'none',
-      uiStates: [{ id: 'habits.new', search: {}, description: 'New habit' }],
-      queryParams: {},
-      description: 'New habit',
-    },
-  ],
-  transitions: [
-    {
-      id: 'habits.open-new',
-      from: 'habits.home',
-      to: '/new',
-      search: {},
-      searchParams: {},
-      params: {},
-      mode: 'push',
-      label: 'Open new habit',
-      ui: { placement: 'fab', icon: 'plus', gesture: 'tap' },
-    },
-  ],
-  capabilities: { historyBack: true },
-} as const satisfies NavigationDeclaration;
+export const routes = defineRoutes({
+  home: { path: '/' },
+  newHabit: { path: '/new' },
+  habit: { path: '/habit/:habitId', search: { sheet: ['edit', 'delete'] } },
+});
 ```
 
-Why `as const satisfies` rather than `: NavigationDeclaration`: keeps the literal types (so transition ID autocompletion works downstream) while still type-checking against the declaration shape.
-
-The full grammar — discrete `uiStates`, `queryParams`, `cases`, `preserveParams`, `actions`, conditions — is in [`../navigation/declaration.md`](../navigation/declaration.md). The minimal claim here is: **every route, every transition, every action your app can do is statically declared in this file**.
+Pages jump against it (`bindNav(routes.habit, { params: { habitId }, search: { sheet: 'edit' } })`, `nav.replace(routes.home)`); path params and declared UI-state values are type-checked. There is no transition table: which control goes where is ordinary code, and the graph of an app is explored from a running simulator. Details in [`../navigation/routes.md`](../navigation/routes.md).
 
 ## `state.ts` (optional but standard)
 
@@ -392,7 +344,7 @@ Why: the benchmark needs to replay deterministic time, override location for rep
 
 ### 2. Discrete UI states go through the URL
 
-Tabs, modals, sheets, drawers — anything that's "in a state, then in another state" — push or replace through `go()` with a search-param change. Never use `useState` for visibility.
+Tabs, modals, sheets, drawers — anything that's "in a state, then in another state" — push or replace through `bindNav` / `nav` with a `search` value. Never use `useState` for visibility.
 
 The back key listens to history, not React state. A `useState`-driven dialog **leaks through back press**: the user pushes back, the dialog stays open, the previous page navigates away. Push a `searchParams` entry instead; closing the dialog is just `back()`.
 
@@ -451,7 +403,7 @@ You usually don't need to think about this — it Just Works — but if you're d
 
 ## Where to go next
 
-- 🎯 The declarative navigation grammar in depth → [`../navigation/declaration.md`](../navigation/declaration.md)
+- 🎯 Route tables, jumps and exploring an app's graph → [`../navigation/routes.md`](../navigation/routes.md)
 - 🗃️ State, snapshots, world data vs. runtime overlay → [`../state/model.md`](../state/model.md)
 - 🚧 Cross-app calls (intents, launchMode, choosers) → [`../os/intent-system.md`](../os/intent-system.md)
 - 🧭 Cross-app Task/back-stack traces → [`../os/cross-app-launch.md`](../os/cross-app-launch.md)

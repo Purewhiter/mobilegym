@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { IcCamera, IcNavBack, IcCart, IcHeart, IcSort, IcFilter, IcSearch } from '../res/icons';
-import { useEbayGestures } from '../navigation';
+import { useEbayGestures } from '../hooks/useEbayGestures';
 import TabBar from '../components/TabBar';
 import SortModal, { type SortOptionType } from '../components/SortModal';
 import FilterDrawer, { type BuyingFormatFilter, type ViewMode } from '../components/FilterDrawer';
@@ -20,11 +20,12 @@ import {
   localizeEbayLocationLabel,
   localizeEbayProductTitle,
 } from '../utils/localize';
+import { routes } from '../routes';
 
 // ── Main component ────────────────────────────────────────────
 
 const SearchPage: React.FC = () => {
-  const { bindBack, bindTap } = useEbayGestures();
+  const { bindBack, bindNav } = useEbayGestures();
   const s = useEbayStrings();
   const locale = useLocale();
   const isEn = locale === 'en';
@@ -371,7 +372,7 @@ const SearchPage: React.FC = () => {
           {filteredProducts.map(product => (
             <div
               key={product.id}
-              {...bindTap('search.item.open', { id: product.id })}
+              {...bindNav(routes.item, { params: { id: product.id } })}
               className="cursor-pointer"
             >
               <ProductCard

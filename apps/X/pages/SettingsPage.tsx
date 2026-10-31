@@ -14,10 +14,11 @@ import {
   IcLayoutList,
   XLogoIcon,
 } from '../res/icons';
+import { routes } from '../routes';
 
 export const SettingsPage: React.FC = () => {
   const user = useXStore(selectUser);
-  const { bindBack, go } = useXGestures();
+  const { bindBack, nav } = useXGestures();
   const locale = useLocale();
   const isEnglish = locale === 'en';
 
@@ -28,7 +29,7 @@ export const SettingsPage: React.FC = () => {
       description: isEnglish
         ? 'See your account information, download an archive of your data, or learn about your deactivation options.'
         : '查看你的账号信息、下载数据存档，或了解停用账号的相关选项。',
-      tapId: 'settings.account.open',
+      tapId: routes.settingsAccount,
     },
     {
       icon: <IcLock size={24} />,
@@ -50,13 +51,13 @@ export const SettingsPage: React.FC = () => {
       icon: <IcLayoutList size={24} />,
       title: isEnglish ? 'Timeline' : '时间线',
       description: isEnglish ? 'Customize the look and interactions of your timeline.' : '配置你的时间线外观和互动方式。',
-      tapId: 'settings.timeline.open',
+      tapId: routes.settingsTimeline,
     },
     {
       icon: <IcShieldCheck size={24} />,
       title: isEnglish ? 'Privacy and safety' : '隐私和安全',
       description: isEnglish ? 'Manage what you see and share on X.' : '管理你在 X 上看到和分享的信息。',
-      tapId: 'settings.privacy.open',
+      tapId: routes.settingsPrivacy,
     },
     {
       icon: <IcTabNotifications size={24} />,
@@ -64,7 +65,7 @@ export const SettingsPage: React.FC = () => {
       description: isEnglish
         ? 'Select the types of notifications you receive about activity, interests, and recommendations.'
         : '选择你接收的关于动态、兴趣和推荐的通知类型。',
-      tapId: 'settings.notifications.open',
+      tapId: routes.settingsNotifications,
     },
     {
       icon: <IcEye size={24} />,
@@ -107,7 +108,7 @@ export const SettingsPage: React.FC = () => {
             key={index}
             className={`flex items-start px-4 py-4 transition-colors ${item.tapId ? 'cursor-pointer active:bg-gray-50' : 'cursor-default'}`}
             onClick={() => {
-              if (item.tapId) go(item.tapId as Parameters<typeof go>[0]);
+              if (item.tapId) nav.push(item.tapId);
             }}
           >
             <div className="mr-4 mt-0.5 shrink-0 text-gray-500">{item.icon}</div>

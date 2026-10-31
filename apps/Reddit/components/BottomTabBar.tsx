@@ -2,13 +2,14 @@ import React from 'react';
 import { IcTabHome, IcTabCreate, IcTabChat, IcTabInbox } from '../res/icons';
 import { useLocation } from 'react-router-dom';
 import { useRedditGestures } from '../hooks/useRedditGestures';
+import { routes } from '../routes';
 const asset = (r: unknown) => { const s = String(r ?? '').trim(); return (!s || s.startsWith('http')) ? s : `/@app-assets/Reddit/${s}`; };
 
 const ANSWERS_TAB_ICON_SRC = asset('tabbar/answers.png');
 
 export const BottomTabBar: React.FC = () => {
   const { pathname } = useLocation();
-  const { bindTap } = useRedditGestures();
+  const { bindNav } = useRedditGestures();
 
   const getIconColor = (isActive: boolean) => isActive ? 'text-black' : 'text-app-text-muted';
   const getLabelClass = (isActive: boolean) => `text-[10px] mt-1 ${isActive ? 'text-black font-medium' : 'text-app-text-muted'}`;
@@ -23,7 +24,7 @@ export const BottomTabBar: React.FC = () => {
     <div className="flex items-center justify-between px-2 py-2 bg-app-surface border-t border-app-border pb-5 relative z-[100] shadow-[0_-1px_3px_rgba(0,0,0,0.05)] shrink-0">
       {/* Home */}
       <div 
-        {...bindTap('tab.home')}
+        {...bindNav(routes.home, { replace: true })}
         className="flex flex-col items-center justify-center flex-1 py-1 cursor-pointer active:bg-gray-100 transition-colors rounded-lg touch-manipulation"
       >
         <IcTabHome
@@ -35,7 +36,7 @@ export const BottomTabBar: React.FC = () => {
 
       {/* Communities */}
       <div 
-        {...bindTap('tab.communities')}
+        {...bindNav(routes.communities, { replace: true })}
         className="flex flex-col items-center justify-center flex-1 py-1 cursor-pointer active:bg-gray-100 transition-colors rounded-lg touch-manipulation"
       >
         <img
@@ -57,7 +58,7 @@ export const BottomTabBar: React.FC = () => {
 
       {/* Create */}
       <div 
-        {...bindTap('tab.create')}
+        {...bindNav(routes.create)}
         className="flex flex-col items-center justify-center flex-1 py-1 cursor-pointer active:bg-gray-100 transition-colors rounded-lg touch-manipulation"
       >
         <IcTabCreate className="w-8 h-8 text-app-text-muted font-light" strokeWidth={1.5} />
@@ -66,7 +67,7 @@ export const BottomTabBar: React.FC = () => {
 
       {/* Chat */}
       <div 
-        {...bindTap('tab.chat')}
+        {...bindNav(routes.chat, { search: { tab: 'messages' }, replace: true })}
         className="flex flex-col items-center justify-center flex-1 py-1 cursor-pointer active:bg-gray-100 transition-colors rounded-lg touch-manipulation"
       >
         <IcTabChat
@@ -78,7 +79,7 @@ export const BottomTabBar: React.FC = () => {
 
       {/* Inbox */}
       <div 
-        {...bindTap('tab.inbox')}
+        {...bindNav(routes.inbox, { search: { tab: 'notifications' }, replace: true })}
         className="flex flex-col items-center justify-center flex-1 py-1 cursor-pointer active:bg-gray-100 transition-colors rounded-lg touch-manipulation"
       >
         <IcTabInbox

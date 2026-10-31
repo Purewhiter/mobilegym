@@ -13,13 +13,14 @@ import msgIcon from '../assets/tabbar/message.png';
 import msgActiveIcon from '../assets/tabbar/message_activate.png';
 import meIcon from '../assets/tabbar/people.png';
 import meActiveIcon from '../assets/tabbar/people_activate.png';
+import { routes } from '../routes';
 
 export const TabBar: React.FC = () => {
   const location = useLocation();
   const { pathname } = location;
   const searchParams = new URLSearchParams(location.search);
   const showPublishSheet = searchParams.get('modal') === 'publish';
-  const { bindTap, bindBack } = useRedBookGestures();
+  const { bindNav, bindBack } = useRedBookGestures();
   const s = useRedBookStrings();
 
   const tabs = [
@@ -73,12 +74,12 @@ export const TabBar: React.FC = () => {
         if (tab.isBig) {
           const openPublishProps =
             pathname === '/'
-              ? bindTap('home.modal.publish.open')
+              ? bindNav(routes.home, { search: { modal: 'publish' }, keep: ['tab'] })
               : pathname === '/market'
-                ? bindTap('market.modal.publish.open')
+                ? bindNav(routes.market, { search: { modal: 'publish' } })
                 : pathname === '/message'
-                  ? bindTap('message.modal.publish.open')
-                  : bindTap('me.modal.publish.open');
+                  ? bindNav(routes.message, { search: { modal: 'publish' } })
+                  : bindNav(routes.me, { search: { modal: 'publish' }, keep: ['tab', 'sub'] });
 
           return (
             <div
@@ -95,12 +96,12 @@ export const TabBar: React.FC = () => {
 
         const tabTriggerProps =
           tab.key === 'home'
-            ? bindTap('tab.home')
+            ? bindNav(routes.home, { search: { tab: 'discover' }, replace: true })
             : tab.key === 'market'
-              ? bindTap('tab.market')
+              ? bindNav(routes.market, { replace: true })
               : tab.key === 'message'
-                ? bindTap('tab.message')
-                : bindTap('tab.me');
+                ? bindNav(routes.message, { replace: true })
+                : bindNav(routes.me, { search: { tab: 'notes', sub: 'public' }, replace: true });
 
         return (
           <div
@@ -124,7 +125,7 @@ export const TabBar: React.FC = () => {
            <div className="text-center py-4 text-[18px] text-app-text border-b border-gray-100">{s.shoot_and_live}</div>
            <div
              className="text-center py-4 text-[18px] text-app-text border-b border-gray-100"
-             {...bindTap('publish.text.open.fromSheet')}
+             {...bindNav(routes.publishText, { replace: true })}
            >
              {s.write_text}
            </div>

@@ -6,10 +6,11 @@ import { useAlipayGestures } from '../hooks/useAlipayGestures';
 import { useAlipayStrings } from '../hooks/useAlipayStrings';
 import { useLocale } from '@/apps/Alipay/locale';
 import { localizeBankName } from '../utils/localizeBankName';
+import { routes } from '../routes';
 
 export const BankCardsPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const { bindBack, bindTap } = useAlipayGestures();
+  const { bindBack, bindNav } = useAlipayGestures();
   const s = useAlipayStrings();
   const locale = useLocale();
   const isEnglish = locale === 'en';
@@ -51,7 +52,7 @@ export const BankCardsPage: React.FC = () => {
         </button>
         <span className="text-lg font-medium text-white">{s.bank_cards}</span>
         <div className="flex items-center gap-2">
-          <button className="flex items-center gap-1 text-sm text-white active:opacity-70" {...bindTap<HTMLButtonElement>('bankCards.add.open')}>
+          <button className="flex items-center gap-1 text-sm text-white active:opacity-70" {...bindNav(routes.bankCardsAdd)}>
             <IcAdd size={18} className="text-white" />
             <span>{s.bank_cards_page_add_card}</span>
           </button>

@@ -6,6 +6,7 @@ import { useAlipayGestures } from '../hooks/useAlipayGestures';
 import * as TimeService from '../../../os/TimeService';
 import { useLocale } from '@/apps/Alipay/locale';
 import { DefaultAvatar } from '../components/DefaultAvatar';
+import { routes } from '../routes';
 
 function formatConvTime(ts: number, isEnglish: boolean): string {
   const now = TimeService.now();
@@ -36,7 +37,7 @@ export const MessagesPage: React.FC = () => {
   const conversations = useAlipayStore(s => s.conversations);
   const chatHistory = useAlipayStore(s => s.chatHistory);
   const markAllRead = useAlipayStore(s => s.markAllConversationsRead);
-  const { bindTap } = useAlipayGestures();
+  const { bindNav } = useAlipayGestures();
   const s = useAlipayStrings();
   const locale = useLocale();
   const isEnglish = locale === 'en';
@@ -85,7 +86,7 @@ export const MessagesPage: React.FC = () => {
             />
           </div>
           <div className="flex items-center space-x-3 flex-shrink-0">
-            <button className="text-gray-700" {...bindTap<HTMLButtonElement>('contacts.open')}><IcUserAdd size={22} /></button>
+            <button className="text-gray-700" {...bindNav(routes.contacts)}><IcUserAdd size={22} /></button>
             <button className="text-gray-700"><IcAdd size={22} /></button>
           </div>
         </div>
@@ -137,7 +138,7 @@ export const MessagesPage: React.FC = () => {
             <div
               key={conv.id}
               className="flex items-center justify-between px-4 py-3 border-b border-gray-100 active:bg-gray-50"
-              {...bindTap('chat.open', { params: { id: conv.id, type: conv.kind } })}
+              {...bindNav(routes.chat, { search: { id: conv.id, type: conv.kind } })}
             >
               <div className="flex items-center flex-1 min-w-0">
                 <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center mr-3 overflow-hidden flex-shrink-0">

@@ -8,6 +8,7 @@ import { useBilibiliStore } from '../state';
 import type { BilibiliUser } from '../data';
 import { useBilibiliGestures } from '../hooks/useBilibiliGestures';
 import * as TimeService from '../../../os/TimeService';
+import { routes } from '../routes';
 const ListItem = ({ label, value, isAvatar = false, noBorder = false, noArrow = false, isQr = false, onClick }: any) => (
     <div
         onClick={onClick}
@@ -229,7 +230,7 @@ const BirthdayPicker = ({ onClose, onSelect, initialDate }: { onClose: () => voi
 
 
 export const ProfileEditPage: React.FC = () => {
-    const { bindBack, bindTap } = useBilibiliGestures();
+    const { bindBack, bindNav } = useBilibiliGestures();
     const user = useBilibiliStore(s => s.user);
     const updateUser = useBilibiliStore(s => s.updateUser);
     const [showGenderModal, setShowGenderModal] = useState(false);
@@ -251,7 +252,7 @@ export const ProfileEditPage: React.FC = () => {
                 <ListItem
                     label="昵称"
                     value={user.name || "xiaoming-ai"}
-                    {...bindTap('profileEditName.open')}
+                    {...bindNav(routes.profileEditName)}
                 />
                 <ListItem
                     label="性别"
@@ -266,7 +267,7 @@ export const ProfileEditPage: React.FC = () => {
                 <ListItem
                     label="个性签名"
                     value={user.sign || "这个人很神秘，什么都没有写"}
-                    {...bindTap('profileEditSign.open')}
+                    {...bindNav(routes.profileEditSign)}
                 />
                 <ListItem
                     label="学校"

@@ -6,10 +6,11 @@ import { useWechatReadingGestures } from '../hooks/useWechatReadingGestures';
 import { dimens } from '../res/dimens';
 import { useWechatReadingStrings } from '../hooks/useWechatReadingStrings';
 import { localizeWechatReadingGender } from '../utils/localization';
+import { routes } from '../routes';
 const EditProfilePage: React.FC = () => {
     const user = useWechatReadingStore(s => s.user);
     const updateUserProfile = useWechatReadingStore(s => s.updateUserProfile);
-    const { bindBack, bindTap } = useWechatReadingGestures();
+    const { bindBack, bindNav } = useWechatReadingGestures();
     const s = useWechatReadingStrings();
 
     const handleUpdate = (field: string, value: string) => {
@@ -57,7 +58,7 @@ const EditProfilePage: React.FC = () => {
 
                     {/* Gender */}
                     <div
-                        {...bindTap<HTMLDivElement>('profile.gender.open')}
+                        {...bindNav(routes.genderSelection)}
                         className="flex flex-col py-4 pr-4 border-b border-(--app-c-tw-border-slate-50) active:bg-(--app-c-tw-bg-slate-100) gap-1 cursor-pointer"
                     >
                         <div className="flex items-center justify-between">

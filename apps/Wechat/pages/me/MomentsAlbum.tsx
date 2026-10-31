@@ -7,6 +7,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useWechatGestures } from '../../hooks/useWechatGestures';
 import { WechatSmartImage } from '../../components/WechatSmartImage';
 import * as TimeService from '../../../../os/TimeService';
+import { routes } from '../../routes';
 
 type TabId = 'album' | 'status';
 
@@ -24,7 +25,7 @@ interface AlbumGroup {
 export const MomentsAlbum: React.FC = () => {
   const t = useWechatStrings();
   const { user, moments } = useWechatStore(useShallow(s => ({ user: s.user, moments: s.moments })));
-  const { bindTap } = useWechatGestures();
+  const { bindNav } = useWechatGestures();
   const [activeTab, setActiveTab] = React.useState<TabId>('album');
 
   const wxid = user.wxid;
@@ -123,7 +124,7 @@ export const MomentsAlbum: React.FC = () => {
           {/* 我的朋友圈 入口 */}
           <div
             className="flex items-center justify-end px-4 py-3 text-(--app-search-filter-text-size) text-(--app-c-settings-item-text) active:bg-(--app-c-tw-bg-gray-50) cursor-pointer"
-            {...bindTap<HTMLDivElement>('momentsAlbum.myTimeline.open', { params: { wxid } })}
+            {...bindNav(routes.momentsByWxid, { params: { wxid } })}
           >
             我的朋友圈
             <IcNavForward size={dimens.icSizeChevron} className="text-(--app-c-me-chevron-color) ml-0.5" strokeWidth={dimens.icStrokeWidth} />

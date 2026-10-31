@@ -1,12 +1,12 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { useAppNavigate } from '../navigation';
 import { IcNavBackArrow, IcShare, IcNavBack, IcNavForward, IcCalendar } from '../res/icons';
 import { dimens } from '../res/dimens';
 import { useWechatReadingStore, selectFinishedBookIds } from '../state';
 import { useWechatReadingGestures } from '../hooks/useWechatReadingGestures';
 import * as TimeService from '../../../os/TimeService';
 import { useVirtualList } from '../../../os/hooks/useVirtualList';
+import { routes } from '../routes';
 
 // Helper for date formatting
 const formatDate = (date: Date): string => {
@@ -231,11 +231,10 @@ const VALID_TABS = ['week', 'month', 'year', 'total', 'history'] as const;
 type TabId = typeof VALID_TABS[number];
 
 const MyReadingPage: React.FC = () => {
-  const { go } = useAppNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const readingRecords = useWechatReadingStore(s => s.readingRecords);
   const finishedBookIds = useWechatReadingStore(selectFinishedBookIds);
-  const { bindTap, bindBack } = useWechatReadingGestures();
+  const { bindNav, bindBack, nav } = useWechatReadingGestures();
 
   const activeTab: TabId = (VALID_TABS.includes(searchParams.get('tab') as TabId)
     ? searchParams.get('tab')
@@ -475,8 +474,8 @@ const MyReadingPage: React.FC = () => {
           <div className="grid grid-cols-2 gap-y-5 mb-8">
             <div
               className="flex items-center gap-1 cursor-pointer active:opacity-60"
-              {...bindTap('readingList.open.all')}
-              onClick={() => go('readingList.open.all')}
+              {...bindNav(routes.readingList, { search: { category: 'all' } })}
+              onClick={() => nav.push(routes.readingList, {}, { search: { category: 'all' } })}
             >
               <div className="text-(--app-c-my-reading-page-text-3333) font-bold flex items-baseline">
                 <span className="text-sm">读过</span>
@@ -487,8 +486,8 @@ const MyReadingPage: React.FC = () => {
             </div>
             <div
               className="flex items-center gap-1 cursor-pointer active:opacity-60"
-              {...bindTap('readingList.open.finished')}
-              onClick={() => go('readingList.open.finished')}
+              {...bindNav(routes.readingList, { search: { category: 'finished' } })}
+              onClick={() => nav.push(routes.readingList, {}, { search: { category: 'finished' } })}
             >
               <div className="text-(--app-c-my-reading-page-text-3333) font-bold flex items-baseline">
                 <span className="text-sm">读完</span>

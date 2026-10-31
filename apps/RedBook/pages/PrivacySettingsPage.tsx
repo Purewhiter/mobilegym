@@ -6,6 +6,7 @@ import { useScrollPosition } from '../hooks/useScrollPosition';
 import { useRedBookStore } from '../state';
 import { useShallow } from 'zustand/react/shallow';
 import { useRedBookGestures } from '../hooks/useRedBookGestures';
+import { routes } from '../routes';
 interface SwitchProps {
     checked: boolean;
     onChange: (checked: boolean) => void;
@@ -74,7 +75,7 @@ const SectionTitle = ({ title }: { title: string }) => (
 
 const PrivacySettingsPage: React.FC = () => {
   const s = useRedBookStrings();
-  const { bindTap, bindBack } = useRedBookGestures();
+  const { bindTap, bindBack, bindNav } = useRedBookGestures();
   const scrollRef = useScrollPosition('privacy_settings');
   const { settings, updateSettings } = useRedBookStore(useShallow(s => ({ settings: s.settings, updateSettings: s.updateSettings })));
   const { privacy } = settings;
@@ -124,7 +125,7 @@ const PrivacySettingsPage: React.FC = () => {
             label={s.online_status}
             rightText={privacyLabel(privacy.onlineStatus)}
             hasArrow
-            {...bindTap('settings.privacy.onlineStatus.open')}
+            {...bindNav(routes.settingsPrivacyOnlineStatus)}
           />
           <ListItem
             label={s.show_chat_badge}
@@ -166,20 +167,20 @@ const PrivacySettingsPage: React.FC = () => {
             label={s.who_can_dm_me}
             rightText={privacyLabel(privacy.messagePermission)}
             hasArrow
-            {...bindTap('settings.privacy.messagePermission.open')}
+            {...bindNav(routes.settingsPrivacyMessagePermission)}
           />
           <ListItem
             label={s.my_collects}
             rightText={privacyLabel(privacy.collectVisibility)}
             hasArrow
-            {...bindTap('settings.privacy.collect.open')}
+            {...bindNav(routes.settingsPrivacyCollect)}
           />
           <ListItem
             label={s.my_reviews}
             rightText={privacyLabel(privacy.commentVisibility)}
             hasArrow
             isLast
-            {...bindTap('settings.privacy.comment.open')}
+            {...bindNav(routes.settingsPrivacyComment)}
           />
         </div>
 
@@ -189,12 +190,12 @@ const PrivacySettingsPage: React.FC = () => {
           <ListItem
             label={s.ways_to_find_me}
             hasArrow
-            {...bindTap('settings.privacy.findMe.open')}
+            {...bindNav(routes.settingsPrivacyFindMe)}
           />
           <ListItem
             label={s.following_and_followers}
             hasArrow
-            {...bindTap('settings.privacy.followList.open')}
+            {...bindNav(routes.settingsPrivacyFollowList)}
           />
           <ListItem
             label={s.recommend_people_i_may_know}
@@ -219,7 +220,7 @@ const PrivacySettingsPage: React.FC = () => {
             subtitle={s.all_system_permissions_used_in_app}
             hasArrow
             isLast
-            {...bindTap('settings.privacy.systemPermission.open')}
+            {...bindNav(routes.settingsPrivacySystemPermission)}
           />
         </div>
 
@@ -229,7 +230,7 @@ const PrivacySettingsPage: React.FC = () => {
           <ListItem
             label={s.personalization}
             hasArrow
-            {...bindTap('settings.privacy.personalization.open')}
+            {...bindNav(routes.settingsPrivacyPersonalization)}
           />
           <ListItem
             label={s.third_party_data}

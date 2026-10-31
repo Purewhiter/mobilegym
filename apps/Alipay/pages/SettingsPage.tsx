@@ -3,8 +3,9 @@ import React from 'react';
 import { IcNavBack, IcNavForward, IcUser, IcWallet, IcBell, IcCog, IcInfo, IcEducation, IcHeart, IcTheme, IcFeature, IcSecureCheck, IcEdit } from '../res/icons';
 import { useAlipayStore } from '../state';
 import { useAlipayGestures } from '../hooks/useAlipayGestures';
+import { routes } from '../routes';
 export const SettingsPage: React.FC = () => {
-  const { bindTap, bindBack } = useAlipayGestures();
+  const { bindTap, bindBack, bindNav } = useAlipayGestures();
   const settings = useAlipayStore(s => s.settings);
   const setSettings = useAlipayStore(s => s.setSettings);
   const s = useAlipayStrings();
@@ -58,11 +59,11 @@ export const SettingsPage: React.FC = () => {
                   key={idx}
                   className="flex items-center justify-between p-4 active:bg-gray-50"
                   {...(item.label === s.general
-                    ? bindTap<HTMLDivElement>('settings.general.open')
+                    ? bindNav(routes.settingsGeneral)
                     : item.label === s.payment_settings
-                      ? bindTap<HTMLDivElement>('settings.payment.open')
+                      ? bindNav(routes.settingsPayment)
                       : item.label === s.notifications_2
-                        ? bindTap<HTMLDivElement>('settings.notifications.open')
+                        ? bindNav(routes.settingsNotifications)
                         : {})}
                 >
                   <div className="flex items-center">

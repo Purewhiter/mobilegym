@@ -6,6 +6,7 @@ import { IcSymbolCarrier, IcSymbolContactsCircle, IcSymbolPhone } from '../res/i
 import { strings } from '../res/strings';
 import { stringsEn } from '../res/strings.en';
 import { useAppStrings } from '@/os/useAppStrings';
+import { routes } from '../routes';
 
 type TabKey = 'calls' | 'contacts' | 'business';
 
@@ -17,7 +18,7 @@ function getActiveTab(pathname: string): TabKey {
 }
 
 export const BottomTabBar: React.FC = () => {
-  const { bindTap } = useContactsGestures();
+  const { bindNav } = useContactsGestures();
   const location = useLocation();
   const active = getActiveTab(location.pathname);
   const s = useAppStrings(strings, stringsEn);
@@ -32,19 +33,19 @@ export const BottomTabBar: React.FC = () => {
       key: 'calls',
       label: s.dialerIconLabel,
       icon: <SymbolIcon name={IcSymbolPhone} size={26} />,
-      tapProps: bindTap('tab.calls'),
+      tapProps: bindNav(routes.home, { replace: true }),
     },
     {
       key: 'contacts',
       label: s.contactsAllLabel,
       icon: <SymbolIcon name={IcSymbolContactsCircle} size={26} />,
-      tapProps: bindTap('tab.contacts'),
+      tapProps: bindNav(routes.contacts, { replace: true }),
     },
     {
       key: 'business',
       label: s.businessHallLabel,
       icon: <SymbolIcon name={IcSymbolCarrier} size={26} />,
-      tapProps: bindTap('tab.business'),
+      tapProps: bindNav(routes.business, { replace: true }),
     },
   ];
 
@@ -59,7 +60,8 @@ export const BottomTabBar: React.FC = () => {
               key={it.key}
               type="button"
               aria-label={it.label}
-              {...it.tapProps}
+              // The current tab does nothing (it does not reset a dialpad / favourites view).
+              {...(isActive ? {} : it.tapProps)}
               className="flex flex-col items-center justify-center gap-[2px] active:opacity-70 select-none"
             >
               <div className={color}>{it.icon}</div>

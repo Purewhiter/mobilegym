@@ -8,11 +8,12 @@ import { useContactsList, useContactsStore } from '../state';
 import { ChevronRightIcon, IcSymbolBack, IcSymbolClose2, IcSymbolSearch } from '../res/icons';
 import { strings } from '../res/strings';
 import { stringsEn } from '../res/strings.en';
+import { routes } from '../routes';
 
 export const SearchPage: React.FC = () => {
   const locale = useLocale();
   const isEnglish = locale === 'en';
-  const { bindBack, go } = useContactsGestures();
+  const { bindBack, nav } = useContactsGestures();
   const contacts = useContactsList();
   const searchHistory = useContactsStore((state) => state.searchHistory);
   const addSearchHistory = useContactsStore((state) => state.addSearchHistory);
@@ -70,7 +71,7 @@ export const SearchPage: React.FC = () => {
     // written by the call / SMS actions on the detail page, where a message
     // actually goes out -- matching ContactsContract, where LAST_TIME_CONTACTED
     // tracks communication and browsing leaves no trace.
-    go('contact.open', { contactId });
+    nav.push(routes.contact, { contactId });
   };
 
   return (

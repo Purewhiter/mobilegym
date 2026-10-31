@@ -5,6 +5,7 @@ import { dimens } from '../res/dimens';
 import { useWechatReadingGestures } from '../hooks/useWechatReadingGestures';
 import { useWechatReadingStrings } from '../hooks/useWechatReadingStrings';
 import { getWechatReadingBookById, useWechatReadingStore } from '../state';
+import { routes } from '../routes';
 
 
 type CategoryId = 'all' | 'reading' | 'finished';
@@ -22,7 +23,7 @@ const BookListsPage: React.FC = () => {
 
 
   const s = useWechatReadingStrings();
-  const { bindBack, bindTap } = useWechatReadingGestures();
+  const { bindBack, bindNav } = useWechatReadingGestures();
   const user = useWechatReadingStore(st => st.user);
   const likedListBooks = useWechatReadingStore(st => st.likedListBooks);
   const displayName = (user.name || '').trim() || '我';
@@ -60,13 +61,13 @@ const BookListsPage: React.FC = () => {
             {s.reading_book_list}
           </h1>
           <div className="flex items-center justify-end gap-1">
-            <button type="button" className="p-1.5 active:opacity-60" {...bindTap<HTMLButtonElement>('search.open')}>
+            <button type="button" className="p-1.5 active:opacity-60" {...bindNav(routes.search)}>
               <IcSearch size={dimens.icSizeToolbar} className="text-(--app-c-tw-text-slate-800)" />
             </button>
             <button
               type="button"
               className="p-1.5 active:opacity-60"
-              {...bindTap<HTMLButtonElement>('bookLists.edit.open')}
+              {...bindNav(routes.bookListsEdit)}
               aria-label={s.book_lists_add_books}
             >
               <IcAddCircle size={dimens.icSizeToolbar} className="text-(--app-c-tw-text-slate-800)" />
@@ -121,7 +122,7 @@ const BookListsPage: React.FC = () => {
                 </div>
               </div>
 
-              <button type="button" {...bindTap<HTMLButtonElement>('bookLists.edit.open')} className="w-full text-left">
+              <button type="button" {...bindNav(routes.bookListsEdit)} className="w-full text-left">
                 <div className="px-4 pb-5 pt-4">
                   {likedListBooks.length > 0 && (
                     <div className="mb-4 flex gap-2 overflow-x-auto pb-1">
@@ -171,7 +172,7 @@ const BookListsPage: React.FC = () => {
               <button
                 type="button"
                 className="mt-2 text-xs font-medium text-[#4A90E2] active:opacity-60"
-                {...bindTap<HTMLButtonElement>('bookLists.viewProfile')}
+                {...bindNav(routes.myProfile, { search: { tab: 'shelf' } })}
               >
                 {s.book_lists_view_public_homepage}
               </button>
@@ -186,7 +187,7 @@ const BookListsPage: React.FC = () => {
               type="button"
               className="mt-10 rounded-full bg-[#4A90E2] px-10 py-3 text-center text-(--app-settings-item-text-size) font-semibold text-white shadow-sm active:opacity-90"
               style={{ transition: 'opacity var(--app-duration-short) var(--app-easing-standard)' }}
-              {...bindTap<HTMLButtonElement>('bookLists.viewPopular')}
+              {...bindNav(routes.categories)}
             >
               {s.book_lists_view_popular}
             </button>

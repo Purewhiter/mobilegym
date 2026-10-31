@@ -18,6 +18,7 @@ import {
   recordMatchesBillFilters,
   type BillFilterValues,
 } from '../utils/bills';
+import { routes } from '../routes';
 
 const MONTH_LABELS_EN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -52,12 +53,12 @@ const formatMonthLabel = (year: number, month: number, currentYear: number, mont
 
 const RecordRow: React.FC<{ record: AlipayTransferRecord; isEnglish: boolean }> = ({ record, isEnglish }) => {
   const s = useAlipayStrings();
-  const { bindTap } = useAlipayGestures();
+  const { bindNav, nav } = useAlipayGestures();
 
   return (
     <button
       key={record.id}
-      {...bindTap<HTMLButtonElement>('bill.detail.open', { params: { id: record.id } })}
+      {...bindNav(routes.billDetail, { params: { id: record.id } })}
       className="flex w-full items-center justify-between border-b border-gray-100 px-4 py-4 text-left last:border-b-0"
     >
       <div className="flex min-w-0 items-center">
@@ -91,7 +92,7 @@ export const BillsPage: React.FC = () => {
   const isEnglish = useLocale() === 'en';
   const [searchParams] = useSearchParams();
   const transferRecords = useAlipayStore(state => state.transferRecords);
-  const { bindTap, bindBack, go } = useAlipayGestures();
+  const { bindNav, bindBack, nav } = useAlipayGestures();
   const [isMonthPickerOpen, setIsMonthPickerOpen] = React.useState(false);
   const now = TimeService.getDate();
   const currentYear = now.getFullYear();
@@ -114,23 +115,23 @@ export const BillsPage: React.FC = () => {
   const bindBillTab = (filterId: AlipayBillQuickFilterId | null) => {
     switch (filterId) {
       case null:
-        return bindTap<HTMLButtonElement>('bill.tab.all');
+        return bindNav(routes.bill, { search: { quickFilters: null }, keep: ['minAmount', 'maxAmount', 'categories'], replace: true });
       case 'expense':
-        return bindTap<HTMLButtonElement>('bill.tab.expense');
+        return bindNav(routes.bill, { search: { quickFilters: 'expense' }, keep: ['minAmount', 'maxAmount', 'categories'], replace: true });
       case 'transfer':
-        return bindTap<HTMLButtonElement>('bill.tab.transfer');
+        return bindNav(routes.bill, { search: { quickFilters: 'transfer' }, keep: ['minAmount', 'maxAmount', 'categories'], replace: true });
       case 'refund':
-        return bindTap<HTMLButtonElement>('bill.tab.refund');
+        return bindNav(routes.bill, { search: { quickFilters: 'refund' }, keep: ['minAmount', 'maxAmount', 'categories'], replace: true });
       case 'order':
-        return bindTap<HTMLButtonElement>('bill.tab.order');
+        return bindNav(routes.bill, { search: { quickFilters: 'order' }, keep: ['minAmount', 'maxAmount', 'categories'], replace: true });
       case 'offline':
-        return bindTap<HTMLButtonElement>('bill.tab.offline');
+        return bindNav(routes.bill, { search: { quickFilters: 'offline' }, keep: ['minAmount', 'maxAmount', 'categories'], replace: true });
       case 'topUp':
-        return bindTap<HTMLButtonElement>('bill.tab.topUp');
+        return bindNav(routes.bill, { search: { quickFilters: 'topUp' }, keep: ['minAmount', 'maxAmount', 'categories'], replace: true });
       case 'shopping':
-        return bindTap<HTMLButtonElement>('bill.tab.shopping');
+        return bindNav(routes.bill, { search: { quickFilters: 'shopping' }, keep: ['minAmount', 'maxAmount', 'categories'], replace: true });
       case 'merchantCollection':
-        return bindTap<HTMLButtonElement>('bill.tab.merchantCollection');
+        return bindNav(routes.bill, { search: { quickFilters: 'merchantCollection' }, keep: ['minAmount', 'maxAmount', 'categories'], replace: true });
       default:
         return {};
     }
@@ -273,11 +274,11 @@ export const BillsPage: React.FC = () => {
     if (values.maxAmount) params.maxAmount = values.maxAmount;
     if (values.quickFilter) params.quickFilters = values.quickFilter;
     if (values.category) params.categories = values.category;
-    go('bill.filter.apply', params);
+    nav.replace(routes.bill, {}, { search: { minAmount: params.minAmount, maxAmount: params.maxAmount, categories: params.categories, quickFilters: params.quickFilters } });
   };
 
   const closeFilter = () => {
-    go('bill.filter.close');
+    nav.replace(routes.bill, {}, { search: { modal: null }, keep: ['minAmount', 'maxAmount', 'categories', 'quickFilters'] });
   };
 
   const openMonthPickerFor = (year: number, month: number) => {
@@ -324,7 +325,7 @@ export const BillsPage: React.FC = () => {
           </div>
           <button
             className="rounded-full bg-app-primary px-4 py-2 text-sm font-medium text-white shadow-sm"
-            {...bindTap<HTMLButtonElement>('bill.analysis.open')}
+            {...bindNav(routes.billAnalysis)}
           >
             {s.income_and_expense_analysis}
           </button>
@@ -441,7 +442,7 @@ export const BillsPage: React.FC = () => {
           </button>
 
           <button
-            {...bindTap<HTMLButtonElement>('bill.search.open')}
+            {...bindNav(routes.billSearch)}
             className="flex flex-1 items-center rounded-full bg-gray-100 px-3 py-2"
           >
             <IcSearch size={16} className="mr-2 text-gray-400" />
@@ -474,7 +475,7 @@ export const BillsPage: React.FC = () => {
           </div>
 
           <button
-            {...bindTap<HTMLButtonElement>('bill.filter.open')}
+            {...bindNav(routes.bill, { search: { modal: 'filter' }, keep: ['minAmount', 'maxAmount', 'categories', 'quickFilters'], replace: true })}
             className={`flex flex-shrink-0 items-center gap-1 whitespace-nowrap rounded-full px-3 py-1.5 text-sm ${
               hasDrawerFilters ? 'bg-app-primary/10 text-app-primary' : 'text-gray-700'
             }`}
@@ -509,7 +510,7 @@ export const BillsPage: React.FC = () => {
               </div>
               <button
                 className="flex items-center gap-0.5 text-sm text-gray-700"
-                {...bindTap<HTMLButtonElement>('bill.analysis.open')}
+                {...bindNav(routes.billAnalysis)}
               >
                 {s.income_and_expense_analysis}
                 <IcNavForward size={14} className="text-gray-400" />

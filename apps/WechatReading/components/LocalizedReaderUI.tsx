@@ -25,8 +25,7 @@ import { getWechatReadingBookById, useWechatReadingStore } from '../state';
 import { useWechatReadingStrings } from '../hooks/useWechatReadingStrings';
 import { formatWechatReadingCount, formatWechatReadingWords } from '../utils/localization';
 import type { BookChapter } from '../data/types';
-import type { TransitionId } from '../navigation.declaration';
-import { useAppNavigate } from '../navigation';
+import { useNav } from '../../../os/navigation';
 import { useReaderTheme } from '../hooks/useReaderTheme';
 import { resolveReaderTheme } from '../utils/readerTheme';
 import type { ReaderPageBlock } from '../utils/readerPagination';
@@ -38,6 +37,7 @@ import {
   normalizeMarginIndex,
 } from '../constants';
 import paperTexture from '../assets/paper.png';
+import { routes } from '../routes';
 
 function getSteppedIndex(clientX: number, rect: DOMRect, stopCount: number): number {
   const pct = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
@@ -130,7 +130,7 @@ export const LocalizedReaderMenu: React.FC<{
   activeTool: string | null;
   hasToc?: boolean;
 }> = ({ visible, onBack, isInShelf, toggleShelfBinding, bindTap, bookId, activeTool, hasToc }) => {
-  const { go } = useAppNavigate();
+  const nav = useNav();
   const rt = useReaderTheme();
   const readerPrefs = useWechatReadingStore(s => s.readerPrefs);
   const updateReaderPrefs = useWechatReadingStore(s => s.updateReaderPrefs);
@@ -184,14 +184,14 @@ export const LocalizedReaderMenu: React.FC<{
   const notesUnit = locale === 'en' ? 'items' : '条';
   const listenLabel = locale === 'en' ? 'Listen' : '听';
 
-  const bindReaderToolToggle = (openId: TransitionId, tool: string) =>
-    bindTap(openId, {
-      params: { bookId },
+  const bindReaderToolToggle = (tool: 'toc' | 'progress' | 'theme' | 'typography') =>
+    bindTap('nav.read', {
+      params: { bookId, tool },
       onTrigger: () => {
         if (activeTool === tool) {
-          go('reader.tool.close', { bookId });
+          nav.replace(routes.read, { bookId });
         } else {
-          go(openId, { bookId });
+          nav.replace(routes.read, { bookId }, { search: { tool } });
         }
       },
     });
@@ -501,7 +501,7 @@ export const LocalizedReaderMenu: React.FC<{
                           color: isSelected ? '#3b82f6' : rt.textPrimary,
                           border: isSelected ? '1.5px solid #93c5fd' : '1.5px solid transparent',
                         }}
-                        onClick={() => { updateSettings({ pageTurnStyle: opt.key }); setShowPageTurnPanel(false); go('reader.tool.close', { bookId }); }}
+                        onClick={() => { updateSettings({ pageTurnStyle: opt.key }); setShowPageTurnPanel(false); nav.replace(routes.read, { bookId }); }}
                       >
                         {opt.label}
                       </button>
@@ -646,7 +646,7 @@ export const LocalizedReaderMenu: React.FC<{
                 <div
                   className={`flex flex-col items-center gap-1 active:opacity-60 w-10 ${activeTool === 'toc' ? 'text-(--app-c-tw-text-blue-500)' : ''}`}
                   style={activeTool !== 'toc' ? { color: rt.textSecondary } : undefined}
-                  {...(hasToc ? bindReaderToolToggle('reader.toc.open', 'toc') : {})}
+                  {...(hasToc ? bindReaderToolToggle('toc') : {})}
                 >
                   <IcList size={dimens.icSizeTab} strokeWidth={1.5} />
                 </div>
@@ -656,21 +656,21 @@ export const LocalizedReaderMenu: React.FC<{
                 <div
                   className={`flex flex-col items-center gap-1 active:opacity-60 w-10 ${activeTool === 'progress' ? 'text-(--app-c-tw-text-blue-500)' : ''}`}
                   style={activeTool !== 'progress' ? { color: rt.textSecondary } : undefined}
-                  {...bindReaderToolToggle('reader.progress.open', 'progress')}
+                  {...bindReaderToolToggle('progress')}
                 >
                   <IcReaderProgressMark size={dimens.icSizeTab} strokeWidth={1.5} />
                 </div>
                 <div
                   className={`flex flex-col items-center gap-1 active:opacity-60 w-10 ${activeTool === 'theme' ? 'text-(--app-c-tw-text-blue-500)' : ''}`}
                   style={activeTool !== 'theme' ? { color: rt.textSecondary } : undefined}
-                  {...bindReaderToolToggle('reader.theme.open', 'theme')}
+                  {...bindReaderToolToggle('theme')}
                 >
                   <IcSun size={dimens.icSizeTab} strokeWidth={1.5} />
                 </div>
                 <div
                   className={`flex flex-col items-center gap-1 active:opacity-60 w-10 ${activeTool === 'typography' ? 'text-(--app-c-tw-text-blue-500)' : ''}`}
                   style={activeTool !== 'typography' ? { color: rt.textSecondary } : undefined}
-                  {...bindReaderToolToggle('reader.typography.open', 'typography')}
+                  {...bindReaderToolToggle('typography')}
                 >
                   <span className="select-none text-[22px] font-semibold leading-none font-serif">A</span>
                 </div>

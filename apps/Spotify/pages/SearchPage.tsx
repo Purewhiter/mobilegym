@@ -5,6 +5,7 @@ import { SPOTIFY_CONFIG } from '../data';
 import { useSpotifyGestures } from '../hooks/useSpotifyGestures';
 import { useSpotifyStrings } from '../hooks/useSpotifyStrings';
 import { localizeSpotifyCategoryTitle, localizeSpotifyDiscoverTitle } from '../utils/localizeCategoryTitle';
+import { routes } from '../routes';
 
 interface SearchCategory {
   id: string;
@@ -16,7 +17,7 @@ interface SearchCategory {
 export const SearchPage: React.FC = () => {
   const locale = useLocale();
   const isEnglish = locale === 'en';
-  const { bindTap } = useSpotifyGestures();
+  const { bindNav } = useSpotifyGestures();
   const s = useSpotifyStrings();
 
   return (
@@ -29,7 +30,7 @@ export const SearchPage: React.FC = () => {
         <header className="mb-6 flex items-center justify-between pt-2">
           <div className="flex items-center gap-3">
             <div
-              {...bindTap('search.sidebar.open')}
+              {...bindNav(routes.search, { search: { drawer: 'sidebar' } })}
               className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-amber-700 text-sm font-bold transition-transform active:scale-95"
             >
               {SPOTIFY_CONFIG.user.initial}
@@ -42,7 +43,7 @@ export const SearchPage: React.FC = () => {
         </header>
 
         <div
-          {...bindTap('search.input.open')}
+          {...bindNav(routes.searchInput)}
           className="sticky top-0 z-40 isolate -mx-4 mb-8 cursor-pointer bg-app-bg px-4 pb-4"
         >
           <div className="relative">
@@ -63,7 +64,7 @@ export const SearchPage: React.FC = () => {
               return (
                 <div
                   key={item.id}
-                  {...bindTap('video.open', { params: { id: item.id } })}
+                  {...bindNav(routes.video, { params: { id: item.id } })}
                   className={`relative aspect-[3/5] w-32 flex-shrink-0 cursor-pointer overflow-hidden rounded-lg ${item.bg}`}
                 >
                   <img src={item.image} alt={localizedTitle} className="absolute inset-0 z-0 h-full w-full object-cover" />
@@ -85,7 +86,7 @@ export const SearchPage: React.FC = () => {
               return (
                 <div
                   key={item.id}
-                  {...bindTap('category.open', { params: { id: item.id } })}
+                  {...bindNav(routes.category, { params: { id: item.id } })}
                   className={`relative h-28 cursor-pointer overflow-hidden rounded ${item.bg}`}
                 >
                   <div className="absolute left-3 top-3 z-10 whitespace-pre-line text-lg font-bold leading-tight">

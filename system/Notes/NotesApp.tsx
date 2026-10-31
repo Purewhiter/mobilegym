@@ -25,12 +25,13 @@ import { dimens } from './res/dimens';
 import { anim } from './res/anim';
 import { strings } from './res/strings';
 import { stringsEn } from './res/strings.en';
-import { useAppNavigate } from './navigation';
+import { useNav } from '../../os/navigation';
+import { routes } from './routes';
 
 /** Handles back navigation and route observation for the OS */
 const NotesNavigationHandler: React.FC = () => {
   const location = useLocation();
-  const { back, go } = useAppNavigate();
+  const nav = useNav(); const back = nav.back;
   const { navigator } = useContext(UNSAFE_NavigationContext);
   const historyIndexRef = useRef(0);
 
@@ -52,12 +53,12 @@ const NotesNavigationHandler: React.FC = () => {
     }
 
     if (location.pathname !== '/') {
-      go('home.open', {}, { mode: 'replace' });
+      nav.replace(routes.home);
       return true;
     }
 
     return false;
-  }, [back, go, location.pathname, navigator]);
+  }, [back, nav, location.pathname, navigator]);
 
   useAppNavigationHandler('notes', {
     onBack: handleBackPress,

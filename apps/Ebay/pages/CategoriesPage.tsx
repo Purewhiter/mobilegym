@@ -1,6 +1,6 @@
 import React from 'react';
 import { IcNavBack } from '../res/icons';
-import { useEbayGestures } from '../navigation';
+import { useEbayGestures } from '../hooks/useEbayGestures';
 import { useLocale } from '../../../os/locale';
 import { useEbayStrings } from '../hooks/useEbayStrings';
 import { localizeEbayCategoryLabel } from '../utils/localize';

@@ -12,6 +12,7 @@ import { XRetweetSheet } from '../components/XRetweetSheet';
 import { XTimelinePostCard } from '../components/XTimelinePostCard';
 import { useElementHeight } from '../hooks/useElementHeight';
 import { shouldShowProfileTopBar } from '../utils/topBarVisibility';
+import { routes } from '../routes';
 
 export const UserProfilePage: React.FC = () => {
   const { id } = useParams();
@@ -21,7 +22,7 @@ export const UserProfilePage: React.FC = () => {
   const followedSet = useXStore(selectEffectiveFollowedSet);
   const { items: rawUserReplies, loading: userRepliesLoading } = useXUserReplies(id || '', 80);
   const toggleRetweet = useXStore(s => s.toggleRetweet);
-  const { bindBack, bindTap, go } = useXGestures();
+  const { bindBack, bindTap, nav, bindNav } = useXGestures();
   const s = useXStrings();
   const locale = useLocale();
 
@@ -217,11 +218,11 @@ export const UserProfilePage: React.FC = () => {
         </div>
 
         <div className="mt-3 flex items-center gap-4 text-sm">
-          <div className="cursor-pointer active:opacity-50" onClick={() => go('connections.open', { id: id!, type: 'following' })}>
+          <div className="cursor-pointer active:opacity-50" onClick={() => nav.push(routes.connections, { id: id! }, { search: { type: 'following' } })}>
             <span className="font-bold text-app-text">{user.following}</span>{' '}
             <span className="text-gray-500">{s.profile_following_label}</span>
           </div>
-          <div className="cursor-pointer active:opacity-50" onClick={() => go('connections.open', { id: id!, type: 'followers' })}>
+          <div className="cursor-pointer active:opacity-50" onClick={() => nav.push(routes.connections, { id: id! }, { search: { type: 'followers' } })}>
             <span className="font-bold text-app-text">{user.followers}</span>{' '}
             <span className="text-gray-500">{s.profile_followers_label}</span>
           </div>
@@ -269,12 +270,12 @@ export const UserProfilePage: React.FC = () => {
               <div
                 key={reply.id}
                 className="border-b border-app-border p-4 active:bg-black/5 cursor-pointer transition-colors"
-                {...bindTap('post.open', { params: { id: reply.id } })}
+                {...bindNav(routes.status, { params: { id: reply.id } })}
               >
                 {parent && (
                   <div className="flex mb-1 relative">
                     <div className="flex flex-col items-center mr-3 w-10 shrink-0 relative">
-                      <div className="w-8 h-8 rounded-full bg-gray-200 overflow-hidden shrink-0 cursor-pointer z-10" {...bindTap('user.open.fromPost', { params: { id: parent.authorId }, stopPropagation: true })}>
+                      <div className="w-8 h-8 rounded-full bg-gray-200 overflow-hidden shrink-0 cursor-pointer z-10" {...bindNav(routes.user, { params: { id: parent.authorId }, stopPropagation: true })}>
                         {parent.author?.avatar ? <XImage src={parent.author.avatar} alt={parent.author.name} className="w-full h-full object-cover" /> : null}
                       </div>
                       <div className="w-0.5 bg-gray-300 absolute left-1/2 -translate-x-1/2 top-8 -bottom-4 z-0" />
@@ -290,7 +291,7 @@ export const UserProfilePage: React.FC = () => {
                   </div>
                 )}
                 <div className="flex relative z-10">
-                  <div className="w-10 h-10 rounded-full bg-gray-200 mr-3 overflow-hidden shrink-0 cursor-pointer relative z-10" {...bindTap('user.open.fromPost', { params: { id: reply.authorId }, stopPropagation: true })}>
+                  <div className="w-10 h-10 rounded-full bg-gray-200 mr-3 overflow-hidden shrink-0 cursor-pointer relative z-10" {...bindNav(routes.user, { params: { id: reply.authorId }, stopPropagation: true })}>
                     {user.avatar ? <XImage src={user.avatar} alt={user.name} className="w-full h-full object-cover" /> : null}
                   </div>
                   <div className="flex-1">
@@ -411,9 +412,9 @@ export const UserProfilePage: React.FC = () => {
         onClose={() => setRetweetMenuPostId(null)}
         onRetweet={toggleRetweet}
         onQuote={(postId) => {
-          go('compose.open', { quotedPostId: postId });
+          nav.push(routes.compose, {}, { search: { quotedPostId: postId } });
         }}
-        onViewActivity={(postId) => go('status.activity.open', { id: postId })}
+        onViewActivity={(postId) => nav.push(routes.statusActivity, { id: postId }, { search: { tab: 'quotes' } })}
       />
 
       <BookmarkToast visible={showBookmarkToast} onClose={() => setShowBookmarkToast(false)} />

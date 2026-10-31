@@ -1,11 +1,12 @@
 import React from 'react';
 import { IcCart, IcInfo, IcCamera, ICON_REGISTRY } from '../res/icons';
-import { useEbayGestures } from '../navigation';
+import { useEbayGestures } from '../hooks/useEbayGestures';
 import TabBar from '../components/TabBar';
 import { useEbayStrings } from '../hooks/useEbayStrings';
+import { routes } from '../routes';
 
 const SellPage: React.FC = () => {
-  const { bindTap, bindAction } = useEbayGestures();
+  const { bindNav, bindAction } = useEbayGestures();
   const s = useEbayStrings();
   const sellingSteps = [
     { id: 'step1', icon: 'IcCamera', title: s.selling_step1_title, description: s.selling_step1_desc },
@@ -20,7 +21,7 @@ const SellPage: React.FC = () => {
            {/* Header */}
            <div className="px-4 py-2 flex items-center justify-between pt-10">
               <h1 className="text-2xl font-bold text-black">{s.sell_title}</h1>
-              <div {...bindTap('cart.open', {})} className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
+              <div {...bindNav(routes.cart)} className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
                  <IcCart size={20} className="text-app-text" />
               </div>
            </div>

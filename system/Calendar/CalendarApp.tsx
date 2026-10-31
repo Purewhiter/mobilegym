@@ -19,12 +19,12 @@ import { CalendarSubscriptionPage } from './pages/CalendarSubscriptionPage';
 import { CalendarEventDetailPage } from './pages/CalendarEventDetailPage';
 import { CalendarDeskThemePage } from './pages/CalendarDeskThemePage';
 import { useAppNavigationHandler } from '../../os/hooks/useAppNavigationHandler';
-import { useAppNavigate } from './navigation';
+import { useNav } from '../../os/navigation';
 
 
 // --- Navigation Handler ---
 const CalendarNavigationHandler: React.FC = () => {
-    const { back } = useAppNavigate();
+    const nav = useNav(); const back = nav.back;
     const location = useLocation();
 
     const handleBack = useCallback(() => {

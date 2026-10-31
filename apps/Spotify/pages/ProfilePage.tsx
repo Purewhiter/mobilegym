@@ -6,12 +6,13 @@ import { useSpotifyStrings } from '../hooks/useSpotifyStrings';
 import { localizeSpotifyText } from '../utils/localizeSpotifyText';
 import { useSpotifyStore } from '../state';
 import { SPOTIFY_CONFIG } from '../data';
+import { routes } from '../routes';
 
 export const ProfilePage: React.FC = () => {
   const locale = useLocale();
   const isEnglish = locale === 'en';
   const s = useSpotifyStrings();
-  const { bindTap, bindBack } = useSpotifyGestures();
+  const { bindNav, bindBack } = useSpotifyGestures();
   const customPlaylists = useSpotifyStore(s => s.customPlaylists);
   const user = SPOTIFY_CONFIG.user;
 
@@ -44,7 +45,7 @@ export const ProfilePage: React.FC = () => {
         <button className="px-4 py-1.5 border border-gray-500 rounded-full text-sm font-bold active:scale-95 transition-transform">
           {s.profile_edit}
         </button>
-        <button {...bindTap('settings.open')} className="px-4 py-1.5 border border-gray-500 rounded-full text-sm font-bold active:scale-95 transition-transform">
+        <button {...bindNav(routes.settings, { replace: true })} className="px-4 py-1.5 border border-gray-500 rounded-full text-sm font-bold active:scale-95 transition-transform">
           <IcSettings size={18} />
         </button>
         <button className="px-4 py-1.5 border border-gray-500 rounded-full text-sm font-bold active:scale-95 transition-transform">
@@ -59,7 +60,7 @@ export const ProfilePage: React.FC = () => {
           <div
             key={playlist.id}
             className="flex items-center gap-4 active:bg-white/10 p-2 -mx-2 rounded-lg transition-colors"
-            {...bindTap('playlist.open', { params: { id: playlist.id } })}
+            {...bindNav(routes.playlist, { params: { id: playlist.id } })}
           >
             <div className="w-12 h-12 bg-[#282828] flex items-center justify-center rounded">
               <span className="text-gray-400 text-lg font-bold">

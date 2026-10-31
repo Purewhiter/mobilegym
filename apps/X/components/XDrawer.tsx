@@ -16,6 +16,7 @@ import {
 import { useXStore, selectUser } from '../state';
 import { useXGestures } from '../hooks/useXGestures';
 import { useXStrings } from '../hooks/useXStrings';
+import { routes } from '../routes';
 
 type XDrawerProps = {
   isOpen: boolean;
@@ -23,7 +24,7 @@ type XDrawerProps = {
 
 export function XDrawer({ isOpen }: XDrawerProps) {
   const user = useXStore(selectUser);
-  const { bindTap, bindBack } = useXGestures();
+  const { bindNav, bindBack } = useXGestures();
   const s = useXStrings();
 
   if (!isOpen) return null;
@@ -56,7 +57,7 @@ export function XDrawer({ isOpen }: XDrawerProps) {
         <div className="h-full overflow-y-auto no-scrollbar pt-10 pb-10">
           <div className="px-4">
             <div className="flex items-start justify-between">
-              <div className="flex items-center gap-3 cursor-pointer active:opacity-80" {...bindTap('profile.open')}>
+              <div className="flex items-center gap-3 cursor-pointer active:opacity-80" {...bindNav(routes.profile)}>
                 <div className="w-12 h-12 rounded-full bg-pink-600 overflow-hidden flex items-center justify-center text-white font-bold text-lg">
                   {user.avatar ? <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" /> : user.name[0]}
                 </div>
@@ -66,7 +67,7 @@ export function XDrawer({ isOpen }: XDrawerProps) {
               </div>
             </div>
 
-            <div className="mt-3 cursor-pointer active:opacity-80" {...bindTap('profile.open')}>
+            <div className="mt-3 cursor-pointer active:opacity-80" {...bindNav(routes.profile)}>
               <div className="text-[18px] font-bold text-app-text leading-tight">{user.name}</div>
               <div className="text-[14px] text-gray-500">{`@${user.id}`}</div>
             </div>
@@ -86,7 +87,7 @@ export function XDrawer({ isOpen }: XDrawerProps) {
           <div className="mt-6 border-t border-black/10" />
 
           <div className="mt-2">
-            <DrawerItem icon={IcUser} label={s.drawer_menu_profile} {...bindTap('profile.open')} />
+            <DrawerItem icon={IcUser} label={s.drawer_menu_profile} {...bindNav(routes.profile)} />
             <DrawerItem icon={IcBadgeCheck} label={s.drawer_menu_premium} />
             <DrawerItem icon={IcPlay} label={s.drawer_menu_videos} />
             <DrawerItem icon={IcContacts} label={s.drawer_menu_communities} />
@@ -100,7 +101,7 @@ export function XDrawer({ isOpen }: XDrawerProps) {
 
           <div className="mt-2">
             <DrawerItem icon={IcDownload} label={s.drawer_menu_download_grok} />
-            <DrawerItem icon={IcSettings} label={s.drawer_menu_settings} {...bindTap('settings.open')} />
+            <DrawerItem icon={IcSettings} label={s.drawer_menu_settings} {...bindNav(routes.settings)} />
             <DrawerItem icon={IcHelp} label={s.drawer_menu_help} />
           </div>
         </div>

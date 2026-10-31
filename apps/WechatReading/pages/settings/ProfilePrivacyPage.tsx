@@ -6,9 +6,10 @@ import { useWechatReadingStore } from '../../state';
 import type { PrivacyProfileSettings } from '../../data/types';
 import { useWechatReadingGestures } from '../../hooks/useWechatReadingGestures';
 import { useWechatReadingStrings } from '../../hooks/useWechatReadingStrings';
+import { routes } from '../../routes';
 
 const ProfilePrivacyPage: React.FC = () => {
-    const { bindBack, bindTap } = useWechatReadingGestures();
+    const { bindBack, bindTap, bindNav } = useWechatReadingGestures();
     const profile = useWechatReadingStore(s => s.settings.privacy.profile);
     const updateProfilePrivacy = useWechatReadingStore(s => s.updateProfilePrivacy);
     const s = useWechatReadingStrings();
@@ -101,7 +102,7 @@ const ProfilePrivacyPage: React.FC = () => {
 
             <div data-scroll-container="main" data-scroll-direction="vertical" className="flex-1 overflow-y-auto no-scrollbar p-3">
                 <Group>
-                    <LinkItem label={s.profile_privacy_edit_profile} binding={bindTap<HTMLDivElement>('profile.edit.open')} />
+                    <LinkItem label={s.profile_privacy_edit_profile} binding={bindNav(routes.editProfile)} />
                 </Group>
 
                 <Group title={s.profile_privacy_display_modules}>

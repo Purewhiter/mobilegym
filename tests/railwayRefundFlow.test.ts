@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it, vi } from 'vitest';
-import { NAVIGATION_DECLARATION } from '../apps/Railway12306/navigation.declaration';
+import { routes } from '../apps/Railway12306/routes';
 import type { OrderRecord } from '../apps/Railway12306/types';
 
 const paidOrder: OrderRecord = {
@@ -19,33 +19,12 @@ const paidOrder: OrderRecord = {
 };
 
 describe('Railway12306 退票退款链路', () => {
-  it('声明本人车票先弹提示，再进入退票确认页，最后从确认页退票成功', () => {
-    expect(NAVIGATION_DECLARATION.transitions).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          id: 'myTickets.openRefundNotice',
-          from: '/my-tickets',
-          to: '/my-tickets',
-          search: { dialog: 'refundNotice' },
-        }),
-        expect.objectContaining({
-          id: 'myTickets.refundConfirm',
-          from: '/my-tickets',
-          to: '/refund-confirm',
-        }),
-        expect.objectContaining({
-          id: 'refundConfirm.openRefundNotice',
-          from: '/refund-confirm',
-          to: '/refund-confirm',
-          search: { dialog: 'refundNotice' },
-        }),
-        expect.objectContaining({
-          id: 'refundConfirm.refundSuccess',
-          from: '/refund-confirm',
-          to: '/refund-success',
-        }),
-      ]),
-    );
+  it('本人车票和退票确认页都有退票提示弹窗，退票成功页单独成页', () => {
+    expect(routes.myTickets.search.dialog).toContain('refundNotice');
+    expect(routes.refundConfirm.search.dialog).toContain('refundNotice');
+    expect(routes.refundSuccess.path).toBe('/refund-success');
+    const tickets = readFileSync('apps/Railway12306/pages/MyTicketsPage.tsx', 'utf8');
+    expect(tickets).toContain("bindNav(routes.refundConfirm, { search: { id: refundDialogOrderId }, replace: true })");
   });
 
   it('确认页点击继续后更新订单并进入退票成功页', async () => {
@@ -54,41 +33,18 @@ describe('Railway12306 退票退款链路', () => {
     if (!refundModule) return;
 
     const updateOrder = vi.fn();
-    const go = vi.fn();
+    const onRefunded = vi.fn();
 
-    refundModule.requestRailwayRefund({
-      order: paidOrder,
-      updateOrder,
-      go,
-      successTransitionId: 'refundConfirm.refundSuccess',
-    });
+    refundModule.requestRailwayRefund({ order: paidOrder, updateOrder, onRefunded });
 
     expect(updateOrder).toHaveBeenCalledWith('paid-1', { status: 'cancelled' });
-    expect(go).toHaveBeenCalledWith(
-      'refundConfirm.refundSuccess',
-      {},
-      {
-        mode: 'replace',
-        state: { order: { ...paidOrder, status: 'cancelled' } },
-      },
-    );
+    expect(onRefunded).toHaveBeenCalledWith({ ...paidOrder, status: 'cancelled' });
+    const page = readFileSync('apps/Railway12306/pages/RefundConfirmPage.tsx', 'utf8');
+    expect(page).toContain('nav.replace(routes.refundSuccess, {}, { state: { order: refundedOrder } })');
   });
 
-  it('退票成功页返回到主页订单 tab', () => {
-    expect(NAVIGATION_DECLARATION.transitions).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          id: 'refundSuccess.backOrders',
-          from: '/refund-success',
-          to: '/orders',
-          mode: 'replace',
-        }),
-      ]),
-    );
-  });
-
-  it('退票成功页返回订单时使用 popTo 清理退票流程返回栈', () => {
+  it('退票成功页返回订单 tab 时用 popTo 清理退票流程返回栈', () => {
     const source = readFileSync('apps/Railway12306/pages/RefundSuccessPage.tsx', 'utf8');
-    expect(source).toContain("go('refundSuccess.backOrders', {}, { popTo: '/orders' })");
+    expect(source).toContain("nav.replace(routes.orders, {}, { popTo: '/orders' })");
   });
 });

@@ -5,11 +5,12 @@ import { manifest } from '../manifest';
 import { IcTabReading, IcTabBookshelf, IcTabAudiobooks, IcTabMe, IcTabCommunity } from '../res/icons';
 import { useWechatReadingGestures } from '../hooks/useWechatReadingGestures';
 import { useWechatReadingStrings } from '../hooks/useWechatReadingStrings';
+import { routes } from '../routes';
 
 const TabBar: React.FC = () => {
   const location = useLocation();
   const audioSubTab = useWechatReadingStore(s => s._temp.audioSubTab);
-  const { bindTap } = useWechatReadingGestures();
+  const { bindNav } = useWechatReadingGestures();
   const s = useWechatReadingStrings();
 
   const activeTab =
@@ -62,12 +63,12 @@ const TabBar: React.FC = () => {
         const isActive = activeTab === tab.id;
         const tapBinding =
           tab.id === 'reading'
-            ? bindTap<HTMLButtonElement>('tab.reading')
+            ? bindNav(routes.home, { replace: true })
             : tab.id === 'bookshelf'
-              ? bindTap<HTMLButtonElement>('tab.bookshelf')
+              ? bindNav(routes.bookshelf, { replace: true })
               : tab.id === 'audiobooks'
-                ? bindTap<HTMLButtonElement>('tab.audiobooks', { params: { sub: audioSubTab } })
-                : bindTap<HTMLButtonElement>('tab.me');
+                ? bindNav(routes.audiobooks, { search: { sub: audioSubTab ?? 'audio' }, replace: true })
+                : bindNav(routes.me, { replace: true });
 
         return (
           <button

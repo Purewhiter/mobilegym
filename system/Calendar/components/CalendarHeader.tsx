@@ -1,12 +1,13 @@
 import React from 'react';
 import { IcAdd, IcMoreVert } from '../res/icons';
 import { useCalendarGestures } from '../hooks/useCalendarGestures';
+import { routes } from '../routes';
 interface CalendarHeaderProps {
     title: string;
 }
 
 export const CalendarHeader: React.FC<CalendarHeaderProps> = ({ title }) => {
-    const { bindTap } = useCalendarGestures();
+    const { bindNav } = useCalendarGestures();
 
     return (
         <div className="flex flex-col bg-app-surface dark:bg-black pt-12">
@@ -19,13 +20,13 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({ title }) => {
 
                 <div className="flex items-center gap-5 text-black dark:text-white">
                     <button
-                        {...bindTap('new-event.open')}
+                        {...bindNav(routes.newEvent)}
                         className="p-1 hover:bg-black/5 dark:hover:bg-white/5 rounded-full"
                     >
                         <IcAdd size={32} strokeWidth={1.5} />
                     </button>
                     <button
-                        {...bindTap('settings.open')}
+                        {...bindNav(routes.settings)}
                         className="p-1 hover:bg-black/5 dark:hover:bg-white/5 rounded-full"
                     >
                         <IcMoreVert size={28} strokeWidth={1.5} />

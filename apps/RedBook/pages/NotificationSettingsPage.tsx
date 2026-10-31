@@ -6,6 +6,7 @@ import { useScrollPosition } from '../hooks/useScrollPosition';
 import { useRedBookStore } from '../state';
 import { useShallow } from 'zustand/react/shallow';
 import { useRedBookGestures } from '../hooks/useRedBookGestures';
+import { routes } from '../routes';
 interface SwitchProps {
     checked: boolean;
     onChange: (checked: boolean) => void;
@@ -31,7 +32,7 @@ const Switch: React.FC<SwitchProps> = ({ checked, onChange, actionProps }) => {
 
 const NotificationSettingsPage: React.FC = () => {
   const s = useRedBookStrings();
-  const { bindTap, bindBack } = useRedBookGestures();
+  const { bindTap, bindBack, bindNav } = useRedBookGestures();
   const scrollRef = useScrollPosition('notification_settings');
   const { settings, updateSettings } = useRedBookStore(useShallow(s => ({ settings: s.settings, updateSettings: s.updateSettings })));
   const { notification } = settings;
@@ -162,7 +163,7 @@ const NotificationSettingsPage: React.FC = () => {
             rightText={(notification.privateChat || notification.groupChat || notification.strangers) ? s.receive : s.notificationsettingspage_off}
             hasArrow
             isLast
-            {...bindTap('settings.notification.private.open')}
+            {...bindNav(routes.settingsNotificationPrivate)}
           />
         </div>
 
@@ -173,32 +174,32 @@ const NotificationSettingsPage: React.FC = () => {
             label={s.author_updates}
             rightText={notifLabel(notification.authorUpdates)}
             hasArrow
-            {...bindTap('settings.notification.follow.open')}
+            {...bindNav(routes.settingsNotificationFollow)}
           />
           <ListItem
             label={s.live_reminder}
             rightText={notifLabel(notification.liveReminder)}
             hasArrow
-            {...bindTap('settings.notification.live.open')}
+            {...bindNav(routes.settingsNotificationLive)}
           />
           <ListItem
             label={s.content_recommendations}
             rightText={notifLabel(notification.contentRecommend)}
             hasArrow
-            {...bindTap('settings.notification.content.open')}
+            {...bindNav(routes.settingsNotificationContent)}
           />
           <ListItem
             label={s.user_recommendations}
             rightText={notifLabel(notification.userRecommend)}
             hasArrow
-            {...bindTap('settings.notification.user.open')}
+            {...bindNav(routes.settingsNotificationUser)}
           />
           <ListItem
             label={s.other_notifications}
             rightText={notifLabel(notification.otherNotif)}
             hasArrow
             isLast
-            {...bindTap('settings.notification.other.open')}
+            {...bindNav(routes.settingsNotificationOther)}
           />
         </div>
 
@@ -224,7 +225,7 @@ const NotificationSettingsPage: React.FC = () => {
             rightText={notifLabel(notification.inAppBanner)}
             hasArrow
             isLast
-            {...bindTap('settings.notification.banner.open')}
+            {...bindNav(routes.settingsNotificationBanner)}
           />
         </div>
 

@@ -8,6 +8,7 @@ import { getAllStations } from '../data/stations';
 import { parseToTimestamp, now as timeNow, fromTimestamp } from '../../../os/TimeService';
 import { BackDispatcher } from '../../../os/BackDispatcher';
 import { useLocale } from '../../../os/locale';
+import { routes } from '../routes';
 
 function formatTripDate(dateStr: string, isEnglish: boolean): string {
   const timestamp = parseToTimestamp(`${dateStr}T00:00:00`);
@@ -19,7 +20,7 @@ function formatTripDate(dateStr: string, isEnglish: boolean): string {
 
 export const PaymentSuccessPage: React.FC = () => {
   const location = useLocation();
-  const { bindTap, go } = useRailwayGestures();
+  const { bindTap, nav } = useRailwayGestures();
   const s = useRailwayStrings();
   const isEnglish = useLocale() === 'en';
   const stateOrder = (location.state as { order?: OrderRecord })?.order ?? null;
@@ -27,11 +28,11 @@ export const PaymentSuccessPage: React.FC = () => {
   React.useEffect(() => {
     const unregister = BackDispatcher.register('railway12306.paymentSuccess.back', () => {
       if (window.__OS__?.state?.activeAppId !== 'railway12306') return false;
-      go('paymentSuccess.backHome', {}, { popTo: '/' });
+      nav.replace(routes.home, {}, { popTo: '/' });
       return true;
     }, 110);
     return unregister;
-  }, [go]);
+  }, [nav]);
 
   const order: OrderRecord = stateOrder || {
     id: 'mock-1',
@@ -58,8 +59,8 @@ export const PaymentSuccessPage: React.FC = () => {
 
       <div className="pt-10 pb-3 px-4 flex items-center gap-3 relative z-10">
         <button
-          {...bindTap<HTMLButtonElement>('paymentSuccess.backHome', {
-            onTrigger: () => go('paymentSuccess.backHome', {}, { popTo: '/' }),
+          {...bindTap<HTMLButtonElement>('nav.home', {
+            onTrigger: () => nav.replace(routes.home, {}, { popTo: '/' }),
           })}
           className="w-16 shrink-0 flex items-center"
         >
@@ -100,8 +101,8 @@ export const PaymentSuccessPage: React.FC = () => {
 
           <div className="mt-4 grid grid-cols-2 gap-2">
             <button
-              {...bindTap<HTMLButtonElement>('paymentSuccess.backOrders', {
-                onTrigger: () => go('paymentSuccess.backOrders', {}, { popTo: '/', mode: 'push' }),
+              {...bindTap<HTMLButtonElement>('nav.paidOrders', {
+                onTrigger: () => nav.push(routes.paidOrders, {}, { popTo: '/' }),
               })}
               className="py-1.5 border border-[#9AC2EB] rounded-[6px] text-[13px] text-[#4886E0] text-center leading-tight whitespace-normal break-words"
             >

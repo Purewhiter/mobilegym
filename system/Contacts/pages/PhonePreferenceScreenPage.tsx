@@ -13,6 +13,7 @@ import type { SimProfile } from '../phoneTypes';
 import type { PhoneSettingsItem } from '../settings/types';
 import { useBooleanPreference, useStringPreference } from '../state';
 import { getPhoneSettingsPageTitle, localizePhoneSettingsPage, localizePhoneSettingsText } from '../utils/localizedText';
+import { routes } from '../routes';
 
 const PAGE_KEY_TO_SETTINGS_PAGE: Record<string, Record<string, string>> = {
   preference_settings: {
@@ -244,7 +245,7 @@ const Inner: React.FC = () => {
   const locale = useLocale();
   const isEnglish = locale === 'en';
   const { pageId } = useParams<{ pageId: string }>();
-  const { bindBack, go } = useContactsGestures();
+  const { bindBack, nav } = useContactsGestures();
   const sims = useSimProfiles();
   const s = useAppStrings(strings, stringsEn);
   const rawPage = pageId ? PHONE_SETTINGS_PAGES[pageId] : undefined;
@@ -310,7 +311,7 @@ const Inner: React.FC = () => {
           title={item.title}
           summary={item.summary}
           showDivider={!isLast}
-          onClick={() => go('settings.page.open', { pageId: targetPage })}
+          onClick={() => nav.push(routes.settingsPage, { pageId: targetPage })}
         />
       );
     }

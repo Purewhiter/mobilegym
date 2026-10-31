@@ -11,6 +11,7 @@ import { strings } from '../res/strings';
 import { stringsEn } from '../res/strings.en';
 import { useAppStrings } from '../../../os/useAppStrings';
 import type { StringKey } from '../res/strings';
+import { routes } from '../routes';
 type Strings = Record<StringKey, string>;
 
 function formatDatePill(dateStr: string, s: Strings): string {
@@ -36,7 +37,7 @@ export const OrderConfirmPage: React.FC = () => {
   const addOrder = useRailwayStore(s => s.addOrder);
   const cancelPendingOrders = useRailwayStore(s => s.cancelPendingOrders);
   const setSelectedTrain = useRailwayStore(s => s.setSelectedTrain);
-  const { bindBack, bindTap, go } = useRailwayGestures();
+  const { bindBack, bindNav, nav } = useRailwayGestures();
   const s = useAppStrings(strings, stringsEn);
   const location = useLocation();
   const [selectedSeat, setSelectedSeat] = useState('');
@@ -191,20 +192,18 @@ export const OrderConfirmPage: React.FC = () => {
     submitTimerRef.current = window.setTimeout(() => {
       setShowProcessing(false);
       setSelectedTrain(null);
-      go('orders.incompleteOrders');
+      nav.push(routes.incompleteOrders);
     }, 1200);
   };
 
-  const passengerSelectBinding = bindTap<HTMLButtonElement>('orderConfirm.passengers', {
-    beforeTrigger: () => {
+  const passengerSelectBinding = bindNav(routes.passengers, { search: { mode: 'select' }, beforeTrigger: () => {
       setSelectedTrain({
         trainNo: train.trainNo,
         seatType: seatInfo.type,
         trainIndex,
         passengerIds: selectedPassengerIds,
       });
-    },
-  });
+    } });
 
   return (
     <div className="pt-10 min-h-full bg-[#FAFAFA] pb-8">

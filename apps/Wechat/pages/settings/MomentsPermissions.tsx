@@ -7,6 +7,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { SettingsItem, SettingsToggle } from './Shared';
 import { UserSettings } from '../../types';
 import { useWechatGestures } from '../../hooks/useWechatGestures';
+import { routes } from '../../routes';
 
 export const MomentsPermissionsPage: React.FC = () => {
   const t = useWechatStrings();
@@ -18,7 +19,7 @@ export const MomentsPermissionsPage: React.FC = () => {
   );
   const { privacy } = settings;
   const location = useLocation();
-  const { bindTap, bindBack, back } = useWechatGestures();
+  const { bindTap, bindBack, back, bindNav } = useWechatGestures();
   const searchParams = new URLSearchParams(location.search);
   const showRangeModal = searchParams.get('menu') === 'range';
 
@@ -111,7 +112,7 @@ export const MomentsPermissionsPage: React.FC = () => {
               {localizeRange(privacy.momentsRange)}
             </span>
           }
-          tapProps={bindTap<HTMLDivElement>('settings.privacy.moments.menu.range.open')}
+          tapProps={bindNav(routes.settingsPrivacyMoments, { search: { menu: 'range' } })}
           isLast
         />
       </div>

@@ -7,6 +7,7 @@ import { useAlipayGestures } from '../hooks/useAlipayGestures';
 import * as TimeService from '../../../os/TimeService';
 import { useLocale } from '@/apps/Alipay/locale';
 import { DefaultAvatar } from '../components/DefaultAvatar';
+import { routes } from '../routes';
 
 function formatMsgTime(ts: number, isEnglish: boolean): string {
   const d = TimeService.fromTimestamp(ts);
@@ -37,7 +38,7 @@ export const ChatPage: React.FC = () => {
   const contacts = useAlipayStore(st => st.contacts);
   const sendChatMessage = useAlipayStore(st => st.sendChatMessage);
   const markConversationRead = useAlipayStore(st => st.markConversationRead);
-  const { bindBack, bindTap } = useAlipayGestures();
+  const { bindBack, bindNav } = useAlipayGestures();
 
   const conv = conversations.find(c => c.id === convId);
   const fallbackContactId = conv?.kind === 'person'
@@ -129,7 +130,7 @@ export const ChatPage: React.FC = () => {
                 <div className="flex items-start mb-4">
                   <button
                     className="w-10 h-10 rounded-lg bg-gray-200 overflow-hidden mr-3 flex-shrink-0"
-                    {...(targetContactId ? bindTap<HTMLButtonElement>('contacts.profile.open', { params: { contactId: targetContactId } }) : {})}
+                    {...(targetContactId ? bindNav(routes.contactsProfile, { search: { contactId: targetContactId } }) : {})}
                   >
                     {peerAvatar ? (
                       <img src={peerAvatar} alt="" className="w-full h-full object-cover" />
@@ -165,7 +166,7 @@ export const ChatPage: React.FC = () => {
             {s.chatpage_send}
           </button>
         ) : targetContactId ? (
-          <button {...bindTap('transfer.amount.open', { params: { contactId: targetContactId } })}>
+          <button {...bindNav(routes.payTransferAmount, { search: { contactId: targetContactId } })}>
             <IcTransfer size={24} className="text-gray-600" />
           </button>
         ) : (

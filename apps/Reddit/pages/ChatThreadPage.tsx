@@ -8,6 +8,7 @@ import { formatChatDateShort, formatChatMessageTime, getChatDayKey } from '../ut
 import { getUserAvatar } from '../utils/userIdentity';
 import { KeyboardService } from '@/os/keyboard';
 import { ClipboardService } from '@/os/clipboard';
+import { routes } from '../routes';
 
 type ChatMessage = {
   id: string;
@@ -35,7 +36,7 @@ export const ChatThreadPage: React.FC = () => {
   const storeSeedChatThread = useRedditStore((s) => s.seedChatThread);
   const storeSendChatMessage = useRedditStore((s) => s.sendChatMessage);
   const storeDeleteChatMessage = useRedditStore((s) => s.deleteChatMessage);
-  const { bindBack, bindTap, bindLongPress } = useRedditGestures();
+  const { bindBack, bindTap, bindLongPress, bindNav } = useRedditGestures();
   const location = useLocation();
   const username = getUsernameFromPath(location.pathname);
 
@@ -204,9 +205,7 @@ export const ChatThreadPage: React.FC = () => {
               const showDay = idx === 0 || currentKey !== prevKey;
               const threadInfo = getThreadInfo(m.id);
               const replyCount = threadInfo.count;
-              const openThreadProps = bindTap('chatThread.message.thread.open', {
-                params: { username, messageId: m.id },
-              });
+              const openThreadProps = bindNav(routes.chatThread, { params: { username, messageId: m.id } });
               return (
                 <React.Fragment key={m.id}>
                   {showDay && (
@@ -434,14 +433,11 @@ export const ChatThreadPage: React.FC = () => {
                   key={item.id}
                   type="button"
                   {...(item.id === 'chatThread.message.menu.reply'
-                    ? bindTap('chatThread.message.thread.open', {
-                        params: { username, messageId: longPressMenu.id },
-                        beforeTrigger: () => {
+                    ? bindNav(routes.chatThread, { params: { username, messageId: longPressMenu.id }, beforeTrigger: () => {
                           // Close overlays before navigating.
                           setConfirmDelete(null);
                           setLongPressMenu(null);
-                        },
-                      })
+                        } })
                     : bindTap(
                         { kind: 'action', id: item.id },
                         {

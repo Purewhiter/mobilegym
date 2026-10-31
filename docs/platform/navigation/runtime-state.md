@@ -4,7 +4,7 @@ Runtime navigation uses React Router `MemoryRouter` plus MobileGym's app navigat
 
 ## App Contract
 
-Business pages should use the app's `go()` / `back()` helpers, not `useNavigate()` directly.
+Business pages navigate with `bindNav` / `nav` from `os/navigation` (see [routes.md](routes.md)), not `useNavigate()` directly.
 
 The entry component calls `useAppNavigationHandler` inside `MemoryRouter`. The hook registers:
 
@@ -27,6 +27,6 @@ When app B is pushed onto app A's Task, app B may already have a background own-
 
 ## Related Docs
 
-- Declaration grammar → [declaration.md](declaration.md)
+- Route tables and jumps → [routes.md](routes.md)
 - OS Task lifecycle → [../os/task-lifecycle.md](../os/task-lifecycle.md)
 - Cross-app launch → [../os/cross-app-launch.md](../os/cross-app-launch.md)

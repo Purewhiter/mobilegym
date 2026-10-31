@@ -31,13 +31,13 @@ import { SettingsPage } from './pages/SettingsPage';
 import { UserProfilePage } from './pages/UserProfilePage';
 import { SearchPage } from './pages/SearchPage';
 import { BottomTabBar } from './components/BottomTabBar';
-import { useAppNavigate } from './navigation';
+import { useNav } from '../../os/navigation';
 import { useAppNavigationHandler } from '../../os/hooks/useAppNavigationHandler';
 
 const RedditNavigationHandler: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { back } = useAppNavigate();
+  const nav = useNav(); const back = nav.back;
   const { navigator } = useContext(UNSAFE_NavigationContext);
   const historyIndexRef = useRef(0);
   

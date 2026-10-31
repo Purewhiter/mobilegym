@@ -6,11 +6,12 @@ import { IcNavForward } from '../../res/icons';
 import { useParams } from 'react-router-dom';
 import { useWechatStore } from '../../state';
 import { useWechatGestures } from '../../hooks/useWechatGestures';
+import { routes } from '../../routes';
 
 export const FriendInfoPage: React.FC = () => {
   const t = useWechatStrings();
     const { id } = useParams<{ id: string }>();
-    const { bindTap } = useWechatGestures();
+    const { bindNav } = useWechatGestures();
     const contacts = useWechatStore(s => s.contacts);
 
     const contact = contacts.find(c => c.wxid === id);
@@ -75,7 +76,7 @@ export const FriendInfoPage: React.FC = () => {
                     label={t.friend_permission}
                     value={permissionText} 
                     isLast 
-                    tapProps={bindTap<HTMLDivElement>('friendPermissionsDetail.open', { params: { id: contact.wxid } })}
+                    tapProps={bindNav(routes.friendPermissionsDetail, { params: { id: contact.wxid } })}
                 />
             </div>
 

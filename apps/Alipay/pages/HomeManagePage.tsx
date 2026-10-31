@@ -3,9 +3,10 @@ import React from 'react';
 import { IcNavBack, IcNavForward, IcMore, IcDot } from '../res/icons';
 import { useAlipayStore } from '../state';
 import { useAlipayGestures } from '../hooks/useAlipayGestures';
+import { routes } from '../routes';
 export const HomeManagePage: React.FC = () => {
   const s = useAlipayStrings();
-  const { bindTap, bindBack } = useAlipayGestures();
+  const { bindNav, bindBack } = useAlipayGestures();
   const settings = useAlipayStore(s => s.settings);
 
   const statusText = (enabled: boolean) => (enabled ? s.generalsettingspage_on : s.generalsettingspage_off);
@@ -56,13 +57,13 @@ export const HomeManagePage: React.FC = () => {
               key={row.id}
               className="flex items-center justify-between px-4 py-4 active:bg-gray-50"
               {...(row.id === 'searchBox'
-                ? bindTap<HTMLDivElement>('settings.homeManage.searchBox.open')
+                ? bindNav(routes.settingsGeneralHomeManageSearchBox)
                 : row.id === 'searchPre'
-                  ? bindTap<HTMLDivElement>('settings.homeManage.searchPre.open')
+                  ? bindNav(routes.settingsGeneralHomeManageSearchPre)
                   : row.id === 'voiceFloat'
-                    ? bindTap<HTMLDivElement>('settings.homeManage.voiceFloat.open')
+                    ? bindNav(routes.settingsGeneralHomeManageVoiceFloat)
                     : row.id === 'activityAmbience'
-                      ? bindTap<HTMLDivElement>('settings.homeManage.activityAmbience.open')
+                      ? bindNav(routes.settingsGeneralHomeManageActivityAmbience)
                       : {})}
             >
               <span className="text-sm font-medium text-gray-800">{row.label}</span>

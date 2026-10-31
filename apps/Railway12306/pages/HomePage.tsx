@@ -10,14 +10,16 @@ import { strings } from '../res/strings';
 import { stringsEn } from '../res/strings.en';
 import { useAppStrings } from '../../../os/useAppStrings';
 import { useLocale } from '../../../os/locale';
+import { routes } from '../routes';
+import type { AppRoute } from '../../../os/navigation';
 // Service grid item ID → transition ID mapping
-const SERVICE_NAV_MAP: Record<string, string> = {
-  station_screen: 'service.stationBoard',
-  timetable: 'service.timetable',
-  warm_service: 'service.servicePhone',
-  air_rail: 'service.airRail',
-  bus_ship: 'service.busTicket',
-  invoice: 'orders.invoice',
+const SERVICE_NAV_MAP: Record<string, AppRoute> = {
+  station_screen: routes.stationBoard,
+  timetable: routes.timetable,
+  warm_service: routes.servicePhone,
+  air_rail: routes.airRail,
+  bus_ship: routes.busTicket,
+  invoice: routes.invoice,
 };
 
 export const HomePage: React.FC = () => {
@@ -26,14 +28,14 @@ export const HomePage: React.FC = () => {
   const setStationSelectTarget = useRailwayStore(s => s.setStationSelectTarget);
   const setIsStudent = useRailwayStore(s => s.setIsStudent);
   const config = RAILWAY12306_CONFIG;
-  const { bindTap, go } = useRailwayGestures();
+  const { bindNav, nav } = useRailwayGestures();
   const s = useAppStrings(strings, stringsEn);
   const locale = useLocale();
   const isEnglish = locale === 'en';
 
   const handleServiceClick = (id: string) => {
     const transitionId = SERVICE_NAV_MAP[id];
-    if (transitionId) go(transitionId as any);
+    if (transitionId) nav.push(transitionId);
   };
 
   // 只展示出发时间在当前时间之后的行程
@@ -144,9 +146,7 @@ export const HomePage: React.FC = () => {
         <div className="flex items-center justify-between h-(--app-station-row-height) mt-[15px] px-[23px]">
           <div
             className="flex-1 cursor-pointer"
-            {...bindTap<HTMLDivElement>('home.stationSelect.from', {
-              beforeTrigger: () => setStationSelectTarget('from'),
-            })}
+            {...bindNav(routes.stationSelect, { beforeTrigger: () => setStationSelectTarget('from') })}
           >
             <span className="text-[23px] font-bold text-app-text">{from}</span>
           </div>
@@ -159,9 +159,7 @@ export const HomePage: React.FC = () => {
           </button>
           <div
             className="flex-1 text-right cursor-pointer"
-            {...bindTap<HTMLDivElement>('home.stationSelect.to', {
-              beforeTrigger: () => setStationSelectTarget('to'),
-            })}
+            {...bindNav(routes.stationSelect, { beforeTrigger: () => setStationSelectTarget('to') })}
           >
             <span className="text-[23px] font-bold text-app-text">{to}</span>
           </div>
@@ -174,7 +172,7 @@ export const HomePage: React.FC = () => {
         <div className="flex items-center justify-between pt-3 px-[23px]">
           <div
             className="cursor-pointer flex items-baseline"
-            {...bindTap<HTMLDivElement>('home.dateSelect')}
+            {...bindNav(routes.dateSelect)}
           >
             <span className="text-[20px] text-app-text">{dateLabel}</span>
             <span className="text-[13px] text-[#666] ml-2">{dayLabel}</span>
@@ -200,7 +198,7 @@ export const HomePage: React.FC = () => {
         <button
  className="w-[calc(100%-46px)] mx-[23px] h-(--app-query-btn-height) bg-app-primary rounded-[4px] text-white text-[18px] font-bold mt-3 active:bg-app-primary-dark active:scale-[0.99] "
  style={{ transition: 'all var(--app-duration-short) var(--app-easing-standard)' }}
-          {...bindTap<HTMLButtonElement>('home.queryResult')}
+          {...bindNav(routes.queryResult, { search: { tab: 'direct' } })}
         >
           {s.home_query_btn}
         </button>
@@ -267,7 +265,7 @@ export const HomePage: React.FC = () => {
           columns={5}
           rowsPerPage={3}
           onItemClick={handleServiceClick}
-          onOverscrollNavigate={() => go('home.allApps')}
+          onOverscrollNavigate={() => nav.push(routes.allApps)}
         />
       </div>
 

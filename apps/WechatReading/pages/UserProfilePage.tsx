@@ -13,6 +13,7 @@ import {
     localizeWechatReadingGender,
     quoteWechatReadingTitle,
 } from '../utils/localization';
+import { routes } from '../routes';
 
 export const UserProfilePage: React.FC = () => {
     const { userId } = useParams<{ userId: string }>();
@@ -20,7 +21,7 @@ export const UserProfilePage: React.FC = () => {
     const userFollowing = useWechatReadingStore(s => s.user.following);
     const toggleFollow = useWechatReadingStore(s => s.toggleFollow);
     const isFollowing = (uid: string) => userFollowing.includes(uid);
-    const { bindBack, bindTap, back } = useWechatReadingGestures();
+    const { bindBack, bindTap, back, bindNav } = useWechatReadingGestures();
     const locale = useLocale();
     const s = useWechatReadingStrings();
 
@@ -96,7 +97,7 @@ export const UserProfilePage: React.FC = () => {
                     (() => {
                         const following = isFollowing(targetUser.id);
                         const followButtonProps = following
-                            ? bindTap<HTMLButtonElement>('user.modal.unfollow.open', { params: { userId: targetUser.id } })
+                            ? bindNav(routes.user, { params: { userId: targetUser.id }, search: { modal: 'unfollow_confirm' } })
                             : bindTap<HTMLButtonElement>(
                                 { kind: 'action', id: 'userProfile.item.follow.toggle' },
                                 { params: { userId: targetUser.id }, onTrigger: () => toggleFollow(targetUser.id) },
@@ -154,7 +155,7 @@ export const UserProfilePage: React.FC = () => {
                             <div
                                 key={book.id}
                                 className="flex flex-col gap-2 cursor-pointer active:opacity-60"
-                                {...bindTap<HTMLDivElement>('book.detail.open', { params: { bookId: book.id } })}
+                                {...bindNav(routes.book, { params: { bookId: book.id } })}
                             >
                                 <div className={`aspect-[3/4] ${book.coverColor || 'bg-(--app-c-tw-bg-slate-200)'} rounded shadow-sm flex items-center justify-center text-center p-2`}>
                                     <span className="text-white text-(--app-tab-bar-label-size) font-bold leading-tight drop-shadow-sm">{book.title}</span>
@@ -167,7 +168,7 @@ export const UserProfilePage: React.FC = () => {
 
                 <button
                     className="w-full py-3 bg-(--app-c-tw-bg-gray-50) rounded-xl text-sm font-bold text-(--app-c-tw-text-slate-600) active:bg-(--app-c-tw-bg-gray-100)" style={{ transition: 'color var(--app-duration-short) var(--app-easing-standard), background-color var(--app-duration-short) var(--app-easing-standard), border-color var(--app-duration-short) var(--app-easing-standard)' }}
-                    {...bindTap<HTMLButtonElement>('user.shelf.open', { params: { userId: targetUser.id } })}
+                    {...bindNav(routes.userShelf, { params: { userId: targetUser.id } })}
                 >
                     {s.user_profile_view_shelf}
                 </button>

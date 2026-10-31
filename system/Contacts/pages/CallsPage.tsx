@@ -12,6 +12,7 @@ import type { CallLogEntry, SimProfile, SimSlot } from '../phoneTypes';
 import { IcNavForward, IcSymbolClose2, IcSymbolExpandMore, IcSymbolPhone, IcSymbolSearch, IcSymbolSettings } from '../res/icons';
 import { strings } from '../res/strings';
 import { stringsEn } from '../res/strings.en';
+import { routes } from '../routes';
 
 const DialpadFab: React.FC<{
   label: string;
@@ -258,7 +259,7 @@ const DialpadOverlay: React.FC<{
 export const CallsPage: React.FC = () => {
   const locale = useLocale();
   const isEnglish = locale === 'en';
-  const { bindTap, back } = useContactsGestures();
+  const { bindNav, back } = useContactsGestures();
   const [searchParams] = useSearchParams();
   const dialpadOpen = searchParams.get('dialpad') === 'true';
   const list = useMemo(() => CONTACTS_CONFIG.callLogs, []);
@@ -299,7 +300,7 @@ export const CallsPage: React.FC = () => {
           <button
             type="button"
             aria-label={isEnglish ? 'Settings' : '设置'}
-            {...bindTap('settings.open.calls')}
+            {...bindNav(routes.settingsCalls)}
             className="absolute right-5 top-2 w-10 h-10 rounded-full flex items-center justify-center active:bg-black/5"
           >
             <SymbolIcon name={IcSymbolSettings} size={24} className="text-gray-700" />
@@ -309,7 +310,7 @@ export const CallsPage: React.FC = () => {
         <div className="px-6 pb-2">
           <button
             type="button"
-            {...bindTap('search.open')}
+            {...bindNav(routes.search)}
             className="w-full h-11 rounded-full bg-black/5 flex items-center px-4 text-[16px] text-gray-400 active:bg-black/10 text-left"
           >
             <SymbolIcon name={IcSymbolSearch} size={18} className="text-gray-400 mr-2" />
@@ -331,12 +332,12 @@ export const CallsPage: React.FC = () => {
             key={entry.id}
             entry={entry}
             showDivider={index < list.length - 1}
-            tapProps={bindTap('call.open', { params: { callLogId: entry.id } })}
+            tapProps={bindNav(routes.call, { params: { callLogId: entry.id } })}
           />
         ))}
       </div>
 
-      {!dialpadOpen ? <DialpadFab label={isEnglish ? 'Open dial pad' : '打开拨号盘'} tapProps={bindTap('dialpad.open')} /> : null}
+      {!dialpadOpen ? <DialpadFab label={isEnglish ? 'Open dial pad' : '打开拨号盘'} tapProps={bindNav(routes.home, { search: { dialpad: 'true' } })} /> : null}
 
       {dialpadOpen ? (
         <DialpadOverlay

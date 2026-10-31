@@ -6,6 +6,7 @@ import type { RankingVideo, BilibiliVideo } from '../data';
 import { useRankings } from '../hooks/useData';
 import { useBilibiliGestures } from '../hooks/useBilibiliGestures';
 import { useVirtualList } from '../../../os/hooks/useVirtualList';
+import { routes } from '../routes';
 const TABS = [
     '全站', '番剧', '国创', '纪录片', '电影', '电视剧', '动画', '游戏', '鬼畜', '音乐', '舞蹈',
     '影视', '娱乐', '知识', '科技数码', '美食', '汽车',
@@ -55,7 +56,7 @@ const formatDuration = (val: number | string | undefined) => {
 };
 
 const RankingItem: React.FC<RankingItemProps> = ({ video, index, videoById, isLast }) => {
-    const { bindTap } = useBilibiliGestures();
+    const { bindNav } = useBilibiliGestures();
 
     // Hydrate from primary data source
     const displayVideo = { ...video, ...(videoById.get(video.id) || {}) };
@@ -108,7 +109,7 @@ const RankingItem: React.FC<RankingItemProps> = ({ video, index, videoById, isLa
     return (
         <div
             className={`flex gap-3 py-3 active:bg-gray-50 ${isLast ? '' : 'border-b border-gray-100'}`}
-            {...bindTap('video.open', { params: { bvid: displayVideo.id } })}
+            {...bindNav(routes.video, { params: { bvid: displayVideo.id }, search: { tab: 'intro' } })}
         >
             {/* Rank badge on image/absolute or just separate? Screenshot shows badge ON image top-left */}
             <div className="relative w-[160px] h-[100px] flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
@@ -189,7 +190,7 @@ const RankingItem: React.FC<RankingItemProps> = ({ video, index, videoById, isLa
 };
 
 export const RankingPage: React.FC = () => {
-    const { bindBack, bindTap } = useBilibiliGestures();
+    const { bindBack, bindNav } = useBilibiliGestures();
     const [searchParams] = useSearchParams();
     const activeTab = searchParams.get('tab') || '全站';
     const rankingKeys = useMemo(() => [activeTab], [activeTab]);
@@ -230,7 +231,7 @@ export const RankingPage: React.FC = () => {
                 {TABS.map(tab => (
                     <button
                         key={tab}
-                        {...(activeTab === tab ? {} : bindTap('ranking.tab.switch', { params: { tab } }))}
+                        {...(activeTab === tab ? {} : bindNav(routes.ranking, { search: { tab: tab }, replace: true }))}
                         className={`flex-shrink-0 px-4 py-2.5 text-[15px] font-medium transition-colors relative ${activeTab === tab ? 'text-app-primary' : 'text-gray-600'
                             }`}
                     >

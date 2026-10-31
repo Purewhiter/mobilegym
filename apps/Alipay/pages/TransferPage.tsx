@@ -8,12 +8,13 @@ import { getRecentTransferContacts } from '../utils/transferContacts';
 import { maskPhone } from '../utils/maskPhone';
 import { useLocale } from '@/apps/Alipay/locale';
 import { DefaultAvatar } from '../components/DefaultAvatar';
+import { routes } from '../routes';
 
 export const TransferPage: React.FC = () => {
   const contacts = useAlipayStore(s => s.contacts);
   const transferRecords = useAlipayStore(s => s.transferRecords);
   const setTransferDraft = useAlipayStore(s => s.setTransferDraft);
-  const { bindTap, bindBack } = useAlipayGestures();
+  const { bindNav, bindBack } = useAlipayGestures();
   const s = useAlipayStrings();
   const locale = useLocale();
   const isEnglish = locale === 'en';
@@ -72,7 +73,7 @@ export const TransferPage: React.FC = () => {
         <div className="grid grid-cols-3 gap-3 mb-6">
            <div 
              className="bg-app-primary rounded-lg p-3 text-white flex flex-col justify-between h-20"
-             {...bindTap<HTMLDivElement>('transfer.toAccount.open')}
+             {...bindNav(routes.payTransferToAccount)}
            >
               <div className="flex items-center space-x-1">
                  <span className="w-5 h-5 rounded bg-app-surface/20 flex items-center justify-center text-xs font-bold">{brandMark}</span>
@@ -145,10 +146,7 @@ export const TransferPage: React.FC = () => {
              <div
                key={contact.id}
                className="flex items-center py-3 border-b border-gray-50 active:bg-gray-50"
-               {...bindTap<HTMLDivElement>('transfer.amount.open', {
-                 params: { contactId: String(contact.id) },
-                 beforeTrigger: () => setTransferDraft({ contact, inputValue: contact.name }),
-               })}
+               {...bindNav(routes.payTransferAmount, { search: { contactId: String(contact.id) }, beforeTrigger: () => setTransferDraft({ contact, inputValue: contact.name }) })}
              >
                 <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center mr-3 overflow-hidden">
                    {contact.avatar ? (

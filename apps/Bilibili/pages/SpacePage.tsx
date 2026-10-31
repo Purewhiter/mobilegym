@@ -9,6 +9,7 @@ import { useBilibiliStore } from '../state';
 import { useBilibiliGestures } from '../hooks/useBilibiliGestures';
 import { useVideosByIds } from '../hooks/useData';
 import { BilibiliDanmakuIcon } from '../res/icons';
+import { routes } from '../routes';
 // Helper functions (matching HomePage)
 const formatStat = (num: number | string | undefined) => {
     if (num === undefined || num === null) return '0';
@@ -40,7 +41,7 @@ const formatDuration = (val: number | string | undefined) => {
 };
 
 export const SpacePage: React.FC = () => {
-    const { bindBack, bindTap } = useBilibiliGestures();
+    const { bindBack, bindNav } = useBilibiliGestures();
     const [searchParams] = useSearchParams();
     const user = useBilibiliStore(s => s.user);
     const [isDetailExpanded, setIsDetailExpanded] = useState(false);
@@ -142,7 +143,7 @@ export const SpacePage: React.FC = () => {
                             <div className="flex justify-around items-center px-2">
                                 <div
                                     className="flex flex-col items-center gap-0.5 active:opacity-60 cursor-pointer"
-                                    {...bindTap('userRelation.open', { params: { tab: 'fans' } })}
+                                    {...bindNav(routes.profileFollowing, { search: { tab: 'fans' } })}
                                 >
                                     <span className="text-app-text text-[15px] font-medium">{user.followersList?.length || 0}</span>
                                     <span className="text-app-text-muted text-[11px]">粉丝</span>
@@ -150,7 +151,7 @@ export const SpacePage: React.FC = () => {
                                 <div className="w-[1px] h-3 bg-gray-200"></div>
                                 <div
                                     className="flex flex-col items-center gap-0.5 active:opacity-60 cursor-pointer"
-                                    {...bindTap('userRelation.open', { params: { tab: 'follow' } })}
+                                    {...bindNav(routes.profileFollowing, { search: { tab: 'follow' } })}
                                 >
                                     <span className="text-app-text text-[15px] font-medium">{user.followingList?.length || 0}</span>
                                     <span className="text-app-text-muted text-[11px]">关注</span>
@@ -165,7 +166,7 @@ export const SpacePage: React.FC = () => {
                             {/* Buttons */}
                             <div className="flex px-2">
                                 <button
-                                    {...bindTap('profileEdit.open')}
+                                    {...bindNav(routes.profileEdit)}
                                     className="flex-1 h-8 border border-app-primary text-app-primary text-[13px] font-medium rounded-[4px] flex items-center justify-center active:bg-pink-50"
                                 >
                                     编辑资料
@@ -225,7 +226,7 @@ export const SpacePage: React.FC = () => {
                             {user.school ? (
                                 <span
                                     className="flex items-center gap-1.5 bg-app-bg px-2 py-0.5 rounded-[2px] text-[11px] text-app-text-muted cursor-pointer active:opacity-60"
-                                    {...bindTap('schoolInfo.open')}
+                                    {...bindNav(routes.profileSchool)}
                                 >
                                     <GraduationCap size={12} />
                                     {user.school}
@@ -233,7 +234,7 @@ export const SpacePage: React.FC = () => {
                             ) : (
                                 <span
                                     className="flex items-center gap-1 bg-app-bg px-1.5 py-0.5 rounded-full border border-dashed border-[#9499A0]/30 cursor-pointer active:opacity-60"
-                                    {...bindTap('schoolInfo.open')}
+                                    {...bindNav(routes.profileSchool)}
                                 >
                                     <span className="text-lg leading-none pb-0.5">+</span> 添加学校信息
                                 </span>
@@ -257,7 +258,7 @@ export const SpacePage: React.FC = () => {
                         return (
                             <div
                                 key={tab.key}
-                                {...(isActive ? {} : bindTap('space.tab.switch', { params: { tab: tab.key } }))}
+                                {...(isActive ? {} : bindNav(routes.space, { search: { tab: tab.key }, replace: true }))}
                                 className={`flex-1 flex justify-center py-3 text-[15px] font-medium relative transition-colors cursor-pointer ${isActive ? 'text-app-primary' : 'text-[#61666D]'}`}
                             >
                                 {tab.label}
@@ -279,13 +280,13 @@ export const SpacePage: React.FC = () => {
                             <div>
                                 <div className="flex justify-between items-center mb-3">
                                     <h3 className="text-[15px] text-app-text font-medium">收藏 <span className="text-app-text-muted text-[12px] font-normal">{user.favoritesFolders?.length || 0}</span></h3>
-                                    <div className="flex items-center gap-1 text-app-text-muted text-[12px]" {...bindTap('space.tab.switch', { params: { tab: 'fav' } })}>
+                                    <div className="flex items-center gap-1 text-app-text-muted text-[12px]" {...bindNav(routes.space, { search: { tab: 'fav' }, replace: true })}>
                                         查看更多 <ChevronLeft size={12} className="rotate-180" />
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-2 gap-3">
                                     {user.favoritesFolders?.slice(0, 2).map(folder => (
-                                        <div key={folder.id} className="bg-app-surface rounded-md overflow-hidden border border-app-bg pb-2 cursor-pointer" {...bindTap('favoritesDetail.open', { params: { folderId: folder.id } })}>
+                                        <div key={folder.id} className="bg-app-surface rounded-md overflow-hidden border border-app-bg pb-2 cursor-pointer" {...bindNav(routes.profileFav, { params: { folderId: folder.id } })}>
                                             <div className="aspect-video bg-app-bg relative">
                                                 {getFolderCover(folder) && <img src={getFolderCover(folder)} className="w-full h-full object-cover" referrerPolicy="no-referrer" />}
                                                 <div className="absolute bottom-1 right-1 bg-black/40 text-white text-[10px] px-1 rounded flex items-center gap-0.5">
@@ -308,7 +309,7 @@ export const SpacePage: React.FC = () => {
                                 <div>
                                     <div className="flex justify-between items-center mb-3">
                                         <h3 className="text-[15px] text-app-text font-medium">追番 <span className="text-app-text-muted text-[12px] font-normal">{user.subscribedAnime?.length || 0}</span></h3>
-                                        <div className="flex items-center gap-1 text-app-text-muted text-[12px]" {...bindTap('space.tab.switch', { params: { tab: 'anime' } })}>
+                                        <div className="flex items-center gap-1 text-app-text-muted text-[12px]" {...bindNav(routes.space, { search: { tab: 'anime' }, replace: true })}>
                                             查看更多 <ChevronLeft size={12} className="rotate-180" />
                                         </div>
                                     </div>
@@ -337,13 +338,13 @@ export const SpacePage: React.FC = () => {
                                 <div>
                                     <div className="flex justify-between items-center mb-3">
                                         <h3 className="text-[15px] text-app-text font-medium">最近点赞的视频</h3>
-                                    <div className="flex items-center gap-1 text-app-text-muted text-[12px] cursor-pointer" {...bindTap('recentLikes.open')}>
+                                    <div className="flex items-center gap-1 text-app-text-muted text-[12px] cursor-pointer" {...bindNav(routes.profileLikes)}>
                                         查看更多 <ChevronLeft size={12} className="rotate-180" />
                                     </div>
                                     </div>
                                     <div className="grid grid-cols-2 gap-3">
                                         {likedVideos.slice(0, 2).map(v => (
-                                            <div key={v.id} className="bg-app-surface rounded-md overflow-hidden border border-app-bg pb-2 cursor-pointer" {...bindTap('video.open', { params: { bvid: v.id } })}>
+                                            <div key={v.id} className="bg-app-surface rounded-md overflow-hidden border border-app-bg pb-2 cursor-pointer" {...bindNav(routes.video, { params: { bvid: v.id }, search: { tab: 'intro' } })}>
                                                 <div className="aspect-video bg-app-bg relative">
                                                     <img src={v.cover} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                                                     {/* Overlays */}
@@ -401,7 +402,7 @@ export const SpacePage: React.FC = () => {
                             </div>
                             <div className="px-4">
                                                 {user.favoritesFolders?.map(folder => (
-                                    <div key={folder.id} className="flex gap-3 py-3 border-b border-app-bg last:border-0 cursor-pointer" {...bindTap('favoritesDetail.open', { params: { folderId: folder.id } })}>
+                                    <div key={folder.id} className="flex gap-3 py-3 border-b border-app-bg last:border-0 cursor-pointer" {...bindNav(routes.profileFav, { params: { folderId: folder.id } })}>
                                         <div className="w-28 aspect-video bg-app-bg rounded-[4px] overflow-hidden relative shrink-0">
                                             {getFolderCover(folder) && <img src={getFolderCover(folder)} className="w-full h-full object-cover" referrerPolicy="no-referrer" />}
                                         </div>

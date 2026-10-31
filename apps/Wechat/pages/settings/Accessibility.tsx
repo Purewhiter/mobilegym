@@ -7,27 +7,27 @@ import { useWechatStore } from '../../state';
 import { SettingsItem } from './Shared';
 import { UserSettings } from '../../types';
 import { useWechatGestures } from '../../hooks/useWechatGestures';
+import { routes } from '../../routes';
 
 export const AccessibilityPage: React.FC = () => {
     const t = useWechatStrings();
-    const { bindTap } = useWechatGestures();
+    const { bindTap, bindNav } = useWechatGestures();
     const settings = useWechatStore(s => s.settings.accessibility);
 
-    // 规范：避免 bindTap(变量) / 动态拼接 ID，确保静态工具可完全发现入口。
     const tapPropsOf = (id: string) => {
         switch (id) {
             case 'tencentNews':
-                return bindTap<HTMLDivElement>('settings.accessibility.tencentNews.open');
+                return bindNav(routes.settingsGeneralAccessibilityTencentNews);
             case 'broadcast':
-                return bindTap<HTMLDivElement>('settings.accessibility.broadcast.open');
+                return bindNav(routes.settingsGeneralAccessibilityBroadcast);
             case 'qqMail':
-                return bindTap<HTMLDivElement>('settings.accessibility.qqMail.open');
+                return bindNav(routes.settingsGeneralAccessibilityQqMail);
             case 'wechatSports':
-                return bindTap<HTMLDivElement>('settings.accessibility.wechatSports.open');
+                return bindNav(routes.settingsGeneralAccessibilityWechatSports);
             case 'wechatPay':
-                return bindTap<HTMLDivElement>('settings.accessibility.wechatPay.open');
+                return bindNav(routes.settingsGeneralAccessibilityWechatPay);
             case 'wechatGames':
-                return bindTap<HTMLDivElement>('settings.accessibility.wechatGames.open');
+                return bindNav(routes.settingsGeneralAccessibilityWechatGames);
             default:
                 return undefined;
         }

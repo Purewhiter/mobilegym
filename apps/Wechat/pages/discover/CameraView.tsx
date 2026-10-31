@@ -5,10 +5,11 @@ import { IcClose, IcRefresh } from '../../res/icons';
 import { useWechatStore } from '../../state';
 import { useWechatGestures } from '../../hooks/useWechatGestures';
 import { useWechatStrings } from '../../hooks/useWechatStrings';
+import { routes } from '../../routes';
 
 export const CameraView: React.FC = () => {
     const t = useWechatStrings();
-    const { bindTap, bindBack, go } = useWechatGestures();
+    const { bindTap, bindBack, nav } = useWechatGestures();
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const updateMomentDraft = useWechatStore(s => s.updateMomentDraft);
@@ -42,7 +43,7 @@ export const CameraView: React.FC = () => {
             const dataUrl = canvas.toDataURL('image/jpeg');
             updateMomentDraft({ tempCapturedImage: dataUrl });
             // 使用 replace 替换相机页，这样编辑页点击取消会直接回到朋友圈
-            go('camera.editImage.open');
+            nav.replace(routes.editImage);
         }
     };
 
@@ -60,7 +61,7 @@ export const CameraView: React.FC = () => {
                 <div className="flex items-center justify-between w-full px-16">
                     <div className="w-8"></div> {/* Placeholder */}
                     <div 
-                        {...bindTap<HTMLDivElement>('camera.editImage.open', { onTrigger: takePhoto })}
+                        {...bindTap<HTMLDivElement>('nav.editImage', { onTrigger: takePhoto })}
                         className="w-(--app-item-width-84) h-(--app-item-height-84) rounded-full border-[6px] border-white/30 flex items-center justify-center active:scale-95" style={{ transition: 'transform var(--app-duration-short) var(--app-easing-standard)' }}
                     >
                         <div className="w-(--app-card-width-60) h-(--app-item-height-60) bg-app-surface rounded-full"></div>

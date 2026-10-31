@@ -9,11 +9,12 @@ import { dimens } from '../res/dimens';
 import { useLocale } from '../../../os/locale';
 import * as TimeService from '../../../os/TimeService';
 import { nextStream, shuffle } from '../../../os/RandomService';
+import { routes } from '../routes';
 
 const ReadingPage: React.FC = () => {
   const shelf = useWechatReadingStore(s => s.shelf);
   const readingRecords = useWechatReadingStore(s => s.readingRecords);
-  const { bindTap } = useWechatReadingGestures();
+  const { bindTap, bindNav } = useWechatReadingGestures();
   const s = useWechatReadingStrings();
   const locale = useLocale();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -103,7 +104,7 @@ const ReadingPage: React.FC = () => {
           <span className="text-(--app-settings-item-value-size) font-bold text-blue-600">{s.reading_hot_trend}</span>
           <IcNavForward size={dimens.icSizeNavPagination} className="text-(--app-c-tw-text-blue-500)" />
         </div>
-        <div {...bindTap<HTMLDivElement>('categories.open')} className="px-5 py-2 bg-app-surface rounded-full flex items-center gap-1 shrink-0 shadow-sm/50 cursor-pointer">
+        <div {...bindNav(routes.categories)} className="px-5 py-2 bg-app-surface rounded-full flex items-center gap-1 shrink-0 shadow-sm/50 cursor-pointer">
           <span className="text-(--app-title-text-size-14) font-medium text-(--app-c-tw-text-slate-700)">{s.reading_category}</span>
           <IcNavForward size={dimens.icSizeNavPagination} className="text-(--app-c-tw-text-slate-400)" />
         </div>
@@ -122,7 +123,7 @@ const ReadingPage: React.FC = () => {
         className="px-4 py-2 flex gap-4 overflow-x-auto no-scrollbar h-32 shrink-0 items-stretch snap-x scroll-pl-8"
       >
         <div
-          {...bindTap<HTMLDivElement>('myReading.open.month')}
+          {...bindNav(routes.myReading, { search: { tab: 'month' } })}
           className="w-36 shrink-0 bg-app-surface p-3 rounded shadow-sm flex flex-col justify-between active:scale-95 overflow-hidden"
           style={{ transition: 'transform var(--app-duration-short) var(--app-easing-standard)' }}
         >
@@ -147,7 +148,7 @@ const ReadingPage: React.FC = () => {
         </div>
 
         <div
-          {...bindTap<HTMLDivElement>('myReading.open.week')}
+          {...bindNav(routes.myReading, { search: { tab: 'week' } })}
           className="w-36 shrink-0 bg-app-surface p-3 rounded shadow-sm flex flex-col justify-between snap-start active:scale-95 overflow-hidden"
           style={{ transition: 'transform var(--app-duration-short) var(--app-easing-standard)' }}
         >
@@ -181,7 +182,7 @@ const ReadingPage: React.FC = () => {
           <div
             key={book.id}
             className="relative aspect-[3/4] h-full shrink-0 rounded shadow-md overflow-hidden bg-(--app-c-tw-bg-slate-200)"
-            {...bindTap<HTMLDivElement>('reader.open', { params: { bookId: book.id } })}
+            {...bindNav(routes.read, { params: { bookId: book.id } })}
           >
             <div className={`absolute inset-0 ${book.coverColor} p-3 flex flex-col items-center justify-center`}>
               <span className="text-(--app-title-text-size-14) font-bold leading-tight opacity-90 text-(--app-c-tw-text-slate-900) text-center">
@@ -204,7 +205,7 @@ const ReadingPage: React.FC = () => {
             <div
               key={book.id}
               className="flex flex-col group cursor-pointer"
-              {...bindTap<HTMLDivElement>('book.detail.open', { params: { bookId: book.id } })}
+              {...bindNav(routes.book, { params: { bookId: book.id } })}
             >
               <div className={`aspect-[2/3] ${book.coverColor} shadow-sm relative overflow-hidden group-active:scale-95`} style={{ transition: 'transform var(--app-duration-short) var(--app-easing-standard)' }}>
                 <div className="absolute inset-0 p-3 flex flex-col justify-between z-10">

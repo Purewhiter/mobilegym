@@ -5,13 +5,14 @@ import { useXMentionNotifications, useXNotifications } from '../data/view';
 import { useXGestures } from '../hooks/useXGestures';
 import { useXStrings } from '../hooks/useXStrings';
 import { XImage } from '../components/XMedia';
+import { routes } from '../routes';
 
 export const NotificationsPage: React.FC<{ isActive?: boolean }> = ({ isActive = true }) => {
   const notifications = useXNotifications();
   const mentionNotifications = useXMentionNotifications();
   const user = useXStore(selectUser);
   const location = useLocation();
-  const { bindTap } = useXGestures(isActive);
+  const { bindNav } = useXGestures(isActive);
   const s = useXStrings();
 
   const searchParams = new URLSearchParams(location.search);
@@ -37,7 +38,7 @@ export const NotificationsPage: React.FC<{ isActive?: boolean }> = ({ isActive =
   return (
     <div className="flex flex-col pt-10 bg-app-bg min-h-full text-app-text">
       <div className="px-4 py-2 flex items-center justify-between">
-        <div className="w-8 h-8 rounded-full bg-gray-200 overflow-hidden cursor-pointer" {...bindTap('notifications.drawer.open')}>
+        <div className="w-8 h-8 rounded-full bg-gray-200 overflow-hidden cursor-pointer" {...bindNav(routes.notifications, { search: { menu: 'drawer' }, keep: ['tab'] })}>
           {user.avatar && isActive ? (
             <XImage src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
           ) : (
@@ -51,15 +52,15 @@ export const NotificationsPage: React.FC<{ isActive?: boolean }> = ({ isActive =
       </div>
 
       <div className="flex border-b border-app-border">
-        <div className={`flex-1 text-center py-3 cursor-pointer hover:bg-black/5 transition relative ${activeTab === 'all' ? 'font-bold' : 'text-gray-500'}`} {...bindTap('notifications.tab.toAll')}>
+        <div className={`flex-1 text-center py-3 cursor-pointer hover:bg-black/5 transition relative ${activeTab === 'all' ? 'font-bold' : 'text-gray-500'}`} {...bindNav(routes.notifications, { search: { tab: 'all' }, replace: true })}>
           {s.notifications_tab_all}
           {activeTab === 'all' && <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-10 h-1 bg-blue-500 rounded-full" />}
         </div>
-        <div className={`flex-1 text-center py-3 cursor-pointer hover:bg-black/5 transition relative ${activeTab === 'verified' ? 'font-bold' : 'text-gray-500'}`} {...bindTap('notifications.tab.toVerified')}>
+        <div className={`flex-1 text-center py-3 cursor-pointer hover:bg-black/5 transition relative ${activeTab === 'verified' ? 'font-bold' : 'text-gray-500'}`} {...bindNav(routes.notifications, { search: { tab: 'verified' }, replace: true })}>
           {s.notifications_tab_verified}
           {activeTab === 'verified' && <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-10 h-1 bg-blue-500 rounded-full" />}
         </div>
-        <div className={`flex-1 text-center py-3 cursor-pointer hover:bg-black/5 transition relative ${activeTab === 'mentions' ? 'font-bold' : 'text-gray-500'}`} {...bindTap('notifications.tab.toMentions')}>
+        <div className={`flex-1 text-center py-3 cursor-pointer hover:bg-black/5 transition relative ${activeTab === 'mentions' ? 'font-bold' : 'text-gray-500'}`} {...bindNav(routes.notifications, { search: { tab: 'mentions' }, replace: true })}>
           {s.notifications_tab_mentions}
           {activeTab === 'mentions' && <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-10 h-1 bg-blue-500 rounded-full" />}
         </div>

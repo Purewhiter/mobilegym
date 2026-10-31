@@ -7,10 +7,11 @@ import { IcNavBack, IcDelete } from '../res/icons';
 const ChevronLeft = IcNavBack, Trash2 = IcDelete;
 import { useRedBookGestures } from '../hooks/useRedBookGestures';
 import { Note } from '../types';
+import { routes } from '../routes';
 export const HistoryPage: React.FC = () => {
   const s = useRedBookStrings();
   const { history, clearHistory } = useRedBookStore(useShallow(s => ({ history: s.history, clearHistory: s.clearHistory })));
-  const { bindTap, bindBack } = useRedBookGestures();
+  const { bindNav, bindBack } = useRedBookGestures();
   const { notes, authorsById } = useRedBookNotes(history);
   const getAuthor = (note: Note) => authorsById[note.authorId];
 
@@ -35,7 +36,7 @@ export const HistoryPage: React.FC = () => {
                 <div
                     key={note.id}
                     className="bg-app-surface rounded-lg overflow-hidden shadow-sm border border-gray-100"
-                    {...bindTap('note.open', { params: { id: note.id } })}
+                    {...bindNav(routes.note, { params: { id: note.id } })}
                 >
                     <div className="aspect-[3/4] relative">
                         <img src={note.images[0]} className="w-full h-full object-cover" />

@@ -1,13 +1,14 @@
 import React from 'react';
 import { IcTabHome, IcTabMe, IcSearch, IcTabBell, IcTabSell } from '../res/icons';
 import { useLocation } from 'react-router-dom';
-import { useEbayGestures } from '../navigation';
+import { useEbayGestures } from '../hooks/useEbayGestures';
 import { useScrollDirection } from '../hooks/useScrollDirection';
 import { useEbayStrings } from '../hooks/useEbayStrings';
+import { routes } from '../routes';
 
 const TabBar: React.FC<{ visible?: boolean }> = ({ visible: visibleProp }) => {
   const location = useLocation();
-  const { bindTap } = useEbayGestures();
+  const { bindNav } = useEbayGestures();
   const s = useEbayStrings();
   const currentPath = location.pathname;
   const isVisibleFromHook = useScrollDirection();
@@ -30,7 +31,7 @@ const TabBar: React.FC<{ visible?: boolean }> = ({ visible: visibleProp }) => {
         style={{ transition: 'transform var(--app-duration-medium) var(--app-easing-standard)' }}
     >
       <div
-        {...bindTap('tab.home')}
+        {...bindNav(routes.home)}
         className={`flex flex-col items-center justify-center w-full cursor-pointer`}
       >
         <IcTabHome size={24} className={isActive('/') ? activeColor : inactiveColor} strokeWidth={isActive('/') ? 2.5 : 2} />
@@ -38,7 +39,7 @@ const TabBar: React.FC<{ visible?: boolean }> = ({ visible: visibleProp }) => {
       </div>
 
       <div
-        {...bindTap('tab.me')}
+        {...bindNav(routes.me)}
         className={`flex flex-col items-center justify-center w-full cursor-pointer`}
       >
         <IcTabMe size={24} className={isActive('/me') ? activeColor : inactiveColor} strokeWidth={isActive('/me') ? 2.5 : 2} />
@@ -46,7 +47,7 @@ const TabBar: React.FC<{ visible?: boolean }> = ({ visible: visibleProp }) => {
       </div>
 
       <div
-        {...bindTap('tab.search')}
+        {...bindNav(routes.search)}
         className={`flex flex-col items-center justify-center w-full cursor-pointer`}
       >
         <IcSearch size={24} className={isActive('/search') ? activeColor : inactiveColor} strokeWidth={isActive('/search') ? 2.5 : 2} />
@@ -54,7 +55,7 @@ const TabBar: React.FC<{ visible?: boolean }> = ({ visible: visibleProp }) => {
       </div>
 
       <div
-        {...bindTap('tab.inbox')}
+        {...bindNav(routes.inbox)}
         className={`flex flex-col items-center justify-center w-full cursor-pointer`}
       >
         <IcTabBell size={24} className={isActive('/inbox') ? activeColor : inactiveColor} strokeWidth={isActive('/inbox') ? 2.5 : 2} />
@@ -62,7 +63,7 @@ const TabBar: React.FC<{ visible?: boolean }> = ({ visible: visibleProp }) => {
       </div>
 
       <div
-        {...bindTap('tab.sell')}
+        {...bindNav(routes.sell)}
         className={`flex flex-col items-center justify-center w-full cursor-pointer`}
       >
         <IcTabSell size={24} className={isActive('/sell') ? activeColor : inactiveColor} strokeWidth={isActive('/sell') ? 2.5 : 2} />

@@ -11,11 +11,12 @@ import {
 const ChevronLeft = IcNavBack, Plus = IcAdd, Tv = IcAnime, MonitorPlay = IcMonitorPlay, Clapperboard = IcClapperboard, Film = IcFilm, Music = IcMusic, Mic = IcMic, Video = IcVideo, Palette = IcPainting, Zap = IcLightning, Gamepad2 = IcGaming, Newspaper = IcNews, GraduationCap = IcGraduationCap, Cpu = IcAI, Car = IcCar, Shirt = IcSkin, Home = IcHome, Tent = IcOutdoor, Dumbbell = IcFitness, Trophy = IcTrophy, Scissors = IcHandcraft, Utensils = IcFood, VenetianMask = IcMaskDance, Plane = IcTravel, Sprout = IcRural, Cat = IcPets, Baby = IcParenting, HeartPulse = IcHeartPulse, Heart = IcHeart, Camera = IcVlog, Coffee = IcLifestyle, Wrench = IcLifeExp, LayoutList = IcList, TrendingUp = IcTrend, Store = IcStore, Ban = IcBan;
 const Trophy2 = IcTrophy;
 import { useBilibiliGestures } from '../hooks/useBilibiliGestures';
+import { routes } from '../routes';
 const CategoryItem = ({ icon: Icon, label, color = '#FB7299', opensRanking = false }: any) => {
-    const { bindTap } = useBilibiliGestures();
+    const { bindNav } = useBilibiliGestures();
     return (
         <div
-            {...(opensRanking ? bindTap('ranking.open') : bindTap('partition.open', { params: { label } }))}
+            {...(opensRanking ? bindNav(routes.ranking, { search: { tab: '全站' } }) : bindNav(routes.partitionsByLabel, { params: { label } }))}
             className="flex flex-col items-center justify-center gap-3 py-4 active:scale-95 transition-transform cursor-pointer"
         >
             <Icon size={32} color={color} strokeWidth={1.5} />
@@ -25,7 +26,7 @@ const CategoryItem = ({ icon: Icon, label, color = '#FB7299', opensRanking = fal
 };
 
 export const PartitionsPage: React.FC = () => {
-    const { bindBack } = useBilibiliGestures();
+    const { bindBack, bindNav } = useBilibiliGestures();
 
     return (
         <div className="flex flex-col h-full bg-app-surface overflow-hidden">

@@ -4,26 +4,28 @@ import { RAILWAY12306_CONFIG } from '../data';
 import { useRailwayGestures } from '../hooks/useRailwayGestures';
 import { useRailwayStrings } from '../hooks/useRailwayStrings';
 import { ServiceGrid } from '../components/ServiceGrid';
+import type { AppRoute } from '../../../os/navigation';
+import { routes } from '../routes';
 
-const ALL_APPS_NAV_MAP: Record<string, string> = {
-  station_screen: 'service.stationBoard',
-  timetable: 'service.timetable',
-  air_rail: 'service.airRail',
-  bus_ship: 'service.busTicket',
-  invoice: 'orders.invoice',
-  warm_service: 'service.servicePhone',
-  special_passenger: 'service.specialPassenger',
-  service_phone: 'service.servicePhone',
+const ALL_APPS_NAV_MAP: Record<string, AppRoute> = {
+  station_screen: routes.stationBoard,
+  timetable: routes.timetable,
+  air_rail: routes.airRail,
+  bus_ship: routes.busTicket,
+  invoice: routes.invoice,
+  warm_service: routes.servicePhone,
+  special_passenger: routes.specialPassenger,
+  service_phone: routes.servicePhone,
 };
 
 export const AllAppsPage: React.FC = () => {
   const config = RAILWAY12306_CONFIG;
-  const { bindBack, go } = useRailwayGestures();
+  const { bindBack, nav } = useRailwayGestures();
   const s = useRailwayStrings();
 
   const handleItemClick = (id: string) => {
     const t = ALL_APPS_NAV_MAP[id];
-    if (t) go(t as any);
+    if (t) nav.push(t);
   };
 
   const sections = [

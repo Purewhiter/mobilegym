@@ -51,7 +51,7 @@ export const CreateGenderPage: React.FC = () => {
             className={`px-8 py-3 rounded-full text-base font-bold transition-transform active:scale-95 ${selectedGender ? 'bg-white text-black' : 'bg-[#535353] text-app-text-muted'
               }`}
             {...(selectedGender
-              ? bindTap('auth.signup.name.open', {
+              ? bindTap('nav.signupFinish', {
                   onTrigger: () => {
                     console.log('Gender selected:', selectedGender);
                   },

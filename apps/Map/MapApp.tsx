@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef } from 'react';
 import { Routes, Route, MemoryRouter, useLocation, UNSAFE_NavigationContext } from 'react-router-dom';
 import { useAppNavigationHandler } from '../../os/hooks/useAppNavigationHandler';
-import { useAppNavigate } from './navigation';
+import { useNav } from '../../os/navigation';
 import { useMapStore } from './state';
 import { setOptions, importLibrary } from '@googlemaps/js-api-loader';
 import { googleLangCode } from './utils/placeUtils';
@@ -35,6 +35,7 @@ import { anim } from './res/anim';
 import { dispatchMapBackHandlers } from './hooks/useMapBackHandler';
 import { OFFLINE_GOOGLE_MAPS_API_KEY, getGoogleMapsApiKey } from './utils/googleMapsConfig';
 import { ensureMapServiceWorkerControlling, registerMapServiceWorker } from './utils/registerMapServiceWorker';
+import { routes } from './routes';
 
 // 使用 @googlemaps/js-api-loader v2 的 setOptions + importLibrary
 let loaderInitialized = false;
@@ -62,7 +63,7 @@ const initGoogleMaps = async (
 
 // 标准 App 桥接：系统返回/路由观测/（可选）外部导航
 const MapNavigationHandler: React.FC = () => {
-  const { back, go } = useAppNavigate();
+  const nav = useNav(); const back = nav.back;
   const location = useLocation();
   const { navigator } = React.useContext(UNSAFE_NavigationContext);
   const historyIndexRef = useRef(0);
@@ -82,7 +83,7 @@ const MapNavigationHandler: React.FC = () => {
     // 「我 / 贡献」更接近顶层 panel，而不是普通可逐层回退页面；
     // 系统返回应优先回到探索主页，而不是依赖历史栈。
     if (location.pathname === '/me' || location.pathname === '/contribute') {
-      go('tab.explore');
+      nav.replace(routes.home);
       return true;
     }
 
@@ -95,7 +96,7 @@ const MapNavigationHandler: React.FC = () => {
       return true;
     }
     return false;
-  }, [back, go, location.pathname, navigator]);
+  }, [back, nav, location.pathname, navigator]);
 
   useAppNavigationHandler('map', { onBack: handleBackPress });
 

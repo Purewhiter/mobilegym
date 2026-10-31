@@ -25,6 +25,7 @@ import { hasGoogleMapsApiKey } from '../utils/googleMapsConfig';
 import type { ShoppingItem } from '../types';
 import { useMapStrings } from '../hooks/useMapStrings';
 import type { PlaceSelectionFallback } from '../types';
+import { routes } from '../routes';
 
 const AUTOCOMPLETE_DEBOUNCE_MS = 280;
 
@@ -46,7 +47,7 @@ export const SearchPage: React.FC = () => {
   const setAutocomplete = useMapStore((s) => s.setAutocomplete);
   const setPendingPlaceSelection = useMapStore((s) => s.setPendingPlaceSelection);
   const location = useLocation();
-  const { go, bindBack } = useMapGestures();
+  const { nav, bindBack } = useMapGestures();
   const initialQuery = location.state?.initialQuery || '';
   const viewportCenter = location.state?.viewportCenter as { lat: number; lng: number } | undefined;
   const [query, setQuery] = useState(initialQuery);
@@ -361,7 +362,7 @@ export const SearchPage: React.FC = () => {
     };
     delete nextRouteState.selectedPlaceId;
     delete nextRouteState.placeFallback;
-    go('tab.explore', {}, { state: nextRouteState, mode: 'replace' });
+    nav.replace(routes.home, {}, { state: nextRouteState });
   };
 
   const sheetTitle = useMemo(() => {
@@ -666,16 +667,14 @@ export const SearchPage: React.FC = () => {
           onFilterChange={handlePlaceResultsFilterChange}
           onNavigate={(item) => {
             if (!item) return;
-            go('tab.explore', {}, {
-              state: {
+            nav.replace(routes.home, {}, { state: {
                 destination: {
                   lat: item.lat,
                   lng: item.lng,
                   name: item.name,
                   address: item.address,
                 },
-              },
-            });
+              } });
           }}
         />
       )}

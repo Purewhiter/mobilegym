@@ -10,6 +10,7 @@ import { requestRailwayRefund } from '../utils/refund';
 import { localizeRailwayText } from '../utils/localizeRailwayItem';
 import { useLocale } from '../../../os/locale';
 import { parseToTimestamp, now as timeNow, fromTimestamp } from '../../../os/TimeService';
+import { routes } from '../routes';
 
 function formatTripDate(dateStr: string, isEnglish: boolean): string {
   const timestamp = parseToTimestamp(`${dateStr}T00:00:00`);
@@ -24,7 +25,7 @@ function formatTripDate(dateStr: string, isEnglish: boolean): string {
 }
 
 export const RefundConfirmPage: React.FC = () => {
-  const { bindBack, bindTap, go } = useRailwayGestures();
+  const { bindBack, bindTap, nav, bindNav } = useRailwayGestures();
   const [searchParams] = useSearchParams();
   const s = useRailwayStrings();
   const isEnglish = useLocale() === 'en';
@@ -59,8 +60,7 @@ export const RefundConfirmPage: React.FC = () => {
     requestRailwayRefund({
       order,
       updateOrder,
-      go,
-      successTransitionId: 'refundConfirm.refundSuccess',
+      onRefunded: (refundedOrder) => nav.replace(routes.refundSuccess, {}, { state: { order: refundedOrder } }),
     });
   };
 
@@ -155,9 +155,7 @@ export const RefundConfirmPage: React.FC = () => {
           </button>
           <button
             className="h-12 w-[140px] rounded-[5px] bg-[#E88643] text-[18px] font-medium text-white active:bg-[#D47133]"
-            {...bindTap<HTMLButtonElement>('refundConfirm.openRefundNotice', {
-              params: { id: order.id },
-            })}
+            {...bindNav(routes.refundConfirm, { search: { dialog: 'refundNotice', id: order.id } })}
           >
             {s.refund_confirm_submit}
           </button>
@@ -171,7 +169,7 @@ export const RefundConfirmPage: React.FC = () => {
           cancelLabel={s.action_cancel}
           confirmLabel={s.refund_notice_continue}
           cancelProps={bindBack<HTMLButtonElement>()}
-          confirmProps={bindTap<HTMLButtonElement>('refundConfirm.refundSuccess', {
+          confirmProps={bindTap<HTMLButtonElement>('nav.refundSuccess', {
             onTrigger: handleRefund,
           })}
         />

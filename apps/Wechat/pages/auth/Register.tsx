@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
 import { useWechatStore } from '../../state';
 import { IcClose, IcNavForward, IcCamera } from '../../res/icons';
-import { useAppNavigate } from '../../navigation';
 import { useWechatGestures } from '../../hooks/useWechatGestures';
 import { useLocale } from '@/os/locale';
+import { routes } from '../../routes';
 
 export const WechatRegisterPage: React.FC = () => {
-  const { go } = useAppNavigate();
-  const { bindBack } = useWechatGestures();
+  const { bindBack, nav } = useWechatGestures();
   const locale = useLocale();
   const isEnglish = locale === 'en';
   const auth = useWechatStore(s => s.auth);
@@ -111,7 +110,7 @@ export const WechatRegisterPage: React.FC = () => {
       setError(res.reason || 'register_failed');
       return;
     }
-    go('auth.register.success');
+    nav.replace(routes.home);
   };
 
   const phoneTrimmed = phone.trim();

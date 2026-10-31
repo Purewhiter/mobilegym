@@ -7,9 +7,10 @@ import { stringsEn } from '../res/strings.en';
 import { useAppStrings } from '../../../os/useAppStrings';
 import { useLocale } from '../../../os/locale';
 import { localizeRailwayItemName } from '../utils/localizeRailwayItem';
+import { routes } from '../routes';
 export const OrdersPage: React.FC = () => {
   const config = RAILWAY12306_CONFIG;
-  const { bindTap } = useRailwayGestures();
+  const { bindNav } = useRailwayGestures();
   const s = useAppStrings(strings, stringsEn);
   const locale = useLocale();
   const [expanded, setExpanded] = useState(false);
@@ -42,10 +43,10 @@ export const OrdersPage: React.FC = () => {
               <div
                 key={entry.id}
                 className="flex flex-col items-center gap-1.5 cursor-pointer"
-                {...(entry.id === 'my_tickets' ? bindTap<HTMLDivElement>('orders.myTickets') :
-                     entry.id === 'paid' ? bindTap<HTMLDivElement>('orders.paidOrders') :
-                     entry.id === 'pending' ? bindTap<HTMLDivElement>('orders.incompleteOrders', { params: { from: 'orders' } }) :
-                     entry.id === 'invoice' ? bindTap<HTMLDivElement>('orders.invoice' as any) : {})}
+                {...(entry.id === 'my_tickets' ? bindNav(routes.myTickets) :
+                     entry.id === 'paid' ? bindNav(routes.paidOrders) :
+                     entry.id === 'pending' ? bindNav(routes.incompleteOrders, { search: { from: 'orders' } }) :
+                     entry.id === 'invoice' ? bindNav(routes.invoice) : {})}
               >
                 <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center">
                   <EntryIcon size={20} className="text-app-primary" />

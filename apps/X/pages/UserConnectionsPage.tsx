@@ -6,6 +6,7 @@ import { useXConnections, useXUser } from '../data/view';
 import { useXGestures } from '../hooks/useXGestures';
 import { useXStrings } from '../hooks/useXStrings';
 import { XImage } from '../components/XMedia';
+import { routes } from '../routes';
 
 const meUserId: string = currentUser.id;
 
@@ -16,7 +17,7 @@ export const UserConnectionsPage: React.FC = () => {
 
   const followedSet = useXStore(selectEffectiveFollowedSet);
   const toggleFollow = useXStore(s => s.toggleFollow);
-  const { bindBack, bindTap, go } = useXGestures();
+  const { bindBack, bindNav, nav } = useXGestures();
   const s = useXStrings();
 
   const user = useXUser(id || '') ?? null;
@@ -42,11 +43,11 @@ export const UserConnectionsPage: React.FC = () => {
       </div>
 
       <div className="flex border-b border-app-border">
-        <div className={`flex-1 text-center py-3 cursor-pointer relative ${type === 'following' ? 'font-bold text-app-text' : 'text-gray-500'}`} onClick={() => go('connections.tab.toFollowing', { id: id! })}>
+        <div className={`flex-1 text-center py-3 cursor-pointer relative ${type === 'following' ? 'font-bold text-app-text' : 'text-gray-500'}`} onClick={() => nav.replace(routes.connections, { id: id! }, { search: { type: 'following' } })}>
           {s.connections_tab_following}
           {type === 'following' && <div className="absolute bottom-0 left-0 right-0 h-1 bg-blue-500 rounded-full mx-10" />}
         </div>
-        <div className={`flex-1 text-center py-3 cursor-pointer relative ${type === 'followers' ? 'font-bold text-app-text' : 'text-gray-500'}`} onClick={() => go('connections.tab.toFollowers', { id: id! })}>
+        <div className={`flex-1 text-center py-3 cursor-pointer relative ${type === 'followers' ? 'font-bold text-app-text' : 'text-gray-500'}`} onClick={() => nav.replace(routes.connections, { id: id! }, { search: { type: 'followers' } })}>
           {s.connections_tab_followers}
           {type === 'followers' && <div className="absolute bottom-0 left-0 right-0 h-1 bg-blue-500 rounded-full mx-10" />}
         </div>
@@ -59,7 +60,7 @@ export const UserConnectionsPage: React.FC = () => {
 
           return (
             <div key={connection.id} className="flex items-center p-4 border-b border-app-border">
-              <div className="w-10 h-10 rounded-full bg-gray-200 mr-3 overflow-hidden cursor-pointer" {...bindTap('user.open.fromPost', { params: { id: connection.id }, stopPropagation: true })}>
+              <div className="w-10 h-10 rounded-full bg-gray-200 mr-3 overflow-hidden cursor-pointer" {...bindNav(routes.user, { params: { id: connection.id }, stopPropagation: true })}>
                 {connection.avatar ? (
                   <XImage src={connection.avatar} alt={connection.name} className="w-full h-full object-cover" />
                 ) : (
@@ -68,7 +69,7 @@ export const UserConnectionsPage: React.FC = () => {
                   </div>
                 )}
               </div>
-              <div className="flex-1 min-w-0 cursor-pointer" {...bindTap('user.open.fromPost', { params: { id: connection.id } })}>
+              <div className="flex-1 min-w-0 cursor-pointer" {...bindNav(routes.user, { params: { id: connection.id } })}>
                 <div className="font-bold truncate">{connection.name}</div>
                 <div className="text-gray-500 text-sm truncate">{`@${connection.id}`}</div>
                 {connection.bio && <div className="text-gray-400 text-sm truncate">{connection.bio}</div>}

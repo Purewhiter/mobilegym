@@ -8,6 +8,7 @@ import { useWechatStore } from '../../state';
 import { useShallow } from 'zustand/react/shallow';
 import { SettingsToggle, SettingsItem } from '../settings/Shared';
 import { useWechatGestures } from '../../hooks/useWechatGestures';
+import { routes } from '../../routes';
 
 export const ChatInfo: React.FC = () => {
   const t = useWechatStrings();
@@ -17,7 +18,7 @@ export const ChatInfo: React.FC = () => {
         contacts: s.contacts,
         updateChatSettings: s.updateChatSettings,
     })));
-    const { bindTap } = useWechatGestures();
+    const { bindTap, bindNav } = useWechatGestures();
 
     const chat = chats.find(c => c.id === id);
     const contact = contacts.find(c => c.wxid === id) || (chat ? chat.user : null);
@@ -45,7 +46,7 @@ export const ChatInfo: React.FC = () => {
             <div className="bg-app-surface px-4 pt-4 pb-6 mb-2 grid grid-cols-5 gap-y-4">
                 <div 
                     className="flex flex-col items-center gap-1 active:opacity-60 cursor-pointer"
-                    {...bindTap<HTMLDivElement>('userProfile.open', { params: { id: contact.wxid } })}
+                    {...bindNav(routes.userProfile, { params: { id: contact.wxid } })}
                 >
                     <img src={contact.avatar} className="w-(--app-avatar-width-52) h-(--app-item-height-52) rounded-[6px] object-cover bg-(--app-c-tw-bg-gray-100)" alt="" />
                     <span className="text-(--app-chat-time-label-text-size) text-(--app-c-tw-text-gray-400) truncate w-full text-center">{contact.name}</span>
@@ -63,7 +64,7 @@ export const ChatInfo: React.FC = () => {
             <div className="bg-app-surface mb-2">
                 <SettingsItem
                 label={t.chat_info_search_history}
-                tapProps={id ? bindTap<HTMLDivElement>('chatInfo.chatSearch.open', { params: { id } }) : undefined}
+                tapProps={id ? bindNav(routes.chatChatSearch, { params: { id } }) : undefined}
               />
             </div>
 

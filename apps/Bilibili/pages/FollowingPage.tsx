@@ -10,6 +10,7 @@ import { useSystemTime } from '../../../os/useSystemTime';
 import { useBilibiliGestures } from '../hooks/useBilibiliGestures';
 import { formatBilibiliRelativeTime, formatBilibiliStat } from '../utils/localize';
 import { int, stream } from '../../../os/RandomService';
+import { routes } from '../routes';
 
 const SquarePen = IcEditSquare;
 const Plus = IcAdd;
@@ -24,7 +25,7 @@ const DEFAULT_VIDEO_COVER = resolveBilibiliAssetUrl('./images/covers/default.svg
 const RECOMMENDED_UP_MIDS = BILIBILI_CONFIG.recommendedUp.map(up => String(up.id));
 
 export const FollowingPage: React.FC = () => {
-    const { bindTap } = useBilibiliGestures();
+    const { bindTap, bindNav } = useBilibiliGestures();
     const { pathname } = useLocation();
     const [searchParams] = useSearchParams();
     const locale = useLocale();
@@ -154,7 +155,7 @@ export const FollowingPage: React.FC = () => {
 
             <div className="flex w-full bg-app-surface pb-2 border-b border-gray-100 z-30">
                 <button
-                    {...(activeTab === 'all' ? {} : bindTap('following.tab.switch', { params: { tab: 'all' } }))}
+                    {...(activeTab === 'all' ? {} : bindNav(routes.following, { search: { tab: 'all' }, replace: true }))}
                     className="flex-1 flex flex-col items-center justify-center pt-2 pb-1 relative transition-colors"
                 >
                     <span className={`text-[15px] font-medium ${activeTab === 'all' ? 'text-app-primary' : 'text-[#61666D]'}`}>
@@ -163,7 +164,7 @@ export const FollowingPage: React.FC = () => {
                     {activeTab === 'all' && <div className="w-8 h-0.5 bg-app-primary rounded-full mt-1.5" />}
                 </button>
                 <button
-                    {...(activeTab === 'video' ? {} : bindTap('following.tab.switch', { params: { tab: 'video' } }))}
+                    {...(activeTab === 'video' ? {} : bindNav(routes.following, { search: { tab: 'video' }, replace: true }))}
                     className="flex-1 flex flex-col items-center justify-center pt-2 pb-1 relative transition-colors"
                 >
                     <span className={`text-[15px] font-medium ${activeTab === 'video' ? 'text-app-primary' : 'text-[#61666D]'}`}>
@@ -185,7 +186,7 @@ export const FollowingPage: React.FC = () => {
                                 {user.followingList?.slice(0, 10).map((u, idx) => {
                                     const author = AUTHOR_DATA[String(u.mid)] || u;
                                     return (
-                                        <div key={idx} className="flex flex-col items-center gap-1.5 shrink-0 w-14" {...bindTap('user.open', { params: { mid: u.mid } })}>
+                                        <div key={idx} className="flex flex-col items-center gap-1.5 shrink-0 w-14" {...bindNav(routes.user, { params: { mid: u.mid }, search: { tab: 'works' } })}>
                                             <div className="w-11 h-11 rounded-full bg-gray-100 overflow-hidden border border-gray-100">
                                                 {author.face ? (
                                                     <img src={author.face} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
@@ -216,7 +217,7 @@ export const FollowingPage: React.FC = () => {
                                             : `更新至第${episode}话`);
 
                                         return (
-                                            <div key={anime.id} className="flex flex-col gap-1.5 w-28 shrink-0" {...bindTap('video.open', { params: { bvid: anime.id } })}>
+                                            <div key={anime.id} className="flex flex-col gap-1.5 w-28 shrink-0" {...bindNav(routes.video, { params: { bvid: anime.id }, search: { tab: 'intro' } })}>
                                                 <div className="w-full aspect-video bg-gray-800 rounded-lg overflow-hidden relative">
                                                     <img src={cover} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                                                     <div className="absolute inset-x-0 bottom-0 p-1 bg-gradient-to-t from-black/80 to-transparent">
@@ -237,7 +238,7 @@ export const FollowingPage: React.FC = () => {
                             {feed.map((item: any, index) => (
                                 <div key={`${item.id}_${index}`} className="bg-app-surface p-4">
                                     <div className="flex justify-between items-start mb-2">
-                                        <div className="flex gap-2" {...bindTap('user.open', { params: { mid: item.author.mid } })}>
+                                        <div className="flex gap-2" {...bindNav(routes.user, { params: { mid: item.author.mid }, search: { tab: 'works' } })}>
                                             <div className="w-9 h-9 rounded-full bg-gray-100 overflow-hidden relative border border-gray-50">
                                                 <img src={item.author.face} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                                                 {item.author.official?.role !== 0 && (
@@ -262,7 +263,7 @@ export const FollowingPage: React.FC = () => {
 
                                     <div
                                         className="aspect-video rounded-lg overflow-hidden relative bg-black/5 mb-3 group"
-                                        {...bindTap('video.open', { params: { bvid: item.id } })}
+                                        {...bindNav(routes.video, { params: { bvid: item.id }, search: { tab: 'intro' } })}
                                     >
                                         <img src={item.cover} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-80" />
@@ -308,7 +309,7 @@ export const FollowingPage: React.FC = () => {
                             {recommendedUps.map(author => (
                                 <div key={author.mid} className="mb-6 last:mb-0">
                                     <div className="flex items-center justify-between px-4 mb-3">
-                                        <div className="flex items-center gap-2.5 flex-1 min-w-0 mr-2" {...bindTap('user.open', { params: { mid: author.mid } })}>
+                                        <div className="flex items-center gap-2.5 flex-1 min-w-0 mr-2" {...bindNav(routes.user, { params: { mid: author.mid }, search: { tab: 'works' } })}>
                                             <div className="w-[42px] h-[42px] rounded-full bg-gray-100 overflow-hidden border border-gray-100 relative shrink-0">
                                                 <img src={author.face} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                                                 {author.official?.role !== 0 && (
@@ -345,7 +346,7 @@ export const FollowingPage: React.FC = () => {
                                             <div
                                                 key={video.id}
                                                 className="w-[calc((100%-20px)/3)] shrink-0 flex flex-col gap-2 group active:opacity-90 transition-opacity"
-                                                {...bindTap('video.open', { params: { bvid: video.id } })}
+                                                {...bindNav(routes.video, { params: { bvid: video.id }, search: { tab: 'intro' } })}
                                             >
                                                 <div className="w-full aspect-video rounded-md overflow-hidden relative bg-gray-100">
                                                     <img

@@ -5,10 +5,11 @@ const ChevronLeft = IcNavBack, ChevronRight = IcNavForward, UserCircle = IcUser,
 import { useRedBookStore } from '../state';
 import { useScrollPosition } from '../hooks/useScrollPosition';
 import { useRedBookGestures } from '../hooks/useRedBookGestures';
+import { routes } from '../routes';
 export const SettingsPage: React.FC = () => {
   const scrollRef = useScrollPosition('settings_main');
   const { logout, clearHistory, settings } = useRedBookStore();
-  const { bindTap, bindBack } = useRedBookGestures();
+  const { bindNav, bindBack } = useRedBookGestures();
   const s = useRedBookStrings();
 
   const ListItem = ({
@@ -66,27 +67,27 @@ export const SettingsPage: React.FC = () => {
                <ListItem
                  label={s.account_and_security}
                  Icon={UserCircle}
-                 {...bindTap('settings.account.open')}
+                 {...bindNav(routes.settingsAccount)}
                />
                <ListItem
                  label={s.general_settings}
                  Icon={Settings}
-                 {...bindTap('settings.general.open')}
+                 {...bindNav(routes.settingsGeneral)}
                />
                <ListItem
                  label={s.notification_settings}
                  Icon={Bell}
-                 {...bindTap('settings.notification.open')}
+                 {...bindNav(routes.settingsNotification)}
                />
                <ListItem
                  label={s.language_and_translation}
                  Icon={Languages}
-                 {...bindTap('settings.language.open')}
+                 {...bindNav(routes.settingsLanguage)}
                />
                <ListItem
                  label={s.privacy_settings}
                  Icon={Lock}
-                 {...bindTap('settings.privacy.open')}
+                 {...bindNav(routes.settingsPrivacy)}
                  isLast
                />
           </div>
@@ -97,7 +98,7 @@ export const SettingsPage: React.FC = () => {
                 label={s.storage}
                 Icon={Trash2}
                 rightText="2.34 GB"
-                {...bindTap('settings.storage.open')}
+                {...bindNav(routes.settingsStorage)}
               />
               <ListItem
                 label={s.content_preferences}
@@ -148,7 +149,7 @@ export const SettingsPage: React.FC = () => {
               </div>
               <div
                   className="w-full py-5 text-center text-[15px] text-app-text active:bg-gray-50 cursor-pointer"
-                  {...bindTap('settings.logout', { beforeTrigger: () => logout() })}
+                  {...bindNav(routes.home, { search: { tab: 'discover' }, replace: true, beforeTrigger: () => logout() })}
               >
                   {s.log_out}
               </div>

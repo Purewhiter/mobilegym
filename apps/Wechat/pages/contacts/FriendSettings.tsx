@@ -6,6 +6,7 @@ import { useWechatStore } from '../../state';
 import { useShallow } from 'zustand/react/shallow';
 import { SettingsToggle, SettingsItem } from '../settings/Shared';
 import { useWechatGestures } from '../../hooks/useWechatGestures';
+import { routes } from '../../routes';
 
 export const FriendSettingsPage: React.FC = () => {
   const t = useWechatStrings();
@@ -17,7 +18,7 @@ export const FriendSettingsPage: React.FC = () => {
     })),
   );
   const location = useLocation();
-  const { bindTap, bindBack, go, back } = useWechatGestures();
+  const { bindTap, bindBack, nav, back, bindNav } = useWechatGestures();
   const searchParams = new URLSearchParams(location.search);
   const showBlacklistModal = searchParams.get('menu') === 'blacklistConfirm';
 
@@ -41,7 +42,7 @@ export const FriendSettingsPage: React.FC = () => {
 
   const openBlacklistConfirm = () => {
     if (!id) return;
-    go('friendSettings.menu.blacklistConfirm.open', { id });
+    nav.push(routes.friendSettings, { id }, { search: { menu: 'blacklistConfirm' } });
   };
 
   const confirmBlacklist = () => {
@@ -55,11 +56,11 @@ export const FriendSettingsPage: React.FC = () => {
       <div className="bg-app-surface mb-2">
         <SettingsItem
           label={t.friend_settings_edit_info}
-          tapProps={id ? bindTap<HTMLDivElement>('friendInfo.open', { params: { id } }) : undefined}
+          tapProps={id ? bindNav(routes.friendInfo, { params: { id } }) : undefined}
         />
         <SettingsItem
           label={t.discover_friend_permission}
-          tapProps={id ? bindTap<HTMLDivElement>('friendPermissionsDetail.open', { params: { id } }) : undefined}
+          tapProps={id ? bindNav(routes.friendPermissionsDetail, { params: { id } }) : undefined}
           isLast
         />
       </div>
@@ -98,9 +99,7 @@ export const FriendSettingsPage: React.FC = () => {
                     { kind: 'action', id: 'friendSettings.item.blacklist.toggle' },
                     { params: { id }, onTrigger: removeFromBlacklist },
                   )
-                : bindTap<HTMLDivElement>('friendSettings.menu.blacklistConfirm.open', {
-                    params: { id },
-                  })
+                : bindNav(routes.friendSettings, { params: { id }, search: { menu: 'blacklistConfirm' } })
               : undefined
           }
           isLast

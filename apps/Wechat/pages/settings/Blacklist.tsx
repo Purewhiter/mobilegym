@@ -2,10 +2,11 @@
 import React from 'react';
 import { useWechatStore } from '../../state';
 import { useWechatGestures } from '../../hooks/useWechatGestures';
+import { routes } from '../../routes';
 
 export const BlacklistPage: React.FC = () => {
     const contacts = useWechatStore(s => s.contacts);
-    const { bindTap } = useWechatGestures();
+    const { bindNav } = useWechatGestures();
 
     const blacklistedContacts = contacts.filter(c => c.isBlacklisted);
 
@@ -22,7 +23,7 @@ export const BlacklistPage: React.FC = () => {
             {blacklistedContacts.map((contact) => (
                 <div 
                     key={contact.wxid} 
-                    {...bindTap<HTMLDivElement>('userProfile.open', { params: { id: contact.wxid } })}
+                    {...bindNav(routes.userProfile, { params: { id: contact.wxid } })}
                     className="flex items-center px-4 py-3 active:bg-(--app-c-tw-bg-gray-100) border-b border-(--app-c-tw-border-gray-100)"
                 >
                     <img 

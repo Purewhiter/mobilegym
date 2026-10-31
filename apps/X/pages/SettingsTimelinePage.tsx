@@ -3,22 +3,23 @@ import { useLocale } from '@/os/locale';
 import { useXStore, selectUser } from '../state';
 import { useXGestures } from '../hooks/useXGestures';
 import { IcChevronRight } from '../res/icons';
+import { routes } from '../routes';
 
 export const SettingsTimelinePage: React.FC = () => {
   const user = useXStore(selectUser);
-  const { bindBack, go } = useXGestures();
+  const { bindBack, nav } = useXGestures();
   const isEnglish = useLocale() === 'en';
 
   const items = [
     {
       title: isEnglish ? 'Post interactions' : '帖子互动',
       desc: isEnglish ? 'Customize how you interact with posts.' : '自定义与你和帖子互动的方式。',
-      tapId: 'settings.timeline.interactions.open',
+      tapId: routes.settingsTimelineInteractions,
     },
     {
       title: isEnglish ? '"Home" tabs' : '"主页"标签',
       desc: isEnglish ? 'Reorder lists and community tabs that appear on your Home screen.' : '重新排列主页上显示的列表和社区标签顺序。',
-      tapId: 'settings.timeline.homeTags.open',
+      tapId: routes.settingsTimelineHomeTags,
     },
   ];
 
@@ -38,7 +39,7 @@ export const SettingsTimelinePage: React.FC = () => {
       </div>
       <div className="flex-1">
         {items.map((item, idx) => (
-          <div key={idx} className="flex cursor-pointer items-start px-4 py-4 transition-colors active:bg-gray-50" onClick={() => go(item.tapId as Parameters<typeof go>[0])}>
+          <div key={idx} className="flex cursor-pointer items-start px-4 py-4 transition-colors active:bg-gray-50" onClick={() => item.tapId && nav.push(item.tapId)}>
             <div className="mr-2 flex-1">
               <div className="mb-0.5 text-[15px] font-medium text-app-text">{item.title}</div>
               <div className="text-[13px] leading-tight text-gray-500">{item.desc}</div>

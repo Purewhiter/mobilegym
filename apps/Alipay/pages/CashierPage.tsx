@@ -11,6 +11,7 @@ import { useAlipayStrings } from '../hooks/useAlipayStrings';
 import { localizeBankName } from '../utils/localizeBankName';
 import { DefaultAvatar } from '../components/DefaultAvatar';
 import type { AlipayUserInfo } from '../types';
+import { routes } from '../routes';
 
 export function getCashierExpectedPassword(userInfo: Pick<AlipayUserInfo, 'paymentPassword'> | null | undefined): string {
   return String(userInfo?.paymentPassword ?? '');
@@ -25,7 +26,7 @@ export const CashierPage: React.FC = () => {
   const balance = useAlipayStore(s => s.balance);
   const userInfo = useAlipayStore(s => s.userInfo);
   const s = useAlipayStrings();
-  const { bindTap, back } = useAlipayGestures();
+  const { bindTap, back, bindNav } = useAlipayGestures();
   const { activityId } = useActivityContext();
   const locale = useLocale();
   const isEnglish = locale === 'en';
@@ -221,7 +222,7 @@ export const CashierPage: React.FC = () => {
               </span>
             )}
             <button
-              {...(!isPasswordModalVisible ? bindTap<HTMLButtonElement>('cashier.password.open') : {})}
+              {...(!isPasswordModalVisible ? bindNav(routes.payCashier, { search: { modal: 'password' } }) : {})}
               className="text-[14px] text-[#1677FF]"
             >
               {isPasswordModalVisible ? s.cashier_use_fingerprint : s.cashier_use_password}
@@ -345,7 +346,7 @@ export const CashierPage: React.FC = () => {
           <div className="flex-shrink-0 px-5 pb-5 pt-2">
             <button
               className="w-full py-3.5 rounded-full bg-[#1677FF] text-white font-medium text-[16px] active:bg-[#1266D9]"
-              {...bindTap<HTMLButtonElement>('cashier.password.open')}
+              {...bindNav(routes.payCashier, { search: { modal: 'password' } })}
             >
               {s.confirm_pay}
             </button>

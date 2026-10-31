@@ -11,6 +11,7 @@ import { useBilibiliStore } from '../state';
 import { BILIBILI_CONFIG } from '../data';
 import { useBilibiliGestures } from '../hooks/useBilibiliGestures';
 import * as TimeService from '../../../os/TimeService';
+import { routes } from '../routes';
 const formatTime = (ts: number) => {
     const date = TimeService.fromTimestamp(ts * 1000);
     const now = TimeService.getDate();
@@ -45,7 +46,7 @@ const RECOMMENDED_UP_MIDS = BILIBILI_CONFIG.recommendedUp.map(up => String(up.id
 
 export const UserProfilePage: React.FC = () => {
     const { mid } = useParams<{ mid: string }>();
-    const { bindBack, bindTap, back } = useBilibiliGestures();
+    const { bindBack, bindTap, back, bindNav } = useBilibiliGestures();
     const [searchParams] = useSearchParams();
 
     // 作者（找不到时退回评论用户）及其投稿；投稿已合并视频库里的完整记录
@@ -227,7 +228,7 @@ export const UserProfilePage: React.FC = () => {
                                     <div className="flex gap-1 h-8">
                                         <button
                                             className="h-full px-6 rounded-[4px] bg-[#E3E5E7] text-[#61666D] font-medium text-[13px] flex items-center justify-center active:bg-[#d0d3d6] transition-colors"
-                                            {...bindTap('user.menu.open')}
+                                            {...bindNav(routes.user, { params: { mid: mid as string }, search: { menu: 'true' } })}
                                         >
                                             已关注
                                         </button>
@@ -270,7 +271,7 @@ export const UserProfilePage: React.FC = () => {
                                     return (
                                         <div
                                             key={up.name}
-                                            {...bindTap('user.open', { params: { mid: up.id } })}
+                                            {...bindNav(routes.user, { params: { mid: up.id }, search: { tab: 'works' } })}
                                             className="w-[130px] bg-app-surface border border-[#E3E5E7] rounded-lg p-3 flex flex-col items-center shrink-0 relative shadow-sm active:opacity-90 transition-opacity"
                                         >
                                             {face ? (
@@ -351,7 +352,7 @@ export const UserProfilePage: React.FC = () => {
                             return (
                                 <button
                                     key={tab.key}
-                                    {...(isActive ? {} : bindTap('user.tab.switch', { params: { tab: tab.key } }))}
+                                    {...(isActive ? {} : bindNav(routes.user, { params: { mid: mid as string }, search: { tab: tab.key }, replace: true }))}
                                     className={`flex-1 py-3 text-[14px] font-medium relative ${isActive ? 'text-app-primary' : 'text-[#61666D]'
                                         }`}
                                 >
@@ -371,7 +372,7 @@ export const UserProfilePage: React.FC = () => {
                                 {/* Video Section Header */}
                                 <div
                                     className="px-3 py-3 flex justify-between items-center"
-                                    {...bindTap('user.tab.switch', { params: { tab: 'works' } })}
+                                    {...bindNav(routes.user, { params: { mid: mid as string }, search: { tab: 'works' }, replace: true })}
                                 >
                                     <div className="flex items-center gap-2">
                                         <span className="text-[15px] font-medium text-app-text">视频</span>
@@ -385,7 +386,7 @@ export const UserProfilePage: React.FC = () => {
                                 {/* Video Grid */}
                                 <div className="grid grid-cols-2 gap-2 px-2">
                                     {enrichedVideos.slice(0, 4).map(v => (
-                                        <div key={v.id} className="flex flex-col gap-2" {...bindTap('video.open', { params: { bvid: v.id } })}>
+                                        <div key={v.id} className="flex flex-col gap-2" {...bindNav(routes.video, { params: { bvid: v.id }, search: { tab: 'intro' } })}>
                                             <div className="aspect-video rounded-lg overflow-hidden relative bg-gray-100">
                                                 <img src={v.cover} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                                                 <div className="absolute bottom-1 left-1 text-white text-[10px] flex items-center gap-2 drop-shadow-md">
@@ -420,7 +421,7 @@ export const UserProfilePage: React.FC = () => {
                         {activeTabKey === 'dynamic' && (
                             <div className="bg-app-bg">
                                 {enrichedVideos.map(v => (
-                                    <div key={v.id} className="bg-app-surface mb-2 p-4" {...bindTap('video.open', { params: { bvid: v.id } })}>
+                                    <div key={v.id} className="bg-app-surface mb-2 p-4" {...bindNav(routes.video, { params: { bvid: v.id }, search: { tab: 'intro' } })}>
                                         {/* Header */}
                                         <div className="flex items-center gap-3 mb-3">
                                             <img src={face} className="w-10 h-10 rounded-full border border-gray-100" referrerPolicy="no-referrer" />
@@ -487,7 +488,7 @@ export const UserProfilePage: React.FC = () => {
                                 {/* Video List */}
                                 <div className="flex flex-col">
                                     {enrichedVideos.map(v => (
-                                        <div key={v.id} className="flex gap-3 px-3 py-3 border-b border-app-bg active:bg-gray-50 bg-app-surface" {...bindTap('video.open', { params: { bvid: v.id } })}>
+                                        <div key={v.id} className="flex gap-3 px-3 py-3 border-b border-app-bg active:bg-gray-50 bg-app-surface" {...bindNav(routes.video, { params: { bvid: v.id }, search: { tab: 'intro' } })}>
                                             {/* Left: Thumbnail */}
                                             <div className="relative w-[140px] h-[88px] rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
                                                 <img src={v.cover} className="w-full h-full object-cover" referrerPolicy="no-referrer" />

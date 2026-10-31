@@ -11,13 +11,14 @@ import { ShareModal } from '../components/ShareModal';
 import { formatPostTime, formatCommentTime } from '../utils/dateUtils';
 import { useRedBookGestures } from '../hooks/useRedBookGestures';
 import { UserPagePreview } from './UserPage';
+import { routes } from '../routes';
 export const DetailPage: React.FC = () => {
   const s = useRedBookStrings();
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const isShareOpen = searchParams.get('modal') === 'share';
-  const { bindTap, bindBack, back, go } = useRedBookGestures();
+  const { bindTap, bindBack, back, nav, bindNav } = useRedBookGestures();
   const { user, toggleLike, toggleCollect, followUser, addComment, toggleCommentLike, addToHistory } = useRedBookStore(useShallow(s => ({
     user: s.user,
     toggleLike: s.toggleLike,
@@ -162,7 +163,7 @@ export const DetailPage: React.FC = () => {
         setDragOffsetX(screenW);
         // 等动画完成后导航，不重置状态（组件会随路由卸载）
         setTimeout(() => {
-          go('user.open', { userId: author.id });
+          nav.push(routes.user, { userId: author.id });
         }, 250);
       } else {
         // 回弹
@@ -296,7 +297,7 @@ export const DetailPage: React.FC = () => {
                     <>
                        <div
                            className="w-10 h-10 rounded-full overflow-hidden border border-gray-100 cursor-pointer"
-                           {...bindTap('user.open', { params: { userId: author.id } })}
+                           {...bindNav(routes.user, { params: { userId: author.id } })}
                        >
                            <img src={author.avatar} className="w-full h-full object-cover" />
                        </div>
@@ -324,7 +325,7 @@ export const DetailPage: React.FC = () => {
             )}
             <div
                 className="w-8 h-8 rounded-full flex items-center justify-center active:scale-90 transition-all bg-transparent cursor-pointer"
-                {...bindTap('note.share.open', { params: { id: id || '' } })}
+                {...bindNav(routes.note, { params: { id: id || '' }, search: { modal: 'share' } })}
             >
                 <Reply size={28} className="text-gray-900 transform -scale-x-100" />
             </div>
@@ -545,7 +546,7 @@ export const DetailPage: React.FC = () => {
                             <div className="flex gap-3">
                                 <div
                                     className="w-8 h-8 rounded-full bg-gray-200 flex-shrink-0 overflow-hidden cursor-pointer"
-                                    {...(root.userId ? bindTap('user.open', { params: { userId: root.userId, name: root.username, avatar: root.avatar || '' } }) : {})}
+                                    {...(root.userId ? bindNav(routes.user, { params: { userId: root.userId }, search: { name: root.username, avatar: root.avatar || '' } }) : {})}
                                 >
                                     {root.avatar ? (
                                         <img src={root.avatar} className="w-full h-full object-cover" loading="eager" />
@@ -597,7 +598,7 @@ export const DetailPage: React.FC = () => {
                                         <div key={reply.id} className="flex gap-2">
                                             <div
                                                 className="w-6 h-6 rounded-full bg-gray-200 flex-shrink-0 overflow-hidden cursor-pointer"
-                                                {...(reply.userId ? bindTap('user.open', { params: { userId: reply.userId, name: reply.username, avatar: reply.avatar || '' } }) : {})}
+                                                {...(reply.userId ? bindNav(routes.user, { params: { userId: reply.userId }, search: { name: reply.username, avatar: reply.avatar || '' } }) : {})}
                                             >
                                                 {reply.avatar ? (
                                                     <img src={reply.avatar} className="w-full h-full object-cover" />

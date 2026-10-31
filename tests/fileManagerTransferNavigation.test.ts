@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { NAVIGATION_DECLARATION } from '../system/FileManager/navigation.declaration';
+import { routes } from '../system/FileManager/routes';
 
 const PAGE_SOURCES = [
   'system/FileManager/pages/BrowseHomePage.tsx',
@@ -10,11 +10,9 @@ const PAGE_SOURCES = [
 
 describe('FileManager 复制和移动目标选择导航', () => {
   it('三种文件列表页面都声明目标选择弹窗状态', () => {
-    const routeIds = NAVIGATION_DECLARATION.routes.flatMap(route => route.uiStates.map(state => state.id));
-
-    expect(routeIds).toContain('browse.select.modal.transfer');
-    expect(routeIds).toContain('recent.select.modal.transfer');
-    expect(routeIds).toContain('folder.select.modal.transfer');
+    for (const route of [routes.home, routes.recent, routes.folder]) {
+      expect(route.search.modal, route.path).toContain('transfer');
+    }
   });
 
   it('三种文件列表页面都接入复制和移动弹窗入口', () => {
@@ -38,18 +36,13 @@ describe('FileManager 复制和移动目标选择导航', () => {
   });
 
   it('目标选择弹窗内的新建文件夹弹窗由 URL 子状态驱动', () => {
-    const routeIds = NAVIGATION_DECLARATION.routes.flatMap(route => route.uiStates.map(state => state.id));
-    const transitionIds = NAVIGATION_DECLARATION.transitions.map(transition => transition.id);
-
-    expect(routeIds).toContain('browse.select.modal.transfer.newFolder');
-    expect(routeIds).toContain('recent.select.modal.transfer.newFolder');
-    expect(routeIds).toContain('folder.select.modal.transfer.newFolder');
-    expect(transitionIds).toContain('browse.modal.transfer.newFolder.open');
-    expect(transitionIds).toContain('recent.modal.transfer.newFolder.open');
-    expect(transitionIds).toContain('folder.modal.transfer.newFolder.open');
+    for (const route of [routes.home, routes.recent, routes.folder]) {
+      expect(route.search.transferDialog, route.path).toContain('newFolder');
+    }
 
     for (const path of PAGE_SOURCES) {
       const source = readFileSync(path, 'utf8');
+      expect(source, path).toContain("modal: 'transfer', transferDialog: 'newFolder'");
       expect(source, path).toContain("transferDialog === 'newFolder'");
       expect(source, path).toContain('onOpenCreateFolder');
       expect(source, path).toContain('onCloseCreateFolder');

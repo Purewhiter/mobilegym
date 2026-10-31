@@ -20,6 +20,7 @@ import { useWechatReadingGestures } from '../hooks/useWechatReadingGestures';
 import { useWechatReadingStrings } from '../hooks/useWechatReadingStrings';
 import { dimens } from '../res/dimens';
 import * as TimeService from '../../../os/TimeService';
+import { routes } from '../routes';
 
 function formatMessage(template: string, ...values: Array<string | number>) {
   let result = template;
@@ -35,7 +36,7 @@ const MePage: React.FC = () => {
   const readingBookIds = useWechatReadingStore(selectReadingBookIds);
   const finishedBookIds = useWechatReadingStore(selectFinishedBookIds);
   const bookProgress = useWechatReadingStore(s => s.bookProgress);
-  const { bindTap } = useWechatReadingGestures();
+  const { bindNav } = useWechatReadingGestures();
   const s = useWechatReadingStrings();
 
   const readingStats = useMemo(() => {
@@ -70,13 +71,13 @@ const MePage: React.FC = () => {
           <IcMail size={dimens.icSizeToolbar as number} />
         </button>
         <div className="font-medium text-(--app-title-text-size-16) text-(--app-c-tw-text-slate-800)">{user.name}</div>
-        <button type="button" className="text-(--app-c-tw-text-slate-600) active:opacity-60 cursor-pointer" {...bindTap<HTMLButtonElement>('settings.open')}>
+        <button type="button" className="text-(--app-c-tw-text-slate-600) active:opacity-60 cursor-pointer" {...bindNav(routes.settings)}>
           <IcFilter size={dimens.icSizeToolbar as number} />
         </button>
       </div>
 
       <div className="px-4 flex items-center mb-6">
-        <div className="w-16 h-16 rounded-full bg-(--app-c-tw-bg-gray-200) flex items-center justify-center overflow-hidden mr-4 active:opacity-70 cursor-pointer" {...bindTap<HTMLDivElement>('profile.edit.open')}>
+        <div className="w-16 h-16 rounded-full bg-(--app-c-tw-bg-gray-200) flex items-center justify-center overflow-hidden mr-4 active:opacity-70 cursor-pointer" {...bindNav(routes.editProfile)}>
           {user.avatar ? (
             <img src={user.avatar} className="w-full h-full object-cover" alt="avatar" />
           ) : (
@@ -84,7 +85,7 @@ const MePage: React.FC = () => {
           )}
         </div>
 
-        <div className="flex-1 active:opacity-70 cursor-pointer" {...bindTap<HTMLDivElement>('profile.my.open')}>
+        <div className="flex-1 active:opacity-70 cursor-pointer" {...bindNav(routes.myProfile, { search: { tab: 'shelf' } })}>
           <div className="flex items-center gap-2">
             <h1 className="text-xl font-bold text-(--app-c-tw-text-slate-900)">{user.name}</h1>
             <div className="px-2 py-0.5 bg-(--app-c-tw-bg-slate-200) rounded-full text-(--app-tab-bar-label-size) text-(--app-c-tw-text-slate-500) font-medium z-10" onClick={e => e.stopPropagation()}>
@@ -102,7 +103,7 @@ const MePage: React.FC = () => {
           </div>
         </div>
 
-        <button type="button" className="text-(--app-c-tw-text-slate-300) ml-2 active:opacity-60" {...bindTap<HTMLButtonElement>('profile.my.open')}>
+        <button type="button" className="text-(--app-c-tw-text-slate-300) ml-2 active:opacity-60" {...bindNav(routes.myProfile, { search: { tab: 'shelf' } })}>
           <IcNavForward size={dimens.icSizeNav} />
         </button>
       </div>
@@ -120,7 +121,7 @@ const MePage: React.FC = () => {
       </div>
 
       <div className="px-4 mb-3 flex gap-3">
-        <div className="flex-1 bg-app-surface rounded-2xl p-4 flex flex-col justify-center active:opacity-70 cursor-pointer" {...bindTap<HTMLDivElement>('wallet.coins.open')}>
+        <div className="flex-1 bg-app-surface rounded-2xl p-4 flex flex-col justify-center active:opacity-70 cursor-pointer" {...bindNav(routes.walletCoins)}>
           <div className="flex items-center gap-2 mb-1">
             <div className="w-5 h-5 rounded-full bg-yellow-100 text-yellow-500 flex items-center justify-center text-(--app-tab-bar-label-size) font-bold">
               C
@@ -155,7 +156,7 @@ const MePage: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex items-center justify-between active:opacity-60 cursor-pointer" {...bindTap<HTMLDivElement>('myReading.open.week')}>
+          <div className="flex items-center justify-between active:opacity-60 cursor-pointer" {...bindNav(routes.myReading, { search: { tab: 'week' } })}>
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-full bg-red-400 text-white flex items-center justify-center">
                 <IcClock size={dimens.icSizeChevron} />
@@ -171,7 +172,7 @@ const MePage: React.FC = () => {
       </div>
 
       <div className="px-4 mb-3 grid grid-cols-2 gap-3">
-        <div className="bg-app-surface rounded-2xl p-4 h-24 flex flex-col justify-between active:opacity-70 cursor-pointer" {...bindTap<HTMLDivElement>('readingList.open.reading')}>
+        <div className="bg-app-surface rounded-2xl p-4 h-24 flex flex-col justify-between active:opacity-70 cursor-pointer" {...bindNav(routes.readingList, { search: { category: 'reading' } })}>
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-full bg-emerald-400 text-white flex items-center justify-center">
               <IcBook size={dimens.icSizeChevron} />
@@ -182,7 +183,7 @@ const MePage: React.FC = () => {
             {s.me_cumulative} {readingStats.readingCount}{s.me_books_unit}
           </span>
         </div>
-        <div className="bg-app-surface rounded-2xl p-4 h-24 flex flex-col justify-between active:opacity-70 cursor-pointer" {...bindTap<HTMLDivElement>('readingList.open.finished')}>
+        <div className="bg-app-surface rounded-2xl p-4 h-24 flex flex-col justify-between active:opacity-70 cursor-pointer" {...bindNav(routes.readingList, { search: { category: 'finished' } })}>
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-full bg-sky-400 text-white flex items-center justify-center">
               <IcCheckCircle size={dimens.icSizeChevron} />
@@ -218,7 +219,7 @@ const MePage: React.FC = () => {
         <div className="bg-app-surface rounded-2xl p-5 relative overflow-hidden">
           <div
             className="flex justify-between items-center mb-6 active:opacity-60 cursor-pointer"
-            {...bindTap<HTMLDivElement>('bookLists.open')}
+            {...bindNav(routes.bookLists, { search: { category: 'all' } })}
           >
             <div className="flex items-center gap-3">
               <div className="w-7 h-7 rounded-full bg-violet-400 text-white flex items-center justify-center">
@@ -232,7 +233,7 @@ const MePage: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex justify-between items-center active:opacity-60 cursor-pointer" {...bindTap<HTMLDivElement>('following.open.following')}>
+          <div className="flex justify-between items-center active:opacity-60 cursor-pointer" {...bindNav(routes.following, { search: { tab: 'following' } })}>
             <div className="flex items-center gap-3">
               <div className="w-7 h-7 rounded-full bg-fuchsia-400 text-white flex items-center justify-center">
                 <IcEye size={dimens.icSizeChevron} />

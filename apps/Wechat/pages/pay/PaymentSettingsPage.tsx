@@ -2,9 +2,10 @@ import React from 'react';
 import { IcNavForward } from '../../res/icons';
 import { useWechatGestures } from '../../hooks/useWechatGestures';
 import { useLocale } from '@/os/locale';
+import { routes } from '../../routes';
 
 export const PaymentSettingsPage: React.FC = () => {
-  const { bindTap } = useWechatGestures();
+  const { bindNav } = useWechatGestures();
   const locale = useLocale();
   const isEnglish = locale === 'en';
   const text = isEnglish
@@ -65,7 +66,7 @@ export const PaymentSettingsPage: React.FC = () => {
       <div className="mt-2 bg-white">
           <MenuItem
             label={text.autoRenew}
-            {...bindTap<HTMLDivElement>('paymentSettings.subscriptions.open')}
+            {...bindNav(routes.settingsSubscriptions)}
           />
           <MenuItem label={text.appleServices} />
           <MenuItem label={text.passwordFree} />

@@ -6,12 +6,13 @@ import { IconRenderer } from '../components/IconRenderer';
 import { useAlipayGestures } from '../hooks/useAlipayGestures';
 import { useLocale } from '@/apps/Alipay/locale';
 import { localizeServiceName } from '../utils/localizeCatalog';
+import { routes } from '../routes';
 export const HomePage: React.FC = () => {
   const quickActions = useAlipayStore(s => s.quickActions);
   const mainServices = useAlipayStore(s => s.mainServices);
   const commonServices = useAlipayStore(s => s.commonServices);
   const notifications = useAlipayStore(s => s.notifications);
-  const { bindTap } = useAlipayGestures();
+  const { bindNav } = useAlipayGestures();
   const s = useAlipayStrings();
   const isEnglish = useLocale() === 'en';
 
@@ -51,7 +52,7 @@ export const HomePage: React.FC = () => {
           {quickActions.map((action) => (
             <button
               key={action.id}
-              {...(action.id === 'pay' ? bindTap<HTMLButtonElement>('pay.open') : action.id === 'scan' ? bindTap<HTMLButtonElement>('scan.open') : {})}
+              {...(action.id === 'pay' ? bindNav(routes.pay) : action.id === 'scan' ? bindNav(routes.scan) : {})}
               className="flex flex-col items-center w-1/4"
             >
               <div className="w-12 h-12 mb-1.5 flex items-center justify-center">
@@ -70,7 +71,7 @@ export const HomePage: React.FC = () => {
               <button 
                 key={service.id} 
                 className="flex flex-col items-center space-y-1 py-1"
-                {...(service.id === 'transfer' ? bindTap<HTMLButtonElement>('transfer.open') : {})}
+                {...(service.id === 'transfer' ? bindNav(routes.payTransfer) : {})}
               >
                 <IconRenderer name={service.icon} size={28} color={service.color} />
                 <span className="text-xs text-gray-600 mt-1">{localizeServiceName(service.id, service.name, isEnglish)}</span>

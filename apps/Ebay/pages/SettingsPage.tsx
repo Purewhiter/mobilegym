@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { IcNavBack } from '../res/icons';
 import { useEbayStore } from '../state';
-import { useEbayGestures } from '../navigation';
+import { useEbayGestures } from '../hooks/useEbayGestures';
 import { useEbayStrings } from '../hooks/useEbayStrings';
 
 type ThemeOption = {

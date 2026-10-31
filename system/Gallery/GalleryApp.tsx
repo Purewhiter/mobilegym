@@ -45,6 +45,7 @@ import { CollapsingToolbar, CollapsingLargeTitle, TOOLBAR_SPACER_HEIGHT } from '
 import * as TimeService from '@/os/TimeService';
 import { useGalleryGestures } from './hooks/useGalleryGestures';
 import { ensureMediaProviderRegistered } from '../../os/providers/MediaProvider';
+import { routes } from './routes';
 
 // ============================================================================
 // Favorites Storage (backed by MediaProvider)
@@ -301,7 +302,7 @@ const AsyncImage: React.FC<{
 // Navigation Handler
 // ============================================================================
 const GalleryNavigationHandler: React.FC = () => {
-  const { back } = useGalleryGestures();
+  const { back, nav } = useGalleryGestures();
   const navigate = useNavigate();
   const { activityId } = useActivityContext();
   const { navigator } = React.useContext(UNSAFE_NavigationContext);
@@ -479,7 +480,7 @@ const PhotoGridItem: React.FC<{
 // Photos Page
 // ============================================================================
 const PhotosPage: React.FC<{ onSelectModeChange?: (active: boolean) => void }> = ({ onSelectModeChange }) => {
-  const { go } = useGalleryGestures();
+  const { nav } = useGalleryGestures();
   const s = useAppStrings(strings, stringsEn);
   const [items, setItems] = useState<MediaItem[]>([]);
   const [selectMode, setSelectMode] = useState(false);
@@ -581,7 +582,7 @@ const PhotosPage: React.FC<{ onSelectModeChange?: (active: boolean) => void }> =
             </button>,
             <button
               type="button"
-              onClick={() => go('favorites.open')}
+              onClick={() => nav.push(routes.favorites)}
               className="w-10 h-10 flex items-center justify-center active:opacity-60"
               aria-label={s.filter_label}
             >
@@ -632,7 +633,7 @@ const PhotosPage: React.FC<{ onSelectModeChange?: (active: boolean) => void }> =
               <PhotoGridItem
                 key={item.id}
                 item={item}
-                onClick={() => go('photo.open', { path: encodeURIComponent(item.path) })}
+                onClick={() => nav.push(routes.photo, { path: encodeURIComponent(item.path) })}
                 isSelectMode={selectMode}
                 isSelected={selected.has(item.path)}
                 onSelect={() => handleSelect(item.path)}
@@ -701,7 +702,7 @@ const PhotosPage: React.FC<{ onSelectModeChange?: (active: boolean) => void }> =
 // Albums Page
 // ============================================================================
 const AlbumsPage: React.FC = () => {
-  const { go } = useGalleryGestures();
+  const { nav } = useGalleryGestures();
   const s = useAppStrings(strings, stringsEn);
   const [albums, setAlbums] = useState<Album[]>([]);
   const [moreCounts, setMoreCounts] = useState({
@@ -765,7 +766,7 @@ const AlbumsPage: React.FC = () => {
               {systemAlbums.map(album => (
                 <button
                   key={album.id}
-                  onClick={() => go('album.open', { albumId: album.id })}
+                  onClick={() => nav.push(routes.album, { albumId: album.id })}
                   className="text-left active:scale-[0.98] transition-transform"
                 >
                   <div className="aspect-square bg-slate-100 rounded-2xl overflow-hidden border border-slate-100">
@@ -801,7 +802,7 @@ const AlbumsPage: React.FC = () => {
                   {appAlbums.map(album => (
                     <button
                       key={album.id}
-                      onClick={() => go('album.open', { albumId: album.id })}
+                      onClick={() => nav.push(routes.album, { albumId: album.id })}
                       className="text-left active:scale-[0.98] transition-transform"
                     >
                       <div className="aspect-square bg-slate-100 rounded-2xl overflow-hidden border border-slate-100">
@@ -959,7 +960,7 @@ const AlbumsPage: React.FC = () => {
 // Favorites Page
 // ============================================================================
 const FavoritesPage: React.FC = () => {
-  const { go } = useGalleryGestures();
+  const { nav } = useGalleryGestures();
   const s = useAppStrings(strings, stringsEn);
   const favorites = useFavorites();
   const [items, setItems] = useState<MediaItem[]>([]);
@@ -1002,7 +1003,7 @@ const FavoritesPage: React.FC = () => {
               <PhotoGridItem
                 key={item.id}
                 item={item}
-                onClick={() => go('photo.open', { path: encodeURIComponent(item.path), from: 'favorites' })}
+                onClick={() => nav.push(routes.photo, { path: encodeURIComponent(item.path) }, { search: { from: 'favorites' } })}
               />
             ))}
           </div>
@@ -1016,7 +1017,7 @@ const FavoritesPage: React.FC = () => {
 // Album Detail Page
 // ============================================================================
 const AlbumDetailPage: React.FC = () => {
-  const { go, back, bindBack } = useGalleryGestures();
+  const { nav, back, bindBack } = useGalleryGestures();
   const { albumId } = useParams<{ albumId: string }>();
   const s = useAppStrings(strings, stringsEn);
   const [items, setItems] = useState<MediaItem[]>([]);
@@ -1120,7 +1121,7 @@ const AlbumDetailPage: React.FC = () => {
                     <PhotoGridItem
                       key={item.id}
                       item={item}
-                      onClick={() => go('photo.open', { path: encodeURIComponent(item.path), album: albumId || '' })}
+                      onClick={() => nav.push(routes.photo, { path: encodeURIComponent(item.path) }, { search: { album: albumId || '' } })}
                       isSelectMode={selectMode}
                       isSelected={selected.has(item.path)}
                       onSelect={() => handleSelect(item.path)}
@@ -1272,7 +1273,7 @@ const PhotoDetailsDialog: React.FC<{
   item: MediaItem | null;
 }> = ({ open, item }) => {
   const s = useAppStrings(strings, stringsEn);
-  const { bindBack } = useGalleryGestures();
+  const { bindBack, nav } = useGalleryGestures();
   if (!open || !item) return null;
 
   const d = TimeService.fromTimestamp(item.createdAt);
@@ -1409,7 +1410,7 @@ const RenameDialog: React.FC<{
 // Photo Viewer Page
 // ============================================================================
 const PhotoViewerPage: React.FC = () => {
-  const { go, back, bindBack, navigateTo } = useGalleryGestures();
+  const { nav, back, bindBack } = useGalleryGestures();
   const location = useLocation();
   const { path } = useParams<{ path: string }>();
   const { activityId } = useActivityContext();
@@ -1452,27 +1453,27 @@ const PhotoViewerPage: React.FC = () => {
   const encodedPath = decodedPath ? encodeURIComponent(decodedPath) : '';
   const openMore = () => {
     if (isIntentMode) {
-      go('photo.intent.modal.more.open');
+      nav.push(routes.intentView, {}, { search: { modal: 'more' } });
       return;
     }
     if (!encodedPath) return;
-    go('photo.modal.more.open', { path: encodedPath });
+    nav.push(routes.photo, { path: encodedPath }, { search: { modal: 'more' }, keep: ['album', 'from'] });
   };
   const openDetails = () => {
     if (isIntentMode) {
-      go('photo.intent.modal.details.open');
+      nav.replace(routes.intentView, {}, { search: { modal: 'details' } });
       return;
     }
     if (!encodedPath) return;
-    go('photo.modal.details.open', { path: encodedPath });
+    nav.replace(routes.photo, { path: encodedPath }, { search: { modal: 'details' }, keep: ['album', 'from'] });
   };
   const openRename = () => {
     if (isIntentMode) {
-      go('photo.intent.modal.rename.open');
+      nav.replace(routes.intentView, {}, { search: { modal: 'rename' } });
       return;
     }
     if (!encodedPath) return;
-    go('photo.modal.rename.open', { path: encodedPath });
+    nav.replace(routes.photo, { path: encodedPath }, { search: { modal: 'rename' }, keep: ['album', 'from'] });
   };
   const closeModal = () => back();
 
@@ -1512,7 +1513,7 @@ const PhotoViewerPage: React.FC = () => {
       if (from) query.set('from', from);
       const queryStr = query.toString();
       const target = `/photo/${encodeURIComponent(newPath)}${queryStr ? `?${queryStr}` : ''}`;
-      navigateTo(target, { replace: true });
+      nav.toPath(target, { replace: true });
     }, 0);
   };
 

@@ -9,6 +9,7 @@ import {
   formatBilibiliRelativeDate,
   formatBilibiliStat,
 } from '../../utils/localizeBilibiliText';
+import { routes } from '../../routes';
 
 const BarChart2 = IcChart;
 const Calendar = IcCalendar;
@@ -19,7 +20,7 @@ const HOT_IDS = HOT_DATA.map((video) => video.id);
 export const HotTab: React.FC = () => {
   const locale = useLocale();
   const isEnglish = locale === 'en';
-  const { bindTap } = useBilibiliGestures();
+  const { bindNav } = useBilibiliGestures();
   const { byId: videoById, loading } = useVideosByIds(HOT_IDS);
 
   const iconItems = [
@@ -60,7 +61,7 @@ export const HotTab: React.FC = () => {
           <div
             key={item.name}
             className="flex flex-col items-center gap-2 cursor-pointer"
-            {...(item.opensRanking ? bindTap('ranking.open') : {})}
+            {...(item.opensRanking ? bindNav(routes.ranking, { search: { tab: '全站' } }) : {})}
           >
             <div className={`w-12 h-12 rounded-full ${item.color} flex items-center justify-center shadow-sm`}>
               {item.icon}
@@ -77,7 +78,7 @@ export const HotTab: React.FC = () => {
             <div
               key={displayVideo.id}
               className="bg-app-surface rounded-lg p-3 shadow-sm flex gap-3 h-[8.5rem] active:scale-[0.98] transition-transform"
-              {...bindTap('video.open', { params: { bvid: displayVideo.id } })}
+              {...bindNav(routes.video, { params: { bvid: displayVideo.id }, search: { tab: 'intro' } })}
             >
               <div className="relative w-44 h-full rounded-md overflow-hidden flex-shrink-0 bg-gray-200">
                 <img

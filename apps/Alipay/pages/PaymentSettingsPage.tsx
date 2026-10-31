@@ -2,6 +2,7 @@ import { useAlipayStrings } from '../hooks/useAlipayStrings';
 import React from 'react';
 import { IcNavBack, IcNavForward, IcLab } from '../res/icons';
 import { useAlipayGestures } from '../hooks/useAlipayGestures';
+import { routes } from '../routes';
 type Row = {
   id: string;
   label: string;
@@ -11,7 +12,7 @@ type Row = {
 
 export const PaymentSettingsPage: React.FC = () => {
   const s = useAlipayStrings();
-  const { bindTap, bindBack, go } = useAlipayGestures();
+  const { bindNav, bindBack, nav } = useAlipayGestures();
 
   const groups: Row[][] = [
     [
@@ -54,13 +55,13 @@ export const PaymentSettingsPage: React.FC = () => {
                 key={row.id}
                 className="flex items-center justify-between px-4 py-4 active:bg-gray-50"
                 {...(row.id === 'payOrder'
-                  ? bindTap<HTMLDivElement>('settings.payment.order.open')
+                  ? bindNav(routes.settingsPaymentOrder)
                   : row.id === 'fastPay'
-                    ? bindTap<HTMLDivElement>('settings.payment.fastPay.open')
+                    ? bindNav(routes.settingsPaymentFastPay)
                     : row.id === 'payPassword'
-                    ? { onClick: () => go('settings.payment.password.open') }
+                    ? { onClick: () => nav.push(routes.settingsPaymentPassword) }
                     : row.id === 'autoPay'
-                        ? { onClick: () => go('settings.payment.subscriptions.open') }
+                        ? { onClick: () => nav.push(routes.settingsPaymentSubscriptions) }
                         : {})}
               >
                 <span className="text-sm font-medium text-gray-800">{row.label}</span>

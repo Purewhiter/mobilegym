@@ -10,11 +10,12 @@ import { formatLatLon } from '../data';
 import { useAppStrings } from '../../../os/useAppStrings';
 import { strings } from '../res/strings';
 import { stringsEn } from '../res/strings.en';
+import { routes } from '../routes';
 
 export function LevelPage() {
   const [searchParams] = useSearchParams();
   const menuOpen = searchParams.get('menu') === 'true';
-  const { bindTap, back } = useCompassGestures();
+  const { bindNav, back } = useCompassGestures();
 
   const s = useAppStrings(strings, stringsEn);
 
@@ -35,8 +36,8 @@ export function LevelPage() {
       <CompassTopBar
         active="level"
         className="absolute inset-x-0 top-0 z-40"
-        compassTabProps={!menuOpen ? bindTap<HTMLButtonElement>('tab.compass') : undefined}
-        moreProps={!menuOpen ? bindTap<HTMLButtonElement>('menu.open.level') : undefined}
+        compassTabProps={!menuOpen ? bindNav(routes.home, { replace: true }) : undefined}
+        moreProps={!menuOpen ? bindNav(routes.level, { search: { menu: 'true' } }) : undefined}
       />
 
       {/* Title (aligned with compass page: same vertical offset) */}
@@ -68,8 +69,8 @@ export function LevelPage() {
       {menuOpen ? (
         <MoreMenuPopover
           onBackdropClick={() => back(1)}
-          privacyProps={bindTap<HTMLButtonElement>('privacy.open')}
-          permissionsProps={bindTap<HTMLButtonElement>('permissions.open')}
+          privacyProps={bindNav(routes.privacy, { replace: true })}
+          permissionsProps={bindNav(routes.permissions, { replace: true })}
         />
       ) : null}
     </div>

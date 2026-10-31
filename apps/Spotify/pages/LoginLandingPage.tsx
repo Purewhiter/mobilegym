@@ -2,9 +2,10 @@ import React from 'react';
 import { IcClose, SpotifyLogoIcon } from '../res/icons';
 import { useSpotifyGestures } from '../hooks/useSpotifyGestures';
 import { useSpotifyStrings } from '../hooks/useSpotifyStrings';
+import { routes } from '../routes';
 
 export const LoginLandingPage: React.FC = () => {
-  const { bindBack, bindTap } = useSpotifyGestures();
+  const { bindBack, bindNav } = useSpotifyGestures();
   const s = useSpotifyStrings();
 
   return (
@@ -33,7 +34,7 @@ export const LoginLandingPage: React.FC = () => {
       <div className="flex flex-col gap-4 mb-6">
         <button
           className="w-full bg-app-primary text-black font-bold py-3.5 rounded-full text-base active:scale-95 transition-transform"
-          {...bindTap('auth.signup.open')}
+          {...bindNav(routes.signup)}
         >
           {s.login_signup_free}
         </button>

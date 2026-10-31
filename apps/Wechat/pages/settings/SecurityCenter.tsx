@@ -4,6 +4,7 @@ import { IcClose, IcMore, IcKeyRound, IcShieldOff, IcLock, IcLockOpen, IcAlertTr
 import { useWechatGestures } from '../../hooks/useWechatGestures';
 import { useWechatStore } from '../../state';
 import { useWechatStrings } from '../../hooks/useWechatStrings';
+import { routes } from '../../routes';
 
 const SECURITY_ITEMS_CONFIG = [
   {
@@ -45,7 +46,7 @@ const SECURITY_ITEMS_CONFIG = [
 ];
 
 export const SecurityCenterPage: React.FC = () => {
-  const { bindBack, bindTap } = useWechatGestures();
+  const { bindBack, bindNav } = useWechatGestures();
   const t = useWechatStrings();
 
   return (
@@ -67,7 +68,7 @@ export const SecurityCenterPage: React.FC = () => {
             <div
               key={item.titleKey}
               className="bg-white rounded-lg px-5 py-5 flex items-start gap-4 active:bg-gray-50 cursor-pointer"
-              {...(item.route ? bindTap<HTMLDivElement>('account.delete.open') : {})}
+              {...(item.route ? bindNav(routes.settingsSecurityCenterDeleteAccount) : {})}
             >
               <div className="flex-shrink-0 mt-0.5">
                 <Icon size={24} className="text-[#07c160]" />
@@ -98,7 +99,7 @@ const DELETION_CONDITION_KEYS = [
 ];
 
 export const AccountDeletionPage: React.FC = () => {
-  const { bindBack, bindTap } = useWechatGestures();
+  const { bindBack, bindNav } = useWechatGestures();
   const [agreed, setAgreed] = useState(false);
   const t = useWechatStrings();
 
@@ -163,7 +164,7 @@ export const AccountDeletionPage: React.FC = () => {
             agreed ? 'bg-[#07c160] text-white active:bg-[#06ad56]' : 'bg-gray-200 text-gray-400 cursor-not-allowed'
           }`}
           disabled={!agreed}
-          {...bindTap<HTMLButtonElement>('account.delete.apply')}
+          {...bindNav(routes.settingsSecurityCenterDeleteAccountDataWarning)}
         >
           {t.account_delete_request_submit}
         </button>
@@ -180,7 +181,7 @@ const DATA_WARNING_KEYS = [
 ] as const;
 
 export const DataWarningPage: React.FC = () => {
-  const { bindBack, bindTap } = useWechatGestures();
+  const { bindBack, bindNav } = useWechatGestures();
   const t = useWechatStrings();
 
   return (
@@ -223,7 +224,7 @@ export const DataWarningPage: React.FC = () => {
       <div className="px-10 pb-10">
         <button
           className="w-full py-3 rounded-lg text-[16px] font-medium bg-[#07c160] text-white active:bg-[#06ad56]"
-          {...bindTap<HTMLButtonElement>('account.delete.next')}
+          {...bindNav(routes.settingsSecurityCenterDeleteAccountConfirm)}
         >
           {t.common_next}
         </button>
@@ -233,7 +234,7 @@ export const DataWarningPage: React.FC = () => {
 };
 
 export const ImportantReminderPage: React.FC = () => {
-  const { bindBack, bindTap } = useWechatGestures();
+  const { bindBack, bindNav } = useWechatGestures();
   const cancelAccount = useWechatStore(s => s.cancelAccount);
   const t = useWechatStrings();
 
@@ -267,7 +268,7 @@ export const ImportantReminderPage: React.FC = () => {
       <div className="px-10 pb-10 pt-3 bg-white">
         <button
           className="w-full py-3 rounded-lg text-[16px] font-medium bg-[#fa5151] text-white active:bg-[#e04848]"
-          {...bindTap<HTMLButtonElement>('account.delete.confirm', { beforeTrigger: () => cancelAccount() })}
+          {...bindNav(routes.authLogin, { replace: true, beforeTrigger: () => cancelAccount() })}
         >
           {t.account_delete_confirm_agree}
         </button>

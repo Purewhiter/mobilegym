@@ -7,6 +7,7 @@ import { useSpotifyGestures } from '../hooks/useSpotifyGestures';
 import { useShallow } from 'zustand/react/shallow';
 import { localizeSpotifyText } from '../utils/localizeSpotifyText';
 import { openSaveLocation } from './LikedToast';
+import { routes } from '../routes';
 
 export const BottomPlayer: React.FC = () => {
   const locale = useLocale();
@@ -17,7 +18,7 @@ export const BottomPlayer: React.FC = () => {
   const toggleLike = useSpotifyStore(s => s.toggleLike);
   const likedSongIds = useSpotifyStore(selectLikedSongIds);
   const isLiked = (trackId: string, track?: { title: string; artist: string }) => likedSongIds.has(trackId, track);
-  const { bindTap } = useSpotifyGestures();
+  const { bindTap, bindNav } = useSpotifyGestures();
 
   if (!currentTrack) return null;
 
@@ -25,7 +26,7 @@ export const BottomPlayer: React.FC = () => {
   const displayText = (value: string | undefined) => localizeSpotifyText(value, isEnglish);
 
   return (
-    <div data-hide-on-keyboard className="absolute left-2 right-2 bottom-(--app-bottom-player-bottom) z-[65]" {...bindTap('player.open')}>
+    <div data-hide-on-keyboard className="absolute left-2 right-2 bottom-(--app-bottom-player-bottom) z-[65]" {...bindNav(routes.player)}>
       <div className="bg-[#302b28] text-white rounded-lg flex items-center px-4 py-3 gap-3 shadow-2xl overflow-hidden relative">
         <div className="flex-1 min-w-0 flex items-center gap-3 mb-1">
           <div className="w-12 h-12 rounded-md overflow-hidden bg-gray-700 flex-shrink-0">

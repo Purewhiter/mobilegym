@@ -7,6 +7,7 @@ import { useXGestures } from '../hooks/useXGestures';
 import { useXStrings } from '../hooks/useXStrings';
 import { useSubmitOnce } from '../../../os/hooks/useSubmitOnce';
 import { XImage, XVideo } from '../components/XMedia';
+import { routes } from '../routes';
 
 export const ReplyPage: React.FC = () => {
   const { id } = useParams();
@@ -16,7 +17,7 @@ export const ReplyPage: React.FC = () => {
   const { post: original, loading: originalLoading } = useXResolvedPostQuery(id || '');
   const addReply = useXStore(s => s.addReply);
   const submitOnce = useSubmitOnce();
-  const { bindBack, bindTap, back } = useXGestures();
+  const { bindBack, bindTap, back, bindNav } = useXGestures();
   const s = useXStrings();
 
   const replies = React.useMemo(() => {
@@ -84,7 +85,7 @@ export const ReplyPage: React.FC = () => {
       <div className="flex-1 overflow-y-auto no-scrollbar" data-scroll-container="main" data-scroll-direction="vertical">
         <div className="px-4 py-4">
           <div className="flex">
-            <div className="w-10 h-10 rounded-full bg-gray-200 mr-3 overflow-hidden shrink-0 cursor-pointer" {...bindTap('user.open.fromPost', { params: { id: original.authorId } })}>
+            <div className="w-10 h-10 rounded-full bg-gray-200 mr-3 overflow-hidden shrink-0 cursor-pointer" {...bindNav(routes.user, { params: { id: original.authorId } })}>
               {original.author?.avatar ? (
                 <XImage src={original.author.avatar} alt={original.author.name} className="w-full h-full object-cover" />
               ) : null}

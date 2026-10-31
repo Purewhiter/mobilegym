@@ -2,20 +2,19 @@ import React, { useEffect, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useLocale } from '@/os/locale';
 import { useAppStrings } from '@/os/useAppStrings';
-import { useAppNavigate } from '../navigation';
 import { PHONE_SETTINGS_PAGES } from '../data/phoneSettingsPages.generated';
 import { useContactsGestures } from '../hooks/useContactsGestures';
 import { IcNavBack, IcNavForward } from '../res/icons';
 import { strings } from '../res/strings';
 import { stringsEn } from '../res/strings.en';
 import { getPhoneSettingsPageTitle } from '../utils/localizedText';
+import { routes } from '../routes';
 
 export const PhoneSettingsHomePage: React.FC = () => {
   const locale = useLocale();
   const isEnglish = locale === 'en';
-  const { bindBack, bindTap } = useContactsGestures();
+  const { bindBack, bindNav, nav } = useContactsGestures();
   const location = useLocation();
-  const { go } = useAppNavigate();
   const s = useAppStrings(strings, stringsEn);
 
   const mode: 'calls' | 'contacts' = location.pathname.includes('/settings/contacts') ? 'contacts' : 'calls';
@@ -30,9 +29,9 @@ export const PhoneSettingsHomePage: React.FC = () => {
 
   useEffect(() => {
     if (PHONE_SETTINGS_PAGES[rootPageId]) {
-      go('settings.page.open', { pageId: rootPageId }, { mode: 'replace' });
+      nav.replace(routes.settingsPage, { pageId: rootPageId });
     }
-  }, [go, rootPageId]);
+  }, [nav, rootPageId]);
 
   if (PHONE_SETTINGS_PAGES[rootPageId]) {
     return (
@@ -109,7 +108,7 @@ export const PhoneSettingsHomePage: React.FC = () => {
               <React.Fragment key={id}>
                 <button
                   type="button"
-                  {...bindTap('settings.page.open', { params: { pageId: id } })}
+                  {...bindNav(routes.settingsPage, { params: { pageId: id } })}
                   className="w-full px-4 py-4 flex items-center justify-between text-left active:bg-black/5"
                 >
                   <span className="text-[15px] text-app-text">

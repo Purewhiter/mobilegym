@@ -3,6 +3,7 @@ import { useAlipayStrings } from '../hooks/useAlipayStrings';
 import { useAlipayStore } from '../state';
 import { useAlipayGestures } from '../hooks/useAlipayGestures';
 import { IcNavBack, IcEye, IcEyeOff, IcNavForward, IcShield } from '../res/icons';
+import { routes } from '../routes';
 
 const fmt = (n: number, visible: boolean) =>
   visible ? n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '****';
@@ -14,7 +15,7 @@ function ChevRight({ className }: { className?: string }) {
 /** 总资产：与理财页同源；理财资产中「余额」= 总资产，「余额宝」固定 0.00 */
 export const TotalAssetsPage: React.FC = () => {
   const balance = useAlipayStore(s => s.balance);
-  const { bindBack, bindTap } = useAlipayGestures();
+  const { bindBack, bindNav } = useAlipayGestures();
   const s = useAlipayStrings();
   const [visible, setVisible] = React.useState(true);
   const total = balance.total;
@@ -35,7 +36,7 @@ export const TotalAssetsPage: React.FC = () => {
             </button>
             <span className="text-[19px] text-gray-900 font-medium">{s.total_assets}</span>
           </div>
-          <button type="button" className="px-1 py-1 text-right text-[15px] text-gray-800 font-medium active:opacity-70 mr-1" {...bindTap<HTMLButtonElement>('assets.finance.open')}>
+          <button type="button" className="px-1 py-1 text-right text-[15px] text-gray-800 font-medium active:opacity-70 mr-1" {...bindNav(routes.finance)}>
             {s.total_assets_page_go_finance}
           </button>
         </div>

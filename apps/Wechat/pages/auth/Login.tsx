@@ -2,13 +2,12 @@ import React, { useMemo, useState } from 'react';
 import { useWechatStore } from '../../state';
 import { CaptchaModal } from '../../components/CaptchaModal';
 import { IcClose } from '../../res/icons';
-import { useAppNavigate } from '../../navigation';
 import { useWechatGestures } from '../../hooks/useWechatGestures';
 import { useLocale } from '@/os/locale';
+import { routes } from '../../routes';
 
 export const WechatLoginPage: React.FC = () => {
-  const { go } = useAppNavigate();
-  const { bindBack } = useWechatGestures();
+  const { bindBack, nav } = useWechatGestures();
   const locale = useLocale();
   const isEnglish = locale === 'en';
   const auth = useWechatStore(s => s.auth);
@@ -118,8 +117,8 @@ export const WechatLoginPage: React.FC = () => {
     return Boolean(acc?.requireCaptcha);
   }, [auth?.accounts, phone]);
 
-  const goTrust = (p: string) => go('auth.trustDevice.open', { phone: p });
-  const goHome = () => go('auth.login.success');
+  const goTrust = (p: string) => nav.push(routes.authTrustDevice, {}, { search: { phone: p } });
+  const goHome = () => nav.replace(routes.home);
 
   const handleLogin = () => {
     const p = phone.trim();
@@ -312,11 +311,11 @@ export const WechatLoginPage: React.FC = () => {
 
         <div className="mt-auto pb-8">
           <div className="flex items-center justify-center gap-6 text-[13px] text-[#576b95]">
-            <button onClick={() => go('auth.forgotPassword.open')}>{text.forgotPassword}</button>
+            <button onClick={() => nav.push(routes.authForgotPassword)}>{text.forgotPassword}</button>
             <div className="w-px h-3 bg-gray-300" />
             <button>{text.exportChatHistory}</button>
             <div className="w-px h-3 bg-gray-300" />
-            <button onClick={() => go('auth.devices.open', { phone: phoneTrimmed })}>{text.more}</button>
+            <button onClick={() => nav.push(routes.authDevices, {}, { search: { phone: phoneTrimmed } })}>{text.more}</button>
           </div>
         </div>
       </div>

@@ -6,6 +6,7 @@ import { useWechatStore } from '../../state';
 import { useWechatGestures } from '../../hooks/useWechatGestures';
 import { useWechatStrings } from '../../hooks/useWechatStrings';
 import { strings } from '../../res/strings';
+import { routes } from '../../routes';
 
 type WechatStrings = typeof strings;
 
@@ -23,7 +24,7 @@ function localizePermission(t: WechatStrings, permission: string) {
 
 export const AuthorizationManagementPage: React.FC = () => {
   const t = useWechatStrings();
-  const { bindTap } = useWechatGestures();
+  const { bindNav } = useWechatGestures();
   const authorizedApps = useWechatStore(s => s.authorizedApps);
 
   return (
@@ -36,9 +37,7 @@ export const AuthorizationManagementPage: React.FC = () => {
         {authorizedApps.map(app => (
           <div
             key={app.id}
-            {...bindTap<HTMLDivElement>('settings.privacy.authorization.detail.open', {
-              params: { id: app.id },
-            })}
+            {...bindNav(routes.settingsPrivacyAuthorizationById, { params: { id: app.id } })}
             className="px-6 py-4 flex items-center active:bg-(--app-c-tw-bg-gray-50) border-b border-(--app-c-tw-border-gray-100)"
           >
             <div className="flex-1 min-w-0">

@@ -1,6 +1,6 @@
 import React, { useMemo, useRef, useState } from 'react';
 import { SettingsHeader } from './SettingsHeader';
-import { useAppNavigate } from '../navigation';
+import { useNav } from '../../../os/navigation';
 import { PreferenceItem } from './PreferenceItem';
 import { Toast } from '@/os/components/Toast';
 import { InputDialog } from './InputDialog';
@@ -8,9 +8,10 @@ import { useWifiConnectedSsid, useWifiSavedNetworks, useBooleanPreference, useWi
 import { strings } from '../res/strings';
 import { stringsEn } from '../res/strings.en';
 import { useAppStrings } from '@/os/useAppStrings';
+import { routes } from '../routes';
 
 export const WifiSavedNetworksPage: React.FC<{ title: string }> = ({ title }) => {
-  const { go } = useAppNavigate();
+  const nav = useNav();
   const s = useAppStrings(strings, stringsEn);
   const savedNetworks = useWifiSavedNetworks();
   const connectedSsid = useWifiConnectedSsid();
@@ -77,7 +78,7 @@ export const WifiSavedNetworksPage: React.FC<{ title: string }> = ({ title }) =>
                   value={isConnected ? s.connected : undefined}
                   showDivider={idx < list.length - 1}
                   showChevron={true}
-                  onClick={() => go('page.open', { pageId: `wifi_saved_network__${encodeURIComponent(n.ssid)}` })}
+                  onClick={() => nav.push(routes.page, { pageId: `wifi_saved_network__${encodeURIComponent(n.ssid)}` })}
                 />
               );
             })}

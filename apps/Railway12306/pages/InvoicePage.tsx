@@ -4,8 +4,9 @@ import { useRailwayGestures } from '../hooks/useRailwayGestures';
 import { useLocale } from '../../../os/locale';
 import { useRailwayStrings } from '../hooks/useRailwayStrings';
 import { localizeRailwayText } from '../utils/localizeRailwayItem';
+import { routes } from '../routes';
 export const InvoicePage: React.FC = () => {
-  const { bindBack, bindTap } = useRailwayGestures();
+  const { bindBack, bindNav } = useRailwayGestures();
   const isEnglish = useLocale() === 'en';
   const s = useRailwayStrings();
 
@@ -35,11 +36,11 @@ export const InvoicePage: React.FC = () => {
           </div>
         </div>
         <div className="flex gap-3">
-          <button className="flex-1 flex items-center justify-center gap-2 bg-blue-50 rounded-xl py-4" {...bindTap<HTMLButtonElement>('invoice.invoiceHeaders' as any)}>
+          <button className="flex-1 flex items-center justify-center gap-2 bg-blue-50 rounded-xl py-4" {...bindNav(routes.invoiceHeaders)}>
             <IcFile size={22} className="text-app-primary" />
             <span className="text-sm font-medium text-gray-700">{s.invoice_manage_headers}</span>
           </button>
-          <button className="flex-1 flex items-center justify-center gap-2 bg-blue-50 rounded-xl py-4" {...bindTap<HTMLButtonElement>('invoice.emailSettings' as any)}>
+          <button className="flex-1 flex items-center justify-center gap-2 bg-blue-50 rounded-xl py-4" {...bindNav(routes.invoiceEmail)}>
             <IcMail size={22} className="text-app-primary" />
             <span className="text-sm font-medium text-gray-700">{s.invoice_email_title}</span>
           </button>

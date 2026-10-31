@@ -5,10 +5,11 @@ import { dimens } from '../res/dimens';
 import { getWechatReadingBookById, getWechatReadingUserById, useWechatReadingStore } from '../state';
 import { useWechatReadingGestures } from '../hooks/useWechatReadingGestures';
 import { useWechatReadingStrings } from '../hooks/useWechatReadingStrings';
+import { routes } from '../routes';
 
 export const UserBookshelfPage: React.FC = () => {
     const { userId } = useParams<{ userId: string }>();
-    const { bindBack, bindTap } = useWechatReadingGestures();
+    const { bindBack, bindNav } = useWechatReadingGestures();
     const user = useWechatReadingStore(s => s.user);
     const shelf = useWechatReadingStore(s => s.shelf);
     const s = useWechatReadingStrings();
@@ -43,7 +44,7 @@ export const UserBookshelfPage: React.FC = () => {
                         <div
                             key={book.id}
                             className="flex flex-col gap-3 active:opacity-60" style={{ transition: 'opacity var(--app-duration-short) var(--app-easing-standard)' }}
-                            {...bindTap<HTMLDivElement>('book.detail.open', { params: { bookId: book.id } })}
+                            {...bindNav(routes.book, { params: { bookId: book.id } })}
                         >
                             <div className={`aspect-[3/4] ${book.coverColor || 'bg-(--app-c-tw-bg-slate-100)'} rounded shadow-sm flex items-center justify-center text-center p-2 relative overflow-hidden border border-(--app-c-tw-border-gray-50)`}>
                                 <span className={`${book.coverColor === 'bg-app-surface' ? 'text-(--app-c-tw-text-slate-800)' : 'text-white'} text-(--app-tab-bar-label-size) font-bold leading-tight drop-shadow-sm`}>

@@ -9,6 +9,7 @@ import { useBilibiliGestures } from '../hooks/useBilibiliGestures';
 import { useVideosByIds } from '../hooks/useData';
 import { BilibiliDanmakuIcon } from '../res/icons';
 import type { BilibiliVideo } from '../types';
+import { routes } from '../routes';
 
 const Lock: React.FC<{ size?: number; className?: string }> = ({ size = 14, className }) => (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
@@ -127,7 +128,7 @@ const VideoListItem: React.FC<{
 type FavTab = 'folders' | 'all' | 'video' | 'article';
 
 export const FavoritesPage: React.FC = () => {
-    const { bindBack, bindTap } = useBilibiliGestures();
+    const { bindBack, bindNav } = useBilibiliGestures();
     const [searchParams] = useSearchParams();
     const user = useBilibiliStore(s => s.user);
 
@@ -173,7 +174,7 @@ export const FavoritesPage: React.FC = () => {
                                             ? 'bg-app-primary/10 text-app-primary'
                                             : 'text-app-text-muted'
                                     }`}
-                                    {...(isActive ? {} : bindTap('favorites.tab.switch', { params: { tab: tab.key } }))}
+                                    {...(isActive ? {} : bindNav(routes.favorites, { search: { tab: tab.key }, replace: true }))}
                                 >
                                     {tab.label}
                                 </div>
@@ -197,7 +198,7 @@ export const FavoritesPage: React.FC = () => {
                                 key={folder.id}
                                 folder={folder}
                                 videos={allFavVideos}
-                                onTap={bindTap('favFolderDetail.open', { params: { folderId: folder.id } })}
+                                onTap={bindNav(routes.favoritesFolder, { params: { folderId: folder.id } })}
                             />
                         ))}
                     </div>
@@ -210,7 +211,7 @@ export const FavoritesPage: React.FC = () => {
                                 <VideoListItem
                                     key={video.id}
                                     video={video}
-                                    onTap={bindTap('video.open', { params: { bvid: video.id } })}
+                                    onTap={bindNav(routes.video, { params: { bvid: video.id }, search: { tab: 'intro' } })}
                                 />
                             ))
                         ) : (

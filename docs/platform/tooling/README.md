@@ -10,6 +10,6 @@ Use these docs when changing build-time discovery, generated artifacts, Vite plu
 | WMR renderer/parser lookup | [`wmr.md`](wmr.md) |
 | Generated artifact rules and commands | [`generated-artifacts.md`](generated-artifacts.md) |
 | App module file conventions | [`../app/module-contract.md`](../app/module-contract.md) |
-| Navigation artifact semantics | [`../navigation/declaration.md`](../navigation/declaration.md) |
+| Exploring an app's navigation graph | [`../navigation/routes.md`](../navigation/routes.md) |
 
 Most app authors only need the commands surfaced in the root `README.md`; this directory is for platform maintainers.

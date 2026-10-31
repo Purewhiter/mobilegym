@@ -5,11 +5,12 @@ import { useWechatStore } from '../../state';
 import { useShallow } from 'zustand/react/shallow';
 import { SettingsItem, SettingsToggle } from './Shared';
 import { useWechatGestures } from '../../hooks/useWechatGestures';
+import { routes } from '../../routes';
 
 // --- General Settings (通用) ---
 export const General: React.FC = () => {
   const t = useWechatStrings();
-    const { bindTap } = useWechatGestures();
+    const { bindTap, bindNav } = useWechatGestures();
     const { user, settings, updateSettings } = useWechatStore(useShallow(s => ({
         user: s.user,
         settings: s.settings,
@@ -42,7 +43,7 @@ export const General: React.FC = () => {
                 <SettingsItem 
                     label={t.settings_dark_mode} 
                     rightContent={<span className="text-(--app-settings-item-text-size)" style={{ color: 'var(--app-c-settings-item-extra-text)' }}>{getDarkModeStatus()}</span>} 
-                    tapProps={bindTap<HTMLDivElement>('settings.general.darkMode.open')}
+                    tapProps={bindNav(routes.settingsGeneralDarkMode)}
                 />
                 <SettingsToggle
                   label={t.general_landscape_mode}
@@ -64,7 +65,7 @@ export const General: React.FC = () => {
                 />
                 <SettingsItem label={t.general_auto_download} rightContent={<span className="text-(--app-settings-item-text-size)" style={{ color: 'var(--app-c-settings-item-extra-text)' }}>{t.general_wifi_only}</span>} />
                 <SettingsItem label={t.general_language} rightContent={<span className="text-(--app-settings-item-text-size)" style={{ color: 'var(--app-c-settings-item-extra-text)' }}>{t.settings_follow_system}</span>} />
-                <SettingsItem label={t.general_translation} tapProps={bindTap<HTMLDivElement>('settings.general.translation.open')} isLast />
+                <SettingsItem label={t.general_translation} tapProps={bindNav(routes.settingsGeneralTranslation)} isLast />
             </div>
 
             {/* Group 2: Others */}
@@ -72,10 +73,10 @@ export const General: React.FC = () => {
             <div className="bg-app-surface">
                 <SettingsItem label={t.general_storage} />
                 <SettingsItem label={t.general_font_size} />
-                <SettingsItem label={t.topbar_media_files} tapProps={bindTap<HTMLDivElement>('settings.general.media.open')} />
-                <SettingsItem label={t.discover_listen} tapProps={bindTap<HTMLDivElement>('settings.general.audio.open')} />
-                <SettingsItem label={t.discover_management} tapProps={bindTap<HTMLDivElement>('settings.general.discover.open')} />
-                <SettingsItem label={t.settings_accessibility} tapProps={bindTap<HTMLDivElement>('settings.general.accessibility.open')} isLast />
+                <SettingsItem label={t.topbar_media_files} tapProps={bindNav(routes.settingsGeneralMedia)} />
+                <SettingsItem label={t.discover_listen} tapProps={bindNav(routes.settingsGeneralAudio)} />
+                <SettingsItem label={t.discover_management} tapProps={bindNav(routes.settingsGeneralDiscover)} />
+                <SettingsItem label={t.settings_accessibility} tapProps={bindNav(routes.settingsGeneralAccessibility)} isLast />
             </div>
         </div>
     );
@@ -90,7 +91,7 @@ export const ChatSettings: React.FC = () => {
         updateSettings: s.updateSettings,
     })));
     const { chat } = settings;
-    const { bindTap } = useWechatGestures();
+    const { bindTap, bindNav } = useWechatGestures();
 
     const update = (key: keyof typeof chat, value: boolean) => {
         updateSettings({
@@ -143,7 +144,7 @@ export const ChatSettings: React.FC = () => {
 // --- Notification Settings (通知) ---
 export const NotificationSettings: React.FC = () => {
     const t = useWechatStrings();
-    const { bindTap } = useWechatGestures();
+    const { bindTap, bindNav } = useWechatGestures();
     const { user, settings, updateSettings } = useWechatStore(useShallow(s => ({
         user: s.user,
         settings: s.settings,
@@ -201,7 +202,7 @@ export const NotificationSettings: React.FC = () => {
                 <SettingsItem 
                     label={t.notification_display_content} 
                     subLabel={displayLabels[notifications.displayMode || 'full']} 
-                    tapProps={bindTap<HTMLDivElement>('settings.notifications.display.open')}
+                    tapProps={bindNav(routes.settingsNotificationsDisplay)}
                     isLast 
                 />
             </div>
@@ -226,12 +227,12 @@ export const NotificationSettings: React.FC = () => {
                 <SettingsItem 
                     label={t.topbar_notification_sound}
                     rightContent={<span className="text-(--app-settings-item-text-size)" style={{ color: 'var(--app-c-settings-item-extra-text)' }}>{notifications.notificationSound || t.settings_follow_system}</span>} 
-                    tapProps={bindTap<HTMLDivElement>('settings.notifications.sound.open')}
+                    tapProps={bindNav(routes.settingsNotificationsSound)}
                 />
                 <SettingsItem 
                     label={t.profile_ringtone}
                     rightContent={<span className="text-(--app-settings-item-text-size)" style={{ color: 'var(--app-c-settings-item-extra-text)' }}>{notifications.incomingRingtone || t.common_wechat}</span>}
-                    tapProps={bindTap<HTMLDivElement>('settings.notifications.ringtone.open')}
+                    tapProps={bindNav(routes.settingsNotificationsRingtone)}
                     isLast 
                 />
             </div>

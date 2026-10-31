@@ -109,7 +109,7 @@ priority (high → low):
   Keyboard         (700)
   IntentChooser    (900)        ← context-conditional, not always above 700
   MediaPicker      (600)
-  App back         (100)        ← app's own go() / back() handler
+  App back         (100)        ← app's own back handler (useAppNavigationHandler onBack)
   Activity back     (50)        ← OS pops one Activity if stack > 1
   finishTopActivity (25)
   os.returnToLauncherTask (12)  ← caller-return: reactivate launchedByTaskId, reset app to /

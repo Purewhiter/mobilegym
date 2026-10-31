@@ -10,6 +10,7 @@ import type { RedditCommunity, RedditPost } from '../types';
 import { REDDIT_COMMUNITIES } from '../data';
 import { useRedditSearchPosts } from '../hooks/useRedditPosts';
 import { matchesWord } from '../utils/view';
+import { routes } from '../routes';
 
 const TRENDING_TOPICS = [
   { title: 'Arc Raiders Shrouded Sky Update', subtitle: 'Based on your interests' },
@@ -23,7 +24,7 @@ const TRENDING_TOPICS = [
 
 export const SearchPage: React.FC = () => {
   const s = useAppStrings(strings, stringsEn);
-  const { bindBack, bindTap } = useRedditGestures();
+  const { bindBack, bindNav } = useRedditGestures();
   const communities = REDDIT_COMMUNITIES;
   const { user } = useRedditStore(useShallow((state) => ({
     user: state.user,
@@ -198,7 +199,7 @@ export const SearchPage: React.FC = () => {
                 )}
                 <div className="space-y-3">
                   {searchedPosts.map((post) => {
-                    const postRef = bindTap('post.comments.open', { params: { postId: post.id } });
+                    const postRef = bindNav(routes.post, { params: { postId: post.id } });
                     return (
                       <div
                         key={post.id}

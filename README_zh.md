@@ -337,8 +337,7 @@ python -m bench_env.run --agent <name> --model-name <id> --model-base-url <url> 
 apps/MyApp/
 ├── manifest.ts                    # ⭐ 身份、图标、主题、intent filters
 ├── MyAppApp.tsx                   # ⭐ 入口组件（必须 export default）
-├── navigation.declaration.ts      # ⭐ FSM：路由 + 跳转 + 动作
-├── navigation.ts                  # go() / back()（支持 popTo）
+├── routes.ts                      # ⭐ 路由表：页面 + URL 里的界面状态
 ├── res/                           # colors / strings / dimens / icons
 ├── pages/, components/, context/, hooks/
 └── data/

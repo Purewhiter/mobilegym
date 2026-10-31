@@ -4,9 +4,10 @@ import { IcNavBack, IcMore, IcScan, IcPiggyBank, IcPay, IcFastPay, IcTransfer } 
 import { RealisticQRCode } from '../components/RealisticQRCode';
 import { useAlipayGestures } from '../hooks/useAlipayGestures';
 import { stream } from '../../../os/RandomService';
+import { routes } from '../routes';
 export const PayPage: React.FC = () => {
   const s = useAlipayStrings();
-  const { bindTap, bindBack } = useAlipayGestures();
+  const { bindNav, bindBack } = useAlipayGestures();
 
   return (
     <div className="bg-app-primary h-full flex flex-col pt-10" data-status-bar-foreground="light">
@@ -79,7 +80,7 @@ export const PayPage: React.FC = () => {
         <div className="mt-4 mx-4 bg-[#4B9FFF]/20 rounded-xl overflow-hidden mb-8">
          <button
            className="w-full flex items-center justify-between p-4 bg-app-primary border-b border-white/10 hover:bg-app-primary/90"
-           {...bindTap<HTMLButtonElement>('receive.open')}
+           {...bindNav(routes.payReceive)}
          >
             <div className="flex items-center text-white">
                <div className="w-8 h-8 rounded-full bg-app-surface/20 flex items-center justify-center mr-3">
@@ -106,7 +107,7 @@ export const PayPage: React.FC = () => {
 
          <button
            className="w-full flex items-center justify-between p-4 bg-app-primary"
-           {...bindTap<HTMLButtonElement>('transfer.open')}
+           {...bindNav(routes.payTransfer)}
          >
             <div className="flex items-center text-white">
                <div className="w-8 h-8 rounded-full bg-app-surface/20 flex items-center justify-center mr-3">

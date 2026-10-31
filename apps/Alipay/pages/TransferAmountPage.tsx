@@ -9,6 +9,7 @@ import { IcNavBack, IcSecureCheck } from '../res/icons';
 import { useAlipayStore } from '../state';
 import { maskPhone } from '../utils/maskPhone';
 import { DefaultAvatar } from '../components/DefaultAvatar';
+import { routes } from '../routes';
 
 const HINT_KEYS = {
   insufficientBalance: 'insufficient_balance',
@@ -30,7 +31,7 @@ export const TransferAmountPage: React.FC = () => {
     setLastPaymentHint,
   } = useAlipayStore();
   const paymentPassword = useAlipayStore(state => state.userInfo.paymentPassword);
-  const { bindTap, bindBack, back, go } = useAlipayGestures();
+  const { bindTap, bindBack, back, nav, bindNav } = useAlipayGestures();
   const s = useAlipayStrings();
   const isEnglish = useLocale() === 'en';
   const [amount, setAmount] = useState('');
@@ -103,7 +104,7 @@ export const TransferAmountPage: React.FC = () => {
 
     setTransferReceipt({ amount, contact: displayContact, paymentMethod: paymentMethodLabel });
     setLastPaymentHint(HINT_KEYS.transferSuccess);
-    go('transfer.success.open');
+    nav.push(routes.payTransferSuccess);
   };
 
   useEffect(() => {
@@ -150,7 +151,7 @@ export const TransferAmountPage: React.FC = () => {
     if (!amount || Number(amount) <= 0) return;
     setIsAmountInputActive(false);
     amountInputRef.current?.blur();
-    go('transferAmount.password.open');
+    nav.push(routes.payTransferAmount, {}, { search: { modal: 'password' } });
   };
 
   return (
@@ -251,7 +252,7 @@ export const TransferAmountPage: React.FC = () => {
               className={`w-full rounded-full py-3 text-lg font-medium text-white shadow-sm ${amount ? 'bg-app-primary' : 'cursor-not-allowed bg-app-primary/50'}`}
               style={{ transition: 'color var(--app-duration-short) var(--app-easing-standard), background-color var(--app-duration-short) var(--app-easing-standard)' }}
               disabled={!amount}
-              {...(amount ? bindTap<HTMLButtonElement>('transferAmount.password.open') : {})}
+              {...(amount ? bindNav(routes.payTransferAmount, { search: { modal: 'password' } }) : {})}
             >
               {s.transfer}
             </button>

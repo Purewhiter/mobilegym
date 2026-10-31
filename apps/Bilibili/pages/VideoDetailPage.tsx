@@ -14,6 +14,7 @@ import { useBilibiliStore } from '../state';
 import { useBilibiliGestures } from '../hooks/useBilibiliGestures';
 import { BilibiliDanmakuIcon } from '../res/icons';
 import coinMascotImg from '../assets/22-coin.png';
+import { routes } from '../routes';
 // “你可能感兴趣”面板是本地子状态：绑定到同一个 history entry（idx），push/back 仍保留；entry 被 pop 后消失
 const videoIntroLocalStateByEntryId = new Map<string, { suggestionsOpen: boolean }>();
 
@@ -25,7 +26,7 @@ export function setPendingNewFavFolder(id: string) {
 const CommentItem: React.FC<{ comment: CommentReply }> = ({ comment }) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const { now } = useSystemTime();
-    const { bindTap } = useBilibiliGestures();
+    const { bindTap, nav, bindNav } = useBilibiliGestures();
 
     const formatCommentTime = (ctime: number) => {
         if (!ctime) return '';
@@ -46,7 +47,7 @@ const CommentItem: React.FC<{ comment: CommentReply }> = ({ comment }) => {
         <div className="flex gap-3 mb-6">
             <div
                 className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0 border border-gray-100 mt-1 relative cursor-pointer active:opacity-80 transition-opacity"
-                {...bindTap('user.open', { params: { mid: comment.mid }, stopPropagation: true })}
+                {...bindNav(routes.user, { params: { mid: comment.mid }, search: { tab: 'works' }, stopPropagation: true })}
             >
                 <img src={comment.avatar} className="w-full h-full object-cover" referrerPolicy="no-referrer" loading="lazy" />
                 {comment.vip && (
@@ -59,7 +60,7 @@ const CommentItem: React.FC<{ comment: CommentReply }> = ({ comment }) => {
                     <div className="flex items-center gap-2">
                         <span
                             className="text-[13px] font-medium text-gray-500 cursor-pointer active:opacity-60"
-                            {...bindTap('user.open', { params: { mid: comment.mid }, stopPropagation: true })}
+                            {...bindNav(routes.user, { params: { mid: comment.mid }, search: { tab: 'works' }, stopPropagation: true })}
                         >
                             {comment.uname}
                         </span>
@@ -95,7 +96,7 @@ const CommentItem: React.FC<{ comment: CommentReply }> = ({ comment }) => {
                                 <div className="text-[13px] text-app-text mb-2">
                                     <span
                                         className="text-[#00A1D6] mr-1 cursor-pointer active:opacity-60"
-                                        {...bindTap('user.open', { params: { mid: comment.replies![0].mid }, stopPropagation: true })}
+                                        {...bindNav(routes.user, { params: { mid: comment.replies![0].mid }, search: { tab: 'works' }, stopPropagation: true })}
                                     >
                                         {comment.replies[0].uname}
                                     </span>
@@ -166,7 +167,7 @@ const RECOMMENDED_UP_MIDS = BILIBILI_CONFIG.recommendedUp.map(up => String(up.id
 
 export const VideoDetailPage: React.FC = () => {
     const { bvid } = useParams<{ bvid: string }>();
-    const { bindTap, bindLongPress, bindBack, go, back } = useBilibiliGestures();
+    const { bindTap, bindLongPress, bindBack, nav, back, bindNav } = useBilibiliGestures();
     const [searchParams] = useSearchParams();
     const location = useLocation();
 
@@ -368,7 +369,7 @@ export const VideoDetailPage: React.FC = () => {
     };
 
     const handleCoinClick = () => {
-        go('video.coinDialog.open', {});
+        nav.push(routes.video, { bvid: bvid as string }, { search: { tab: 'intro', coinDialog: 'open' } });
     };
 
     const [coinDialogSelected, setCoinDialogSelected] = useState(1);
@@ -471,8 +472,8 @@ export const VideoDetailPage: React.FC = () => {
 
     const handleCreateFolderFromSheet = useCallback(() => {
         setShowFavSheet(false);
-        go('favCreate.open', {});
-    }, [go]);
+        nav.push(routes.favCreate);
+    }, [nav]);
 
     useEffect(() => {
         if (pendingNewFavFolderId) {
@@ -742,13 +743,13 @@ export const VideoDetailPage: React.FC = () => {
             <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 sticky top-[calc(2.5rem+56.25cqw)] bg-app-surface z-40">
                 <div className="flex gap-6 relative">
                     <button
-                        {...(activeTab === 'intro' ? {} : bindTap('video.tab.switch', { params: { tab: 'intro' } }))}
+                        {...(activeTab === 'intro' ? {} : bindNav(routes.video, { params: { bvid: bvid as string }, search: { tab: 'intro' }, replace: true }))}
                         className={`text-[15px] font-medium transition-colors ${activeTab === 'intro' ? 'text-app-primary' : 'text-gray-600'}`}
                     >
                         简介
                     </button>
                     <button
-                        {...(activeTab === 'comment' ? {} : bindTap('video.tab.switch', { params: { tab: 'comment' } }))}
+                        {...(activeTab === 'comment' ? {} : bindNav(routes.video, { params: { bvid: bvid as string }, search: { tab: 'comment' }, replace: true }))}
                         className={`text-[15px] font-medium transition-colors ${activeTab === 'comment' ? 'text-app-primary' : 'text-gray-600'}`}
                     >
                         评论 <span className="text-xs font-normal">{commentCount}</span>
@@ -783,7 +784,7 @@ export const VideoDetailPage: React.FC = () => {
                         <div className="flex items-center justify-between mb-4">
                             <div
                                 className="flex items-center gap-2 cursor-pointer active:opacity-70 transition-opacity"
-                                {...(mid ? bindTap('user.open', { params: { mid: String(mid) } }) : {})}
+                                {...(mid ? bindNav(routes.user, { params: { mid: String(mid) }, search: { tab: 'works' } }) : {})}
                             >
                                 <div className="w-9 h-9 rounded-full overflow-hidden border border-gray-100">
                                     <img src={upInfo.face} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
@@ -801,7 +802,7 @@ export const VideoDetailPage: React.FC = () => {
                                 {isFollowed ? (
                                     <button
                                         className="h-7 px-3 rounded-full bg-[#E3E5E7] text-[#61666D] flex items-center justify-center gap-1 font-medium text-[12px] active:bg-[#d0d3d6] transition-colors"
-                                        {...bindTap('video.menu.open')}
+                                        {...bindNav(routes.video, { params: { bvid: bvid as string }, search: { tab: 'intro', menu: 'true' } })}
                                     >
                                         <Menu size={12} /> 已关注
                                     </button>
@@ -855,7 +856,7 @@ export const VideoDetailPage: React.FC = () => {
                                         return (
                                             <div
                                                 key={up.name}
-                                                {...bindTap('user.open', { params: { mid: up.id } })}
+                                                {...bindNav(routes.user, { params: { mid: up.id }, search: { tab: 'works' } })}
                                                 className="w-(--app-suggestion-card-width) bg-app-surface border border-[#E3E5E7] rounded-lg p-2 flex flex-col items-center shrink-0 relative shadow-sm active:opacity-90"
                                             >
                                                 {face ? (
@@ -1085,7 +1086,7 @@ export const VideoDetailPage: React.FC = () => {
                                     <div
                                         key={v.id}
                                         className="flex gap-3 h-20 relative cursor-pointer active:opacity-70 transition-opacity"
-                                        {...bindTap('video.open.fromVideo', { params: { bvid: v.id } })}
+                                        {...bindNav(routes.video, { params: { bvid: v.id }, search: { tab: 'intro' } })}
                                     >
                                         <div className="relative w-36 h-full rounded-md bg-gray-200 overflow-hidden flex-shrink-0">
                                             <img src={v.cover} className="w-full h-full object-cover" referrerPolicy="no-referrer" loading="lazy" />

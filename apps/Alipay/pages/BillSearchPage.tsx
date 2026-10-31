@@ -13,6 +13,7 @@ import {
   getBillRefundStatusLabel,
   recordMatchesBillFilters,
 } from '../utils/bills';
+import { routes } from '../routes';
 
 const MONTH_LABELS_EN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -48,11 +49,11 @@ const formatMonthLabel = (monthKey: string, currentYear: number, monthSuffix: st
 
 const SearchRecordRow: React.FC<{ record: AlipayTransferRecord; isEnglish: boolean }> = ({ record, isEnglish }) => {
   const s = useAlipayStrings();
-  const { bindTap } = useAlipayGestures();
+  const { bindNav } = useAlipayGestures();
 
   return (
     <button
-      {...bindTap<HTMLButtonElement>('bill.search.detail.open', { params: { id: record.id } })}
+      {...bindNav(routes.billDetail, { params: { id: record.id } })}
       className="flex w-full items-center justify-between border-b border-gray-100 px-4 py-4 text-left last:border-b-0"
     >
       <div className="flex min-w-0 items-center">
@@ -84,7 +85,7 @@ const SearchRecordRow: React.FC<{ record: AlipayTransferRecord; isEnglish: boole
 export const BillSearchPage: React.FC = () => {
   const s = useAlipayStrings();
   const isEnglish = useLocale() === 'en';
-  const { back } = useAlipayGestures();
+  const { back, bindNav } = useAlipayGestures();
   const transferRecords = useAlipayStore(state => state.transferRecords);
   const billSearchHistory = useAlipayStore(state => state.billSearchHistory);
   const addBillSearchHistory = useAlipayStore(state => state.addBillSearchHistory);

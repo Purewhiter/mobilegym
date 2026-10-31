@@ -6,6 +6,7 @@ import { strings } from '../res/strings';
 import { stringsEn } from '../res/strings.en';
 import { useAppStrings } from '@/os/useAppStrings';
 import { useWeatherGestures } from '../hooks/useWeatherGestures';
+import { routes } from '../routes';
 const lightThemeOverrides: React.CSSProperties = {
     '--app-surface': '#ffffff',
     '--app-text': '#1c1c1e',
@@ -15,7 +16,7 @@ const lightThemeOverrides: React.CSSProperties = {
 } as React.CSSProperties;
 
 const WeatherPrivacySettingsPage: React.FC = () => {
-    const { bindTap, bindBack } = useWeatherGestures();
+    const { bindNav, bindBack } = useWeatherGestures();
     const s = useAppStrings(strings, stringsEn);
 
     return (
@@ -44,7 +45,7 @@ const WeatherPrivacySettingsPage: React.FC = () => {
                 <PreferenceCategory title={s.privacy_category_permissions}>
                     <PreferenceItem
                         title={s.privacy_permissions_detail}
-                        itemProps={bindTap<HTMLDivElement>('permissions.open')}
+                        itemProps={bindNav(routes.settingsPermissions)}
                     />
                 </PreferenceCategory>
 

@@ -1,6 +1,6 @@
 import React, { useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { IcWifi, IcLock, IcUnlock } from '../res/icons';
-import { useAppNavigate } from '../navigation';
+import { useNav } from '../../../os/navigation';
 import { SettingsHeader } from './SettingsHeader';
 import { PreferenceCategory } from './PreferenceCategory';
 import { PreferenceItem } from './PreferenceItem';
@@ -14,6 +14,7 @@ import { getOsDataRevision, subscribeOsDataRevision } from '../../../os/simState
 import { strings } from '../res/strings';
 import { stringsEn } from '../res/strings.en';
 import { useAppStrings } from '@/os/useAppStrings';
+import { routes } from '../routes';
 function bandLabel(freqMHz: number): string {
   if (!Number.isFinite(freqMHz)) return '';
   if (freqMHz >= 4900) return '5G';
@@ -27,7 +28,7 @@ function securityLabel(sec: string): string {
 }
 
 export const WifiNetworksPage: React.FC = () => {
-  const { go } = useAppNavigate();
+  const nav = useNav();
   const s = useAppStrings(strings, stringsEn);
   const [wifiEnabled, setWifiEnabled] = useBooleanPreference('wifi_enable', true);
   const savedNetworks = useWifiSavedNetworks();
@@ -180,13 +181,13 @@ export const WifiNetworksPage: React.FC = () => {
             title={s.saved_networks}
             summary={s.view_and_manage_saved_wlan_networks}
             showDivider={true}
-            onClick={() => go('page.open', { pageId: 'saved_access_points' })}
+            onClick={() => nav.push(routes.page, { pageId: 'saved_access_points' })}
           />
           <PreferenceItem
             title={s.advanced_settings}
             summary={s.proxy_random_mac_network_preferences_etc}
             showDivider={false}
-            onClick={() => go('page.open', { pageId: 'wifi_configure_settings' })}
+            onClick={() => nav.push(routes.page, { pageId: 'wifi_configure_settings' })}
           />
         </PreferenceCategory>
       </div>

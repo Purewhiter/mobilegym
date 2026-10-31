@@ -1,14 +1,15 @@
 import React from 'react';
 import { IcCart, IcCamera, IcHeart, IcTag, IcGrid, IcFastPay, IcSearch, IcShield, IcNavForward } from '../res/icons';
-import { useEbayGestures } from '../navigation';
+import { useEbayGestures } from '../hooks/useEbayGestures';
 import TabBar from '../components/TabBar';
 import { useEbayStrings } from '../hooks/useEbayStrings';
 import { cdn } from '../../../os/utils/cdn';
+import { routes } from '../routes';
 
 const EBAY_CDN = cdn('ebay/images');
 
 const HomePage: React.FC = () => {
-  const { bindTap, bindAction } = useEbayGestures();
+  const { bindNav, bindAction } = useEbayGestures();
   const s = useEbayStrings();
 
   return (
@@ -26,7 +27,7 @@ const HomePage: React.FC = () => {
                     <span className="text-[#86b817]">y</span>
                 </span>
             </div>
-            <div {...bindTap('cart.open', {})} className="p-2">
+            <div {...bindNav(routes.cart)} className="p-2">
                 <IcCart size={24} className="text-app-text" />
             </div>
           </div>
@@ -34,7 +35,7 @@ const HomePage: React.FC = () => {
           {/* IcSearch Bar */}
           <div className="px-4 mb-3 pb-2">
             <div 
-                {...bindTap('home.search.open')}
+                {...bindNav(routes.search)}
                 className="bg-gray-100 rounded-full h-12 flex items-center px-4 relative cursor-pointer"
             >
                 <IcSearch className="text-app-text-muted mr-3" size={20} />
@@ -51,8 +52,8 @@ const HomePage: React.FC = () => {
           {/* Quick Filters */}
           <div className="px-4 flex space-x-3 overflow-x-auto mb-6 no-scrollbar pb-2 pt-2">
              <Chip icon={<IcHeart size={16} />} label={s.home_saved} />
-             <Chip icon={<IcTag size={16} />} label={s.home_sell} onClickProps={bindTap('home.quick_filter.sell')} />
-             <Chip icon={<IcGrid size={16} />} label={s.home_categories} onClickProps={bindTap('home.quick_filter.categories')} />
+             <Chip icon={<IcTag size={16} />} label={s.home_sell} onClickProps={bindNav(routes.sell)} />
+             <Chip icon={<IcGrid size={16} />} label={s.home_categories} onClickProps={bindNav(routes.categories)} />
              <Chip icon={<IcFastPay size={16} />} label={s.home_deals} />
           </div>
 

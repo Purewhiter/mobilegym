@@ -6,6 +6,7 @@ import { IcHeart, IcNavBack, IcMore, IcShare, IcNavBackArrow, IcSearch, IcScan }
 const Heart = IcHeart, ChevronLeft = IcNavBack, MoreHorizontal = IcMore, Share2 = IcShare, ArrowLeft = IcNavBackArrow, Search = IcSearch, ScanLine = IcScan;
 import { useParams, useLocation } from 'react-router-dom';
 import { useRedBookGestures } from '../hooks/useRedBookGestures';
+import { routes } from '../routes';
 
 /** Standalone preview of user page — no router dependency, non-interactive. */
 export const UserPagePreview: React.FC<{ userId: string }> = ({ userId }) => {
@@ -134,7 +135,7 @@ export const UserPage: React.FC = () => {
 
   const followUser = useRedBookStore(s => s.followUser);
   const currentUser = useRedBookStore(s => s.user);
-  const { bindTap, bindBack, go } = useRedBookGestures();
+  const { bindTap, bindBack, nav, bindNav } = useRedBookGestures();
   const [activeTab, setActiveTab] = useState<'works' | 'collects'>('works');
   const [isScrolled, setIsScrolled] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -292,7 +293,7 @@ export const UserPage: React.FC = () => {
                     {isMe ? (
                         <button
                             className="px-6 py-1.5 rounded-full text-[13px] font-medium text-white border border-white/30 bg-white/10 backdrop-blur-sm"
-                            {...bindTap('editProfile.open')}
+                            {...bindNav(routes.editProfile)}
                         >
                             {s.edit_profile}
                         </button>
@@ -313,7 +314,7 @@ export const UserPage: React.FC = () => {
                             </button>
                             <button
                                 className="px-6 py-1.5 rounded-full text-[13px] font-medium text-white bg-[#333] border border-white/10"
-                                {...bindTap('chat.open', { params: { userId: user.id } })}
+                                {...bindNav(routes.chat, { params: { userId: user.id } })}
                             >
                                 {s.message_2}
                             </button>
@@ -360,7 +361,7 @@ export const UserPage: React.FC = () => {
                                     <div
                                         key={note.id + idx}
                                         className="bg-app-surface rounded-[4px] overflow-hidden relative cursor-pointer mb-1"
-                                        onClick={() => go('note.open', { id: note.id }, { state: { fromAuthorId: user.id } })}
+                                        onClick={() => nav.push(routes.note, { id: note.id }, { state: { fromAuthorId: user.id } })}
                                     >
                                         {/* Constraint height for masonry items to avoid huge gaps */}
                                         <div className="relative overflow-hidden rounded-[4px] max-h-[220px]">

@@ -37,10 +37,8 @@ If you just want to run a benchmark or train an agent, start with [getting-start
 
 | Topic | Read |
 |---|---|
-| Declarative navigation: routes, transitions, actions, conditions, graph generation | [`navigation/declaration.md`](navigation/declaration.md) |
-| Navigation actions: action declarations and DOM action binding | [`navigation/actions.md`](navigation/actions.md) |
-| Data-mode graph expansion: `dataSource`, `StateCondition`, `boundParams`, unevaluable conditions | [`navigation/data-sources.md`](navigation/data-sources.md) |
-| Navigation graph generation: commands, artifacts, validation | [`navigation/graph-generation.md`](navigation/graph-generation.md) |
+| Navigation: route tables, jumps, URL UI states, DOM tags, exploring an app's graph | [`navigation/routes.md`](navigation/routes.md) |
+| Actions: action ids and DOM action binding | [`navigation/actions.md`](navigation/actions.md) |
 | Navigation runtime state: MemoryRouter, URL state, foreign-task isolation | [`navigation/runtime-state.md`](navigation/runtime-state.md) |
 
 ### Input, tooling, and mapping

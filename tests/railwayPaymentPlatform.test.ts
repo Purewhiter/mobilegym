@@ -1,7 +1,7 @@
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
-import { NAVIGATION_DECLARATION } from '../apps/Railway12306/navigation.declaration';
+import { routes } from '../apps/Railway12306/routes';
 
 const mockOrder = {
   id: 'pending-1',
@@ -57,24 +57,17 @@ vi.mock('../apps/Railway12306/hooks/useRailwayStrings', () => ({
 }));
 
 describe('Railway12306 支付平台导航', () => {
-  it('声明支付平台页面路由，保证导航图能连接支付提交页', () => {
-    expect(NAVIGATION_DECLARATION.routes).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          path: '/payment-platform',
-          component: 'PaymentPlatformPage',
-        }),
-      ]),
-    );
+  it('登记支付平台页面路由，保证导航图能连接支付提交页', () => {
+    expect(routes.paymentPlatform.path).toBe('/payment-platform');
   });
 
-  it('提交支付按钮绑定支付成功 transition，供动作图继续唤起支付宝支付链路', async () => {
+  it('提交支付按钮打上支付成功页的标签，供探索继续唤起支付宝支付链路', async () => {
     const { PaymentPlatformPage } = await import('../apps/Railway12306/pages/PaymentPlatformPage');
 
     const markup = renderToStaticMarkup(React.createElement(PaymentPlatformPage));
 
     expect(markup).toContain('提交支付');
-    expect(markup).toContain('data-trigger="paymentPlatform.paymentSuccess"');
+    expect(markup).toContain('data-trigger="nav.paymentSuccess"');
     expect(markup).toContain('data-trigger-type="tap"');
   });
 });

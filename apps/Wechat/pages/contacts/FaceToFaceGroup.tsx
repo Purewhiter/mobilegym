@@ -7,9 +7,10 @@ import { useWechatStore } from '../../state';
 import { useWechatGestures } from '../../hooks/useWechatGestures';
 import { BackspaceIcon } from '../../res/icons';
 import { useLocale } from '@/os/locale';
+import { routes } from '../../routes';
 
 export const FaceToFaceGroupInput: React.FC = () => {
-    const { bindBack, bindTap, go } = useWechatGestures();
+    const { bindBack, bindTap, nav } = useWechatGestures();
     const locale = useLocale();
     const isEnglish = locale === 'en';
     const [pin, setPin] = useState<string[]>([]);
@@ -97,7 +98,7 @@ export const FaceToFaceGroupInput: React.FC = () => {
                         <button 
                             key={idx} 
                             {...(isLastDigit && finalPin
-                              ? bindTap<HTMLButtonElement>('faceToFace.join.open', {
+                              ? bindTap<HTMLButtonElement>('nav.faceToFaceGroupJoin', {
                                   params: { pin: finalPin },
                                   onTrigger: () => {
                                       handleKeyClick(key);
@@ -108,7 +109,7 @@ export const FaceToFaceGroupInput: React.FC = () => {
                                       // Short delay to show the last digit before navigating
                                       navTimerRef.current = window.setTimeout(() => {
                                           navTimerRef.current = null;
-                                          go('faceToFace.join.open', { pin: finalPin });
+                                          nav.replace(routes.faceToFaceGroupJoin, {}, { search: { pin: finalPin } });
                                       }, 300);
                                   },
                               })
@@ -129,7 +130,7 @@ export const FaceToFaceGroupInput: React.FC = () => {
 };
 
 export const FaceToFaceGroupJoin: React.FC = () => {
-    const { bindBack } = useWechatGestures();
+    const { bindBack, nav } = useWechatGestures();
     const locale = useLocale();
     const isEnglish = locale === 'en';
     const [searchParams] = useSearchParams();

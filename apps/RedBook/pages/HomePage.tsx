@@ -13,6 +13,7 @@ import { useRedBookGestures } from '../hooks/useRedBookGestures';
 import { strings, type StringKey } from '../res/strings';
 import { RedBookPlayIcon, RedBookHeartFilledIcon, RedBookHeartOutlineIcon, RedBookHeartIcon, RedBookCommentIcon, RedBookPeopleIcon } from '../res/icons';
 import * as TimeService from '../../../os/TimeService';
+import { routes } from '../routes';
 // Format time helper
 const formatTime = (timestamp: number, s: typeof strings) => {
     const now = TimeService.now();
@@ -50,7 +51,7 @@ const getFeedTextCardClass = (text: string) => {
 };
 
 const NoteItemImpl: React.FC<{ note: Note; showTime?: boolean }> = ({ note, showTime }) => {
-  const { bindTap } = useRedBookGestures();
+  const { bindTap, bindNav } = useRedBookGestures();
   // 细粒度订阅：toggleLike 是稳定 ref，author/isLiked 通过 useRedBookAuthor/useIsNoteLiked
   // 直接订阅它们对应的字段——避免之前 useRedBookView 让卡片被任何 store change 触发重渲染。
   const toggleLike = useRedBookStore(s => s.toggleLike);
@@ -92,17 +93,14 @@ const NoteItemImpl: React.FC<{ note: Note; showTime?: boolean }> = ({ note, show
   return (
     <div
         className="break-inside-avoid bg-app-surface rounded-[8px] overflow-hidden shadow-[0_0_8px_rgba(0,0,0,0.04)] active:opacity-90 transition-opacity cursor-pointer"
-        {...bindTap('note.open', {
-            params: { id: note.id },
-            beforeTrigger: () => {
+        {...bindNav(routes.note, { params: { id: note.id }, beforeTrigger: () => {
                 // Start preloading in next idle frame to avoid blocking navigation animation
                 if ('requestIdleCallback' in window) {
                     window.requestIdleCallback(preloadNoteResources);
                 } else {
                     setTimeout(preloadNoteResources, 0);
                 }
-            }
-        })}
+            } })}
         // Preload on touch/hover for faster reaction
         onTouchStart={preloadNoteResources}
         onMouseEnter={preloadNoteResources}
@@ -144,7 +142,7 @@ const NoteItemImpl: React.FC<{ note: Note; showTime?: boolean }> = ({ note, show
         <div className="flex items-center justify-between">
             <div
                 className="flex items-center gap-1.5 min-w-0 flex-1 cursor-pointer"
-                {...bindTap('user.open', { params: { userId: author.id }, stopPropagation: true })}
+                {...bindNav(routes.user, { params: { userId: author.id }, stopPropagation: true })}
             >
                 <img src={author.avatar} className="w-5 h-5 rounded-full bg-gray-200 object-cover flex-shrink-0" />
                 <div className="flex flex-col min-w-0">
@@ -186,7 +184,7 @@ const NoteItemImpl: React.FC<{ note: Note; showTime?: boolean }> = ({ note, show
 export const NoteItem = React.memo(NoteItemImpl);
 
 const FollowNoteItemImpl: React.FC<{ note: Note }> = ({ note }) => {
-    const { bindTap } = useRedBookGestures();
+    const { bindTap, bindNav } = useRedBookGestures();
     const followUser = useRedBookStore(s => s.followUser);
     const author = useRedBookAuthor(note.authorId);
     const isFollowing = useIsFollowingUser(note.authorId);
@@ -198,11 +196,11 @@ const FollowNoteItemImpl: React.FC<{ note: Note }> = ({ note }) => {
     if (!author) return null;
 
     return (
-        <div className="bg-app-surface mb-2 p-4 border-b border-gray-100" {...bindTap('note.open', { params: { id: note.id } })}>
+        <div className="bg-app-surface mb-2 p-4 border-b border-gray-100" {...bindNav(routes.note, { params: { id: note.id } })}>
             <div className="flex items-center justify-between mb-3">
                 <div
                     className="flex items-center gap-3 cursor-pointer"
-                    {...bindTap('user.open', { params: { userId: author.id }, stopPropagation: true })}
+                    {...bindNav(routes.user, { params: { userId: author.id }, stopPropagation: true })}
                 >
                     <img src={author.avatar} className="w-8 h-8 rounded-full bg-gray-200 object-cover" />
                     <div>
@@ -289,7 +287,7 @@ export const DiscoveryFeed: React.FC<{ feed: Note[]; showTime?: boolean }> = ({ 
 
 const FollowUpdates: React.FC = () => {
     const followingIds = useRedBookStore(s => s.user.followingIds);
-    const { bindTap } = useRedBookGestures();
+    const { bindTap, bindNav } = useRedBookGestures();
     const s = useRedBookStrings();
     const { users: followedUsers } = useRedBookUsers(followingIds || []);
 
@@ -300,7 +298,7 @@ const FollowUpdates: React.FC = () => {
                      <div
                         key={u.id}
                         className="flex flex-col items-center gap-1.5 flex-shrink-0 cursor-pointer"
-                        {...bindTap('user.open', { params: { userId: u.id }, stopPropagation: true })}
+                        {...bindNav(routes.user, { params: { userId: u.id }, stopPropagation: true })}
                      >
                          <div className="w-(--app-follow-story-avatar-size) h-(--app-follow-story-avatar-size) rounded-full p-[2px] border-[2px] border-app-primary relative">
                              <img src={u.avatar} className="w-full h-full rounded-full object-cover bg-gray-100" />
@@ -402,7 +400,7 @@ export const HomePage: React.FC = () => {
     tabParamRaw === 'follow' || tabParamRaw === 'discover' || tabParamRaw === 'city'
       ? tabParamRaw
       : 'discover';
-  const { bindTap, back, go } = useRedBookGestures();
+  const { bindTap, back, nav, bindNav } = useRedBookGestures();
 
   // Local state for UI only
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
@@ -512,18 +510,14 @@ export const HomePage: React.FC = () => {
       {/* Top Navigation Bar */}
       <div className="fixed top-0 left-0 right-0 z-40 bg-app-surface pt-10 px-3 pb-0">
         <div className="flex items-center justify-between h-(--app-home-nav-height)">
-            <div className="w-8 flex items-center justify-start" {...bindTap('home.drawer.open')}>
+            <div className="w-8 flex items-center justify-start" {...bindNav(routes.home, { search: { menu: 'drawer' }, keep: ['tab'] })}>
                  <Menu className="w-6 h-6 text-app-text" strokeWidth={2} />
             </div>
 
             <div className="flex items-center gap-6">
                 <div
                     className="flex flex-col items-center cursor-pointer"
-                    {...bindTap('home.tab.switch', {
-                        params: { tab: 'follow' },
-                        // 不能传 onTrigger（会覆盖 execute 导致不导航）；用 beforeTrigger 做本地状态准备
-                        beforeTrigger: () => setActiveTab('follow'),
-                    })}
+                    {...bindNav(routes.home, { search: { tab: 'follow' }, replace: true, beforeTrigger: () => setActiveTab('follow') })}
                 >
                     <span className={`text-[17px] transition-all ${activeTab === 'follow' ? 'font-bold text-app-text' : 'font-medium text-app-text-muted'}`}>{s.following}</span>
                     {activeTab === 'follow' && <div className="w-8 h-[2px] bg-app-primary rounded-full mt-1"></div>}
@@ -531,10 +525,7 @@ export const HomePage: React.FC = () => {
 
                 <div
                     className="flex flex-col items-center cursor-pointer"
-                    {...bindTap('home.tab.switch', {
-                        params: { tab: 'discover' },
-                        beforeTrigger: () => setActiveTab('discover'),
-                    })}
+                    {...bindNav(routes.home, { search: { tab: 'discover' }, replace: true, beforeTrigger: () => setActiveTab('discover') })}
                 >
                     <span className={`text-[17px] transition-all ${activeTab === 'discover' ? 'font-bold text-app-text' : 'font-medium text-app-text-muted'}`}>{s.explore}</span>
                     {activeTab === 'discover' && <div className="w-8 h-[2px] bg-app-primary rounded-full mt-1"></div>}
@@ -542,17 +533,14 @@ export const HomePage: React.FC = () => {
 
                 <div
                     className="flex flex-col items-center cursor-pointer"
-                    {...bindTap('home.tab.switch', {
-                        params: { tab: 'city' },
-                        beforeTrigger: () => setActiveTab('city'),
-                    })}
+                    {...bindNav(routes.home, { search: { tab: 'city' }, replace: true, beforeTrigger: () => setActiveTab('city') })}
                 >
                     <span className={`text-[17px] transition-all ${activeTab === 'city' ? 'font-bold text-app-text' : 'font-medium text-app-text-muted'}`}>{s.nearby}</span>
                     {activeTab === 'city' && <div className="w-8 h-[2px] bg-app-primary rounded-full mt-1"></div>}
                 </div>
             </div>
 
-            <div className="w-8 flex items-center justify-end cursor-pointer" {...bindTap('search.open')}>
+            <div className="w-8 flex items-center justify-end cursor-pointer" {...bindNav(routes.search)}>
                 <Search className="w-6 h-6 text-app-text" strokeWidth={2} />
             </div>
         </div>

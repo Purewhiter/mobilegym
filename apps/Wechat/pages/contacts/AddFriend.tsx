@@ -7,11 +7,12 @@ import { useWechatStore } from '../../state';
 import QRCode from 'qrcode';
 import { useWechatGestures } from '../../hooks/useWechatGestures';
 import { useLocale } from '../../../../os/locale';
+import { routes } from '../../routes';
 export const AddFriendPage: React.FC = () => {
   const t = useWechatStrings();
   const locale = useLocale();
   const user = useWechatStore(s => s.user);
-  const { bindTap } = useWechatGestures();
+  const { bindNav } = useWechatGestures();
   const [qrDataUrl, setQrDataUrl] = useState<string>('');
 
   useEffect(() => {
@@ -72,7 +73,7 @@ export const AddFriendPage: React.FC = () => {
             icon={<IcRadio className="text-(--app-c-me-icon-settings)" size={dimens.icSizeListIcon} />} 
             title={locale === 'en' ? 'Radar' : '雷达'} 
             subTitle={locale === 'en' ? 'Add nearby friends' : '添加身边的朋友'}
-            tapProps={bindTap<HTMLDivElement>('addFriend.radar.open')}
+            tapProps={bindNav(routes.radar)}
         />
         <ListItem 
             icon={<IcMessageSquare className="text-(--app-c-me-icon-settings)" size={dimens.icSizeTab} />} 
@@ -83,7 +84,7 @@ export const AddFriendPage: React.FC = () => {
             icon={<IcContacts className="text-app-primary" size={dimens.icSizeListIcon} />} 
             title={locale === 'en' ? 'Face-to-face group' : '面对面建群'} 
             subTitle={locale === 'en' ? 'Join the same group chat with nearby friends' : '与身边的朋友进入同一个群聊'}
-            tapProps={bindTap<HTMLDivElement>('addFriend.faceToFace.open')}
+            tapProps={bindNav(routes.faceToFaceGroup)}
         />
          <ListItem 
             icon={<IcFile className="text-(--app-c-me-icon-settings)" size={dimens.icSizeListIcon} />} 
@@ -102,7 +103,7 @@ export const AddFriendPage: React.FC = () => {
       <div className="flex flex-col items-center mt-8 mb-16">
           <div 
             className="mb-8 cursor-pointer active:opacity-60" 
-            {...bindTap<HTMLDivElement>('me.qrcode.open', { stopPropagation: true })}
+            {...bindNav(routes.meQrcode, { stopPropagation: true })}
           >
              {qrDataUrl ? (
                 <img src={qrDataUrl} alt="Large QR" className="w-(--app-contacts-add-friend-width-175) h-(--app-contacts-add-friend-height-175)" />

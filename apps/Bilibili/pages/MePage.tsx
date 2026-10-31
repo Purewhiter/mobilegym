@@ -8,6 +8,7 @@ import {
 import { useLocale } from '@/apps/Bilibili/locale';
 import { useBilibiliStore } from '../state';
 import { useBilibiliGestures } from '../hooks/useBilibiliGestures';
+import { routes } from '../routes';
 
 const Scan = IcScan;
 const Shirt = IcSkin;
@@ -57,7 +58,7 @@ const MoreServiceItem = ({ icon: Icon, label }: any) => (
 
 export const MePage: React.FC = () => {
     const { user } = useBilibiliStore();
-    const { bindTap } = useBilibiliGestures();
+    const { bindNav } = useBilibiliGestures();
     const locale = useLocale();
     const text = locale === 'en'
         ? {
@@ -167,7 +168,7 @@ export const MePage: React.FC = () => {
                 <div className="px-5 pb-4">
                     <div
                         className="flex items-center gap-4 mt-2 active:bg-gray-50 transition-colors rounded-lg -mx-2 px-2 py-2 cursor-pointer"
-                        {...bindTap('space.open')}
+                        {...bindNav(routes.space, { search: { tab: 'home' } })}
                     >
                         <div className="w-[4.5rem] h-[4.5rem] rounded-full bg-gray-100 border-2 border-white shadow-sm overflow-hidden relative flex-shrink-0">
                             {user.avatar ? (
@@ -186,7 +187,7 @@ export const MePage: React.FC = () => {
                                 </h2>
                                 <div
                                     className="p-1 text-gray-400 active:text-app-primary transition-colors"
-                                    {...bindTap('profileEdit.open', { stopPropagation: true })}
+                                    {...bindNav(routes.profileEdit, { stopPropagation: true })}
                                 >
                                     <PencilLine size={16} />
                                 </div>
@@ -226,7 +227,7 @@ export const MePage: React.FC = () => {
                         <div className="w-[1px] h-3 bg-gray-200"></div>
                         <div
                             className="flex flex-col items-center gap-1 flex-1 active:opacity-60 cursor-pointer"
-                            {...bindTap('userRelation.open', { params: { tab: 'follow' } })}
+                            {...bindNav(routes.profileFollowing, { search: { tab: 'follow' } })}
                         >
                             <div className="font-medium text-lg text-app-text">{user.followingList?.length || 0}</div>
                             <div className="text-xs text-gray-400">{text.following}</div>
@@ -234,7 +235,7 @@ export const MePage: React.FC = () => {
                         <div className="w-[1px] h-3 bg-gray-200"></div>
                         <div
                             className="flex flex-col items-center gap-1 flex-1 active:opacity-60 cursor-pointer"
-                            {...bindTap('userRelation.open', { params: { tab: 'fans' } })}
+                            {...bindNav(routes.profileFollowing, { search: { tab: 'fans' } })}
                         >
                             <div className="font-medium text-lg text-app-text">{user.followersList?.length || 0}</div>
                             <div className="text-xs text-gray-400">{text.fans}</div>
@@ -255,7 +256,7 @@ export const MePage: React.FC = () => {
                         </div>
                         <button
                             className="bg-app-primary text-white text-[13px] font-medium px-3.5 py-1.5 rounded-full shadow-sm shadow-[#FB7299]/30"
-                            {...bindTap('vip.open')}
+                            {...bindNav(routes.vip)}
                         >
                             {text.vipCenter}
                         </button>
@@ -271,7 +272,7 @@ export const MePage: React.FC = () => {
                 <div className="grid grid-cols-4 mb-2 px-2">
                     <ServiceItem icon={Download} label={text.offline} color="#2FB3FF" />
                     <ServiceItem icon={History} label={text.history} color="#2FB3FF" />
-                    <div {...bindTap('favorites.open')}>
+                    <div {...bindNav(routes.favorites, { search: { tab: 'folders' } })}>
                         <ServiceItem icon={Star} label={text.favorites} color="#2FB3FF" />
                     </div>
                     <ServiceItem icon={MonitorPlay} label={text.watchLater} color="#2FB3FF" />
@@ -327,7 +328,7 @@ export const MePage: React.FC = () => {
                     <MoreServiceItem icon={Headphones} label={text.contact} />
                     <MoreServiceItem icon={Radio} label={text.audio} />
                     <MoreServiceItem icon={Shield} label={text.guardian} />
-                    <div {...bindTap('settings.open')}>
+                    <div {...bindNav(routes.settings)}>
                         <MoreServiceItem icon={Settings} label={text.settings} />
                     </div>
                 </div>

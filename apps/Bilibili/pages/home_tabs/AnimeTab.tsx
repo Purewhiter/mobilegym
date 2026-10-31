@@ -4,6 +4,7 @@ import { useLocale } from '@/apps/Bilibili/locale';
 import type { BilibiliVideo } from '../../data';
 import { useRankings } from '../../hooks/useData';
 import { useBilibiliGestures } from '../../hooks/useBilibiliGestures';
+import { routes } from '../../routes';
 
 const rankingTabs = [
   { key: 'bangumi', label: '番剧榜', labelEn: 'Anime', rankingKey: '番剧' },
@@ -30,7 +31,7 @@ export const AnimeTab: React.FC = () => {
   const locale = useLocale();
   const isEnglish = locale === 'en';
   const [searchParams] = useSearchParams();
-  const { bindTap } = useBilibiliGestures();
+  const { bindNav } = useBilibiliGestures();
   const { rankings, videoById } = useRankings(ANIME_RANKING_KEYS);
   const animeRankParam = searchParams.get('animeRank');
   const activeRankingTabKey = isRankingTabKey(animeRankParam) ? animeRankParam : 'bangumi';
@@ -53,7 +54,7 @@ export const AnimeTab: React.FC = () => {
             <div
               key={item.id}
               className="relative h-full w-full flex-shrink-0 snap-center overflow-hidden"
-              {...bindTap('video.open', { params: { bvid: item.id } })}
+              {...bindNav(routes.video, { params: { bvid: item.id }, search: { tab: 'intro' } })}
             >
               {item.cover && (
                 <>
@@ -90,7 +91,7 @@ export const AnimeTab: React.FC = () => {
           return (
             <div
               key={item.label}
-              {...(partition ? bindTap('home.anime.partition.open', { params: { label: partition } }) : {})}
+              {...(partition ? bindNav(routes.partitionsByLabel, { params: { label: partition } }) : {})}
               className={`px-4 py-2 bg-gray-100 rounded-lg text-sm text-gray-700 whitespace-nowrap ${
                 partition ? 'active:scale-95 transition-transform' : ''
               }`}
@@ -114,7 +115,7 @@ export const AnimeTab: React.FC = () => {
             <button
               key={tab.key}
               {...(tab.rankingKey && tab.key !== activeRankingTab.key
-                ? bindTap('home.anime.ranking.switch', { params: { animeRank: tab.key } })
+                ? bindNav(routes.home, { search: { tab: 'anime', animeRank: tab.key }, replace: true })
                 : {})}
               className={
                 tab.key === activeRankingTab.key
@@ -132,7 +133,7 @@ export const AnimeTab: React.FC = () => {
             <div
               key={item.id}
               className="w-32 flex-shrink-0 flex flex-col gap-2 active:scale-95 transition-transform"
-              {...bindTap('video.open', { params: { bvid: item.id } })}
+              {...bindNav(routes.video, { params: { bvid: item.id }, search: { tab: 'intro' } })}
             >
               <div className="relative aspect-[3/4] rounded-lg overflow-hidden bg-gray-200">
                 {item.cover ? (

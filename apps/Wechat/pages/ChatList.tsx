@@ -8,9 +8,10 @@ import { ChatSession } from '../types';
 import * as TimeService from '../../../os/TimeService';
 import { useWechatGestures } from '../hooks/useWechatGestures';
 import { useWechatStrings } from '../hooks/useWechatStrings';
+import { routes } from '../routes';
 
 const ChatList: React.FC = () => {
-  const { bindTap } = useWechatGestures();
+  const { bindNav } = useWechatGestures();
   const t = useWechatStrings();
   const { chats, contacts } = useWechatStore(useShallow(s => ({
     chats: s.chats,
@@ -85,7 +86,7 @@ const ChatList: React.FC = () => {
       {sortedChats.map((chat) => (
         <div
           key={chat.id}
-          {...bindTap<HTMLDivElement>('chat.open', { params: { id: chat.id } })}
+          {...bindNav(routes.chat, { params: { id: chat.id } })}
           className={`flex items-center px-4 py-3 active:bg-(--app-c-chat-list-item-bg-active) border-b border-gray-100/50 ${chat.isSticky ? '' : 'bg-app-surface'}`}
           style={chat.isSticky ? { backgroundColor: 'var(--app-c-chat-list-item-bg-sticky)' } : undefined}
         >

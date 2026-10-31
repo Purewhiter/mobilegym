@@ -11,12 +11,13 @@ import { AmountKeyboard } from '../components/AmountKeyboard';
 import { useLocale } from '@/apps/Alipay/locale';
 import { localizeBankName } from '../utils/localizeBankName';
 import { base36, nextStream } from '../../../os/RandomService';
+import { routes } from '../routes';
 
 export const RechargePage: React.FC = () => {
   const { bankCards, recordTransfer } = useAlipayStore();
   const s = useAlipayStrings();
   const paymentPassword = useAlipayStore(s => s.userInfo.paymentPassword);
-  const { bindBack, go, back } = useAlipayGestures();
+  const { bindBack, nav, back } = useAlipayGestures();
   const locale = useLocale();
   const isEnglish = locale === 'en';
   const [searchParams] = useSearchParams();
@@ -50,7 +51,7 @@ export const RechargePage: React.FC = () => {
   const [selectedCard, setSelectedCard] = useState<typeof bankCards[number] | null>(boundCards[0] || bankCards[0] || null);
 
   const openMulti = () => {
-    go('recharge.multi.open');
+    nav.push(routes.balanceRecharge, {}, { search: { modal: 'multi' } });
   };
 
   const closeMulti = () => {
@@ -61,10 +62,10 @@ export const RechargePage: React.FC = () => {
   const handleRecharge = () => {
     if (!amount || Number(amount) <= 0) return;
     if (!selectedCard) {
-      go('balance.bankCards.open');
+      nav.push(routes.settingsPaymentBankCards);
       return;
     }
-    go('rechargePassword.open');
+    nav.push(routes.balanceRecharge, {}, { search: { modal: 'password' } });
   };
 
   const onPasswordSuccess = () => {
@@ -82,16 +83,16 @@ export const RechargePage: React.FC = () => {
       rechargeDescription: '普通充值',
       orderId: batchId,
     });
-    go('balance.recharge.success.open');
+    nav.replace(routes.balanceRechargeSuccess);
   };
 
   const goAddCard = () => {
-    go('bankCards.add.open', { returnTo: '/balance/recharge?modal=multi' });
+    nav.push(routes.bankCardsAdd, {}, { search: { returnTo: '/balance/recharge?modal=multi' } });
   };
 
   const onMultiSubmit = (rows: MultiRechargeRow[]) => {
     setMultiRows(rows);
-    go('rechargeMultiPay.open');
+    nav.push(routes.balanceRecharge, {}, { search: { modal: 'multiPay' } });
   };
 
   const onMultiPaySuccess = () => {
@@ -118,7 +119,7 @@ export const RechargePage: React.FC = () => {
       });
     }
 
-    go('balance.recharge.success.open');
+    nav.replace(routes.balanceRechargeSuccess);
   };
 
   const handleAmountKey = (key: string) => {
@@ -309,7 +310,7 @@ export const RechargePage: React.FC = () => {
 
               <button
                 className="w-full flex items-center px-4 py-4 active:bg-gray-50"
-                onClick={() => { setCardSelectorOpen(false); go('bankCards.add.open', { returnTo: '/balance/recharge' }); }}
+                onClick={() => { setCardSelectorOpen(false); nav.push(routes.bankCardsAdd, {}, { search: { returnTo: '/balance/recharge' } }); }}
               >
                 <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0 mr-3">
                   <IcCard size={20} className="text-gray-500" />

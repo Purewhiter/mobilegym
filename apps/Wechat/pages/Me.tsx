@@ -5,10 +5,11 @@ import { IcNavForward, IcQrCode, IcAdd, IcRotateCw, IcMessageCode, IcBox, IcImag
 import { useWechatStore } from '../state';
 import { useWechatGestures } from '../hooks/useWechatGestures';
 import { dimens } from '../res/dimens';
+import { routes } from '../routes';
 
 const Me: React.FC = () => {
   const t = useWechatStrings();
-  const { bindTap } = useWechatGestures();
+  const { bindNav } = useWechatGestures();
   const user = useWechatStore(s => s.user);
 
   const MenuItem: React.FC<{ 
@@ -35,7 +36,7 @@ const Me: React.FC = () => {
     <div className="bg-app-bg min-h-full pb-16">
       {/* Header Profile Card - Pure White */}
       <div 
-        {...bindTap<HTMLDivElement>('profile.detail.open')}
+        {...bindNav(routes.myProfileDetail)}
         className="bg-app-surface px-6 pt-20 pb-8 flex relative active:bg-(--app-c-tw-bg-gray-50) cursor-pointer" 
       >
         {/* Actual User Avatar */}
@@ -71,7 +72,7 @@ const Me: React.FC = () => {
         {/* QR Code icon - Top Right corner, clickable */}
         <div 
             className="absolute right-6 top-[72px] p-2 -mr-2 -mt-2 active:opacity-60 z-10"
-            {...bindTap<HTMLDivElement>('me.qrcode.open', { stopPropagation: true })}
+            {...bindNav(routes.meQrcode, { stopPropagation: true })}
         >
             <IcQrCode size={dimens.icSizeAction} className="opacity-30" style={{ color: 'var(--app-c-settings-item-text)' }} />
         </div>
@@ -86,7 +87,7 @@ const Me: React.FC = () => {
           icon={<div className="text-app-primary"><IcMessageCode size={dimens.me_menu_icon_size} strokeWidth={1.5} /></div>}
           label={t.me_services} 
           isLast={true}
-          tapProps={bindTap<HTMLDivElement>('me.services.open')}
+          tapProps={bindNav(routes.services)}
         />
       </div>
 
@@ -101,7 +102,7 @@ const Me: React.FC = () => {
         <MenuItem 
             icon={<IcImage size={dimens.me_menu_icon_size} style={{ color: 'var(--app-c-me-icon-moments)' }} strokeWidth={1.5} />}
             label={t.discover_moments}
-            tapProps={bindTap<HTMLDivElement>('me.moments.open')}
+            tapProps={bindNav(routes.meMomentsAlbum)}
         />
         <MenuItem 
             icon={<IcSmile size={dimens.me_menu_icon_size} style={{ color: 'var(--app-c-me-icon-stickers)' }} strokeWidth={1.5} />}
@@ -118,7 +119,7 @@ const Me: React.FC = () => {
           icon={<IcSettings size={dimens.me_menu_icon_size} style={{ color: 'var(--app-c-me-icon-settings)' }} strokeWidth={1.5} />} 
           label={t.settings_title} 
           isLast={true}
-          tapProps={bindTap<HTMLDivElement>('me.settings.open')}
+          tapProps={bindNav(routes.settings)}
         />
       </div>
     </div>

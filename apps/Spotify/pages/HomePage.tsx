@@ -13,13 +13,14 @@ import { PODCAST_DATA, WRAPPED_DATA } from '../data';
 import { useSpotifyGestures } from '../hooks/useSpotifyGestures';
 import { useSpotifyStrings } from '../hooks/useSpotifyStrings';
 import { localizeSpotifyText } from '../utils/localizeSpotifyText';
+import { routes } from '../routes';
 type TabType = 'all' | 'wrapped' | 'music' | 'podcast';
 
 export const HomePage: React.FC = () => {
   const locale = useLocale();
   const isEnglish = locale === 'en';
   const [searchParams] = useSearchParams();
-  const { bindTap, bindBack, back, go } = useSpotifyGestures();
+  const { bindTap, bindBack, back, nav, bindNav } = useSpotifyGestures();
   const s = useSpotifyStrings();
   const { currentTrack, isPlaying, queue, recentPlays, likedSongs, customPlaylists } = useSpotifyStore(useShallow(s => ({
     currentTrack: s.currentTrack, isPlaying: s.isPlaying,
@@ -182,7 +183,7 @@ export const HomePage: React.FC = () => {
           {SPOTIFY_CONFIG.dailyPicks.map(pl => (
             <div
               key={pl.id}
-              {...bindTap('playlist.open', { params: { id: pl.id } })}
+              {...bindNav(routes.playlist, { params: { id: pl.id } })}
               className="flex-shrink-0 w-48 cursor-pointer"
             >
               <div className="w-48 h-48 rounded-md overflow-hidden bg-gray-700 mb-2">
@@ -199,7 +200,7 @@ export const HomePage: React.FC = () => {
           {SPOTIFY_CONFIG.personalizedPlaylists.slice(0, 4).map(pl => (
             <div
               key={pl.id}
-              {...bindTap('playlist.open', { params: { id: pl.id } })}
+              {...bindNav(routes.playlist, { params: { id: pl.id } })}
               className="bg-[#282828] rounded-md flex overflow-hidden cursor-pointer"
             >
               <img src={pl.cover} className="w-16 h-16 object-cover flex-shrink-0" />
@@ -264,10 +265,7 @@ export const HomePage: React.FC = () => {
                   </div>
                 </div>
                 <button
-                  {...bindTap('home.trackMenu.open', {
-                    params: { trackId: track.id },
-                    stopPropagation: true,
-                  })}
+                  {...bindNav(routes.home, { search: { sheet: 'track_menu', trackId: track.id }, keep: ['tab'], stopPropagation: true })}
                   className="p-2 hover:bg-[#222] rounded-full flex-shrink-0"
                 >
                   <IcMoreVertical size={18} className="text-gray-400" />
@@ -283,7 +281,7 @@ export const HomePage: React.FC = () => {
           {SPOTIFY_CONFIG.personalizedPlaylists.map(pl => (
             <div
               key={pl.id}
-              {...bindTap('playlist.open', { params: { id: pl.id } })}
+              {...bindNav(routes.playlist, { params: { id: pl.id } })}
               className="flex-shrink-0 w-48 cursor-pointer"
             >
               <div className="w-48 h-48 rounded-md overflow-hidden bg-gray-700 mb-2">
@@ -302,7 +300,7 @@ export const HomePage: React.FC = () => {
           {SPOTIFY_CONFIG.dailyPicks.map(pl => (
             <div
               key={pl.id}
-              {...bindTap('playlist.open', { params: { id: pl.id } })}
+              {...bindNav(routes.playlist, { params: { id: pl.id } })}
               className="flex-shrink-0 w-48 cursor-pointer"
             >
               <div className="w-48 h-48 rounded-md overflow-hidden bg-gray-700 mb-2">
@@ -330,7 +328,7 @@ export const HomePage: React.FC = () => {
             {section.playlists.map(playlist => (
               <div
                 key={playlist.id}
-                {...bindTap('playlist.open', { params: { id: playlist.id } })}
+                {...bindNav(routes.playlist, { params: { id: playlist.id } })}
                 className="flex-shrink-0 w-48 cursor-pointer"
               >
                 <div className="w-48 h-48 rounded-md overflow-hidden bg-gray-700 mb-2">
@@ -350,7 +348,7 @@ export const HomePage: React.FC = () => {
           {SPOTIFY_CONFIG.charts.map(chart => (
             <div
               key={chart.id}
-              {...bindTap('playlist.open', { params: { id: chart.id } })}
+              {...bindNav(routes.playlist, { params: { id: chart.id } })}
               className="flex-shrink-0 w-48 cursor-pointer"
             >
               <div className="w-48 h-48 rounded-md overflow-hidden bg-gray-700 mb-2">
@@ -368,7 +366,7 @@ export const HomePage: React.FC = () => {
           {SPOTIFY_CONFIG.featuredCharts.map(chart => (
             <div
               key={chart.id}
-              {...bindTap('playlist.open', { params: { id: chart.id } })}
+              {...bindNav(routes.playlist, { params: { id: chart.id } })}
               className="flex-shrink-0 w-48 cursor-pointer"
             >
               <div className="w-48 h-48 rounded-md overflow-hidden bg-gray-700 mb-2">
@@ -386,7 +384,7 @@ export const HomePage: React.FC = () => {
           {SPOTIFY_CONFIG.recommendedArtists.map(artist => (
             <div
               key={artist.id}
-              {...bindTap('playlist.open', { params: { id: artist.id } })}
+              {...bindNav(routes.playlist, { params: { id: artist.id } })}
               className="flex-shrink-0 text-center w-24 cursor-pointer"
             >
               <div className="w-24 h-24 rounded-full overflow-hidden bg-gray-700 mb-2 mx-auto">
@@ -404,7 +402,7 @@ export const HomePage: React.FC = () => {
           {SPOTIFY_CONFIG.throwback.map(pl => (
             <div
               key={pl.id}
-              {...bindTap('playlist.open', { params: { id: pl.id } })}
+              {...bindNav(routes.playlist, { params: { id: pl.id } })}
               className="flex-shrink-0 w-48 cursor-pointer"
             >
               <div className="w-48 h-48 rounded-md overflow-hidden bg-gray-700 mb-2">
@@ -422,7 +420,7 @@ export const HomePage: React.FC = () => {
           {SPOTIFY_CONFIG.newHotSelections.map(pl => (
             <div
               key={pl.id}
-              {...bindTap('playlist.open', { params: { id: pl.id } })}
+              {...bindNav(routes.playlist, { params: { id: pl.id } })}
               className="flex-shrink-0 w-48 cursor-pointer"
             >
               <div className="w-48 h-48 rounded-md overflow-hidden bg-gray-700 mb-2">
@@ -440,7 +438,7 @@ export const HomePage: React.FC = () => {
           {SPOTIFY_CONFIG.hottestToday.map(pl => (
             <div
               key={pl.id}
-              {...bindTap('playlist.open', { params: { id: pl.id } })}
+              {...bindNav(routes.playlist, { params: { id: pl.id } })}
               className="flex-shrink-0 w-48 cursor-pointer"
             >
               <div className="w-48 h-48 rounded-md overflow-hidden bg-gray-700 mb-2">
@@ -458,7 +456,7 @@ export const HomePage: React.FC = () => {
           {SPOTIFY_CONFIG.allNewMusic.map(pl => (
             <div
               key={pl.id}
-              {...bindTap('playlist.open', { params: { id: pl.id } })}
+              {...bindNav(routes.playlist, { params: { id: pl.id } })}
               className="flex-shrink-0 w-48 cursor-pointer"
             >
               <div className="w-48 h-48 rounded-md overflow-hidden bg-gray-700 mb-2">
@@ -476,7 +474,7 @@ export const HomePage: React.FC = () => {
           {SPOTIFY_CONFIG.party.map(pl => (
             <div
               key={pl.id}
-              {...bindTap('playlist.open', { params: { id: pl.id } })}
+              {...bindNav(routes.playlist, { params: { id: pl.id } })}
               className="flex-shrink-0 w-48 cursor-pointer"
             >
               <div className="w-48 h-48 rounded-md overflow-hidden bg-gray-700 mb-2">
@@ -494,7 +492,7 @@ export const HomePage: React.FC = () => {
           {SPOTIFY_CONFIG.joyful.map(pl => (
             <div
               key={pl.id}
-              {...bindTap('playlist.open', { params: { id: pl.id } })}
+              {...bindNav(routes.playlist, { params: { id: pl.id } })}
               className="flex-shrink-0 w-48 cursor-pointer"
             >
               <div className="w-48 h-48 rounded-md overflow-hidden bg-gray-700 mb-2">
@@ -512,7 +510,7 @@ export const HomePage: React.FC = () => {
           {SPOTIFY_CONFIG.sadSongs.map(pl => (
             <div
               key={pl.id}
-              {...bindTap('playlist.open', { params: { id: pl.id } })}
+              {...bindNav(routes.playlist, { params: { id: pl.id } })}
               className="flex-shrink-0 w-48 cursor-pointer"
             >
               <div className="w-48 h-48 rounded-md overflow-hidden bg-gray-700 mb-2">
@@ -530,7 +528,7 @@ export const HomePage: React.FC = () => {
           {SPOTIFY_CONFIG.singAlong.map(pl => (
             <div
               key={pl.id}
-              {...bindTap('playlist.open', { params: { id: pl.id } })}
+              {...bindNav(routes.playlist, { params: { id: pl.id } })}
               className="flex-shrink-0 w-48 cursor-pointer"
             >
               <div className="w-48 h-48 rounded-md overflow-hidden bg-gray-700 mb-2">
@@ -557,10 +555,7 @@ export const HomePage: React.FC = () => {
                 </div>
               </div>
               <button
-                {...bindTap('home.trackMenu.open', {
-                  params: { trackId: track.id },
-                  stopPropagation: true,
-                })}
+                {...bindNav(routes.home, { search: { sheet: 'track_menu', trackId: track.id }, keep: ['tab'], stopPropagation: true })}
                 className="p-2 hover:bg-[#222] rounded-full flex-shrink-0"
               >
                 <IcMoreVertical size={18} className="text-gray-400" />
@@ -575,7 +570,7 @@ export const HomePage: React.FC = () => {
           {SPOTIFY_CONFIG.chill.map(pl => (
             <div
               key={pl.id}
-              {...bindTap('playlist.open', { params: { id: pl.id } })}
+              {...bindNav(routes.playlist, { params: { id: pl.id } })}
               className="flex-shrink-0 w-48 cursor-pointer"
             >
               <div className="w-48 h-48 rounded-md overflow-hidden bg-gray-700 mb-2">
@@ -593,7 +588,7 @@ export const HomePage: React.FC = () => {
           {SPOTIFY_CONFIG.instrumentals.map(pl => (
             <div
               key={pl.id}
-              {...bindTap('playlist.open', { params: { id: pl.id } })}
+              {...bindNav(routes.playlist, { params: { id: pl.id } })}
               className="flex-shrink-0 w-48 cursor-pointer"
             >
               <div className="w-48 h-48 rounded-md overflow-hidden bg-gray-700 mb-2">
@@ -617,16 +612,16 @@ export const HomePage: React.FC = () => {
       <div className="sticky top-0 z-10 bg-app-bg px-4 pt-10 pb-3">
         <header className="flex items-center gap-3">
           <div
-            {...bindTap('home.sidebar.open')}
+            {...bindNav(routes.home, { search: { drawer: 'sidebar' }, keep: ['tab'] })}
             className="w-9 h-9 rounded-full bg-amber-700 flex items-center justify-center text-sm font-bold flex-shrink-0 cursor-pointer active:scale-95 transition-transform"
           >
             {SPOTIFY_CONFIG.user.initial}
           </div>
           <div className="flex-1 flex items-center gap-3 overflow-x-auto no-scrollbar mask-linear-fade">
-            <button {...bindTap('home.tab.all')} className={getTabStyle('all')}>{s.home_tab_all}</button>
-            <button {...bindTap('home.tab.wrapped')} className={getTabStyle('wrapped')}>{s.home_tab_wrapped}</button>
-            <button {...bindTap('home.tab.music')} className={getTabStyle('music')}>{s.home_tab_music}</button>
-            <button {...bindTap('home.tab.podcast')} className={getTabStyle('podcast')}>{s.home_tab_podcast}</button>
+            <button {...bindNav(routes.home, { search: { tab: 'all' }, replace: true })} className={getTabStyle('all')}>{s.home_tab_all}</button>
+            <button {...bindNav(routes.home, { search: { tab: 'wrapped' }, replace: true })} className={getTabStyle('wrapped')}>{s.home_tab_wrapped}</button>
+            <button {...bindNav(routes.home, { search: { tab: 'music' }, replace: true })} className={getTabStyle('music')}>{s.home_tab_music}</button>
+            <button {...bindNav(routes.home, { search: { tab: 'podcast' }, replace: true })} className={getTabStyle('podcast')}>{s.home_tab_podcast}</button>
           </div>
         </header>
       </div>
@@ -660,8 +655,8 @@ export const HomePage: React.FC = () => {
               },
             },
           )}
-          addToPlaylistProps={bindTap('home.addPlaylist.open', { params: { trackId: selectedTrack.id }, stopPropagation: true })}
-          createJamProps={bindTap('tab.premium')}
+          addToPlaylistProps={bindNav(routes.home, { search: { sheet: 'add_playlist', trackId: selectedTrack.id }, keep: ['tab'], replace: true, stopPropagation: true })}
+          createJamProps={bindNav(routes.premium, { replace: true })}
           addToQueueProps={bindTap(
             { kind: 'action', id: 'track.queue.add' },
             {
@@ -673,8 +668,8 @@ export const HomePage: React.FC = () => {
               },
             },
           )}
-          goToAlbumProps={bindTap('playlist.open', { params: { id: selectedTrack.id } })}
-          goToArtistProps={bindTap('artist.open', { params: { name: selectedTrack.artist } })}
+          goToAlbumProps={bindNav(routes.playlist, { params: { id: selectedTrack.id } })}
+          goToArtistProps={bindNav(routes.artist, { params: { name: selectedTrack.artist } })}
         />
       )}
       {selectedTrack && (

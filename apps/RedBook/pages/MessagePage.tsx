@@ -8,10 +8,11 @@ import { IcBell, IcHeart, IcContacts, IcMessage, IcSearch, IcAddCircle } from '.
 const Bell = IcBell, Heart = IcHeart, Users = IcContacts, MessageSquare = IcMessage, Search = IcSearch, PlusCircle = IcAddCircle;
 import { useRedBookGestures } from '../hooks/useRedBookGestures';
 import { useLocale } from '@/apps/RedBook/locale';
+import { routes } from '../routes';
 export const MessagePage: React.FC = () => {
   const { chats, notifications } = useRedBookStore(useShallow(s => ({ chats: s.chats, notifications: s.notifications })));
   const [activeTab, setActiveTab] = useState<number | null>(null);
-  const { bindTap } = useRedBookGestures();
+  const { bindNav } = useRedBookGestures();
   const s = useRedBookStrings();
   const locale = useLocale();
 
@@ -77,10 +78,10 @@ export const MessagePage: React.FC = () => {
                 const Icon = tab.Icon;
                 const tapProps =
                     tab.id === 1
-                    ? bindTap('message.likes.open')
+                    ? bindNav(routes.messageLikes)
                     : tab.id === 2
-                      ? bindTap('message.followers.open')
-                      : bindTap('message.comments.open');
+                      ? bindNav(routes.messageFollowers)
+                      : bindNav(routes.messageComments);
                 return (
                     <div
                         key={tab.id}
@@ -115,7 +116,7 @@ export const MessagePage: React.FC = () => {
                      <div
                         key={chat.userId}
                         className="px-4 flex items-start gap-3 active:bg-gray-50 py-3 relative group overflow-hidden cursor-pointer"
-                        {...bindTap('chat.open', { params: { userId: chat.userId } })}
+                        {...bindNav(routes.chat, { params: { userId: chat.userId } })}
                      >
                         {/* Avatar */}
                         <div className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden border border-gray-100 relative">

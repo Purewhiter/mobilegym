@@ -3,6 +3,7 @@ import { useLocale } from '@/apps/Bilibili/locale';
 import type { BilibiliVideo } from '../../data';
 import { useRankings } from '../../hooks/useData';
 import { useBilibiliGestures } from '../../hooks/useBilibiliGestures';
+import { routes } from '../../routes';
 
 const featuredRankingKeys = ['电影', '电视剧', '纪录片'] as const;
 const quickLinks = [
@@ -17,7 +18,7 @@ const quickLinks = [
 export const MovieTab: React.FC = () => {
   const locale = useLocale();
   const isEnglish = locale === 'en';
-  const { bindTap } = useBilibiliGestures();
+  const { bindNav } = useBilibiliGestures();
   const { rankings, videoById } = useRankings(featuredRankingKeys);
   const bannerItems = featuredRankingKeys.map((key) => {
     const item = rankings[key]?.[0];
@@ -37,7 +38,7 @@ export const MovieTab: React.FC = () => {
             <div
               key={item.id}
               className="relative h-full w-full flex-shrink-0 snap-center overflow-hidden"
-              {...bindTap('video.open', { params: { bvid: item.id } })}
+              {...bindNav(routes.video, { params: { bvid: item.id }, search: { tab: 'intro' } })}
             >
               {item.cover && (
                 <>
@@ -74,7 +75,7 @@ export const MovieTab: React.FC = () => {
           return (
             <div
               key={item.label}
-              {...(partition ? bindTap('home.movie.partition.open', { params: { label: partition } }) : {})}
+              {...(partition ? bindNav(routes.partitionsByLabel, { params: { label: partition } }) : {})}
               className={`px-4 py-2 bg-gray-100 rounded-lg text-sm text-gray-700 whitespace-nowrap ${
                 partition ? 'active:scale-95 transition-transform' : ''
               }`}
@@ -98,7 +99,7 @@ export const MovieTab: React.FC = () => {
             <div
               key={item.id}
               className="w-32 flex-shrink-0 flex flex-col gap-2 active:scale-95 transition-transform"
-              {...bindTap('video.open', { params: { bvid: item.id } })}
+              {...bindNav(routes.video, { params: { bvid: item.id }, search: { tab: 'intro' } })}
             >
               <div className="relative aspect-[2/3] rounded-lg overflow-hidden bg-gray-200">
                 {item.cover ? (

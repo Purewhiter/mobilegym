@@ -4,11 +4,12 @@ import { useWechatStrings } from '../../hooks/useWechatStrings';
 import { useWechatStore } from '../../state';
 import { SettingsItem, SettingsToggle } from './Shared';
 import { useWechatGestures } from '../../hooks/useWechatGestures';
+import { routes } from '../../routes';
 
 // --- Account Security ---
 export const AccountSecurity: React.FC = () => {
   const t = useWechatStrings();
-  const { bindTap } = useWechatGestures();
+  const { bindTap, bindNav } = useWechatGestures();
 
   return (
     <div className="bg-app-bg min-h-full pb-10 pt-2">
@@ -20,13 +21,13 @@ export const AccountSecurity: React.FC = () => {
       <div className="bg-app-surface mb-2">
         <SettingsItem label={t.security_emergency_contacts} />
         <SettingsItem label={t.security_login_devices} />
-        <SettingsItem label={t.security_more_settings} tapProps={bindTap('security.more.open')} isLast />
+        <SettingsItem label={t.security_more_settings} tapProps={bindNav(routes.settingsSecurityMore)} isLast />
       </div>
 
       <div className="bg-app-surface mb-2">
         <SettingsItem
           label={t.security_wechat_center}
-          tapProps={bindTap('securityCenter.open')}
+          tapProps={bindNav(routes.settingsSecurityCenter)}
           isLast
         />
       </div>
@@ -39,7 +40,7 @@ export const AccountSecurity: React.FC = () => {
 // --- Friend Permissions ---
 export const FriendPermissions: React.FC = () => {
   const t = useWechatStrings();
-  const { bindTap } = useWechatGestures();
+  const { bindTap, bindNav } = useWechatGestures();
   const settings = useWechatStore(s => s.settings);
   const updateSettings = useWechatStore(s => s.updateSettings);
   const { privacy } = settings;
@@ -72,7 +73,7 @@ export const FriendPermissions: React.FC = () => {
       <div className="bg-app-surface mb-2">
         <SettingsItem
           label={t.privacy_add_me_methods_label}
-          tapProps={bindTap<HTMLDivElement>('settings.privacy.addMe.open')}
+          tapProps={bindNav(routes.settingsPrivacyAddMe)}
         />
         <SettingsToggle
           label={t.privacy_recommend_contacts}
@@ -92,12 +93,12 @@ export const FriendPermissions: React.FC = () => {
         <SettingsItem label={t.chat_only} />
         <SettingsItem
           label={t.discover_moments}
-          tapProps={bindTap<HTMLDivElement>('settings.privacy.moments.open')}
+          tapProps={bindNav(routes.settingsPrivacyMoments)}
         />
         <SettingsItem label={t.discover_channels} />
         <SettingsItem
           label={t.discover_watch}
-          tapProps={bindTap<HTMLDivElement>('settings.privacy.topStories.open')}
+          tapProps={bindNav(routes.settingsPrivacyTopStories)}
         />
         <SettingsItem label={t.settings_wechat_sports} isLast />
       </div>
@@ -105,7 +106,7 @@ export const FriendPermissions: React.FC = () => {
       <div className="bg-app-surface mb-2">
         <SettingsItem
           label={t.privacy_blacklist_contacts}
-          tapProps={bindTap<HTMLDivElement>('settings.privacy.blacklist.open')}
+          tapProps={bindNav(routes.settingsPrivacyBlacklist)}
           isLast
         />
       </div>
@@ -116,7 +117,7 @@ export const FriendPermissions: React.FC = () => {
 // --- Personal Info Permissions ---
 export const PersonalInfoPermissions: React.FC = () => {
   const t = useWechatStrings();
-  const { bindTap } = useWechatGestures();
+  const { bindTap, bindNav } = useWechatGestures();
 
   return (
     <div className="bg-app-bg min-h-full pb-10 pt-2">
@@ -124,7 +125,7 @@ export const PersonalInfoPermissions: React.FC = () => {
         <SettingsItem label={t.privacy_system_permission_mgmt} />
         <SettingsItem
           label={t.privacy_authorization_mgmt}
-          tapProps={bindTap<HTMLDivElement>('settings.privacy.authorization.open')}
+          tapProps={bindNav(routes.settingsPrivacyAuthorization)}
           isLast
         />
       </div>

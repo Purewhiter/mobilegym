@@ -2,6 +2,7 @@ import React from 'react';
 import { IcMail, IcNavBack, SpotifyLogoIcon } from '../res/icons';
 import { useSpotifyGestures } from '../hooks/useSpotifyGestures';
 import { useSpotifyStrings } from '../hooks/useSpotifyStrings';
+import { routes } from '../routes';
 
 const GoogleIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -14,7 +15,7 @@ const GoogleIcon = () => (
 );
 
 export const SignupPage: React.FC = () => {
-  const { bindBack, bindTap } = useSpotifyGestures();
+  const { bindBack, bindNav } = useSpotifyGestures();
   const s = useSpotifyStrings();
 
   return (
@@ -41,7 +42,7 @@ export const SignupPage: React.FC = () => {
       <div className="flex flex-col gap-3 mb-8">
         <button
           className="w-full bg-app-primary text-black font-bold py-3 px-8 rounded-full text-[15px] active:scale-95 transition-transform flex items-center justify-center relative"
-          {...bindTap('auth.signup.email.open')}
+          {...bindNav(routes.signupEmail)}
         >
           <span className="absolute left-4">
             <IcMail className="text-black" size={24} />

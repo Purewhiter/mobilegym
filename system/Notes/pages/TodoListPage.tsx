@@ -13,6 +13,7 @@ import { stringsEn } from '../res/strings.en';
 import { useAppStrings } from '../../../os/useAppStrings';
 import { useNotesGestures } from '../hooks/useNotesGestures';
 import { normalizeTodoText, partitionVisibleTodos } from './todoListModel';
+import { routes } from '../routes';
 
 const ACTION_WIDTH = 88;
 
@@ -175,7 +176,7 @@ const EditingTodoItem: React.FC<{
 );
 
 export const TodoListPage: React.FC = () => {
-  const { go } = useNotesGestures();
+  const { nav } = useNotesGestures();
   const { todos, addTodo, toggleTodo, deleteTodo, updateTodoText } = useNotesStore(
     useShallow(s => ({
       todos: s.todos,
@@ -255,7 +256,7 @@ export const TodoListPage: React.FC = () => {
             <button
               className="w-10 h-10 flex items-center justify-center active:opacity-70"
               onClick={() => {
-                go('settings.open');
+                nav.push(routes.settings);
               }}
               aria-label={s.settings}
             >

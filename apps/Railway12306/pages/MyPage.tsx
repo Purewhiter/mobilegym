@@ -12,42 +12,44 @@ import { useRailwayGestures } from '../hooks/useRailwayGestures';
 import { ServiceGrid } from '../components/ServiceGrid';
 import { useRailwayStrings } from '../hooks/useRailwayStrings';
 import { localizeRailwayItemName } from '../utils/localizeRailwayItem';
+import { routes } from '../routes';
+import type { AppRoute } from '../../../os/navigation';
 const warmServiceIconMap: Record<string, React.ElementType> = {
   UserCheck: IcUserCheck, HelpCircle: IcHelp, MessageSquare: IcMessage, MessageCircle: IcMessageCircle, Accessibility: IcAccessibility, Phone: IcPhoneCall, Globe: IcGlobe,
 };
 
 // 出行向导 item ID → transition
-const GUIDE_NAV_MAP: Record<string, string> = {
-  station_screen: 'service.stationBoard',
-  timetable: 'service.timetable',
+const GUIDE_NAV_MAP: Record<string, AppRoute> = {
+  station_screen: routes.stationBoard,
+  timetable: routes.timetable,
 };
 
 // 常用功能 item ID → transition
-const FUNC_NAV_MAP: Record<string, string> = {
-  id_verify: 'settings.idVerify',
-  fingerprint: 'settings.fingerprint',
-  change_password: 'settings.changePassword',
-  change_phone: 'account.changePhone',
-  notifications: 'settings.notificationSettings',
-  student_verify: 'account.studentVerify',
-  invoice: 'orders.invoice',
+const FUNC_NAV_MAP: Record<string, AppRoute> = {
+  id_verify: routes.idVerify,
+  fingerprint: routes.fingerprint,
+  change_password: routes.changePassword,
+  change_phone: routes.changePhone,
+  notifications: routes.notificationSettings,
+  student_verify: routes.studentVerify,
+  invoice: routes.invoice,
 };
 
 // 温馨服务 item ID → transition
-const WARM_NAV_MAP: Record<string, string> = {
-  special_passenger: 'service.specialPassenger',
-  service_phone: 'service.servicePhone',
+const WARM_NAV_MAP: Record<string, AppRoute> = {
+  special_passenger: routes.specialPassenger,
+  service_phone: routes.servicePhone,
 };
 
 export const MyPage: React.FC = () => {
   const config = RAILWAY12306_CONFIG;
-  const { bindTap, go } = useRailwayGestures();
+  const { bindTap, nav, bindNav } = useRailwayGestures();
   const { user, travelGuide, commonFunctions, warmServices, infoServices } = config;
   const s = useRailwayStrings();
 
-  const handleNav = (map: Record<string, string>) => (id: string) => {
+  const handleNav = (map: Record<string, AppRoute>) => (id: string) => {
     const t = map[id];
-    if (t) go(t as any);
+    if (t) nav.push(t);
   };
 
   // 监听滚动位置，切换顶栏透明→白色
@@ -67,7 +69,7 @@ export const MyPage: React.FC = () => {
   const isFullyScrolled = scrollProgress >= 1;
 
   const quickLinks = [
-    { id: 'passengers', name: s.my_passengers, icon: IcUser, navId: 'my.passengers' },
+    { id: 'passengers', name: s.my_passengers, icon: IcUser, opensPassengers: true },
     { id: 'my_orders', name: s.my_orders_short, icon: IcFile },
     { id: 'coupons', name: s.my_coupons, icon: IcTicket },
   ];
@@ -84,11 +86,11 @@ export const MyPage: React.FC = () => {
         <div className="flex items-center justify-between h-[30px]">
           <span className="text-base font-medium text-gray-900" style={{ opacity: scrollProgress }}>{s.tab_my}</span>
           <div className="flex items-center gap-3">
-            <div {...bindTap<HTMLDivElement>('my.settings' as any)}>
+            <div {...bindNav(routes.settings)}>
  <IcSettings size={22} className={` ${isFullyScrolled ? 'text-gray-700' : 'text-white'}`}
  style={{ transition: 'color var(--app-duration-short) var(--app-easing-standard), background-color var(--app-duration-short) var(--app-easing-standard)' }} />
             </div>
-            <div {...bindTap<HTMLDivElement>('my.notifications' as any)}>
+            <div {...bindNav(routes.notifications)}>
  <IcMessage size={22} className={` ${isFullyScrolled ? 'text-gray-700' : 'text-white'}`}
  style={{ transition: 'color var(--app-duration-short) var(--app-easing-standard), background-color var(--app-duration-short) var(--app-easing-standard)' }} />
             </div>
@@ -99,7 +101,7 @@ export const MyPage: React.FC = () => {
       {/* 蓝色渐变头部 */}
       <div className="bg-gradient-to-b from-app-primary to-[#5A9BE6] pt-10 pb-6 px-3">
         <div className="flex items-center gap-3">
-          <div className="w-16 h-16 rounded-full bg-app-surface/20 border-2 border-white/40 flex items-center justify-center active:opacity-70" {...bindTap<HTMLDivElement>('my.account' as any)}>
+          <div className="w-16 h-16 rounded-full bg-app-surface/20 border-2 border-white/40 flex items-center justify-center active:opacity-70" {...bindNav(routes.myAccount)}>
             <IcUser size={28} className="text-white/70" />
           </div>
           <div>
@@ -108,7 +110,7 @@ export const MyPage: React.FC = () => {
             <span className="text-[11px] text-white bg-app-surface/20 rounded-full px-2.5 py-0.5 flex items-center gap-1">
                 {s.my_phone_verified} <IcCheckCircle size={10} className="text-green-300" />
               </span>
-              <span className="text-[11px] text-white bg-app-surface/20 rounded-full px-2.5 py-0.5 flex items-center gap-1 active:opacity-70" {...bindTap<HTMLSpanElement>('my.account' as any)}>
+              <span className="text-[11px] text-white bg-app-surface/20 rounded-full px-2.5 py-0.5 flex items-center gap-1 active:opacity-70" {...bindNav(routes.myAccount)}>
                 {s.my_identity_verified} <IcCheckCircle size={10} className="text-green-300" />
               </span>
             </div>
@@ -124,7 +126,7 @@ export const MyPage: React.FC = () => {
             <div
               key={link.id}
               className="flex flex-col items-center gap-1.5 active:opacity-70"
-              {...(link.navId ? bindTap<HTMLDivElement>(link.navId as any) : {})}
+              {...(link.opensPassengers ? bindNav(routes.passengers, { search: { mode: 'manage' } }) : {})}
             >
               <Icon size={26} className="text-app-primary" />
               <span className="text-xs text-gray-700">{link.name}</span>
@@ -182,7 +184,7 @@ export const MyPage: React.FC = () => {
       {/* 通知消息 */}
       <div
         className="mx-[10px] mt-[6px] bg-app-surface rounded-[6px] px-4 py-4 flex items-center justify-between active:bg-gray-50"
-        {...bindTap<HTMLDivElement>('my.notifications' as any)}
+        {...bindNav(routes.notifications)}
       >
         <span className="text-base font-medium text-gray-900">{s.my_notifications_title}</span>
         <IcNavForward size={18} className="text-gray-300" />
@@ -191,7 +193,7 @@ export const MyPage: React.FC = () => {
       {/* 系统设置 */}
       <div
         className="mx-[10px] mt-[6px] bg-app-surface rounded-[6px] px-4 py-4 flex items-center justify-between active:bg-gray-50"
-        {...bindTap<HTMLDivElement>('my.settings' as any)}
+        {...bindNav(routes.settings)}
       >
         <span className="text-base font-medium text-gray-900">{s.my_system_settings_title}</span>
         <IcNavForward size={18} className="text-gray-300" />

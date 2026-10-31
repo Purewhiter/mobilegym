@@ -5,12 +5,11 @@ import { useWechatStrings } from '../../hooks/useWechatStrings';
 import { IcNavForward, IcLightbulb } from '../../res/icons';
 import { useWechatGestures } from '../../hooks/useWechatGestures';
 import { useWechatStore } from '../../state';
-import { useAppNavigate } from '../../navigation';
+import { routes } from '../../routes';
 
 export const SettingsPage: React.FC = () => {
   const t = useWechatStrings();
-    const { bindTap } = useWechatGestures();
-    const { go } = useAppNavigate();
+    const { bindNav, nav } = useWechatGestures();
     const updateSettings = useWechatStore(s => s.updateSettings);
     const logout = useWechatStore(s => s.logout);
 
@@ -64,30 +63,30 @@ export const SettingsPage: React.FC = () => {
             
             {/* Group 1: Personal Info & Security */}
             <SettingsGroup>
-                <SettingsItem label={t.settings_profile} tapProps={bindTap<HTMLDivElement>('profile.detail.open')} />
-                <SettingsItem label={t.settings_account_security} tapProps={bindTap<HTMLDivElement>('settings.security.open')} isLast />
+                <SettingsItem label={t.settings_profile} tapProps={bindNav(routes.myProfileDetail)} />
+                <SettingsItem label={t.settings_account_security} tapProps={bindNav(routes.settingsSecurity)} isLast />
             </SettingsGroup>
 
             {/* Group 2: Modes */}
             <SettingsGroup>
-                <SettingsItem label={t.settings_minor_mode} tapProps={bindTap<HTMLDivElement>('settings.minorMode.open')} />
-                <SettingsItem label={t.settings_care_mode} tapProps={bindTap<HTMLDivElement>('settings.careMode.open')} isLast />
+                <SettingsItem label={t.settings_minor_mode} tapProps={bindNav(routes.settingsMinorMode)} />
+                <SettingsItem label={t.settings_care_mode} tapProps={bindNav(routes.settingsCareMode)} isLast />
             </SettingsGroup>
 
             {/* Group 3: General App Settings */}
             <SettingsGroup>
-                <SettingsItem label={t.settings_notifications} tapProps={bindTap<HTMLDivElement>('settings.notifications.open')} />
-                <SettingsItem label={t.settings_chat} tapProps={bindTap<HTMLDivElement>('settings.chat.open')} />
-                <SettingsItem label={t.settings_general} tapProps={bindTap<HTMLDivElement>('settings.general.open')} />
-                <SettingsItem label={t.settings_subscriptions} tapProps={bindTap<HTMLDivElement>('settings.subscriptions.open')} isLast />
+                <SettingsItem label={t.settings_notifications} tapProps={bindNav(routes.settingsNotifications)} />
+                <SettingsItem label={t.settings_chat} tapProps={bindNav(routes.settingsChat)} />
+                <SettingsItem label={t.settings_general} tapProps={bindNav(routes.settingsGeneral)} />
+                <SettingsItem label={t.settings_subscriptions} tapProps={bindNav(routes.settingsSubscriptions)} isLast />
             </SettingsGroup>
 
             {/* Group 4: Privacy */}
             <SettingsGroup title={t.settings_privacy}>
-                <SettingsItem label={t.discover_friend_permission} tapProps={bindTap<HTMLDivElement>('settings.privacy.friends.open')} />
-                <SettingsItem label={t.settings_personal_info} tapProps={bindTap<HTMLDivElement>('settings.privacy.personal.open')} />
+                <SettingsItem label={t.discover_friend_permission} tapProps={bindNav(routes.settingsPrivacyFriends)} />
+                <SettingsItem label={t.settings_personal_info} tapProps={bindNav(routes.settingsPrivacyPersonal)} />
                 <SettingsItem label={t.settings_personal_info_list} />
-                <SettingsItem label={t.settings_third_party_list} tapProps={bindTap<HTMLDivElement>('settings.privacy.thirdParty.open')} isLast />
+                <SettingsItem label={t.settings_third_party_list} tapProps={bindNav(routes.settingsPrivacyAuthorization)} isLast />
             </SettingsGroup>
 
             {/* Group 5: Plugins */}
@@ -107,14 +106,14 @@ export const SettingsPage: React.FC = () => {
             {/* Footer Buttons */}
             <div
                 className="mt-2 text-center h-(--app-settings-item-height) flex items-center justify-center bg-app-surface text-(--app-settings-item-text-size) font-normal active:bg-(--app-c-tw-bg-gray-100) cursor-pointer text-(--app-c-settings-item-text) border-b border-gray-100/50"
-                onClick={() => go('settings.switchAccount')}
+                onClick={() => nav.replace(routes.authLogin)}
             >
                 {t.settings_switch_account}
             </div>
 
             <div
                 className="mt-2 text-center h-(--app-settings-item-height) flex items-center justify-center bg-app-surface text-(--app-settings-item-text-size) font-normal active:bg-(--app-c-tw-bg-gray-100) cursor-pointer text-(--app-c-settings-item-text)"
-                onClick={() => { logout(); go('settings.switchAccount'); }}
+                onClick={() => { logout(); nav.replace(routes.authLogin); }}
             >
                 {t.settings_logout}
             </div>

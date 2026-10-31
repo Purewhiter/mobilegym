@@ -30,6 +30,7 @@ import {
     paginateBook,
     type ReaderLayoutKey,
 } from '../utils/readerPagination';
+import { routes } from '../routes';
 
 function normalizeReaderParagraph(text: string): string {
     return text.replace(/^[\s\u3000]+/, '');
@@ -45,7 +46,7 @@ export const ReaderPage: React.FC = () => {
     const updateProgress = useWechatReadingStore(s => s.updateProgress);
     const readerPrefs = useWechatReadingStore(s => s.readerPrefs);
     const firstLineIndent = useWechatReadingStore(s => s.settings.firstLineIndent);
-    const { bindBack, bindTap, go, back } = useWechatReadingGestures();
+    const { bindBack, bindTap, nav, back, bindNav } = useWechatReadingGestures();
     const s = useWechatReadingStrings();
     const readerTheme = useReaderTheme();
 
@@ -66,7 +67,7 @@ export const ReaderPage: React.FC = () => {
 
     const isInShelf = shelf.some(item => item.bookId === bookId);
     const toggleShelfBinding = isInShelf
-        ? bindTap<HTMLButtonElement>('reader.modal.shelf.open', { params: { bookId: bookId! } })
+        ? bindNav(routes.read, { params: { bookId: bookId! }, search: { modal: 'shelf' } })
         : bindTap<HTMLButtonElement>(
             { kind: 'action', id: 'reader.item.shelf.add.submit' },
             { params: { bookId: bookId! }, onTrigger: () => addToBookshelf(bookId!) },
@@ -225,9 +226,9 @@ export const ReaderPage: React.FC = () => {
                 setShowDoorLeaf(false);
             }
         }
-        go('reader.tool.close', { bookId: bookId! });
+        nav.replace(routes.read, { bookId: bookId! });
         setMenuVisible(false);
-    }, [parsedBook, bookId, totalWords, totalInternalChars, jumpToExternalOffset, go]);
+    }, [parsedBook, bookId, totalWords, totalInternalChars, jumpToExternalOffset, nav]);
 
     useEffect(() => {
         const handleBack = () => {
@@ -241,7 +242,7 @@ export const ReaderPage: React.FC = () => {
             }
 
             if (isToolOpen) {
-                go('reader.tool.close', { bookId: bookId! });
+                nav.replace(routes.read, { bookId: bookId! });
                 setMenuVisible(false);
                 return true;
             }
@@ -259,7 +260,7 @@ export const ReaderPage: React.FC = () => {
         return () => {
             AppNavigatorRegistry.setBackOverride('wechat_reading');
         };
-    }, [menuVisible, back, go, bookId, location.search]);
+    }, [menuVisible, back, nav, bookId, location.search]);
 
     const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
         if (e.pointerType === 'mouse' && e.button !== 0) return;
@@ -373,7 +374,7 @@ export const ReaderPage: React.FC = () => {
                         if (activeTool || menuVisible) {
                             setMenuVisible(false);
                             if (activeTool) {
-                                go('reader.tool.close', { bookId: bookId! });
+                                nav.replace(routes.read, { bookId: bookId! });
                             }
                         } else {
                             setMenuVisible(true);
@@ -446,7 +447,7 @@ export const ReaderPage: React.FC = () => {
                     currentChapterIndex={currentChapterIndex}
                     onSelectChapter={jumpToChapter}
                     onClose={() => {
-                        go('reader.tool.close', { bookId: bookId! });
+                        nav.replace(routes.read, { bookId: bookId! });
                         setMenuVisible(false);
                     }}
                 />

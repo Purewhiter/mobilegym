@@ -24,6 +24,7 @@ import {
   IcShare,
 } from '../res/icons';
 import { useRedditGestures } from '../hooks/useRedditGestures';
+import { routes } from '../routes';
 const asset = (r: unknown) => { const s = String(r ?? '').trim(); return (!s || s.startsWith('http')) ? s : `/@app-assets/Reddit/${s}`; };
 
 /* ── helpers (module-level, stable) ── */
@@ -122,7 +123,7 @@ interface PostCardProps {
 const PostCard: React.FC<PostCardProps> = React.memo(({
   post, voted, isJoined, onVote, onToggleJoin, onMoreMenu, onPostClick,
 }) => {
-  const { bindTap } = useRedditGestures();
+  const { bindTap, nav, bindNav } = useRedditGestures();
   const communityId = post.subreddit;
   return (
     <div
@@ -146,7 +147,7 @@ const PostCard: React.FC<PostCardProps> = React.memo(({
                 <button
                   type="button"
                   aria-label="Open user profile"
-                  {...bindTap('profile.user.open', { params: { username: normalizeUsername(post.author) } })}
+                  {...bindNav(routes.user, { params: { username: normalizeUsername(post.author) }, search: { tab: 'posts' } })}
                   className="w-4 h-4 rounded-full bg-gray-200 overflow-hidden relative flex-shrink-0"
                 >
                   <div className="absolute inset-0 flex items-center justify-center text-[9px] font-black text-app-text-muted select-none">u</div>
@@ -218,7 +219,7 @@ const PostCard: React.FC<PostCardProps> = React.memo(({
           </div>
 
           <div className="flex items-center gap-2 min-w-0">
-            <button type="button" {...bindTap('post.comments.open', { params: { postId: post.id } })} className="flex items-center gap-2 border border-app-border rounded-full px-3 py-1.5 bg-app-surface active:bg-gray-50">
+            <button type="button" {...bindNav(routes.post, { params: { postId: post.id } })} className="flex items-center gap-2 border border-app-border rounded-full px-3 py-1.5 bg-app-surface active:bg-gray-50">
               <img src={asset('basic/icon_comment.png')} alt="Comments" className="w-6 h-5 object-contain opacity-60" draggable={false} />
               <span className="text-sm font-bold text-gray-700">{post.comments}</span>
             </button>
@@ -251,7 +252,7 @@ export const HomePage: React.FC = () => {
   })));
   const votePost = useRedditStore((s) => s.votePost);
   const toggleJoin = useRedditStore((s) => s.toggleJoin);
-  const { go } = useRedditGestures();
+  const { nav, bindNav } = useRedditGestures();
   const [postMoreMenuPostId, setPostMoreMenuPostId] = React.useState<string | null>(null);
 
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
@@ -263,9 +264,9 @@ export const HomePage: React.FC = () => {
     (e: React.MouseEvent, postId: string) => {
       const el = e.target as HTMLElement | null;
       if (el?.closest?.('button, a, [data-trigger], [data-action], [data-comment-action]')) return;
-      go('post.comments.open', { postId });
+      nav.push(routes.post, { postId });
     },
-    [go],
+    [nav],
   );
 
   const openMoreMenu = React.useCallback((postId: string) => { setPostMoreMenuPostId(postId); }, []);

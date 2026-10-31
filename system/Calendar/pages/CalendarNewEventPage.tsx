@@ -12,10 +12,11 @@ import { stringsEn } from '../res/strings.en';
 import { useAppStrings } from '@/os/useAppStrings';
 import { useCalendarGestures } from '../hooks/useCalendarGestures';
 import * as TimeService from '@/os/TimeService';
+import { routes } from '../routes';
 const calIcon = (name: string) => name ? `/@app-assets/Calendar/icons/${name}.svg` : '';
 
 export const CalendarNewEventPage: React.FC = () => {
-    const { back, go, bindBack } = useCalendarGestures();
+    const { back, nav, bindBack } = useCalendarGestures();
     const { eventId } = useParams();
     const selectedDate = useCalendarStore(selectSelectedDate);
     const { settings, createEvent, setSelectedDate, updateEvent, events } = useCalendarStore(
@@ -211,7 +212,7 @@ export const CalendarNewEventPage: React.FC = () => {
         if (editing && eventId) updateEvent(eventId, payload);
         // Jump back to event day
         setSelectedDate(TimeService.fromTimestamp(startTs));
-        if (editing) go('event.open', { eventId: id });
+        if (editing) nav.push(routes.event, { eventId: id });
         else back();
     };
 

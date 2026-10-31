@@ -4,8 +4,8 @@ import { dimens } from '../res/dimens';
 import { useWechatReadingGestures } from '../hooks/useWechatReadingGestures';
 import { useWechatReadingStrings } from '../hooks/useWechatReadingStrings';
 import { getWechatReadingBookById, useWechatReadingStore } from '../state';
-import { useAppNavigate } from '../navigation';
 import type { Book } from '../data/types';
+import { routes } from '../routes';
 
 function formatTemplate(template: string, value: string | number) {
   return template.replace('{0}', String(value));
@@ -33,8 +33,7 @@ function BookCoverThumb({ book, className }: { book: Book; className?: string })
 
 const EditBookListPage: React.FC = () => {
   const s = useWechatReadingStrings();
-  const { bindBack } = useWechatReadingGestures();
-  const { go, back } = useAppNavigate();
+  const { bindBack, nav, back } = useWechatReadingGestures();
   const user = useWechatReadingStore(st => st.user);
   const likedListBooks = useWechatReadingStore(st => st.likedListBooks);
   const likedListSyncToHome = useWechatReadingStore(st => st.likedListSyncToHome);
@@ -77,7 +76,7 @@ const EditBookListPage: React.FC = () => {
           type="button"
           className="mb-10 mt-7 flex w-full items-center gap-4 py-1 text-left active:opacity-80"
           style={{ transition: 'opacity var(--app-duration-short) var(--app-easing-standard)' }}
-          onClick={() => go('bookLists.addBooks.open')}
+          onClick={() => nav.push(routes.bookListsAddBooks)}
         >
           <div className="flex h-[104px] w-[72px] shrink-0 items-center justify-center rounded-[2px] border border-slate-200 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
             <IcAdd size={28} className="text-slate-300" strokeWidth={1.25} />

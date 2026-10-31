@@ -14,8 +14,9 @@ import { strings } from '../res/strings';
 import { stringsEn } from '../res/strings.en';
 import { useAppStrings } from '@/os/useAppStrings';
 import { useSettingsGestures } from '../hooks/useSettingsGestures';
+import { routes } from '../routes';
 export const BluetoothDevicesPage: React.FC = () => {
-  const { bindTap } = useSettingsGestures();
+  const { bindNav } = useSettingsGestures();
   const s = useAppStrings(strings, stringsEn);
   const [btEnabled, setBtEnabled] = useBooleanPreference('bluetooth_enable', true);
 
@@ -161,9 +162,7 @@ export const BluetoothDevicesPage: React.FC = () => {
             title={s.advanced_settings}
             summary={s.quick_connect_connection_notifications_icon}
             showDivider={false}
-            itemProps={bindTap<HTMLDivElement>('page.open', {
-              params: { pageId: 'bluetooth_advanced_settings' },
-            })}
+            itemProps={bindNav(routes.page, { params: { pageId: 'bluetooth_advanced_settings' } })}
           />
         </PreferenceCategory>
       </div>

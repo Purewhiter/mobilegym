@@ -7,13 +7,14 @@ import { useRedBookStore } from '../state';
 import { useRedBookUsers } from '../data/view';
 import { useShallow } from 'zustand/react/shallow';
 import { useRedBookGestures } from '../hooks/useRedBookGestures';
+import { routes } from '../routes';
 export const FollowListPage: React.FC = () => {
   const s = useRedBookStrings();
   const [searchParams] = useSearchParams();
   const type = searchParams.get('type'); // 0 = fans, 1 = following
   const title = type === '1' ? s.following : s.followers;
   const { user, followUser } = useRedBookStore(useShallow(s => ({ user: s.user, followUser: s.followUser })));
-  const { bindTap, bindBack } = useRedBookGestures();
+  const { bindNav, bindBack } = useRedBookGestures();
 
   // 1 = following, otherwise followers; canonical user order like before.
   const ids = (type === '1' ? user.followingIds : user.followerIds) || [];
@@ -45,7 +46,7 @@ export const FollowListPage: React.FC = () => {
                   <div
                     key={item.id}
                     className="flex items-center justify-between px-4 py-3 active:bg-gray-50 cursor-pointer"
-                    {...bindTap('user.open', { params: { userId: item.id } })}
+                    {...bindNav(routes.user, { params: { userId: item.id } })}
                   >
                       <div className="flex items-center gap-3 flex-1 overflow-hidden">
                           <div className="w-10 h-10 rounded-full bg-gray-200 flex-shrink-0 overflow-hidden">

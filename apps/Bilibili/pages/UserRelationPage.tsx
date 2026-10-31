@@ -5,8 +5,9 @@ import { useSearchParams } from 'react-router-dom';
 import { useBilibiliStore } from '../state';
 import { useAuthorsByMid } from '../hooks/useData';
 import { useBilibiliGestures } from '../hooks/useBilibiliGestures';
+import { routes } from '../routes';
 export const UserRelationPage: React.FC = () => {
-    const { bindBack, bindTap, back } = useBilibiliGestures();
+    const { bindBack, bindNav, back } = useBilibiliGestures();
     const [searchParams] = useSearchParams();
     const user = useBilibiliStore(s => s.user);
     const toggleFollow = useBilibiliStore(s => s.toggleFollow);
@@ -74,14 +75,14 @@ export const UserRelationPage: React.FC = () => {
             {/* Tabs */}
             <div className="flex bg-app-surface border-b border-gray-100 sticky top-[57px] z-30">
                 <button
-                    {...(activeTab === 'follow' ? {} : bindTap('userRelation.tab.switch', { params: { tab: 'follow' } }))}
+                    {...(activeTab === 'follow' ? {} : bindNav(routes.profileFollowing, { search: { tab: 'follow' }, replace: true }))}
                     className={`flex-1 py-3 text-[14px] font-medium relative ${activeTab === 'follow' ? 'text-app-primary' : 'text-[#61666D]'}`}
                 >
                     关注
                     {activeTab === 'follow' && <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-app-primary rounded-full" />}
                 </button>
                 <button
-                    {...(activeTab === 'fans' ? {} : bindTap('userRelation.tab.switch', { params: { tab: 'fans' } }))}
+                    {...(activeTab === 'fans' ? {} : bindNav(routes.profileFollowing, { search: { tab: 'fans' }, replace: true }))}
                     className={`flex-1 py-3 text-[14px] font-medium relative ${activeTab === 'fans' ? 'text-app-primary' : 'text-[#61666D]'}`}
                 >
                     粉丝
@@ -117,7 +118,7 @@ export const UserRelationPage: React.FC = () => {
                         <div
                             key={item.mid}
                             className="flex items-center justify-between px-4 py-3 active:bg-gray-50 bg-app-surface border-b border-gray-50 last:border-0"
-                            {...bindTap('user.open', { params: { mid: item.mid } })}
+                            {...bindNav(routes.user, { params: { mid: item.mid }, search: { tab: 'works' } })}
                         >
                             <div className="flex items-center gap-3 overflow-hidden flex-1">
                                 <div className="relative w-11 h-11 rounded-full overflow-hidden shrink-0 border border-gray-100">
@@ -144,10 +145,7 @@ export const UserRelationPage: React.FC = () => {
                             </div>
 
                             <button
-                                {...bindTap('userRelation.menu.open', {
-                                    stopPropagation: true,
-                                    beforeTrigger: () => setSelectedMid(String(item.mid)),
-                                })}
+                                {...bindNav(routes.profileFollowing, { search: { menu: 'true' }, stopPropagation: true, beforeTrigger: () => setSelectedMid(String(item.mid)) })}
                                 className="h-7 px-3 rounded-full bg-[#E3E5E7] text-app-text-muted flex items-center justify-center gap-1 font-medium text-[12px] shrink-0 active:bg-[#d0d3d6] ml-2"
                             >
                                 <Menu size={12} /> 已关注

@@ -10,6 +10,7 @@ import { AddToPlaylistSheet } from '../components/AddToPlaylistSheet';
 import { useSpotifyStrings } from '../hooks/useSpotifyStrings';
 import type { SpotifyTrack, PlayHistoryEntry } from '../types';
 import { localizeSpotifyText } from '../utils/localizeSpotifyText';
+import { routes } from '../routes';
 
 interface HistoryGroup {
     sourceType: string;
@@ -71,7 +72,7 @@ export const RecentPlayedPage: React.FC = () => {
     const locale = useLocale();
     const isEnglish = locale === 'en';
     const [searchParams] = useSearchParams();
-    const { bindTap, bindBack, back, go } = useSpotifyGestures();
+    const { bindTap, bindBack, back, nav, bindNav } = useSpotifyGestures();
     const s = useSpotifyStrings();
     const { currentTrack, recentPlays, customPlaylists, playHistory } = useSpotifyStore(useShallow(s => ({
         currentTrack: s.currentTrack, recentPlays: s.recentPlays,
@@ -172,11 +173,9 @@ export const RecentPlayedPage: React.FC = () => {
     const TrackItem = ({ track }: { track: SpotifyTrack }) => (
         <div
             className="flex items-center gap-3 py-2 pl-4 pr-0 active:bg-white/10 rounded-lg transition-colors cursor-pointer"
-            {...bindTap('player.open', {
-                beforeTrigger: () => {
+            {...bindNav(routes.player, { beforeTrigger: () => {
                     if (currentTrack?.id !== track.id) playTrack(track);
-                },
-            })}
+                } })}
         >
             <div className="w-12 h-12 rounded bg-gray-800 overflow-hidden flex-shrink-0">
                 {track.cover ? (
@@ -192,10 +191,7 @@ export const RecentPlayedPage: React.FC = () => {
                 <div className="text-gray-400 text-xs truncate">{displayText(track.artist)}</div>
             </div>
             <button
-                {...bindTap('history.trackMenu.open', {
-                    params: { trackId: track.id },
-                    stopPropagation: true,
-                })}
+                {...bindNav(routes.history, { search: { sheet: 'track_menu', trackId: track.id }, stopPropagation: true })}
                 className="p-2 hover:bg-[#222] rounded-full flex-shrink-0"
             >
                 <IcMore size={20} className="text-gray-400" />
@@ -312,8 +308,8 @@ export const RecentPlayedPage: React.FC = () => {
                             },
                         },
                     )}
-                    addToPlaylistProps={bindTap('history.addPlaylist.open', { params: { trackId: selectedTrack.id }, stopPropagation: true })}
-                    createJamProps={bindTap('tab.premium')}
+                    addToPlaylistProps={bindNav(routes.history, { search: { sheet: 'add_playlist', trackId: selectedTrack.id }, replace: true, stopPropagation: true })}
+                    createJamProps={bindNav(routes.premium, { replace: true })}
                     addToQueueProps={bindTap(
                         { kind: 'action', id: 'track.queue.add' },
                         {
@@ -325,8 +321,8 @@ export const RecentPlayedPage: React.FC = () => {
                             },
                         },
                     )}
-                    goToAlbumProps={bindTap('playlist.open', { params: { id: selectedTrack.id } })}
-                    goToArtistProps={bindTap('artist.open', { params: { name: selectedTrack.artist } })}
+                    goToAlbumProps={bindNav(routes.playlist, { params: { id: selectedTrack.id } })}
+                    goToArtistProps={bindNav(routes.artist, { params: { name: selectedTrack.artist } })}
                 />
             )}
             {selectedTrack && (

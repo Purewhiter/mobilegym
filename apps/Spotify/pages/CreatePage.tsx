@@ -6,13 +6,14 @@ import { useShallow } from 'zustand/react/shallow';
 import { useSpotifyGestures } from '../hooks/useSpotifyGestures';
 import { useSubmitOnce } from '../../../os/hooks/useSubmitOnce';
 import { useSpotifyStrings } from '../hooks/useSpotifyStrings';
+import { routes } from '../routes';
 
 export const CreatePage: React.FC = () => {
   const { customPlaylists } = useSpotifyStore(useShallow(s => ({ customPlaylists: s.customPlaylists })));
   const createPlaylist = useSpotifyStore(s => s.createPlaylist);
   const pendingTrack = useSpotifyStore(s => s.pendingPlaylistTrack);
   const submitOnce = useSubmitOnce();
-  const { bindTap, bindBack, back, go } = useSpotifyGestures();
+  const { bindTap, bindBack, back, nav, bindNav } = useSpotifyGestures();
   const s = useSpotifyStrings();
   const [searchParams] = useSearchParams();
 
@@ -54,7 +55,7 @@ export const CreatePage: React.FC = () => {
     void submitOnce(async () => {
       newPlaylistId = (await createPlaylist(name, pendingTrack))?.id ?? null;
     }, () => {
-      if (newPlaylistId) go('playlist.open', { id: newPlaylistId }, { mode: 'replace' });
+      if (newPlaylistId) nav.replace(routes.playlist, { id: newPlaylistId });
     });
   };
 
@@ -176,7 +177,7 @@ export const CreatePage: React.FC = () => {
 
         <div className="space-y-7">
           <button
-            {...bindTap('create.naming.open')}
+            {...bindNav(routes.create, { search: { view: 'naming' }, replace: true })}
             className="flex items-center gap-5 group active:opacity-70 transition-opacity cursor-pointer w-full text-left"
           >
             <div className="w-16 h-16 rounded-full bg-[#3E3E3E] flex items-center justify-center text-gray-300">

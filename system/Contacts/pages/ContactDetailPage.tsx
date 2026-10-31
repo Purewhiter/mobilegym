@@ -11,6 +11,7 @@ import { ChevronRightIcon, IcSymbolBack, IcSymbolDelete, IcSymbolFavorites, IcSy
 import { strings } from '../res/strings';
 import { stringsEn } from '../res/strings.en';
 import { localizeContactLabel } from '../utils/localizedText';
+import { routes } from '../routes';
 
 function normalizeNumber(value: string): string {
   return (value || '').replace(/\s+/g, '');
@@ -36,7 +37,7 @@ export const ContactDetailPage: React.FC = () => {
   const locale = useLocale();
   const isEnglish = locale === 'en';
   const { contactId } = useParams<{ contactId: string }>();
-  const { bindBack, go, back } = useContactsGestures();
+  const { bindBack, nav, back } = useContactsGestures();
   const s = useAppStrings(strings, stringsEn);
   const contact = useContact(contactId);
 
@@ -291,7 +292,7 @@ export const ContactDetailPage: React.FC = () => {
                   <button
                     type="button"
                     className="w-full px-5 py-4 flex items-center justify-between active:bg-black/5 text-left"
-                    onClick={() => go('call.open', { callLogId: entry.id })}
+                    onClick={() => nav.push(routes.call, { callLogId: entry.id })}
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       <CallTypeBadge type={entry.type ?? 'incoming'} />

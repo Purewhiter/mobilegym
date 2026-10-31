@@ -2,9 +2,10 @@ import React from 'react';
 import { IcNavForward, IcWallet, IcCard, IcCoins } from '../../res/icons';
 import { useWechatGestures } from '../../hooks/useWechatGestures';
 import { useLocale } from '@/os/locale';
+import { routes } from '../../routes';
 
 export const WalletPage: React.FC = () => {
-  const { bindTap } = useWechatGestures();
+  const { bindNav } = useWechatGestures();
   const locale = useLocale();
   const isEnglish = locale === 'en';
   const text = isEnglish
@@ -76,7 +77,7 @@ export const WalletPage: React.FC = () => {
           <div className="w-[1px] h-3 bg-gray-300 self-center"></div>
           <span
             className="cursor-pointer"
-            {...bindTap<HTMLSpanElement>('paymentSettings.open')}
+            {...bindNav(routes.paySettings)}
           >{text.paymentSettings}</span>
       </div>
     </div>

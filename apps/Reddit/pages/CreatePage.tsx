@@ -7,6 +7,7 @@ import * as MediaService from '../../../os/MediaService';
 import * as TimeService from '../../../os/TimeService';
 import { useSubmitOnce } from '../../../os/hooks/useSubmitOnce';
 import { getUserAvatar } from '../utils/userIdentity';
+import { routes } from '../routes';
 
 /* ── flair data per community ── */
 const COMMUNITY_FLAIRS: Record<string, string[]> = {
@@ -188,7 +189,7 @@ const AddTagsSheet: React.FC<{
 
 /* ── CreatePage ── */
 export const CreatePage: React.FC = () => {
-  const { bindBack, bindTap, back } = useRedditGestures();
+  const { bindBack, bindNav, back } = useRedditGestures();
   const { createDraft, user } = useRedditStore(useShallow((s) => ({ createDraft: s.createDraft, user: s.user })));
   const storeAddFlair = useRedditStore((s) => s.addFlair);
   const storeCreatePost = useRedditStore((s) => s.createPost);
@@ -278,7 +279,7 @@ export const CreatePage: React.FC = () => {
         {/* Community selector row */}
         <div className="flex items-center mb-4">
           <button
-            {...bindTap('create.community.open')}
+            {...bindNav(routes.createCommunity)}
             className="flex items-center gap-2 bg-gray-100 rounded-full px-4 py-2"
           >
             {selectedCommunity ? (

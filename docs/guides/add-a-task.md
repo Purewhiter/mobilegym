@@ -172,13 +172,12 @@ python -m bench_env.run \
 
 The runner will reset the env, sample your parameters, dispatch the prompt to the agent, run the trajectory, and print the verdict plus saved trajectory path under `runs/`.
 
-## Generating task candidates from the nav graph
+## Finding task candidates from the nav graph
 
-After you write your app's `navigation.declaration.ts`, the analyzer can enumerate reachable trajectories and suggest candidate tasks:
+Explore the app to list what is reachable and which controls lead where:
 
 ```bash
-node scripts/build_nav_artifacts.mjs <AppName>
-# → public/<appname>_action_tasks.json
+python scripts/explore_nav_graph.py http://localhost:3000/ <appId> /tmp/<appId>.json
 ```
 
 This is a starting point, not a substitute for thinking — you still need to write the judge.

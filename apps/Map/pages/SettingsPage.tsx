@@ -11,9 +11,10 @@ import {
 } from '../res/icons';
 import { useMapGestures } from '../hooks/useMapGestures';
 import { useMapStrings } from '../hooks/useMapStrings';
+import { routes } from '../routes';
 
 export const SettingsPage: React.FC = () => {
-  const { go, bindBack } = useMapGestures();
+  const { nav, bindBack } = useMapGestures();
   const s = useMapStrings();
 
   return (
@@ -31,7 +32,7 @@ export const SettingsPage: React.FC = () => {
       <div className="flex-1 overflow-y-auto no-scrollbar px-2">
         <div
           className="flex items-start gap-5 p-4 active:bg-gray-50 rounded-xl"
-          onClick={() => go('settings.app-display.open')}
+          onClick={() => nav.push(routes.settingsAppDisplay)}
         >
           <div className="mt-1 text-app-text-muted bg-gray-100 p-2 rounded-full">
             <IcPhone2 size={20} />
@@ -44,7 +45,7 @@ export const SettingsPage: React.FC = () => {
 
         <div
           className="flex items-start gap-5 p-4 active:bg-gray-50 rounded-xl"
-          onClick={() => go('settings.nav.open')}
+          onClick={() => nav.push(routes.settingsNav)}
         >
           <div className="mt-1 text-app-text-muted bg-gray-100 p-2 rounded-full">
             <IcNavigation size={20} />
@@ -57,7 +58,7 @@ export const SettingsPage: React.FC = () => {
 
         <div
           className="flex items-start gap-5 p-4 active:bg-gray-50 rounded-xl"
-          onClick={() => go('settings.getting-around.open')}
+          onClick={() => nav.push(routes.settingsGettingAround)}
         >
           <div className="mt-1 text-app-text-muted bg-gray-100 p-2 rounded-full">
             <IcBus size={20} />
@@ -70,7 +71,7 @@ export const SettingsPage: React.FC = () => {
 
         <div
           className="flex items-start gap-5 p-4 active:bg-gray-50 rounded-xl"
-          onClick={() => go('settings.location-privacy.open')}
+          onClick={() => nav.push(routes.settingsLocationPrivacy)}
         >
           <div className="mt-1 text-app-text-muted bg-gray-100 p-2 rounded-full">
             <IcLocation size={20} />
@@ -83,7 +84,7 @@ export const SettingsPage: React.FC = () => {
 
         <div
           className="flex items-start gap-5 p-4 active:bg-gray-50 rounded-xl"
-          onClick={() => go('settings.offline-maps.open')}
+          onClick={() => nav.push(routes.settingsOfflineMaps)}
         >
           <div className="mt-1 text-app-text-muted bg-gray-100 p-2 rounded-full">
             <IcDownload size={20} />
@@ -96,7 +97,7 @@ export const SettingsPage: React.FC = () => {
 
         <div
           className="flex items-start gap-5 p-4 active:bg-gray-50 rounded-xl"
-          onClick={() => go('settings.notifications.open')}
+          onClick={() => nav.push(routes.settingsNotifications)}
         >
           <div className="mt-1 text-app-text-muted bg-gray-100 p-2 rounded-full">
             <IcBell size={20} />

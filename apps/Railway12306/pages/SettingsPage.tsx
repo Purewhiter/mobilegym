@@ -3,8 +3,9 @@ import { IcNavBack, IcNavForward } from '../res/icons';
 import { useRailwayGestures } from '../hooks/useRailwayGestures';
 import { useRailwayStrings } from '../hooks/useRailwayStrings';
 import { useRailwayStore } from '../state';
+import { routes } from '../routes';
 export const SettingsPage: React.FC = () => {
-  const { bindBack, bindTap } = useRailwayGestures();
+  const { bindBack, bindTap, bindNav } = useRailwayGestures();
   const settings = useRailwayStore(s => s.settings);
   const toggleSetting = useRailwayStore(s => s.toggleSetting);
   const s = useRailwayStrings();
@@ -12,21 +13,21 @@ export const SettingsPage: React.FC = () => {
   const sections = [
     {
       items: [
-        { id: 'change_password', label: s.func_change_password, desc: s.settings_change_password_desc, route: 'settings.changePassword' as const },
-        { id: 'payment_settings', label: s.settings_payment_settings, desc: s.settings_payment_settings_desc, route: 'settings.paymentPassword' as const },
-        { id: 'notification_settings', label: s.notification_settings_title, desc: s.settings_notification_desc, route: 'settings.notificationSettings' as const },
+        { id: 'change_password', label: s.func_change_password, desc: s.settings_change_password_desc, route: routes.changePassword },
+        { id: 'payment_settings', label: s.settings_payment_settings, desc: s.settings_payment_settings_desc, route: routes.paymentPassword },
+        { id: 'notification_settings', label: s.notification_settings_title, desc: s.settings_notification_desc, route: routes.notificationSettings },
       ],
     },
     {
       items: [
-        { id: 'id_verify', label: s.func_id_verify, desc: s.settings_id_verify_desc, route: 'settings.idVerify' as const },
-        { id: 'fingerprint', label: s.func_fingerprint, desc: s.settings_fingerprint_desc, route: 'settings.fingerprint' as const, badge: s.settings_badge_on },
+        { id: 'id_verify', label: s.func_id_verify, desc: s.settings_id_verify_desc, route: routes.idVerify },
+        { id: 'fingerprint', label: s.func_fingerprint, desc: s.settings_fingerprint_desc, route: routes.fingerprint, badge: s.settings_badge_on },
       ],
     },
     {
       items: [
-        { id: 'version_switch', label: s.version_switch_title, desc: s.settings_version_switch_desc, route: 'settings.versionSwitch' as const, isNew: true },
-        { id: 'font_size', label: s.settings_font_size_contrast, desc: s.settings_font_size_contrast_desc, route: 'settings.fontSize' as const, isNew: true },
+        { id: 'version_switch', label: s.version_switch_title, desc: s.settings_version_switch_desc, route: routes.versionSwitch, isNew: true },
+        { id: 'font_size', label: s.settings_font_size_contrast, desc: s.settings_font_size_contrast_desc, route: routes.fontSize, isNew: true },
         { id: 'permissions', label: s.settings_permissions, desc: s.settings_permissions_desc },
       ],
     },
@@ -49,7 +50,7 @@ export const SettingsPage: React.FC = () => {
             <div
               key={item.id}
               className="flex items-center px-4 py-4 border-b border-gray-50 last:border-b-0 active:bg-gray-50"
-              {...(item.route ? bindTap<HTMLDivElement>(item.route as any) : {})}
+              {...(item.route ? bindNav(item.route) : {})}
             >
             <div className="flex-1 min-w-0 pr-2">
               <div className="flex items-center gap-2">
@@ -117,7 +118,7 @@ export const SettingsPage: React.FC = () => {
       <div className="bg-app-surface mt-2">
         <div
           className="flex items-center justify-between px-4 py-4 border-b border-gray-50 active:bg-gray-50"
-          {...bindTap<HTMLDivElement>('settings.cancelAccount' as any)}
+          {...bindNav(routes.cancelAccount)}
         >
           <span className="text-base text-gray-900">{s.settings_close_account}</span>
           <IcNavForward size={16} className="text-gray-300" />

@@ -7,6 +7,7 @@ import { useRedditStore } from '../state';
 import * as TimeService from '../../../os/TimeService';
 import { formatChatListTime } from '../utils/chatTime';
 import { getUserAvatar } from '../utils/userIdentity';
+import { routes } from '../routes';
 
 const asset = (r: unknown) => { const s = String(r ?? '').trim(); return (!s || s.startsWith('http')) ? s : `/@app-assets/Reddit/${s}`; };
 
@@ -21,7 +22,7 @@ const pickAvatar = (usernameLike: string): string | undefined => getUserAvatar(u
 export const ChatPage: React.FC = () => {
   const chatThreads = useRedditStore((s) => s.chatThreads);
   const storeSeedChatThread = useRedditStore((s) => s.seedChatThread);
-  const { bindTap } = useRedditGestures();
+  const { bindNav } = useRedditGestures();
   const location = useLocation();
 
   const searchParams = new URLSearchParams(location.search);
@@ -147,7 +148,7 @@ export const ChatPage: React.FC = () => {
               <div
                 key={t.key}
                 className="flex flex-col items-center cursor-pointer min-w-max"
-                {...bindTap('chat.tab.switch', { params: { tab: t.key } })}
+                {...bindNav(routes.chat, { search: { tab: t.key }, replace: true })}
               >
                 <span className={`pb-3 text-[15px] font-semibold ${active ? 'text-black' : 'text-gray-400'}`}>
                   {t.label}
@@ -324,7 +325,7 @@ export const ChatPage: React.FC = () => {
             <div className="mt-3 text-[15px] text-app-text-muted">When you do, they&apos;ll show up here.</div>
             <button
               type="button"
-              {...bindTap('chat.tab.switch', { params: { tab: 'messages' } })}
+              {...bindNav(routes.chat, { search: { tab: 'messages' }, replace: true })}
               className="mt-6 h-11 px-8 rounded-full bg-[#0045AC] text-white font-bold shadow-sm active:opacity-95"
             >
               Go to Messages
@@ -340,7 +341,7 @@ export const ChatPage: React.FC = () => {
             <div className="mt-3 text-[15px] text-app-text-muted">When you do, they&apos;ll show up here.</div>
             <button
               type="button"
-              {...bindTap('chat.tab.switch', { params: { tab: 'messages' } })}
+              {...bindNav(routes.chat, { search: { tab: 'messages' }, replace: true })}
               className="mt-6 h-11 px-8 rounded-full bg-[#0045AC] text-white font-bold shadow-sm active:opacity-95"
             >
               Go to Messages
@@ -373,7 +374,7 @@ export const ChatPage: React.FC = () => {
               <button
                 key={c.username}
                 type="button"
-                {...bindTap('chat.thread.open', { params: { username: c.username } })}
+                {...bindNav(routes.chatByUsername, { params: { username: c.username } })}
                 className="w-full flex items-center justify-between px-4 py-3 border-b border-gray-100 active:bg-gray-50"
               >
                 <div className="flex items-center gap-3 min-w-0">
@@ -411,7 +412,7 @@ export const ChatPage: React.FC = () => {
       {/* FAB */}
       <div className="absolute bottom-6 right-4">
          <button 
-           {...bindTap('chat.new.open')}
+           {...bindNav(routes.chatNew)}
            className="w-14 h-14 bg-[#0045AC] rounded-full flex items-center justify-center shadow-lg text-white"
          >
             <IcAddPost className="w-7 h-7" />

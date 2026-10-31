@@ -10,11 +10,12 @@ import { formatLatLon, getDirectionText } from '../data';
 import { useAppStrings } from '../../../os/useAppStrings';
 import { strings } from '../res/strings';
 import { stringsEn } from '../res/strings.en';
+import { routes } from '../routes';
 
 export function CompassPage() {
   const [searchParams] = useSearchParams();
   const menuOpen = searchParams.get('menu') === 'true';
-  const { bindTap, back } = useCompassGestures();
+  const { bindNav, back } = useCompassGestures();
 
   const s = useAppStrings(strings, stringsEn);
 
@@ -46,8 +47,8 @@ export function CompassPage() {
         active="compass"
         className="absolute inset-x-0 top-0 z-40"
         // Active tab has no trigger (real app tap does nothing)
-        levelTabProps={!menuOpen ? bindTap<HTMLButtonElement>('tab.level') : undefined}
-        moreProps={!menuOpen ? bindTap<HTMLButtonElement>('menu.open.compass') : undefined}
+        levelTabProps={!menuOpen ? bindNav(routes.level, { replace: true }) : undefined}
+        moreProps={!menuOpen ? bindNav(routes.home, { search: { menu: 'true' } }) : undefined}
       />
 
       {/* Title (matches compass_layout_portrait.xml: 44dp direction + 52dp angle + degree glyph) */}
@@ -79,8 +80,8 @@ export function CompassPage() {
       {menuOpen ? (
         <MoreMenuPopover
           onBackdropClick={() => back(1)}
-          privacyProps={bindTap<HTMLButtonElement>('privacy.open')}
-          permissionsProps={bindTap<HTMLButtonElement>('permissions.open')}
+          privacyProps={bindNav(routes.privacy, { replace: true })}
+          permissionsProps={bindNav(routes.permissions, { replace: true })}
         />
       ) : null}
     </div>

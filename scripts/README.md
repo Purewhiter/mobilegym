@@ -4,15 +4,10 @@
 
 ## 根目录
 
-- `build_nav_artifacts.mjs`
-- `check_navigation_declaration_consistency.mjs`
-- `navigation_declaration_analyzer.mjs`
-- `generate_action_tasks_from_nav_graph.mjs`
-- `nav_path_finder.py`
 - `lint_store_getters.mjs`
 - `explore_nav_graph.py`：在运行中的模拟器上逐个点击带标签的元素，记录点击和随后返回各落到哪个 URL；`--diff` 比较两个构建的导航图（用于导航改动前后对拍，见 `docs/platform/navigation/routes.md`）
 
-这些是导航图、动作任务、状态 store 检查等正式开发入口。
+这些是导航图探索、状态 store 检查等正式开发入口。
 
 ## bench
 

@@ -11,6 +11,7 @@ import * as FileSystem from '../../../../os/FileSystemService';
 import * as TimeService from '../../../../os/TimeService';
 import type { MediaItem, FSNode } from '../../../../os/types';
 import type { Message, ChatSession } from '../../types';
+import { routes } from '../../routes';
 
 const MAX_SELECT = 9;
 const FILE_BROWSER_ROOT = '/sdcard';
@@ -75,7 +76,7 @@ export const SelectFilePage: React.FC = () => {
   const t = useWechatStrings();
   const location = useLocation();
   const { id: targetWxid } = useParams<{ id: string }>();
-  const { go, back, bindBack, bindTap } = useWechatGestures();
+  const { nav, back, bindBack, bindTap, bindNav } = useWechatGestures();
 
   const searchParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
   const tab = (searchParams.get('tab') || 'chat') as Tab;
@@ -185,7 +186,7 @@ export const SelectFilePage: React.FC = () => {
           label={t.selectFile_tab_chat}
           tapProps={
             tab !== 'chat' && targetWxid
-              ? bindTap<HTMLButtonElement>('chat.selectFile.tab.chat.switch', { params: { id: targetWxid } })
+              ? bindNav(routes.chatSelectFile, { params: { id: targetWxid }, replace: true })
               : {}
           }
         />
@@ -194,7 +195,7 @@ export const SelectFilePage: React.FC = () => {
           label={t.selectFile_tab_favorites}
           tapProps={
             tab !== 'favorites' && targetWxid
-              ? bindTap<HTMLButtonElement>('chat.selectFile.tab.favorites.switch', { params: { id: targetWxid } })
+              ? bindNav(routes.chatSelectFile, { params: { id: targetWxid }, search: { tab: 'favorites' }, replace: true })
               : {}
           }
         />
@@ -203,7 +204,7 @@ export const SelectFilePage: React.FC = () => {
           label={t.selectFile_tab_album}
           tapProps={
             tab !== 'album' && targetWxid
-              ? bindTap<HTMLButtonElement>('chat.selectFile.tab.album.switch', { params: { id: targetWxid } })
+              ? bindNav(routes.chatSelectFile, { params: { id: targetWxid }, search: { tab: 'album' }, replace: true })
               : {}
           }
         />
@@ -212,7 +213,7 @@ export const SelectFilePage: React.FC = () => {
           label={t.selectFile_tab_file}
           tapProps={
             tab !== 'file' && targetWxid
-              ? bindTap<HTMLButtonElement>('chat.selectFile.tab.file.switch', { params: { id: targetWxid } })
+              ? bindNav(routes.chatSelectFile, { params: { id: targetWxid }, search: { tab: 'file' }, replace: true })
               : {}
           }
         />
@@ -236,7 +237,7 @@ export const SelectFilePage: React.FC = () => {
                     {
                       params: { id: targetWxid },
                       onTrigger: () =>
-                        go('chat.selectFile.file.browser.open', { id: targetWxid }),
+                        nav.push(routes.chatSelectFile, { id: targetWxid }, { search: { tab: 'file', view: 'browser' } }),
                     },
                   )
                 : {}
@@ -252,7 +253,7 @@ export const SelectFilePage: React.FC = () => {
           count={selectedList.length}
           toggleProps={
             selectedList.length > 0 && targetWxid
-              ? bindTap<HTMLButtonElement>('chat.selectFile.selected.expand', { params: { id: targetWxid } })
+              ? bindNav(routes.chatSelectFile, { params: { id: targetWxid }, search: { selected: 'expanded' } })
               : {}
           }
           sendProps={
@@ -648,7 +649,7 @@ const FileBrowserView: React.FC<{
   onPickFile: (node: FSNode) => void;
 }> = ({ dir, onPickFile }) => {
   const t = useWechatStrings();
-  const { go, bindBack } = useWechatGestures();
+  const { nav, bindBack, bindNav } = useWechatGestures();
   const { id: targetWxid } = useParams<{ id: string }>();
 
   const nodes = useMemo(() => FileSystem.listDirectory(dir), [dir]);
@@ -690,7 +691,7 @@ const FileBrowserView: React.FC<{
         {parent != null && (
           <button
             type="button"
-            onClick={() => go('chat.selectFile.file.browser.navigate', { id: targetWxid!, tab: 'file', dir: parent })}
+            onClick={() => nav.replace(routes.chatSelectFile, { id: targetWxid! }, { search: { tab: 'file', view: 'browser', dir: parent } })}
             className="w-full flex items-center gap-3 px-4 py-3 active:opacity-70 border-b border-app-border"
           >
             <IcFolder size={26} className="text-(--app-c-tw-text-gray-400)" />
@@ -703,7 +704,7 @@ const FileBrowserView: React.FC<{
             type="button"
             onClick={() => {
               if (node.type === 'directory') {
-                go('chat.selectFile.file.browser.navigate', { id: targetWxid!, tab: 'file', dir: node.path });
+                nav.replace(routes.chatSelectFile, { id: targetWxid! }, { search: { tab: 'file', view: 'browser', dir: node.path } });
               } else {
                 onPickFile(node);
               }

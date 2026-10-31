@@ -10,9 +10,10 @@ import BackDispatcher from '../../../os/BackDispatcher';
 import { popToAlipayBankCardsList } from '../utils/popToBankCardsList';
 import { useLocale } from '@/apps/Alipay/locale';
 import { localizeBankName } from '../utils/localizeBankName';
+import { routes } from '../routes';
 
 export const AddBankCardPage: React.FC = () => {
-  const { go, back } = useAlipayGestures();
+  const { nav, back } = useAlipayGestures();
   const s = useAlipayStrings();
   const { navigator } = useContext(UNSAFE_NavigationContext);
   const locale = useLocale();
@@ -73,10 +74,12 @@ export const AddBankCardPage: React.FC = () => {
       return;
     }
     const digits = String(cardNumber || '').replace(/\D/g, '');
-    go('bankCards.add.verify.open', {
-      bankName: bank.bankName,
-      ...(digits.length >= 10 ? { cardNumber: digits } : {}),
-      ...(returnTo ? { returnTo } : {}),
+    nav.push(routes.bankCardsAddVerify, {}, {
+      search: {
+        bankName: bank.bankName,
+        cardNumber: digits.length >= 10 ? digits : undefined,
+        returnTo: returnTo || undefined,
+      },
     });
   };
 

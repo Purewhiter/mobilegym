@@ -85,12 +85,12 @@ Discrete UI state belongs in the route/history stack:
 |---|---|
 | Main tabs | Separate pathname routes such as `/`, `/contacts`, `/me`; switch with `replace`. |
 | Dialogs / drawers | Push search params or dialog routes; close with back. |
-| Finite substates | `uiStates` in `navigation.declaration.ts`. |
+| Finite substates | `search` values in the app's `routes.ts`. |
 
 Avoid `useState` for modal visibility when Back should close the modal. App Back only understands URL/history state.
 
 ## Related Docs
 
 - Keyboard and IME details → [../os/services/input-keyboard.md](../os/services/input-keyboard.md)
-- Navigation declaration grammar → [../navigation/declaration.md](../navigation/declaration.md)
+- Route tables and jumps → [../navigation/routes.md](../navigation/routes.md)
 - App contract → [module-contract.md](module-contract.md)

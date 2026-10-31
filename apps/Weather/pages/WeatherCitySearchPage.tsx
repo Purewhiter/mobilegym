@@ -11,6 +11,7 @@ import { strings } from '../res/strings';
 import { stringsEn } from '../res/strings.en';
 import { useAppStrings } from '@/os/useAppStrings';
 import { getLocalizedWeatherCityName } from '../utils/cityNames';
+import { routes } from '../routes';
 
 type Box = { left: number; top: number; width: number; height: number };
 
@@ -44,7 +45,7 @@ function formatResultLine(city: SearchableCity, country: string, s: typeof strin
 }
 
 const WeatherCitySearchPage: React.FC = () => {
-  const { bindTap, bindBack, back } = useWeatherGestures();
+  const { bindNav, bindBack, back } = useWeatherGestures();
   const s = useAppStrings(strings, stringsEn);
   const weatherState = useWeatherStore();
   const setState = useCallback(
@@ -190,10 +191,7 @@ const WeatherCitySearchPage: React.FC = () => {
                         },
                       }
                     : {
-                        ...bindTap<HTMLButtonElement>('city.preview.open', {
-                          params: { cityId: city.id },
-                          beforeTrigger: () => handleSearchResultTap(city),
-                        }),
+                        ...bindNav(routes.citiesPreview, { search: { cityId: city.id }, beforeTrigger: () => handleSearchResultTap(city) }),
                       })}
                 >
                   <span className="text-[16px] text-[#111827] truncate">
@@ -266,9 +264,7 @@ const WeatherCitySearchPage: React.FC = () => {
                     ].join(' ')}
                     {...(selected
                       ? { onClick: () => handleSelectAdded(city.id) }
-                      : bindTap<HTMLButtonElement>('city.preview.open', {
-                          params: { cityId: city.id },
-                        }))}
+                      : bindNav(routes.citiesPreview, { search: { cityId: city.id } }))}
                   >
                     {getLocalizedWeatherCityName(city, s)}
                   </button>

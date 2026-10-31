@@ -27,8 +27,9 @@ import { stringsEn } from '../res/strings.en';
 import { useAppStrings } from '@/os/useAppStrings';
 import * as TimeService from '@/os/TimeService';
 import { transferNodesToDirectory, type TransferOperation } from '../utils/fileOperations';
+import { routes } from '../routes';
 export const BrowseHomePage: React.FC = () => {
-  const { go, back } = useFileManagerGestures();
+  const { nav, back } = useFileManagerGestures();
   const location = useLocation();
   const s = useAppStrings(strings, stringsEn);
 
@@ -82,7 +83,7 @@ export const BrowseHomePage: React.FC = () => {
     if (isSelecting) return;
     isLongPress.current = true;
     if (initialItemId) setSelectedIds(new Set([initialItemId]));
-    go('browse.select.enter', {});
+    nav.push(routes.home, {}, { search: { mode: 'select' } });
   };
 
   const exitSelectMode = () => {
@@ -91,10 +92,10 @@ export const BrowseHomePage: React.FC = () => {
   };
 
   const openModal = (type: 'delete' | 'more' | 'details' | 'rename', itemId?: string) => {
-    if (type === 'delete') go('browse.modal.delete.open', {});
-    else if (type === 'more') go('browse.modal.more.open', {});
-    else if (type === 'details') go('browse.modal.details.open', itemId ? { itemId } : {});
-    else if (type === 'rename') go('browse.modal.rename.open', itemId ? { itemId } : {});
+    if (type === 'delete') nav.push(routes.home, {}, { search: { mode: 'select', modal: 'delete' }, keep: ['selected'] });
+    else if (type === 'more') nav.push(routes.home, {}, { search: { mode: 'select', modal: 'more' }, keep: ['selected'] });
+    else if (type === 'details') nav.replace(routes.home, {}, { search: { modal: 'details', itemId: (itemId ? { itemId } : {}).itemId } });
+    else if (type === 'rename') nav.replace(routes.home, {}, { search: { modal: 'rename', itemId: (itemId ? { itemId } : {}).itemId } });
   };
 
   const closeModal = () => {
@@ -136,9 +137,9 @@ export const BrowseHomePage: React.FC = () => {
       toggleSelect(item.id);
       return;
     }
-    if (item.type === 'directory') go('folder.open', { path: item.path });
-    else if (isTextPreviewableFile(item)) go('file.text.open', { path: item.path });
-    else if (isPdfPreviewableFile(item)) go('file.pdf.open', { path: item.path });
+    if (item.type === 'directory') nav.push(routes.folder, {}, { search: { path: item.path } });
+    else if (isTextPreviewableFile(item)) nav.push(routes.text, {}, { search: { path: item.path } });
+    else if (isPdfPreviewableFile(item)) nav.push(routes.pdf, {}, { search: { path: item.path } });
   };
 
   const handlePointerDown = (item: FSNode) => {
@@ -168,11 +169,13 @@ export const BrowseHomePage: React.FC = () => {
 
   const openTransferSheet = (operation: TransferOperation) => {
     if (selectedIds.size === 0) return;
-    go('browse.modal.transfer.open', { operation }, { mode: modal === 'more' ? 'replace' : 'push' });
+    const target = { search: { mode: 'select', modal: 'transfer', operation }, keep: ['selected'] } as const;
+    if (modal === 'more') nav.replace(routes.home, {}, target);
+    else nav.push(routes.home, {}, target);
   };
 
   const openTransferCreateFolder = () => {
-    go('browse.modal.transfer.newFolder.open');
+    nav.push(routes.home, {}, { search: { mode: 'select', modal: 'transfer', transferDialog: 'newFolder' }, keep: ['selected', 'operation'] });
   };
 
   const handleDelete = async () => {
@@ -207,7 +210,7 @@ export const BrowseHomePage: React.FC = () => {
     const id = Array.from(selectedIds)[0];
     // Back to base state first (2 steps: more menu + select mode), then open rename
     back(2);
-    setTimeout(() => go('browse.modal.rename.open.fromBase', { itemId: id }), 50);
+    setTimeout(() => nav.push(routes.home, {}, { search: { modal: 'rename', itemId: id } }), 50);
   };
 
   const doRename = async (newName: string) => {
@@ -240,7 +243,7 @@ export const BrowseHomePage: React.FC = () => {
     const id = Array.from(selectedIds)[0];
     // Back to base state first (2 steps: more menu + select mode), then open details
     back(2);
-    setTimeout(() => go('browse.modal.details.open.fromBase', { itemId: id }), 50);
+    setTimeout(() => nav.push(routes.home, {}, { search: { modal: 'details', itemId: id } }), 50);
   };
 
   const selectionMoreOptions = [
@@ -316,7 +319,7 @@ export const BrowseHomePage: React.FC = () => {
             {categories.map(cat => (
               <button
                 key={cat.id}
-                onClick={() => go('category.open', { category: cat.id })}
+                onClick={() => nav.push(routes.category, { category: cat.id })}
                 className="flex items-center gap-4 p-4 bg-gray-50/80 rounded-[20px] active:scale-[0.98] transition-transform"
               >
                 <div className={`w-11 h-11 rounded-xl ${cat.color} flex items-center justify-center shrink-0`}>

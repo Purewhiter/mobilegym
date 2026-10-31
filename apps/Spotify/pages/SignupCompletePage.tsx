@@ -2,9 +2,10 @@ import React from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useSpotifyGestures } from '../hooks/useSpotifyGestures';
 import { useSpotifyStrings } from '../hooks/useSpotifyStrings';
+import { routes } from '../routes';
 
 export const SignupCompletePage: React.FC = () => {
-  const { bindTap } = useSpotifyGestures();
+  const { bindNav } = useSpotifyGestures();
   const s = useSpotifyStrings();
   const [searchParams] = useSearchParams();
 
@@ -60,14 +61,14 @@ export const SignupCompletePage: React.FC = () => {
 
       <button
         className="w-48 bg-white text-black font-bold py-3.5 rounded-full text-base mb-4 active:scale-95 transition-transform"
-        {...bindTap('signup.complete.startListening')}
+        {...bindNav(routes.home, { search: { tab: 'all' }, replace: true })}
       >
         {s.signup_complete_start}
       </button>
 
       <button
         className="bg-transparent text-white font-bold py-3 text-sm active:scale-95 transition-transform opacity-80 hover:opacity-100"
-        {...bindTap('signup.complete.later')}
+        {...bindNav(routes.home, { search: { tab: 'all' }, replace: true })}
       >
         {s.signup_complete_later}
       </button>

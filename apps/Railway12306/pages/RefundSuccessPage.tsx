@@ -5,15 +5,16 @@ import { useRailwayGestures } from '../hooks/useRailwayGestures';
 import { useRailwayStrings } from '../hooks/useRailwayStrings';
 import type { OrderRecord } from '../types';
 import { getOrderTotalPrice } from '../types';
+import { routes } from '../routes';
 
 export const RefundSuccessPage: React.FC = () => {
   const location = useLocation();
-  const { bindTap, go } = useRailwayGestures();
+  const { bindTap, nav } = useRailwayGestures();
   const s = useRailwayStrings();
   const order = (location.state as { order?: OrderRecord })?.order ?? null;
   const totalPrice = order ? getOrderTotalPrice(order) : 0;
-  const backToOrdersProps = bindTap<HTMLButtonElement>('refundSuccess.backOrders', {
-    onTrigger: () => go('refundSuccess.backOrders', {}, { popTo: '/orders' }),
+  const backToOrdersProps = bindTap<HTMLButtonElement>('nav.orders', {
+    onTrigger: () => nav.replace(routes.orders, {}, { popTo: '/orders' }),
   });
 
   return (

@@ -17,6 +17,7 @@ import { useAppStrings } from '@/os/useAppStrings';
 import { useCalendarGestures } from '../hooks/useCalendarGestures';
 import * as TimeService from '@/os/TimeService';
 import { getSystemSymbolUrl, IcSymbolImport, IcSymbolMonths, IcSymbolTheme, IcSymbolTune } from '../res/icons';
+import { routes } from '../routes';
 
 const WEEK_LABELS_MON = ['一', '二', '三', '四', '五', '六', '日'];
 const WEEK_LABELS_SUN = ['日', '一', '二', '三', '四', '五', '六'];
@@ -27,7 +28,7 @@ const formatHHmm = (ts: number) => {
 };
 
 const CalendarHomePage: React.FC = () => {
-    const { go } = useCalendarGestures();
+    const { nav } = useCalendarGestures();
     const selectedDate = useCalendarStore(selectSelectedDate);
     const setSelectedDate = useCalendarStore(s => s.setSelectedDate);
     const settings = useCalendarStore(s => s.settings);
@@ -83,7 +84,7 @@ const CalendarHomePage: React.FC = () => {
                 id: e.id,
                 title: e.title,
                 subtitle: e.allDay ? s.label_all_day_value : formatHHmm(e.startTs),
-                onClick: () => go('event.open', { eventId: e.id }),
+                onClick: () => nav.push(routes.event, { eventId: e.id }),
             });
         }
 
@@ -92,12 +93,12 @@ const CalendarHomePage: React.FC = () => {
                 id: 'empty',
                 title: s.empty_agenda,
                 subtitle: s.empty_agenda_hint,
-                onClick: () => go('new-event.open'),
+                onClick: () => nav.push(routes.newEvent),
             });
         }
 
         return items;
-    }, [dayEvents, go, lunarCell.isFestival, lunarCell.isHoliday, lunarCell.isSolarTerm, lunarCell.isSpecial, lunarCell.label, lunarFull.title, s.empty_agenda, s.empty_agenda_hint, s.label_all_day_value]);
+    }, [dayEvents, nav, lunarCell.isFestival, lunarCell.isHoliday, lunarCell.isSolarTerm, lunarCell.isSpecial, lunarCell.label, lunarFull.title, s.empty_agenda, s.empty_agenda_hint, s.label_all_day_value]);
 
     const weekLabels = weekStartDay === 'sunday' ? WEEK_LABELS_SUN : WEEK_LABELS_MON;
 
@@ -239,14 +240,14 @@ const CalendarHomePage: React.FC = () => {
                 {/* Right actions */}
                 <div className="flex items-center gap-4 text-gray-700 dark:text-gray-200">
                     <button
-                        onClick={() => go('search.open')}
+                        onClick={() => nav.push(routes.search)}
                         className="w-10 h-10 rounded-full flex items-center justify-center active:bg-black/5 dark:active:bg-white/5"
                         aria-label="搜索日程"
                     >
                         <MaskIcon src={calIcon('miuix_action_icon_search_light')} size={22} />
                     </button>
                     <button
-                        onClick={() => go('new-event.open')}
+                        onClick={() => nav.push(routes.newEvent)}
                         className="w-10 h-10 rounded-full flex items-center justify-center active:bg-black/5 dark:active:bg-white/5"
                         aria-label="新建"
                     >
@@ -270,25 +271,25 @@ const CalendarHomePage: React.FC = () => {
                         id: 'date-jump',
                         title: s.action_date_jump,
                         icon: <MaskIcon src={getSystemSymbolUrl(IcSymbolMonths, '2')} size={20} />,
-                        onClick: () => go('date-jump.open'),
+                        onClick: () => nav.push(routes.dateJump),
                     },
                     {
                         id: 'date-calculate',
                         title: s.action_date_calculate,
                         icon: <MaskIcon src={getSystemSymbolUrl(IcSymbolTune, '2')} size={20} />,
-                        onClick: () => go('date-calculate.open'),
+                        onClick: () => nav.push(routes.dateCalculate),
                     },
                     {
                         id: 'subscription',
                         title: s.action_subscription,
                         icon: <MaskIcon src={getSystemSymbolUrl(IcSymbolImport, '2')} size={20} />,
-                        onClick: () => go('subscription.open'),
+                        onClick: () => nav.push(routes.subscription),
                     },
                     {
                         id: 'desk-theme',
                         title: s.action_desk_theme,
                         icon: <MaskIcon src={getSystemSymbolUrl(IcSymbolTheme, '2')} size={20} />,
-                        onClick: () => go('desk-theme.open'),
+                        onClick: () => nav.push(routes.deskTheme),
                     },
                     {
                         id: 'share',
@@ -300,7 +301,7 @@ const CalendarHomePage: React.FC = () => {
                         id: 'settings',
                         title: s.action_settings,
                         icon: <MaskIcon src={calIcon('miuix_action_icon_settings_light')} size={20} />,
-                        onClick: () => go('settings.open'),
+                        onClick: () => nav.push(routes.settings),
                     },
                 ]}
             />

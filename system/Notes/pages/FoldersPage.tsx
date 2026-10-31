@@ -11,6 +11,7 @@ import { stringsEn } from '../res/strings.en';
 import { useAppStrings } from '../../../os/useAppStrings';
 import { useNotesGestures } from '../hooks/useNotesGestures';
 import { getFolderDisplayName } from '../utils';
+import { routes } from '../routes';
 const FolderRow: React.FC<{
   name: string;
   count: number;
@@ -73,7 +74,7 @@ const FolderRow: React.FC<{
 };
 
 export const FoldersPage: React.FC = () => {
-  const { back, go, bindBack } = useNotesGestures();
+  const { back, nav, bindBack } = useNotesGestures();
   const notes = useNotesStore(selectVisibleNotes);
   const privateNotes = useNotesStore(selectPrivateNotes);
   const trashedNotes = useNotesStore(selectTrashedNotes);
@@ -137,7 +138,7 @@ export const FoldersPage: React.FC = () => {
           <div className="bg-app-surface rounded-[16px] px-5 py-4 shadow-[0_1px_0_rgba(0,0,0,0.04)] mb-3">
             <button
               className="w-full flex items-center justify-between active:opacity-80"
-              onClick={() => go('private.open')}
+              onClick={() => nav.push(routes.private)}
             >
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-full bg-black/5 flex items-center justify-center">
@@ -152,7 +153,7 @@ export const FoldersPage: React.FC = () => {
             <div className="h-px bg-black/5 my-3" />
             <button
               className="w-full flex items-center justify-between active:opacity-80"
-              onClick={() => go('trash.open')}
+              onClick={() => nav.push(routes.trash)}
             >
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-full bg-black/5 flex items-center justify-center">

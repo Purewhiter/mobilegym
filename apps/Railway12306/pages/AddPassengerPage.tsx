@@ -9,6 +9,7 @@ import { now as timeNow } from '../../../os/TimeService';
 import type { Passenger } from '../types';
 import { localizeRailwayText } from '../utils/localizeRailwayItem';
 import { useLocale } from '../../../os/locale';
+import { routes } from '../routes';
 
 const ID_TYPES = ['中国居民身份证', '港澳居民来往内地通行证', '台湾居民来往大陆通行证', '护照'];
 const TICKET_TYPES = ['成人', '儿童', '学生', '残疾军人'];
@@ -16,7 +17,7 @@ const TICKET_TYPES = ['成人', '儿童', '学生', '残疾军人'];
 type RailwayStrings = ReturnType<typeof useRailwayStrings>;
 
 export const AddPassengerPage: React.FC = () => {
-  const { bindBack, back, go } = useRailwayGestures();
+  const { bindBack, back, nav } = useRailwayGestures();
   const updatePassengers = useRailwayStore(s => s.updatePassengers);
   const passengers = useRailwayStore(s => s.passengers);
   const location = useLocation();
@@ -39,7 +40,7 @@ export const AddPassengerPage: React.FC = () => {
 
   const openAlert = (msg: string) => {
     setAlertMsg(msg);
-    go('addPassenger.showAlert' as any);
+    nav.push(routes.addPassenger, {}, { search: { dialog: 'alert' } });
   };
 
   const handleSubmit = () => {
@@ -123,7 +124,7 @@ export const AddPassengerPage: React.FC = () => {
         </div>
 
         <div className="mx-4 mt-3 rounded-lg overflow-hidden">
-          <FormRow label={s.add_passenger_id_type} onClick={() => go('addPassenger.openIdTypePicker' as any)}>
+          <FormRow label={s.add_passenger_id_type} onClick={() => nav.push(routes.addPassenger, {}, { search: { dialog: 'idType' } })}>
             <span className="text-[14px] text-[#333]">{localizeRailwayText(idType, isEnglish)}</span>
           </FormRow>
           <FormRow label={s.add_passenger_name}>
@@ -144,7 +145,7 @@ export const AddPassengerPage: React.FC = () => {
               data-keep-keyboard="true"
             />
           </FormRow>
-          <FormRow label={s.add_passenger_ticket_type} onClick={() => go('addPassenger.openTicketTypePicker' as any)} border={false}>
+          <FormRow label={s.add_passenger_ticket_type} onClick={() => nav.push(routes.addPassenger, {}, { search: { dialog: 'ticketType' } })} border={false}>
             <span className="text-[14px] text-[#333]">{localizeRailwayText(ticketType, isEnglish)}</span>
           </FormRow>
         </div>

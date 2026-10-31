@@ -2,20 +2,17 @@ import React from 'react';
 import googleMapsBrandIcon from '../../assets/google_maps_icon_2020.svg';
 import googleMicBrandIcon from '../../assets/google_mic.svg';
 import { EXPLORE_CATEGORIES } from '../../constants';
-import type { TransitionId } from '../../navigation.declaration';
+import type { Nav } from '../../../../os/navigation';
 import { useMapStrings } from '../../hooks/useMapStrings';
+import { routes } from '../../routes';
 
 export const ExploreSearchBar: React.FC<{
   mapInstance: google.maps.Map | null;
-  go: (
-    id: TransitionId,
-    params?: Record<string, string | number>,
-    options?: { mode?: 'push' | 'replace'; popTo?: string; popToInclusive?: boolean; state?: unknown },
-  ) => void;
-  /** 由父组件 `bindTap('profile.open')` 展开得到 */
+  nav: Nav;
+  /** 由父组件 `bindNav(routes.profile)` 展开得到 */
   profileTriggerProps: Record<string, unknown>;
   searchNearby: (type: string) => void;
-}> = ({ mapInstance, go, profileTriggerProps, searchNearby }) => {
+}> = ({ mapInstance, nav, profileTriggerProps, searchNearby }) => {
   const s = useMapStrings();
 
   return (
@@ -26,11 +23,7 @@ export const ExploreSearchBar: React.FC<{
         className="flex-1 text-app-text-muted text-lg truncate"
         onClick={() => {
           const mc = mapInstance?.getCenter();
-          go(
-            'search.open',
-            undefined,
-            mc ? { state: { viewportCenter: { lat: mc.lat(), lng: mc.lng() } } } : undefined,
-          );
+          nav.push(routes.search, {}, mc ? { state: { viewportCenter: { lat: mc.lat(), lng: mc.lng() } } } : undefined);
         }}
       >
         {s.search_placeholder}

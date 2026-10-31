@@ -3,12 +3,13 @@ import React from 'react';
 import { IcNavBack, IcNavForward } from '../res/icons';
 import { useAlipayStore } from '../state';
 import { useAlipayGestures } from '../hooks/useAlipayGestures';
+import { routes } from '../routes';
 type Row =
   | { id: string; label: string; rightText?: string; type?: 'link' }
   | { id: string; label: string; type: 'switch'; value: boolean; onToggle: () => void };
 
 export const GeneralSettingsPage: React.FC = () => {
-  const { bindTap, bindBack } = useAlipayGestures();
+  const { bindTap, bindBack, bindNav } = useAlipayGestures();
   const language = useAlipayStore(s => s.language);
   const settings = useAlipayStore(s => s.settings);
   const setSettings = useAlipayStore(s => s.setSettings);
@@ -137,19 +138,19 @@ export const GeneralSettingsPage: React.FC = () => {
                   key={row.id}
                   className="flex items-center justify-between px-4 py-4 active:bg-gray-50"
                   {...(row.id === 'language'
-                    ? bindTap<HTMLDivElement>('settings.general.language.open', { beforeTrigger: persistSelfScroll })
+                    ? bindNav(routes.settingsGeneralLanguage, { beforeTrigger: persistSelfScroll })
                     : row.id === 'fontSize'
-                      ? bindTap<HTMLDivElement>('settings.general.fontSize.open', { beforeTrigger: persistSelfScroll })
+                      ? bindNav(routes.settingsGeneralFontSize, { beforeTrigger: persistSelfScroll })
                       : row.id === 'darkMode'
-                        ? bindTap<HTMLDivElement>('settings.general.darkMode.open', { beforeTrigger: persistSelfScroll })
+                        ? bindNav(routes.settingsGeneralDarkMode, { beforeTrigger: persistSelfScroll })
                         : row.id === 'speedMode'
-                          ? bindTap<HTMLDivElement>('settings.general.speedMode.open', { beforeTrigger: persistSelfScroll })
+                          ? bindNav(routes.settingsGeneralSpeedMode, { beforeTrigger: persistSelfScroll })
                           : row.id === 'clipboard'
-                            ? bindTap<HTMLDivElement>('settings.general.clipboard.open', { beforeTrigger: persistSelfScroll })
+                            ? bindNav(routes.settingsGeneralClipboard, { beforeTrigger: persistSelfScroll })
                             : row.id === 'myManage'
-                              ? bindTap<HTMLDivElement>('settings.general.myManage.open', { beforeTrigger: persistSelfScroll })
+                              ? bindNav(routes.settingsGeneralMyManage, { beforeTrigger: persistSelfScroll })
                               : row.id === 'homeManage'
-                                ? bindTap<HTMLDivElement>('settings.general.homeManage.open', { beforeTrigger: persistSelfScroll })
+                                ? bindNav(routes.settingsGeneralHomeManage, { beforeTrigger: persistSelfScroll })
                                 : {})}
                 >
                   <span className="text-sm font-medium text-gray-800">{row.label}</span>

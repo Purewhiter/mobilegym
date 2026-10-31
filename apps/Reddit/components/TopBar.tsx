@@ -27,6 +27,7 @@ import {
 } from '../res/icons';
 import { useRedditStore } from '../state';
 import { useRedditGestures } from '../hooks/useRedditGestures';
+import { routes } from '../routes';
 
 const asset = (resource: unknown) => {
   const src = String(resource ?? '').trim();
@@ -51,7 +52,7 @@ export const TopBar: React.FC<TopBarProps> = ({
   const s = useAppStrings(strings, stringsEn);
   const user = useRedditStore((state) => state.user);
   const location = useLocation();
-  const { bindTap, bindBack, go } = useRedditGestures();
+  const { bindNav, bindBack, nav } = useRedditGestures();
 
   const menu = new URLSearchParams(location.search).get('menu');
   const isHomeMenuOpen = Boolean(isHome && menu === 'home');
@@ -59,14 +60,15 @@ export const TopBar: React.FC<TopBarProps> = ({
 
   const closeDrawerBinding = bindBack<HTMLDivElement>();
   const closeHomeMenuBinding = bindBack<HTMLDivElement>();
-  const profileOpenBinding = bindTap('profile.me.open');
+  const profileOpenBinding = bindNav(routes.me, { search: { tab: 'posts' } });
 
   const drawerOpenBinding = (() => {
     if (isDrawerOpen) return bindBack<HTMLDivElement>();
-    if (location.pathname === '/') return bindTap('home.drawer.open');
-    if (location.pathname === '/communities') return bindTap('communities.drawer.open');
-    if (location.pathname === '/chat') return bindTap('chat.drawer.open');
-    if (location.pathname === '/inbox') return bindTap('inbox.drawer.open');
+    if (menu) return null; // another menu is open: the drawer opens only from the bare page
+    if (location.pathname === '/') return bindNav(routes.home, { search: { menu: 'drawer' } });
+    if (location.pathname === '/communities') return bindNav(routes.communities, { search: { menu: 'drawer' } });
+    if (location.pathname === '/chat') return bindNav(routes.chat, { search: { menu: 'drawer' }, keep: ['tab'] });
+    if (location.pathname === '/inbox') return bindNav(routes.inbox, { search: { menu: 'drawer' }, keep: ['tab'] });
     return null;
   })();
 
@@ -384,7 +386,7 @@ export const TopBar: React.FC<TopBarProps> = ({
           {isHome ? (
             <div className="relative">
               <div
-                {...(isHomeMenuOpen ? bindBack<HTMLDivElement>() : bindTap('home.menu.open'))}
+                {...(isHomeMenuOpen ? bindBack<HTMLDivElement>() : menu ? {} : bindNav(routes.home, { search: { menu: 'home' } }))}
                 className="flex items-center gap-1 cursor-pointer select-none active:opacity-80 transition-opacity"
               >
                 <span className="font-black text-[22px] tracking-tight text-app-primary leading-none">
@@ -426,7 +428,7 @@ export const TopBar: React.FC<TopBarProps> = ({
           {rightSlot}
           {rightAction === 'search' && (
             <button
-              onClick={() => go('search.open', {})}
+              onClick={() => nav.push(routes.search)}
               className="w-8 h-8 flex items-center justify-center rounded-full active:bg-gray-100"
               aria-label="Search"
             >

@@ -9,6 +9,7 @@ import { stringsEn } from '../res/strings.en';
 import { useAppStrings } from '@/os/useAppStrings';
 import { useSmsGestures } from '../hooks/useSmsGestures';
 import type { Conversation } from '../types';
+import { routes } from '../routes';
 const smsIcon = (name: string) => name ? `/@app-assets/Sms/icons/${name}.svg` : '';
 
 /** Toolbar icon button */
@@ -32,7 +33,7 @@ const SmsIcon: React.FC<{ name: string; size?: number }> = ({ name, size = 24 })
 };
 
 export const ConversationListPage: React.FC = () => {
-    const { go } = useSmsGestures();
+    const { nav } = useSmsGestures();
     const { conversations, messagesByConversationId } = useSmsProviderState();
     const s = useAppStrings(strings, stringsEn);
     const [query, setQuery] = React.useState('');
@@ -74,15 +75,15 @@ export const ConversationListPage: React.FC = () => {
             longPressFiredRef.current = false;
             return;
         }
-        go('conversation.open', { conversationId });
+        nav.push(routes.conversation, { conversationId });
     };
 
     const handleNewMessage = () => {
-        go('compose.open');
+        nav.push(routes.new);
     };
 
     const handleSettings = () => {
-        go('settings.open');
+        nav.push(routes.settings);
     };
 
     const showToast = (message: string) => {

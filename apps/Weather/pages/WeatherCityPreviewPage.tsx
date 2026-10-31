@@ -25,6 +25,7 @@ import { normalizeAqiLevel, getAqiLevelLabel } from '../utils/airQuality';
 import { getLocalizedWeatherText } from '../utils/localizedText';
 import { getLocalizedWeatherCityName } from '../utils/cityNames';
 import { getDailyForecastGridTemplate } from '../utils/dailyForecastGrid';
+import { routes } from '../routes';
 
 const DailyRows: React.FC<{ daily: WeatherDaily[] }> = ({ daily }) => {
   const s = useAppStrings(strings, stringsEn);
@@ -111,7 +112,7 @@ const DailyRows: React.FC<{ daily: WeatherDaily[] }> = ({ daily }) => {
 };
 
 const WeatherCityPreviewPage: React.FC = () => {
-  const { bindBack, bindTap, back, go } = useWeatherGestures();
+  const { bindBack, bindTap, back, nav, bindNav } = useWeatherGestures();
   const s = useAppStrings(strings, stringsEn);
   const tempUnit = useWeatherStore((st) => st.settings.tempUnit);
   const [searchParams] = useSearchParams();
@@ -186,7 +187,7 @@ const WeatherCityPreviewPage: React.FC = () => {
     if (depth > 0) {
       back(depth);
     } else {
-      go('home.open');
+      nav.replace(routes.home);
     }
   };
 
@@ -223,7 +224,7 @@ const WeatherCityPreviewPage: React.FC = () => {
             </button>
             <button
               type="button"
-              {...bindTap<HTMLButtonElement>('home.open', { onTrigger: handleAdd })}
+              {...bindTap<HTMLButtonElement>('nav.home', { onTrigger: handleAdd })}
               disabled={adding || loading}
               className="h-[36px] px-5 rounded-full backdrop-blur-md text-white text-[16px] font-medium active:bg-white/25 transition-colors disabled:opacity-50"
               style={{ backgroundColor: colors.pill_bg_action }}
@@ -296,7 +297,7 @@ const WeatherCityPreviewPage: React.FC = () => {
                   <div className="px-5 mt-2">
                     <button
                       type="button"
-                      {...bindTap<HTMLButtonElement>('forecast.daily.open', { params: { cityId: cityDef.id } })}
+                      {...bindNav(routes.forecastDaily, { search: { cityId: cityDef.id } })}
                       className="w-full h-[47px] rounded-[16px] text-white text-[20px] font-medium active:bg-white/[0.12] transition-colors"
                       style={{ backgroundColor: colors.card_action_surface }}
                     >

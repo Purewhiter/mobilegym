@@ -9,6 +9,7 @@ import { useBilibiliGestures } from '../hooks/useBilibiliGestures';
 import { useVirtualList } from '../../../os/hooks/useVirtualList';
 import { useLocale } from '@/apps/Bilibili/locale';
 import { formatBilibiliSearchDate, formatBilibiliStat } from '../utils/localize';
+import { routes } from '../routes';
 // ----- Utils -----
 // ----- Utils -----
 const formatDuration = (d: any) => {
@@ -66,7 +67,7 @@ const DISCOVERY_ITEMS = [
 // ----- Helper Components -----
 
 const MediaResultItem: React.FC<{ item: any; type: 'anime' | 'movie' }> = ({ item, type }) => {
-    const { bindTap } = useBilibiliGestures();
+    const { bindTap, nav, bindNav } = useBilibiliGestures();
     const locale = useLocale();
     const toggleAnime = useBilibiliStore(s => s.toggleAnime);
     const toggleDrama = useBilibiliStore(s => s.toggleDrama);
@@ -104,7 +105,7 @@ const MediaResultItem: React.FC<{ item: any; type: 'anime' | 'movie' }> = ({ ite
 
     return (
         <div
-            {...bindTap('video.open', { params: { bvid: item.id } })}
+            {...bindNav(routes.video, { params: { bvid: item.id }, search: { tab: 'intro' } })}
             className="flex gap-3 px-4 py-3 border-b border-gray-100 bg-app-surface items-start"
         >
             <div className="relative w-[85px] aspect-[3/4] rounded-[4px] overflow-hidden shrink-0 bg-gray-100">
@@ -172,7 +173,7 @@ const MediaResultItem: React.FC<{ item: any; type: 'anime' | 'movie' }> = ({ ite
 };
 
 const RichUserCard: React.FC<{ user: any; videoById: Map<string, any> }> = ({ user, videoById }) => {
-    const { bindTap } = useBilibiliGestures();
+    const { bindTap, nav, bindNav } = useBilibiliGestures();
     const locale = useLocale();
     const toggleFollow = useBilibiliStore(s => s.toggleFollow);
     const biliUser = useBilibiliStore(s => s.user);
@@ -192,7 +193,7 @@ const RichUserCard: React.FC<{ user: any; videoById: Map<string, any> }> = ({ us
         <div className="border-b border-gray-100 pb-4 mb-2 bg-app-surface relative">
             {/* User Header */}
             <div
-                {...bindTap('user.open', { params: { mid: user.mid } })}
+                {...bindNav(routes.user, { params: { mid: user.mid }, search: { tab: 'works' } })}
                 className="flex items-center justify-between p-4 active:bg-gray-50"
             >
                 <div className="flex items-center gap-3">
@@ -254,7 +255,7 @@ const RichUserCard: React.FC<{ user: any; videoById: Map<string, any> }> = ({ us
                     {recentVideos.map((v: any) => (
                         <div
                             key={v.id}
-                            {...bindTap('video.open', { params: { bvid: v.id } })}
+                            {...bindNav(routes.video, { params: { bvid: v.id }, search: { tab: 'intro' } })}
                             className="flex flex-col gap-1.5"
                         >
                             <div className="relative w-full aspect-[16/10] rounded-md overflow-hidden bg-gray-100">
@@ -282,7 +283,7 @@ const RichUserCard: React.FC<{ user: any; videoById: Map<string, any> }> = ({ us
 
             {/* View All */}
             <div
-                {...bindTap('user.open', { params: { mid: user.mid } })}
+                {...bindNav(routes.user, { params: { mid: user.mid }, search: { tab: 'works' } })}
                 className="flex items-center justify-center gap-1 text-[13px] text-app-text-muted mt-3 active:bg-gray-50 py-2"
             >
                 {locale === 'en' ? `View all ${user.videos?.length || 0} videos` : `查看全部${user.videos?.length || 0}个视频`}
@@ -326,7 +327,7 @@ const RichUserCard: React.FC<{ user: any; videoById: Map<string, any> }> = ({ us
 };
 
 const VideoResultItem: React.FC<{ video: any; authorByName: Map<string, any> }> = ({ video, authorByName }) => {
-    const { bindTap } = useBilibiliGestures();
+    const { bindTap, nav, bindNav } = useBilibiliGestures();
     const locale = useLocale();
 
     // Find author info if possible, otherwise use video.author
@@ -335,7 +336,7 @@ const VideoResultItem: React.FC<{ video: any; authorByName: Map<string, any> }> 
 
     return (
         <div
-            {...bindTap('video.open', { params: { bvid: video.id } })}
+            {...bindNav(routes.video, { params: { bvid: video.id }, search: { tab: 'intro' } })}
             className="flex gap-3 py-3 border-b border-gray-100 active:bg-gray-50 px-4"
         >
             <div className="relative w-[140px] h-(--app-video-card-thumbnail-height) rounded-md overflow-hidden shrink-0">
@@ -363,7 +364,7 @@ const VideoResultItem: React.FC<{ video: any; authorByName: Map<string, any> }> 
 };
 
 const UserResultItem: React.FC<{ user: any }> = ({ user }) => {
-    const { bindTap } = useBilibiliGestures();
+    const { bindTap, nav, bindNav } = useBilibiliGestures();
     const locale = useLocale();
     const toggleFollow = useBilibiliStore(s => s.toggleFollow);
     const biliUser = useBilibiliStore(s => s.user);
@@ -375,7 +376,7 @@ const UserResultItem: React.FC<{ user: any }> = ({ user }) => {
 
     return (
         <div
-            {...bindTap('user.open', { params: { mid: user.mid } })}
+            {...bindNav(routes.user, { params: { mid: user.mid }, search: { tab: 'works' } })}
             className="flex items-center justify-between py-4 border-b border-gray-100 px-4 active:bg-gray-50 relative"
         >
             <div className="flex items-center gap-3">
@@ -700,13 +701,17 @@ const ComprehensiveResultsPane: React.FC<{
 
 // ----- Page Component -----
 export const SearchPage: React.FC = () => {
-    const { bindBack, bindTap, go } = useBilibiliGestures();
+    const { bindBack, bindTap, nav, bindNav } = useBilibiliGestures();
     const { pathname } = useLocation();
     const locale = useLocale();
     const [searchParams] = useSearchParams();
 
     type SearchTabKey = 'comprehensive' | 'anime' | 'live' | 'user' | 'movie' | 'article';
     const isResultsPage = pathname === '/search/results';
+    // On the results page a new query replaces it and keeps the tab; elsewhere it opens results on 综合.
+    const bindSearchResults = (q: string, beforeTrigger: () => void) => isResultsPage
+        ? bindNav(routes.searchResults, { search: { q }, keep: ['tab'], replace: true, beforeTrigger })
+        : bindNav(routes.searchResults, { search: { tab: 'comprehensive', q }, beforeTrigger });
     const activeTab = (searchParams.get('tab') as SearchTabKey) || 'comprehensive';
 
     const committedQuery = searchParams.get('q') || '';
@@ -768,15 +773,15 @@ export const SearchPage: React.FC = () => {
         const trimmed = q.trim();
         if (!trimmed) {
             if (isResultsPage) {
-                go('search.results.close');
+                nav.replace(routes.search);
             }
             return;
         }
         addSearchHistory(trimmed);
         if (isResultsPage) {
-            go('search.results.query.submit', { q: trimmed });
+            nav.replace(routes.searchResults, {}, { search: { q: trimmed }, keep: ['tab'] });
         } else {
-            go('search.results.open', { q: trimmed });
+            nav.push(routes.searchResults, {}, { search: { tab: 'comprehensive', q: trimmed } });
         }
     };
 
@@ -821,7 +826,7 @@ export const SearchPage: React.FC = () => {
                 {draftQuery && (
                     <button
                         {...(isResultsPage
-                            ? bindTap('search.results.close', { beforeTrigger: () => setDraftQuery('') })
+                            ? bindNav(routes.search, { replace: true, beforeTrigger: () => setDraftQuery('') })
                             : { onClick: () => setDraftQuery('') })}
                     >
                         <X size={16} className="text-app-text-muted bg-[#C0C4CC] rounded-full p-0.5 text-white" />
@@ -831,11 +836,8 @@ export const SearchPage: React.FC = () => {
             <button
                 className="text-[15px] text-app-primary font-medium"
                 {...(draftQuery.trim()
-                    ? bindTap(isResultsPage ? 'search.results.query.submit' : 'search.results.open', {
-                        params: { q: draftQuery.trim() },
-                        beforeTrigger: () => addSearchHistory(draftQuery.trim()),
-                    })
-                    : (isResultsPage ? bindTap('search.results.close') : { onClick: () => {} }))}
+                    ? bindSearchResults(draftQuery.trim(), () => addSearchHistory(draftQuery.trim()))
+                    : (isResultsPage ? bindNav(routes.search, { replace: true }) : { onClick: () => {} }))}
             >
                 {text.search}
             </button>
@@ -855,13 +857,10 @@ export const SearchPage: React.FC = () => {
                         <div
                             key={idx}
                             className="flex items-center gap-2 truncate"
-                            {...bindTap(isResultsPage ? 'search.results.query.submit' : 'search.results.open', {
-                                params: { q: item.query },
-                                beforeTrigger: () => {
+                            {...bindSearchResults(item.query, () => {
                                     setDraftQuery(item.query);
                                     addSearchHistory(item.query);
-                                },
-                            })}
+                                })}
                         >
                             <span className={`text-[13px] ${idx < 3 ? 'font-bold' : ''} w-4 text-center ${idx === 0 ? 'text-[#FED152]' : idx === 1 ? 'text-[#C0C4CC]' : idx === 2 ? 'text-[#ECA575]' : 'text-app-text-muted'}`}>
                                 {idx + 1}
@@ -886,13 +885,10 @@ export const SearchPage: React.FC = () => {
                         {searchHistory.map((h, i) => (
                             <span
                                 key={i}
-                                {...bindTap(isResultsPage ? 'search.results.query.submit' : 'search.results.open', {
-                                    params: { q: h },
-                                    beforeTrigger: () => {
+                                {...bindSearchResults(h, () => {
                                         setDraftQuery(h);
                                         addSearchHistory(h);
-                                    },
-                                })}
+                                    })}
                                 className="bg-[#F6F7F8] text-app-text text-[13px] px-3 py-1.5 rounded-[4px] max-w-full truncate"
                             >
                                 {h}
@@ -916,13 +912,10 @@ export const SearchPage: React.FC = () => {
                         <div
                             key={i}
                             className="bg-[#F6F7F8] p-2 rounded-[4px] flex flex-col justify-center"
-                            {...bindTap(isResultsPage ? 'search.results.query.submit' : 'search.results.open', {
-                                params: { q: item.query },
-                                beforeTrigger: () => {
+                            {...bindSearchResults(item.query, () => {
                                     setDraftQuery(item.query);
                                     addSearchHistory(item.query);
-                                },
-                            })}
+                                })}
                         >
                             <div className="text-[13px] text-app-text truncate">{locale === 'en' ? item.titleEn : item.titleZh}</div>
                             {(locale === 'en' ? item.infoEn : item.infoZh) && <div className="text-[11px] text-app-text-muted mt-0.5 truncate">{locale === 'en' ? item.infoEn : item.infoZh}</div>}
@@ -950,7 +943,7 @@ export const SearchPage: React.FC = () => {
                         key={tab.id}
                         {...(activeTab === tab.id
                             ? {}
-                            : bindTap('search.results.tab.switch', { params: { tab: tab.id } }))}
+                            : bindNav(routes.searchResults, { search: { tab: tab.id }, keep: ['q'], replace: true }))}
                         className={`px-4 py-2.5 text-[14px] whitespace-nowrap relative transition-colors ${activeTab === tab.id ? 'text-app-primary font-bold' : 'text-[#61666D]'}`}
                     >
                         {tab.label}

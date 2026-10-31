@@ -6,10 +6,11 @@ import { useAlipayGestures } from '../hooks/useAlipayGestures';
 import { sortContactsByName } from '../utils/transferContacts';
 import { maskPhone } from '../utils/maskPhone';
 import { DefaultAvatar } from '../components/DefaultAvatar';
+import { routes } from '../routes';
 export const ContactsPage: React.FC = () => {
   const s = useAlipayStrings();
   const contacts = useAlipayStore(s => s.contacts);
-  const { bindTap, bindBack } = useAlipayGestures();
+  const { bindNav, bindBack } = useAlipayGestures();
 
   const [query, setQuery] = React.useState('');
 
@@ -81,7 +82,7 @@ export const ContactsPage: React.FC = () => {
             <div
               key={contact.id}
               className="flex items-center px-4 py-3 border-b border-gray-100 last:border-none active:bg-gray-50"
-              {...bindTap('contacts.profile.open', { params: { contactId: String(contact.id) } })}
+              {...bindNav(routes.contactsProfile, { search: { contactId: String(contact.id) } })}
             >
               <div className="w-10 h-10 rounded-lg bg-gray-200 overflow-hidden mr-3">
                 {contact.avatar ? (

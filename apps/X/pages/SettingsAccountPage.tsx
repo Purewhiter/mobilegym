@@ -3,10 +3,11 @@ import { useLocale } from '@/os/locale';
 import { useXStore, selectUser } from '../state';
 import { useXGestures } from '../hooks/useXGestures';
 import { IcChevronRight, IcDownload, IcHeartCrack, IcKey, IcUser } from '../res/icons';
+import { routes } from '../routes';
 
 export const SettingsAccountPage: React.FC = () => {
   const user = useXStore(selectUser);
-  const { bindBack, go } = useXGestures();
+  const { bindBack, nav } = useXGestures();
   const isEnglish = useLocale() === 'en';
 
   const menuItems = [
@@ -14,7 +15,7 @@ export const SettingsAccountPage: React.FC = () => {
       icon: <IcUser size={24} />,
       title: isEnglish ? 'Account information' : '账号信息',
       description: isEnglish ? 'See your account information such as your phone number and email address.' : '查看你的账号信息，例如手机号和邮箱地址。',
-      tapId: 'settings.account.info.open',
+      tapId: routes.settingsAccountInfo,
     },
     {
       icon: <IcKey size={24} />,
@@ -60,7 +61,7 @@ export const SettingsAccountPage: React.FC = () => {
             key={index}
             className="flex cursor-pointer items-start px-4 py-4 transition-colors active:bg-gray-50"
             onClick={() => {
-              if (item.tapId) go(item.tapId as Parameters<typeof go>[0]);
+              if (item.tapId) nav.push(item.tapId);
             }}
           >
             <div className="mr-4 mt-0.5 shrink-0 text-gray-500">{item.icon}</div>

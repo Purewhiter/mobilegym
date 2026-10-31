@@ -9,6 +9,7 @@ import { BookmarkToast } from '../components/BookmarkToast';
 import { XRetweetSheet } from '../components/XRetweetSheet';
 import { XTimelinePostCard } from '../components/XTimelinePostCard';
 import { compareXPostsByRecencyDesc } from '../utils/formatTime';
+import { routes } from '../routes';
 
 type SearchTab = 'hot' | 'latest' | 'people' | 'video' | 'photo';
 
@@ -18,7 +19,7 @@ export const SearchInputPage: React.FC = () => {
   const toggleFollow = useXStore(s => s.toggleFollow);
   const toggleRetweet = useXStore(s => s.toggleRetweet);
   const setSearchQuery = useXStore(s => s.setSearchQuery);
-  const { bindBack, bindTap, go } = useXGestures();
+  const { bindBack, bindNav, nav } = useXGestures();
   const s = useXStrings();
   const locale = useLocale();
   const [inputValue, setInputValue] = React.useState('');
@@ -148,7 +149,7 @@ export const SearchInputPage: React.FC = () => {
                   <div
                     key={user.id}
                     className="flex cursor-pointer items-center border-b border-app-border px-4 py-3 active:bg-gray-100"
-                    {...bindTap('user.open.fromSearch', { params: { id: user.id } })}
+                    {...bindNav(routes.user, { params: { id: user.id } })}
                   >
                     <div className="mr-3 h-10 w-10 shrink-0 overflow-hidden rounded-full bg-gray-200">
                       {user.avatar ? (
@@ -197,7 +198,7 @@ export const SearchInputPage: React.FC = () => {
                         <div
                           key={user.id}
                           className="flex w-[150px] min-w-[150px] cursor-pointer flex-col overflow-hidden rounded-xl border border-app-border bg-app-surface"
-                          {...bindTap('user.open.fromSearch', { params: { id: user.id } })}
+                          {...bindNav(routes.user, { params: { id: user.id } })}
                         >
                           <div className="relative h-16 bg-blue-500">
                             <div className="absolute bottom-[-20px] left-1/2 h-10 w-10 -translate-x-1/2 overflow-hidden rounded-full border-2 border-app-bg bg-gray-200">
@@ -253,7 +254,7 @@ export const SearchInputPage: React.FC = () => {
             <div
               key={item.id}
               className="flex cursor-pointer items-center px-4 py-3 active:bg-gray-100"
-              {...(item.type === 'user' && item.userId ? bindTap('user.open.fromSearch', { params: { id: item.userId } }) : {})}
+              {...(item.type === 'user' && item.userId ? bindNav(routes.user, { params: { id: item.userId } }) : {})}
             >
               {item.type === 'user' && item.user ? (
                 <>
@@ -283,9 +284,9 @@ export const SearchInputPage: React.FC = () => {
         onClose={() => setRetweetMenuPostId(null)}
         onRetweet={toggleRetweet}
         onQuote={postId => {
-          go('compose.open', { quotedPostId: postId });
+          nav.push(routes.compose, {}, { search: { quotedPostId: postId } });
         }}
-        onViewActivity={postId => go('status.activity.open', { id: postId })}
+        onViewActivity={postId => nav.push(routes.statusActivity, { id: postId }, { search: { tab: 'quotes' } })}
       />
       <BookmarkToast visible={showBookmarkToast} onClose={() => setShowBookmarkToast(false)} />
     </div>

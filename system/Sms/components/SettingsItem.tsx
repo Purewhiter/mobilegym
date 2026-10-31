@@ -3,6 +3,7 @@ import { IcNavForward } from '../res/icons';
 import { isToggle } from '../types';
 import type { SettingsToggle, SettingsNavItem } from '../types';
 import { useSmsGestures } from '../hooks/useSmsGestures';
+import { routes } from '../routes';
 
 interface SettingsItemProps {
     item: SettingsToggle | SettingsNavItem;
@@ -34,24 +35,24 @@ export const SettingsItem: React.FC<SettingsItemProps> = ({
     onValueChange,
     showDivider = true,
 }) => {
-    const { go } = useSmsGestures();
+    const { nav } = useSmsGestures();
 
     const handleClick = () => {
         if (!isToggle(item) && item.targetPage) {
             if (item.targetPage === '/settings/free-network-sms') {
-                go('settings.free-network.open');
+                nav.push(routes.settingsFreeNetworkSms);
                 return;
             }
             if (item.targetPage === '/settings/advanced') {
-                go('settings.advanced.open');
+                nav.push(routes.settingsAdvanced);
                 return;
             }
             if (item.targetPage === '/settings/5g-message') {
-                go('settings.5g.open');
+                nav.push(routes.settings5gMessage);
                 return;
             }
             if (item.targetPage.startsWith('/settings/')) {
-                go('settings.placeholder.open');
+                nav.push(routes.settingsPlaceholder);
                 return;
             }
         }

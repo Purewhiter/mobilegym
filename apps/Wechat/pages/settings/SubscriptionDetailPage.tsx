@@ -6,12 +6,13 @@ import { useWechatGestures } from '../../hooks/useWechatGestures';
 import { useWechatStore } from '../../state';
 import { useLocale } from '@/os/locale';
 import { useWechatStrings } from '../../hooks/useWechatStrings';
+import { routes } from '../../routes';
 
 export const SubscriptionDetailPage: React.FC = () => {
   const t = useWechatStrings();
   const { id } = useParams();
   const [searchParams] = useSearchParams();
-  const { bindTap, bindBack, back } = useWechatGestures();
+  const { bindTap, bindBack, back, bindNav } = useWechatGestures();
   const locale = useLocale();
 
   const subs = useWechatStore(store => store.subscriptions);
@@ -88,7 +89,7 @@ export const SubscriptionDetailPage: React.FC = () => {
         <div className="mt-auto pb-10 px-4">
           <button
             className="w-full py-3 text-[#576B95] text-[17px] bg-[#F2F2F2] rounded-lg active:bg-gray-200"
-            {...bindTap<HTMLButtonElement>('subscription.cancel', { params: { id: id! } })}
+            {...bindNav(routes.settingsSubscriptionsById, { params: { id: id! }, search: { modal: 'cancel_confirm' } })}
           >
             {t.subscription_detail_stop_billing}
           </button>

@@ -1,57 +1,24 @@
-import React, { useCallback } from 'react';
-import { useAppNavigate } from '../navigation';
-import { useTriggerGestures } from '../../../os/hooks/useTriggerGestures';
-import type { TransitionId } from '../navigation.declaration';
+import { useMemo } from 'react';
+import { useNavGestures } from '../../../os/navigation';
 
-type SystemTriggerId = 'system.back';
-type GestureId = TransitionId | SystemTriggerId;
+// X pages pass untyped action specs, as before.
+type AnyBinding = (id: any, options?: any) => any;
+const inactive = () => ({});
 
+/**
+ * Gesture bindings for X pages; jump targets come from `../routes`.
+ * While `isActive` is false (an off-screen tab), tap bindings render no
+ * handler and no tag; system back stays bound.
+ */
 export function useXGestures(isActive: boolean = true) {
-  const { go, back } = useAppNavigate();
-  const { bindTap, bindLongPress, bindDoubleTap } = useTriggerGestures<GestureId>({
-    execute: (id, params) => {
-      if (!isActive) return;
-      if (id === 'system.back') return;
-      
-      // Handle action objects (not navigation transitions)
-      if (typeof id === 'object' && id !== null && (id as any).kind === 'action') {
-        return;
-      }
-
-      go(id, params);
-    },
-  });
-
-  type TriggerTapOptions<T extends HTMLElement> = {
-    params?: Record<string, string | number>;
-    preventDefault?: boolean;
-    stopPropagation?: boolean;
-    beforeTrigger?: (event: React.SyntheticEvent<T>) => void;
-    onTrigger?: () => void;
-  };
-
-  const bindBack = <T extends HTMLElement>(
-    options?: (TriggerTapOptions<T> & { steps?: number }) | undefined,
-  ) => {
-    if (!options) {
-      const binding = bindTap<T>('system.back', { params: { steps: 1 } });
-      return { ...binding, 'data-trigger-type': 'back' as const };
-    }
-    const { steps, params, ...rest } = options;
-    const binding = bindTap<T>('system.back', {
-      ...rest,
-      params: { ...(params ?? {}), steps: steps ?? 1 },
-    });
-    return { ...binding, 'data-trigger-type': 'back' as const };
-  };
-
-  return {
-    bindTap: useCallback((id: any, options?: any) => (isActive ? bindTap(id, options) : {}), [bindTap, isActive]),
-    bindLongPress: useCallback((id: any, options?: any) => (isActive ? bindLongPress(id, options) : {}), [bindLongPress, isActive]),
-    bindDoubleTap: useCallback((id: any, options?: any) => (isActive ? bindDoubleTap(id, options) : {}), [bindDoubleTap, isActive]),
-    bindBack,
-    go,
-    back,
-  };
+  const gestures = useNavGestures();
+  return useMemo(() => ({
+    nav: gestures.nav,
+    back: gestures.nav.back,
+    bindBack: gestures.bindBack,
+    bindNav: isActive ? gestures.bindNav : (inactive as unknown as typeof gestures.bindNav),
+    bindTap: (isActive ? gestures.bindTap : inactive) as AnyBinding,
+    bindLongPress: (isActive ? gestures.bindLongPress : inactive) as AnyBinding,
+    bindDoubleTap: (isActive ? gestures.bindDoubleTap : inactive) as AnyBinding,
+  }), [gestures, isActive]);
 }
-

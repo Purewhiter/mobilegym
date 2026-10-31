@@ -7,12 +7,13 @@ const Settings = IcSettings, Menu = IcMenu, Share2 = IcShare, ScanLine = IcScan,
 import { Drawer } from '../components/Drawer';
 import { useLocation } from 'react-router-dom';
 import { useRedBookGestures } from '../hooks/useRedBookGestures';
+import { routes } from '../routes';
 export const MePage: React.FC = () => {
   const user = useRedBookStore(s => s.user);
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const isDrawerOpen = searchParams.get('menu') === 'drawer';
-  const { bindTap, back } = useRedBookGestures();
+  const { bindTap, back, bindNav } = useRedBookGestures();
   const s = useRedBookStrings();
   const [isScrolled, setIsScrolled] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -84,7 +85,7 @@ export const MePage: React.FC = () => {
          }`}
          style={{ transitionDuration: 'var(--app-duration-medium)' }}
        >
-           <Menu className="w-6 h-6 text-white cursor-pointer" strokeWidth={2} {...(bindTap('me.drawer.open') as unknown as Record<string, unknown>)} />
+           <Menu className="w-6 h-6 text-white cursor-pointer" strokeWidth={2} {...(bindNav(routes.me, { search: { menu: 'drawer' }, keep: ['tab', 'sub'] }) as unknown as Record<string, unknown>)} />
 
            {/* Center: User Name (Visible only when scrolled) */}
            <div className={`flex-1 flex justify-center items-center transition-opacity ${isScrolled ? 'opacity-100' : 'opacity-0'}`} style={{ transitionDuration: 'var(--app-duration-medium)' }}>
@@ -141,11 +142,11 @@ export const MePage: React.FC = () => {
             {/* Stats & Buttons Row */}
             <div className="flex items-center justify-between mb-4 px-1">
                 <div className="flex items-center gap-6">
-                    <div className="flex flex-col items-center cursor-pointer" {...bindTap('followList.open', { params: { type: '1' } })}>
+                    <div className="flex flex-col items-center cursor-pointer" {...bindNav(routes.userAllUser, { search: { type: '1' } })}>
                         <span className="text-[16px] font-bold text-white">{followingCount}</span>
                         <span className="text-[11px] text-gray-400">{s.following}</span>
                     </div>
-                    <div className="flex flex-col items-center cursor-pointer" {...bindTap('followList.open', { params: { type: '0' } })}>
+                    <div className="flex flex-col items-center cursor-pointer" {...bindNav(routes.userAllUser, { search: { type: '0' } })}>
                         <span className="text-[16px] font-bold text-white">{followerCount}</span>
                         <span className="text-[11px] text-gray-400">{s.followers}</span>
                     </div>
@@ -158,13 +159,13 @@ export const MePage: React.FC = () => {
                 <div className="flex items-center gap-2">
                     <button
                         className="px-6 py-1.5 rounded-full text-[13px] font-medium text-white border border-white/30 bg-white/10 backdrop-blur-sm active:bg-white/20 transition-colors"
-                        {...bindTap('editProfile.open')}
+                        {...bindNav(routes.editProfile)}
                     >
                         {s.edit_profile}
                     </button>
                     <button
                         className="p-1.5 rounded-full text-white border border-white/30 bg-white/10 backdrop-blur-sm active:bg-white/20 transition-colors"
-                        {...bindTap('settings.open')}
+                        {...bindNav(routes.settings)}
                     >
                         <Settings size={18} />
                     </button>
@@ -182,7 +183,7 @@ export const MePage: React.FC = () => {
                 </div>
                 <div
                     className="bg-white/5 backdrop-blur-md rounded-lg p-3 flex flex-col items-start gap-1 cursor-pointer active:bg-white/10"
-                    {...bindTap('history.open')}
+                    {...bindNav(routes.history)}
                 >
                     <div className="flex items-center gap-1 text-gray-200 text-[13px] font-medium">
                         <Clock size={14} />
@@ -210,14 +211,14 @@ export const MePage: React.FC = () => {
                <div className="flex items-center justify-between px-4 mb-2">
                    <div
                       className={`relative flex flex-col items-center cursor-pointer transition-colors ${activeTab === 'notes' ? 'text-app-text' : 'text-app-text-muted'}`}
-                      {...bindTap(noteSubTab === 'private' ? 'me.tab.notes.private' : noteSubTab === 'collection' ? 'me.tab.notes.collection' : 'me.tab.notes.public')}
+                      {...bindNav(routes.me, { search: { tab: 'notes', sub: noteSubTab === 'private' ? 'private' : noteSubTab === 'collection' ? 'collection' : 'public' }, replace: true })}
                    >
                        <span className={`text-[15px] ${activeTab === 'notes' ? 'font-bold' : ''}`}>{s.notes}</span>
                        {activeTab === 'notes' && <div className="absolute -bottom-1 w-8 h-[2px] bg-app-primary rounded-full" />}
                    </div>
                    <div
                       className={`relative flex flex-col items-center cursor-pointer transition-colors ${activeTab === 'comments' ? 'text-app-text' : 'text-app-text-muted'}`}
-                      {...bindTap('me.tab.comments')}
+                      {...bindNav(routes.me, { search: { tab: 'comments' }, replace: true })}
                    >
                        <span className={`text-[15px] flex items-center gap-1 ${activeTab === 'comments' ? 'font-bold' : ''}`}>
                            <Lock size={12} /> {s.comments}
@@ -226,7 +227,7 @@ export const MePage: React.FC = () => {
                    </div>
                    <div
                       className={`relative flex flex-col items-center cursor-pointer transition-colors ${activeTab === 'collects' ? 'text-app-text' : 'text-app-text-muted'}`}
-                      {...bindTap('me.tab.collects')}
+                      {...bindNav(routes.me, { search: { tab: 'collects' }, replace: true })}
                    >
                        <span className={`text-[15px] flex items-center gap-1 ${activeTab === 'collects' ? 'font-bold' : ''}`}>
                            <Lock size={12} /> {s.collects}
@@ -235,7 +236,7 @@ export const MePage: React.FC = () => {
                    </div>
                    <div
                       className={`relative flex flex-col items-center cursor-pointer transition-colors ${activeTab === 'likes' ? 'text-app-text' : 'text-app-text-muted'}`}
-                      {...bindTap('me.tab.likes')}
+                      {...bindNav(routes.me, { search: { tab: 'likes' }, replace: true })}
                    >
                        <span className={`text-[15px] flex items-center gap-1 ${activeTab === 'likes' ? 'font-bold' : ''}`}>
                            <Lock size={12} /> {s.likes}
@@ -253,19 +254,19 @@ export const MePage: React.FC = () => {
                    <div className="flex items-center gap-6 px-4 mt-3 text-[13px]">
                        <span
                             className={`cursor-pointer transition-colors ${noteSubTab === 'public' ? 'text-app-text font-medium' : 'text-app-text-muted'}`}
-                            {...bindTap('me.tab.notes.public')}
+                            {...bindNav(routes.me, { search: { tab: 'notes', sub: 'public' }, replace: true })}
                        >
                            {s.public} {(user.publishedNoteIds || []).length}
                        </span>
                        <span
                             className={`flex items-center gap-1 cursor-pointer transition-colors ${noteSubTab === 'private' ? 'text-app-text font-medium' : 'text-app-text-muted'}`}
-                            {...bindTap('me.tab.notes.private')}
+                            {...bindNav(routes.me, { search: { tab: 'notes', sub: 'private' }, replace: true })}
                        >
                            <Lock size={12} /> {s.private} 0
                        </span>
                        <span
                             className={`cursor-pointer transition-colors ${noteSubTab === 'collection' ? 'text-app-text font-medium' : 'text-app-text-muted'}`}
-                            {...bindTap('me.tab.notes.collection')}
+                            {...bindNav(routes.me, { search: { tab: 'notes', sub: 'collection' }, replace: true })}
                        >
                            {s.collection} 0
                        </span>
@@ -298,7 +299,7 @@ export const MePage: React.FC = () => {
                             <div
                                 key={note.id + idx}
                                 className="bg-app-surface rounded-[4px] overflow-hidden relative cursor-pointer"
-                                {...bindTap('note.open', { params: { id: note.id } })}
+                                {...bindNav(routes.note, { params: { id: note.id } })}
                             >
                                 {/* Image Aspect Ratio wrapper */}
                                 <div className="aspect-[3/4] bg-gray-100 relative overflow-hidden rounded-[4px]">

@@ -10,6 +10,7 @@ import { getToday } from '../../../os/TimeService';
 import { useLocale } from '../../../os/locale';
 import { localizeRailwayText } from '../utils/localizeRailwayItem';
 import { RefundNoticeDialog } from '../components/RefundNoticeDialog';
+import { routes } from '../routes';
 
 function localizeFullDate(value: string, isEnglish: boolean): string {
   if (!isEnglish) return value;
@@ -54,7 +55,7 @@ function localizeDiscount(value: string | undefined, isEnglish: boolean): string
 }
 
 export const MyTicketsPage: React.FC = () => {
-  const { bindBack, bindTap } = useRailwayGestures();
+  const { bindBack, bindNav } = useRailwayGestures();
   const location = useLocation();
   const s = useRailwayStrings();
   const { passengers, orders } = useRailwayStore(useShallow(state => ({
@@ -190,9 +191,7 @@ export const MyTicketsPage: React.FC = () => {
                         <button className="flex-1 py-2.5 text-center text-sm text-app-primary border-r border-gray-100">{isEnglish ? 'Reschedule' : '改签'}</button>
                         <button
                           className="flex-1 py-2.5 text-center text-sm text-app-primary border-r border-gray-100"
-                          {...bindTap<HTMLButtonElement>('myTickets.openRefundNotice', {
-                            params: { id: ticket.orderId },
-                          })}
+                          {...bindNav(routes.myTickets, { search: { dialog: 'refundNotice', id: ticket.orderId } })}
                         >
                           {isEnglish ? 'Refund' : '退票'}
                         </button>
@@ -226,9 +225,7 @@ export const MyTicketsPage: React.FC = () => {
           cancelLabel={s.action_cancel}
           confirmLabel={s.action_confirm}
           cancelProps={bindBack<HTMLButtonElement>()}
-          confirmProps={bindTap<HTMLButtonElement>('myTickets.refundConfirm', {
-            params: { id: refundDialogOrderId },
-          })}
+          confirmProps={bindNav(routes.refundConfirm, { search: { id: refundDialogOrderId }, replace: true })}
         />
       )}
     </div>

@@ -92,7 +92,7 @@ Some MobileGym features have no direct AOSP analog. Worth knowing if you're carr
 | `__SIM__.reset()` | Factory reset in one call. AOSP has the same conceptually; we make it a method. |
 | `__SIM_TIME__.setSimulatedTime(...)` | Override wall clock for reproducibility. AOSP requires emulator-level games. |
 | `__SIM_LOCATION__.setSimulatedLocation(...)` | Override GPS deterministically. AOSP allows mock locations but they're real apps' choice. |
-| Static UI graph (`scripts/build_nav_artifacts.mjs`) | Compile-time enumeration of every route, transition, action. AOSP has no equivalent. |
+| UI graph exploration (`scripts/explore_nav_graph.py`) | Taps every tagged control on a running simulator and records where it lands, like DroidBot / Monkey-style explorers. |
 | Foreign-task isolation | When app B is pushed onto app A's task (cross-app result picker), B's app-level registrations are skipped to avoid clashing with B's own task. Pure MobileGym mechanism. |
 
 ## When the model matters

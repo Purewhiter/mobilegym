@@ -6,9 +6,10 @@ import { IcRotateCcw, IcRotateCw, IcType, IcSmile, IcCrop, IcGrid, IcEdit } from
 import { useWechatStore } from '../../state';
 import { useShallow } from 'zustand/react/shallow';
 import { useWechatGestures } from '../../hooks/useWechatGestures';
+import { routes } from '../../routes';
 export const EditImage: React.FC = () => {
   const t = useWechatStrings();
-    const { bindTap, bindBack, go } = useWechatGestures();
+    const { bindTap, bindBack, nav } = useWechatGestures();
     const { momentDraft, updateMomentDraft } = useWechatStore(useShallow(s => ({
         momentDraft: s.momentDraft,
         updateMomentDraft: s.updateMomentDraft,
@@ -19,7 +20,7 @@ export const EditImage: React.FC = () => {
         if (image) {
             updateMomentDraft({ selectedImages: [image], tempCapturedImage: undefined });
             // 使用 replace 替换编辑页，这样发表页点击返回会直接回到朋友圈
-            go('editImage.postMoment.open');
+            nav.replace(routes.postMoment);
         }
     };
 
@@ -45,7 +46,7 @@ export const EditImage: React.FC = () => {
                     <IcCrop size={dimens.icSizeToolbar} className="text-white" />
                     <IcGrid size={dimens.icSizeToolbar} className="text-white" />
                     <button 
-                        {...bindTap<HTMLButtonElement>('editImage.postMoment.open', { onTrigger: handleDone })}
+                        {...bindTap<HTMLButtonElement>('nav.postMoment', { onTrigger: handleDone })}
                         className="bg-app-primary text-white px-4 py-1.5 rounded-[4px] text-(--app-search-filter-text-size) font-medium active:opacity-80"
                     >
                         {t.common_done}

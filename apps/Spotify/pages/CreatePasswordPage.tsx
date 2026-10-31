@@ -2,9 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { IcEye, IcEyeOff, IcNavBack } from '../res/icons';
 import { useSpotifyGestures } from '../hooks/useSpotifyGestures';
 import { useSpotifyStrings } from '../hooks/useSpotifyStrings';
+import { routes } from '../routes';
 
 export const CreatePasswordPage: React.FC = () => {
-  const { bindBack, bindTap } = useSpotifyGestures();
+  const { bindBack, bindNav } = useSpotifyGestures();
   const s = useSpotifyStrings();
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -56,7 +57,7 @@ export const CreatePasswordPage: React.FC = () => {
               ? 'bg-white text-black scale-100'
               : 'bg-[#535353] text-app-text-muted cursor-not-allowed'
             }`}
-            {...(isValid ? bindTap('auth.signup.date.open') : {})}
+            {...(isValid ? bindNav(routes.signupDate) : {})}
           >
             {s.create_account_next}
           </button>

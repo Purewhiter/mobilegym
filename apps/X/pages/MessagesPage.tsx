@@ -6,12 +6,13 @@ import { useXConversations } from '../data/view';
 import { useXGestures } from '../hooks/useXGestures';
 import { useXStrings } from '../hooks/useXStrings';
 import { XImage } from '../components/XMedia';
+import { routes } from '../routes';
 
 export const MessagesPage: React.FC<{ isActive?: boolean }> = ({ isActive = true }) => {
   const conversations = useXConversations();
   const user = useXStore(selectUser);
   const location = useLocation();
-  const { bindTap } = useXGestures(isActive);
+  const { bindNav } = useXGestures(isActive);
   const s = useXStrings();
 
   const searchParams = new URLSearchParams(location.search);
@@ -70,7 +71,7 @@ export const MessagesPage: React.FC<{ isActive?: boolean }> = ({ isActive = true
           <div
             key={conversation.id}
             className="flex px-4 py-3 border-b border-app-border active:bg-gray-50 cursor-pointer"
-            {...bindTap('messages.conversation.open', { params: { id: conversation.id } })}
+            {...bindNav(routes.messagesById, { params: { id: conversation.id } })}
           >
             <div className="w-12 h-12 rounded-full bg-gray-200 mr-3 overflow-hidden shrink-0">
               {conversation.participant.avatar && <img src={conversation.participant.avatar} alt={conversation.participant.name} className="w-full h-full object-cover" />}
@@ -99,7 +100,7 @@ export const MessagesPage: React.FC<{ isActive?: boolean }> = ({ isActive = true
   return (
     <div className="flex flex-col pt-10 bg-app-bg min-h-full text-app-text">
       <div className="px-4 py-2 flex items-center justify-between">
-        <div className="w-8 h-8 rounded-full bg-gray-200 overflow-hidden cursor-pointer" {...bindTap('messages.drawer.open')}>
+        <div className="w-8 h-8 rounded-full bg-gray-200 overflow-hidden cursor-pointer" {...bindNav(routes.messages, { search: { menu: 'drawer' }, keep: ['tab'] })}>
           {user.avatar && isActive ? (
             <XImage src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
           ) : (
@@ -120,16 +121,16 @@ export const MessagesPage: React.FC<{ isActive?: boolean }> = ({ isActive = true
       </div>
 
       <div className="flex gap-4 px-4 py-2 border-b border-app-border overflow-x-auto no-scrollbar">
-        <div {...bindTap('messages.tab.toAll')} className={`px-4 py-1 rounded-full whitespace-nowrap font-bold cursor-pointer transition-colors ${activeTab === 'all' ? 'bg-app-text text-app-bg' : 'border border-app-border text-app-text'}`}>
+        <div {...bindNav(routes.messages, { search: { tab: 'all' }, replace: true })} className={`px-4 py-1 rounded-full whitespace-nowrap font-bold cursor-pointer transition-colors ${activeTab === 'all' ? 'bg-app-text text-app-bg' : 'border border-app-border text-app-text'}`}>
           {s.messages_tab_all}
         </div>
-        <div {...bindTap('messages.tab.toUnread')} className={`px-4 py-1 rounded-full whitespace-nowrap font-bold cursor-pointer transition-colors ${activeTab === 'unread' ? 'bg-app-text text-app-bg' : 'border border-app-border text-app-text'}`}>
+        <div {...bindNav(routes.messages, { search: { tab: 'unread' }, replace: true })} className={`px-4 py-1 rounded-full whitespace-nowrap font-bold cursor-pointer transition-colors ${activeTab === 'unread' ? 'bg-app-text text-app-bg' : 'border border-app-border text-app-text'}`}>
           {s.messages_tab_unread}
         </div>
-        <div {...bindTap('messages.tab.toGroups')} className={`px-4 py-1 rounded-full whitespace-nowrap font-bold cursor-pointer transition-colors ${activeTab === 'groups' ? 'bg-app-text text-app-bg' : 'border border-app-border text-app-text'}`}>
+        <div {...bindNav(routes.messages, { search: { tab: 'groups' }, replace: true })} className={`px-4 py-1 rounded-full whitespace-nowrap font-bold cursor-pointer transition-colors ${activeTab === 'groups' ? 'bg-app-text text-app-bg' : 'border border-app-border text-app-text'}`}>
           {s.messages_tab_groups}
         </div>
-        <div {...bindTap('messages.tab.toRequests')} className={`px-4 py-1 rounded-full whitespace-nowrap font-bold cursor-pointer transition-colors ${activeTab === 'requests' ? 'bg-app-text text-app-bg' : 'border border-app-border text-app-text'}`}>
+        <div {...bindNav(routes.messages, { search: { tab: 'requests' }, replace: true })} className={`px-4 py-1 rounded-full whitespace-nowrap font-bold cursor-pointer transition-colors ${activeTab === 'requests' ? 'bg-app-text text-app-bg' : 'border border-app-border text-app-text'}`}>
           {s.messages_tab_requests}
         </div>
       </div>

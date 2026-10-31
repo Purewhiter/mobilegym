@@ -30,6 +30,7 @@ import { getUserAvatar } from '../utils/userIdentity';
 import { useRedditComments } from '../hooks/useRedditComments';
 import { useRedditPostById } from '../hooks/useRedditPosts';
 import type { Comment } from '../types';
+import { routes } from '../routes';
 
 type CommentItem = Comment;
 
@@ -144,7 +145,7 @@ export const PostCommentsPage: React.FC = () => {
   const storeVoteComment = useRedditStore((s) => s.voteComment);
   const storeAddComment = useRedditStore((s) => s.addComment);
   const storeDeleteOwnComment = useRedditStore((s) => s.deleteOwnComment);
-  const { bindBack, bindTap, go } = useRedditGestures();
+  const { bindBack, bindTap, nav, bindNav } = useRedditGestures();
   const location = useLocation();
   const postId = getPostIdFromPath(location.pathname);
   const scrollRef = React.useRef<HTMLDivElement | null>(null);
@@ -321,7 +322,7 @@ export const PostCommentsPage: React.FC = () => {
           <button
             type="button"
             aria-label="Open user profile"
-            {...bindTap('profile.user.open', { params: { username: normalizeUsername(c.author) } })}
+            {...bindNav(routes.user, { params: { username: normalizeUsername(c.author) }, search: { tab: 'posts' } })}
             className="w-9 h-9 rounded-full bg-gray-200 overflow-hidden flex-shrink-0"
           >
             <img
@@ -337,7 +338,7 @@ export const PostCommentsPage: React.FC = () => {
             <div className="flex items-center gap-2 text-[13px] text-gray-600">
               <span
                 className="font-bold text-app-text truncate cursor-pointer"
-                {...bindTap('profile.user.open', { params: { username: normalizeUsername(c.author) } })}
+                {...bindNav(routes.user, { params: { username: normalizeUsername(c.author) }, search: { tab: 'posts' } })}
               >
                 {c.author}
               </span>
@@ -372,7 +373,7 @@ export const PostCommentsPage: React.FC = () => {
 
               <button
                 type="button"
-                {...bindTap('comment.reply.open', { params: { postId: postId ?? '', commentId: c.id } })}
+                {...bindNav(routes.postReply, { params: { postId: postId ?? '', commentId: c.id } })}
                 className="h-9 px-2 rounded-full flex items-center justify-center gap-1.5 active:bg-gray-100"
                 aria-label="Reply"
               >
@@ -731,10 +732,7 @@ export const PostCommentsPage: React.FC = () => {
                     // Close sheet first for a cleaner transition.
                     setMoreMenu(null);
                     setSelectedOwnCommentId(null);
-                    go('comment.edit.open', {
-                      postId: postId ?? '',
-                      commentId: moreMenu.comment.id,
-                    });
+                    nav.push(routes.postEdit, { postId: postId ?? '', commentId: moreMenu.comment.id });
                   }}
                 />
               )}

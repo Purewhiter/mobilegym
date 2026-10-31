@@ -81,7 +81,7 @@ Before writing anything, you must understand **what the App can do**, **what's r
 
 | Source | What to look for |
 |---|---|
-| `apps/<AppDir>/navigation.declaration.ts` | All routes, UI states, action IDs (for `optimal_paths`, `criteria.route`) |
+| `apps/<AppDir>/routes.ts` | All routes and URL UI states (for `criteria.route`) |
 | `apps/<AppDir>/data/defaults.json` | Default data entries (sampling-pool size, field completeness) |
 | `apps/<AppDir>/data/index.ts` / `state.ts` | **Fields derived by enrichment / store actions** (usable for judging) |
 | `apps/<AppDir>/types.ts` | state schema |
@@ -954,7 +954,7 @@ If `max_steps` is omitted, the runner maps difficulty to `L1=15`, `L2=30`, `L3=4
 
 **Labeling rule**: only tag core capabilities; don't tag necessary preliminaries like navigation. `extract` is a capability (information is extracted during the task); `objective=query` is the goal (the Agent must answer). `handoff` is a capability (cross-app information handoff); `composition=transfer` is the composition (one step's output feeds the next).
 
-**`optimal_paths`**: declares the optimal-path solution(s) (sequences of transition / action IDs from `navigation.declaration.ts`):
+**`optimal_paths`**: declares the optimal-path solution(s) as sequences of step names (descriptive ids such as `tab.me`; metrics only use the shortest path's length as the golden step count):
 
 ```python
 class ReadMyWxid(AnswerTask):

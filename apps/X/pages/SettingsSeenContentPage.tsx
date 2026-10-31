@@ -3,10 +3,11 @@ import { useLocale } from '@/os/locale';
 import { useXStore, selectUser } from '../state';
 import { useXGestures } from '../hooks/useXGestures';
 import { IcChevronRight } from '../res/icons';
+import { routes } from '../routes';
 
 export const SettingsSeenContentPage: React.FC = () => {
   const user = useXStore(selectUser);
-  const { bindBack, go } = useXGestures();
+  const { bindBack, nav } = useXGestures();
   const isEnglish = useLocale() === 'en';
 
   return (
@@ -32,7 +33,7 @@ export const SettingsSeenContentPage: React.FC = () => {
           <div className="flex-1 text-[15px]">{isEnglish ? 'Interests' : '兴趣'}</div>
           <IcChevronRight size={18} className="text-gray-400" />
         </div>
-        <div className="flex cursor-pointer items-center px-4 py-4 transition-colors active:bg-gray-50" onClick={() => go('settings.seen.explore.open')}>
+        <div className="flex cursor-pointer items-center px-4 py-4 transition-colors active:bg-gray-50" onClick={() => nav.push(routes.settingsPrivacySeenExplore)}>
           <div className="flex-1 text-[15px]">{isEnglish ? 'Explore settings' : '探索设置'}</div>
           <IcChevronRight size={18} className="text-gray-400" />
         </div>

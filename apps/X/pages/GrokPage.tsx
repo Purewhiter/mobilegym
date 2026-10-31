@@ -6,6 +6,7 @@ import { XImage } from '../components/XMedia';
 import { useXStrings } from '../hooks/useXStrings';
 import * as AIService from '../../../os/AIService';
 import * as TimeService from '../../../os/TimeService';
+import { routes } from '../routes';
 
 let localSeq = 0;
 function nextMessageId(prefix: 'ai' | 'err' | 'u'): string {
@@ -15,7 +16,7 @@ function nextMessageId(prefix: 'ai' | 'err' | 'u'): string {
 
 export const GrokPage: React.FC<{ isActive?: boolean }> = ({ isActive = true }) => {
     const user = useXStore(selectUser);
-    const { bindTap } = useXGestures(isActive);
+    const { bindTap, bindNav } = useXGestures(isActive);
     const s = useXStrings();
     const [inputValue, setInputValue] = useState('');
     const [messages, setMessages] = useState<Array<{ id: string; role: 'user' | 'assistant'; content: string }>>([]);
@@ -84,7 +85,7 @@ export const GrokPage: React.FC<{ isActive?: boolean }> = ({ isActive = true }) 
             <div className="flex items-center justify-between px-4 py-3">
                 <div
                     className="w-8 h-8 rounded-full bg-gray-200 overflow-hidden cursor-pointer"
-                    {...bindTap('grok.drawer.open')}
+                    {...bindNav(routes.grok, { search: { menu: 'drawer' } })}
                 >
                     {user.avatar && isActive ? (
                         <XImage src={user.avatar} alt={user.name} className="w-full h-full object-cover" />

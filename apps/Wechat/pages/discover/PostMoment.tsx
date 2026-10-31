@@ -7,12 +7,13 @@ import { useShallow } from 'zustand/react/shallow';
 import { useWechatGestures } from '../../hooks/useWechatGestures';
 import { WechatSmartImage } from '../../components/WechatSmartImage';
 import { useWechatStrings } from '../../hooks/useWechatStrings';
+import { routes } from '../../routes';
 
 const POST_MOMENT_TRY_EXIT_EVENT = 'wechat:postMoment:tryExit';
 
 export const PostMomentPage: React.FC = () => {
     const t = useWechatStrings();
-    const { bindTap, back } = useWechatGestures();
+    const { bindNav, back } = useWechatGestures();
     const { momentDraft, updateMomentDraft, clearMomentDraft, postMoment, setRightAction } = useWechatStore(useShallow(s => ({
         momentDraft: s.momentDraft,
         updateMomentDraft: s.updateMomentDraft,
@@ -138,7 +139,7 @@ export const PostMomentPage: React.FC = () => {
                     
                     {momentDraft.selectedImages.length < 9 && (
                         <div 
-                            {...bindTap<HTMLDivElement>('postMoment.mediaPicker.open', { params: { albumId: 'all' } })}
+                            {...bindNav(routes.momentsMediaPicker, { search: { albumId: 'all' } })}
                             className="aspect-square bg-(--app-c-chat-input-bar-bg) rounded-[2px] flex items-center justify-center active:bg-(--app-c-tw-bg-gray-200) cursor-pointer"
                         >
                             <IcAdd size={dimens.icSizeAddLarge} className="text-(--app-c-tw-text-gray-300)" strokeWidth={1.5} />
@@ -150,7 +151,7 @@ export const PostMomentPage: React.FC = () => {
             {/* 选项列表 - 位于中间位置 */}
             <div className="border-t border-app-border mx-4 mt-4">
                 <div 
-                    {...bindTap<HTMLDivElement>('selectLocation.open', { params: { target: 'moment' } })}
+                    {...bindNav(routes.selectLocation, { search: { target: 'moment' } })}
                     className="flex items-center py-4 active:bg-(--app-c-tw-bg-gray-50) cursor-pointer border-b border-(--app-c-tw-border-gray-100)"
                 >
                     <IcLocation size={dimens.icSizeCheck} className={momentDraft.location ? "text-app-primary" : "text-(--app-c-common-text-secondary)"} strokeWidth={1.5} />

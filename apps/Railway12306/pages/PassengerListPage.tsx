@@ -5,6 +5,7 @@ import { useRailwayStore, maskIdNo } from '../state';
 import { useRailwayGestures } from '../hooks/useRailwayGestures';
 import { useShallow } from 'zustand/react/shallow';
 import type { Passenger } from '../types';
+import { routes } from '../routes';
 
 
 // ── Pinyin initial letter helper ────────────────────────────────
@@ -68,6 +69,7 @@ const ManagePassengersView: React.FC<{
   bindBack: ReturnType<typeof useRailwayGestures>['bindBack'];
   bindTap: ReturnType<typeof useRailwayGestures>['bindTap'];
 }> = ({ passengers, bindBack, bindTap }) => {
+  const { bindNav } = useRailwayGestures();
   const currentUser = passengers.find(p => p.isDefault);
   const otherPassengers = passengers.filter(p => !p.isDefault);
   const grouped = groupByInitial(otherPassengers);
@@ -81,7 +83,7 @@ const ManagePassengersView: React.FC<{
             <IcNavBack size={24} className="text-white" />
           </button>
           <span className="text-[17px] text-white font-medium">乘车人</span>
-          <button className="w-10 shrink-0 text-right text-white text-[15px] p-1" {...bindTap<HTMLButtonElement>('passengers.addPassenger' as any)}>添加</button>
+          <button className="w-10 shrink-0 text-right text-white text-[15px] p-1" {...bindNav(routes.addPassenger)}>添加</button>
         </div>
       </div>
 
@@ -131,7 +133,9 @@ const SelectPassengersView: React.FC<{
   bindBack: ReturnType<typeof useRailwayGestures>['bindBack'];
   bindTap: ReturnType<typeof useRailwayGestures>['bindTap'];
   doneBackBinding: Record<string, any>;
-}> = ({ passengers, selectedIds, selectedCount, totalCount, onToggle, bindBack, bindTap, doneBackBinding }) => (
+}> = ({ passengers, selectedIds, selectedCount, totalCount, onToggle, bindBack, bindTap, doneBackBinding }) => {
+  const { bindNav } = useRailwayGestures();
+  return (
   <div className="min-h-full bg-[#F5F5F5] pb-[110px]">
     <div className="bg-[#4FA4F7] pt-12 pb-3 px-4 sticky top-0 z-20 flex items-center justify-between gap-3">
       <button className="w-10 shrink-0 flex items-center justify-center p-1" {...bindBack<HTMLButtonElement>()}>
@@ -144,7 +148,7 @@ const SelectPassengersView: React.FC<{
     <div className="mx-3 mt-3">
       <button
         className="w-full h-[60px] rounded-[10px] bg-white text-[#525C6A] text-[16px] flex items-center justify-center gap-2"
-        {...bindTap<HTMLButtonElement>('passengers.addPassenger' as any)}
+        {...bindNav(routes.addPassenger)}
       >
         <div className="w-[18px] h-[18px] rounded-full border border-[#4FA4F7] flex items-center justify-center">
           <IcAdd size={16} className="text-[#4FA4F7]" />
@@ -195,6 +199,7 @@ const SelectPassengersView: React.FC<{
     </div>
   </div>
 );
+};
 
 export const PassengerListPage: React.FC = () => {
   const { passengers, selectedTrain } = useRailwayStore(
@@ -202,7 +207,7 @@ export const PassengerListPage: React.FC = () => {
   );
   const updatePassengers = useRailwayStore(s => s.updatePassengers);
   const setSelectedTrain = useRailwayStore(s => s.setSelectedTrain);
-  const { bindBack, bindTap } = useRailwayGestures();
+  const { bindBack, bindTap, bindNav } = useRailwayGestures();
   const location = useLocation();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 

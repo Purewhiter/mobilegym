@@ -3,9 +3,10 @@ import { IcSearch } from '../res/icons';
 import { dimens } from '../res/dimens';
 import { useWechatReadingGestures } from '../hooks/useWechatReadingGestures';
 import { useWechatReadingStrings } from '../hooks/useWechatReadingStrings';
+import { routes } from '../routes';
 
 const Header: React.FC = () => {
-  const { bindTap } = useWechatReadingGestures();
+  const { bindNav } = useWechatReadingGestures();
   const s = useWechatReadingStrings();
 
   return (
@@ -14,7 +15,7 @@ const Header: React.FC = () => {
         <div
           className="flex-1 h-10 bg-(--app-c-tw-bg-gray-100) rounded-full flex items-center px-4 gap-2 active:opacity-70"
           style={{ transition: 'opacity var(--app-duration-short) var(--app-easing-standard)' }}
-          {...bindTap('search.open')}
+          {...bindNav(routes.search)}
         >
           <IcSearch size={dimens.header_search_icon_size} className="text-(--app-c-tw-text-gray-400)" />
           <div className="flex-1 text-(--app-settings-item-text-size) text-(--app-c-tw-text-gray-400) truncate">

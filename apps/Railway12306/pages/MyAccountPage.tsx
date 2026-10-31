@@ -5,9 +5,10 @@ import { maskPhone, maskEmail } from '../state';
 import { useRailwayGestures } from '../hooks/useRailwayGestures';
 import { useLocale } from '../../../os/locale';
 import { localizeRailwayText } from '../utils/localizeRailwayItem';
+import { routes } from '../routes';
 export const MyAccountPage: React.FC = () => {
   const config = RAILWAY12306_CONFIG;
-  const { bindBack, bindTap } = useRailwayGestures();
+  const { bindBack, bindNav } = useRailwayGestures();
   const { account } = config;
   const isEnglish = useLocale() === 'en';
 
@@ -24,7 +25,7 @@ export const MyAccountPage: React.FC = () => {
         {/* 个人信息 */}
         <div
           className="flex items-center justify-between px-4 py-4 border-b border-gray-100 active:bg-gray-50"
-          {...bindTap<HTMLDivElement>('account.editProfile' as any)}
+          {...bindNav(routes.editProfile)}
         >
           <div className="min-w-0 pr-2">
             <span className="text-base text-gray-900 font-medium">{isEnglish ? 'Personal info' : '个人信息'}</span>
@@ -41,7 +42,7 @@ export const MyAccountPage: React.FC = () => {
         {/* 学生资质查询 */}
         <div
           className="flex items-center justify-between px-4 py-4 border-b border-gray-100 active:bg-gray-50"
-          {...bindTap<HTMLDivElement>('account.studentVerify' as any)}
+          {...bindNav(routes.studentVerify)}
         >
           <div className="min-w-0 pr-2">
             <span className="text-base text-gray-900 font-medium">{isEnglish ? 'Student qualification' : '学生资质查询'}</span>
@@ -55,7 +56,7 @@ export const MyAccountPage: React.FC = () => {
         {/* 手机号 */}
         <div
           className="flex items-center justify-between px-4 py-4 border-b border-gray-100 active:bg-gray-50"
-          {...bindTap<HTMLDivElement>('account.changePhone' as any)}
+          {...bindNav(routes.changePhone)}
         >
           <div className="min-w-0 pr-2">
             <span className="text-base text-gray-900 font-medium">{isEnglish ? 'Phone number' : '手机号'}</span>
@@ -86,7 +87,7 @@ export const MyAccountPage: React.FC = () => {
         {/* 修改密码 */}
         <div
           className="flex items-center justify-between px-4 py-4 active:bg-gray-50"
-          {...bindTap<HTMLDivElement>('settings.changePassword' as any)}
+          {...bindNav(routes.changePassword)}
         >
           <div className="min-w-0 pr-2">
             <span className="text-base text-gray-900 font-medium">{isEnglish ? 'Change password' : '修改密码'}</span>

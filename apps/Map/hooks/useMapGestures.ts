@@ -1,41 +1,16 @@
 import { useCallback } from 'react';
-import { useTriggerGestures } from '../../../os/hooks/useTriggerGestures';
 import { useNavigate } from 'react-router-dom';
-import type { TransitionId } from '../navigation.declaration';
-import { useAppNavigate } from '../navigation';
+import { useNavGestures } from '../../../os/navigation';
 
-type SystemTriggerId = 'system.back';
-type GestureId = TransitionId | SystemTriggerId;
-
+/** Gesture bindings for Map pages; jump targets come from `../routes`. */
 export function useMapGestures() {
+  const gestures = useNavGestures();
   const navigate = useNavigate();
-  const { go, back } = useAppNavigate();
-  const { bindTap, bindLongPress, bindDoubleTap } = useTriggerGestures<GestureId>({
-    execute: (id, params) => {
-      if (id === 'system.back') return;
-      go(id, params);
-    },
-  });
 
-  const bindBack = <T extends HTMLElement>(
-    options?: { steps?: number; [key: string]: any }
-  ) => {
-    const steps = options?.steps ?? 1;
-    const binding = bindTap<T>('system.back', { params: { steps } });
-    return { ...binding, 'data-trigger-type': 'back' as const };
-  };
-
+  /** Replace the current entry's `location.state`, keeping its URL. */
   const replaceState = useCallback((state: Record<string, unknown>) => {
     navigate('.', { replace: true, state });
   }, [navigate]);
 
-  return {
-    bindTap,
-    bindLongPress,
-    bindDoubleTap,
-    bindBack,
-    go,
-    back,
-    replaceState,
-  };
+  return { ...gestures, back: gestures.nav.back, replaceState };
 }

@@ -28,6 +28,7 @@ import { getOsDataRevision, subscribeOsDataRevision } from '../../../os/simState
 import { useSettingsStrings } from '../res/useSettingsStrings';
 import { useSettingsStore, selectPagesData, selectPagesLoading, selectPagesError } from '../state';
 import { useSettingsGestures } from '../hooks/useSettingsGestures';
+import { routes } from '../routes';
 
 const PAGE_ID_ALIASES: Record<string, { targetId: string; title?: string }> = {
   // System: this page is built dynamically; we reuse a close static screen.
@@ -125,7 +126,7 @@ function makeExternalPageId(title: string, key?: string) {
 /** Generic preference screen renderer - driven by page data from config */
 export const PreferenceScreenPage: React.FC = () => {
   const { pageId } = useParams<{ pageId: string }>();
-  const { bindTap, go } = useSettingsGestures();
+  const { bindTap, nav, bindNav } = useSettingsGestures();
   const { s, t } = useSettingsStrings();
   const data = useSettingsStore(selectPagesData);
   const loading = useSettingsStore(selectPagesLoading);
@@ -343,13 +344,11 @@ export const PreferenceScreenPage: React.FC = () => {
     }
     const target = getTargetPageForItem(item);
     if (target) {
-      go('page.open', { pageId: target });
+      nav.push(routes.page, { pageId: target });
       return;
     }
     if (item.type === 'preference') {
-      go('page.open', {
-        pageId: makeExternalPageId(item.title || s.settings, item.key || ''),
-      });
+      nav.push(routes.page, { pageId: makeExternalPageId(item.title || s.settings, item.key || '') });
     }
   };
 
@@ -448,10 +447,10 @@ export const PreferenceScreenPage: React.FC = () => {
             defaultValue={item.defaultValue || ''}
             inputType={item.inputType}
             showDivider={!isLast}
-            onNavigate={target ? () => go('page.open', { pageId: target }) : undefined}
+            onNavigate={target ? () => nav.push(routes.page, { pageId: target }) : undefined}
             itemProps={
               target
-                ? bindTap<HTMLDivElement>('page.open', { params: { pageId: target } })
+                ? bindNav(routes.page, { params: { pageId: target } })
                 : undefined
             }
           />
@@ -496,7 +495,7 @@ export const PreferenceScreenPage: React.FC = () => {
             }}
             itemProps={
               target
-                ? bindTap<HTMLDivElement>('page.open', {
+                ? bindTap<HTMLDivElement>('nav.page', {
                     params: { pageId: target },
                     onTrigger: () => handleItemClick(item),
                   })

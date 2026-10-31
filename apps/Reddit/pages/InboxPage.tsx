@@ -3,10 +3,11 @@ import { TopBar } from '../components/TopBar';
 import { REDDIT_CONFIG } from '../data';
 import { useRedditGestures } from '../hooks/useRedditGestures';
 import { useLocation } from 'react-router-dom';
+import { routes } from '../routes';
 
 export const InboxPage: React.FC = () => {
   const { assets } = REDDIT_CONFIG;
-  const { bindTap } = useRedditGestures();
+  const { bindNav } = useRedditGestures();
   const location = useLocation();
   
   // Parse current tab from search params or default to notifications
@@ -23,7 +24,7 @@ export const InboxPage: React.FC = () => {
       <div className="flex border-b border-app-border">
          <div 
            className="flex-1 flex flex-col items-center cursor-pointer"
-           {...bindTap('inbox.tab.switch', { params: { tab: 'notifications' } })}
+           {...bindNav(routes.inbox, { search: { tab: 'notifications' }, replace: true })}
          >
             <span className={`py-3 font-bold text-sm ${isNotifications ? 'text-black' : 'text-app-text-muted'}`}>
               Notifications
@@ -33,7 +34,7 @@ export const InboxPage: React.FC = () => {
          
          <div 
            className="flex-1 flex flex-col items-center cursor-pointer"
-           {...bindTap('inbox.tab.switch', { params: { tab: 'messages' } })}
+           {...bindNav(routes.inbox, { search: { tab: 'messages' }, replace: true })}
          >
             <span className={`py-3 font-bold text-sm ${!isNotifications ? 'text-black' : 'text-app-text-muted'}`}>
               Messages

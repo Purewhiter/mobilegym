@@ -9,6 +9,7 @@ import { DiscoveryFeed } from './HomePage';
 import { useRedBookGestures } from '../hooks/useRedBookGestures';
 import { strings, type StringKey } from '../res/strings';
 import { RedBookFlameIcon } from '../res/icons';
+import { routes } from '../routes';
 // Helper for Hot Search Rank Colors
 const getRankColor = (index: number) => {
     if (index === 0) return 'text-app-primary'; // Red
@@ -39,7 +40,7 @@ export const SearchPage: React.FC = () => {
   const addSearchHistory = useRedBookStore(s => s.addSearchHistory);
   const removeSearchHistory = useRedBookStore(s => s.removeSearchHistory);
   const clearSearchHistory = useRedBookStore(s => s.clearSearchHistory);
-  const { bindTap, bindBack, go, back } = useRedBookGestures();
+  const { bindTap, bindBack, nav, back, bindNav } = useRedBookGestures();
   const s = useRedBookStrings();
   const inputRef = useRef<HTMLInputElement>(null);
   
@@ -106,8 +107,9 @@ export const SearchPage: React.FC = () => {
           nextParams.sort = sortKey;
       }
       // 根据是否已有搜索词选择 push 或 replace
-      const transitionId = keyword ? 'search.query.submit.replace' : 'search.query.submit.push';
-      go(transitionId, nextParams);
+      const search = { q: nextParams.q, tab: nextParams.tab, sort: nextParams.sort };
+      if (keyword) nav.replace(routes.search, {}, { search });
+      else nav.push(routes.search, {}, { search });
       
       addSearchHistory(key);
   };
@@ -118,12 +120,12 @@ export const SearchPage: React.FC = () => {
       if (tab === 'searchpage_all') {
           nextParams.sort = sortKey;
       }
-      go('search.tab.switch', nextParams);
+      nav.replace(routes.search, {}, { search: { panel: null, tab: nextParams.tab, sort: nextParams.sort }, keep: ['q'] });
   };
 
   const handleOpenFilter = () => {
       if (activeTab !== 'searchpage_all' || isFilterOpen) return;
-      go('search.filter.open', { sort: sortKey });
+      nav.replace(routes.search, {}, { search: { panel: 'filter', sort: sortKey }, keep: ['q', 'tab'] });
   };
 
   const clearSearch = () => {
@@ -140,14 +142,14 @@ export const SearchPage: React.FC = () => {
   useEffect(() => {
       if (!isSearching) return;
       if (!searchParams.get('tab')) {
-          go('search.tab.switch', { tab: 'searchpage_all', sort: sortKey });
+          nav.replace(routes.search, {}, { search: { panel: null, tab: 'searchpage_all', sort: sortKey }, keep: ['q'] });
           return;
       }
       if (activeTab !== 'searchpage_all') return;
       if (isFilterOpen) return;
       if (!sortKey) return;
-      go('search.sort.apply', { sort: sortKey });
-  }, [activeTab, isFilterOpen, isSearching, searchParams, sortKey, go]);
+      nav.replace(routes.search, {}, { search: { panel: null, sort: sortKey }, keep: ['q', 'tab'] });
+  }, [activeTab, isFilterOpen, isSearching, searchParams, sortKey, nav]);
 
   // Matching and sorting run on the device server over the merged notes.
   const { notes: sortedResults } = useRedBookSearchNotes(
@@ -184,7 +186,7 @@ export const SearchPage: React.FC = () => {
                       {history.map((item, idx) => (
                           <div key={idx} className="relative">
                               <span 
-                                  {...bindTap('search.query.submit.push', { params: { q: item, tab: activeTab }, onTrigger: () => handleSearch(item) })}
+                                  {...bindTap('nav.search', { params: { q: item, tab: activeTab }, onTrigger: () => handleSearch(item) })}
                                   className="inline-block px-3 py-1.5 bg-[#f8f8f8] rounded-full text-[13px] text-app-text max-w-[150px] truncate"
                               >
                                   {item}
@@ -217,7 +219,7 @@ export const SearchPage: React.FC = () => {
                   {guessYouLike?.map((item, idx) => (
                        <span 
                           key={idx}
-                          {...bindTap('search.query.submit.push', { params: { q: item, tab: activeTab }, onTrigger: () => handleSearch(item) })}
+                          {...bindTap('nav.search', { params: { q: item, tab: activeTab }, onTrigger: () => handleSearch(item) })}
                           className="text-[14px] text-app-text truncate"
                       >
                           {item}
@@ -238,7 +240,7 @@ export const SearchPage: React.FC = () => {
                       <div 
                           key={idx} 
                           className="flex items-center justify-between active:opacity-70 cursor-pointer"
-                          {...bindTap('search.query.submit.push', { params: { q: item.keyword, tab: activeTab }, onTrigger: () => handleSearch(item.keyword) })}
+                          {...bindTap('nav.search', { params: { q: item.keyword, tab: activeTab }, onTrigger: () => handleSearch(item.keyword) })}
                       >
                            <div className="flex items-center gap-3 flex-1 min-w-0">
                                <span className={`text-[15px] font-bold w-4 text-center ${getRankColor(idx)}`}>
@@ -274,14 +276,14 @@ export const SearchPage: React.FC = () => {
                           <div
                               key={tab}
                               className={`relative flex h-full flex-shrink-0 items-center justify-center text-[15px] transition-all ${isActive ? 'font-bold text-app-text' : 'text-[#666]'}`}
-                              {...(isActive ? {} : bindTap('search.tab.switch', { params: { tab } }))}
+                              {...(isActive ? {} : bindNav(routes.search, { search: { panel: null, tab: tab }, keep: ['q'], replace: true }))}
                           >
                               <div className="flex items-center gap-1 whitespace-nowrap">
                                   <span className="whitespace-nowrap">{s[tab]}</span>
                                   {isAllTab && (
                                       <span
                                           className={`flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full ${canOpenFilter ? 'text-app-text-muted' : 'text-[#cfcfcf]'}`}
-                                          {...(canOpenFilter ? bindTap('search.filter.open', { stopPropagation: true, onTrigger: handleOpenFilter }) : {})}
+                                          {...(canOpenFilter ? bindTap('nav.search', { stopPropagation: true, onTrigger: handleOpenFilter }) : {})}
                                       >
                                           <SlidersHorizontal size={14} />
                                       </span>
@@ -319,7 +321,7 @@ export const SearchPage: React.FC = () => {
                               return (
                                   <div
                                       key={option.key}
-                                      {...bindTap('search.sort.switch', { params: { sort: option.key }, onTrigger: () => go('search.sort.apply', { sort: option.key }) })}
+                                      {...bindTap('nav.search', { params: { sort: option.key }, onTrigger: () => nav.replace(routes.search, {}, { search: { panel: null, sort: option.key }, keep: ['q', 'tab'] }) })}
                                       className={`px-4 py-2 rounded-[10px] text-[14px] ${isSelected ? 'bg-[#fde8eb] text-app-primary font-medium' : 'bg-[#f5f5f5] text-app-text'}`}
                                   >
                                       {s[option.label]}
@@ -384,7 +386,7 @@ export const SearchPage: React.FC = () => {
                       <div className="h-5 w-px bg-gray-200" />
                       <div
                         className="flex items-center gap-2"
-                        {...bindTap('search.sort.apply', { params: { sort: sortKey }, onTrigger: () => go('search.sort.apply', { sort: sortKey }) })}
+                        {...bindTap('nav.search', { params: { sort: sortKey }, onTrigger: () => nav.replace(routes.search, {}, { search: { panel: null, sort: sortKey }, keep: ['q', 'tab'] }) })}
                       >
                           <span className="text-[16px]">˄</span>
                           <span>{s.collapse}</span>
@@ -392,7 +394,7 @@ export const SearchPage: React.FC = () => {
                   </div>
                   <div
                     className="flex-1 bg-black/30"
-                    {...bindTap('search.sort.apply', { params: { sort: sortKey }, onTrigger: () => go('search.sort.apply', { sort: sortKey }) })}
+                    {...bindTap('nav.search', { params: { sort: sortKey }, onTrigger: () => nav.replace(routes.search, {}, { search: { panel: null, sort: sortKey }, keep: ['q', 'tab'] }) })}
                   />
               </div>
           )}
@@ -419,7 +421,7 @@ export const SearchPage: React.FC = () => {
                           <div
                               key={user.id}
                               className="flex items-center justify-between gap-3 border-b border-gray-50 p-4"
-                              {...bindTap('user.open', { params: { userId: user.id } })}
+                              {...bindNav(routes.user, { params: { userId: user.id } })}
                           >
                               <div className="flex min-w-0 flex-1 items-center gap-3">
                                   <img src={user.avatar} className="w-[50px] h-[50px] rounded-full object-cover border border-gray-100" />
@@ -483,14 +485,14 @@ export const SearchPage: React.FC = () => {
         
         {keyword ? (
             <button
-                {...bindTap('search.query.submit.replace', { params: { q: inputValue, tab: activeTab, sort: sortKey }, onTrigger: () => handleSearch() })}
+                {...bindTap('nav.search', { params: { q: inputValue, tab: activeTab, sort: sortKey }, onTrigger: () => handleSearch() })}
                 className="px-1 text-[15px] font-medium text-app-text active:opacity-60 flex-shrink-0 whitespace-nowrap"
             >
                 {s.search}
             </button>
         ) : (
             <button
-                {...bindTap('search.query.submit.push', { params: { q: inputValue, tab: activeTab, sort: sortKey }, onTrigger: () => handleSearch() })}
+                {...bindTap('nav.search', { params: { q: inputValue, tab: activeTab, sort: sortKey }, onTrigger: () => handleSearch() })}
                 className="px-1 text-[15px] font-medium text-app-text active:opacity-60 flex-shrink-0 whitespace-nowrap"
             >
                 {s.search}

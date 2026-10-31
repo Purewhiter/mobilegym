@@ -7,6 +7,7 @@ import { XImage } from '../components/XMedia';
 import { useXStrings } from '../hooks/useXStrings';
 import type { XPost, XUser } from '../types';
 import { IcSort } from '../res/icons';
+import { routes } from '../routes';
 export const PostActivityPage: React.FC = () => {
   const { id } = useParams();
   const posts = useXHydratedPosts();
@@ -14,7 +15,7 @@ export const PostActivityPage: React.FC = () => {
   const toggleFollow = useXStore(s => s.toggleFollow);
   const followedSet = useXStore(selectEffectiveFollowedSet);
   const isFollowing = (userId: string) => followedSet.has(userId);
-  const { bindBack, bindTap, go } = useXGestures();
+  const { bindBack, bindNav, nav } = useXGestures();
   const s = useXStrings();
   const [activeTab, setActiveTab] = React.useState<'quotes' | 'retweets'>('quotes');
   const [showSortMenu, setShowSortMenu] = React.useState(false);
@@ -101,7 +102,7 @@ export const PostActivityPage: React.FC = () => {
                 <div
                   key={quote.id}
                   className="border-b border-app-border p-4 active:bg-black/5 cursor-pointer transition-colors"
-                  {...bindTap('status.open', { params: { id: quote.id } })}
+                  {...bindNav(routes.status, { params: { id: quote.id } })}
                 >
                   <div className="flex">
                     <div className="w-10 h-10 rounded-full bg-gray-200 mr-3 overflow-hidden shrink-0">
@@ -135,7 +136,7 @@ export const PostActivityPage: React.FC = () => {
                 <div
                   key={i}
                   className="border-b border-app-border p-4 active:bg-black/5 cursor-pointer transition-colors"
-                  {...bindTap('status.open', { params: { id: `mock_quote_${i}` } })}
+                  {...bindNav(routes.status, { params: { id: `mock_quote_${i}` } })}
                 >
                   <div className="flex">
                     <div className="w-10 h-10 rounded-full bg-gray-200 mr-3 overflow-hidden shrink-0">
@@ -173,7 +174,7 @@ export const PostActivityPage: React.FC = () => {
               <div
                 key={user.id}
                 className="flex items-center justify-between p-4 border-b border-app-border active:bg-black/5 transition-colors cursor-pointer"
-                {...bindTap('user.open.fromPost', { params: { id: user.id } })}
+                {...bindNav(routes.user, { params: { id: user.id } })}
               >
                 <div className="flex items-start flex-1 mr-4">
                   <div className="w-10 h-10 rounded-full bg-gray-200 mr-3 overflow-hidden shrink-0">

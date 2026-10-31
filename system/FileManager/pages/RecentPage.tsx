@@ -24,9 +24,10 @@ import { CollapsingToolbar, CollapsingLargeTitle, TOOLBAR_SPACER_HEIGHT } from '
 import { IcShare, IcMove, IcDelete, IcMoreCircle } from '../res/icons';
 import * as TimeService from '@/os/TimeService';
 import { transferNodesToDirectory, shareNodesAsImages, type TransferOperation } from '../utils/fileOperations';
+import { routes } from '../routes';
 
 export const RecentPage: React.FC = () => {
-  const { go, back } = useFileManagerGestures();
+  const { nav, back } = useFileManagerGestures();
   const location = useLocation();
   const s = useAppStrings(strings, stringsEn);
 
@@ -75,7 +76,7 @@ export const RecentPage: React.FC = () => {
     if (isSelecting) return;
     isLongPress.current = true;
     if (initialItemId) setSelectedIds(new Set([initialItemId]));
-    go('recent.select.enter', {});
+    nav.push(routes.recent, {}, { search: { mode: 'select' } });
   };
 
   const exitSelectMode = () => {
@@ -84,10 +85,10 @@ export const RecentPage: React.FC = () => {
   };
 
   const openModal = (type: 'delete' | 'more' | 'details' | 'rename', itemId?: string) => {
-    if (type === 'delete') go('recent.modal.delete.open', {});
-    else if (type === 'more') go('recent.modal.more.open', {});
-    else if (type === 'details') go('recent.modal.details.open', itemId ? { itemId } : {});
-    else if (type === 'rename') go('recent.modal.rename.open', itemId ? { itemId } : {});
+    if (type === 'delete') nav.push(routes.recent, {}, { search: { mode: 'select', modal: 'delete' }, keep: ['selected'] });
+    else if (type === 'more') nav.push(routes.recent, {}, { search: { mode: 'select', modal: 'more' }, keep: ['selected'] });
+    else if (type === 'details') nav.replace(routes.recent, {}, { search: { modal: 'details', itemId: (itemId ? { itemId } : {}).itemId } });
+    else if (type === 'rename') nav.replace(routes.recent, {}, { search: { modal: 'rename', itemId: (itemId ? { itemId } : {}).itemId } });
   };
 
   const closeModal = () => back();
@@ -211,11 +212,13 @@ export const RecentPage: React.FC = () => {
 
   const openTransferSheet = (operation: TransferOperation) => {
     if (selectedIds.size === 0) return;
-    go('recent.modal.transfer.open', { operation }, { mode: modal === 'more' ? 'replace' : 'push' });
+    const target = { search: { mode: 'select', modal: 'transfer', operation }, keep: ['selected'] } as const;
+    if (modal === 'more') nav.replace(routes.recent, {}, target);
+    else nav.push(routes.recent, {}, target);
   };
 
   const openTransferCreateFolder = () => {
-    go('recent.modal.transfer.newFolder.open');
+    nav.push(routes.recent, {}, { search: { mode: 'select', modal: 'transfer', transferDialog: 'newFolder' }, keep: ['selected', 'operation'] });
   };
 
   const handleDelete = async () => {
@@ -247,7 +250,7 @@ export const RecentPage: React.FC = () => {
     const id = Array.from(selectedIds)[0];
     // Back to base state first (2 steps: more menu + select mode), then open details
     back(2);
-    setTimeout(() => go('recent.modal.details.open.fromBase', { itemId: id }), 50);
+    setTimeout(() => nav.push(routes.recent, {}, { search: { modal: 'details', itemId: id } }), 50);
   };
 
   const handleRenameClick = () => {
@@ -258,7 +261,7 @@ export const RecentPage: React.FC = () => {
     const id = Array.from(selectedIds)[0];
     // Back to base state first (2 steps: more menu + select mode), then open rename
     back(2);
-    setTimeout(() => go('recent.modal.rename.open.fromBase', { itemId: id }), 50);
+    setTimeout(() => nav.push(routes.recent, {}, { search: { modal: 'rename', itemId: id } }), 50);
   };
 
   const doRename = async (newName: string) => {

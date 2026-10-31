@@ -57,6 +57,7 @@ import { RoutePointPickerOverlay } from '../components/explore/RoutePointPickerO
 import { useMapStrings } from '../hooks/useMapStrings';
 import { useLocale } from '../locale';
 import type { PlaceSelectionFallback } from '../types';
+import { routes } from '../routes';
 
 const PLACE_RESULTS_SHEET_CATEGORIES = [
   'shopping_mall',
@@ -76,7 +77,7 @@ export const ExplorePage: React.FC = () => {
   /** 仅「探索」首页：隐藏与 Tab 页 Sheet 冲突的脉搏/探索周边占位；搜索栏等仍显示 */
   const isExploreMapHome = routerLocation.pathname === '/';
 
-  const { bindTap, go, replaceState } = useMapGestures();
+  const { bindNav, nav, replaceState } = useMapGestures();
   const currentLocation = useMapStore(selectCurrentLocation);
   const locationLoading = useMapStore(selectLocationLoading);
   const google = useMapStore(selectGoogle);
@@ -1093,8 +1094,8 @@ export const ExplorePage: React.FC = () => {
         {!destination && !selectedPlace && !activeCategory && (
           <ExploreSearchBar
             mapInstance={mapInstance}
-            go={go}
-            profileTriggerProps={bindTap('profile.open') as unknown as Record<string, unknown>}
+            nav={nav}
+            profileTriggerProps={bindNav(routes.profile) as unknown as Record<string, unknown>}
             searchNearby={searchNearby}
           />
         )}

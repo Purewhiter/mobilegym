@@ -5,6 +5,7 @@ import { useWechatStrings } from '../hooks/useWechatStrings';
 import { IcUserAdd, IcContacts, IcTag, IcFolder } from '../res/icons';
 import { useWechatStore } from '../state';
 import { useWechatGestures } from '../hooks/useWechatGestures';
+import { routes } from '../routes';
 
 const ContactItem: React.FC<{ 
   icon?: React.ReactNode; 
@@ -29,7 +30,7 @@ const ContactItem: React.FC<{
 
 const Contacts: React.FC = () => {
   const t = useWechatStrings();
-  const { bindTap } = useWechatGestures();
+  const { bindNav } = useWechatGestures();
   const contacts = useWechatStore(s => s.contacts);
 
   const alphabet = Array.from({ length: 26 }, (_, i) => String.fromCharCode(65 + i));
@@ -63,17 +64,17 @@ const Contacts: React.FC = () => {
           <ContactItem 
             icon={<div className="w-10 h-10 rounded-[4px] flex items-center justify-center" style={{ backgroundColor: 'var(--app-c-contacts-new-friend-icon-bg)' }}><IcUserAdd className="text-white" size={dimens.icSizeToolbar} /></div>}
             name={t.contacts_new_friend} 
-            tapProps={bindTap<HTMLDivElement>('contacts.newFriends.open')}
+            tapProps={bindNav(routes.newFriends)}
           />
           <ContactItem 
               icon={<div className="w-10 h-10 bg-app-primary rounded-[4px] flex items-center justify-center"><IcContacts className="text-white" size={dimens.icSizeToolbar} fill="white" /></div>}
               name={t.contacts_group_chat}
-              tapProps={bindTap<HTMLDivElement>('contacts.groups.open')}
+              tapProps={bindNav(routes.groups)}
           />
           <ContactItem 
               icon={<div className="w-10 h-10 rounded-[4px] flex items-center justify-center" style={{ backgroundColor: 'var(--app-c-contacts-tags-icon-bg)' }}><IcTag className="text-white" size={dimens.icSizeToolbar} fill="white" /></div>}
               name={t.contacts_tags}
-              tapProps={bindTap<HTMLDivElement>('contacts.tags.open')}
+              tapProps={bindNav(routes.tags)}
           />
           <ContactItem
               icon={<div className="w-10 h-10 rounded-[4px] flex items-center justify-center" style={{ backgroundColor: 'var(--app-c-contacts-tags-icon-bg)' }}><IcFolder className="text-white" size={dimens.icSizeToolbar} fill="white" /></div>}
@@ -93,7 +94,7 @@ const Contacts: React.FC = () => {
                   key={contact.wxid} 
                   name={contact.name} 
                   avatar={contact.avatar} 
-                  tapProps={bindTap<HTMLDivElement>('userProfile.open', { params: { id: contact.wxid } })}
+                  tapProps={bindNav(routes.userProfile, { params: { id: contact.wxid } })}
                 />
               ))}
             </div>

@@ -6,9 +6,10 @@ import { useWechatReadingStore } from '../../state';
 import type { PrivacySettings } from '../../data/types';
 import { useWechatReadingGestures } from '../../hooks/useWechatReadingGestures';
 import { useWechatReadingStrings } from '../../hooks/useWechatReadingStrings';
+import { routes } from '../../routes';
 
 const PrivacyPage: React.FC = () => {
-    const { bindBack, bindTap } = useWechatReadingGestures();
+    const { bindBack, bindTap, bindNav } = useWechatReadingGestures();
     const privacy = useWechatReadingStore(s => s.settings.privacy);
     const updatePrivacy = useWechatReadingStore(s => s.updatePrivacy);
     const s = useWechatReadingStrings();
@@ -80,7 +81,7 @@ const PrivacyPage: React.FC = () => {
             <div data-scroll-container="main" data-scroll-direction="vertical" className="flex-1 overflow-y-auto no-scrollbar p-3">
 
                 <Group>
-                    <LinkItem label={s.privacy_personal_page} binding={bindTap<HTMLDivElement>('settings.privacy.profile.open')} />
+                    <LinkItem label={s.privacy_personal_page} binding={bindNav(routes.settingsPrivacyProfile)} />
                     <ToggleItem
                         label={s.privacy_require_follow_request}
                         desc={s.privacy_require_follow_request_desc}

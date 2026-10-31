@@ -7,6 +7,7 @@ import { BOOK_BADGE_COLOR_MAP } from '../constants';
 import { useLocale } from '../../../os/locale';
 import { useWechatReadingStrings } from '../hooks/useWechatReadingStrings';
 import { quoteWechatReadingTitle } from '../utils/localization';
+import { routes } from '../routes';
 
 const HighlightText: React.FC<{ text: string, highlight: string, className?: string }> = ({ text, highlight, className = '' }) => {
     if (!highlight) return <span className={className}>{text}</span>;
@@ -25,7 +26,7 @@ const HighlightText: React.FC<{ text: string, highlight: string, className?: str
 type SearchTab = 'all' | 'ebook' | 'audiobook' | 'fulltext' | 'author' | 'booklist';
 
 const SearchPage: React.FC = () => {
-    const { bindTap, bindBack } = useWechatReadingGestures();
+    const { bindTap, bindBack, bindNav } = useWechatReadingGestures();
     const [searchText, setSearchText] = useState('');
     const [activeTab, setActiveTab] = useState<SearchTab>('all');
     const locale = useLocale();
@@ -213,7 +214,7 @@ const SearchPage: React.FC = () => {
                                         <div
                                             key={book.id}
                                             className="flex gap-3 mb-4 last:mb-0"
-                                            {...bindTap('book.detail.open', { params: { bookId: book.id } })}
+                                            {...bindNav(routes.book, { params: { bookId: book.id } })}
                                         >
                                             <div className={`w-12 h-16 ${book.coverColor} rounded shadow-sm shrink-0 flex items-center justify-center text-(--app-item-text-size-8) p-1 text-center`}>
                                                 {book.title}
@@ -247,7 +248,7 @@ const SearchPage: React.FC = () => {
                                         <div
                                             key={audio.id}
                                             className="flex gap-3 mb-4 last:mb-0"
-                                            {...bindTap('book.detail.open', { params: { bookId: audio.id } })}
+                                            {...bindNav(routes.book, { params: { bookId: audio.id } })}
                                         >
                                             <div
                                                 className="w-12 h-12 rounded-lg shadow-sm shrink-0 flex items-center justify-center text-(--app-item-text-size-8) p-1 text-center text-white font-bold"

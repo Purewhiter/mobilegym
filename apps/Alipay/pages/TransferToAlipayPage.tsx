@@ -7,13 +7,14 @@ import { useAlipayGestures } from '../hooks/useAlipayGestures';
 import { getRecentTransferContacts } from '../utils/transferContacts';
 import { maskPhone } from '../utils/maskPhone';
 import { DefaultAvatar } from '../components/DefaultAvatar';
+import { routes } from '../routes';
 export const TransferToAlipayPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const modal = searchParams.get('modal');
   const contacts = useAlipayStore(s => s.contacts);
   const transferRecords = useAlipayStore(s => s.transferRecords);
   const setTransferDraft = useAlipayStore(s => s.setTransferDraft);
-  const { bindTap, bindBack } = useAlipayGestures();
+  const { bindNav, bindBack } = useAlipayGestures();
   const s = useAlipayStrings();
   const [inputValue, setInputValue] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
@@ -41,11 +42,8 @@ export const TransferToAlipayPage: React.FC = () => {
   );
   const confirmTapProps =
     matchedContact && inputValue
-      ? bindTap<HTMLButtonElement>('transfer.amount.open', {
-          params: { contactId: String(matchedContact.id) },
-          beforeTrigger: () => setTransferDraft({ contact: matchedContact, inputValue }),
-        })
-      : bindTap<HTMLButtonElement>('transferToAccount.error.open');
+      ? bindNav(routes.payTransferAmount, { search: { contactId: String(matchedContact.id) }, beforeTrigger: () => setTransferDraft({ contact: matchedContact, inputValue }) })
+      : bindNav(routes.payTransferToAccount, { search: { modal: 'accountNotFound' } });
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -98,7 +96,7 @@ export const TransferToAlipayPage: React.FC = () => {
         <div className="flex justify-center mb-8">
             <button
               className="text-gray-400 text-sm flex items-center"
-              {...bindTap<HTMLButtonElement>('transferToAccount.recentContacts.open')}
+              {...bindNav(routes.payTransferToAccount, { search: { modal: 'contacts' } })}
             >
                 {s.recent_contacts} <IcExpand size={14} className="ml-1" />
             </button>
@@ -142,12 +140,9 @@ export const TransferToAlipayPage: React.FC = () => {
                         <div 
                             key={contact.id} 
                             className="flex items-center p-4 border-b border-gray-50 active:bg-gray-50"
-                            {...bindTap<HTMLDivElement>('transfer.amount.open', {
-                              params: { contactId: String(contact.id) },
-                              beforeTrigger: () => {
+                            {...bindNav(routes.payTransferAmount, { search: { contactId: String(contact.id) }, beforeTrigger: () => {
                                 setTransferDraft({ contact, inputValue: contact.name });
-                              },
-                            })}
+                              } })}
                         >
                             <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center mr-3 text-sm overflow-hidden">
                                 {contact.avatar ? <img src={contact.avatar} alt="" className="w-full h-full rounded-full object-cover" /> : <DefaultAvatar iconSize={20} />}

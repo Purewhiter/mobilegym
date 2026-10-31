@@ -16,6 +16,7 @@ import { BilibiliDanmakuIcon } from '../res/icons';
 import { useLocale } from '@/apps/Bilibili/locale';
 import { useBilibiliStrings } from '../hooks/useBilibiliStrings';
 import { formatBilibiliStat } from '../utils/localize';
+import { routes } from '../routes';
 
 const formatDuration = (val: number | string | undefined) => {
     if (!val) return '00:00';
@@ -38,13 +39,13 @@ const formatDuration = (val: number | string | undefined) => {
 
 const BigVideoCard: React.FC<{ video: BilibiliVideo; locale: 'zh-Hans' | 'en' }> = ({ video, locale }) => {
     const coverSrc = typeof video.cover === 'string' && !video.cover.startsWith('#') ? video.cover : '';
-    const { bindTap } = useBilibiliGestures();
+    const { bindNav } = useBilibiliGestures();
 
     return (
         <div
             className="bg-app-surface mx-2 mt-2 rounded-lg overflow-hidden shadow-sm active:scale-[0.98]"
             style={{ transition: 'transform var(--app-duration-quick) var(--app-easing-standard)' }}
-            {...bindTap('video.open', { params: { bvid: video.id } })}
+            {...bindNav(routes.video, { params: { bvid: video.id }, search: { tab: 'intro' } })}
         >
             {/* Cover Area */}
             <div className="relative aspect-video bg-gray-200">
@@ -100,13 +101,13 @@ const BigVideoCard: React.FC<{ video: BilibiliVideo; locale: 'zh-Hans' | 'en' }>
 
 const VideoCard: React.FC<{ video: BilibiliVideo; locale: 'zh-Hans' | 'en'; adLabel: string }> = ({ video, locale, adLabel }) => {
     const coverSrc = typeof video.cover === 'string' && !video.cover.startsWith('#') ? video.cover : '';
-    const { bindTap } = useBilibiliGestures();
+    const { bindNav } = useBilibiliGestures();
 
     return (
         <div
             className="bg-app-surface rounded-lg overflow-hidden shadow-sm flex flex-col h-full active:scale-95"
             style={{ transition: 'transform var(--app-duration-quick) var(--app-easing-standard)' }}
-            {...bindTap('video.open', { params: { bvid: video.id } })}
+            {...bindNav(routes.video, { params: { bvid: video.id }, search: { tab: 'intro' } })}
         >
             <div className="relative aspect-video bg-gray-200">
                 {coverSrc ? (
@@ -161,7 +162,7 @@ interface HomePageProps {
 
 export const HomePage: React.FC<HomePageProps> = ({ activeTab: urlTab = 'recommend' }) => {
     const user = useBilibiliStore(s => s.user);
-    const { bindTap } = useBilibiliGestures();
+    const { bindNav } = useBilibiliGestures();
     const locale = useLocale();
     const s = useBilibiliStrings();
     const text = locale === 'en'
@@ -230,7 +231,7 @@ export const HomePage: React.FC<HomePageProps> = ({ activeTab: urlTab = 'recomme
                     <img src={user.avatar} alt="avatar" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                 </div>
                 <div
-                    {...bindTap('search.open')}
+                    {...bindNav(routes.search)}
                     className="flex-1 h-8 bg-gray-100 rounded-full flex items-center px-3 gap-2 text-gray-400 active:scale-95 transition-transform origin-center"
                 >
                     <Search size={16} />
@@ -250,7 +251,7 @@ export const HomePage: React.FC<HomePageProps> = ({ activeTab: urlTab = 'recomme
                             return (
                                 <button
                                     key={tab.key}
-                                    {...(isActive || isDisabled ? {} : bindTap('home.tab.switch', { params: { tab: tab.key } }))}
+                                    {...(isActive || isDisabled ? {} : bindNav(routes.home, { search: { tab: tab.key }, replace: true }))}
                                     className={`flex-shrink-0 px-3 py-2 text-[16px] font-medium whitespace-nowrap relative text-center ${isActive ? 'text-app-primary' : 'text-gray-600'} ${isDisabled ? 'opacity-60 pointer-events-none' : ''}`}
                                 >
                                     {tab.label}
@@ -262,7 +263,7 @@ export const HomePage: React.FC<HomePageProps> = ({ activeTab: urlTab = 'recomme
                         })}
                     </div>
                 </div>
-                <div className="px-2 text-gray-600 flex-none" {...bindTap('partitions.open')}>
+                <div className="px-2 text-gray-600 flex-none" {...bindNav(routes.partitions)}>
                     <Menu size={20} />
                 </div>
             </div>

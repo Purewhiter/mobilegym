@@ -14,6 +14,7 @@ import {
   selectReadingBookIds,
   useWechatReadingStore,
 } from '../state';
+import { routes } from '../routes';
 
 const CATEGORIES = ['all', 'reading', 'finished'] as const;
 type CategoryId = typeof CATEGORIES[number];
@@ -29,15 +30,15 @@ const ReadingListPage: React.FC = () => {
   const allProgressBookIds = useWechatReadingStore(selectAllProgressBookIds);
   const readingBookIds = useWechatReadingStore(selectReadingBookIds);
   const finishedBookIds = useWechatReadingStore(selectFinishedBookIds);
-  const { bindBack, bindTap, go } = useWechatReadingGestures();
+  const { bindBack, bindNav, nav } = useWechatReadingGestures();
 
   React.useEffect(() => {
     if (location.pathname !== '/reading-list') return;
     const raw = new URLSearchParams(location.search).get('category');
     if (!raw || !(['all', 'reading', 'finished'] as const).includes(raw as any)) {
-      go('readingList.tab.switch', { category: 'all' });
+      nav.replace(routes.readingList, {}, { search: { category: 'all' } });
     }
-  }, [go, location.pathname, location.search]);
+  }, [nav, location.pathname, location.search]);
 
   const shelfByBookId = useMemo(() => new Map(shelf.map(i => [String(i.bookId), i])), [shelf]);
 
@@ -129,7 +130,7 @@ const ReadingListPage: React.FC = () => {
             return (
               <div
                 key={tab.id}
-                {...(isActive ? {} : bindTap<HTMLDivElement>('readingList.tab.switch', { params: { category: tab.id } }))}
+                {...(isActive ? {} : bindNav(routes.readingList, { search: { category: tab.id }, replace: true }))}
                 className={`flex-1 cursor-pointer rounded-full py-1.5 text-center text-(--app-settings-item-value-size) font-medium ${
                   isActive ? 'bg-app-surface text-(--app-c-tw-text-slate-900) shadow-sm' : 'text-(--app-c-tw-text-slate-500)'
                 }`}
@@ -161,7 +162,7 @@ const ReadingListPage: React.FC = () => {
                   key={item.bookId}
                   className="flex items-stretch justify-between rounded-2xl bg-app-surface p-5 shadow-sm active:scale-[0.98]"
                   style={{ transition: 'transform var(--app-duration-short) var(--app-easing-standard)' }}
-                  {...bindTap<HTMLDivElement>('book.detail.open', { params: { bookId: item.bookId } })}
+                  {...bindNav(routes.book, { params: { bookId: item.bookId } })}
                 >
                   <div className="flex flex-col justify-between py-1">
                     <div className="space-y-3">

@@ -6,6 +6,7 @@ import type { SettingsPage } from '../types';
 import { useSettingsStrings } from '../res/useSettingsStrings';
 import { useSettingsStore, selectPagesData, selectPagesLoading, selectPagesError } from '../state';
 import { useSettingsGestures } from '../hooks/useSettingsGestures';
+import { routes } from '../routes';
 type SearchResult = {
   pageId: string;
   title: string;
@@ -19,7 +20,7 @@ function includesInsensitive(haystack: string, needle: string) {
 }
 
 export const SettingsSearchPage: React.FC = () => {
-  const { bindTap, bindBack } = useSettingsGestures();
+  const { bindNav, bindBack } = useSettingsGestures();
   const { s, t } = useSettingsStrings();
   const [query, setQuery] = useState('');
   const data = useSettingsStore(selectPagesData);
@@ -151,7 +152,7 @@ export const SettingsSearchPage: React.FC = () => {
                   summary={r.preview ? t(r.preview) : undefined}
                   showDivider={idx < results.length - 1}
                   showChevron={true}
-                  itemProps={bindTap<HTMLDivElement>('page.open', { params: { pageId: r.pageId } })}
+                  itemProps={bindNav(routes.page, { params: { pageId: r.pageId } })}
                 />
               ))}
             </div>

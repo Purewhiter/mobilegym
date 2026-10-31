@@ -9,6 +9,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { SettingsToggle, SettingsItem } from './Shared';
 import { useWechatGestures } from '../../hooks/useWechatGestures';
 import { useWechatStrings } from '../../hooks/useWechatStrings';
+import { routes } from '../../routes';
 const asset = (r: unknown) => { const s = String(r ?? '').trim(); return (!s || s.startsWith('http')) ? s : `/@app-assets/Wechat/${s}`; };
 
 /**
@@ -38,7 +39,7 @@ const getSportsData = (participant: { wxid: string, name: string, steps?: number
 // --- 微信运动主页（消息列表流） ---
 export const WechatSportsMain: React.FC = () => {
     const t = useWechatStrings();
-    const { bindTap } = useWechatGestures();
+    const { bindTap, bindNav } = useWechatGestures();
     return (
         <div className="bg-app-bg min-h-full flex flex-col relative">
             <div className="flex-1 p-4 space-y-4">
@@ -62,7 +63,7 @@ export const WechatSportsMain: React.FC = () => {
             </div>
 
             <div 
-                {...bindTap<HTMLDivElement>('wechatSports.leaderboard.open')}
+                {...bindNav(routes.wechatSportsLeaderboard)}
                 className="sticky bottom-0 h-(--app-settings-item-height) bg-app-surface border-t border-app-border flex items-center justify-center active:bg-(--app-c-tw-bg-gray-50) cursor-pointer"
             >
                 <span className="text-(--app-settings-item-text-size) text-app-text font-medium">{t.sports_leaderboard}</span>
@@ -74,7 +75,7 @@ export const WechatSportsMain: React.FC = () => {
 // --- 步数排行榜页面 ---
 export const SportsLeaderboard: React.FC = () => {
     const t = useWechatStrings();
-    const { bindTap } = useWechatGestures();
+    const { bindTap, bindNav } = useWechatGestures();
     const { user, contacts } = useWechatStore(useShallow(s => ({
         user: s.user,
         settings: s.settings,
@@ -120,8 +121,8 @@ export const SportsLeaderboard: React.FC = () => {
 
     const LeaderboardItem = ({ rank, name, avatar, steps, likes, isMe = false, wxid }: any) => {
         const tapProps = isMe
-            ? bindTap<HTMLDivElement>('wechatSports.profile.me.open')
-            : bindTap<HTMLDivElement>('wechatSports.profile.friend.open', { params: { id: wxid } });
+            ? bindNav(routes.wechatSportsProfile)
+            : bindNav(routes.wechatSportsProfileById, { params: { id: wxid } });
 
         return (
             <div 
@@ -304,7 +305,7 @@ export const SportsPrivacySettings: React.FC = () => {
         settings: s.settings,
         updateSettings: s.updateSettings,
     })));
-    const { bindTap } = useWechatGestures();
+    const { bindTap, bindNav } = useWechatGestures();
     const sportsSettings = allSettings.accessibility.wechatSports;
 
     const update = (field: string, value: boolean) => {

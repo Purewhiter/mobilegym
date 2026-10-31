@@ -3,12 +3,11 @@ import { dimens } from '../../res/dimens';
 import { useWechatStrings } from '../../hooks/useWechatStrings';
 import { IcClose, IcMore, IcQrCode, IcImage } from '../../res/icons';
 import { useWechatGestures } from '../../hooks/useWechatGestures';
-import { useAppNavigate } from '../../navigation';
+import { routes } from '../../routes';
 
 export const ScanPage: React.FC = () => {
   const t = useWechatStrings();
-  const { bindBack } = useWechatGestures();
-  const { go } = useAppNavigate();
+  const { bindBack, nav } = useWechatGestures();
 
   return (
     <div
@@ -55,7 +54,7 @@ export const ScanPage: React.FC = () => {
       <div className="flex justify-between items-center px-8 pb-6 pt-0 bg-(--app-c-misc-moments-cover-bg)">
         <button
           type="button"
-          onClick={() => go('scan.qrcode.open')}
+          onClick={() => nav.push(routes.meQrcode)}
           className="flex flex-col items-center gap-2 active:opacity-80"
         >
           <div className="w-11 h-11 rounded-full bg-app-surface/40 flex items-center justify-center">

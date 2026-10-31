@@ -3,12 +3,13 @@ import React from 'react';
 import { IcUserAdd, IcBus, IcLightbulb, IcFile, IcClock, IcDownload, IcClipboard, IcCart, IcWallet, IcGrid, IcBookOpen, IcScan, IcHelp, IcSettings } from '../res/icons';
 const UserPlus = IcUserAdd, Bus = IcBus, Lightbulb = IcLightbulb, FileText = IcFile, Clock = IcClock, Download = IcDownload, ClipboardList = IcClipboard, ShoppingCart = IcCart, Wallet = IcWallet, LayoutGrid = IcGrid, BookOpen = IcBookOpen, ScanLine = IcScan, HelpCircle = IcHelp, Settings = IcSettings;
 import { useRedBookGestures } from '../hooks/useRedBookGestures';
+import { routes } from '../routes';
 interface DrawerProps {
     isOpen: boolean;
 }
 
 export const Drawer: React.FC<DrawerProps> = ({ isOpen }) => {
-    const { bindTap, bindBack } = useRedBookGestures();
+    const { bindNav, bindBack } = useRedBookGestures();
     const s = useRedBookStrings();
 
     if (!isOpen) return null;
@@ -40,7 +41,7 @@ export const Drawer: React.FC<DrawerProps> = ({ isOpen }) => {
                 <div className="h-full overflow-y-auto pt-20 px-3 no-scrollbar pb-[150px]">
                     {/* Group 1 */}
                     <div className="bg-app-surface rounded-xl mb-5 overflow-hidden">
-                        <DrawerItem icon={UserPlus} label={s.discover_friends} {...bindTap('addFriend.open.fromDrawer')} />
+                        <DrawerItem icon={UserPlus} label={s.discover_friends} {...bindNav(routes.addfriend, { replace: true })} />
                     </div>
 
                     {/* Group 2 */}
@@ -59,7 +60,7 @@ export const Drawer: React.FC<DrawerProps> = ({ isOpen }) => {
                     {/* Group 4 */}
                     <div className="bg-app-surface rounded-xl mb-5 overflow-hidden">
                         <DrawerItem icon={FileText} label={s.my_drafts} />
-                        <DrawerItem icon={Clock} label={s.history} {...bindTap('history.open.fromDrawer')} />
+                        <DrawerItem icon={Clock} label={s.history} {...bindNav(routes.history, { replace: true })} />
                         <DrawerItem icon={Download} label={s.my_downloads} />
                     </div>
                     
@@ -91,7 +92,7 @@ export const Drawer: React.FC<DrawerProps> = ({ isOpen }) => {
                         </div>
                         <span className="text-[12px] font-medium">{s.help_and_support}</span>
                     </div>
-                    <div className="flex flex-col items-center gap-2 text-gray-600" {...bindTap('settings.open.fromDrawer')}>
+                    <div className="flex flex-col items-center gap-2 text-gray-600" {...bindNav(routes.settings, { replace: true })}>
                         <div className="w-11 h-11 rounded-full bg-app-surface flex items-center justify-center shadow-sm active:scale-95 transition-transform">
                             <Settings size={22} className="text-gray-700" />
                         </div>

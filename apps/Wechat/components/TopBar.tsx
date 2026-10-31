@@ -8,6 +8,7 @@ import { selectMomentDraft, useWechatStore } from '../state';
 import { useWechatGestures } from '../hooks/useWechatGestures';
 import { useLocale } from '@/os/locale';
 import { resolveChatPeerByWxid } from '../utils/resolveChatPeer';
+import { routes } from '../routes';
 const POST_MOMENT_TRY_EXIT_EVENT = 'wechat:postMoment:tryExit';
 const POST_TEXT_MOMENT_TRY_EXIT_EVENT = 'wechat:postTextMoment:tryExit';
 
@@ -42,7 +43,7 @@ const TopBar: React.FC = () => {
     const contacts = useWechatStore(s => s.contacts);
     const rightAction = useWechatStore(s => s._temp.rightAction);
     const momentDraft = useWechatStore(selectMomentDraft);
-    const { bindTap, bindLongPress, bindBack, go } = useWechatGestures();
+    const { bindTap, bindLongPress, bindBack, nav, bindNav } = useWechatGestures();
     const cameraLongPressTriggeredRef = React.useRef(false);
 
     const searchParams = new URLSearchParams(location.search);
@@ -172,23 +173,23 @@ const TopBar: React.FC = () => {
     }
 
     if (['/', '/contacts', '/discover'].includes(path)) {
-        // 规范：避免 bindTap(变量ID)，用字面量绑定，确保静态工具可发现入口。
         const plusMenuTapProps =
-            path === '/' ? bindTap<HTMLDivElement>('home.menu.plus.open', { stopPropagation: true }) :
-            path === '/contacts' ? bindTap<HTMLDivElement>('contacts.menu.plus.open', { stopPropagation: true }) :
-            path === '/discover' ? bindTap<HTMLDivElement>('discover.menu.plus.open', { stopPropagation: true }) :
+            path === '/' ? bindNav(routes.home, { search: { menu: 'plus' }, stopPropagation: true }) :
+            path === '/contacts' ? bindNav(routes.contacts, { search: { menu: 'plus' }, stopPropagation: true }) :
+            path === '/discover' ? bindNav(routes.discover, { search: { menu: 'plus' }, stopPropagation: true }) :
             null;
         rightContent = (
             <div className="flex items-center gap-4 relative">
                 <div
-                    {...bindTap<HTMLDivElement>('search.open')}
+                    {...bindNav(routes.search)}
                     className="text-app-text active:opacity-60 cursor-pointer"
                 >
                     <IcSearch size={dimens.icSizeToolbar} />
                 </div>
                 {plusMenuTapProps ? (
                     <div
-                        {...plusMenuTapProps}
+                        // While the menu is open the button does nothing (it does not stack a second menu).
+                        {...(showPlusMenu ? {} : plusMenuTapProps)}
                         className="text-app-text active:opacity-60 cursor-pointer"
                     >
                         <IcAddCircle size={dimens.icSizeToolbar} />
@@ -202,15 +203,16 @@ const TopBar: React.FC = () => {
             (momentDraft.selectedImages?.length ?? 0) > 0 ||
             Boolean(momentDraft.location);
 
-        const cameraLongPressProps = bindLongPress<HTMLDivElement>('moments.post.open.longPress', {
+        const cameraLongPressProps = bindLongPress<HTMLDivElement>('nav.postTextMoment', {
             duration: 800,
+            onTrigger: () => nav.push(routes.postTextMoment),
             onLongPressEnd: (_event, triggered) => {
                 if (triggered) cameraLongPressTriggeredRef.current = true;
             },
         });
         const cameraTapBinding = hasMomentDraft
-            ? bindTap<HTMLDivElement>('moments.post.open.fromDraft')
-            : bindTap<HTMLDivElement>('moments.menu.camera.open');
+            ? bindNav(routes.postMoment)
+            : bindNav(routes.moments, { search: { menu: 'camera' } });
 
         const { onClick: triggerTap, ...cameraTapProps } = cameraTapBinding;
         rightContent = (
@@ -256,7 +258,7 @@ const TopBar: React.FC = () => {
                 const canOpenFriendSettings = !!targetId && targetId !== user.wxid;
                 rightContent = canOpenFriendSettings ? (
                     <div
-                        {...bindTap<HTMLDivElement>('friendSettings.open', { params: { id: targetId } })}
+                        {...bindNav(routes.friendSettings, { params: { id: targetId } })}
                         className="text-app-text active:opacity-60 cursor-pointer"
                     >
                         <IcMore size={dimens.icSizeTab} />
@@ -265,7 +267,7 @@ const TopBar: React.FC = () => {
             } else if (path.startsWith('/chat/')) {
                 rightContent = chatId ? (
                     <div
-                        {...bindTap<HTMLDivElement>('chatInfo.open', { params: { id: chatId } })}
+                        {...bindNav(routes.chatInfo, { params: { id: chatId } })}
                         className="text-app-text active:opacity-60 cursor-pointer"
                     >
                         <IcMore size={dimens.icSizeTab} />

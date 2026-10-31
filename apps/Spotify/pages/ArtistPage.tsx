@@ -13,6 +13,7 @@ import { loadArtistTracks } from '../data/loader';
 import { inferLargeArtworkUrl } from '../utils/artwork';
 import { searchITunes } from '../utils/itunes';
 import { int, stream } from '../../../os/RandomService';
+import { routes } from '../routes';
 interface Track {
     id: string;
     title: string;
@@ -28,7 +29,7 @@ export const ArtistPage: React.FC = () => {
     const { name } = useParams<{ name: string }>();
     const locale = useLocale();
     const isEnglish = locale === 'en';
-    const { bindBack, bindTap, back } = useSpotifyGestures();
+    const { bindBack, bindTap, back, bindNav } = useSpotifyGestures();
     const s = useSpotifyStrings();
     const currentTrack = useSpotifyStore(s => s.currentTrack);
     const playTrack = useSpotifyStore(s => s.playTrack);
@@ -318,10 +319,7 @@ export const ArtistPage: React.FC = () => {
 
                                 {/* Menu */}
                                 <button
-                                    {...bindTap('artist.trackMenu.open', {
-                                        params: { trackId: track.id, name: name ?? '' },
-                                        stopPropagation: true,
-                                    })}
+                                    {...bindNav(routes.artist, { params: { name: name ?? '' }, search: { sheet: 'track_menu', trackId: track.id }, stopPropagation: true })}
                                     className="p-2"
                                 >
                                     <IcMoreVertical size={24} className="text-gray-400" />
@@ -355,8 +353,8 @@ export const ArtistPage: React.FC = () => {
                             },
                         },
                     )}
-                    addToPlaylistProps={bindTap('artist.addPlaylist.open', { params: { trackId: menuTrack.id, name: name ?? '' }, stopPropagation: true })}
-                    createJamProps={bindTap('tab.premium')}
+                    addToPlaylistProps={bindNav(routes.artist, { params: { name: name ?? '' }, search: { sheet: 'add_playlist', trackId: menuTrack.id }, replace: true, stopPropagation: true })}
+                    createJamProps={bindNav(routes.premium, { replace: true })}
                     addToQueueProps={bindTap(
                         { kind: 'action', id: 'track.queue.add' },
                         {
@@ -368,8 +366,8 @@ export const ArtistPage: React.FC = () => {
                             },
                         },
                     )}
-                    goToAlbumProps={bindTap('playlist.open', { params: { id: String(menuTrack.id) } })}
-                    goToArtistProps={bindTap('artist.open', { params: { name: String(menuTrack.artist) } })}
+                    goToAlbumProps={bindNav(routes.playlist, { params: { id: String(menuTrack.id) } })}
+                    goToArtistProps={bindNav(routes.artist, { params: { name: String(menuTrack.artist) } })}
                 />
             )}
             {menuTrack && (

@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { IcNavBack } from '../res/icons';
 import { useRailwayGestures } from '../hooks/useRailwayGestures';
-import { useAppNavigate } from '../navigation';
 import { useRailwayStore } from '../state';
 import { Slider } from '@/os/components/Slider';
+import { routes } from '../routes';
 
 const FONT_SIZE_OPTIONS = ['small', 'medium', 'large'] as const;
 const FONT_SIZE_INDEX: Record<string, number> = {
@@ -13,8 +13,7 @@ const FONT_SIZE_INDEX: Record<string, number> = {
 };
 
 export const FontSizePage: React.FC = () => {
-  const { bindBack } = useRailwayGestures();
-  const { go } = useAppNavigate();
+  const { bindBack, nav } = useRailwayGestures();
   const settings = useRailwayStore(s => s.settings);
   const updateSettings = useRailwayStore(s => s.updateSettings);
   const [fontSize, setFontSize] = useState(FONT_SIZE_INDEX[settings.fontSize] ?? 1); // 0=小, 1=标准, 2=大
@@ -118,14 +117,14 @@ export const FontSizePage: React.FC = () => {
       <div className="px-6 mt-6">
         <button
           className="w-full py-3 bg-app-primary rounded-lg text-white text-base font-medium"
-          data-trigger="fontSize.switchNow"
+          data-trigger="nav.home"
           data-trigger-type="tap"
           onClick={() => {
             updateSettings({
               fontSize: FONT_SIZE_OPTIONS[fontSize] ?? 'medium',
               highContrast,
             });
-            go('fontSize.switchNow', {}, { popTo: '/my' });
+            nav.replace(routes.home, {}, { popTo: '/my' });
           }}
         >
           立即切换

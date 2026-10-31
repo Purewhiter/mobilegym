@@ -13,21 +13,22 @@ import {
   IcRadio,
   IcShieldOff,
 } from '../res/icons';
+import { routes } from '../routes';
 
 export const SettingsPrivacyPage: React.FC = () => {
   const user = useXStore(selectUser);
-  const { bindBack, go } = useXGestures();
+  const { bindBack, nav } = useXGestures();
   const isEnglish = useLocale() === 'en';
 
   const items = [
-    { icon: <IcContacts size={22} />, title: isEnglish ? 'Audience and tagging' : '受众和圈人', description: isEnglish ? 'Manage what information you allow other people on X to see.' : '管理你允许其他人在 X 上看到的信息。', tapId: 'settings.privacy.audience.open' },
-    { icon: <IcFileText size={22} />, title: isEnglish ? 'Your posts' : '你的帖子', description: isEnglish ? 'Manage information associated with your posts.' : '管理与你的帖子相关的信息。', tapId: 'settings.privacy.yourPosts.open' },
-    { icon: <IcEye size={22} />, title: isEnglish ? 'Content you see' : '你看到的内容', description: isEnglish ? 'Decide what content you see on X based on your preferences.' : '根据你的偏好决定你在 X 上看到的内容。', tapId: 'settings.seen.open' },
+    { icon: <IcContacts size={22} />, title: isEnglish ? 'Audience and tagging' : '受众和圈人', description: isEnglish ? 'Manage what information you allow other people on X to see.' : '管理你允许其他人在 X 上看到的信息。', tapId: routes.settingsPrivacyAudience },
+    { icon: <IcFileText size={22} />, title: isEnglish ? 'Your posts' : '你的帖子', description: isEnglish ? 'Manage information associated with your posts.' : '管理与你的帖子相关的信息。', tapId: routes.settingsPrivacyYourPosts },
+    { icon: <IcEye size={22} />, title: isEnglish ? 'Content you see' : '你看到的内容', description: isEnglish ? 'Decide what content you see on X based on your preferences.' : '根据你的偏好决定你在 X 上看到的内容。', tapId: routes.settingsPrivacySeen },
     { icon: <IcShieldOff size={22} />, title: isEnglish ? 'Mute and block' : '隐藏和屏蔽', description: isEnglish ? 'Manage the accounts, words, and notifications you have muted or blocked.' : '管理你已隐藏或屏蔽的账号、词语和通知。', tapId: null },
-    { icon: <IcMessage size={22} />, title: isEnglish ? 'Direct Messages' : '聊天', description: isEnglish ? 'Manage who can message you directly.' : '管理谁可以直接私信你。', tapId: 'settings.privacy.chat.open' },
-    { icon: <IcRadio size={22} />, title: isEnglish ? 'Spaces' : '空间', description: isEnglish ? 'Manage your Spaces activity.' : '管理你的空间活动。', tapId: 'settings.privacy.space.open' },
-    { icon: <IcLink size={22} />, title: isEnglish ? 'Discoverability and contacts' : '允许认识我的人找到我和联系人', description: isEnglish ? 'Control whether people who know you can find you, and manage imported contacts.' : '控制认识你的人是否能找到你，并管理已导入的联系人。', tapId: 'settings.privacy.findContacts.open' },
-    { icon: <IcInfo size={22} />, title: isEnglish ? 'About your account' : '关于你的账号', description: isEnglish ? 'Manage location information related to your account.' : '管理与你的账号关联的位置信息。', tapId: 'settings.privacy.aboutAccount.open' },
+    { icon: <IcMessage size={22} />, title: isEnglish ? 'Direct Messages' : '聊天', description: isEnglish ? 'Manage who can message you directly.' : '管理谁可以直接私信你。', tapId: routes.settingsPrivacyChat },
+    { icon: <IcRadio size={22} />, title: isEnglish ? 'Spaces' : '空间', description: isEnglish ? 'Manage your Spaces activity.' : '管理你的空间活动。', tapId: routes.settingsPrivacySpace },
+    { icon: <IcLink size={22} />, title: isEnglish ? 'Discoverability and contacts' : '允许认识我的人找到我和联系人', description: isEnglish ? 'Control whether people who know you can find you, and manage imported contacts.' : '控制认识你的人是否能找到你，并管理已导入的联系人。', tapId: routes.settingsPrivacyFindContacts },
+    { icon: <IcInfo size={22} />, title: isEnglish ? 'About your account' : '关于你的账号', description: isEnglish ? 'Manage location information related to your account.' : '管理与你的账号关联的位置信息。', tapId: routes.settingsPrivacyAboutAccount },
   ];
 
   return (
@@ -52,7 +53,7 @@ export const SettingsPrivacyPage: React.FC = () => {
             key={idx}
             className="flex cursor-pointer items-start px-4 py-4 transition-colors active:bg-gray-50"
             onClick={() => {
-              if (item.tapId) go(item.tapId as Parameters<typeof go>[0]);
+              if (item.tapId) nav.push(item.tapId);
             }}
           >
             <div className="mr-4 mt-0.5 shrink-0 text-gray-500">{item.icon}</div>

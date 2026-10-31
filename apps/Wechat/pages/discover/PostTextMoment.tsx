@@ -5,12 +5,13 @@ import { useWechatStore } from '../../state';
 import { useShallow } from 'zustand/react/shallow';
 import { useWechatGestures } from '../../hooks/useWechatGestures';
 import { useWechatStrings } from '../../hooks/useWechatStrings';
+import { routes } from '../../routes';
 
 const POST_TEXT_MOMENT_TRY_EXIT_EVENT = 'wechat:postTextMoment:tryExit';
 
 export const PostTextMomentPage: React.FC = () => {
   const t = useWechatStrings();
-  const { bindTap, back } = useWechatGestures();
+  const { bindNav, back } = useWechatGestures();
   const {
     textMomentDraft,
     updateTextMomentDraft,
@@ -110,7 +111,7 @@ export const PostTextMomentPage: React.FC = () => {
       {/* 选项列表 - 位于中间位置 */}
       <div className="border-t border-app-border mx-4">
         <div
-          {...bindTap<HTMLDivElement>('selectLocation.open', { params: { target: 'text' } })}
+          {...bindNav(routes.selectLocation, { search: { target: 'text' } })}
           className="flex items-center py-4 active:bg-(--app-c-tw-bg-gray-50) cursor-pointer border-b border-(--app-c-tw-border-gray-100)"
         >
           <IcLocation size={dimens.icSizeCheck} className={textMomentDraft.location ? 'text-app-primary' : 'text-(--app-c-common-text-secondary)'} strokeWidth={1.5} />

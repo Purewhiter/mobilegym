@@ -66,6 +66,7 @@ import { RechargeCardPage } from './pages/RechargeCardPage';
 import { SubscriptionsPage } from './pages/SubscriptionsPage';
 import { RefundPage } from './pages/RefundPage';
 import { ScanPage } from './pages/ScanPage';
+import { routes } from './routes';
 
 
 // Icon mapping for dynamic icons from config
@@ -86,7 +87,7 @@ const TabBar: React.FC = () => {
   const activeTab = TAB_PATH_TO_ID[pathname] ?? '';
   const conversations = useAlipayStore(s => s.conversations);
   const chatHistory = useAlipayStore(s => s.chatHistory);
-  const { bindTap } = useAlipayGestures();
+  const { bindNav } = useAlipayGestures();
   const s = useAlipayStrings();
   const locale = useLocale();
   const isEnglish = locale === 'en';
@@ -109,14 +110,14 @@ const TabBar: React.FC = () => {
               key={tab.id}
               className="flex flex-col items-center justify-center py-1 px-2 relative"
               {...(tab.id === 'home'
-                ? bindTap<HTMLButtonElement>('tab.home')
+                ? bindNav(routes.home, { replace: true })
                 : tab.id === 'finance'
-                  ? bindTap<HTMLButtonElement>('tab.finance')
+                  ? bindNav(routes.finance, { replace: true })
                   : tab.id === 'video'
-                    ? bindTap<HTMLButtonElement>('tab.video')
+                    ? bindNav(routes.video, { replace: true })
                     : tab.id === 'messages'
-                      ? bindTap<HTMLButtonElement>('tab.messages')
-                      : bindTap<HTMLButtonElement>('tab.my'))}
+                      ? bindNav(routes.messages, { replace: true })
+                      : bindNav(routes.my, { replace: true }))}
             >
             <div className="relative">
               {tab.id === 'home' ? (

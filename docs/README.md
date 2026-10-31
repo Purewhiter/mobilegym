@@ -27,7 +27,7 @@ For implementation-level rules and contracts — when you're extending the simul
 | OS internals — TaskManager, BackDispatcher, IntentResolver, lifecycle | [`platform/os/overview.md`](platform/os/overview.md) |
 | App module contract — how apps integrate, file conventions, runtime hooks | [`platform/app/module-contract.md`](platform/app/module-contract.md) |
 | State model — layered runtime/world data, snapshots, diffs, side effects | [`platform/state/model.md`](platform/state/model.md) |
-| Declarative navigation — FSM, transitions, actions, graph generation | [`platform/navigation/declaration.md`](platform/navigation/declaration.md) |
+| Navigation — route tables, jumps, exploring an app's graph | [`platform/navigation/routes.md`](platform/navigation/routes.md) |
 | Intent system — cross-app calls, launchMode, choosers | [`platform/os/intent-system.md`](platform/os/intent-system.md) |
 | Cross-app launch — Task/back-stack traces, `openApp`, `newTask` | [`platform/os/cross-app-launch.md`](platform/os/cross-app-launch.md) |
 | OS services — Time, Location, Network, SMS, Display, Clipboard, etc. | [`platform/os/services/README.md`](platform/os/services/README.md) |

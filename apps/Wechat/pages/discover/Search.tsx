@@ -8,6 +8,7 @@ import { useWechatStore } from '../../state';
 import { matchContact } from '../../utils/pinyinSearch';
 import { SEARCHABLE_FEATURES, type SearchableFeature } from '../../constants';
 import type { UserSettings } from '../../types';
+import { routes } from '../../routes';
 
 /**
  * 按点分隔路径读取 settings 下的 boolean,仅支持 'settings.*' 前缀。
@@ -40,7 +41,7 @@ const SearchSectionHeader: React.FC<{ title: string }> = ({ title }) => (
 
 export const SearchPage: React.FC = () => {
   const t = useWechatStrings();
-  const { bindBack, bindTap } = useWechatGestures();
+  const { bindBack, bindTap, bindNav } = useWechatGestures();
   const contacts = useWechatStore(s => s.contacts);
   const settings = useWechatStore(s => s.settings);
   const [query, setQuery] = useState('');
@@ -57,11 +58,7 @@ export const SearchPage: React.FC = () => {
   }, [query, t]);
 
   /**
-   * 为 feature 行绑定 tap。
-   *
-   * Transition id 必须是 bind 点的字面量(CLAUDE.md §DOM Tagging),
-   * 因此在这里对 feature.id 做 switch;新增 feature 时在此追加 case。
-   * 字面量与 constants.ts 中 SEARCHABLE_FEATURES[*].gate.enabledTransitionId / disabledTransitionId 保持同步。
+   * 为 feature 行绑定 tap:按 feature.id 选择跳转目标;新增 feature 时在此追加 case。
    */
   const bindFeatureTap = (f: SearchableFeature) => {
     if (f.gate) {
@@ -69,13 +66,13 @@ export const SearchPage: React.FC = () => {
       switch (f.id) {
         case 'wechatSports':
           return enabled
-            ? bindTap<HTMLDivElement>('discover.search.feature.wechatSports.open')
-            : bindTap<HTMLDivElement>('discover.search.feature.wechatSports.enable.open');
+            ? bindNav(routes.wechatSports)
+            : bindNav(routes.settingsGeneralAccessibilityWechatSports);
       }
     }
     // 未注册的 feature 或未实现的 route-only 分支:返回 undefined 会使点击静默无反应。
-    // 新增 feature 时必须在上方 switch 或下方 TODO 处补写 bindTap 字面量。
-    // TODO: 支持 feature.route + feature.routeTransitionId 的直跳分支。
+    // 新增 feature 时必须在上方 switch 中补写跳转。
+    // TODO: 支持 feature.route 的直跳分支。
     if (import.meta.env.DEV) {
       console.warn(`[Search] feature ${JSON.stringify(f.id)} has no registered bindTap handler`);
     }
@@ -135,7 +132,7 @@ export const SearchPage: React.FC = () => {
               {filteredContacts.map(contact => (
                 <div
                   key={contact.wxid}
-                  {...bindTap<HTMLDivElement>('chat.open', { params: { id: contact.wxid } })}
+                  {...bindNav(routes.chat, { params: { id: contact.wxid } })}
                   className="flex items-center gap-3 px-4 py-2.5 active:bg-black/5 cursor-pointer"
                 >
                   <img

@@ -7,8 +7,8 @@ import { stringsEn } from '../res/strings.en';
 import { useAppStrings } from '@/os/useAppStrings';
 import { useWeatherGestures } from '../hooks/useWeatherGestures';
 import { useWeatherStore } from '../state';
-import type { TransitionId } from '../navigation.declaration';
 import type { WeatherSettings } from '../types';
+import { routes } from '../routes';
 
 type PickerOption = { label: string; value: string; actionId: string };
 
@@ -64,13 +64,13 @@ const UnitPreferenceItem: React.FC<{
   title: string;
   options: PickerOption[];
   settingKey: keyof WeatherSettings;
-  pickerKey: string;
-  transitionId: TransitionId;
+  pickerKey: 'temp' | 'wind' | 'pressure';
   showDivider?: boolean;
+  bindNav: ReturnType<typeof useWeatherGestures>['bindNav'];
   bindTap: ReturnType<typeof useWeatherGestures>['bindTap'];
   bindBack: ReturnType<typeof useWeatherGestures>['bindBack'];
   back: ReturnType<typeof useWeatherGestures>['back'];
-}> = ({ title, options, settingKey, pickerKey, transitionId, showDivider = true, bindTap, bindBack, back }) => {
+}> = ({ title, options, settingKey, pickerKey, showDivider = true, bindNav, bindTap, bindBack, back }) => {
   const [value, setValue] = useWeatherSetting(settingKey);
   const [searchParams] = useSearchParams();
   const open = searchParams.get('picker') === pickerKey;
@@ -89,7 +89,7 @@ const UnitPreferenceItem: React.FC<{
       <div>
         <div
           className="flex items-center px-4 py-3.5 active:bg-gray-50 min-h-[52px] cursor-pointer"
-          {...bindTap<HTMLDivElement>(transitionId)}
+          {...bindNav(routes.settings, { search: { picker: pickerKey } })}
         >
           <div className="flex-1 min-w-0">
             <div className="text-[15px] text-gray-900 leading-tight">{title}</div>
@@ -160,7 +160,7 @@ const lightThemeOverrides: React.CSSProperties = {
 } as React.CSSProperties;
 
 const WeatherSettingsPage: React.FC = () => {
-  const { bindTap, bindBack, back } = useWeatherGestures();
+  const { bindTap, bindBack, back, bindNav } = useWeatherGestures();
   const s = useAppStrings(strings, stringsEn);
 
   const tempOptions: PickerOption[] = useMemo(() => [
@@ -228,7 +228,7 @@ const WeatherSettingsPage: React.FC = () => {
             options={tempOptions}
             settingKey="tempUnit"
             pickerKey="temp"
-            transitionId="settings.picker.temp.open"
+            bindNav={bindNav}
             bindTap={bindTap}
             bindBack={bindBack}
             back={back}
@@ -238,7 +238,7 @@ const WeatherSettingsPage: React.FC = () => {
             options={windOptions}
             settingKey="windUnit"
             pickerKey="wind"
-            transitionId="settings.picker.wind.open"
+            bindNav={bindNav}
             bindTap={bindTap}
             bindBack={bindBack}
             back={back}
@@ -248,7 +248,7 @@ const WeatherSettingsPage: React.FC = () => {
             options={pressureOptions}
             settingKey="pressureUnit"
             pickerKey="pressure"
-            transitionId="settings.picker.pressure.open"
+            bindNav={bindNav}
             bindTap={bindTap}
             bindBack={bindBack}
             back={back}
@@ -268,7 +268,7 @@ const WeatherSettingsPage: React.FC = () => {
           <PreferenceItemNav title={s.settings_feedback} />
           <PreferenceItemNav
             title={s.settings_privacy_policy}
-            itemProps={bindTap<HTMLDivElement>('privacy.open')}
+            itemProps={bindNav(routes.settingsPrivacy)}
           />
           <WeatherSwitchItem
             settingKey="revokeConsent"
@@ -280,7 +280,7 @@ const WeatherSettingsPage: React.FC = () => {
         <PreferenceCategory>
           <PreferenceItemNav
             title={s.settings_privacy_settings}
-            itemProps={bindTap<HTMLDivElement>('privacy.open')}
+            itemProps={bindNav(routes.settingsPrivacy)}
             showDivider={false}
           />
         </PreferenceCategory>

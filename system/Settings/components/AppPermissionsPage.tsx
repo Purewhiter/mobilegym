@@ -9,6 +9,7 @@ import { strings } from '../res/strings';
 import { stringsEn } from '../res/strings.en';
 import { useAppStrings } from '@/os/useAppStrings';
 import { useSettingsGestures } from '../hooks/useSettingsGestures';
+import { routes } from '../routes';
 
 const AppRow: React.FC<{
   appId: string;
@@ -44,7 +45,7 @@ const AppRow: React.FC<{
 };
 
 export const AppPermissionsPage: React.FC = () => {
-  const { bindTap } = useSettingsGestures();
+  const { bindNav } = useSettingsGestures();
   const s = useAppStrings(strings, stringsEn);
 
   const snapshot = useSyncExternalStore(
@@ -90,9 +91,7 @@ export const AppPermissionsPage: React.FC = () => {
               packageName={app.packageName}
               summary={summaryByAppId.get(app.id) || '—'}
               showDivider={index < apps.length - 1}
-              rowProps={bindTap<HTMLDivElement>('page.open', {
-                params: { pageId: `app_permission_detail__${encodeURIComponent(app.id)}` },
-              })}
+              rowProps={bindNav(routes.page, { params: { pageId: `app_permission_detail__${encodeURIComponent(app.id)}` } })}
             />
           ))}
         </PreferenceCategory>

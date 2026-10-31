@@ -11,6 +11,7 @@ import type { TempUnit } from '../types';
 import { convertTemp } from '../utils/unitConversion';
 import { getLocalizedWeatherText } from '../utils/localizedText';
 import { getLocalizedLocationName, getLocalizedWeatherCityName } from '../utils/cityNames';
+import { routes } from '../routes';
 
 type Box = { left: number; top: number; width: number; height: number };
 
@@ -147,7 +148,7 @@ function previewFromBundle(name: string, bundle: any | undefined, tempUnit: Temp
 }
 
 const WeatherCityManagerPage: React.FC = () => {
-  const { bindTap, bindBack } = useWeatherGestures();
+  const { bindNav, bindBack } = useWeatherGestures();
   const s = useAppStrings(strings, stringsEn);
   const weatherState = useWeatherStore();
   const tempUnit = weatherState.settings.tempUnit;
@@ -204,7 +205,7 @@ const WeatherCityManagerPage: React.FC = () => {
       <button
         type="button"
         id="search_bar"
-        {...bindTap<HTMLButtonElement>('city.search.open')}
+        {...bindNav(routes.citiesSearch)}
         style={abs({ left: 0, top: 150.3, width: 360, height: 54.7 })}
         className="z-10 bg-transparent border-0 p-0 m-0"
         aria-label={s.city_manager_search_placeholder}

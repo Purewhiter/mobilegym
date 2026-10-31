@@ -9,6 +9,7 @@ import { parseToTimestamp, now as timeNow, fromTimestamp } from '../../../os/Tim
 import { getOrderPassengerNames } from '../types';
 import { useLocale } from '../../../os/locale';
 import { RefundNoticeDialog } from '../components/RefundNoticeDialog';
+import { routes } from '../routes';
 
 function formatWeekday(dateStr: string, isEnglish: boolean): string {
   const timestamp = parseToTimestamp(`${dateStr}T00:00:00`);
@@ -19,7 +20,7 @@ function formatWeekday(dateStr: string, isEnglish: boolean): string {
 }
 
 export const PaidOrdersPage: React.FC = () => {
-  const { bindBack, bindTap } = useRailwayGestures();
+  const { bindBack, bindNav } = useRailwayGestures();
   const location = useLocation();
   const orders = useRailwayStore(s => s.orders);
   const [activeTab, setActiveTab] = useState<'pending' | 'history'>('pending');
@@ -141,7 +142,7 @@ export const PaidOrdersPage: React.FC = () => {
                     <div
                       key={order.id}
                       className="mx-3 mb-3 rounded-[8px] bg-white overflow-hidden shadow-[0_2px_8px_rgba(0,0,0,0.02)] active:opacity-60 transition-opacity"
-                      {...bindTap('paidOrders.orderDetail', { params: { id: order.id } })}
+                      {...bindNav(routes.orderDetail, { search: { id: order.id } })}
                     >
                       <div className={`px-4 py-3 border-b border-[#F5F5F5] flex items-center text-[15px] font-medium ${isCancelled ? 'text-[#999]' : 'text-[#333]'}`}>
                         <span className={`text-[15px] mr-1.5 flex items-center ${isCancelled ? 'grayscale opacity-60' : ''}`}>🚄</span>
@@ -217,9 +218,7 @@ export const PaidOrdersPage: React.FC = () => {
           cancelLabel={s.action_cancel}
           confirmLabel={s.action_confirm}
           cancelProps={bindBack<HTMLButtonElement>()}
-          confirmProps={bindTap<HTMLButtonElement>('paidOrders.refundConfirm', {
-            params: { id: refundDialogOrderId },
-          })}
+          confirmProps={bindNav(routes.refundConfirm, { search: { id: refundDialogOrderId }, replace: true })}
         />
       )}
     </div>

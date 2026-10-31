@@ -15,7 +15,7 @@ import {
   IcFastPay,
   IcNavForward,
 } from '../res/icons';
-import { useEbayGestures } from '../navigation';
+import { useEbayGestures } from '../hooks/useEbayGestures';
 import { useEbayStrings } from '../hooks/useEbayStrings';
 import { useLocale } from '../../../os/locale';
 import { useEbayProduct } from '../data/loader';

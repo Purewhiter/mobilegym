@@ -10,6 +10,7 @@ import { fromTimestamp, now as timeNow, parseToTimestamp } from '../../../os/Tim
 import { getOrderTotalPrice } from '../types';
 import { localizeRailwayText } from '../utils/localizeRailwayItem';
 import { useLocale } from '../../../os/locale';
+import { routes } from '../routes';
 
 const WEEK_DAYS_EN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const WEEK_DAYS_ZH = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
@@ -45,7 +46,7 @@ function formatDuration(departTime: string, arriveTime: string, isEnglish: boole
 export const IncompleteOrdersPage: React.FC = () => {
   const state = useRailwayStore(useShallow(s => ({ orders: s.orders, passengers: s.passengers })));
   const updateOrder = useRailwayStore(s => s.updateOrder);
-  const { bindBack, go } = useRailwayGestures();
+  const { bindBack, nav } = useRailwayGestures();
   const s = useRailwayStrings();
   const location = useLocation();
   const isEnglish = useLocale() === 'en';
@@ -303,8 +304,8 @@ export const IncompleteOrdersPage: React.FC = () => {
                 onClick={() => {
                   updateOrder(pendingOrder.id, { status: 'cancelled' });
                   setShowCancelConfirm(false);
-                  if (fromOrders) go('incompleteOrders.backOrders');
-                  else go('incompleteOrders.backHome');
+                  if (fromOrders) nav.replace(routes.orders);
+                  else nav.replace(routes.home);
                 }}
               >
                 {s.incomplete_orders_confirm_cancel}
@@ -351,8 +352,8 @@ export const IncompleteOrdersPage: React.FC = () => {
                 className="flex-1 py-3 text-[16px] text-[#4FA4F7] font-medium"
                 onClick={() => {
                   setShowLeaveConfirm(false);
-                  if (fromOrders) go('incompleteOrders.backOrders');
-                  else go('incompleteOrders.backHome');
+                  if (fromOrders) nav.replace(routes.orders);
+                  else nav.replace(routes.home);
                 }}
               >
                 {s.action_confirm}
@@ -486,7 +487,7 @@ export const IncompleteOrdersPage: React.FC = () => {
                   className="w-full h-[46px] rounded-[8px] bg-[#4FA4F7] text-white text-[17px] font-medium"
                   onClick={() => {
                     setShowPaymentSheet(false);
-                    go('incompleteOrders.paymentPlatform.open', { from: fromOrders ? 'orders' : 'home' });
+                    nav.push(routes.paymentPlatform, {}, { search: { from: fromOrders ? 'orders' : 'home' } });
                   }}
                 >
                   {s.incomplete_orders_go_pay}

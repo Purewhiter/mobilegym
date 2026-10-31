@@ -63,6 +63,7 @@ import { SettingsImageQualityPage } from './pages/settings/SettingsImageQualityP
 import { SettingsTimerPage } from './pages/settings/SettingsTimerPage';
 import { SettingsSleepPage } from './pages/settings/SettingsSleepPage';
 import { useLocale } from '@/apps/Bilibili/locale';
+import { routes } from './routes';
 // Standard Navigation Handler as per spec
 const BilibiliNavigationHandler: React.FC = () => {
     const navigate = useNavigate();
@@ -102,7 +103,7 @@ const TabBarItem = ({ active, icon: Icon, label, isBig = false, ...props }: any)
 const Layout = () => {
     const { pathname } = useLocation();
     const [searchParams] = useSearchParams();
-    const { bindTap } = useBilibiliGestures();
+    const { bindNav } = useBilibiliGestures();
     const locale = useLocale();
     const text = locale === 'en'
         ? {
@@ -186,7 +187,7 @@ const Layout = () => {
                     {isHome ? (
                         <TabBarItem active={true} icon={IcTabHome} label={text.home} />
                     ) : (
-                        <TabBarItem active={false} icon={IcTabHome} label={text.home} {...bindTap('tab.home')} />
+                        <TabBarItem active={false} icon={IcTabHome} label={text.home} {...bindNav(routes.home, { search: { tab: 'recommend' }, replace: true })} />
                     )}
                     {isFollowing ? (
                         <TabBarItem active={true} icon={IcTabFollowing} label={text.following} />
@@ -195,19 +196,19 @@ const Layout = () => {
                             active={false}
                             icon={IcTabFollowing}
                             label={text.following}
-                            {...bindTap('tab.following', { params: { tab: lastFollowingTab } })}
+                            {...bindNav(routes.following, { search: { tab: lastFollowingTab === 'video' ? 'video' : 'all' }, replace: true })}
                         />
                     )}
                     <TabBarItem active={false} icon={IcTabPublish} label={text.publish} isBig />
                     {isShop ? (
                         <TabBarItem active={true} icon={IcTabShop} label={text.shop} />
                     ) : (
-                        <TabBarItem active={false} icon={IcTabShop} label={text.shop} {...bindTap('tab.shop')} />
+                        <TabBarItem active={false} icon={IcTabShop} label={text.shop} {...bindNav(routes.shop, { replace: true })} />
                     )}
                     {isMe ? (
                         <TabBarItem active={true} icon={IcTabMe} label={text.me} />
                     ) : (
-                        <TabBarItem active={false} icon={IcTabMe} label={text.me} {...bindTap('tab.me')} />
+                        <TabBarItem active={false} icon={IcTabMe} label={text.me} {...bindNav(routes.me, { replace: true })} />
                     )}
                 </div>
             )}

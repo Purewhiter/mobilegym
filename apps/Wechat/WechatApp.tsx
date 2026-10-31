@@ -92,7 +92,7 @@ import WechatTrustDevicePage from './pages/auth/TrustDevice';
 import WechatDeviceManagementPage from './pages/auth/DeviceManagement';
 import { PaymentConfirmationPage } from './pages/pay/PaymentConfirmationPage';
 import { ShareForwardPage } from './pages/share/ShareForwardPage';
-import { useAppNavigate } from './navigation';
+import { useNav } from '../../os/navigation';
 import { useWechatGestures } from './hooks/useWechatGestures';
 import { useAppNavigationHandler } from '../../os/hooks/useAppNavigationHandler';
 import { AppNavigatorRegistry } from '../../os/AppNavigatorRegistry';
@@ -107,6 +107,7 @@ import { anim } from './res/anim';
 import { dimens } from './res/dimens';
 import { useWechatStore } from './state';
 import * as TimeService from '../../os/TimeService';
+import { routes } from './routes';
 
 const POST_MOMENT_TRY_EXIT_EVENT = 'wechat:postMoment:tryExit';
 const POST_TEXT_MOMENT_TRY_EXIT_EVENT = 'wechat:postTextMoment:tryExit';
@@ -125,7 +126,7 @@ const AuthGuard: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 const WechatNavigationHandler: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { go, back } = useAppNavigate();
+  const nav = useNav(); const back = nav.back;
   const { activityId } = useActivityContext();
   const { navigator } = React.useContext(UNSAFE_NavigationContext);
 
@@ -148,13 +149,13 @@ const WechatNavigationHandler: React.FC = () => {
     const searchParams = new URLSearchParams(location.search);
     const menu = searchParams.get('menu');
     if (location.pathname === '/moments/media-picker' && menu === 'preview') {
-      go('moments.mediaPicker.preview.close');
+      nav.replace(routes.momentsMediaPicker, {}, { search: { menu: null }, keep: ['albumId'] });
       return true;
     }
     if (/^\/chat\/[^/]+\/media-picker$/.test(location.pathname) && menu === 'preview') {
       const chatId = location.pathname.match(/^\/chat\/([^/]+)\/media-picker$/)?.[1];
       if (chatId) {
-        go('chat.mediaPicker.preview.close', { id: chatId });
+        nav.replace(routes.chatMediaPicker, { id: chatId }, { search: { menu: null }, keep: ['albumId'] });
         return true;
       }
     }
@@ -175,7 +176,7 @@ const WechatNavigationHandler: React.FC = () => {
       return true;
     }
     return false;
-  }, [back, go, location.pathname, location.search, navigator]);
+  }, [back, nav, location.pathname, location.search, navigator]);
 
   useEffect(() => {
     // 默认 replace=true（兼容 OS 内部 finishActivity/back 等"重置到根"的旧调用），
@@ -199,7 +200,7 @@ const Layout = () => {
   const t = useWechatStrings();
   const location = useLocation();
   const path = location.pathname;
-  const { bindTap, bindBack } = useWechatGestures();
+  const { bindNav, bindBack, nav } = useWechatGestures();
 
   const searchParams = new URLSearchParams(location.search);
   const isMainTab = ['/', '/contacts', '/discover', '/me'].includes(path);
@@ -314,18 +315,18 @@ const Layout = () => {
             <div className="absolute top-[-6px] right-[10px] w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[6px] border-b-(--app-c-wechat-app-border-bottom-4c4c)"></div>
 
             <div className="flex items-center px-4 py-3 active:bg-white/10 gap-3 border-b border-white/10 cursor-pointer"
-              {...bindTap<HTMLDivElement>('plusMenu.startGroup.open', { stopPropagation: true })}>
+              {...bindNav(routes.startGroup, { replace: true, stopPropagation: true })}>
               <IcMessageSquare size={dimens.icSizePlusMenu} className="text-white" fill="white" />
               <span className="text-white text-(--app-wechat-app-text-size-16)">{t.contacts_start_group}</span>
             </div>
             <div className="flex items-center px-4 py-3 active:bg-white/10 gap-3 border-b border-white/10 cursor-pointer"
-              {...bindTap<HTMLDivElement>('plusMenu.addFriend.open')}>
+              {...bindNav(routes.addFriend, { replace: true })}>
               <IcUserAdd size={dimens.icSizePlusMenu} className="text-white" />
               <span className="text-white text-(--app-wechat-app-text-size-16)">{t.contacts_add_friend}</span>
             </div>
             <div
               className="flex items-center px-4 py-3 active:bg-white/10 gap-3 border-b border-white/10 cursor-pointer"
-              {...bindTap<HTMLDivElement>('plusMenu.scan.open')}
+              {...bindNav(routes.scan, { replace: true })}
             >
               <IcScan size={dimens.icSizePlusMenu} className="text-white" />
               <span className="text-white text-(--app-wechat-app-text-size-16)">{t.discover_scan}</span>
@@ -347,17 +348,14 @@ const Layout = () => {
           ></div>
           <div className="relative bg-(--app-c-chat-input-bar-bg) rounded-t-[12px] overflow-hidden animate-slide-up w-full">
             <button
-              {...bindTap<HTMLButtonElement>('moments.camera.open')}
+              {...bindNav(routes.camera, { replace: true })}
               className="w-full bg-app-surface h-16 flex flex-col items-center justify-center border-b border-(--app-c-tw-border-gray-100) active:bg-(--app-c-tw-bg-gray-50)"
             >
               <span className="text-(--app-title-text-size-17) text-black">{t.moments_shoot}</span>
               <span className="text-(--app-hint-text-size-12) text-(--app-c-tw-text-gray-400)">{t.moments_photo_video}</span>
             </button>
             <button
-              {...bindTap<HTMLButtonElement>('moments.post.open.fromAlbum', {
-                stopPropagation: true,
-                params: { albumId: 'all' },
-              })}
+              {...bindNav(routes.momentsMediaPicker, { search: { albumId: 'all' }, replace: true, stopPropagation: true })}
               className="w-full bg-app-surface h-16 flex items-center justify-center active:bg-(--app-c-tw-bg-gray-50)"
             >
               <span className="text-(--app-title-text-size-17) text-black">{t.moments_from_album}</span>

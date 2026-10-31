@@ -12,6 +12,7 @@ import { XTimelinePostCard } from '../components/XTimelinePostCard';
 import { useElementHeight } from '../hooks/useElementHeight';
 import { useVirtualList } from '../../../os/hooks/useVirtualList';
 import { getNextTimelineTopBarVisibility } from '../utils/topBarVisibility';
+import { routes } from '../routes';
 
 export const HomePage: React.FC<{ isActive?: boolean }> = ({ isActive = true }) => {
   const { forYou: posts, following: followingPosts } = useXHomeTimelines();
@@ -20,7 +21,7 @@ export const HomePage: React.FC<{ isActive?: boolean }> = ({ isActive = true }) 
   const toggleFollow = useXStore(s => s.toggleFollow);
   const toggleRetweet = useXStore(s => s.toggleRetweet);
   const location = useLocation();
-  const { bindTap, go } = useXGestures(isActive);
+  const { bindTap, nav, bindNav } = useXGestures(isActive);
   const s = useXStrings();
   const [retweetMenuPostId, setRetweetMenuPostId] = useState<string | null>(null);
   const [showBookmarkToast, setShowBookmarkToast] = useState(false);
@@ -85,7 +86,7 @@ export const HomePage: React.FC<{ isActive?: boolean }> = ({ isActive = true }) 
         }`}
       >
         <div className="flex items-center justify-between px-4 py-2">
-          <div className="w-8 h-8 rounded-full bg-gray-200 overflow-hidden cursor-pointer" {...bindTap('home.drawer.open')}>
+          <div className="w-8 h-8 rounded-full bg-gray-200 overflow-hidden cursor-pointer" {...bindNav(routes.home, { search: { menu: 'drawer' }, keep: ['tab'] })}>
             {user.avatar ? (
               <XImage src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
             ) : (
@@ -101,14 +102,14 @@ export const HomePage: React.FC<{ isActive?: boolean }> = ({ isActive = true }) 
         <div className="flex border-b border-app-border">
           <div
             className={`flex-1 text-center py-3 cursor-pointer hover:bg-black/5 transition relative ${activeTab === 'foryou' ? 'font-bold' : 'text-gray-500'}`}
-            {...bindTap('home.feed.tab.toForyou')}
+            {...bindNav(routes.home, { search: { tab: 'foryou' }, replace: true })}
           >
             {s.home_tab_foryou}
             {activeTab === 'foryou' && <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-14 h-1 bg-blue-500 rounded-full" />}
           </div>
           <div
             className={`flex-1 text-center py-3 cursor-pointer hover:bg-black/5 transition relative ${activeTab === 'following' ? 'font-bold' : 'text-gray-500'}`}
-            {...bindTap('home.feed.tab.toFollowing')}
+            {...bindNav(routes.home, { search: { tab: 'following' }, replace: true })}
           >
             {s.home_tab_following}
             {activeTab === 'following' && <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-14 h-1 bg-blue-500 rounded-full" />}
@@ -189,7 +190,7 @@ export const HomePage: React.FC<{ isActive?: boolean }> = ({ isActive = true }) 
       </div>
 
       <div
-        {...bindTap('compose.open')}
+        {...bindNav(routes.compose)}
         className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] right-4 w-14 h-14 bg-blue-500 rounded-full flex items-center justify-center text-3xl shadow-lg cursor-pointer z-50"
       >
         +
@@ -200,9 +201,9 @@ export const HomePage: React.FC<{ isActive?: boolean }> = ({ isActive = true }) 
         onClose={() => setRetweetMenuPostId(null)}
         onRetweet={toggleRetweet}
         onQuote={(postId) => {
-          go('compose.open', { quotedPostId: postId });
+          nav.push(routes.compose, {}, { search: { quotedPostId: postId } });
         }}
-        onViewActivity={(postId) => go('status.activity.open', { id: postId })}
+        onViewActivity={(postId) => nav.push(routes.statusActivity, { id: postId }, { search: { tab: 'quotes' } })}
       />
 
       <BookmarkToast visible={showBookmarkToast} onClose={() => setShowBookmarkToast(false)} />

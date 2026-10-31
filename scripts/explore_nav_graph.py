@@ -1,7 +1,9 @@
 """Explore an app's navigation on a running simulator and write the graph it finds.
 
-From every reachable URL, tap each tagged element (data-trigger / data-action),
-record the URL it lands on, then press system back and record where that lands.
+From every reachable URL, tap each tagged element (data-trigger / data-action)
+at its centre, as an agent tapping the screen would (elements under an overlay
+are recorded as COVERED), record the URL it lands on, then press system back
+and record where that lands.
 Elements are keyed by kind + visible text (+ occurrence index), not by trigger
 id, so graphs from two builds can be compared even when ids change:
 
@@ -36,10 +38,18 @@ LIST_JS = """() => {
   });
 }"""
 
-CLICK_JS = """(i) => {
+# Bring the element to the middle of the screen and return its centre if a tap
+# there would hit it (not an overlay, dialog backdrop or drawer above it).
+LOCATE_JS = """(i) => {
   const els = [...document.querySelectorAll('[data-trigger],[data-action]')]
     .filter(e => e.offsetParent && e.getBoundingClientRect().width > 0);
-  els[i].click();
+  const e = els[i];
+  e.scrollIntoView({ block: 'center', inline: 'center' });
+  const r = e.getBoundingClientRect();
+  const x = r.left + r.width / 2, y = r.top + r.height / 2;
+  if (x < 0 || y < 0 || x > innerWidth || y > innerHeight) return null;
+  const top = document.elementFromPoint(x, y);
+  return top && (top === e || e.contains(top)) ? [x, y] : null;
 }"""
 
 
@@ -71,7 +81,10 @@ async def explore(url: str, app: str, max_states: int, max_taps: int, wait_ms: i
             hit = next((it for it in items if it["key"] == key), None)
             if hit is None:
                 return False
-            await page.evaluate(CLICK_JS, hit["idx"])
+            point = await page.evaluate(LOCATE_JS, hit["idx"])
+            if point is None:
+                return False
+            await page.mouse.click(point[0], point[1])
             await page.wait_for_timeout(wait_ms)
             return True
 
@@ -98,7 +111,7 @@ async def explore(url: str, app: str, max_states: int, max_taps: int, wait_ms: i
                     break
                 edge = f"{state} :: {item['key']}"
                 if not await tap(item["key"]):
-                    edges[edge] = "MISSING"
+                    edges[edge] = "COVERED"  # missing, or under an overlay: a real tap cannot reach it
                     continue
                 after = await page.evaluate(route_js)
                 await page.evaluate("() => window.__OS__.handleBack()")

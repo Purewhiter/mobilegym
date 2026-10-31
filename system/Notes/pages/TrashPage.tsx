@@ -12,6 +12,7 @@ import { stringsEn } from '../res/strings.en';
 import { useAppStrings } from '../../../os/useAppStrings';
 import type { Note } from '../types';
 import { useNotesGestures } from '../hooks/useNotesGestures';
+import { routes } from '../routes';
 function formatTime(ts: number) {
   const d = TimeService.fromTimestamp(ts);
   const y = d.getFullYear();
@@ -61,7 +62,7 @@ const TrashCard: React.FC<{
 };
 
 export const TrashPage: React.FC = () => {
-  const { go, bindBack } = useNotesGestures();
+  const { nav, bindBack } = useNotesGestures();
   const trashedNotes = useNotesStore(selectTrashedNotes);
   const restoreNote = useNotesStore(s => s.restoreNote);
   const deleteNoteForever = useNotesStore(s => s.deleteNoteForever);
@@ -140,7 +141,7 @@ export const TrashPage: React.FC = () => {
               <TrashCard
                 key={n.id}
                 note={n}
-                onOpen={() => go('note.open', { id: n.id })}
+                onOpen={() => nav.push(routes.note, { id: n.id })}
                 onActions={() => setActive(n)}
               />
             ))

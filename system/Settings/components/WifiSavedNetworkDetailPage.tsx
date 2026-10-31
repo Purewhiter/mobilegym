@@ -1,6 +1,6 @@
 import React, { useMemo, useRef, useState } from 'react';
 import { SettingsHeader } from './SettingsHeader';
-import { useAppNavigate } from '../navigation';
+import { useNav } from '../../../os/navigation';
 import { PreferenceCategory } from './PreferenceCategory';
 import { PreferenceItem } from './PreferenceItem';
 import { Toast } from '@/os/components/Toast';
@@ -15,7 +15,7 @@ import { stringsEn } from '../res/strings.en';
 import { useAppStrings } from '@/os/useAppStrings';
 
 export const WifiSavedNetworkDetailPage: React.FC<{ ssid: string }> = ({ ssid }) => {
-  const { back } = useAppNavigate();
+  const nav = useNav(); const back = nav.back;
   const s = useAppStrings(strings, stringsEn);
   const savedNetworks = useWifiSavedNetworks();
   const connectedSsid = useWifiConnectedSsid();

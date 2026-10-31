@@ -11,6 +11,7 @@ import { colors } from '../res/colors';
 import { IcNavForward, IcSymbolAdd, IcSymbolExpandMore, IcSymbolFavorites, IcSymbolFavoritesFill, IcSymbolSearch, IcSymbolSettings } from '../res/icons';
 import { strings } from '../res/strings';
 import { stringsEn } from '../res/strings.en';
+import { routes } from '../routes';
 
 function deriveSectionKey(contact: Contact): string {
   const explicit = (contact.sectionKey ?? '').trim();
@@ -101,7 +102,7 @@ export const ContactsPage: React.FC = () => {
   const locale = useLocale();
   const isEnglish = locale === 'en';
   const contacts = useContactsList();
-  const { bindTap, go } = useContactsGestures();
+  const { bindNav, nav } = useContactsGestures();
   const [searchParams] = useSearchParams();
   const favOnly = searchParams.get('fav') === 'true';
   const s = useAppStrings(strings, stringsEn);
@@ -163,7 +164,7 @@ export const ContactsPage: React.FC = () => {
     sectionRefs.current[key]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
-  const favoriteToggleProps = favOnly ? bindTap('contacts.favorites.off') : bindTap('contacts.favorites.on');
+  const favoriteToggleProps = favOnly ? bindNav(routes.contacts, { replace: true }) : bindNav(routes.contacts, { search: { fav: 'true' }, replace: true });
 
   return (
     <div className="h-full w-full bg-app-surface relative flex flex-col">
@@ -176,7 +177,7 @@ export const ContactsPage: React.FC = () => {
           <button
             type="button"
             aria-label={isEnglish ? 'Settings' : '设置'}
-            {...bindTap('settings.open.contacts')}
+            {...bindNav(routes.settingsContacts)}
             className="absolute right-5 top-2 w-10 h-10 rounded-full flex items-center justify-center active:bg-black/5"
           >
             <SymbolIcon name={IcSymbolSettings} size={24} className="text-gray-700" />
@@ -186,7 +187,7 @@ export const ContactsPage: React.FC = () => {
         <div className="px-6 pb-2">
           <button
             type="button"
-            {...bindTap('search.open')}
+            {...bindNav(routes.search)}
             className="w-full h-11 rounded-full bg-black/5 flex items-center px-4 text-[16px] text-gray-400 active:bg-black/10 text-left"
           >
             <SymbolIcon name={IcSymbolSearch} size={18} className="text-gray-400 mr-2" />
@@ -254,7 +255,7 @@ export const ContactsPage: React.FC = () => {
                   onClick={() => {
                     // Browsing to a contact is not contacting them -- see the
                     // note in SearchPage.openContact.
-                    go('contact.open', { contactId: contact.id });
+                    nav.push(routes.contact, { contactId: contact.id });
                   }}
                 />
               ))}
@@ -265,7 +266,7 @@ export const ContactsPage: React.FC = () => {
 
       <AlphabetIndex keys={sectionKeys.indexKeys} onPick={scrollTo} />
 
-      <ContactsFab label={isEnglish ? 'Create contact' : '新建联系人'} tapProps={bindTap('contact.new.open')} />
+      <ContactsFab label={isEnglish ? 'Create contact' : '新建联系人'} tapProps={bindNav(routes.contactsNew)} />
     </div>
   );
 };

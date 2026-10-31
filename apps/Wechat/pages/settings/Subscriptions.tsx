@@ -3,14 +3,13 @@ import * as TimeService from '../../../../os/TimeService';
 import { IcNavForward } from '../../res/icons';
 import { useWechatGestures } from '../../hooks/useWechatGestures';
 import { useWechatStore } from '../../state';
-import { useAppNavigate } from '../../navigation';
 import { useLocale } from '@/os/locale';
 import { useWechatStrings } from '../../hooks/useWechatStrings';
+import { routes } from '../../routes';
 
 export const SubscriptionsPage: React.FC = () => {
   const t = useWechatStrings();
-  const { go } = useAppNavigate();
-  const { bindTap } = useWechatGestures();
+  const { bindTap, nav } = useWechatGestures();
   const locale = useLocale();
   const subs = useWechatStore(s => s.subscriptions);
   const formatActivatedAt = (timestamp: number) => {
@@ -39,8 +38,8 @@ export const SubscriptionsPage: React.FC = () => {
                 key={s.id}
                 className="flex items-center p-4 active:bg-gray-50 border-b border-gray-50 last:border-none cursor-pointer"
                 {...bindTap<HTMLDivElement>(
-                  'subscription.detail.open',
-                  { onTrigger: () => go('subscription.detail.open', { id: s.id }) },
+                  'nav.settingsSubscriptionsById',
+                  { onTrigger: () => nav.push(routes.settingsSubscriptionsById, { id: s.id }) },
                 )}
             >
               <div className="w-10 h-10 rounded-full bg-[#FB7299] flex items-center justify-center text-white font-bold text-xs mr-3 flex-shrink-0">

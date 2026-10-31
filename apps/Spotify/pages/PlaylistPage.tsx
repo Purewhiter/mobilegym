@@ -18,6 +18,7 @@ import { useVirtualList } from '../../../os/hooks/useVirtualList';
 import { inferLargeArtworkUrl } from '../utils/artwork';
 import { lookupITunes } from '../utils/itunes';
 import { pick, shuffle as shuffleWith, stream } from '../../../os/RandomService';
+import { routes } from '../routes';
 // 扩充一些 Mock 歌曲数据以丰富详情页
 const MOCK_TRACKS: SpotifyTrack[] = [
     ...SPOTIFY_CONFIG.startListening,
@@ -29,7 +30,7 @@ export const PlaylistPage: React.FC = () => {
     const isEnglish = locale === 'en';
     const { id } = useParams<{ id: string }>();
     const [searchParams] = useSearchParams();
-    const { bindTap, bindBack, back } = useSpotifyGestures();
+    const { bindTap, bindBack, back, bindNav } = useSpotifyGestures();
     const s = useSpotifyStrings();
     const { currentTrack, isPlaying, customPlaylists, queue, recentPlays, likedSongs, shuffle } = useSpotifyStore(useShallow(s => ({
         currentTrack: s.currentTrack, isPlaying: s.isPlaying, customPlaylists: s.customPlaylists,
@@ -454,10 +455,7 @@ export const PlaylistPage: React.FC = () => {
                                             </div>
                                         </div>
                                         <button
-                                            {...bindTap('playlist.trackMenu.open', {
-                                                params: { id: id ?? '', trackId: track.id },
-                                                stopPropagation: true,
-                                            })}
+                                            {...bindNav(routes.playlist, { params: { id: id ?? '' }, search: { sheet: 'track_menu', trackId: track.id }, stopPropagation: true })}
                                             className="p-3 hover:bg-white/10 rounded-full flex-shrink-0 text-gray-400"
                                         >
                                             <IcMoreVertical size={20} />
@@ -501,9 +499,9 @@ export const PlaylistPage: React.FC = () => {
                       },
                     ) : undefined}
                     hideFromPlaylistProps={!isCustomPlaylist ? { onClick: () => back() } : undefined}
-                    addToPlaylistProps={bindTap('playlist.addPlaylist.open', { params: { trackId: selectedTrack.id, id: id || '' }, stopPropagation: true })}
+                    addToPlaylistProps={bindNav(routes.playlist, { params: { id: id || '' }, search: { sheet: 'add_playlist', trackId: selectedTrack.id }, replace: true, stopPropagation: true })}
                     addToPlaylistLabel={isCustomPlaylist ? s.track_menu_add_to_other_playlists : undefined}
-                    createJamProps={bindTap('tab.premium')}
+                    createJamProps={bindNav(routes.premium, { replace: true })}
                     addToQueueProps={bindTap(
                       { kind: 'action', id: 'track.queue.add' },
                       {
@@ -515,8 +513,8 @@ export const PlaylistPage: React.FC = () => {
                         },
                       },
                     )}
-                    goToAlbumProps={bindTap('playlist.open', { params: { id: selectedTrack.id } })}
-                    goToArtistProps={bindTap('artist.open', { params: { name: selectedTrack.artist } })}
+                    goToAlbumProps={bindNav(routes.playlist, { params: { id: selectedTrack.id } })}
+                    goToArtistProps={bindNav(routes.artist, { params: { name: selectedTrack.artist } })}
                 />
             )}
             {selectedTrack && (

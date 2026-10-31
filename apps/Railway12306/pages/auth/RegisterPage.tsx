@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { useRailwayGestures } from '../../hooks/useRailwayGestures';
 import { IcNavBack, IcScan } from '../../res/icons';
+import { routes } from '../../routes';
 
 // ── Validation helpers ──────────────────────────────────────────────
 
@@ -78,7 +79,7 @@ const PASSENGER_TYPES = ['成人', '儿童', '学生', '残疾军人'] as const;
 // ── Component ───────────────────────────────────────────────────────
 
 export const RailwayRegisterPage: React.FC = () => {
-  const { go, bindBack } = useRailwayGestures();
+  const { nav, bindBack } = useRailwayGestures();
 
   const [formData, setFormData] = useState<Record<FieldKey, string>>({
     username: '',
@@ -119,17 +120,15 @@ export const RailwayRegisterPage: React.FC = () => {
 
   const handleConfirmRegister = useCallback(() => {
     setShowConfirm(false);
-    go('auth.register.verify', {}, {
-      state: {
+    nav.push(routes.authRegisterVerify, {}, { state: {
         username: formData.username,
         password: formData.password,
         name: formData.name,
         idNo: formData.idNo,
         phone: formData.phone,
         email: formData.email,
-      },
-    });
-  }, [formData, go]);
+      } });
+  }, [formData, nav]);
 
   const labelCls = (field: FieldKey) =>
     `w-24 text-[14px] ${errorFields.has(field) ? 'text-red-500 font-medium' : 'text-gray-800'}`;

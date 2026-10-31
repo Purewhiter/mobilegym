@@ -5,10 +5,11 @@ const X = IcClose, ChevronLeft = IcNavBack;
 import { useRedBookStore } from '../../state';
 import { useShallow } from 'zustand/react/shallow';
 import { useRedBookGestures } from '../../hooks/useRedBookGestures';
+import { routes } from '../../routes';
 export const PublishTextEntryPage: React.FC = () => {
   const s = useRedBookStrings();
   const { publishDraft, updatePublishDraft } = useRedBookStore(useShallow(s => ({ publishDraft: s.publishDraft, updatePublishDraft: s.updatePublishDraft })));
-  const { bindTap, bindBack, go, back } = useRedBookGestures();
+  const { bindTap, bindBack, nav, back } = useRedBookGestures();
   const [text, setText] = useState(publishDraft.text || '');
   const [isEditing, setIsEditing] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -42,7 +43,7 @@ export const PublishTextEntryPage: React.FC = () => {
   const handleNext = async () => {
     if (!text.trim()) return;
     await updatePublishDraft({ text });
-    go('publish.text.template.open');
+    nav.push(routes.publishTextTemplate);
   };
 
   return (
@@ -64,7 +65,7 @@ export const PublishTextEntryPage: React.FC = () => {
             className={`px-4 py-1.5 rounded-full text-[13px] font-medium ${
               text.trim() ? 'bg-app-primary text-white' : 'bg-[#f0f0f0] text-[#bbb]'
             }`}
-            {...(text.trim() ? bindTap('publish.text.template.open', { onTrigger: handleNext }) : {})}
+            {...(text.trim() ? bindTap('nav.publishTextTemplate', { onTrigger: handleNext }) : {})}
           >
             {s.next}
           </button>

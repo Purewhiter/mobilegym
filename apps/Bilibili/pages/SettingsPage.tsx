@@ -3,16 +3,18 @@ import { IcNavBack, IcNavForward } from '../res/icons';
 import { useLocale } from '@/apps/Bilibili/locale';
 import { useBilibiliGestures } from '../hooks/useBilibiliGestures';
 import { useBilibiliStore } from '../state';
+import type { AppRoute } from '../../../os/navigation';
+import { routes } from '../routes';
 
 /** 设置项：标题 + 可选副标题 + 右箭头，点击跳转子页 */
 const SettingItem: React.FC<{
   label: string;
   subtitle?: string;
-  transitionId?: string;
+  route?: AppRoute;
   onClick?: () => void;
-}> = ({ label, subtitle, transitionId, onClick }) => {
-  const { bindTap } = useBilibiliGestures();
-  const binding = transitionId ? bindTap(transitionId as any) : {};
+}> = ({ label, subtitle, route, onClick }) => {
+  const { bindNav } = useBilibiliGestures();
+  const binding = route ? bindNav(route) : {};
   return (
     <div
       className="flex items-center justify-between px-4 py-3.5 active:bg-gray-50 cursor-pointer"
@@ -140,14 +142,14 @@ export const SettingsPage: React.FC = () => {
         data-scroll-direction="vertical"
       >
         {/* Section 1: 账号 */}
-        <SettingItem label={text.accountProfile} transitionId="settings.profileEdit.open" />
+        <SettingItem label={text.accountProfile} route={routes.profileEdit} />
         <SettingItem label={text.security} />
         <SettingItem label={text.shipping} />
 
         <SectionGap />
 
         {/* Section 2: 语言 */}
-        <SettingItem label={text.language} transitionId="settings.language.open" />
+        <SettingItem label={text.language} route={routes.settingsLanguage} />
 
         <SectionGap />
 
@@ -156,28 +158,28 @@ export const SettingsPage: React.FC = () => {
         <SettingItem
           label={text.recommend}
           subtitle={text.recommendSubtitle}
-          transitionId="settings.recommend.open"
+          route={routes.settingsRecommend}
         />
-        <SettingItem label={text.avatarEntry} transitionId="settings.avatarEntry.open" />
-        <SettingItem label={text.playback} transitionId="settings.playback.open" />
-        <SettingItem label={text.offline} transitionId="settings.offline.open" />
-        <SettingItem label={text.chase} transitionId="settings.chase.open" />
+        <SettingItem label={text.avatarEntry} route={routes.settingsAvatarEntry} />
+        <SettingItem label={text.playback} route={routes.settingsPlayback} />
+        <SettingItem label={text.offline} route={routes.settingsOffline} />
+        <SettingItem label={text.chase} route={routes.settingsChase} />
 
         <SectionGap />
 
         {/* Section 4: 通知 */}
-        <SettingItem label={text.push} transitionId="settings.push.open" />
-        <SettingItem label={text.messages} transitionId="settings.message.open" />
-        <SettingItem label={text.harass} transitionId="settings.harass.open" />
+        <SettingItem label={text.push} route={routes.settingsPush} />
+        <SettingItem label={text.messages} route={routes.settingsMessage} />
+        <SettingItem label={text.harass} route={routes.settingsHarass} />
         <SettingItem label={text.downloads} />
-        <SettingItem label={text.storage} transitionId="settings.storage.open" />
-        <SettingItem label={text.other} transitionId="settings.other.open" />
+        <SettingItem label={text.storage} route={routes.settingsStorage} />
+        <SettingItem label={text.other} route={routes.settingsOther} />
 
         <SectionGap />
 
         {/* Section 5: 定时 */}
-        <SettingItem label={text.timer} subtitle={timerLabel} transitionId="settings.timer.open" />
-        <SettingItem label={text.sleep} subtitle={sleepLabel} transitionId="settings.sleep.open" />
+        <SettingItem label={text.timer} subtitle={timerLabel} route={routes.settingsTimer} />
+        <SettingItem label={text.sleep} subtitle={sleepLabel} route={routes.settingsSleep} />
 
         <SectionGap />
 

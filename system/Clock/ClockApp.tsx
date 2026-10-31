@@ -28,10 +28,11 @@ import { TimerPage } from './pages/TimerPage';
 import { WorldClockPage } from './pages/WorldClockPage';
 import { CLOCK_CONFIG } from './data';
 import { base36, nextStream } from '../../os/RandomService';
+import { routes } from './routes';
 
 const ClockShell: React.FC = () => {
   const s = useAppStrings(strings, stringsEn);
-  const { go, back } = useClockGestures();
+  const { nav, back } = useClockGestures();
   const location = useLocation();
   const { navigator } = React.useContext(UNSAFE_NavigationContext);
 
@@ -292,10 +293,10 @@ const ClockShell: React.FC = () => {
         <TabBar
           activeTab={activeTab || 'alarm'}
           onChange={(tab) => {
-            if (tab === 'alarm') go('tab.alarm');
-            else if (tab === 'world') go('tab.world');
-            else if (tab === 'stopwatch') go('tab.stopwatch');
-            else if (tab === 'timer') go('tab.timer');
+            if (tab === 'alarm') nav.replace(routes.alarm);
+            else if (tab === 'world') nav.replace(routes.world);
+            else if (tab === 'stopwatch') nav.replace(routes.stopwatch);
+            else if (tab === 'timer') nav.replace(routes.timer);
           }}
         />
       )}

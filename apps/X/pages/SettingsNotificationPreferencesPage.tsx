@@ -3,14 +3,15 @@ import { useLocale } from '@/os/locale';
 import { useXStore, selectUser } from '../state';
 import { useXGestures } from '../hooks/useXGestures';
 import { IcChevronRight } from '../res/icons';
+import { routes } from '../routes';
 
 export const SettingsNotificationPreferencesPage: React.FC = () => {
   const user = useXStore(selectUser);
-  const { bindBack, bindTap } = useXGestures();
+  const { bindBack, bindNav } = useXGestures();
   const isEnglish = useLocale() === 'en';
 
   const items = [
-    { title: isEnglish ? 'Push notifications' : '推送通知', tapId: 'settings.notifications.preferences.push.open' },
+    { title: isEnglish ? 'Push notifications' : '推送通知', tapId: routes.settingsNotificationsPreferencesPush },
     { title: isEnglish ? 'SMS notifications' : '短信通知', tapId: null },
     { title: isEnglish ? 'Email notifications' : '电子邮件通知', tapId: null },
   ];
@@ -31,7 +32,7 @@ export const SettingsNotificationPreferencesPage: React.FC = () => {
       </div>
       <div className="flex-1">
         {items.map((item, idx) => (
-          <div key={idx} className="flex cursor-pointer items-center px-4 py-4 transition-colors active:bg-gray-50" {...(item.tapId ? bindTap(item.tapId) : {})}>
+          <div key={idx} className="flex cursor-pointer items-center px-4 py-4 transition-colors active:bg-gray-50" {...(item.tapId ? bindNav(item.tapId) : {})}>
             <div className="flex-1 text-[15px] font-medium">{item.title}</div>
             <IcChevronRight size={18} className="text-gray-400" />
           </div>

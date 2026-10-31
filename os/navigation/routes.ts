@@ -25,8 +25,8 @@ type ParamNames<P extends string> =
 /** Path params of a route path, e.g. `{ meetingId: string | number }` for `/history/:meetingId`. */
 export type RouteParams<P extends string> = { [K in ParamNames<P>]: string | number };
 
-/** Query values for a jump: a declared value, `null` (clear), or a free string for undeclared keys. */
-export type SearchValues<S extends SearchSpec> = { [K in keyof S]?: S[K][number] | null } & Record<string, string | null | undefined>;
+/** Query values for a jump: a declared value, `null` (clear), or a free value for undeclared keys. */
+export type SearchValues<S extends SearchSpec> = { [K in keyof S]?: S[K][number] | null } & Record<string, string | number | null | undefined>;
 
 export interface AppRoute<P extends string = string, S extends SearchSpec = SearchSpec> {
   /** Key in the app's route table; DOM tags carry it as `nav.<name>`. */
@@ -51,7 +51,7 @@ export function defineRoutes<const T extends RouteDefs>(defs: T): RouteTable<T> 
 
 export interface NavTarget {
   /** Query of the target URL. Starts empty: keys not given here (or in `keep`) are dropped. */
-  search?: Record<string, string | null | undefined>;
+  search?: Record<string, string | number | null | undefined>;
   /** Query keys copied from the current URL before `search` applies. */
   keep?: readonly string[];
 }
@@ -75,7 +75,7 @@ export function buildHref(
   }
   for (const [key, value] of Object.entries(target.search ?? {})) {
     if (value === null || value === undefined) query.delete(key);
-    else query.set(key, value);
+    else query.set(key, String(value));
   }
   const queryString = query.toString();
   return queryString ? `${pathname}?${queryString}` : pathname;

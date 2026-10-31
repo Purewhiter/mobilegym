@@ -2,10 +2,11 @@ import React from 'react';
 import { useAlipayStrings } from '../hooks/useAlipayStrings';
 import { useAlipayGestures } from '../hooks/useAlipayGestures';
 import { IcNavBack, IcMore, IcQrCode, IcImage } from '../res/icons';
+import { routes } from '../routes';
 
 export const ScanPage: React.FC = () => {
   const s = useAlipayStrings();
-  const { bindTap, bindBack } = useAlipayGestures();
+  const { bindNav, bindBack } = useAlipayGestures();
 
   return (
     <div
@@ -65,7 +66,7 @@ export const ScanPage: React.FC = () => {
           {/* 收付款 button */}
           <button
             className="flex flex-col items-center"
-            {...bindTap<HTMLButtonElement>('scan.pay')}
+            {...bindNav(routes.pay)}
           >
             <div className="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center mb-1">
               <IcQrCode size={28} className="text-white" />

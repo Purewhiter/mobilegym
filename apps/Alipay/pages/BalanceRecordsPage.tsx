@@ -7,6 +7,7 @@ import { useAlipayStore } from '../state';
 import { useAlipayGestures } from '../hooks/useAlipayGestures';
 import { DefaultAvatar } from '../components/DefaultAvatar';
 import { getBillDisplayTitle } from '../utils/bills';
+import { routes } from '../routes';
 
 type TabKey = 'all' | 'out' | 'in';
 
@@ -22,7 +23,7 @@ export const BalanceRecordsPage: React.FC = () => {
   const tabParam = searchParams.get('tab');
   const tab: TabKey = tabParam === 'out' || tabParam === 'in' ? tabParam : 'all';
   const { balance, transferRecords } = useAlipayStore();
-  const { bindTap, bindBack } = useAlipayGestures();
+  const { bindNav, bindBack } = useAlipayGestures();
 
   // 首先计算完整列表的余额变化，无论当前tab是什么
   const fullSorted = React.useMemo(() => {
@@ -64,19 +65,19 @@ export const BalanceRecordsPage: React.FC = () => {
       <div className="bg-app-surface border-b border-gray-100 px-6 pt-2">
         <div className="flex items-center justify-between text-base font-medium">
           <button
-            {...bindTap<HTMLButtonElement>('balanceRecords.tab.all')}
+            {...bindNav(routes.balanceRecords, { replace: true })}
             className={`pb-2 ${tab === 'all' ? 'text-app-primary border-b-2 border-app-primary' : 'text-gray-600'}`}
           >
             {s.messagespage_all}
           </button>
           <button
-            {...bindTap<HTMLButtonElement>('balanceRecords.tab.out')}
+            {...bindNav(routes.balanceRecords, { search: { tab: 'out' }, replace: true })}
             className={`pb-2 ${tab === 'out' ? 'text-app-primary border-b-2 border-app-primary' : 'text-gray-600'}`}
           >
             {s.expenses}
           </button>
           <button
-            {...bindTap<HTMLButtonElement>('balanceRecords.tab.in')}
+            {...bindNav(routes.balanceRecords, { search: { tab: 'in' }, replace: true })}
             className={`pb-2 ${tab === 'in' ? 'text-app-primary border-b-2 border-app-primary' : 'text-gray-600'}`}
           >
             {s.income}

@@ -6,6 +6,7 @@ import { useAlipayGestures } from '../hooks/useAlipayGestures';
 import { useAlipayStore } from '../state';
 import { useLocale } from '@/apps/Alipay/locale';
 import { localizeBankName } from '../utils/localizeBankName';
+import { routes } from '../routes';
 
 const selectRecentRecharges = memoSelector(
   (state: any) => state.transferRecords,
@@ -19,7 +20,7 @@ const selectRecentRecharges = memoSelector(
 );
 
 export const RechargeSuccessPage: React.FC = () => {
-  const { go, back, bindBack } = useAlipayGestures();
+  const { nav, back, bindBack } = useAlipayGestures();
   const s = useAlipayStrings();
   const locale = useLocale();
   const isEnglish = locale === 'en';
@@ -93,7 +94,7 @@ export const RechargeSuccessPage: React.FC = () => {
       <div className="px-4 py-3 flex items-center justify-between">
         <div />
         <span className="text-lg font-medium">{s.recharge_success_title}</span>
-        <button onClick={() => go('recharge.success.toHome')} className="text-sm text-white">{s.recharge_success_home}</button>
+        <button onClick={() => nav.replace(routes.home)} className="text-sm text-white">{s.recharge_success_home}</button>
       </div>
 
       <div className="flex flex-col items-center mt-8 mb-10">
@@ -136,7 +137,7 @@ export const RechargeSuccessPage: React.FC = () => {
       <div className="px-6 pb-8 pt-4 flex-shrink-0">
         <button
           className="w-full bg-white text-app-primary font-medium py-3 rounded-full shadow-lg active:bg-gray-50"
-          onClick={() => go('recharge.success.done', {}, { popTo: '/balance' })}
+          onClick={() => nav.replace(routes.balance, {}, { popTo: '/balance' })}
         >
           {s.recharge_success_done}
         </button>

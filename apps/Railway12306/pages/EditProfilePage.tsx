@@ -5,9 +5,10 @@ import { maskIdNo } from '../state';
 import { useRailwayGestures } from '../hooks/useRailwayGestures';
 import { useLocale } from '../../../os/locale';
 import { localizeRailwayText } from '../utils/localizeRailwayItem';
+import { routes } from '../routes';
 export const EditProfilePage: React.FC = () => {
   const config = RAILWAY12306_CONFIG;
-  const { bindBack, bindTap } = useRailwayGestures();
+  const { bindBack, bindNav } = useRailwayGestures();
   const { account, passengers } = config;
   const isEnglish = useLocale() === 'en';
 
@@ -49,7 +50,7 @@ export const EditProfilePage: React.FC = () => {
       <div className="bg-app-surface mt-2">
         <div
           className="flex items-center justify-between px-4 py-4 active:bg-gray-50"
-          {...bindTap<HTMLDivElement>('account.studentVerify' as any)}
+          {...bindNav(routes.studentVerify)}
         >
           <div className="flex items-center">
             <span className="text-base text-gray-900 w-[112px] shrink-0 whitespace-normal leading-tight">{isEnglish ? 'Discount type' : '优惠(待)类型'}</span>

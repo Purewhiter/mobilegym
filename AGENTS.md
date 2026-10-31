@@ -21,23 +21,14 @@ npm run lint          # Lint runtime code under os/ and apps/
 
 Current rule: bare `Date.now()` and any form of `new Date(...)` (including parameterised forms — they must go through `TimeService`) are forbidden, and so are `Math.random()`, `crypto.randomUUID()` and `crypto.getRandomValues()` (they must go through `RandomService`). `<Outlet />` / `<Routes>` inside a plain scroll div is forbidden too (use `RouteScrollContainer`). Config lives in `eslint.config.js`.
 
-### Navigation Artifact Generation (run after modifying navigation declarations)
+### Navigation Graph (run after changing navigation)
 
 ```bash
-# One-shot: consistency check + schema nav graph + action tasks
-node scripts/build_nav_artifacts.mjs <AppName>
+# Explore an app on a running dev server: taps every tagged element, records where taps and system back land
+python scripts/explore_nav_graph.py http://localhost:3000/ <appId> /tmp/<appId>.json
 
-# With data graph generation
-node scripts/build_nav_artifacts.mjs <AppName> --data data/index.ts
-
-# Skip tasks, only update graphs
-node scripts/build_nav_artifacts.mjs <AppName> --skip-tasks
-```
-
-### Consistency Checking
-
-```bash
-node scripts/check_navigation_declaration_consistency.mjs <AppName> --actions
+# Compare two builds (before / after a change)
+python scripts/explore_nav_graph.py --diff old.json new.json
 ```
 
 ### Benchmark Environment (Python)
@@ -86,9 +77,9 @@ Each app follows a standard structure:
 
 - **`manifest.ts`** — App identity (AndroidManifest-like): id, displayName, displayNameEn, aliases, icon, theme Tier-1 colors, `intentFilters` (deep links). **This is the only file needed to register an app with the OS**
 - **`<AppName>App.tsx`** — Entry point with `MemoryRouter`, `useAppNavigationHandler` hook (registers navigator, back handler, and lifecycle events with the OS via `AppNavigatorRegistry` + `BackDispatcher` + `AppLifecycle`), and the "main tabs persistent + subpages exclusive" layout. **Must have `export default` — the OS discovers it via `import.meta.glob(['apps/*/*App.tsx', 'system/*/*App.tsx'])`**
-- **`navigation.declaration.ts`** — Declarative navigation: all routes, transitions, actions, UI states. **Source of truth** for static analysis, graph generation, and task generation
-- **`navigation.ts`** — Navigation hook (`useAppNavigate` with `go`/`back`). Supports `go(id, params, { mode, popTo, popToInclusive, state })`. **Business pages must NOT use `useNavigate()` directly**
-- **`hooks/use<AppName>Gestures.ts`** — App-specific gesture hook wrapping `useTriggerGestures`
+- **`routes.ts`** — The app's route table (`defineRoutes` from `os/navigation/routes`): every page path and the finite UI states it keeps in its URL (`search: { dialog: ['chat', 'exit'] }`). Jumps are written in code against it; there is no transition table
+- **Navigation** — Pages jump with the shared `os/navigation` hooks: `bindNav(routes.x, { params, search, replace })` on controls, `nav.push / nav.replace / nav.back` in handlers. **Business pages must NOT use `useNavigate()` directly**
+- **`hooks/use<AppName>Gestures.ts`** — Thin wrapper over `useNavGestures()` (`bindNav`, `bindBack`, `bindTap` for in-place actions, `nav`); add app-specific behaviour here only (e.g. X disables bindings on inactive tabs)
 - **`context/<AppName>Context.tsx`** — State management via React Context; registers with `AppStateRegistry` on mount
 - **`res/`** — App resources aligned with Android `res/values/*`:
   - `colors.ts`, `strings.ts`, `dimens.ts` (and optional `colors.states.ts`, `icons.tsx`)
@@ -107,31 +98,27 @@ Python-based evaluation framework using Playwright. Tasks are organized into sui
 
 ### Scripts (`scripts/`)
 
-- **`build_nav_artifacts.mjs`** — One-shot: consistency check + nav graph + action tasks
-- **`check_navigation_declaration_consistency.mjs`** — Validates declaration-to-source-code consistency
-- **`navigation_declaration_analyzer.mjs`** — Generates nav graph JSON (schema and data modes)
-- **`generate_action_tasks_from_nav_graph.mjs`** — Enumerates action trajectories from nav graphs
-- **`nav_path_finder.py`** — Shortest path search on nav graphs for verification
 - **`ime/build_pinyin_dict.mjs`** — Generates IME pinyin dictionary from Rime dict sources
+- **`explore_nav_graph.py`** — Explores a running app's navigation (taps tagged elements, records tap and back targets) and diffs two builds
 - **`lint_store_getters.mjs`** — Detects query getter functions in store actions and consumer subscriptions to them (violating the "Query-style getters in actions" rule in `docs/platform/state/model.md`). Usage: `node scripts/lint_store_getters.mjs [AppName...]`
 
 ## Key Development Rules
 
-**The authoritative platform references live under `docs/platform/`** (`app/module-contract.md`, `state/model.md`, `navigation/declaration.md`, `os/overview.md`, `os/intent-system.md`, `os/cross-app-launch.md`, `os/services/README.md`, `android-mapping.md`). When conflicts arise, flag them rather than silently overriding. Before navigation/actions/condition changes, review `docs/platform/navigation/declaration.md`.
+**The authoritative platform references live under `docs/platform/`** (`app/module-contract.md`, `state/model.md`, `navigation/routes.md`, `os/overview.md`, `os/intent-system.md`, `os/cross-app-launch.md`, `os/services/README.md`, `android-mapping.md`). When conflicts arise, flag them rather than silently overriding. Before navigation changes, review `docs/platform/navigation/routes.md`.
 
 ### Navigation
 
-- Every app maintains `navigation.declaration.ts` with routes (including `uiStates`, `queryParams`, `scrollContainers`) and transitions
-  - Exception (pilot): Tencent Meeting uses a route table (`apps/TencentMeeting/routes.ts`) and the shared `os/navigation` hooks instead; see `docs/platform/navigation/routes.md`
-- All discrete UI state changes (tabs, modals, menus) must go through `go()` + URL update — never purely via React setState
+- Every app keeps a route table `routes.ts` (pages + the finite UI states each keeps in its URL); jumps are code: `bindNav(routes.x, ...)`, `nav.push(routes.x, params, { search })`, `nav.replace(...)`, `nav.back()`. See `docs/platform/navigation/routes.md`
+- All discrete UI state changes (tabs, modals, menus) must go through a URL change (`bindNav` / `nav.*` with `search`) — never purely via React setState
 - Main TabBar tabs use separate pathname routes (`/`, `/contacts`, `/me`), not query params
-- Tab/subtab switching uses `mode: 'replace'`; modals/drawers use `mode: 'push'` (closed via `back()`)
+- Tab/subtab switching replaces (`replace: true`); modals/drawers push (closed via back)
 - **Dialogs / popups are URL-driven by default** (matching Android's DialogFragment / Navigation dialog destination), unless the user explicitly asks otherwise:
   - Push them into the history stack via `searchParams` (e.g. `setSearchParams(p => { p.set('myDialog', 'open'); return p; })`), and derive dialog visibility from `searchParams.get('myDialog') === 'open'`
   - Close dialogs uniformly with `navigate(-1)` to pop the history entry; the system back key automatically pops the top of the stack to close the dialog — no extra handling needed
   - **Never control dialog visibility with `useState`** — the back key cannot see React local state and will pass through the dialog straight to the previous page
   - **Do not import `BackDispatcher` directly in the App layer** — it's an OS-internal module; Apps gain back-key support indirectly via the URL + navigation stack
-- Business pages must never use `useNavigate()`/`navigate()` directly — only the app's `go()`/`back()`
+- Business pages must never use `useNavigate()`/`navigate()` directly — only `bindNav` / `nav` (a path string from an intent or deep link goes through `nav.toPath`)
+- A jump that only applies in some states (only while a dialog is closed, say) is plain code: bind it only where it applies
 - New route paths must be registered in the app's `<Routes>` in `<AppName>App.tsx`
 
 ### Adding a New App
@@ -151,12 +138,11 @@ Convention details:
 
 ### DOM Tagging
 
-- All navigation triggers must produce `data-trigger` + `data-trigger-type` attributes via gesture hooks
-- All action triggers must produce `data-action` + `data-action-type` attributes
-- Transition/Action IDs must be **string literals** at bind sites (no dynamic concatenation/variables)
-- Return/close buttons must use `bindBack()` (`system.back`), not custom transitions
+- Every navigation control must use `bindNav` (or `bindBack`), which tags it `data-trigger="nav.<route name>"` + params automatically; a plain `onClick` that navigates is invisible to exploration and trajectory tools
+- All action triggers must produce `data-action` + `data-action-type` attributes (`bindTap({ kind: 'action', id: '...' }, { onTrigger })`); action IDs must be **string literals**
+- Return/close buttons must use `bindBack()` (`system.back`)
 - Only tag controls that actually do something — no tags on unimplemented placeholders
-- Scrollable containers need `data-scroll-container` + `data-scroll-direction` attributes matching `scrollContainers` declarations
+- Scrollable containers need `data-scroll-container` + `data-scroll-direction` attributes
 - A layout scroller around routed pages (`<Outlet />` / `<Routes>`) must be `os/components/RouteScrollContainer` (new page starts at top, back restores, `rememberPaths` for main tabs); a plain div lets pages inherit each other's scroll position, which varies with frame timing
 
 ### State and Data
@@ -189,13 +175,7 @@ Convention details:
 
 ### Validation
 
-After modifying navigation declarations or adding pages, always run:
-
-```bash
-node scripts/build_nav_artifacts.mjs <AppName>
-```
-
-If the output has `ERROR` or `WARN`, include the specific IDs and file locations — not just summary counts.
+After changing navigation or adding pages, run `npx tsc --noEmit` (route params and UI-state values are type-checked) and explore the app before and after (`python scripts/explore_nav_graph.py ... --diff`); report every differing edge, not just counts.
 
 ---
 
@@ -307,16 +287,16 @@ The implemented page should match the screenshot (layout, styling, visual hierar
 
 ### 2. Implementation order
 
-Land code in this order to avoid declaration / source drift:
+Land code in this order:
 
-1. `navigation.declaration.ts` — declare the new routes, `uiStates`, transitions, actions
+1. `routes.ts` — add the new pages and the UI states they keep in the URL
 2. `<Routes>` in `<AppName>App.tsx` — register the route components
 3. `data/defaults.json` / `state.ts` — prepare the replaceable default data / runtime state
-4. `pages/` — implement the UI; use the app's own `go()` / `back()` and the gesture hooks
-5. Run `node scripts/build_nav_artifacts.mjs <AppName>` once and confirm no ERROR / WARN
+4. `pages/` — implement the UI with `bindNav` / `bindBack` / `nav` and action bindings
+5. Run `npx tsc --noEmit` and explore the app (`scripts/explore_nav_graph.py`) to confirm every control lands where intended
 6. If you modified an existing App, confirm that the state paths referenced by `bench_env` are not broken
 
-For the syntactic rules (`uiStates` required, `transitions[].to` required, `from:'*'` constraints, `.switch` + `cases`, ID literal binding, the `{ id: '...' }` configuration constraints for shared components, when `data-trigger-params` is required, etc.) see [`docs/platform/navigation/declaration.md`](docs/platform/navigation/declaration.md) and [`docs/platform/navigation/actions.md`](docs/platform/navigation/actions.md).
+See [`docs/platform/navigation/routes.md`](docs/platform/navigation/routes.md) and [`docs/platform/navigation/actions.md`](docs/platform/navigation/actions.md).
 
 ### 3. Required output format
 
@@ -324,7 +304,7 @@ Your reply to the user must include:
 
 - **Change summary** — which elements and interactions from the screenshot you implemented
 - **Files touched** — one sentence per file describing what changed
-- **New / modified IDs** — the list of transitionId / actionId
-- **Self-check verdict** — whether `build_nav_artifacts.mjs` passed; if there are WARN / ERROR, list specific IDs + file:line (the top 5–10 is enough) and explain how to fix them
+- **New / modified routes and actions** — route names / UI states and action IDs
+- **Self-check verdict** — whether tsc passed and what the exploration found; list unexpected edges with file:line
 
 Do not just paste summary counts; ERROR / WARN must come with details.

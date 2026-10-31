@@ -8,6 +8,7 @@ import { useRedBookGestures } from '../../hooks/useRedBookGestures';
 import { type StringKey } from '../../res/strings';
 import { TemplatePreview, type TemplateId } from '../../components/TemplatePreview';
 import { rasterizeTemplateCard } from '../../utils/rasterizeTemplate';
+import { routes } from '../../routes';
 
 const templates: { id: TemplateId, label: StringKey }[] = [
   { id: 'basic', label: 'basic' },
@@ -20,7 +21,7 @@ const templates: { id: TemplateId, label: StringKey }[] = [
 export const PublishTextTemplatePage: React.FC = () => {
   const s = useRedBookStrings();
   const { publishDraft, updatePublishDraft } = useRedBookStore(useShallow(s => ({ publishDraft: s.publishDraft, updatePublishDraft: s.updatePublishDraft })));
-  const { bindTap, bindBack, go } = useRedBookGestures();
+  const { bindTap, bindBack, nav } = useRedBookGestures();
 
   const handleSelect = (id: string) => {
     updatePublishDraft({ templateId: id });
@@ -29,7 +30,7 @@ export const PublishTextTemplatePage: React.FC = () => {
   const handleNext = async () => {
     const cardImage = rasterizeTemplateCard(publishDraft.templateId, (publishDraft.text || '').trim());
     await updatePublishDraft({ images: cardImage ? [cardImage] : [] });
-    go('publish.text.final.open');
+    nav.push(routes.publishTextFinal);
   };
 
   const activeId = publishDraft.templateId || 'basic';
@@ -84,7 +85,7 @@ export const PublishTextTemplatePage: React.FC = () => {
       <div className="px-4 pb-10">
         <button
           className="w-full bg-app-primary text-white text-[16px] font-medium rounded-full py-3"
-          {...bindTap('publish.text.final.open', { onTrigger: handleNext })}
+          {...bindTap('nav.publishTextFinal', { onTrigger: handleNext })}
         >
           {s.next}
         </button>

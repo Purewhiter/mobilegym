@@ -6,6 +6,7 @@ import { stringsEn } from '../res/strings.en';
 import { useAppStrings } from '@/os/useAppStrings';
 import { useCalendarGestures } from '../hooks/useCalendarGestures';
 import * as TimeService from '@/os/TimeService';
+import { routes } from '../routes';
 const calIcon = (name: string) => name ? `/@app-assets/Calendar/icons/${name}.svg` : '';
 
 const toYmd = (d: Date) => {
@@ -14,7 +15,7 @@ const toYmd = (d: Date) => {
 };
 
 export const CalendarDateJumpPage: React.FC = () => {
-  const { go, bindBack } = useCalendarGestures();
+  const { nav, bindBack } = useCalendarGestures();
   const selectedDate = useCalendarStore(selectSelectedDate);
   const setSelectedDate = useCalendarStore(s => s.setSelectedDate);
   const s = useAppStrings(strings, stringsEn);
@@ -24,7 +25,7 @@ export const CalendarDateJumpPage: React.FC = () => {
     const next = TimeService.fromTimestamp(TimeService.parseToTimestamp(`${ymd}T00:00:00`));
     if (Number.isNaN(next.getTime())) return;
     setSelectedDate(next);
-    go('home.open');
+    nav.replace(routes.home);
   };
 
   return (

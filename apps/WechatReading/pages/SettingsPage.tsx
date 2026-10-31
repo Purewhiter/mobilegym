@@ -10,11 +10,12 @@ import {
     localizeWechatReadingDarkModeValue,
     localizeWechatReadingPageTurnStyle,
 } from '../utils/localization';
+import { routes } from '../routes';
 
 type TopLevelSettingKey = Exclude<keyof Settings, 'privacy' | 'notifications'>;
 
 const SettingsPage: React.FC = () => {
-    const { bindBack, bindTap } = useWechatReadingGestures();
+    const { bindBack, bindTap, bindNav } = useWechatReadingGestures();
     const settings = useWechatReadingStore(s => s.settings);
     const updateSettings = useWechatReadingStore(s => s.updateSettings);
     const s = useWechatReadingStrings();
@@ -139,24 +140,24 @@ const SettingsPage: React.FC = () => {
                         binding={bindTap<HTMLDivElement>({ kind: 'action', id: 'settings.reader.mixAudio.toggle' }, { onTrigger: () => toggleSetting('mixAudio') })}
                     />
 
-                    <LinkItem label={s.settings_auto_download} binding={bindTap<HTMLDivElement>('settings.autoDownload.open')} />
+                    <LinkItem label={s.settings_auto_download} binding={bindNav(routes.settingsAutoDownload)} />
                     <LinkItem
                         label={s.settings_page_turn_style}
                         value={localizeWechatReadingPageTurnStyle(settings.pageTurnStyle, s)}
-                        binding={bindTap<HTMLDivElement>('settings.pageTurn.open')}
+                        binding={bindNav(routes.settingsPageTurnStyle)}
                     />
                     <LinkItem
                         label={s.settings_dark_mode}
                         value={localizeWechatReadingDarkModeValue(settings.darkMode, s)}
-                        binding={bindTap<HTMLDivElement>('settings.darkMode.open')}
+                        binding={bindNav(routes.settingsDarkMode)}
                     />
                 </Group>
 
                 <Group>
-                    <LinkItem label={s.settings_privacy} binding={bindTap<HTMLDivElement>('settings.privacy.open')} />
+                    <LinkItem label={s.settings_privacy} binding={bindNav(routes.settingsPrivacy)} />
                     <LinkItem label={s.settings_student_auth} value={s.settings_student_auth_desc} />
                     <LinkItem label={s.settings_teen_mode} value={s.settings_teen_mode_status} />
-                    <LinkItem label={s.settings_notifications} binding={bindTap<HTMLDivElement>('settings.notifications.open')} />
+                    <LinkItem label={s.settings_notifications} binding={bindNav(routes.settingsNotifications)} />
                     <LinkItem label={s.settings_login_devices} />
                     <LinkItem label={s.settings_clear_cache} />
                 </Group>

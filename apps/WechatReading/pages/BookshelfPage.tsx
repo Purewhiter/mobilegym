@@ -17,6 +17,7 @@ import {
 } from '../res/icons';
 import { useWechatReadingGestures } from '../hooks/useWechatReadingGestures';
 import { useWechatReadingStrings } from '../hooks/useWechatReadingStrings';
+import { routes } from '../routes';
 
 function formatMessage(template: string, ...values: Array<string | number>) {
   let result = template;
@@ -30,7 +31,7 @@ const BookshelfPage: React.FC = () => {
   const shelf = useWechatReadingStore(s => s.shelf);
   const removeFromShelf = useWechatReadingStore(s => s.removeFromShelf);
   const togglePrivate = useWechatReadingStore(s => s.togglePrivate);
-  const { bindTap, bindLongPress, bindBack, go, back } = useWechatReadingGestures();
+  const { bindTap, bindLongPress, bindBack, nav, back, bindNav } = useWechatReadingGestures();
   const s = useWechatReadingStrings();
   const location = useLocation();
 
@@ -84,12 +85,12 @@ const BookshelfPage: React.FC = () => {
   const enterSelectModeFromItem = (bookId: string) => {
     if (isSelectMode) return;
     setSelectedIds(new Set([bookId]));
-    go('bookshelf.select.enter');
+    nav.push(routes.bookshelf, {}, { search: { select: 'true' } });
   };
 
   const openReaderFromItem = (bookId: string) => {
 
-    go('reader.open', { bookId });
+    nav.push(routes.read, { bookId });
   };
 
   const sortTabs = [
@@ -107,7 +108,7 @@ const BookshelfPage: React.FC = () => {
         <div className="flex items-center gap-3 mb-2">
           <button
             type="button"
-            {...bindTap<HTMLButtonElement>('search.open')}
+            {...bindNav(routes.search)}
             className="flex-1 h-9 bg-(--app-c-tw-bg-gray-100)/80 rounded-full flex items-center px-3 gap-2 active:opacity-70"
             style={{ transition: 'opacity var(--app-duration-short) var(--app-easing-standard)' }}
           >
@@ -138,7 +139,7 @@ const BookshelfPage: React.FC = () => {
               <span className="text-(--app-title-text-size-11) text-(--app-c-tw-text-slate-500)">{selectedCountLabel}</span>
             </div>
             <button
-              {...bindTap<HTMLButtonElement>('bookshelf.select.exit')}
+              {...bindNav(routes.bookshelf, { replace: true })}
               className="text-(--app-settings-item-text-size) font-medium text-(--app-c-tw-text-slate-800) active:opacity-60"
             >
               {s.bookshelf_cancel}
@@ -152,9 +153,7 @@ const BookshelfPage: React.FC = () => {
                 <IcAddCircle size={dimens.icSizeAction} /> {s.bookshelf_import}
               </button>
               <button
-                {...bindTap<HTMLButtonElement>('bookshelf.select.enter.tap', {
-                  beforeTrigger: () => setSelectedIds(new Set()),
-                })}
+                {...bindNav(routes.bookshelf, { search: { select: 'true' }, beforeTrigger: () => setSelectedIds(new Set()) })}
                 className="flex items-center gap-1 text-sm font-medium active:opacity-60"
               >
                 <IcCheckCircle size={dimens.icSizeAction} /> {s.bookshelf_select}
@@ -181,11 +180,11 @@ const BookshelfPage: React.FC = () => {
                 { kind: 'action', id: 'bookshelf.item.select.toggle' },
                 { params: { bookId: item.bookId }, onTrigger: () => toggleSelection(item.bookId) },
               )
-              : bindTap<HTMLDivElement>('reader.open', {
+              : bindTap<HTMLDivElement>('nav.read', {
                 params: { bookId: item.bookId },
                 onTrigger: () => openReaderFromItem(item.bookId),
               });
-            const itemLongPressProps = bindLongPress<HTMLDivElement>('bookshelf.select.enter', {
+            const itemLongPressProps = bindLongPress<HTMLDivElement>('nav.bookshelf', {
               duration: 600,
               onTrigger: () => enterSelectModeFromItem(item.bookId),
             });
@@ -225,7 +224,7 @@ const BookshelfPage: React.FC = () => {
           })}
 
           {!isSelectMode && (
-            <button {...bindTap<HTMLButtonElement>('reading.open')} className="aspect-[3/4] flex flex-col items-center justify-center">
+            <button {...bindNav(routes.home, { replace: true })} className="aspect-[3/4] flex flex-col items-center justify-center">
               <div className="w-full h-full bg-(--app-c-tw-bg-slate-50) border-2 border-dashed border-(--app-c-tw-border-slate-200) rounded-sm flex items-center justify-center active:bg-(--app-c-tw-bg-slate-100)" style={{ transition: 'color var(--app-duration-short) var(--app-easing-standard), background-color var(--app-duration-short) var(--app-easing-standard), border-color var(--app-duration-short) var(--app-easing-standard)' }}>
                 <IcAdd size={dimens.icSizeService} className="text-(--app-c-tw-text-slate-300) stroke-[1.5]" />
               </div>
@@ -237,7 +236,7 @@ const BookshelfPage: React.FC = () => {
         <div className="pt-4 pb-12 flex flex-col items-center justify-center gap-1">
           <span className="text-xs text-(--app-c-tw-text-slate-400)">{footerStats}</span>
           <button
-            {...bindTap<HTMLButtonElement>('profile.my.open')}
+            {...bindNav(routes.myProfile, { search: { tab: 'shelf' } })}
             className="text-xs text-(--app-c-tw-text-blue-500) font-medium active:opacity-60"
           >
             {s.bookshelf_view_public_page}
@@ -252,7 +251,7 @@ const BookshelfPage: React.FC = () => {
               disabled={selectedIds.size === 0}
               className={`flex flex-col items-center gap-1.5 ${selectedIds.size === 0 ? 'opacity-30' : 'active:opacity-60'}`}
               style={{ transition: 'opacity var(--app-duration-short) var(--app-easing-standard)' }}
-              {...bindTap<HTMLButtonElement>('bookshelf.modal.private.open')}
+              {...bindNav(routes.bookshelf, { search: { select: 'true', modal: 'private_reading' } })}
             >
               <IcGhost size={dimens.icSizeTab} strokeWidth={1.5} className="text-(--app-c-tw-text-slate-600)" />
               <span className="text-(--app-tab-bar-label-size) text-(--app-c-tw-text-slate-500) scale-90">{s.bookshelf_toolbar_private_reading}</span>
@@ -277,7 +276,7 @@ const BookshelfPage: React.FC = () => {
               disabled={selectedIds.size === 0}
               className={`flex flex-col items-center gap-1.5 ${selectedIds.size === 0 ? 'opacity-30' : 'active:opacity-60'}`}
               style={{ transition: 'opacity var(--app-duration-short) var(--app-easing-standard)' }}
-              {...bindTap<HTMLButtonElement>('bookshelf.modal.confirm_remove.open')}
+              {...bindNav(routes.bookshelf, { search: { select: 'true', modal: 'confirm_remove' } })}
             >
               <IcBookRemove size={dimens.icSizeTab} strokeWidth={1.5} className="text-red-500" />
               <span className="text-(--app-tab-bar-label-size) text-red-500 scale-90 font-medium">{s.bookshelf_toolbar_remove}</span>

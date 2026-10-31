@@ -6,9 +6,10 @@ import { WechatSmartImage } from '../../components/WechatSmartImage';
 import { useActivityContext } from '../../../../os/ActivityContext';
 import { BackDispatcher } from '../../../../os/BackDispatcher';
 import { useWechatStrings } from '../../hooks/useWechatStrings';
-import { useAppNavigate } from '../../navigation';
+import { useNav } from '../../../../os/navigation';
 import * as TimeService from '../../../../os/TimeService';
 import type { ChatSession, ContactItem } from '../../types';
+import { routes } from '../../routes';
 
 type ShareTarget = {
   wxid: string;
@@ -457,7 +458,7 @@ const ConfirmSheet: React.FC<{
 // ----- Top-level page -----
 export const ShareForwardPage: React.FC = () => {
   const { activityId } = useActivityContext();
-  const { go, back } = useAppNavigate();
+  const nav = useNav(); const back = nav.back;
   const sendImages = useWechatStore(s => s.sendImages);
   const sendMessage = useWechatStore(s => s.sendMessage);
 
@@ -584,9 +585,9 @@ export const ShareForwardPage: React.FC = () => {
     // 这里 replace 当前 '/share/forward' 为 '/chat/:id'，使历史变为 ['/', '/chat/:id']。
     const target = confirmTargets[0];
     requestAnimationFrame(() => {
-      go('share.forward.send.toChat', { id: target.wxid });
+      nav.replace(routes.chat, { id: target.wxid });
     });
-  }, [confirmTargets, sending, intentImages, caption, sendImages, sendMessage, go]);
+  }, [confirmTargets, sending, intentImages, caption, sendImages, sendMessage, nav]);
 
   const toggleCreateContact = (wxid: string) => {
     setCreateSelectedIds(prev => {

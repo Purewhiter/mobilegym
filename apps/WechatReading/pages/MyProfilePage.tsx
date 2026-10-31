@@ -13,6 +13,7 @@ import {
     localizeWechatReadingVisibility,
     quoteWechatReadingTitle,
 } from '../utils/localization';
+import { routes } from '../routes';
 
 const MyProfilePage: React.FC = () => {
     const user = useWechatReadingStore(s => s.user);
@@ -20,7 +21,7 @@ const MyProfilePage: React.FC = () => {
     const settings = useWechatReadingStore(s => s.settings);
     const readingRecords = useWechatReadingStore(s => s.readingRecords);
     const homeFinishedBookIds = useWechatReadingStore(selectHomeFinishedBookIds);
-    const { bindBack, bindTap, go } = useWechatReadingGestures();
+    const { bindBack, bindNav, nav } = useWechatReadingGestures();
     const [searchParams] = useSearchParams();
     const location = useLocation();
     const locale = useLocale();
@@ -35,13 +36,13 @@ const MyProfilePage: React.FC = () => {
         const raw = new URLSearchParams(location.search).get('tab');
         const valid = raw === 'shelf' || raw === 'finished';
         if (!valid) {
-            go('myProfile.tab.switch', { tab: 'shelf' });
+            nav.replace(routes.myProfile, {}, { search: { tab: 'shelf' } });
             return;
         }
         if (raw === 'finished' && !canShowFinishedTab) {
-            go('myProfile.tab.switch', { tab: 'shelf' });
+            nav.replace(routes.myProfile, {}, { search: { tab: 'shelf' } });
         }
-    }, [location.pathname, location.search, canShowFinishedTab, go]);
+    }, [location.pathname, location.search, canShowFinishedTab, nav]);
 
     const totalReadingMinutes = useMemo(
         () => readingRecords.reduce((sum, record) => sum + record.duration, 0),
@@ -93,7 +94,7 @@ const MyProfilePage: React.FC = () => {
                 <div className="flex gap-2">
                     <button
                         className="p-2 active:opacity-60"
-                        {...bindTap<HTMLButtonElement>('settings.privacy.profile.open')}
+                        {...bindNav(routes.settingsPrivacyProfile)}
                     >
                         <IcEye size={dimens.icSizeToolbar} className="text-(--app-c-tw-text-slate-800)" />
                     </button>
@@ -116,7 +117,7 @@ const MyProfilePage: React.FC = () => {
 
                 <h1
                     className="text-2xl font-black text-(--app-c-tw-text-slate-900) mb-3 active:opacity-60 cursor-pointer"
-                    {...bindTap<HTMLHeadingElement>('profile.edit.open')}
+                    {...bindNav(routes.editProfile)}
                 >
                     {user.name}
                 </h1>
@@ -142,7 +143,7 @@ const MyProfilePage: React.FC = () => {
                 <div className="w-full grid grid-cols-3 gap-0 mb-10">
                     <div
                         className="flex flex-col items-center border-r border-(--app-c-tw-border-gray-100) active:opacity-60 cursor-pointer"
-                        {...bindTap<HTMLDivElement>('myReading.open.total')}
+                        {...bindNav(routes.myReading, { search: { tab: 'total' } })}
                     >
                         <span className="text-xl font-black text-(--app-c-tw-text-slate-900)">{formatWechatReadingDuration(totalReadingMinutes, locale)}</span>
                         <span className="text-xs text-(--app-c-tw-text-slate-400) mt-1 font-bold">{s.my_profile_reading_duration}</span>
@@ -153,7 +154,7 @@ const MyProfilePage: React.FC = () => {
                     </div>
                     <div
                         className="flex flex-col items-center active:opacity-60 cursor-pointer"
-                        {...bindTap<HTMLDivElement>('following.open.followers')}
+                        {...bindNav(routes.following, { search: { tab: 'followers' } })}
                     >
                         <span className="text-xl font-black text-(--app-c-tw-text-slate-900)">{user.followerCount}</span>
                         <span className="text-xs text-(--app-c-tw-text-slate-400) mt-1 font-bold">{s.my_profile_followers}</span>
@@ -164,7 +165,7 @@ const MyProfilePage: React.FC = () => {
                     <div className="flex border-b border-(--app-c-tw-border-gray-50)">
                         <div
                             className="flex-1 py-4 flex flex-col items-center relative cursor-pointer"
-                            {...bindTap<HTMLDivElement>('myProfile.tab.switch', { params: { tab: 'shelf' } })}
+                            {...bindNav(routes.myProfile, { search: { tab: 'shelf' }, replace: true })}
                         >
                             <span className={`text-base font-black ${activeCardTab === 'shelf' ? 'text-app-primary' : 'text-(--app-c-tw-text-slate-300)'}`} style={{ transition: 'color var(--app-duration-short) var(--app-easing-standard), background-color var(--app-duration-short) var(--app-easing-standard), border-color var(--app-duration-short) var(--app-easing-standard)' }}>{s.my_profile_tab_shelf}</span>
                             {effectiveTab === 'shelf' && <div className="absolute bottom-0 w-6 h-0.5 bg-app-primary rounded-full"></div>}
@@ -172,7 +173,7 @@ const MyProfilePage: React.FC = () => {
                         {canShowFinishedTab && (
                             <div
                                 className="flex-1 py-4 flex items-center justify-center gap-1 cursor-pointer relative"
-                                {...bindTap<HTMLDivElement>('myProfile.tab.switch', { params: { tab: 'finished' } })}
+                                {...bindNav(routes.myProfile, { search: { tab: 'finished' }, replace: true })}
                             >
                                 <span className={`text-base font-black ${effectiveTab === 'finished' ? 'text-app-primary' : 'text-(--app-c-tw-text-slate-300)'}`} style={{ transition: 'color var(--app-duration-short) var(--app-easing-standard), background-color var(--app-duration-short) var(--app-easing-standard), border-color var(--app-duration-short) var(--app-easing-standard)' }}>{s.my_profile_tab_finished}</span>
                                 <span className={`text-xs font-bold mt-1 ${effectiveTab === 'finished' ? 'text-app-primary' : 'text-(--app-c-tw-text-slate-300)'}`} style={{ transition: 'color var(--app-duration-short) var(--app-easing-standard), background-color var(--app-duration-short) var(--app-easing-standard), border-color var(--app-duration-short) var(--app-easing-standard)' }}>· {stats.finishedCount}</span>
@@ -195,7 +196,7 @@ const MyProfilePage: React.FC = () => {
                                     <div
                                         key={idx}
                                         className="flex flex-col gap-2 active:opacity-60"
-                                        {...bindTap<HTMLDivElement>('book.detail.open', { params: { bookId: book.id } })}
+                                        {...bindNav(routes.book, { params: { bookId: book.id } })}
                                     >
                                         <div className={`aspect-[3/4] ${book.coverColor || 'bg-(--app-c-tw-bg-gray-100)'} rounded shadow-sm overflow-hidden relative border border-black/5`}>
                                             <div className="absolute inset-0 flex flex-col items-center justify-center p-2 text-center">
@@ -217,8 +218,8 @@ const MyProfilePage: React.FC = () => {
                         <button
                             className="w-full py-4 bg-app-bg rounded-2xl text-(--app-settings-item-text-size) font-black text-(--app-c-tw-text-slate-600) active:bg-(--app-c-tw-bg-gray-200)" style={{ transition: 'color var(--app-duration-short) var(--app-easing-standard), background-color var(--app-duration-short) var(--app-easing-standard), border-color var(--app-duration-short) var(--app-easing-standard)' }}
                             {...(effectiveTab === 'shelf'
-                                ? bindTap<HTMLButtonElement>('user.shelf.open', { params: { userId: user.id } })
-                                : bindTap<HTMLButtonElement>('readingList.open.finished'))}
+                                ? bindNav(routes.userShelf, { params: { userId: user.id } })
+                                : bindNav(routes.readingList, { search: { category: 'finished' } }))}
                         >
                             {effectiveTab === 'shelf' ? s.my_profile_view_shelf : s.my_profile_view_all}
                         </button>

@@ -5,12 +5,13 @@ import { useSpotifyGestures } from '../hooks/useSpotifyGestures';
 import { useSpotifyStrings } from '../hooks/useSpotifyStrings';
 import { IcCheck, SpotifyLogoIcon } from '../res/icons';
 import { localizePremiumPlan } from '../utils/localizePremiumPlan';
+import { routes } from '../routes';
 
 export const PremiumPage: React.FC = () => {
   const locale = useLocale();
   const isEnglish = locale === 'en';
   const s = useSpotifyStrings();
-  const { bindTap } = useSpotifyGestures();
+  const { bindNav } = useSpotifyGestures();
   const plans = PREMIUM_PLANS.map((plan) => localizePremiumPlan(plan, isEnglish));
 
   return (
@@ -30,7 +31,7 @@ export const PremiumPage: React.FC = () => {
         <h1 className="text-3xl font-extrabold mb-4 leading-tight">{s.premium_hero_title}</h1>
 
         <button
-          {...bindTap('premium.payment.open', { params: { planId: plans[0].id } })}
+          {...bindNav(routes.premiumPayment, { search: { planId: plans[0].id } })}
           className="w-full bg-white text-black font-bold rounded-full py-3.5 text-base mb-4 active:scale-95 transition-transform"
         >
           {s.premium_trial_button}
@@ -96,7 +97,7 @@ export const PremiumPage: React.FC = () => {
               </ul>
 
               <button
-                {...bindTap('premium.payment.open', { params: { planId: plan.id } })}
+                {...bindNav(routes.premiumPayment, { search: { planId: plan.id } })}
                 className={`w-full py-3.5 rounded-full font-bold text-sm hover:scale-105 transition-transform ${plan.buttonBg} ${plan.buttonTextColor}`}
               >
                 {plan.buttonText}

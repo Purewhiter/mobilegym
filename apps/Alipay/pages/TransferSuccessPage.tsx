@@ -6,22 +6,23 @@ import { IcCheckCircle, IcNavForward } from '../res/icons';
 import { useAlipayStore } from '../state';
 import { localizePaymentMethodLabel } from '../utils/localizeCatalog';
 import { DefaultAvatar } from '../components/DefaultAvatar';
+import { routes } from '../routes';
 
 export const TransferSuccessPage: React.FC = () => {
   const transferReceipt = useAlipayStore(state => state.transferReceipt);
   const setTransferReceipt = useAlipayStore(state => state.setTransferReceipt);
   const setTransferDraft = useAlipayStore(state => state.setTransferDraft);
-  const { bindTap, go } = useAlipayGestures();
+  const { bindTap, nav } = useAlipayGestures();
   const s = useAlipayStrings();
   const isEnglish = useLocale() === 'en';
   const amount = transferReceipt?.amount || '0.00';
   const contact = transferReceipt?.contact || { name: s.unknown_user };
 
-  const doneTapProps = bindTap<HTMLButtonElement>('transfer.success.done', {
+  const doneTapProps = bindTap<HTMLButtonElement>('nav.payTransfer', {
     onTrigger: () => {
       setTransferReceipt(null);
       setTransferDraft(null);
-      go('transfer.success.done', {}, { popTo: '/pay/transfer', popToInclusive: false });
+      nav.replace(routes.payTransfer, {}, { popTo: '/pay/transfer', popToInclusive: false });
     },
   });
 

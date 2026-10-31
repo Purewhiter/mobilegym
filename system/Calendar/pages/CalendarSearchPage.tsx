@@ -7,6 +7,7 @@ import { useAppStrings } from '@/os/useAppStrings';
 import { useCalendarGestures } from '../hooks/useCalendarGestures';
 import * as TimeService from '@/os/TimeService';
 import { getSystemSymbolUrl, IcSymbolClear } from '../res/icons';
+import { routes } from '../routes';
 const calIcon = (name: string) => name ? `/@app-assets/Calendar/icons/${name}.svg` : '';
 
 const formatDateTimeCN = (ts: number, allDay: boolean, allDayLabel: string) => {
@@ -20,7 +21,7 @@ const formatDateTimeCN = (ts: number, allDay: boolean, allDayLabel: string) => {
 };
 
 export const CalendarSearchPage: React.FC = () => {
-  const { bindBack, bindTap } = useCalendarGestures();
+  const { bindBack, bindNav } = useCalendarGestures();
   const events = useCalendarStore(s => s.events);
   const s = useAppStrings(strings, stringsEn);
 
@@ -79,7 +80,7 @@ export const CalendarSearchPage: React.FC = () => {
             {results.map((e) => (
               <button
                 key={e.id}
-                {...bindTap('event.open', { params: { eventId: e.id } })}
+                {...bindNav(routes.event, { params: { eventId: e.id } })}
                 className="w-full text-left bg-app-surface dark:bg-[#1c1c1e] rounded-2xl px-4 py-3 border border-gray-100 dark:border-white/10 active:bg-black/5 dark:active:bg-white/5"
               >
                 <div className="text-[16px] text-app-text dark:text-gray-100 truncate">{e.title}</div>

@@ -8,12 +8,13 @@ import { XImage } from '../components/XMedia';
 import { BookmarkToast } from '../components/BookmarkToast';
 import { XRetweetSheet } from '../components/XRetweetSheet';
 import { XTimelinePostCard } from '../components/XTimelinePostCard';
+import { routes } from '../routes';
 
 export const ProfilePage: React.FC = () => {
   const user = useXStore(selectUser);
   const myPosts = useXUserProfilePosts(user.id, 80);
   const toggleRetweet = useXStore(s => s.toggleRetweet);
-  const { bindBack, go } = useXGestures();
+  const { bindBack, nav } = useXGestures();
   const s = useXStrings();
   const [retweetMenuPostId, setRetweetMenuPostId] = React.useState<string | null>(null);
   const [showBookmarkToast, setShowBookmarkToast] = React.useState(false);
@@ -85,10 +86,10 @@ export const ProfilePage: React.FC = () => {
         </div>
 
         <div className="mt-3 flex gap-4 text-sm">
-          <div className="cursor-pointer active:opacity-50" onClick={() => go('connections.open', { id: user.id, type: 'following' })}>
+          <div className="cursor-pointer active:opacity-50" onClick={() => nav.push(routes.connections, { id: user.id }, { search: { type: 'following' } })}>
             <span className="font-bold text-app-text">{user.following}</span> <span className="text-gray-500">{s.profile_following_label}</span>
           </div>
-          <div className="cursor-pointer active:opacity-50" onClick={() => go('connections.open', { id: user.id, type: 'followers' })}>
+          <div className="cursor-pointer active:opacity-50" onClick={() => nav.push(routes.connections, { id: user.id }, { search: { type: 'followers' } })}>
             <span className="font-bold text-app-text">{user.followers}</span> <span className="text-gray-500">{s.profile_followers_label}</span>
           </div>
         </div>
@@ -182,9 +183,9 @@ export const ProfilePage: React.FC = () => {
         onClose={() => setRetweetMenuPostId(null)}
         onRetweet={toggleRetweet}
         onQuote={(postId) => {
-          go('compose.open', { quotedPostId: postId });
+          nav.push(routes.compose, {}, { search: { quotedPostId: postId } });
         }}
-        onViewActivity={(postId) => go('status.activity.open', { id: postId })}
+        onViewActivity={(postId) => nav.push(routes.statusActivity, { id: postId }, { search: { tab: 'quotes' } })}
       />
 
       <BookmarkToast visible={showBookmarkToast} onClose={() => setShowBookmarkToast(false)} />

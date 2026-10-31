@@ -8,6 +8,7 @@ import { useSpotifyStrings } from '../hooks/useSpotifyStrings';
 import { useSearchParams } from 'react-router-dom';
 import { localizeSpotifyText } from '../utils/localizeSpotifyText';
 import { openSaveLocation } from '../components/LikedToast';
+import { routes } from '../routes';
 // Mock Data with specific covers matching description roughly or placeholders
 const NEW_RELEASES = [
     {
@@ -46,7 +47,7 @@ const NewItem: React.FC<{ item: typeof NEW_RELEASES[0] }> = ({ item }) => {
     const locale = useLocale();
     const isEnglish = locale === 'en';
     const [, setSearchParams] = useSearchParams();
-    const { bindTap } = useSpotifyGestures();
+    const { bindTap, bindNav } = useSpotifyGestures();
     const s = useSpotifyStrings();
     const { currentTrack, isPlaying: storeIsPlaying } = useSpotifyStore(useShallow(s => ({ currentTrack: s.currentTrack, isPlaying: s.isPlaying })));
     const playTrack = useSpotifyStore(s => s.playTrack);
@@ -90,13 +91,11 @@ const NewItem: React.FC<{ item: typeof NEW_RELEASES[0] }> = ({ item }) => {
     return (
         <div
             className="flex flex-col mb-8"
-            {...bindTap('player.open', {
-                beforeTrigger: () => {
+            {...bindNav(routes.player, { beforeTrigger: () => {
                     if (!isCurrentTrack) {
                         playTrack(track);
                     }
-                },
-            })}
+                } })}
         >
             <div className="flex gap-4 mb-2">
                 <img
@@ -167,7 +166,7 @@ const NewItem: React.FC<{ item: typeof NEW_RELEASES[0] }> = ({ item }) => {
 };
 
 export const WhatsNewPage: React.FC = () => {
-    const { bindBack } = useSpotifyGestures();
+    const { bindBack, bindNav } = useSpotifyGestures();
     const s = useSpotifyStrings();
 
     return (

@@ -25,10 +25,11 @@ import { stringsEn } from '../res/strings.en';
 import { useAppStrings } from '@/os/useAppStrings';
 import * as TimeService from '@/os/TimeService';
 import { transferNodesToDirectory, shareNodesAsImages, type TransferOperation } from '../utils/fileOperations';
+import { routes } from '../routes';
 export const FolderPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const location = useLocation();
-  const { go, back } = useFileManagerGestures();
+  const { nav, back } = useFileManagerGestures();
   const clipboardItems = useFileManagerStore(s => s.clipboardItems);
   const clipboardOperation = useFileManagerStore(s => s.clipboardOperation);
   const paste = useFileManagerStore(s => s.paste);
@@ -81,7 +82,7 @@ export const FolderPage: React.FC = () => {
     if (isSelecting) return;
     isLongPress.current = true;
     if (initialItemId) setSelectedIds(new Set([initialItemId]));
-    go('folder.select.enter', {});
+    nav.push(routes.folder, {}, { search: { mode: 'select' }, keep: ['path'] });
   };
 
   const exitSelectMode = () => {
@@ -90,11 +91,11 @@ export const FolderPage: React.FC = () => {
   };
 
   const openModal = (type: 'delete' | 'more' | 'newFolder' | 'details' | 'rename', itemId?: string) => {
-    if (type === 'delete') go('folder.modal.delete.open', {});
-    else if (type === 'more') go('folder.modal.more.open', {});
-    else if (type === 'newFolder') go('folder.modal.newFolder.open', {});
-    else if (type === 'details') go('folder.modal.details.open', itemId ? { itemId } : {});
-    else if (type === 'rename') go('folder.modal.rename.open', itemId ? { itemId } : {});
+    if (type === 'delete') nav.push(routes.folder, {}, { search: { mode: 'select', modal: 'delete' }, keep: ['path', 'selected'] });
+    else if (type === 'more') nav.push(routes.folder, {}, { search: { mode: 'select', modal: 'more' }, keep: ['path', 'selected'] });
+    else if (type === 'newFolder') nav.push(routes.folder, {}, { search: { modal: 'newFolder' }, keep: ['path', 'mode', 'selected'] });
+    else if (type === 'details') nav.replace(routes.folder, {}, { search: { modal: 'details', itemId: (itemId ? { itemId } : {}).itemId }, keep: ['path'] });
+    else if (type === 'rename') nav.replace(routes.folder, {}, { search: { modal: 'rename', itemId: (itemId ? { itemId } : {}).itemId }, keep: ['path'] });
   };
 
   const closeModal = () => back();
@@ -136,9 +137,9 @@ export const FolderPage: React.FC = () => {
       toggleSelect(item.id);
       return;
     }
-    if (item.type === 'directory') go('folder.open', { path: item.path });
-    else if (isTextPreviewableFile(item)) go('file.text.open', { path: item.path });
-    else if (isPdfPreviewableFile(item)) go('file.pdf.open', { path: item.path });
+    if (item.type === 'directory') nav.push(routes.folder, {}, { search: { path: item.path } });
+    else if (isTextPreviewableFile(item)) nav.push(routes.text, {}, { search: { path: item.path } });
+    else if (isPdfPreviewableFile(item)) nav.push(routes.pdf, {}, { search: { path: item.path } });
     else if (item.mimeType?.startsWith('image/')) {
       window.__OS__?.startActivity?.({
         action: 'ACTION_VIEW',
@@ -165,11 +166,13 @@ export const FolderPage: React.FC = () => {
 
   const openTransferSheet = (operation: TransferOperation) => {
     if (selectedIds.size === 0) return;
-    go('folder.modal.transfer.open', { operation }, { mode: modal === 'more' ? 'replace' : 'push' });
+    const target = { search: { mode: 'select', modal: 'transfer', operation }, keep: ['path', 'selected'] } as const;
+    if (modal === 'more') nav.replace(routes.folder, {}, target);
+    else nav.push(routes.folder, {}, target);
   };
 
   const openTransferCreateFolder = () => {
-    go('folder.modal.transfer.newFolder.open');
+    nav.push(routes.folder, {}, { search: { mode: 'select', modal: 'transfer', transferDialog: 'newFolder' }, keep: ['path', 'selected', 'operation'] });
   };
   
   const handlePaste = async () => {
@@ -221,7 +224,7 @@ export const FolderPage: React.FC = () => {
     const id = nodes[0].id;
     // Back to base state first (2 steps: more menu + select mode), then open details
     back(2);
-    setTimeout(() => go('folder.modal.details.open.fromBase', { itemId: id }), 50);
+    setTimeout(() => nav.push(routes.folder, {}, { search: { modal: 'details', itemId: id }, keep: ['path'] }), 50);
   };
 
   const handleRenameClick = () => {
@@ -233,7 +236,7 @@ export const FolderPage: React.FC = () => {
     const id = nodes[0].id;
     // Back to base state first (2 steps: more menu + select mode), then open rename
     back(2);
-    setTimeout(() => go('folder.modal.rename.open.fromBase', { itemId: id }), 50);
+    setTimeout(() => nav.push(routes.folder, {}, { search: { modal: 'rename', itemId: id }, keep: ['path'] }), 50);
   };
 
   const doRename = async (newName: string) => {
@@ -353,7 +356,7 @@ export const FolderPage: React.FC = () => {
             <React.Fragment key={crumb.path}>
               {index > 0 && <IcNavForward size={14} className="text-gray-300 shrink-0" />}
               <button
-                onClick={() => crumb.path !== currentPath && go('folder.open', { path: crumb.path }, { mode: 'replace' })}
+                onClick={() => crumb.path !== currentPath && nav.replace(routes.folder, {}, { search: { path: crumb.path } })}
                 className={`px-4 py-1.5 rounded-full text-[13px] transition-colors shrink-0 ${
                   index === breadcrumbs.length - 1 ? 'bg-amber-100 text-amber-600 font-medium' : 'bg-gray-100 text-gray-500'
                 }`}
@@ -394,11 +397,11 @@ export const FolderPage: React.FC = () => {
                 const isCutting = clipboardOperation === 'cut' && clipboardItems.some(i => i.id === item.id);
                 const isImage = item.mimeType?.startsWith('image/');
                 const triggerId = item.type === 'directory'
-                  ? 'folder.open'
+                  ? 'nav.folder'
                   : isTextPreviewableFile(item)
-                    ? 'file.text.open'
+                    ? 'nav.text'
                     : isPdfPreviewableFile(item)
-                      ? 'file.pdf.open'
+                      ? 'nav.pdf'
                       : undefined;
                 const actionAttrs = !triggerId && isImage
                   ? {

@@ -24,6 +24,7 @@ import { useAppStrings } from '../../../os/useAppStrings';
 import type { Note } from '../types';
 import { useNotesGestures } from '../hooks/useNotesGestures';
 import { getFolderDisplayName } from '../utils';
+import { routes } from '../routes';
 
 const NOTE_LONG_PRESS_MS = 520;
 const NOTE_LONG_PRESS_MOVE_CANCEL_PX = 12;
@@ -181,7 +182,7 @@ const NoteCard: React.FC<{
 };
 
 export const NotesListPage: React.FC = () => {
-  const { go } = useNotesGestures();
+  const { nav } = useNotesGestures();
   const notes = useNotesStore(selectVisibleNotes);
   const { folders, selectedFolderId, setSelectedFolderId, settings, updateNote, deleteNote, hideNote } =
     useNotesStore(
@@ -326,7 +327,7 @@ export const NotesListPage: React.FC = () => {
                 <button
                   className="w-10 h-10 flex items-center justify-center active:opacity-70"
                   onClick={() => {
-                    go('folders.open');
+                    nav.push(routes.folders);
                   }}
                   aria-label={s.folders}
                 >
@@ -335,7 +336,7 @@ export const NotesListPage: React.FC = () => {
                 <button
                   className="w-10 h-10 flex items-center justify-center active:opacity-70"
                   onClick={() => {
-                    go('settings.open');
+                    nav.push(routes.settings);
                   }}
                   aria-label={s.settings}
                 >
@@ -387,7 +388,7 @@ export const NotesListPage: React.FC = () => {
                   note={note}
                   selectionMode={selectionMode}
                   selected={selectedNoteIds.has(note.id)}
-                  onOpen={() => go('note.open', { id: note.id })}
+                  onOpen={() => nav.push(routes.note, { id: note.id })}
                   onToggleSelected={() => toggleSelected(note.id)}
                   onLongPress={() => startSelection(note.id)}
                 />
@@ -401,7 +402,7 @@ export const NotesListPage: React.FC = () => {
                   note={note}
                   selectionMode={selectionMode}
                   selected={selectedNoteIds.has(note.id)}
-                  onOpen={() => go('note.open', { id: note.id })}
+                  onOpen={() => nav.push(routes.note, { id: note.id })}
                   onToggleSelected={() => toggleSelected(note.id)}
                   onLongPress={() => startSelection(note.id)}
                 />
@@ -419,7 +420,7 @@ export const NotesListPage: React.FC = () => {
       {/* Floating action button */}
       {!selectionMode ? (
         <button
-          onClick={() => go('note.new', { id: 'new' })}
+          onClick={() => nav.push(routes.note, { id: 'new' })}
           className="absolute rounded-full text-white shadow-2xl flex items-center justify-center active:scale-95 transition-transform"
           style={{
             bottom: fabBottom,

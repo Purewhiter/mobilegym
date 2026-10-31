@@ -1,11 +1,12 @@
 import React from 'react';
 import { IcCart, IcMail, IcUser, IcNavForward, IcHeart, IcRefresh, IcClose, IcPackage, IcGavel, IcHistory, IcTag, IcLike, IcDislike } from '../res/icons';
-import { useEbayGestures } from '../navigation';
+import { useEbayGestures } from '../hooks/useEbayGestures';
 import TabBar from '../components/TabBar';
 import { useEbayStrings } from '../hooks/useEbayStrings';
+import { routes } from '../routes';
 
 const MePage: React.FC = () => {
-  const { bindTap, bindAction } = useEbayGestures();
+  const { bindNav, bindAction } = useEbayGestures();
   const s = useEbayStrings();
 
   return (
@@ -19,7 +20,7 @@ const MePage: React.FC = () => {
                  <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
                      <IcMail size={20} className="text-app-text" />
                  </div>
-                 <div {...bindTap('cart.open', {})} className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
+                 <div {...bindNav(routes.cart)} className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
                      <IcCart size={20} className="text-app-text" />
                  </div>
             </div>
@@ -109,7 +110,7 @@ const MePage: React.FC = () => {
           {/* Selling Section */}
           <div className="px-4 mb-6">
               <h2 className="text-xl font-bold mb-4 text-black">{s.me_selling}</h2>
-              <div {...bindTap('tab.sell', {})}>
+              <div {...bindNav(routes.sell)}>
                 <ListItem 
                     icon={<IcTag size={24} className="text-black" />} 
                     title={s.me_selling_overview} 
@@ -130,7 +131,7 @@ const MePage: React.FC = () => {
               <div className="space-y-6">
                   <SimpleListItem text={s.me_payments} />
                   <SimpleListItem text={s.me_help} />
-                  <SimpleListItem text={s.me_settings} onClickProps={bindTap('me.settings.open')} />
+                  <SimpleListItem text={s.me_settings} onClickProps={bindNav(routes.settings)} />
               </div>
           </div>
 

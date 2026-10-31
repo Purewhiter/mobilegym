@@ -7,6 +7,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { IcPlay, IcPause, IcMic, IcMore, IcShuffle, IcRepeat, IcTimer } from '../res/icons';
 import { localizeSpotifyText } from '../utils/localizeSpotifyText';
 import { getTrackCoverLarge } from '../utils/artwork';
+import { routes } from '../routes';
 
 const DISMISS_THRESHOLD = 80;
 const SNAP_THRESHOLD = 50;
@@ -26,7 +27,7 @@ export const QueueSheetPanel: React.FC<QueueSheetPanelProps> = ({
   const locale = useLocale();
   const isEnglish = locale === 'en';
   const s = useSpotifyStrings();
-  const { bindTap } = useSpotifyGestures();
+  const { bindTap, bindNav } = useSpotifyGestures();
   const displayText = (v: string | undefined) => localizeSpotifyText(v, isEnglish);
 
   const { currentTrack, isPlaying, queue, shuffle, repeat } = useSpotifyStore(
@@ -316,7 +317,7 @@ export const QueueSheetPanel: React.FC<QueueSheetPanelProps> = ({
             <span>{repeat === 'track' ? s.player_repeat_one : s.player_repeat}</span>
           </button>
           <button
-            {...bindTap('player.timer.open')}
+            {...bindNav(routes.player, { search: { sheet: 'timer' } })}
             className="flex items-center justify-center gap-2 text-sm text-gray-300 font-bold bg-[#3E3E3E] py-3 rounded-lg active:scale-95 transition-transform"
           >
             <IcTimer size={20} />

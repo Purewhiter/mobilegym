@@ -9,6 +9,7 @@ import { useBilibiliGestures } from '../hooks/useBilibiliGestures';
 import { useVideosByIds } from '../hooks/useData';
 import { BilibiliDanmakuIcon } from '../res/icons';
 import type { BilibiliVideo } from '../types';
+import { routes } from '../routes';
 
 const formatStat = (num: number | string | undefined) => {
     if (num === undefined || num === null) return '0';
@@ -66,7 +67,7 @@ const VideoItem: React.FC<{ video: BilibiliVideo; onTap: any }> = ({ video, onTa
 );
 
 export const FavFolderDetailPage: React.FC = () => {
-    const { bindBack, bindTap } = useBilibiliGestures();
+    const { bindBack, bindNav } = useBilibiliGestures();
     const { folderId } = useParams();
     const user = useBilibiliStore(s => s.user);
 
@@ -121,7 +122,7 @@ export const FavFolderDetailPage: React.FC = () => {
                     <VideoItem
                         key={video.id}
                         video={video}
-                        onTap={bindTap('video.open', { params: { bvid: video.id } })}
+                        onTap={bindNav(routes.video, { params: { bvid: video.id }, search: { tab: 'intro' } })}
                     />
                 ))}
                 {videos.length === 0 && (

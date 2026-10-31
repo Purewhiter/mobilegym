@@ -4,6 +4,7 @@ import { useWechatGestures } from '../../hooks/useWechatGestures';
 import { useWechatStore } from '../../state';
 import { IcNavBack, IcSearch } from '../../res/icons';
 import { dimens } from '../../res/dimens';
+import { routes } from '../../routes';
 
 const StartGroupContactItem: React.FC<{
   name: string;
@@ -28,7 +29,7 @@ const StartGroupContactItem: React.FC<{
 
 export const StartGroupPage: React.FC = () => {
   const t = useWechatStrings();
-  const { bindBack, bindTap } = useWechatGestures();
+  const { bindBack, bindNav } = useWechatGestures();
   const contacts = useWechatStore(s => s.contacts);
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -117,7 +118,7 @@ export const StartGroupPage: React.FC = () => {
           </div>
 
           <div
-            {...bindTap<HTMLDivElement>('startGroup.faceToFace.open')}
+            {...bindNav(routes.faceToFaceGroup)}
             className="px-4 py-3.5 border-b border-(--app-c-tw-border-gray-100) active:bg-(--app-c-contacts-item-bg-active) cursor-pointer text-[16px] text-(--app-c-settings-item-text)"
           >
             {t.contacts_start_group_face_to_face}

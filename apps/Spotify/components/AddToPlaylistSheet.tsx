@@ -6,6 +6,7 @@ import type { SpotifyPlaylist, SpotifyTrack } from '../types';
 import { useSpotifyGestures } from '../hooks/useSpotifyGestures';
 import { useSpotifyStrings } from '../hooks/useSpotifyStrings';
 import { localizeSpotifyText } from '../utils/localizeSpotifyText';
+import { routes } from '../routes';
 
 interface Props {
   isOpen: boolean;
@@ -24,7 +25,7 @@ export const AddToPlaylistSheet: React.FC<Props> = ({
 }) => {
   const dragStartY = useRef(0);
   const barRef = useRef<HTMLDivElement>(null);
-  const { go } = useSpotifyGestures();
+  const { nav } = useSpotifyGestures();
   const locale = useLocale();
   const isEnglish = locale === 'en';
   const s = useSpotifyStrings();
@@ -95,7 +96,7 @@ export const AddToPlaylistSheet: React.FC<Props> = ({
 
   const handleCreateNew = () => {
     useSpotifyStore.setState({ pendingPlaylistTrack: track });
-    go('create.naming.directOpen');
+    nav.push(routes.create, {}, { search: { view: 'naming' } });
   };
 
   const handleLike = () => {

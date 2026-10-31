@@ -1,13 +1,13 @@
-# Route Tables (pilot)
+# Routes and Navigation
 
-`os/navigation/` replaces the per-app navigation declaration with a small route table and jumps written in code. **Tencent Meeting** (`apps/TencentMeeting`) is the pilot; every other app still uses [`navigation.declaration.ts`](declaration.md).
+Every app keeps a **route table** (`routes.ts`): its pages and the finite UI states each keeps in its URL, like the destinations of an Android nav graph. Jumps are written in code with the shared hooks in `os/navigation/`; there is no per-button transition table to keep in sync.
 
-## What an app writes
-
-A route table lists the app's destinations and the finite UI states each keeps in its URL — the same information as a declaration's `routes` and `uiStates`, without transitions:
+## The route table
 
 ```ts
 // apps/TencentMeeting/routes.ts
+import { defineRoutes } from '../../os/navigation/routes';
+
 export const routes = defineRoutes({
   home: { path: '/' },
   meeting: { path: '/meeting', search: { dialog: ['chat', 'exit'] } },
@@ -15,38 +15,62 @@ export const routes = defineRoutes({
 });
 ```
 
-Pages jump with the shared hooks; path params and query values are type-checked against the table:
+- `path` uses react-router syntax; `:param` segments are typed and required when jumping there.
+- `search` lists the values a query key can take for discrete UI states (tabs, dialogs, sheets). Keys left out of `search` (a search keyword, an item id) accept any value.
+- Every path must also be registered in the app's `<Routes>`.
+
+## Jumping
 
 ```tsx
-const { nav, bindNav, bindBack, bindTap } = useNavGestures();   // apps wrap it, e.g. useMeetingGestures()
+const { nav, bindNav, bindBack, bindTap } = useMeetingGestures();   // wraps useNavGestures()
 
 <div {...bindNav(routes.historyDetail, { params: { meetingId } })} />          // push
 <div {...bindNav(routes.me, { replace: true })} />                             // tab switch
 <div {...bindNav(routes.meeting, { search: { dialog: 'chat' } })} />           // URL-driven dialog
+<div {...bindNav(routes.home, { replace: true, beforeTrigger: cancelMeeting })} />
 nav.replace(routes.meetingEdit);                                               // from a handler
+nav.push(routes.search, {}, { state: { viewportCenter } });
 nav.back();
+nav.toPath(intentRoute, { replace: true });                                    // a path that arrived at runtime
 ```
 
-`bindBack()` is the system back, as before. In-place actions keep using `bindTap({ kind: 'action', id }, { onTrigger })`.
+Semantics:
 
-## Semantics (same as the declaration runtime)
+- The target query **starts empty**: only `search` values, and keys listed in `keep` (copied from the current URL first), end up in it. `null` / `undefined` clears a key. Keys keep the order `keep`, then `search`.
+- `replace: true` replaces the current history entry; otherwise the jump pushes. Replacing the page with the identical URL (tapping the current tab) does nothing.
+- `popTo` (a path, or several tried in order) rewinds the history first, like Android's `popUpTo`; `popToInclusive` pops the match too.
+- `state` becomes the new entry's `location.state`.
 
-- The target query starts empty: only `search` values (and keys listed in `keep`, copied from the current URL) end up in it; `null` clears a key.
-- `replace: true` replaces the current history entry; otherwise the jump pushes.
-- `popTo` / `popToInclusive` rewind the history first (Android's `popUpTo`).
-- Replacing the page with the identical URL (tapping the current tab) does nothing.
-- A declaration's `from` constraint becomes ordinary code: bind the jump only where it applies (for example, the delete-account entry does nothing while its dialog is open).
+## Rules
+
+- **Tabs** are separate pathnames (`/`, `/contacts`, `/me`) and switch with `replace: true`.
+- **Dialogs, sheets, menus are URL-driven**: open them with a jump that adds a query value (`search: { dialog: 'chat' }`), derive visibility from the URL, close them with back. Never control dialog visibility with `useState` — the back key cannot see it.
+- **Conditions are code**: a jump that only applies in some states (only while a dialog is closed, only after a choice) is bound only where it applies.
+- **Business pages do not call `useNavigate()`**; a path string from an intent or deep link goes through `nav.toPath`.
+- **Back / close / cancel** use `bindBack()` (`system.back`), which runs the OS back chain.
+- Do not import `BackDispatcher` in app code.
 
 ## DOM tags
 
-`bindNav` tags elements `data-trigger="nav.<route name>"` with the path params and query values in `data-trigger-params`; there are no hand-written transition ids. The static tools (`build_nav_artifacts.mjs`, consistency check, action-task generation) do not read route tables; use [`scripts/explore_nav_graph.py`](../../../scripts/explore_nav_graph.py) instead, which taps every tagged element on a running simulator and records where each tap and the following system back land.
+`bindNav` tags elements `data-trigger="nav.<route name>"` with path params and query values in `data-trigger-params`; `bindBack` tags `data-trigger="system.back"`; actions are tagged as described in [actions.md](actions.md). Ids come from the route table, so nothing is hand-written. A control that navigates through a plain `onClick` is invisible to the tools below — use `bindNav`.
 
-## How the pilot was checked
+## Exploring an app's graph
 
-- Every one of Tencent Meeting's 41 declared transitions resolves to the same URL and push/replace mode through `buildHref` as through the old `go()`.
-- `explore_nav_graph.py` on the build before and after the migration: the same 36 states and the same tap/back outcomes. The only differences are two elements that were tagged but did nothing (a transition missing from the declaration, and an entry under an open dialog), which are no longer tagged.
-- Against the static graph the old declaration generated: the explored graph has every real edge of it. The static graph missed `/meeting/detail` (not in the declaration's routes, so its 7 edges were broken), a declared transition was never used in code, and the meeting-number join needs typed input, which the explorer does not do. The explorer also finds edges the declaration forbade but the UI allows (switching between the chat and exit dialogs).
+There is no static graph. [`scripts/explore_nav_graph.py`](../../../scripts/explore_nav_graph.py) builds one from a running simulator:
 
-## Exploring a graph
+```bash
+python scripts/explore_nav_graph.py http://localhost:3000/ tencent_meeting out.json
+python scripts/explore_nav_graph.py --diff before.json after.json
+```
 
-`scripts/explore_nav_graph.py <url> <appId> out.json` resets the simulator before reaching each state again (taps change data), freezes simulated time (`--sim-time`) so labels match across reloads, and records `HOME` when system back leaves the app. Elements without a tag are invisible to it — every navigation control must use `bindNav` / `bindBack` (the meeting action sheet's edit and cancel buttons were plain `onClick` until the pilot).
+From every reachable URL it taps each tagged element, records where the tap lands and where system back then lands (`HOME` when back leaves the app), and queues new URLs. Each state is reached again from a reset simulator with frozen simulated time (`--sim-time`), so taps that change data (cancel a meeting) do not break later paths and time labels match. Controls that need typed input first (a meeting number) are not followed. Use the diff before and after any navigation change.
+
+## How the migration was checked
+
+The per-app navigation declarations were removed in one change (the Tencent Meeting pilot first). For every app:
+
+- Each declared transition used in code was resolved through the old `go()` semantics of that app and through `buildHref` with the new call; URLs and push/replace matched for all of them. The two conditional (`cases`) transitions, Bilibili's following tab and WechatReading's audiobooks tab, were rewritten by hand.
+- `explore_nav_graph.py` on the build before and after: identical graphs for X (602 edges), WechatReading (437), Alipay (237), Weather (140), Settings (136), Railway12306 (89), eBay (41), FileManager (36) and the smaller system apps; the differences found in Tencent Meeting, WeChat, Reddit and Contacts were taps the old declaration's `from` forbade (re-tapping the current tab, a control under an open menu), now guarded in code the same way. Calendar, Notes, SMS, Gallery, ThemeStore and Browser navigate mostly through untagged `onClick`, so exploration sees little of them; they rely on the per-transition check.
+- Three controls changed on purpose: they were dead before because the declaration's `from` list was too narrow — Spotify's Timer in a queue sheet opened outside the player, Spotify's "New playlist" in the save sheet on `/library`, and SMS's MMS / SIM rows under advanced settings. They now open their pages.
+
+Behaviour was kept even where the old code differed from its declaration: eBay always pushes (tabs included) and its back pops history directly; FileManager's taps stop propagation and its back pops history directly; Bilibili's jumps within the same page now pass the path params they used to inherit from the current URL.

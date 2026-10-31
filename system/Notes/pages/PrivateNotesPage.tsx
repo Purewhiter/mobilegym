@@ -12,6 +12,7 @@ import { stringsEn } from '../res/strings.en';
 import { useAppStrings } from '../../../os/useAppStrings';
 import type { Note } from '../types';
 import { useNotesGestures } from '../hooks/useNotesGestures';
+import { routes } from '../routes';
 
 function formatListTime(timestamp: number, s: typeof strings) {
   const d = TimeService.fromTimestamp(timestamp);
@@ -67,7 +68,7 @@ const PrivateCard: React.FC<{
 };
 
 export const PrivateNotesPage: React.FC = () => {
-  const { go, bindBack } = useNotesGestures();
+  const { nav, bindBack } = useNotesGestures();
   const privateNotes = useNotesStore(selectPrivateNotes);
   const unhideNote = useNotesStore(s => s.unhideNote);
   const deleteNote = useNotesStore(s => s.deleteNote);
@@ -129,7 +130,7 @@ export const PrivateNotesPage: React.FC = () => {
               <PrivateCard
                 key={n.id}
                 note={n}
-                onOpen={() => go('note.open', { id: n.id })}
+                onOpen={() => nav.push(routes.note, { id: n.id })}
                 onActions={() => setActive(n)}
               />
             ))

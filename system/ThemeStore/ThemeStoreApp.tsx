@@ -19,6 +19,7 @@ import { anim } from './res/anim';
 import { strings } from './res/strings';
 import { stringsEn } from './res/strings.en';
 import { useThemeStoreGestures } from './hooks/useThemeStoreGestures';
+import { routes } from './routes';
 
 const { statusBarHeight } = SIMULATOR_CONFIG.framework;
 
@@ -49,7 +50,7 @@ function setLauncherWallpaper(wallpaper: LauncherWallpaper) {
 
 const ThemeStoreNavigationHandler: React.FC = () => {
   const location = useLocation();
-  const { back } = useThemeStoreGestures();
+  const { back, nav } = useThemeStoreGestures();
 
   const handleBackPress = useCallback((): boolean => {
     if (location.pathname !== '/') {
@@ -67,7 +68,7 @@ const ThemeStoreNavigationHandler: React.FC = () => {
 function ThemeStoreHomePage() {
   const s = useAppStrings(strings, stringsEn);
   const { themeService, version } = useTheme();
-  const { go } = useThemeStoreGestures();
+  const { nav } = useThemeStoreGestures();
   const [tab, setTab] = useState<StoreTab>('themes');
   const [items, setItems] = useState<ThemeMeta[]>([]);
   const [loading, setLoading] = useState(true);
@@ -193,10 +194,7 @@ function ThemeStoreHomePage() {
                 <button
                   key={themeMeta.id}
                   className="bg-app-surface rounded-2xl overflow-hidden border border-black/5 shadow-sm text-left"
-                  onClick={() => go('item.open', {
-                    kind: tab === 'themes' ? 'theme' : tab === 'fonts' ? 'font' : 'aod',
-                    id: themeMeta.id,
-                  })}
+                  onClick={() => nav.push(routes.item, { kind: tab === 'themes' ? 'theme' : tab === 'fonts' ? 'font' : 'aod', id: themeMeta.id })}
                 >
                   <div className="h-(--app-card-preview-height) w-full bg-black/5">
                     {previewUrl ? <img src={previewUrl} alt={themeMeta.title} className="h-full w-full object-cover" /> : null}
@@ -229,7 +227,7 @@ function ThemeStoreHomePage() {
 function StoreItemDetailPage() {
   const s = useAppStrings(strings, stringsEn);
   const { themeService, version } = useTheme();
-  const { bindBack } = useThemeStoreGestures();
+  const { bindBack, nav } = useThemeStoreGestures();
   const params = useParams<{ kind: 'theme' | 'font' | 'aod'; id: string }>();
   const kind = params.kind || 'theme';
   const id = params.id || '';

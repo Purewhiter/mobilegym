@@ -10,6 +10,7 @@ import {
   formatBilibiliDuration,
   formatBilibiliStat,
 } from '../utils/localizeBilibiliText';
+import { routes } from '../routes';
 
 const ChevronLeft = IcNavBack;
 const MonitorPlay = IcMonitorPlay;
@@ -45,14 +46,14 @@ function getPartitionGroup(label: string) {
 
 const VideoCard: React.FC<{ video: BilibiliVideo; isEnglish: boolean }> = ({ video, isEnglish }) => {
   const coverSrc = typeof video.cover === 'string' && !video.cover.startsWith('#') ? video.cover : '';
-  const { bindTap } = useBilibiliGestures();
+  const { bindNav } = useBilibiliGestures();
   const locale = useLocale();
 
   return (
     <div
       className="bg-app-surface rounded-lg overflow-hidden shadow-sm flex flex-col h-full active:scale-95"
       style={{ transition: 'transform var(--app-duration-quick) var(--app-easing-standard)' }}
-      {...bindTap('video.open', { params: { bvid: video.id } })}
+      {...bindNav(routes.video, { params: { bvid: video.id }, search: { tab: 'intro' } })}
     >
       <div className="relative aspect-video bg-gray-200">
         {coverSrc ? (
@@ -107,7 +108,7 @@ export const PartitionDetailPage: React.FC = () => {
   const locale = useLocale();
   const isEnglish = locale === 'en';
   const { label } = useParams<{ label: string }>();
-  const { bindBack } = useBilibiliGestures();
+  const { bindBack, bindNav } = useBilibiliGestures();
 
   const normalizedLabel = label ? decodeURIComponent(label) : '';
   const partitionGroup = useMemo(() => getPartitionGroup(normalizedLabel), [normalizedLabel]);

@@ -3,12 +3,13 @@ import React from 'react';
 import { IcSettings, IcHeadphone, IcNavForward, IcUser, IcFile, IcChart, IcPiggyBank, IcCircle, IcSecureCheck, IcDroplet, IcCard, IcBank, IcBuilding, IcMedical, IcHeart, IcTabHome } from '../res/icons';
 import { useAlipayStore } from '../state';
 import { useAlipayGestures } from '../hooks/useAlipayGestures';
+import { routes } from '../routes';
 export const MyPage: React.FC = () => {
   const userInfo = useAlipayStore(s => s.userInfo);
   const myServicesList = useAlipayStore(s => s.myServicesList);
   const myServicesGrid = useAlipayStore(s => s.myServicesGrid);
   const myCivicServices = useAlipayStore(s => s.myCivicServices);
-  const { bindTap } = useAlipayGestures();
+  const { bindNav } = useAlipayGestures();
   const s = useAlipayStrings();
 
   return (
@@ -22,7 +23,7 @@ export const MyPage: React.FC = () => {
       <div className="bg-app-primary px-4 pt-8 pb-6 relative">
         <div className="absolute right-4 top-2 flex items-center space-x-4 text-white">
           <button><IcHeadphone size={22} strokeWidth={1.5} /></button>
-          <button {...bindTap<HTMLButtonElement>('settings.open')}><IcSettings size={22} strokeWidth={1.5} /></button>
+          <button {...bindNav(routes.settings)}><IcSettings size={22} strokeWidth={1.5} /></button>
         </div>
         <div className="flex items-center">
           {/* Avatar */}
@@ -65,7 +66,7 @@ export const MyPage: React.FC = () => {
            {/* Bill Row */}
            <div 
              className="flex items-center justify-between p-4 active:bg-gray-50"
-             {...bindTap<HTMLDivElement>('bill.open')}
+             {...bindNav(routes.bill)}
            >
              <div className="flex items-center">
                 <IcFile size={22} color="#FF7D00" className="mr-3" />
@@ -75,7 +76,7 @@ export const MyPage: React.FC = () => {
            </div>
 
            {/* Assets Row */}
-           <div className="flex items-center justify-between p-4 active:bg-gray-50" {...bindTap<HTMLDivElement>('assets.open')}>
+           <div className="flex items-center justify-between p-4 active:bg-gray-50" {...bindNav(routes.assets)}>
              <div className="flex items-center">
                 <IcChart size={22} color="#1677FF" className="mr-3" />
                 <span className="text-base font-medium text-gray-900">{s.total_assets}</span>
@@ -89,7 +90,7 @@ export const MyPage: React.FC = () => {
            {/* Balance Row */}
            <div 
              className="flex items-center justify-between p-4 active:bg-gray-50"
-             {...bindTap<HTMLDivElement>('balance.open')}
+             {...bindNav(routes.balance)}
            >
              <div className="flex items-center">
                 <div className="w-[22px] h-[22px] rounded-full bg-app-primary flex items-center justify-center text-white text-xs font-bold mr-3">¥</div>
@@ -99,7 +100,7 @@ export const MyPage: React.FC = () => {
            </div>
 
            {/* Yuebao Row */}
-           <div className="flex items-center justify-between p-4 active:bg-gray-50" {...bindTap<HTMLDivElement>('yuebao.open')}>
+           <div className="flex items-center justify-between p-4 active:bg-gray-50" {...bindNav(routes.yuebao)}>
              <div className="flex items-center">
                 <IcPiggyBank size={22} color="#FF7D00" className="mr-3"  />
                 <span className="text-base font-medium text-gray-900">{s.yue_bao}</span>
@@ -134,7 +135,7 @@ export const MyPage: React.FC = () => {
             </div>
             <button
               className="flex flex-col items-center active:opacity-70"
-              {...bindTap<HTMLButtonElement>('bankCards.open')}
+              {...bindNav(routes.bankCards)}
             >
               <IcCard size={28} color="#FF7D00" />
               <div className="mt-2 text-xs text-center leading-tight text-gray-700 font-medium">{s.bank_cards}</div>

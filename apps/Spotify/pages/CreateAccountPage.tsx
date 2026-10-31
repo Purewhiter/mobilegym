@@ -2,9 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { IcNavBack } from '../res/icons';
 import { useSpotifyGestures } from '../hooks/useSpotifyGestures';
 import { useSpotifyStrings } from '../hooks/useSpotifyStrings';
+import { routes } from '../routes';
 
 export const CreateAccountPage: React.FC = () => {
-  const { bindBack, bindTap } = useSpotifyGestures();
+  const { bindBack, bindNav } = useSpotifyGestures();
   const s = useSpotifyStrings();
   const [email, setEmail] = useState('');
   const [isValid, setIsValid] = useState(false);
@@ -48,7 +49,7 @@ export const CreateAccountPage: React.FC = () => {
               ? 'bg-white text-black scale-100'
               : 'bg-[#535353] text-app-text-muted cursor-not-allowed'
             }`}
-            {...(isValid ? bindTap('auth.signup.password.open') : {})}
+            {...(isValid ? bindNav(routes.signupPassword) : {})}
           >
             {s.create_account_next}
           </button>

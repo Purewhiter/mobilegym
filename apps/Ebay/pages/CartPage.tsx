@@ -1,6 +1,6 @@
 import React from 'react';
 import { IcNavBack, IcCart } from '../res/icons';
-import { useEbayGestures } from '../navigation';
+import { useEbayGestures } from '../hooks/useEbayGestures';
 import { useEbayStrings } from '../hooks/useEbayStrings';
 
 const CartPage: React.FC = () => {

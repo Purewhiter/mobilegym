@@ -4,10 +4,11 @@ import { useWechatStrings } from '../hooks/useWechatStrings';
 import { IcScan, IcWallet } from '../res/icons';
 import { getServicesData } from '../constants';
 import { useWechatGestures } from '../hooks/useWechatGestures';
+import { routes } from '../routes';
 
 const Services: React.FC = () => {
   const t = useWechatStrings();
-  const { bindTap } = useWechatGestures();
+  const { bindNav } = useWechatGestures();
   const servicesData = getServicesData(t);
 
   return (
@@ -21,7 +22,7 @@ const Services: React.FC = () => {
            </div>
            <div
              className="flex-1 flex flex-col items-center justify-center gap-2 active:bg-white/10 cursor-pointer"
-             {...bindTap<HTMLDivElement>('wallet.open')}
+             {...bindNav(routes.payWallet)}
            >
               <IcWallet size={28} strokeWidth={1.5} />
               <span className="text-[15px] font-medium">{t.service_wallet}</span>

@@ -11,6 +11,7 @@ import ContentResolver from '../../../os/ContentResolver';
 import { ensureContactsProviderRegistered } from '../../../os/providers/ContactsProvider';
 import { useActivityContext } from '../../../os/ActivityContext';
 import { useSmsGestures } from '../hooks/useSmsGestures';
+import { routes } from '../routes';
 
 interface ContactOption {
     displayName: string;
@@ -19,7 +20,7 @@ interface ContactOption {
 }
 
 export const NewMessagePage: React.FC = () => {
-    const { go, bindBack } = useSmsGestures();
+    const { nav, bindBack } = useSmsGestures();
     const s = useAppStrings(strings, stringsEn);
     const location = useLocation();
     const { activityId } = useActivityContext();
@@ -111,7 +112,7 @@ export const NewMessagePage: React.FC = () => {
         sendMessage(convId, message.trim());
         setMessage('');
         setShowAttachments(false);
-        go('conversation.open.fromNew', { conversationId: convId });
+        nav.replace(routes.conversation, { conversationId: convId });
     };
 
     const canSend = recipient.trim().length > 0 && message.trim().length > 0;

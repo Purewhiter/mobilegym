@@ -27,7 +27,7 @@ import { AdvancedSettingsPage } from './components/AdvancedSettingsPage';
 import { FiveGMessagePage } from './components/FiveGMessagePage';
 import { SettingsPlaceholderPage } from './components/SettingsPlaceholderPage';
 import { useSmsStore } from './state';
-import { useAppNavigate } from './navigation';
+import { useNav } from '../../os/navigation';
 
 /** Handles back navigation and route observation for the OS */
 const SmsNavigationHandler: React.FC = () => {
@@ -35,7 +35,7 @@ const SmsNavigationHandler: React.FC = () => {
     const navigate = useNavigate();
     const { navigator } = useContext(UNSAFE_NavigationContext);
     const { activityId } = useActivityContext();
-    const { back } = useAppNavigate();
+    const nav = useNav(); const back = nav.back;
     const mem = navigator as { index?: number; entries?: unknown[] };
 
     const handleBackPress = useCallback((): boolean => {

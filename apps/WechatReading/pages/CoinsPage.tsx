@@ -4,10 +4,11 @@ import { dimens } from '../res/dimens';
 import { useWechatReadingStore } from '../state';
 import { useWechatReadingGestures } from '../hooks/useWechatReadingGestures';
 import { useWechatReadingStrings } from '../hooks/useWechatReadingStrings';
+import { routes } from '../routes';
 
 const CoinsPage: React.FC = () => {
     const user = useWechatReadingStore(s => s.user);
-    const { bindBack, bindTap } = useWechatReadingGestures();
+    const { bindBack, bindNav } = useWechatReadingGestures();
     const s = useWechatReadingStrings();
 
     return (
@@ -41,7 +42,7 @@ const CoinsPage: React.FC = () => {
                 <div className="bg-app-surface rounded-2xl overflow-hidden shadow-sm">
                     <div
                         className="flex items-center justify-between px-6 py-5 active:bg-(--app-c-tw-bg-gray-50) border-b border-(--app-c-tw-border-gray-50) cursor-pointer"
-                        {...bindTap<HTMLDivElement>('wallet.transactions.open')}
+                        {...bindNav(routes.walletTransactions)}
                     >
                         <span className="text-(--app-modal-action-text-size) font-bold text-(--app-c-tw-text-slate-800)">{s.coins_transactions}</span>
                         <IcNavForward size={dimens.icSizeAction} className="text-(--app-c-tw-text-slate-300)" />

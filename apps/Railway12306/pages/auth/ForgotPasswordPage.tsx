@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useAppNavigate } from '../../navigation';
 import { useRailwayStore } from '../../state';
 import { useRailwayGestures } from '../../hooks/useRailwayGestures';
 import { IcNavBack, IcExpand } from '../../res/icons';
+import { routes } from '../../routes';
 
 export const ForgotPasswordPage: React.FC = () => {
-  const { go } = useAppNavigate();
-  const { bindBack } = useRailwayGestures();
+  const { bindBack, nav } = useRailwayGestures();
   const { requestResetCode, resetPasswordWithCode } = useRailwayStore();
   const [tab, setTab] = useState<'face' | 'phone' | 'email'>('phone');
   const [phone, setPhone] = useState('');
@@ -53,7 +52,7 @@ export const ForgotPasswordPage: React.FC = () => {
     if (res.ok) {
       setError('');
       alert('密码重置成功');
-      go('auth.forgotPassword.done');
+      nav.replace(routes.authLogin);
     } else {
       const msgMap: Record<string, string> = {
         'no_account': '账号不存在',

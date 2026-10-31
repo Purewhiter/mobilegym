@@ -55,6 +55,7 @@ import WeatherDynamicBackground from './components/WeatherDynamicBackground';
 import { normalizeAqiLevel, getAqiLevelLabel } from './utils/airQuality';
 import { getLocalizedMinutelySummary, getLocalizedWeatherText } from './utils/localizedText';
 import { getLocalizedLocationName, getLocalizedWeatherCityName } from './utils/cityNames';
+import { routes } from './routes';
 
 // 城市来源说明：
 // - 主页面与城市管理页统一从 localStorage 单键 `weather` 恢复城市列表
@@ -218,7 +219,7 @@ const WeatherNavigationHandler: React.FC = () => {
 };
 
 const WeatherContent: React.FC = () => {
-  const { bindTap, go, back } = useWeatherGestures();
+  const { bindNav, nav, back } = useWeatherGestures();
   const [searchParams] = useSearchParams();
   const isMenuOpen = searchParams.get('menu') === 'more';
   const s = useAppStrings(strings, stringsEn);
@@ -800,7 +801,7 @@ const WeatherContent: React.FC = () => {
             id="activity_main_add_city"
             className="absolute flex items-center justify-center text-white cursor-pointer"
             style={{ width: 39, height: 39, right: 63, top: 8 }}
-            {...bindTap<HTMLDivElement>('cities.open')}
+            {...bindNav(routes.cities)}
             aria-label={s.aria_city_manager}
           >
             <IcAdd size={24} strokeWidth={1.5} />
@@ -809,7 +810,7 @@ const WeatherContent: React.FC = () => {
             id="activity_main_more"
             className="absolute flex items-center justify-center text-white cursor-pointer"
             style={{ width: 40, height: 40, right: 16, top: 8 }}
-            {...bindTap<HTMLDivElement>('menu.open')}
+            {...bindNav(routes.home, { search: { menu: 'more' } })}
             aria-label={s.aria_more_settings}
           >
             <IcMoreVert size={24} strokeWidth={1.5} />
@@ -902,9 +903,7 @@ const WeatherContent: React.FC = () => {
                     id="tv_aqi_desc2"
                     className="flex items-center h-[30px] backdrop-blur-md rounded-full px-[8px] text-[16px] font-medium opacity-90 cursor-pointer"
                     style={{ backgroundColor: colors.pill_bg_main }}
-                    {...bindTap<HTMLDivElement>('airquality.open', {
-                      params: { cityId: currentCityId },
-                    })}
+                    {...bindNav(routes.airquality, { search: { cityId: currentCityId } })}
                   >
                     <IcLeaf size={14} className="mr-[4px] opacity-80" />
                     <span>{s.air_quality_prefix} {getAqiLevelLabel(normalizeAqiLevel(currentData.airQuality.category, currentData.airQuality.level), s)} {currentData.airQuality.aqi}</span>
@@ -938,9 +937,7 @@ const WeatherContent: React.FC = () => {
             <CityCards
               key={idx}
               data={pageData}
-              forecastButtonProps={bindTap<HTMLButtonElement>('forecast.daily.open', {
-                params: { cityId: idx === 0 ? 'located' : savedCities[idx - 1]?.id ?? 'located' },
-              })}
+              forecastButtonProps={bindNav(routes.forecastDaily, { search: { cityId: idx === 0 ? 'located' : savedCities[idx - 1]?.id ?? 'located' } })}
               warningRef={idx === currentIndex ? activeWarningRef : undefined}
             />
           ))}
@@ -970,7 +967,7 @@ const WeatherContent: React.FC = () => {
           <button
             type="button"
             className="w-full px-5 py-3.5 text-left text-[16px] text-gray-800 active:bg-gray-100 border-0 bg-transparent cursor-pointer"
-            {...bindTap<HTMLButtonElement>('settings.open')}
+            {...bindNav(routes.settings, { replace: true })}
           >
             {s.menu_settings}
           </button>

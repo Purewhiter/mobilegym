@@ -7,12 +7,13 @@ import { IcUser, IcContacts } from '../../res/icons';
 import { useWechatStore } from '../../state';
 import { useShallow } from 'zustand/react/shallow';
 import { useWechatGestures } from '../../hooks/useWechatGestures';
+import { routes } from '../../routes';
 
 export const AuthorizationDetailPage: React.FC = () => {
   const t = useWechatStrings();
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
-  const { bindTap, bindBack, back, go } = useWechatGestures();
+  const { bindTap, bindBack, back, nav, bindNav } = useWechatGestures();
   const { authorizedApps, deauthorizeApp } = useWechatStore(
     useShallow(s => ({
       authorizedApps: s.authorizedApps,
@@ -26,9 +27,9 @@ export const AuthorizationDetailPage: React.FC = () => {
 
   useEffect(() => {
     if (!app) {
-      go('settings.privacy.authorization.list.open');
+      nav.replace(routes.settingsPrivacyAuthorization);
     }
-  }, [app, go]);
+  }, [app, nav]);
 
   if (!app) return null;
 
@@ -82,9 +83,7 @@ export const AuthorizationDetailPage: React.FC = () => {
       <div className="mt-auto mb-16 flex justify-center w-full px-6">
         <button
           {...(id
-            ? bindTap<HTMLButtonElement>('settings.privacy.authorization.menu.confirm.open', {
-                params: { id },
-              })
+            ? bindNav(routes.settingsPrivacyAuthorizationById, { params: { id }, search: { menu: 'confirm' } })
             : {})}
           className="w-full bg-(--app-c-me-avatar-bg) text-(--app-c-common-red) py-3 rounded-[8px] font-bold text-(--app-settings-item-text-size) active:bg-(--app-c-tw-bg-gray-200)"
         >

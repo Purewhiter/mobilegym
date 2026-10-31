@@ -3,6 +3,7 @@ import { useRedBookStrings } from '../hooks/useRedBookStrings';
 import { useRedBookStore } from '../state';
 import { IcNavBack, IcInfo, IcSettings, IcScan, IcClipboard, IcMessageCircle, IcNavForward } from '../res/icons';
 import { useRedBookGestures } from '../hooks/useRedBookGestures';
+import { routes } from '../routes';
 
 const ChevronLeft = IcNavBack;
 const Info = IcInfo;
@@ -16,7 +17,7 @@ const ChevronRight = IcNavForward;
 export const AddFriendPage: React.FC = () => {
   const s = useRedBookStrings();
   const currentUser = useRedBookStore(state => state.user);
-  const { bindBack, bindTap } = useRedBookGestures();
+  const { bindBack, bindNav } = useRedBookGestures();
 
   const redBookId = currentUser.id.replace('user_', '');
 
@@ -31,7 +32,7 @@ export const AddFriendPage: React.FC = () => {
           <span className="text-base font-medium">添加好友</span>
           <Info size={16} className="text-gray-400" />
         </div>
-        <button className="active:opacity-70" {...bindTap('settings.open.fromAddFriend')}>
+        <button className="active:opacity-70" {...bindNav(routes.settings)}>
           <Settings size={20} className="text-gray-700" />
         </button>
       </div>

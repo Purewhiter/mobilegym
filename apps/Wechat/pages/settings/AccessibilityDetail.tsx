@@ -9,6 +9,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { SettingsItem, SettingsToggle } from './Shared';
 import { UserSettings } from '../../types';
 import { useWechatGestures } from '../../hooks/useWechatGestures';
+import { routes } from '../../routes';
 
 export const AccessibilityDetailPage: React.FC<{ featureId?: keyof UserSettings['accessibility'] }> = ({ featureId }) => {
     const t = useWechatStrings();
@@ -17,7 +18,7 @@ export const AccessibilityDetailPage: React.FC<{ featureId?: keyof UserSettings[
     // - 兼容旧写法：从 params.id 读取（如果仍有旧路由存在）
     const params = useParams();
     const id = (featureId ?? (params.id as any)) as keyof UserSettings['accessibility'];
-    const { bindTap } = useWechatGestures();
+    const { bindTap, bindNav } = useWechatGestures();
     const { settings: allSettings, updateSettings } = useWechatStore(useShallow(s => ({
         settings: s.settings,
         updateSettings: s.updateSettings,
@@ -172,11 +173,11 @@ export const AccessibilityDetailPage: React.FC<{ featureId?: keyof UserSettings[
                         </div>
                         <SettingsItem 
                             label={`${t.accessibility_enter}${configs?.label}`} 
-                            tapProps={id === 'wechatSports' ? bindTap<HTMLDivElement>('wechatSports.open') : undefined}
+                            tapProps={id === 'wechatSports' ? bindNav(routes.wechatSports) : undefined}
                         />
                         {id === 'wechatSports' && (
                             <>
-                                <SettingsItem label={t.accessibility_enter_my_profile} tapProps={bindTap<HTMLDivElement>('wechatSports.profile.me.open')} />
+                                <SettingsItem label={t.accessibility_enter_my_profile} tapProps={bindNav(routes.wechatSportsProfile)} />
                                 <SettingsItem label={t.accessibility_invite_friend} />
                                 <SettingsItem label={t.accessibility_faq} isLast />
                             </>
@@ -191,7 +192,7 @@ export const AccessibilityDetailPage: React.FC<{ featureId?: keyof UserSettings[
                         <SettingsItem
                           label={t.topbar_privacy_settings}
                           isLast
-                          tapProps={id === 'wechatSports' ? bindTap<HTMLDivElement>('wechatSports.privacy.open') : undefined}
+                          tapProps={id === 'wechatSports' ? bindNav(routes.wechatSportsPrivacy) : undefined}
                         />
                     </div>
 

@@ -17,6 +17,7 @@ import { useRedditPostsByIds } from '../hooks/useRedditPosts';
 import type { Comment, RedditPost } from '../types';
 import { useDeviceQuery } from '../../../os/device/deviceStore';
 import * as TimeService from '../../../os/TimeService';
+import { routes } from '../routes';
 const asset = (r: unknown) => { const s = String(r ?? '').trim(); return (!s || s.startsWith('http')) ? s : `/@app-assets/Reddit/${s}`; };
 
 type ProfileTabKey = 'posts' | 'comments' | 'about';
@@ -115,7 +116,7 @@ export const ProfilePage: React.FC = () => {
   const toggleJoin = useRedditStore((st) => st.toggleJoin);
   const storeDeletePost = useRedditStore((st) => st.deleteOwnPost);
   const location = useLocation();
-  const { bindTap, bindBack, back } = useRedditGestures();
+  const { bindNav, bindBack, back } = useRedditGestures();
   const [moreMenuPostId, setMoreMenuPostId] = React.useState<string | null>(null);
   const [confirmDeletePostId, setConfirmDeletePostId] = React.useState<string | null>(null);
   const [searchParamsProfile, setSearchParamsProfile] = useSearchParams();
@@ -315,7 +316,7 @@ export const ProfilePage: React.FC = () => {
                 <button
                   type="button"
                   className="text-[14px] font-semibold text-white/80 active:opacity-80"
-                  {...bindTap('profile.edit.open')}
+                  {...bindNav(routes.meEdit)}
                 >
                   Edit
                 </button>
@@ -383,7 +384,7 @@ export const ProfilePage: React.FC = () => {
                   <div
                     key={t.key}
                     className="flex flex-col items-center cursor-pointer select-none"
-                    {...bindTap('profile.tab.switch', { params: { tab: t.key } })}
+                    {...bindNav(routes.me, { search: { tab: t.key }, replace: true })}
                   >
                     <div className={`py-3 text-[15px] font-bold ${active ? 'text-black' : 'text-gray-400'}`}>
                       {t.label}
@@ -504,7 +505,7 @@ export const ProfilePage: React.FC = () => {
                         {/* Title */}
                         <h3
                           className="font-bold text-base leading-snug text-black mb-1 cursor-pointer"
-                          {...bindTap('post.comments.open', { params: { postId: post.id } })}
+                          {...bindNav(routes.post, { params: { postId: post.id } })}
                         >
                           {post.title}
                         </h3>
@@ -558,7 +559,7 @@ export const ProfilePage: React.FC = () => {
                           <div className="flex items-center gap-2 shrink-0">
                             <button
                               type="button"
-                              {...bindTap('post.comments.open', { params: { postId: post.id } })}
+                              {...bindNav(routes.post, { params: { postId: post.id } })}
                               className="flex items-center gap-1 border border-app-border rounded-full px-2.5 py-1 bg-app-surface active:bg-gray-50"
                             >
                               <img
@@ -647,7 +648,7 @@ export const ProfilePage: React.FC = () => {
                     <div
                       key={row.key}
                       className="py-4 cursor-pointer"
-                      {...bindTap('post.comments.open', { params: { postId: row.postId, commentId: row.commentId } })}
+                      {...bindNav(routes.post, { params: { postId: row.postId }, search: { commentId: row.commentId } })}
                     >
                       <div className="text-[16px] font-semibold text-app-text leading-snug line-clamp-2">
                         {row.contextBody}
@@ -809,7 +810,7 @@ export const ProfilePage: React.FC = () => {
               <AccountMenuItem
                 icon={<IcSettings className="w-5 h-5" strokeWidth={2} />}
                 label={s.profile_settings}
-                triggerProps={bindTap('profile.settings.open')}
+                triggerProps={bindNav(routes.meSettings)}
               />
               <AccountMenuItem
                 icon={<IcUser className="w-5 h-5" strokeWidth={2} />}

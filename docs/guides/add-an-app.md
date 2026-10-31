@@ -2,7 +2,7 @@
 
 This guide walks you through adding a brand-new app to the MobileGym simulator.  Plan on an hour for a minimal app, longer for one with rich features.
 
-> 📐 For the formal contract and edge cases, see [`../platform/app/module-contract.md`](../platform/app/module-contract.md). Layered state and snapshots are in [`../platform/state/model.md`](../platform/state/model.md). Navigation grammar is in [`../platform/navigation/declaration.md`](../platform/navigation/declaration.md).
+> 📐 For the formal contract and edge cases, see [`../platform/app/module-contract.md`](../platform/app/module-contract.md). Layered state and snapshots are in [`../platform/state/model.md`](../platform/state/model.md). Routes and jumps are in [`../platform/navigation/routes.md`](../platform/navigation/routes.md).
 
 ## Where apps live
 
@@ -76,13 +76,14 @@ import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import { useLocation, UNSAFE_NavigationContext } from 'react-router-dom';
 import { useAppNavigationHandler } from '@/os/hooks/useAppNavigationHandler';
 import { manifest } from './manifest';
-import { useAppNavigate } from './navigation';
+import { useNav } from '@/os/navigation';
+import { routes } from './routes';
 import HomePage from './pages/HomePage';
 import NewHabitPage from './pages/NewHabitPage';
 
 function HabitsNavigationHandler() {
   const location = useLocation();
-  const { back, go } = useAppNavigate();
+  const nav = useNav();
   const { navigator } = useContext(UNSAFE_NavigationContext);
   const historyIndexRef = useRef(0);
 
@@ -101,17 +102,17 @@ function HabitsNavigationHandler() {
         : historyIndexRef.current;
 
     if (currentIndex > 0) {
-      back();
+      nav.back();
       return true;
     }
 
     if (location.pathname !== '/') {
-      go('habits.home-open', {}, { mode: 'replace' });
+      nav.replace(routes.home);
       return true;
     }
 
     return false;
-  }, [back, go, location.pathname, navigator]);
+  }, [nav, location.pathname, navigator]);
 
   useAppNavigationHandler(manifest.id, {
     onBack: handleBackPress,
@@ -146,90 +147,44 @@ export default function HabitsApp() {
 
 > ⚠️ **The file name must match `*App.tsx`** and the component must be `export default`. That's how the OS discovers it.
 
-> 🚫 **Business pages should never call `useNavigate()` from `react-router`.** Keep raw router access inside `navigation.ts` and the app-level navigation handler; pages should use your app's own `go()` / `back()` helpers.
+> 🚫 **Business pages should never call `useNavigate()` from `react-router`.** Keep raw router access inside the app-level navigation handler; pages use `bindNav` / `nav` from your gesture hook.
 
-## Step 3 — Declare the navigation FSM
+## Step 3 — Write the route table
 
-Every route, transition, and discrete UI state must be declared. This file is the source of truth for static analysis, graph generation, and task authoring.
+List every page and the discrete UI states it keeps in its URL. Jumps are written in the pages against this table; there is no transition table.
 
-Every app keeps its own `navigation.types.ts` next to the declaration (each app re-declares the type to keep apps decoupled from each other and from the OS layer). Start by copying `apps/Wechat/navigation.types.ts` into `apps/Habits/navigation.types.ts` — the type shape is shared across apps even though the file is per-app.
-
-`apps/Habits/navigation.declaration.ts` (sketch):
+`apps/Habits/routes.ts`:
 
 ```ts
-import type { NavigationDeclaration, ScrollContainerDeclaration } from './navigation.types';
+import { defineRoutes } from '../../os/navigation/routes';
 
-const MAIN_SCROLL: ScrollContainerDeclaration[] = [
-  { name: 'main', direction: 'vertical', description: 'Main content' },
-];
-
-export const NAVIGATION_DECLARATION = {
-  app: 'habits',
-  routes: [
-    {
-      path: '/',
-      component: 'HomePage',
-      params: {},
-      entryPoint: 'home',
-      scrollContainers: MAIN_SCROLL,
-      uiStates: [{ id: 'habits.home.base', search: {}, description: 'Habit list' }],
-      queryParams: {},
-      description: 'Habit list',
-    },
-    {
-      path: '/new',
-      component: 'NewHabitPage',
-      params: {},
-      entryPoint: 'none',
-      scrollContainers: MAIN_SCROLL,
-      uiStates: [{ id: 'habits.new.base', search: {}, description: 'New habit form' }],
-      queryParams: {},
-      description: 'New habit form',
-    },
-  ],
-  transitions: [
-    {
-      id: 'habits.home-open',
-      from: '*',
-      to: '/',
-      search: {},
-      searchParams: {},
-      mode: 'replace',
-      params: {},
-      label: 'Return to habit list',
-      ui: { placement: 'none', icon: 'back', gesture: 'back' },
-    },
-    {
-      id: 'habits.open-new',
-      from: '/',
-      to: '/new',
-      search: {},
-      searchParams: {},
-      mode: 'push',
-      params: {},
-      label: 'Open the new-habit form',
-      ui: { placement: 'fab', icon: 'add', gesture: 'tap' },
-    },
-  ],
-  capabilities: {
-    historyBack: true,
-  },
-} as const satisfies NavigationDeclaration;
-
-export type TransitionId = typeof NAVIGATION_DECLARATION.transitions[number]['id'];
+export const routes = defineRoutes({
+  home: { path: '/' },
+  newHabit: { path: '/new', search: { sheet: ['icons'] } },
+  habit: { path: '/habit/:habitId' },
+});
 ```
 
-The matching `apps/Habits/navigation.ts` exposes `useAppNavigate` with `go()` / `back()` (copy the pattern from any existing app — the implementations are nearly identical).
+`apps/Habits/hooks/useHabitsGestures.ts`:
 
-> 💡 Use **string literals** for `transition.id` and `action.id` at every bind site. The consistency check scans your source for these literals — variable interpolation breaks it.
+```ts
+import { useNavGestures } from '../../../os/navigation';
+
+export function useHabitsGestures() {
+  const gestures = useNavGestures();
+  return { ...gestures, back: gestures.nav.back };
+}
+```
+
+In a page: `<button {...bindNav(routes.newHabit)}>`, `<li {...bindNav(routes.habit, { params: { habitId } })}>`, `nav.replace(routes.home)` in handlers, `<button {...bindBack()}>` for back. Route params and declared UI-state values are type-checked. See [`../platform/navigation/routes.md`](../platform/navigation/routes.md).
 
 ## Step 4 — Build the pages
 
 Write your pages under `apps/Habits/pages/`. Three rules to keep you out of trouble:
 
 1. **Reserve the status bar.** Every page's outermost container needs `pt-10` and (if it's not dark) a `data-status-bar-foreground="dark|light"` attribute.
-2. **Drive every discrete UI state through the URL.** Tabs, modals, sheets — push them through `go()` with `searchParams`. Never use `useState` for visibility, the back key will betray you.
-3. **Tag the controls.** Use the gesture hooks from `useTriggerGestures` so every transition / action emits `data-trigger="..."` and `data-action="..."` attributes. These are how the static analyzer matches code against the declaration.
+2. **Drive every discrete UI state through the URL.** Tabs, modals, sheets — open them with `bindNav` / `nav.push` and a `search` value. Never use `useState` for visibility, the back key will betray you.
+3. **Tag the controls.** Navigate with `bindNav` / `bindBack` and bind actions with `bindTap({ kind: 'action', id })`, so every control emits `data-trigger` / `data-action` attributes. Exploration and trajectory tools find controls through them.
 
 ## Step 5 — Add data and state
 
@@ -301,11 +256,11 @@ export const useHabitsStore = createAppStoreWithActions<HabitsState, HabitsActio
 # Type check
 npx tsc --noEmit
 
-# Rebuild navigation artifacts (consistency check + graph + tasks)
-node scripts/build_nav_artifacts.mjs Habits
+# Explore the app's navigation on a running dev server
+python scripts/explore_nav_graph.py http://localhost:3000/ habits /tmp/habits.json
 ```
 
-The artifacts pipeline will fail if your declaration doesn't match the source — e.g. a `data-trigger="habits.open-new"` in the code but no matching transition in the declaration. Read the error log carefully; it points at the exact file and line.
+The exploration lists every tagged control, where tapping it lands, and where system back then lands. A page you expected but that is missing usually means a control navigates through a plain `onClick` instead of `bindNav`.
 
 ## Step 7 — Smoke-test in the simulator
 
@@ -323,7 +278,7 @@ __SIM__.getState().apps.habits
 ## Common pitfalls
 
 - **`data-trigger` is dynamic.** The analyzer can't follow `data-trigger={\`habits.${kind}\`}`. Hard-code the literal.
-- **You used `useNavigate()` in a business page.** Replace it with the app's `go()` / `back()` helpers so navigation stays analyzable.
+- **You used `useNavigate()` in a business page.** Replace it with `bindNav` / `nav` so the control stays visible to exploration.
 - **Dialog visibility from `useState`.** Press the back key and the dialog stays open — the OS's `BackDispatcher` doesn't know about your local state. Push a `searchParams` entry instead.
 - **Imported `BackDispatcher` directly.** That's an OS-internal module. Apps interact with back through the URL/history.
 - **`Date.now()` or `new Date()`.** Always go through `TimeService` (`TimeService.now()`, `TimeService.fromTimestamp(ts)`, …). The lint rule will reject the raw form.
@@ -333,4 +288,4 @@ __SIM__.getState().apps.habits
 
 - 🧪 Add tasks for your new app → [add-a-task.md](add-a-task.md)
 - 📊 Want your app on the public leaderboard's task surface? Open a discussion issue with the proposed task set.
-- 📐 Deep dives: [`app-module-contract.md`](../platform/app/module-contract.md) (file conventions, hooks, cross-cutting rules), [`state-model.md`](../platform/state/model.md) (layered state, snapshots), [`declarative-navigation.md`](../platform/navigation/declaration.md) (FSM grammar, graph generation), [`intent-system.md`](../platform/os/intent-system.md) (cross-app calls).
+- 📐 Deep dives: [`app-module-contract.md`](../platform/app/module-contract.md) (file conventions, hooks, cross-cutting rules), [`state-model.md`](../platform/state/model.md) (layered state, snapshots), [`routes.md`](../platform/navigation/routes.md) (route tables, jumps, exploring the graph), [`intent-system.md`](../platform/os/intent-system.md) (cross-app calls).

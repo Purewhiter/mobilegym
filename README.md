@@ -335,8 +335,7 @@ Point your coding agent at this repo — [AGENTS.md](AGENTS.md) already explains
 apps/MyApp/
 ├── manifest.ts                    # ⭐ identity, icon, theme, intent filters
 ├── MyAppApp.tsx                   # ⭐ entry component (must export default)
-├── navigation.declaration.ts      # ⭐ FSM: routes + transitions + actions
-├── navigation.ts                  # go() / back() with popTo
+├── routes.ts                      # ⭐ route table: pages + URL UI states
 ├── res/                           # colors / strings / dimens / icons
 ├── pages/, components/, context/, hooks/
 └── data/

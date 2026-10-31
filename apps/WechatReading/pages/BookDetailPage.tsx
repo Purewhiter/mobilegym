@@ -20,6 +20,7 @@ import {
     formatWechatReadingWords,
     quoteWechatReadingTitle,
 } from '../utils/localization';
+import { routes } from '../routes';
 
 export const BookDetailPage: React.FC = () => {
     const { bookId } = useParams();
@@ -28,7 +29,7 @@ export const BookDetailPage: React.FC = () => {
     const removeFromShelf = useWechatReadingStore(s => s.removeFromShelf);
     const shelf = useWechatReadingStore(s => s.shelf);
     const [book, setBook] = useState<any>(null);
-    const { bindBack, bindTap, back } = useWechatReadingGestures();
+    const { bindBack, bindTap, back, bindNav } = useWechatReadingGestures();
     const locale = useLocale();
     const s = useWechatReadingStrings();
 
@@ -227,7 +228,7 @@ export const BookDetailPage: React.FC = () => {
                 </button>
                 {(() => {
                     const shelfButtonProps = isInShelf
-                        ? bindTap<HTMLButtonElement>('book.modal.shelf.open', { params: { bookId: bookId! } })
+                        ? bindNav(routes.book, { params: { bookId: bookId! }, search: { modal: 'shelf' } })
                         : bindTap<HTMLButtonElement>(
                             { kind: 'action', id: 'bookDetail.item.shelf.add.submit' },
                             { params: { bookId: bookId! }, onTrigger: () => addToBookshelf(bookId!) },
@@ -247,7 +248,7 @@ export const BookDetailPage: React.FC = () => {
                 })()}
                 <button
                     className="flex-1 h-10 bg-app-primary rounded-lg text-white font-bold text-sm active:bg-blue-600" style={{ transition: 'color var(--app-duration-short) var(--app-easing-standard), background-color var(--app-duration-short) var(--app-easing-standard), border-color var(--app-duration-short) var(--app-easing-standard)' }}
-                    {...bindTap<HTMLButtonElement>('reader.open', { params: { bookId: bookId! } })}
+                    {...bindNav(routes.read, { params: { bookId: bookId! } })}
                 >
                     {s.book_detail_read_button}
                 </button>

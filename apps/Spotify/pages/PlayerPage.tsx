@@ -14,11 +14,12 @@ import { useSpotifyStrings } from '../hooks/useSpotifyStrings';
 import { localizeSpotifyText } from '../utils/localizeSpotifyText';
 import { openSaveLocation } from '../components/LikedToast';
 import { getTrackCover, getTrackCoverLarge } from '../utils/artwork';
+import { routes } from '../routes';
 export const PlayerPage: React.FC = () => {
     const locale = useLocale();
     const isEnglish = locale === 'en';
     const [searchParams, setSearchParams] = useSearchParams();
-    const { bindTap, bindBack, back } = useSpotifyGestures();
+    const { bindTap, bindBack, back, bindNav } = useSpotifyGestures();
     const s = useSpotifyStrings();
     const { currentTrack, isPlaying, shuffle, repeat, queue, customPlaylists } = useSpotifyStore(useShallow(s => ({
         currentTrack: s.currentTrack, isPlaying: s.isPlaying, shuffle: s.shuffle, repeat: s.repeat, queue: s.queue, customPlaylists: s.customPlaylists,
@@ -110,9 +111,7 @@ export const PlayerPage: React.FC = () => {
                         <span className="font-bold text-base">{displayText(currentTrack.artist)} {s.player_radio_suffix}</span>
                     </div>
                     <button
-                        {...bindTap('player.trackMenu.open', {
-                            params: { trackId: currentTrack.id },
-                        })}
+                        {...bindNav(routes.player, { search: { sheet: 'track_menu', trackId: currentTrack.id } })}
                         className="cursor-pointer"
                     >
                         <IcMoreVertical size={28} />
@@ -249,7 +248,7 @@ export const PlayerPage: React.FC = () => {
                         <div className="flex gap-6">
                             <IcShare size={24} className="text-white/70 cursor-pointer" />
                             <button
-                                {...bindTap('player.queue.open')}
+                                {...bindNav(routes.player, { search: { sheet: 'queue' } })}
                                 className="text-white/70 cursor-pointer"
                             >
                                 <IcQueue size={24} />
@@ -302,6 +301,7 @@ export const PlayerPage: React.FC = () => {
 
 // Bottom sheet menu for current track
 export const PlayerPageMenuOverlay: React.FC<{ currentTrack: any; isOpen: boolean; liked: boolean; bindBack: any; bindTap: any; toggleLike: any; back?: () => void }> = ({ currentTrack, isOpen, liked, bindBack, bindTap, toggleLike, back }) => {
+  const { bindNav } = useSpotifyGestures();
     const lyricsEnabled = useSpotifyStore(st => st.settings.playback.lyricsEnabled);
     const updateSettings = useSpotifyStore(st => st.updateSettings);
 
@@ -324,12 +324,12 @@ export const PlayerPageMenuOverlay: React.FC<{ currentTrack: any; isOpen: boolea
                     updateSettings('playback', { lyricsEnabled: !lyricsEnabled });
                 },
             }}
-            sleepTimerProps={bindTap('player.timer.openFromMenu')}
+            sleepTimerProps={bindNav(routes.player, { search: { sheet: 'timer' }, replace: true })}
             likeProps={bindTap(
                 { kind: 'action', id: 'track.like.toggle' },
                 { onTrigger: () => toggleLike(currentTrack), stopPropagation: true }
             )}
-            addToPlaylistProps={bindTap('player.addPlaylist.open', { params: { trackId: currentTrack.id }, stopPropagation: true })}
+            addToPlaylistProps={bindNav(routes.player, { search: { sheet: 'add_playlist', trackId: currentTrack.id }, replace: true, stopPropagation: true })}
             addToQueueProps={bindTap(
                 { kind: 'action', id: 'track.queue.add' },
                 {
@@ -342,9 +342,9 @@ export const PlayerPageMenuOverlay: React.FC<{ currentTrack: any; isOpen: boolea
                     },
                 }
             )}
-            goToAlbumProps={bindTap('playlist.open', { params: { id: currentTrack.id } })}
-            goToArtistProps={bindTap('artist.open', { params: { name: String(currentTrack.artist) } })}
-            createJamProps={bindTap('tab.premium')}
+            goToAlbumProps={bindNav(routes.playlist, { params: { id: currentTrack.id } })}
+            goToArtistProps={bindNav(routes.artist, { params: { name: String(currentTrack.artist) } })}
+            createJamProps={bindNav(routes.premium, { replace: true })}
         />
     );
 }

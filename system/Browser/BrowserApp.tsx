@@ -21,11 +21,12 @@ import faviconZhihu from './assets/favicons/zhihu.ico';
 import faviconReact from './assets/favicons/react.ico';
 import faviconGoogle from './assets/favicons/google.ico';
 import faviconBing from './assets/favicons/bing.ico';
+import { routes } from './routes';
 
 // --- Navigation Handler ---
 const BrowserNavigationHandler: React.FC = () => {
     const location = useLocation();
-    const { back } = useBrowserGestures();
+    const { back, nav } = useBrowserGestures();
     const { navigator } = React.useContext(UNSAFE_NavigationContext);
     const historyIndexRef = useRef(0);
 
@@ -209,7 +210,7 @@ const TabsOverlay: React.FC<{
 
 // --- Main App Logic ---
 const BrowserContent: React.FC = () => {
-    const { go, back, bindBack } = useBrowserGestures();
+    const { nav, back, bindBack } = useBrowserGestures();
     const location = useLocation();
     const { navigator } = React.useContext(UNSAFE_NavigationContext);
 
@@ -245,13 +246,13 @@ const BrowserContent: React.FC = () => {
             }
         }
         navigateTab(activeTabId, target);
-        go('view.open');
+        nav.push(routes.view);
     };
 
     const handleNewTab = () => {
         storeAddTab();
         setIsTabsOverlayOpen(false);
-        go('home.open');
+        nav.replace(routes.home);
     };
 
     const handleCloseTab = (id: string, e: React.MouseEvent) => {
@@ -259,9 +260,9 @@ const BrowserContent: React.FC = () => {
         const result = storeCloseTab(id);
         if (id === activeTabId || tabs.length === 1) {
             if (result.newActiveTabHasUrl) {
-                go('view.open');
+                nav.push(routes.view);
             } else {
-                go('home.open');
+                nav.replace(routes.home);
             }
         }
     };
@@ -305,7 +306,7 @@ const BrowserContent: React.FC = () => {
                         if (activeTab.url) {
                             storeGoHome(activeTabId);
                         }
-                        go('home.open');
+                        nav.replace(routes.home);
                     }}
                     className={`w-14 h-14 flex items-center justify-center rounded-[20px] transition-all ${location.pathname === '/' ? 'bg-blue-500 text-white shadow-lg' : 'text-slate-500 active:bg-slate-50'}`}
                 >
@@ -336,9 +337,9 @@ const BrowserContent: React.FC = () => {
                         setIsTabsOverlayOpen(false);
                         const target = tabs.find(t => t.id === id);
                         if (target?.url) {
-                            go('view.open');
+                            nav.push(routes.view);
                         } else {
-                            go('home.open');
+                            nav.replace(routes.home);
                         }
                     }}
                     onNewTab={handleNewTab}

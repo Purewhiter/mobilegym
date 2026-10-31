@@ -4,6 +4,7 @@ import { useSpotifyGestures } from '../hooks/useSpotifyGestures';
 import { useSpotifyStrings } from '../hooks/useSpotifyStrings';
 import { IcCheck, IcSearch } from '../res/icons';
 import { localizeSpotifyArtistName } from '../utils/localizeSpotifyText';
+import { routes } from '../routes';
 
 interface Artist {
   id: string;
@@ -27,7 +28,7 @@ export const ChooseArtistsPage: React.FC = () => {
   const locale = useLocale();
   const isEnglish = locale === 'en';
   const s = useSpotifyStrings();
-  const { bindTap } = useSpotifyGestures();
+  const { bindNav } = useSpotifyGestures();
   const [selectedArtists, setSelectedArtists] = useState<Artist[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const artists = FALLBACK_ARTISTS;
@@ -99,9 +100,7 @@ export const ChooseArtistsPage: React.FC = () => {
         <div className="fixed bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-app-surface via-app-surface to-transparent flex justify-center pointer-events-none">
           <button
             className="pointer-events-auto px-12 py-3.5 text-base font-bold text-white transition-all transform hover:scale-105 active:scale-95"
-            {...bindTap('auth.signup.complete.open', {
-              params: { selectedArtists: JSON.stringify(selectedArtists) },
-            })}
+            {...bindNav(routes.signupComplete, { search: { selectedArtists: JSON.stringify(selectedArtists) } })}
           >
             {s.choose_artists_done}
           </button>

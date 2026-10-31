@@ -228,7 +228,7 @@ export const VipPage: React.FC = () => {
          </div>
          <button
             className="w-full bg-[#fb7299] text-white font-bold py-2.5 rounded-full text-lg shadow-lg shadow-pink-200 active:scale-98 transition-transform"
-            {...bindTap<HTMLButtonElement>('vip.pay.confirm', { onTrigger: executePay })}
+            {...bindTap<HTMLButtonElement>('nav.vip', { onTrigger: executePay })}
          >
              确认协议并支付 ¥{selectedPkg.price}
          </button>

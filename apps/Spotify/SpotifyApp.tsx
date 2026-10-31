@@ -53,6 +53,7 @@ import { IcCloseCircle, IcTabCreate, IcTabHome, IcTabLibrary, IcTabSearch, Spoti
 import { Sidebar } from './components/Sidebar';
 import { useSpotifyGestures } from './hooks/useSpotifyGestures';
 import { useSpotifyStrings } from './hooks/useSpotifyStrings';
+import { routes } from './routes';
 
 const NavigationHandler: React.FC = () => {
   const navigate = useNavigate();
@@ -107,7 +108,7 @@ const NavigationHandler: React.FC = () => {
 
 const BottomTabBar: React.FC = () => {
   const location = useLocation();
-  const { bindTap, bindBack } = useSpotifyGestures();
+  const { bindTap, bindBack, bindNav } = useSpotifyGestures();
   const s = useSpotifyStrings();
   const isCreate = location.pathname === '/create';
   const isSearchRoute = location.pathname.startsWith('/search');
@@ -115,7 +116,7 @@ const BottomTabBar: React.FC = () => {
   return (
     <div data-hide-on-keyboard className="absolute left-0 right-0 bottom-0 min-h-(--app-tab-bar-height) pb-8 pt-4 bg-gradient-to-t from-black via-black/95 to-transparent flex justify-around items-start z-[60]">
       <button
-        {...(location.pathname === '/' ? bindTap('tab.home', { onTrigger: () => {} }) : bindTap('tab.home'))}
+        {...(location.pathname === '/' ? bindTap('nav.home', { onTrigger: () => {} }) : bindNav(routes.home, { search: { tab: 'all' }, replace: true }))}
         className="flex flex-col items-center gap-1.5 w-16 group transition-colors"
       >
         <IcTabHome
@@ -130,7 +131,7 @@ const BottomTabBar: React.FC = () => {
       </button>
 
       <button
-        {...(location.pathname === '/search' ? bindTap('tab.search', { onTrigger: () => {} }) : bindTap('tab.search'))}
+        {...(location.pathname === '/search' ? bindTap('nav.search', { onTrigger: () => {} }) : bindNav(routes.search, { replace: true }))}
         className="flex flex-col items-center gap-1.5 w-16 group transition-colors"
       >
         <IcTabSearch size={32} strokeWidth={dimens.icStrokeWidth} color={isSearchRoute ? 'white' : '#b3b3b3'} />
@@ -140,7 +141,7 @@ const BottomTabBar: React.FC = () => {
       </button>
 
       <button
-        {...(location.pathname === '/library' ? bindTap('tab.library', { onTrigger: () => {} }) : bindTap('tab.library'))}
+        {...(location.pathname === '/library' ? bindTap('nav.library', { onTrigger: () => {} }) : bindNav(routes.library, { replace: true }))}
         className="flex flex-col items-center gap-1.5 w-16 group transition-colors"
       >
         <IcTabLibrary size={32} strokeWidth={dimens.icStrokeWidth} color={location.pathname === '/library' ? 'white' : '#b3b3b3'} />
@@ -150,7 +151,7 @@ const BottomTabBar: React.FC = () => {
       </button>
 
       <button
-        {...(location.pathname === '/premium' ? bindTap('tab.premium', { onTrigger: () => {} }) : bindTap('tab.premium'))}
+        {...(location.pathname === '/premium' ? bindTap('nav.premium', { onTrigger: () => {} }) : bindNav(routes.premium, { replace: true }))}
         className="flex flex-col items-center gap-1.5 w-16 group transition-colors"
       >
         <SpotifyLogoIcon size={32} fill={location.pathname === '/premium' ? 'white' : '#b3b3b3'} />
@@ -162,7 +163,7 @@ const BottomTabBar: React.FC = () => {
       <button
         {...(isCreate
           ? bindBack()
-          : bindTap('create.open'))}
+          : bindNav(routes.create, { search: { view: 'menu' } }))}
         className="flex flex-col items-center justify-center w-16 group transition-colors"
       >
         {isCreate ? (
@@ -183,7 +184,7 @@ const BottomTabBar: React.FC = () => {
 const Layout: React.FC = () => {
   const location = useLocation();
   const [searchParams] = useSearchParams();
-  const { bindTap, bindBack, back } = useSpotifyGestures();
+  const { bindTap, bindBack, back, bindNav } = useSpotifyGestures();
   const mainTabs = ['/', '/search', '/library', '/premium'];
   const isCreate = location.pathname === '/create';
   const isMainTab = [...mainTabs, '/create'].includes(location.pathname);
@@ -250,11 +251,11 @@ const Layout: React.FC = () => {
         isOpen={isSidebarOpen}
         onClose={() => back()}
         backdropProps={bindBack({ stopPropagation: true })}
-        profileOpenProps={bindTap('profile.open')}
-        addAccountProps={bindTap('auth.loginLanding.open')}
-        whatsNewOpenProps={bindTap('whatsNew.open')}
-        historyOpenProps={bindTap('history.open')}
-        settingsOpenProps={bindTap('settings.open')}
+        profileOpenProps={bindNav(routes.profile, { replace: true })}
+        addAccountProps={bindNav(routes.loginLanding, { replace: true })}
+        whatsNewOpenProps={bindNav(routes.newReleases, { replace: true })}
+        historyOpenProps={bindNav(routes.history, { replace: true })}
+        settingsOpenProps={bindNav(routes.settings, { replace: true })}
       />
     </div>
   );

@@ -13,6 +13,7 @@ import { stringsEn } from '../res/strings.en';
 import { useAppStrings } from '../../../os/useAppStrings';
 
 import type { TrainInfo } from '../types';
+import { routes } from '../routes';
 type TransferSortMode = 'default' | 'duration' | 'depart';
 
 /** 铺位/卧铺席别名称（用于判断是否显示"铺"标签） */
@@ -358,6 +359,7 @@ const TrainCard: React.FC<TrainCardProps> = React.memo(({
   onSelectSeat,
   bindTap,
 }) => {
+  const { bindNav } = useRailwayGestures();
   const s = useAppStrings(strings, stringsEn);
   const availableSeats = train.seats.filter(seat => seat.count > 0 && seat.price > 0);
   const allPricedSeats = train.seats.filter(seat => seat.price > 0);
@@ -518,10 +520,7 @@ const TrainCard: React.FC<TrainCardProps> = React.memo(({
                   {bookable ? (
                     <button
                       className="w-(--app-seat-detail-book-btn-w) h-(--app-seat-detail-book-btn-h) rounded-lg bg-app-primary text-white text-[15px]"
-                      {...bindTap<HTMLButtonElement>('trainDetail.book', {
-                        params: { idx: directIndex, seat: seat.type },
-                        beforeTrigger: () => onSelectSeat(train, seat.type, directIndex),
-                      })}
+                      {...bindNav(routes.orderConfirm, { search: { idx: directIndex, seat: seat.type }, beforeTrigger: () => onSelectSeat(train, seat.type, directIndex) })}
                     >
                       {s.seat_book_btn}
                     </button>
@@ -594,7 +593,7 @@ export const QueryResultPage: React.FC = () => {
   const setSelectedTrain = useRailwayStore(s => s.setSelectedTrain);
   const setDate = useRailwayStore(s => s.setDate);
   const swapStations = useRailwayStore(s => s.swapStations);
-  const { bindBack, bindTap } = useRailwayGestures();
+  const { bindBack, bindTap, bindNav } = useRailwayGestures();
   const s = useAppStrings(strings, stringsEn);
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -783,7 +782,7 @@ export const QueryResultPage: React.FC = () => {
           </div>
           <div
             className="flex-shrink-0 pl-2 pr-1 flex flex-col items-center justify-center text-white/80 cursor-pointer"
-            {...bindTap<HTMLDivElement>('home.dateSelect')}
+            {...bindNav(routes.dateSelect)}
           >
             <IcCalendar size={14} />
             <span className="text-[10px]">{s.query_calendar_label}</span>

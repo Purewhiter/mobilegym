@@ -6,6 +6,7 @@ import type { ActivityResult } from '@/os/types/manifest';
 import type { OrderRecord } from '../types';
 import { getOrderTotalPrice, randomSeatNo } from '../types';
 import { base36, nextStream } from '../../../os/RandomService';
+import { routes } from '../routes';
 
 /** Seat for a ticket that reached payment without one (order ids carry the clock, so key by sequence). */
 function lateSeatNo(seatType: string): string {
@@ -23,7 +24,7 @@ function completeOrder(order: OrderRecord): OrderRecord {
 export const PaymentPlatformPage: React.FC = () => {
   const orders = useRailwayStore(s => s.orders);
   const updateOrder = useRailwayStore(s => s.updateOrder);
-  const { bindTap, go, back } = useRailwayGestures();
+  const { bindTap, nav, back } = useRailwayGestures();
   const s = useRailwayStrings();
   const [selectedMethod, setSelectedMethod] = useState<'alipay' | 'jd'>('alipay');
 
@@ -40,7 +41,7 @@ export const PaymentPlatformPage: React.FC = () => {
     const completed = completeOrder(pendingOrder);
     // The success page and the judges must see the same order: write it first.
     await updateOrder(pendingOrder.id, { status: 'completed', tickets: completed.tickets });
-    go('paymentPlatform.paymentSuccess', {}, { state: { order: completed } });
+    nav.replace(routes.paymentSuccess, {}, { state: { order: completed } });
   };
 
   const handleSubmit = () => {
@@ -150,7 +151,7 @@ export const PaymentPlatformPage: React.FC = () => {
 
       <div className="mt-auto px-4 pb-12 pt-6">
         <button
-          {...bindTap<HTMLButtonElement>('paymentPlatform.paymentSuccess', {
+          {...bindTap<HTMLButtonElement>('nav.paymentSuccess', {
             onTrigger: handleSubmit,
           })}
           className="w-full h-[46px] rounded-[4px] bg-[#4886E0] text-white text-[17px] active:bg-[#3b75c9] transition-colors"

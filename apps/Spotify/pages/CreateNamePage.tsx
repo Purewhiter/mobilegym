@@ -116,7 +116,7 @@ export const CreateNamePage: React.FC = () => {
               className={`px-8 py-3 rounded-full text-base font-bold transition-transform active:scale-95 ${isValid ? 'bg-white text-black' : 'bg-[#535353] text-app-text-muted'
                 }`}
               {...(isValid
-                ? bindTap('auth.signup.artists.open', {
+                ? bindTap('nav.signupArtists', {
                     onTrigger: () => {
                       console.log('Create Account', { name, termsAccepted, marketingOptOut, shareData });
                       addAccount(name);

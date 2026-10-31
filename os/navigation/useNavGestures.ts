@@ -35,13 +35,13 @@ export function useNavGestures() {
     route: AppRoute<P, S>,
     ...[options]: BindNavArgs<P, S, T>
   ) => {
-    const { params, search, keep, popTo, popToInclusive, replace, preventDefault, stopPropagation, beforeTrigger } =
+    const { params, search, keep, popTo, popToInclusive, state, replace, preventDefault, stopPropagation, beforeTrigger } =
       (options ?? {}) as BindNavOptions<S, T> & { params?: Record<string, string | number> };
     const tagParams: Record<string, string | number> = { ...(params ?? {}) };
     for (const [key, value] of Object.entries(search ?? {})) {
-      if (typeof value === 'string') tagParams[key] = value;
+      if (typeof value === 'string' || typeof value === 'number') tagParams[key] = value;
     }
-    const navOptions: NavOptions<S> = { search, keep, popTo, popToInclusive };
+    const navOptions: NavOptions<S> = { search, keep, popTo, popToInclusive, state };
     const go = replace ? nav.replace : nav.push;
     return bindTap<T>(`nav.${route.name}`, {
       params: tagParams,
@@ -52,7 +52,8 @@ export function useNavGestures() {
     });
   };
 
-  const bindBack = <T extends HTMLElement>(options?: GestureOptions<T> & { steps?: number }) => {
+  // onTrigger is accepted for old call sites but, as before, system back ignores it.
+  const bindBack = <T extends HTMLElement>(options?: GestureOptions<T> & { steps?: number; onTrigger?: () => void }) => {
     const { steps, ...rest } = options ?? {};
     const binding = bindTap<T>('system.back', { ...rest, params: { steps: steps ?? 1 } });
     return { ...binding, 'data-trigger-type': 'back' as const };

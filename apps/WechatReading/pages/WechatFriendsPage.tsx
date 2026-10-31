@@ -6,6 +6,7 @@ import { WECHAT_READING_CONFIG } from '../data';
 import { useWechatReadingGestures } from '../hooks/useWechatReadingGestures';
 import { useWechatReadingStrings } from '../hooks/useWechatReadingStrings';
 import { formatWechatReadingMessage } from '../utils/localization';
+import { routes } from '../routes';
 
 function formatReadingTime(minutes: number, s: ReturnType<typeof useWechatReadingStrings>): string {
     const hours = Math.floor(minutes / 60);
@@ -19,7 +20,7 @@ function formatReadingTime(minutes: number, s: ReturnType<typeof useWechatReadin
 export const WechatFriendsPage: React.FC = () => {
     const user = useWechatReadingStore(s => s.user);
     const toggleFollow = useWechatReadingStore(s => s.toggleFollow);
-    const { bindBack, bindTap } = useWechatReadingGestures();
+    const { bindBack, bindTap, bindNav } = useWechatReadingGestures();
     const s = useWechatReadingStrings();
 
     const wechatFriends = WECHAT_READING_CONFIG.users.filter(
@@ -51,7 +52,7 @@ export const WechatFriendsPage: React.FC = () => {
                             key={friend.id}
                             className="px-5 py-3.5 flex items-center justify-between active:bg-(--app-c-tw-bg-gray-50)"
                             style={{ transition: 'background-color var(--app-duration-short) var(--app-easing-standard)' }}
-                            {...bindTap<HTMLDivElement>('user.profile.open.fromFriends', { params: { userId: friend.id } })}
+                            {...bindNav(routes.user, { params: { userId: friend.id } })}
                         >
                             <div className="flex items-center gap-3.5 flex-1 min-w-0">
                                 <div className="w-11 h-11 rounded-full overflow-hidden border border-(--app-c-tw-border-gray-100) shrink-0 bg-(--app-c-tw-bg-gray-100)">

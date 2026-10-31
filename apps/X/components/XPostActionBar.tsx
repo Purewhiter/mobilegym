@@ -3,6 +3,7 @@ import { useXGestures } from '../hooks/useXGestures';
 import { useXStore } from '../state';
 import { IcMessage, IcRepost, IcHeart, IcChart, IcBookmark, IcShare } from '../res/icons';
 import type { XPost } from '../types';
+import { routes } from '../routes';
 
 export interface XPostActionIds {
   retweet: string;
@@ -43,7 +44,7 @@ export const XPostActionBar: React.FC<XPostActionBarProps> = ({
   const toggleBookmark = useXStore(s => s.toggleBookmark);
   const bookmarkedPostIds = useXStore(s => s.user.bookmarkedPostIds);
   const defaultShowCounts = useXStore(s => s.settings.showInteractionCounts);
-  const { bindTap } = useXGestures(isActive);
+  const { bindTap, bindNav } = useXGestures(isActive);
 
   const resolvedShowCounts = showCounts ?? defaultShowCounts;
   const comments = stats?.comments ?? 0;
@@ -59,10 +60,7 @@ export const XPostActionBar: React.FC<XPostActionBarProps> = ({
     <div className={`flex justify-between mt-3 text-gray-500 text-sm max-w-[450px] ${className}`.trim()}>
       <div
         className="flex items-center gap-1 group cursor-pointer hover:text-blue-400 transition-colors relative z-10"
-        {...bindTap('reply.open', {
-          params: { id: postId },
-          stopPropagation: true,
-        })}
+        {...bindNav(routes.reply, { params: { id: postId }, stopPropagation: true })}
       >
         <div className="p-2 -ml-2 rounded-full group-hover:bg-blue-500/10 transition-colors">
           <IcMessage size={iconSize} />

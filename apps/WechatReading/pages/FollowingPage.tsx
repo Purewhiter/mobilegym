@@ -8,12 +8,13 @@ import { useLocation, useSearchParams } from 'react-router-dom';
 import { WechatReadingWechatBubbleIcon } from '../res/icons';
 import { useWechatReadingStrings } from '../hooks/useWechatReadingStrings';
 import { formatWechatReadingMessage } from '../utils/localization';
+import { routes } from '../routes';
 
 export const FollowingPage: React.FC = () => {
     const user = useWechatReadingStore(s => s.user);
     const toggleFollow = useWechatReadingStore(s => s.toggleFollow);
     const isFollowing = (uid: string) => user.following.includes(uid);
-    const { bindBack, bindTap, go } = useWechatReadingGestures();
+    const { bindBack, bindTap, nav, bindNav } = useWechatReadingGestures();
     const location = useLocation();
     const [searchParams] = useSearchParams();
     const s = useWechatReadingStrings();
@@ -24,11 +25,11 @@ export const FollowingPage: React.FC = () => {
     React.useEffect(() => {
         if (location.pathname !== '/following') return;
         if (activeTab !== 'following' && activeTab !== 'followers') {
-            go('following.tab.switch', { tab: 'following' });
+            nav.replace(routes.following, {}, { search: { tab: 'following' } });
             return;
         }
         if (!searchParams.get('tab')) {
-            go('following.tab.switch', { tab: 'following' });
+            nav.replace(routes.following, {}, { search: { tab: 'following' } });
         }
 
     }, [location.pathname]);
@@ -46,13 +47,13 @@ export const FollowingPage: React.FC = () => {
 
                 <div className="flex bg-(--app-c-tw-bg-gray-100) rounded-lg p-0.5">
                     <button
-                        {...bindTap<HTMLButtonElement>('following.tab.switch', { params: { tab: 'following' } })}
+                        {...bindNav(routes.following, { search: { tab: 'following' }, replace: true })}
                         className={`px-4 py-1 rounded-md text-sm font-medium ${activeTab === 'following' ? 'bg-app-surface text-(--app-c-tw-text-slate-900) shadow-sm' : 'text-(--app-c-tw-text-slate-500)'}`} style={{ transition: 'all var(--app-duration-short) var(--app-easing-standard)' }}
                     >
                         {s.following_tab_following}
                     </button>
                     <button
-                        {...bindTap<HTMLButtonElement>('following.tab.switch', { params: { tab: 'followers' } })}
+                        {...bindNav(routes.following, { search: { tab: 'followers' }, replace: true })}
                         className={`px-4 py-1 rounded-md text-sm font-medium ${activeTab === 'followers' ? 'bg-app-surface text-(--app-c-tw-text-slate-900) shadow-sm' : 'text-(--app-c-tw-text-slate-500)'}`} style={{ transition: 'all var(--app-duration-short) var(--app-easing-standard)' }}
                     >
                         {s.following_tab_followers}
@@ -77,7 +78,7 @@ export const FollowingPage: React.FC = () => {
                         <div
                             className="px-5 py-4 flex items-center justify-between active:bg-(--app-c-tw-bg-gray-50)"
                             style={{ transition: 'color var(--app-duration-short) var(--app-easing-standard), background-color var(--app-duration-short) var(--app-easing-standard), border-color var(--app-duration-short) var(--app-easing-standard)' }}
-                            {...bindTap<HTMLDivElement>('wechatFriends.open')}
+                            {...bindNav(routes.wechatFriends)}
                         >
                             <div className="flex items-center gap-4">
                                 <div className="w-12 h-12 bg-(--app-c-following-page-bg-07c1) rounded-full flex items-center justify-center">
@@ -98,7 +99,7 @@ export const FollowingPage: React.FC = () => {
                             <div
                                 key={targetUser.id}
                                 className="px-5 py-3 flex items-center justify-between active:bg-(--app-c-tw-bg-gray-50)" style={{ transition: 'color var(--app-duration-short) var(--app-easing-standard), background-color var(--app-duration-short) var(--app-easing-standard), border-color var(--app-duration-short) var(--app-easing-standard)' }}
-                                {...bindTap<HTMLDivElement>('user.profile.open', { params: { userId: targetUser.id } })}
+                                {...bindNav(routes.user, { params: { userId: targetUser.id } })}
                             >
                                 <div className="flex items-center gap-4">
                                     <div className="w-12 h-12 rounded-full overflow-hidden border border-(--app-c-tw-border-gray-100) shrink-0">

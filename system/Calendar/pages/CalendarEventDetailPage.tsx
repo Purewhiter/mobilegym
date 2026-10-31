@@ -7,6 +7,7 @@ import { stringsEn } from '../res/strings.en';
 import { useAppStrings } from '@/os/useAppStrings';
 import { useCalendarGestures } from '../hooks/useCalendarGestures';
 import * as TimeService from '@/os/TimeService';
+import { routes } from '../routes';
 const calIcon = (name: string) => name ? `/@app-assets/Calendar/icons/${name}.svg` : '';
 
 const formatRangeCN = (startTs: number, endTs: number, allDay: boolean, allDayLabel: string) => {
@@ -24,7 +25,7 @@ const formatRangeCN = (startTs: number, endTs: number, allDay: boolean, allDayLa
 };
 
 export const CalendarEventDetailPage: React.FC = () => {
-  const { back, bindBack, bindTap } = useCalendarGestures();
+  const { back, bindBack, bindNav } = useCalendarGestures();
   const { eventId } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
   const showDeleteConfirm = searchParams.get('deleteConfirm') === 'open';
@@ -123,7 +124,7 @@ export const CalendarEventDetailPage: React.FC = () => {
       <div className="absolute left-0 right-0 bottom-0 pb-safe">
         <div className="flex justify-center gap-4 px-6 pb-6">
           <button
-            {...bindTap('event.edit', { params: { eventId: event.id } })}
+            {...bindNav(routes.eventEdit, { params: { eventId: event.id } })}
             className="w-14 h-14 rounded-full bg-white/95 dark:bg-[#1c1c1e]/95 shadow-lg flex items-center justify-center text-gray-800 dark:text-gray-100 active:scale-95 transition-transform"
             aria-label="编辑"
           >

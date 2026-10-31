@@ -4,6 +4,7 @@ const ChevronLeft = IcNavBack, Search = IcSearch, MoreVertical = IcMoreVertical,
 import { useBilibiliStore } from '../state';
 import { useBilibiliGestures } from '../hooks/useBilibiliGestures';
 import { useVideosByIds } from '../hooks/useData';
+import { routes } from '../routes';
 // Helper for formatting stats numbers
 const formatStat = (num: number | string | undefined) => {
     if (num === undefined || num === null) return '0';
@@ -35,7 +36,7 @@ const formatDuration = (val: number | string | undefined) => {
 };
 
 export const RecentLikesPage: React.FC = () => {
-    const { bindBack, bindTap } = useBilibiliGestures();
+    const { bindBack, bindNav } = useBilibiliGestures();
     const user = useBilibiliStore(s => s.user);
     const { videos: likedVideos } = useVideosByIds(user.likedVideoIds ?? [], 'catalog');
 
@@ -57,7 +58,7 @@ export const RecentLikesPage: React.FC = () => {
             {/* List */}
             <div className="flex-1 overflow-y-auto" data-scroll-container="main" data-scroll-direction="vertical">
                 {likedVideos.map(video => (
-                    <div key={video.id} className="flex gap-3 px-4 py-3 border-b border-app-bg active:bg-gray-50 transition-colors cursor-pointer" {...bindTap('video.open', { params: { bvid: video.id } })}>
+                    <div key={video.id} className="flex gap-3 px-4 py-3 border-b border-app-bg active:bg-gray-50 transition-colors cursor-pointer" {...bindNav(routes.video, { params: { bvid: video.id }, search: { tab: 'intro' } })}>
                         {/* Thumbnail */}
                         <div className="w-[125px] aspect-video bg-app-bg rounded-[6px] overflow-hidden relative shrink-0">
                             <img src={video.cover} className="w-full h-full object-cover" referrerPolicy="no-referrer" />

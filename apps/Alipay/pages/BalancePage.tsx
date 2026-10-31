@@ -6,9 +6,10 @@ import { useAlipayStore } from '../state';
 import { useAlipayGestures } from '../hooks/useAlipayGestures';
 import { DefaultAvatar } from '../components/DefaultAvatar';
 import { getBillDisplayTitle } from '../utils/bills';
+import { routes } from '../routes';
 export const BalancePage: React.FC = () => {
   const { balance, transferRecords } = useAlipayStore();
-  const { bindTap, bindBack, go } = useAlipayGestures();
+  const { bindNav, bindBack, nav } = useAlipayGestures();
   const s = useAlipayStrings();
   const [showBalance, setShowBalance] = React.useState(true);
   const sorted = React.useMemo(() => {
@@ -85,7 +86,7 @@ export const BalancePage: React.FC = () => {
             </button>
             <button
               className="flex-1 bg-app-primary text-white py-2.5 rounded-lg font-medium text-sm shadow-md shadow-blue-200"
-              onClick={() => go('balance.recharge.open')}
+              onClick={() => nav.push(routes.balanceRecharge)}
             >
               {s.top_up}
             </button>
@@ -97,7 +98,7 @@ export const BalancePage: React.FC = () => {
           <div className="grid grid-cols-5 gap-4">
             <button 
               className="flex flex-col items-center"
-              {...bindTap<HTMLButtonElement>('transfer.open')}
+              {...bindNav(routes.payTransfer)}
             >
               <div className="w-10 h-10 rounded-full flex items-center justify-center mb-1 text-gray-600">
                 <IcTransfer size={24} />
@@ -106,7 +107,7 @@ export const BalancePage: React.FC = () => {
             </button>
             <button
               className="flex flex-col items-center relative"
-              onClick={() => go('balance.bankCards.open')}
+              onClick={() => nav.push(routes.settingsPaymentBankCards)}
             >
               <div className="absolute -top-2 right-1 bg-[#FF4D4F] text-white text-[9px] px-1 rounded-bl-lg rounded-tr-lg">{s.discount}</div>
               <div className="w-10 h-10 rounded-full flex items-center justify-center mb-1 text-gray-600">
@@ -139,7 +140,7 @@ export const BalancePage: React.FC = () => {
         <div className="bg-app-surface rounded-xl shadow-sm overflow-hidden">
           <div className="flex justify-between items-center p-4 border-b border-gray-50">
             <span className="font-medium text-gray-800">{s.balance_details}</span>
-            <button className="flex items-center text-gray-400 text-sm" {...bindTap<HTMLButtonElement>('balance.records.open')}>
+            <button className="flex items-center text-gray-400 text-sm" {...bindNav(routes.balanceRecords)}>
               {s.messagespage_all} <IcNavForward size={16} />
             </button>
           </div>

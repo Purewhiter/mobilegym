@@ -4,9 +4,10 @@ import { useRailwayStore } from '../state';
 import { useRailwayGestures } from '../hooks/useRailwayGestures';
 import { useLocale } from '../../../os/locale';
 import { localizeRailwayText } from '../utils/localizeRailwayItem';
+import { routes } from '../routes';
 
 export const InvoiceHeadersPage: React.FC = () => {
-  const { bindBack, bindTap } = useRailwayGestures();
+  const { bindBack, bindNav } = useRailwayGestures();
   const invoiceHeaders = useRailwayStore(s => s.invoiceHeaders);
   const isEnglish = useLocale() === 'en';
 
@@ -45,7 +46,7 @@ export const InvoiceHeadersPage: React.FC = () => {
             <p className="text-gray-400 text-sm mb-6">{isEnglish ? 'No invoice headers yet' : '当前暂无发票抬头'}</p>
             <button
               className="flex items-center gap-2 bg-app-primary text-white px-8 py-3 rounded-full text-base font-medium active:opacity-80"
-              {...bindTap<HTMLButtonElement>('invoice.addHeader' as any)}
+              {...bindNav(routes.addInvoiceHeader)}
             >
               <IcAdd size={20} />
               <span>{isEnglish ? 'Add invoice header' : '添加发票抬头'}</span>
@@ -98,7 +99,7 @@ export const InvoiceHeadersPage: React.FC = () => {
         <div className="px-3 pb-4 pt-4 mt-auto">
           <button
             className="w-full flex items-center justify-center gap-2 bg-app-primary text-white py-3 rounded-full text-base font-medium active:opacity-80"
-            {...bindTap<HTMLButtonElement>('invoice.addHeader' as any)}
+            {...bindNav(routes.addInvoiceHeader)}
           >
             <IcAdd size={20} />
             <span>{isEnglish ? 'Add invoice header' : '添加发票抬头'}</span>

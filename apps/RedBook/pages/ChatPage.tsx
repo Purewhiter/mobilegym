@@ -15,6 +15,7 @@ import { useLocale } from '@/apps/RedBook/locale';
 import voiceIcon from '../assets/chat/voice.png';
 import emojiIcon from '../assets/chat/emoji.png';
 import moreIcon from '../assets/chat/more.png';
+import { routes } from '../routes';
 
 type DisplayMessage = {
   id: string;
@@ -91,7 +92,7 @@ export const ChatPage: React.FC = () => {
     sendMessage: s.sendMessage,
     chats: s.chats,
   })));
-  const { bindTap, bindBack } = useRedBookGestures();
+  const { bindNav, bindBack } = useRedBookGestures();
   const { user: otherUser } = useRedBookUser(userId && userId !== user.id ? userId : undefined);
   const targetUser = userId ? (userId === user.id ? user : otherUser ?? undefined) : undefined;
   
@@ -165,7 +166,7 @@ export const ChatPage: React.FC = () => {
               size={24}
               className="text-app-text cursor-pointer"
               strokeWidth={2}
-              {...(bindTap('chat.settings.open', { params: { userId: userId || '' } }) as unknown as Record<string, unknown>)}
+              {...(bindNav(routes.chatSettings, { params: { userId: userId || '' } }) as unknown as Record<string, unknown>)}
           />
       </div>
 

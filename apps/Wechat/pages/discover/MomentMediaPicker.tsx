@@ -9,6 +9,7 @@ import { useWechatGestures } from '../../hooks/useWechatGestures';
 import { useWechatStore } from '../../state';
 import { useShallow } from 'zustand/react/shallow';
 import { WechatSmartImage } from '../../components/WechatSmartImage';
+import { routes } from '../../routes';
 
 const MAX_SELECT = 9;
 const SWIPE_THRESHOLD = 40;
@@ -24,7 +25,7 @@ export const MomentMediaPickerPage: React.FC = () => {
   const urlIndex = Number(searchParams.get('index') || '0');
   const isChatMediaPicker = /^\/chat\/[^/]+\/media-picker$/.test(location.pathname);
 
-  const { bindTap, bindBack, go, back } = useWechatGestures();
+  const { bindTap, bindBack, nav, back, bindNav } = useWechatGestures();
   const { momentDraft, updateMomentDraft, sendImages } = useWechatStore(useShallow(s => ({
     momentDraft: s.momentDraft,
     updateMomentDraft: s.updateMomentDraft,
@@ -50,11 +51,11 @@ export const MomentMediaPickerPage: React.FC = () => {
     if (menu === 'albums' || menu === 'preview') return;
     if (searchParams.get('albumId')) return;
     if (isChatMediaPicker && targetWxid) {
-      go('chat.mediaPicker.defaultAlbum.replace', { id: targetWxid, albumId: 'all' });
+      nav.replace(routes.chatMediaPicker, { id: targetWxid }, { search: { albumId: 'all' } });
       return;
     }
-    go('moments.mediaPicker.defaultAlbum.replace', { albumId: 'all' });
-  }, [go, isChatMediaPicker, menu, searchParams, targetWxid]);
+    nav.replace(routes.momentsMediaPicker, {}, { search: { albumId: 'all' } });
+  }, [nav, isChatMediaPicker, menu, searchParams, targetWxid]);
 
   useEffect(() => {
     const loadedItems = MediaService.getMediaItems({ albumId, type: 'image' });
@@ -67,12 +68,12 @@ export const MomentMediaPickerPage: React.FC = () => {
     if (!pendingAlbumId) return;
     if (menu === 'albums') return;
     if (isChatMediaPicker && targetWxid) {
-      go('chat.mediaPicker.album.switch', { id: targetWxid, albumId: pendingAlbumId });
+      nav.replace(routes.chatMediaPicker, { id: targetWxid }, { search: { albumId: pendingAlbumId } });
     } else {
-      go('moments.mediaPicker.album.switch', { albumId: pendingAlbumId });
+      nav.replace(routes.momentsMediaPicker, {}, { search: { albumId: pendingAlbumId } });
     }
     setPendingAlbumId(null);
-  }, [go, isChatMediaPicker, menu, pendingAlbumId, targetWxid]);
+  }, [nav, isChatMediaPicker, menu, pendingAlbumId, targetWxid]);
 
   const selectedItems = useMemo(() => {
     const map = new Map(items.map(i => [i.id, i]));
@@ -135,16 +136,16 @@ export const MomentMediaPickerPage: React.FC = () => {
       return;
     }
     if (appendImagesToMomentDraft()) {
-      go('moments.post.open.fromMediaPicker');
+      nav.replace(routes.postMoment);
     }
   };
 
   const openPreview = (index: number, previewScope: 'all' | 'selected') => {
     if (isChatMediaPicker && targetWxid) {
-      go('chat.mediaPicker.preview.open', { id: targetWxid, index, scope: previewScope });
+      nav.replace(routes.chatMediaPicker, { id: targetWxid }, { search: { menu: 'preview', index: index, scope: previewScope }, keep: ['albumId'] });
       return;
     }
-    go('moments.mediaPicker.preview.open', { index, scope: previewScope });
+    nav.replace(routes.momentsMediaPicker, {}, { search: { menu: 'preview', index: index, scope: previewScope }, keep: ['albumId'] });
   };
 
   const toggleSelectByPreviewIndex = () => {
@@ -175,15 +176,12 @@ export const MomentMediaPickerPage: React.FC = () => {
   const primaryLabel = isChatMediaPicker ? t.chat_send : t.moment_media_done;
   const previewCloseProps =
     isChatMediaPicker && targetWxid
-      ? bindTap<HTMLButtonElement>('chat.mediaPicker.preview.close', {
-          params: { id: targetWxid },
-          stopPropagation: true,
-        })
-      : bindTap<HTMLButtonElement>('moments.mediaPicker.preview.close', { stopPropagation: true });
+      ? bindNav(routes.chatMediaPicker, { params: { id: targetWxid }, search: { menu: null }, keep: ['albumId'], replace: true, stopPropagation: true })
+      : bindNav(routes.momentsMediaPicker, { search: { menu: null }, keep: ['albumId'], replace: true, stopPropagation: true });
   const albumMenuOpenProps =
     isChatMediaPicker && targetWxid
-      ? bindTap<HTMLButtonElement>('chat.mediaPicker.albumMenu.open', { params: { id: targetWxid } })
-      : bindTap<HTMLButtonElement>('moments.mediaPicker.albumMenu.open');
+      ? bindNav(routes.chatMediaPicker, { params: { id: targetWxid }, search: { menu: 'albums' }, keep: ['albumId'] })
+      : bindNav(routes.momentsMediaPicker, { search: { menu: 'albums' }, keep: ['albumId'] });
 
   return (
     <div className="relative w-full h-full bg-black flex flex-col" data-status-bar-foreground="light">
@@ -301,7 +299,7 @@ export const MomentMediaPickerPage: React.FC = () => {
                     </button>
                   ) : (
                     <button
-                      {...bindTap<HTMLButtonElement>('moments.post.open.fromMediaPicker', {
+                      {...bindTap<HTMLButtonElement>('nav.postMoment', {
                         onTrigger: handlePreviewPrimaryAction,
                         stopPropagation: true,
                       })}
@@ -363,14 +361,14 @@ export const MomentMediaPickerPage: React.FC = () => {
                   const isCurrent = album.id === albumId;
                   const albumSwitchProps =
                     isChatMediaPicker && targetWxid
-                      ? bindTap<HTMLButtonElement>('chat.mediaPicker.album.switch', {
+                      ? bindTap<HTMLButtonElement>('nav.chatMediaPicker', {
                           params: { id: targetWxid, albumId: album.id },
                           onTrigger: () => {
                             setPendingAlbumId(album.id);
                             back();
                           },
                         })
-                      : bindTap<HTMLButtonElement>('moments.mediaPicker.album.switch', {
+                      : bindTap<HTMLButtonElement>('nav.momentsMediaPicker', {
                           params: { albumId: album.id },
                           onTrigger: () => {
                             setPendingAlbumId(album.id);
@@ -467,9 +465,7 @@ export const MomentMediaPickerPage: React.FC = () => {
               </button>
             ) : (
               <button
-                {...bindTap<HTMLButtonElement>('moments.post.open.fromMediaPicker', {
-                  beforeTrigger: () => handlePrimaryAction(),
-                })}
+                {...bindNav(routes.postMoment, { replace: true, beforeTrigger: () => handlePrimaryAction() })}
                 disabled={selectedIds.length === 0}
                 className={`ml-auto px-4 py-1.5 rounded-[4px] text-(--app-chat-bubble-text-size) font-medium ${
                   selectedIds.length > 0 ? 'bg-app-primary text-white' : 'bg-app-surface/15 text-white/40'

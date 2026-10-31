@@ -6,12 +6,13 @@ import { useAlipayStore } from '../state';
 import { useAlipayGestures } from '../hooks/useAlipayGestures';
 import { maskPhone } from '../utils/maskPhone';
 import { DefaultAvatar } from '../components/DefaultAvatar';
+import { routes } from '../routes';
 export const ContactProfilePage: React.FC = () => {
   const s = useAlipayStrings();
   const [searchParams] = useSearchParams();
   const contactId = searchParams.get('contactId');
   const contacts = useAlipayStore(s => s.contacts);
-  const { bindTap, bindBack } = useAlipayGestures();
+  const { bindNav, bindBack } = useAlipayGestures();
 
   const contact = contacts.find(c => String(c.id) === String(contactId));
 
@@ -91,7 +92,7 @@ export const ContactProfilePage: React.FC = () => {
       <div className="mt-auto px-4 py-2 flex items-center space-x-3">
         <button
           className="flex-1 flex items-center justify-center py-3 bg-white border border-gray-200 rounded-xl text-gray-800 font-medium active:bg-gray-50"
-          {...bindTap('chat.open', { params: { id: `conv_p_${contact.id}`, type: 'person' } })}
+          {...bindNav(routes.chat, { search: { id: `conv_p_${contact.id}`, type: 'person' } })}
         >
             <IcMessage size={20} className="mr-1.5 text-gray-500" />
             {s.send_message}
@@ -102,7 +103,7 @@ export const ContactProfilePage: React.FC = () => {
         </button>
         <button
             className="flex-1 flex items-center justify-center py-3 bg-app-primary rounded-xl text-white font-medium active:bg-blue-600"
-            {...bindTap('transfer.amount.open', { params: { contactId: String(contact.id) } })}
+            {...bindNav(routes.payTransferAmount, { search: { contactId: String(contact.id) } })}
         >
             <IcTransfer size={20} className="mr-1.5" />
             {s.go_transfer}

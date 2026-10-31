@@ -4,10 +4,12 @@ import { IcTabWechat, IcTabContacts, IcTabDiscover, IcTabMe } from '../res/icons
 import { dimens } from '../res/dimens';
 import { useLocation } from 'react-router-dom';
 import { useWechatGestures } from '../hooks/useWechatGestures';
+import type { AppRoute } from '../../../os/navigation';
+import { routes } from '../routes';
 const TabBar: React.FC = () => {
   const t = useWechatStrings();
   const location = useLocation();
-  const { bindTap, go } = useWechatGestures();
+  const { bindTap, nav } = useWechatGestures();
   const currentPath = location.pathname;
 
   const isActive = (path: string) => currentPath === path;
@@ -18,15 +20,15 @@ const TabBar: React.FC = () => {
   const activeColor = "text-app-primary";
   const inactiveColor = "text-(--app-c-common-text-primary)";
 
-  const handleTabClick = (path: string, transitionId: 'tab.wechat' | 'tab.contacts' | 'tab.discover' | 'tab.me') => {
+  const handleTabClick = (path: string, route: AppRoute) => {
     if (currentPath === path) return;
-    go(transitionId);
+    nav.replace(route);
   };
 
   return (
     <div className="h-(--app-item-height-65) bg-(--app-c-chat-input-bar-bg) border-t border-(--app-c-tw-border-gray-300) flex justify-around items-start w-full pt-2 absolute bottom-0 left-0 right-0 z-[90]">
       <div
-        {...bindTap<HTMLDivElement>('tab.wechat', { onTrigger: () => handleTabClick('/', 'tab.wechat') })}
+        {...bindTap<HTMLDivElement>('nav.home', { onTrigger: () => handleTabClick('/', routes.home) })}
         className={`flex flex-col items-center justify-start w-full space-y-[2px] cursor-pointer`}
       >
         <div className={`relative ${isActive('/') ? activeColor : inactiveColor}`}>
@@ -36,7 +38,7 @@ const TabBar: React.FC = () => {
       </div>
 
       <div
-        {...bindTap<HTMLDivElement>('tab.contacts', { onTrigger: () => handleTabClick('/contacts', 'tab.contacts') })}
+        {...bindTap<HTMLDivElement>('nav.contacts', { onTrigger: () => handleTabClick('/contacts', routes.contacts) })}
         className={`flex flex-col items-center justify-start w-full space-y-[2px] cursor-pointer`}
       >
         <div className={`${isActive('/contacts') ? activeColor : inactiveColor}`}>
@@ -46,7 +48,7 @@ const TabBar: React.FC = () => {
       </div>
 
       <div
-        {...bindTap<HTMLDivElement>('tab.discover', { onTrigger: () => handleTabClick('/discover', 'tab.discover') })}
+        {...bindTap<HTMLDivElement>('nav.discover', { onTrigger: () => handleTabClick('/discover', routes.discover) })}
         className={`flex flex-col items-center justify-start w-full space-y-[2px] cursor-pointer`}
       >
         <div className={`${isActive('/discover') ? activeColor : inactiveColor}`}>
@@ -56,7 +58,7 @@ const TabBar: React.FC = () => {
       </div>
 
       <div
-        {...bindTap<HTMLDivElement>('tab.me', { onTrigger: () => handleTabClick('/me', 'tab.me') })}
+        {...bindTap<HTMLDivElement>('nav.me', { onTrigger: () => handleTabClick('/me', routes.me) })}
         className={`flex flex-col items-center justify-start w-full space-y-[2px] cursor-pointer`}
       >
         <div className={`${isActive('/me') ? activeColor : inactiveColor}`}>

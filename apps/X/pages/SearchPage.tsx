@@ -4,12 +4,13 @@ import { useXStore, selectTrends, selectUser } from '../state';
 import { useXGestures } from '../hooks/useXGestures';
 import { useXStrings } from '../hooks/useXStrings';
 import globalTrendsImage from '../assets/global_trends.jpg';
+import { routes } from '../routes';
 
 export const SearchPage: React.FC<{ isActive?: boolean }> = ({ isActive = true }) => {
   const trends = selectTrends();
   const user = useXStore(selectUser);
   const location = useLocation();
-  const { bindTap } = useXGestures(isActive);
+  const { bindTap, bindNav } = useXGestures(isActive);
   const s = useXStrings();
 
   const searchParams = new URLSearchParams(location.search);
@@ -37,31 +38,31 @@ export const SearchPage: React.FC<{ isActive?: boolean }> = ({ isActive = true }
   }, [activeTab, trends]);
 
   const tabs = [
-    { key: 'foryou', label: s.search_tab_foryou, transitionId: 'search.tab.toForyou' as const },
-    { key: 'trending', label: s.search_tab_trending, transitionId: 'search.tab.toTrending' as const },
-    { key: 'news', label: s.search_tab_news, transitionId: 'search.tab.toNews' as const },
-    { key: 'sports', label: s.search_tab_sports, transitionId: 'search.tab.toSports' as const },
-    { key: 'entertainment', label: s.search_tab_entertainment, transitionId: 'search.tab.toEntertainment' as const },
+    { key: 'foryou', label: s.search_tab_foryou },
+    { key: 'trending', label: s.search_tab_trending },
+    { key: 'news', label: s.search_tab_news },
+    { key: 'sports', label: s.search_tab_sports },
+    { key: 'entertainment', label: s.search_tab_entertainment },
   ];
 
   return (
     <div className="flex flex-col pt-10 bg-app-bg min-h-full text-app-text">
       <div className="px-4 py-2 flex items-center gap-4">
-        <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-app-text font-bold overflow-hidden cursor-pointer" {...bindTap('search.drawer.open')}>
+        <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-app-text font-bold overflow-hidden cursor-pointer" {...bindNav(routes.search, { search: { menu: 'drawer' }, keep: ['tab'] })}>
           {user.avatar ? <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" /> : user.name[0]}
         </div>
-        <div className="flex-1 bg-app-surface rounded-full px-4 py-2 text-gray-500 text-center cursor-pointer" {...bindTap('search.input.open')}>
+        <div className="flex-1 bg-app-surface rounded-full px-4 py-2 text-gray-500 text-center cursor-pointer" {...bindNav(routes.searchInput)}>
           ⌕ {s.search_input_placeholder}
         </div>
         <div className="w-6 text-center">⋯</div>
       </div>
 
       <div className="flex border-b border-app-border mt-2 overflow-x-auto no-scrollbar">
-        {tabs.map(({ key, label, transitionId }) => (
+        {tabs.map(({ key, label }) => (
           <div
             key={key}
             className={`px-4 py-2 whitespace-nowrap cursor-pointer relative ${activeTab === key ? 'font-bold' : 'text-gray-500'}`}
-            {...bindTap(transitionId)}
+            {...bindNav(routes.search, { search: { tab: key }, replace: true })}
           >
             {label}
             {activeTab === key && <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-1 bg-blue-500 rounded-full" />}
@@ -138,7 +139,7 @@ export const SearchPage: React.FC<{ isActive?: boolean }> = ({ isActive = true }
             )}
 
             {filteredTrends.filter(trend => !trend.image && trend.type !== 'sports_match').map(trend => (
-              <div key={trend.id} className="py-3 px-4 border-b border-app-border flex justify-between items-start active:bg-black/5 cursor-pointer transition-colors" {...bindTap('trend.open', { params: { id: trend.id } })}>
+              <div key={trend.id} className="py-3 px-4 border-b border-app-border flex justify-between items-start active:bg-black/5 cursor-pointer transition-colors" {...bindNav(routes.searchInput)}>
                 <div>
                   {activeTab === 'trending' ? (
                     <div className="font-bold text-md">{trend.title}</div>
@@ -158,7 +159,7 @@ export const SearchPage: React.FC<{ isActive?: boolean }> = ({ isActive = true }
         )}
       </div>
 
-      <div {...bindTap('compose.open')} className="fixed bottom-20 right-4 w-14 h-14 bg-blue-500 rounded-full flex items-center justify-center text-3xl shadow-lg cursor-pointer z-50">
+      <div {...bindNav(routes.compose)} className="fixed bottom-20 right-4 w-14 h-14 bg-blue-500 rounded-full flex items-center justify-center text-3xl shadow-lg cursor-pointer z-50">
         +
       </div>
     </div>

@@ -19,7 +19,7 @@ import { SearchInputPage } from './pages/SearchInputPage';
 import { ComposePage } from './pages/ComposePage';
 import { ChatPage } from './pages/ChatPage';
 import { GrokPage } from './pages/GrokPage';
-import { useAppNavigate } from './navigation';
+import { useNav } from '../../os/navigation';
 import { useXGestures } from './hooks/useXGestures';
 import { XDrawer } from './components/XDrawer';
 import { ReplyPage } from './pages/ReplyPage';
@@ -54,11 +54,12 @@ import { colorStates, colorStatesDark } from './res/colors.states';
 import { dimens } from './res/dimens';
 import { anim } from './res/anim';
 import { useAppNavigationHandler } from '../../os/hooks/useAppNavigationHandler';
+import { routes } from './routes';
 
 const XNavigationHandler: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { back } = useAppNavigate();
+  const nav = useNav(); const back = nav.back;
   const { navigator } = useContext(UNSAFE_NavigationContext);
   const historyIndexRef = useRef(0);
 
@@ -156,22 +157,22 @@ function withChildPageViewport(
 
 const Layout = () => {
     const { pathname } = useLocation();
-    const { bindTap } = useXGestures();
+    const { bindNav } = useXGestures();
     const location = useLocation();
     const searchParams = new URLSearchParams(location.search);
     const isDrawerOpen = searchParams.get('menu') === 'drawer';
 
     const tabs = [
-      { id: 'home', path: '/', icon: IcTabHome, tapProps: bindTap('tab.home') },
-      { id: 'search', path: '/search', icon: IcTabSearch, tapProps: bindTap('tab.search') },
-      { id: 'grok', path: '/grok', icon: IcTabGrok, tapProps: bindTap('tab.grok') },
+      { id: 'home', path: '/', icon: IcTabHome, tapProps: bindNav(routes.home, { search: { tab: 'foryou' }, replace: true }) },
+      { id: 'search', path: '/search', icon: IcTabSearch, tapProps: bindNav(routes.search, { search: { tab: 'foryou' }, replace: true }) },
+      { id: 'grok', path: '/grok', icon: IcTabGrok, tapProps: bindNav(routes.grok, { replace: true }) },
       {
         id: 'notifications',
         path: '/notifications',
         icon: IcTabNotifications,
-        tapProps: bindTap('tab.notifications'),
+        tapProps: bindNav(routes.notifications, { search: { tab: 'all' }, replace: true }),
       },
-      { id: 'messages', path: '/messages', icon: IcTabMessages, tapProps: bindTap('tab.messages') },
+      { id: 'messages', path: '/messages', icon: IcTabMessages, tapProps: bindNav(routes.messages, { search: { tab: 'all' }, replace: true }) },
     ] as const;
 
     const isHome = pathname === '/';

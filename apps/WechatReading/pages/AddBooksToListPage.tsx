@@ -4,11 +4,11 @@ import { dimens } from '../res/dimens';
 import { useWechatReadingGestures } from '../hooks/useWechatReadingGestures';
 import { useWechatReadingStrings } from '../hooks/useWechatReadingStrings';
 import { getWechatReadingBookById, useWechatReadingStore } from '../state';
-import { useAppNavigate } from '../navigation';
+import { useNav } from '../../../os/navigation';
 import type { Book } from '../data/types';
 
 const AddBooksToListPage: React.FC = () => {
-  const { back } = useAppNavigate();
+  const nav = useNav(); const back = nav.back;
   const s = useWechatReadingStrings();
   const { bindBack } = useWechatReadingGestures();
   const shelf = useWechatReadingStore(st => st.shelf);

@@ -168,33 +168,16 @@ The scanner intentionally keeps system-style dot directories such as `.data` and
 
 The gateway keeps a server-side cookie jar per `x-gw-session` and contains defensive handling for upstream compression, aborts, retries, and repeated 404 image/video fetches.
 
-## Navigation artifacts
+## Navigation graph
 
-Run after modifying navigation declarations:
-
-```bash
-node scripts/build_nav_artifacts.mjs <AppName>
-```
-
-Useful variants:
+There is no static navigation graph; explore a running app instead:
 
 ```bash
-node scripts/build_nav_artifacts.mjs <AppName> --data data/index.ts
-node scripts/build_nav_artifacts.mjs <AppName> --skip-tasks
-node scripts/check_navigation_declaration_consistency.mjs <AppName> --actions
+python scripts/explore_nav_graph.py http://localhost:3000/ <appId> out.json
+python scripts/explore_nav_graph.py --diff before.json after.json
 ```
 
-Generated files are written under `public/`:
-
-| Artifact | Meaning |
-|---|---|
-| `<app>_nav_graph.json` | Full schema graph. |
-| `<app>_nav_graph_simplified.json` | Route-level graph with uiStates collapsed. |
-| `<app>_data_graph.json` | Concrete data-mode graph when `--data` is provided. |
-| `<app>_action_tasks.json` / `.jsonl` | Generated action trajectories from the schema graph. |
-| `<app>_action_tasks_data.json` | Generated action trajectories from the data graph when `--data` is provided. |
-
-See [`../navigation/declaration.md`](../navigation/declaration.md) and [`../navigation/data-sources.md`](../navigation/data-sources.md) for declaration semantics.
+See [`../navigation/routes.md`](../navigation/routes.md).
 
 ## WMR tooling
 
@@ -231,7 +214,7 @@ Manifest `displayNameEn` values are injected automatically; new apps should not 
 
 | Change type | Suggested check |
 |---|---|
-| Navigation declaration or new page route | `node scripts/build_nav_artifacts.mjs <AppName>` |
+| Routes or jumps | `npx tsc --noEmit`, then explore the app before / after (`scripts/explore_nav_graph.py --diff`) |
 | Runtime TypeScript behavior across several files | `npx tsc --noEmit` |
 | OS/app runtime code | `npm run lint` |
 | System app runtime code | `npx eslint system/` |
@@ -246,8 +229,8 @@ Use this as the compact version of the app onboarding checklist:
 |---|---|
 | Manifest | `manifest.ts` exports `manifest`, has a unique `id`, `displayName`, `displayNameEn`, icon, theme, and any `intentFilters`. |
 | Entry component | `<Name>App.tsx` matches `*App.tsx`, has a default export, wraps routes in `MemoryRouter`, and calls `useAppNavigationHandler` inside the router. |
-| Navigation | Every route, discrete UI state, transition, action, and scroll container is declared in `navigation.declaration.ts`. |
-| Business navigation | Pages use the app's `go()` / `back()` helper, never direct `useNavigate()` imports. |
+| Navigation | Every page and discrete UI state is in `routes.ts`; jumps use `bindNav` / `nav`. |
+| Business navigation | Pages use `bindNav` / `nav` from the gesture hook, never direct `useNavigate()` imports. |
 | DOM tagging | Interactive controls use gesture hooks so they emit `data-trigger*` or `data-action*`; back/close controls bind `system.back`. |
 | Data | Structural constants live in `constants.ts`; replaceable runtime defaults live in `data/defaults.json`; `data/index.ts` exports `<APPNAME>_CONFIG`. |
 | Large data | Big public datasets stay out of `defaults.json`; add `loader.ts` and decide hook vs store-action vs service consumption. |
@@ -255,4 +238,4 @@ Use this as the compact version of the app onboarding checklist:
 | Resources | App icons are `Ic*` aliases in `res/icons.tsx`; data-driven icon names also use `Ic*`. |
 | UI chrome | Page roots reserve status bar space and declare status/navigation bar foreground when needed. |
 | Keyboard | Bottom input bars use flex layout plus `data-keep-keyboard`; tab bars that should disappear use `data-hide-on-keyboard`. |
-| Validation | Run `node scripts/build_nav_artifacts.mjs <AppName>` after navigation changes; run type/lint checks when the runtime change is broad. |
+| Validation | Run `npx tsc --noEmit` and explore the app after navigation changes; run lint when the runtime change is broad. |
