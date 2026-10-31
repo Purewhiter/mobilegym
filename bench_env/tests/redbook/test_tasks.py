@@ -491,7 +491,7 @@ class TestRedbookAccessor:
 
     def test_base_user_overlay_does_not_backfill_missing_fields(self):
         state = copy.deepcopy(_load_defaults())
-        base_user_id = next(iter(Redbook(state).base_users_by_id.keys()))
+        base_user_id = Redbook(state).base_user_ids[0]
         state["users"][base_user_id] = {"id": base_user_id, "name": "缺字段用户 overlay"}
 
         user = Redbook(state).view_user(base_user_id)
@@ -600,9 +600,7 @@ class TestRedbookAccessor:
 
         redbook = Redbook(state)
 
-        assert "obsolete_note" not in redbook.base_notes_by_id
         assert "obsolete_note" not in redbook.feed_ids
-        assert "obsolete_user" not in redbook.base_users_by_id
         assert "obsolete_user" not in redbook.base_user_ids
         with pytest.raises(ValueError):
             redbook.require_note("obsolete_note")

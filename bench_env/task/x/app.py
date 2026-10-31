@@ -1,27 +1,19 @@
 """
 X (Twitter) app state accessor.
+
+Posts and users as the user sees them (catalog plus this state's posts,
+edits, likes, retweets and replies) come from the device server's X module
+through `DeviceView`; this file never merges catalog and state itself.
 """
 
 from __future__ import annotations
 
-import json
 import random
 from functools import cached_property
-from pathlib import Path
 from typing import Any
 
+from bench_env.env.device_view import DeviceView
 from bench_env.task.base import BaseApp
-
-
-_REPO_ROOT = Path(__file__).resolve().parents[3]
-_X_DATA_DIR = _REPO_ROOT / "apps" / "X" / "data"
-
-_X_USERS_JSON_PATH = _X_DATA_DIR / "users.json"
-_X_POSTS_JSON_PATH = _X_DATA_DIR / "posts.json"
-
-_X_USERS_JSON_CACHE: dict[str, dict[str, Any]] | None = None
-_X_POSTS_JSON_CACHE: list[dict[str, Any]] | None = None
-_X_POSTS_BY_ID_CACHE: dict[str, dict[str, Any]] | None = None
 
 
 def _preview_text(text: Any, *, limit: int = 40) -> str:
@@ -39,52 +31,6 @@ def _pick_keyword(text: Any) -> str:
     if len(words) >= 3:
         return " ".join(words[: min(5, len(words))])
     return plain[: min(8, len(plain))]
-
-
-def _load_users_json() -> dict[str, Any]:
-    """
-    加载 X 应用公共用户表。
-    """
-    global _X_USERS_JSON_CACHE
-    if _X_USERS_JSON_CACHE is not None:
-        return _X_USERS_JSON_CACHE
-
-    try:
-        with _X_USERS_JSON_PATH.open("r", encoding="utf-8") as f:
-            users = json.load(f) or {}
-        _X_USERS_JSON_CACHE = users if isinstance(users, dict) else {}
-    except Exception:
-        _X_USERS_JSON_CACHE = {}
-    return _X_USERS_JSON_CACHE
-
-
-def _load_posts_json() -> list[dict[str, Any]]:
-    """
-    加载 X 应用公共推文表。
-    """
-    global _X_POSTS_JSON_CACHE
-    if _X_POSTS_JSON_CACHE is not None:
-        return _X_POSTS_JSON_CACHE
-
-    try:
-        with _X_POSTS_JSON_PATH.open("r", encoding="utf-8") as f:
-            posts = json.load(f) or []
-        _X_POSTS_JSON_CACHE = posts if isinstance(posts, list) else []
-    except Exception:
-        _X_POSTS_JSON_CACHE = []
-    return _X_POSTS_JSON_CACHE
-
-
-def _load_posts_by_id() -> dict[str, dict[str, Any]]:
-    global _X_POSTS_BY_ID_CACHE
-    if _X_POSTS_BY_ID_CACHE is not None:
-        return _X_POSTS_BY_ID_CACHE
-    _X_POSTS_BY_ID_CACHE = {
-        post.get("id"): post
-        for post in _load_posts_json()
-        if isinstance(post, dict) and post.get("id")
-    }
-    return _X_POSTS_BY_ID_CACHE
 
 
 X_POST_CHANGES = ["x.posts", "x.user.postIds"]
@@ -119,12 +65,10 @@ class X(BaseApp):
         posts = self.get("posts") or {}
         return posts if isinstance(posts, dict) else {}
 
-    @property
-    def base_posts(self) -> list[dict[str, Any]]:
-        return _load_posts_json()
-
-    def base_post(self, post_id: str) -> dict[str, Any] | None:
-        return _load_posts_by_id().get(post_id)
+    @cached_property
+    def device(self) -> DeviceView:
+        """This state as the device server's X module sees it."""
+        return DeviceView("x", self.raw)
 
     def state_post(self, post_id: str) -> dict[str, Any] | None:
         value = self.state_posts.get(post_id)
@@ -134,115 +78,12 @@ class X(BaseApp):
         return [post for post in self.state_posts.values() if isinstance(post, dict)]
 
     def view_post(self, post_id: str) -> dict[str, Any] | None:
-        table = self.state_posts
-        # runtime overlay: dict 覆盖 base; None 表示 tombstone (隐藏 base)
-        if post_id in table:
-            value = table[post_id]
-            if not isinstance(value, dict):
-                return None
-            return self._with_relationship_derived_stats(value)
-        base = self.base_post(post_id)
-        if not base:
-            return None
-        return self._with_relationship_derived_stats(base)
-
-    def _runtime_comment_counts(self) -> dict[str, int]:
-        counts: dict[str, int] = {}
-        for item in self.state_post_entities():
-            thread_id = item.get("threadId")
-            if thread_id:
-                counts[thread_id] = counts.get(thread_id, 0) + 1
-        return counts
-
-    def _with_relationship_derived_stats(
-        self,
-        post: dict[str, Any],
-        *,
-        liked_ids: set[str] | None = None,
-        retweeted_ids: set[str] | None = None,
-        comment_counts: dict[str, int] | None = None,
-    ) -> dict[str, Any]:
-        stats = post.get("stats")
-        if not isinstance(stats, dict):
-            return post
-        post_id = post.get("id")
-        liked_ids = liked_ids if liked_ids is not None else self.liked_post_ids
-        retweeted_ids = retweeted_ids if retweeted_ids is not None else self.retweeted_post_ids
-        comment_counts = comment_counts if comment_counts is not None else self._runtime_comment_counts()
-        runtime_comments = comment_counts.get(post_id, 0)
-        likes_delta = 1 if post_id in liked_ids else 0
-        retweets_delta = 1 if post_id in retweeted_ids else 0
-        if not runtime_comments and not likes_delta and not retweets_delta:
-            return post
-        return {
-            **post,
-            "stats": {
-                **stats,
-                "comments": max(0, int(stats.get("comments") or 0) + runtime_comments),
-                "likes": max(0, int(stats.get("likes") or 0) + likes_delta),
-                "retweets": max(0, int(stats.get("retweets") or 0) + retweets_delta),
-            },
-        }
+        """A post as the user sees it (``None`` when absent or deleted)."""
+        return self.device.query("viewPost", {"id": str(post_id)})
 
     def view_posts(self) -> list[dict[str, Any]]:
-        table = self.state_posts
-        tombstones = {
-            post_id
-            for post_id, value in table.items()
-            if value is None
-        }
-        liked_ids = self.liked_post_ids
-        retweeted_ids = self.retweeted_post_ids
-        comment_counts = self._runtime_comment_counts()
-        combined = []
-        for _post_id, value in table.items():
-            if value is None or not isinstance(value, dict):
-                continue
-            combined.append(value)
-        combined.extend(
-            post for post in self.base_posts if post.get("id") not in tombstones
-        )
-        seen: set[str] = set()
-        out: list[dict[str, Any]] = []
-        for post in combined:
-            pid = post.get("id")
-            if not pid or pid in seen:
-                continue
-            seen.add(pid)
-            out.append(
-                self._with_relationship_derived_stats(
-                    post,
-                    liked_ids=liked_ids,
-                    retweeted_ids=retweeted_ids,
-                    comment_counts=comment_counts,
-                )
-            )
-        return out
-
-    def resolved_posts(self) -> list[dict[str, Any]]:
-        out = self.view_posts()
-
-        by_id = {post.get("id"): post for post in out}
-        retweet_shells = []
-        emitted: set[str] = set()
-        for post_id in reversed(list(self.state_user().get("retweetedPostIds") or [])):
-            if not post_id or post_id in emitted:
-                continue
-            source = by_id.get(post_id)
-            if not source:
-                continue
-            retweet_shells.append(
-                {
-                    "id": f"retweet_{source.get('id')}",
-                    "authorId": self.get("user.id"),
-                    "content": "",
-                    "time": "刚刚",
-                    "stats": source.get("stats") or {"comments": 0, "retweets": 0, "likes": 0, "views": 0},
-                    "retweetedPostId": source.get("id"),
-                }
-            )
-            emitted.add(post_id)
-        return [*retweet_shells, *out]
+        """Every visible post: this state's posts first, then the catalog."""
+        return self.device.query("viewPosts")
 
     @property
     def conversations(self) -> list[dict[str, Any]]:
@@ -250,18 +91,8 @@ class X(BaseApp):
 
     @cached_property
     def users(self) -> dict[str, Any]:
-        """
-        Base users + me user 的合并视图。Instance 生命周期内只构建一次。
-
-        Contract: X instance 一旦构造, 其 _state 不应被替换 (BaseApp 的常规用法是
-        每次 task judge 创建新 instance, 不复用)。若调用方违反该约定, 此 cache 会
-        固化为旧 me user 快照。
-        """
-        me = self.state_user()
-        base = _load_users_json()
-        if isinstance(me, dict) and me.get("id"):
-            return {**base, str(me["id"]): me}
-        return base
+        """Catalog users plus the current user, by id."""
+        return self.device.query("viewUsers")
 
     @property
     def followed_user_ids(self) -> set[str]:
@@ -325,12 +156,8 @@ class X(BaseApp):
             raise ValueError("Init state required for X post diff")
         current_posts = self.state_post_entities()
         init_posts = self.init.state_post_entities()
-        base_ids = {
-            post.get("id")
-            for post in self.base_posts
-            if isinstance(post, dict) and post.get("id")
-        }
-        new_ids = self.get_new_ids(current_posts, init_posts) - base_ids
+        new_ids = self.get_new_ids(current_posts, init_posts)
+        new_ids -= set(self.device.query("catalogPostIds", {"ids": sorted(i for i in new_ids if i)}))
         new_post_ids = self.new_user_post_ids()
         new_reply_ids = self.new_user_reply_ids()
         out: list[dict[str, Any]] = []

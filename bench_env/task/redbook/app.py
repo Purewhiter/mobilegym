@@ -2,6 +2,11 @@
 Redbook (小红书) state accessor.
 
 Provides convenient access to Redbook app state with comparison utilities.
+
+Notes and users as the user sees them (catalog plus this state's likes,
+collects, follows, comment patches and new notes) come from the device
+server's RedBook module through `DeviceView`; this file never merges catalog
+and state itself.
 """
 
 from __future__ import annotations
@@ -12,18 +17,13 @@ from functools import cached_property
 from pathlib import Path
 from typing import Any, Sequence
 
+from bench_env.env.device_view import DeviceView
 from bench_env.task.base import BaseApp
 from bench_env.task.utils import norm
 
 
 _DEFAULTS_PATH = Path(__file__).resolve().parents[3] / "apps" / "RedBook" / "data" / "defaults.json"
-_REDBOOK_DATA_DIR = _DEFAULTS_PATH.parent
-_REDBOOK_USERS_JSON_PATH = _REDBOOK_DATA_DIR / "users.json"
-_REDBOOK_NOTES_JSON_PATH = _REDBOOK_DATA_DIR / "notes.json"
 _DEFAULTS = json.loads(_DEFAULTS_PATH.read_text(encoding="utf-8"))
-_REDBOOK_USERS_JSON_CACHE: dict[str, dict[str, Any]] | None = None
-_REDBOOK_NOTES_JSON_CACHE: list[dict[str, Any]] | None = None
-_REDBOOK_NOTES_BY_ID_CACHE: dict[str, dict[str, Any]] | None = None
 
 # HomePage category key → Chinese label mapping.
 # Aligned with apps/RedBook/res/strings.ts — update here when categories change.
@@ -223,123 +223,6 @@ def _parse_count(value: Any) -> float:
     return _parse_float_prefix(raw)
 
 
-def _load_users_json() -> dict[str, dict[str, Any]]:
-    global _REDBOOK_USERS_JSON_CACHE
-    if _REDBOOK_USERS_JSON_CACHE is not None:
-        return _REDBOOK_USERS_JSON_CACHE
-    try:
-        raw = json.loads(_REDBOOK_USERS_JSON_PATH.read_text(encoding="utf-8")) or []
-        users = raw if isinstance(raw, list) else []
-    except Exception:
-        users = []
-    _REDBOOK_USERS_JSON_CACHE = {
-        str(user.get("id")): user
-        for user in users
-        if isinstance(user, dict) and user.get("id")
-    }
-    return _REDBOOK_USERS_JSON_CACHE
-
-
-def _load_notes_json() -> list[dict[str, Any]]:
-    global _REDBOOK_NOTES_JSON_CACHE
-    if _REDBOOK_NOTES_JSON_CACHE is not None:
-        return _REDBOOK_NOTES_JSON_CACHE
-    try:
-        raw = json.loads(_REDBOOK_NOTES_JSON_PATH.read_text(encoding="utf-8")) or []
-        _REDBOOK_NOTES_JSON_CACHE = raw if isinstance(raw, list) else []
-    except Exception:
-        _REDBOOK_NOTES_JSON_CACHE = []
-    return _REDBOOK_NOTES_JSON_CACHE
-
-
-def _load_notes_by_id() -> dict[str, dict[str, Any]]:
-    global _REDBOOK_NOTES_BY_ID_CACHE
-    if _REDBOOK_NOTES_BY_ID_CACHE is not None:
-        return _REDBOOK_NOTES_BY_ID_CACHE
-    _REDBOOK_NOTES_BY_ID_CACHE = {
-        str(note.get("id")): note
-        for note in _load_notes_json()
-        if isinstance(note, dict) and note.get("id")
-    }
-    return _REDBOOK_NOTES_BY_ID_CACHE
-
-
-_REDBOOK_BASE_PARSED_COUNTS_CACHE: dict[str, tuple[int, int, int]] | None = None
-_REDBOOK_BASE_COMMENT_TO_NOTE_CACHE: dict[str, str] | None = None
-_REDBOOK_BASE_FEED_IDS_CACHE: tuple[str, ...] | None = None
-_REDBOOK_BASE_USER_IDS_CACHE: tuple[str, ...] | None = None
-
-# Sentinel used by `view_note` to distinguish "key not in state" from "key present with value None".
-_MISSING: Any = object()
-
-
-def _load_base_comment_to_note() -> dict[str, str]:
-    """Reverse index: base comment id → its parent note id.
-
-    Used for two things:
-    - Filtering `state.comments` entries that are *patches* on base comments
-      (handled in the base commentList loop) vs. runtime-only new comments.
-    - Inverting the "which base notes are touched by state.comments?" query
-      from O(F·C) full-scan to O(|state.comments|) dict lookup.
-    """
-    global _REDBOOK_BASE_COMMENT_TO_NOTE_CACHE
-    if _REDBOOK_BASE_COMMENT_TO_NOTE_CACHE is not None:
-        return _REDBOOK_BASE_COMMENT_TO_NOTE_CACHE
-    out: dict[str, str] = {}
-    for note in _load_notes_json():
-        if not isinstance(note, dict) or not note.get("id"):
-            continue
-        nid = str(note["id"])
-        for c in note.get("commentList") or []:
-            if isinstance(c, dict) and c.get("id") is not None:
-                out[str(c["id"])] = nid
-    _REDBOOK_BASE_COMMENT_TO_NOTE_CACHE = out
-    return out
-
-
-def _load_base_feed_ids() -> tuple[str, ...]:
-    """Module-cached base feed order. Returns an immutable tuple."""
-    global _REDBOOK_BASE_FEED_IDS_CACHE
-    if _REDBOOK_BASE_FEED_IDS_CACHE is not None:
-        return _REDBOOK_BASE_FEED_IDS_CACHE
-    _REDBOOK_BASE_FEED_IDS_CACHE = tuple(
-        str(note["id"]) for note in _load_notes_json()
-        if isinstance(note, dict) and note.get("id")
-    )
-    return _REDBOOK_BASE_FEED_IDS_CACHE
-
-
-def _load_base_user_ids() -> tuple[str, ...]:
-    """Module-cached base user-id list. Returns an immutable tuple."""
-    global _REDBOOK_BASE_USER_IDS_CACHE
-    if _REDBOOK_BASE_USER_IDS_CACHE is not None:
-        return _REDBOOK_BASE_USER_IDS_CACHE
-    _REDBOOK_BASE_USER_IDS_CACHE = tuple(_load_users_json().keys())
-    return _REDBOOK_BASE_USER_IDS_CACHE
-
-
-def _load_base_parsed_counts() -> dict[str, tuple[int, int, int]]:
-    """Pre-parse base note count fields once.
-
-    Base notes' likes/collections/comments are often Chinese-formatted strings
-    like '1.2万'. Without pre-parsing we re-run `_parse_count` on every
-    `view_note` call (4000+ notes × 3 fields = ~12K regex/string ops per
-    materialization). Pre-parsing turns this into one dict lookup.
-    """
-    global _REDBOOK_BASE_PARSED_COUNTS_CACHE
-    if _REDBOOK_BASE_PARSED_COUNTS_CACHE is not None:
-        return _REDBOOK_BASE_PARSED_COUNTS_CACHE
-    out: dict[str, tuple[int, int, int]] = {}
-    for nid, note in _load_notes_by_id().items():
-        out[nid] = (
-            int(_parse_count(note.get("likes"))),
-            int(_parse_count(note.get("collections"))),
-            int(_parse_count(note.get("comments"))),
-        )
-    _REDBOOK_BASE_PARSED_COUNTS_CACHE = out
-    return out
-
-
 class Redbook(BaseApp):
     """
     Redbook state accessor.
@@ -411,27 +294,6 @@ class Redbook(BaseApp):
         """Note IDs the user has published."""
         return self.user.get("publishedNoteIds", [])
 
-    # ── Set-shaped lookups (hot path in view_note) ─────────────────────
-    @cached_property
-    def _liked_notes_set(self) -> set[str]:
-        return {str(nid) for nid in self.liked_notes}
-
-    @cached_property
-    def _collected_notes_set(self) -> set[str]:
-        return {str(nid) for nid in self.collected_notes}
-
-    @cached_property
-    def _following_ids_set(self) -> set[str]:
-        return {str(uid) for uid in self.following_ids}
-
-    @cached_property
-    def _liked_comments_by_note(self) -> dict[str, set[str]]:
-        raw = self.user.get("likedCommentsByNote") or {}
-        return {
-            str(nid): {str(cid) for cid in (cids or [])}
-            for nid, cids in raw.items()
-        }
-
     @property
     def first_liked_note_id(self) -> str | None:
         liked = set(self.liked_notes)
@@ -468,126 +330,36 @@ class Redbook(BaseApp):
         return users if isinstance(users, dict) else {}
 
     @cached_property
-    def _state_comment_keys(self) -> set[str]:
-        """All comment ids that have a state.comments entry (patch or tombstone)."""
-        return set(self.state_comments.keys())
+    def device(self) -> DeviceView:
+        """This state as the device server's RedBook module sees it."""
+        return DeviceView("redbook", self.raw)
 
     @cached_property
-    def _state_comments_by_note_id(self) -> dict[str, list[dict[str, Any]]]:
-        """Bucket state.comments entries by their declared `noteId`.
-
-        We DO NOT filter patches on base comments here — instead `view_note` filters
-        per-note using THAT note's base commentList ids. This preserves the prior
-        semantic that an entry whose id matches a base comment of note B but whose
-        `noteId` points to note A still appears as a runtime comment under A.
-        """
-        out: dict[str, list[dict[str, Any]]] = {}
-        for cid, comment in self.state_comments.items():
-            if not isinstance(comment, dict):
-                continue
-            nid = str(comment.get("noteId") or "")
-            if not nid:
-                continue
-            cid_str = str(cid)
-            # Prefer the entry's own `id` field; fall back to the dict key when missing.
-            if comment.get("id"):
-                normalized = comment
-            else:
-                normalized = {**comment, "id": cid_str}
-            out.setdefault(nid, []).append(normalized)
-        return out
-
-    @cached_property
-    def _base_notes_with_comment_overlay(self) -> set[str]:
-        """Base note IDs whose `commentList` has at least one comment touched by `state.comments`.
-
-        Uses the module-cached `_load_base_comment_to_note` reverse index, so the cost
-        is O(|state.comments|) (typically tiny) instead of O(F·C) full-scan.
-        """
-        state_keys = self._state_comment_keys
-        if not state_keys:
-            return set()
-        comment_to_note = _load_base_comment_to_note()
-        return {
-            comment_to_note[str(cid)]
-            for cid in state_keys
-            if str(cid) in comment_to_note
-        }
-
-    @property
-    def base_notes_by_id(self) -> dict[str, dict[str, Any]]:
-        return _load_notes_by_id()
-
-    @property
-    def base_users_by_id(self) -> dict[str, dict[str, Any]]:
-        return _load_users_json()
-
-    @property
-    def base_feed_ids(self) -> tuple[str, ...]:
-        return _load_base_feed_ids()
+    def _profile_user_ids(self) -> dict[str, Any]:
+        """{current, catalog, runtime}: users with a profile (not bare commenters)."""
+        return self.device.query("profileUserIds")
 
     @property
     def base_user_ids(self) -> tuple[str, ...]:
-        return _load_base_user_ids()
-    
+        """Catalog users with a profile, in users.json order."""
+        return tuple(self._profile_user_ids["catalog"])
+
     @property
     def notes_by_id(self) -> dict[str, dict]:
-        """All visible notes by ID, using base + runtime view semantics."""
+        """All visible notes by ID, in feed order."""
         return self.view_notes_by_id
-    
+
     @property
     def users_by_id(self) -> dict[str, dict]:
-        """All visible users by ID, using base + runtime view semantics."""
+        """All users with a profile by ID: current user, catalog, then runtime-only."""
         return self.view_users_by_id
-    
+
     @cached_property
     def feed_ids(self) -> list[str]:
-        """Visible public feed note IDs.
+        """Visible public feed note IDs: runtime-only notes newest first, then
+        catalog order minus tombstones (the device module's feed order)."""
+        return [str(nid) for nid in self.device.query("feedIds")]
 
-        Order mirrors the frontend `buildRedBookView` semantics: runtime-only notes
-        (newly published or seeded via `defaults.notes`) come first, sorted by
-        `createdAt` desc; then `base.feedIds` in declared order, with tombstoned
-        entries removed.
-
-        Cached on the instance — do not reuse a `Redbook` after mutating its
-        backing `state`; construct a new instance instead.
-        """
-        base_feed = [str(nid) for nid in self.base_feed_ids if nid]
-        base_feed_set = set(base_feed)
-        tombstones: set[str] = set()
-        runtime_only: list[tuple[str, float]] = []
-        for note_id, value in self.state_notes.items():
-            nid = str(note_id)
-            if not nid:
-                continue
-            if value is None:
-                tombstones.add(nid)
-                continue
-            if nid in base_feed_set:
-                continue
-            created_at = 0.0
-            if isinstance(value, dict):
-                try:
-                    created_at = float(value.get("createdAt") or 0)
-                except (TypeError, ValueError):
-                    created_at = 0.0
-            runtime_only.append((nid, created_at))
-        runtime_only.sort(key=lambda item: item[1], reverse=True)
-
-        out: list[str] = []
-        seen: set[str] = set()
-        for nid, _ in runtime_only:
-            if nid in seen:
-                continue
-            seen.add(nid)
-            out.append(nid)
-        for nid in base_feed:
-            if nid in seen or nid in tombstones:
-                continue
-            seen.add(nid)
-            out.append(nid)
-        return out
-    
     @property
     def chats(self) -> list[dict]:
         """Chat list."""
@@ -675,7 +447,7 @@ class Redbook(BaseApp):
         return self.note_author(self.first_collected_note())[field]
 
     def user_note_count(self, user_id: str) -> int:
-        return sum(1 for note in self.notes_by_id.values() if str(note["authorId"]) == str(user_id))
+        return int(self.device.query("feed", {"authorIds": [str(user_id)], "limit": 0})["total"])
 
     def followed_user_note_count(self, username: str) -> int:
         return self.user_note_count(self.require_user_by_name(username)["id"])
@@ -690,15 +462,7 @@ class Redbook(BaseApp):
                 if (note := self.view_note(str(note_id))) is not None
             ]
 
-        notes: list[dict[str, Any]] = []
-        for note_id in self.feed_ids:
-            note = self.notes_by_id.get(note_id)
-            if note is None:
-                continue
-            if str(note.get("authorId") or "") != target_id:
-                continue
-            notes.append(note)
-        return notes
+        return list(self.device.query("feed", {"authorIds": [target_id]})["items"])
 
     def user_notes_by_name(self, username: str) -> list[dict[str, Any]]:
         return self.user_notes(self.require_user_by_name(username)["id"])
@@ -797,40 +561,23 @@ class Redbook(BaseApp):
 
     @cached_property
     def view_notes_by_id(self) -> dict[str, dict[str, Any]]:
-        """All visible notes by ID. `feed_ids` already merges runtime-only notes.
-
-        Cached on the instance — do not reuse a `Redbook` after mutating its
-        backing `state`; construct a new instance instead.
-        """
-        out: dict[str, dict[str, Any]] = {}
-        for note_id in self.feed_ids:
-            note = self.view_note(str(note_id))
-            if note is not None:
-                out[str(note["id"])] = note
-        return out
+        """All visible notes by ID, in feed order."""
+        items = self.device.query("feed")["items"]
+        return {str(note["id"]): note for note in items}
 
     @cached_property
     def view_users_by_id(self) -> dict[str, dict[str, Any]]:
-        """All visible users by ID. Cached on the instance — see `view_notes_by_id`."""
-        user_ids = [self.user_id, *self.base_user_ids, *self.state_users.keys()]
-        out: dict[str, dict[str, Any]] = {}
-        for user_id in user_ids:
-            user = self.view_user(str(user_id))
-            if user is not None:
-                out[str(user["id"])] = user
-        return out
-
-    def base_note(self, note_id: str) -> dict[str, Any] | None:
-        return self.base_notes_by_id.get(str(note_id))
+        """All users with a profile by ID: current user, catalog, then runtime-only."""
+        ids = self._profile_user_ids
+        wanted = [ids["current"], *ids["catalog"], *ids["runtime"]]
+        users = {str(u["id"]): u for u in self.device.query("usersByIds", {"ids": wanted})}
+        return {str(uid): users[str(uid)] for uid in wanted if str(uid) in users}
 
     def state_note(self, note_id: str) -> dict[str, Any] | None:
         if str(note_id) not in self.state_notes:
             return None
         value = self.state_notes.get(str(note_id))
         return value if isinstance(value, dict) else None
-
-    def base_user(self, user_id: str) -> dict[str, Any] | None:
-        return self.base_users_by_id.get(str(user_id))
 
     def state_user_entity(self, user_id: str) -> dict[str, Any] | None:
         if str(user_id) not in self.state_users:
@@ -839,150 +586,25 @@ class Redbook(BaseApp):
         return value if isinstance(value, dict) else None
 
     def view_note(self, note_id: str) -> dict[str, Any] | None:
-        """Resolve a single note for the view.
-
-        Hot path (~99% of notes when user has no interactions): a clean base note with
-        no overlay returns the base reference unmodified — no dict clone, no derivation.
-        Treat the returned dict as **read-only**; callers must not mutate it.
-
-        Slow path: clone base + state overlay, derive counts from user truth fields,
-        merge runtime comments + apply comment patches/tombstones/likes.
-        """
-        note_id = str(note_id)
-        state_notes = self.state_notes
-        state_value = state_notes.get(note_id) if note_id in state_notes else _MISSING
-        if state_value is None:  # tombstone
-            return None
-        base = self.base_notes_by_id.get(note_id)
-
-        # ── Fast path ─────────────────────────────────────────────────────────
-        if (
-            state_value is _MISSING
-            and base is not None
-            and note_id not in self._liked_notes_set
-            and note_id not in self._collected_notes_set
-            and not self._liked_comments_by_note.get(note_id)
-            and note_id not in self._state_comments_by_note_id
-            and note_id not in self._base_notes_with_comment_overlay
-        ):
-            return base
-
-        # ── Slow path ─────────────────────────────────────────────────────────
-        # 不变量: store/seed 写 `state.notes` 时必须保持 `state.notes[id]["id"] == id`
-        # (`apps/RedBook/state.ts` 的 `addNote` 与 bench `_publish_note` 都遵守)。
-        # 因此用 `note_id` (dict key) 作为唯一锚点查 liked/collected/runtime-comments，
-        # 与 `view_notes_by_id` 用 dict key 作为索引保持一致 —— 调用方拿 feed id 来 lookup
-        # 不会 miss。若调用方违反不变量，feedIds 与 view_notes_by_id 会以不同 id 索引。
-        merged_source = state_value if isinstance(state_value, dict) else base
-        if merged_source is None:
-            return None
-        note = dict(merged_source)
-
-        liked_comment_ids = self._liked_comments_by_note.get(note_id, frozenset())
-        state_comments = self.state_comments
-        base_comments_out: list[Any] = []
-        hidden_base_comments = 0
-        # Track ids claimed by THIS note's base commentList; runtime-only entries
-        # carrying the same id are patches handled here, not separate comments.
-        this_note_base_comment_ids: set[str] = set()
-        for comment in note.get("commentList") or []:
-            if not isinstance(comment, dict):
-                base_comments_out.append(comment)
-                continue
-            comment_id = str(comment.get("id") or "")
-            if comment_id:
-                this_note_base_comment_ids.add(comment_id)
-            state_comment = state_comments.get(comment_id, _MISSING) if comment_id else _MISSING
-            if state_comment is None:
-                hidden_base_comments += 1
-                continue
-            if isinstance(state_comment, dict):
-                merged_comment = {"id": comment_id, **state_comment}
-            else:
-                merged_comment = comment
-            if str(merged_comment.get("id")) in liked_comment_ids:
-                merged_comment = {**merged_comment, "likes": _parse_count(merged_comment.get("likes")) + 1}
-            base_comments_out.append(merged_comment)
-
-        runtime_comments_raw = self._state_comments_by_note_id.get(note_id, [])
-        runtime_comments = [
-            rc for rc in runtime_comments_raw
-            if str(rc.get("id") or "") not in this_note_base_comment_ids
-        ]
-        if liked_comment_ids and runtime_comments:
-            runtime_comments = [
-                {**rc, "likes": _parse_count(rc.get("likes")) + 1}
-                if str(rc.get("id")) in liked_comment_ids
-                else rc
-                for rc in runtime_comments
-            ]
-
-        # Use pre-parsed base counts when the note has no state overlay; otherwise
-        # parse from the (likely numeric) state value.
-        if state_value is _MISSING:
-            parsed = _load_base_parsed_counts().get(note_id)
-            if parsed is not None:
-                base_likes, base_collections, base_comments_n = parsed
-            else:
-                base_likes = int(_parse_count(merged_source.get("likes")))
-                base_collections = int(_parse_count(merged_source.get("collections")))
-                base_comments_n = int(_parse_count(merged_source.get("comments")))
-        else:
-            base_likes = int(_parse_count(merged_source.get("likes")))
-            base_collections = int(_parse_count(merged_source.get("collections")))
-            base_comments_n = int(_parse_count(merged_source.get("comments")))
-
-        liked = note_id in self._liked_notes_set
-        collected = note_id in self._collected_notes_set
-        note["likes"] = base_likes + (1 if liked else 0)
-        note["collections"] = base_collections + (1 if collected else 0)
-        note["comments"] = max(0, base_comments_n - hidden_base_comments + len(runtime_comments))
-        note["commentList"] = [*runtime_comments, *base_comments_out]
-        return note
+        """A note as the user sees it (``None`` when absent or deleted).
+        Treat the returned dict as read-only."""
+        items = self.device.query("note", {"id": str(note_id)})["items"]
+        return items[0] if items else None
 
     def view_user(self, user_id: str) -> dict[str, Any] | None:
-        user_id = str(user_id)
-        if user_id == self.user_id:
-            user = dict(self.user)
-            user["following"] = len(self.following_ids)
-            user["followers"] = len(user.get("followerIds") or [])
-            return user
+        """A user as the user sees it (``None`` when absent or deleted)."""
+        return self.device.query("user", {"id": str(user_id)})
 
-        state_has_key = user_id in self.state_users
-        state_value = self.state_users.get(user_id)
-        if state_has_key and state_value is None:
-            return None
-        base = self.base_user(user_id)
-        if isinstance(state_value, dict):
-            user = dict(state_value)
-        elif base:
-            user = dict(base)
-        else:
-            return None
-        if user_id in {str(item) for item in self.following_ids}:
-            user["followers"] = int(_parse_count(user.get("followers")) + 1)
-        return user
-    
     def get_note(self, note_id: str) -> dict | None:
         """Get visible note by ID."""
         return self.view_note(note_id)
 
     def search_notes(self, keyword: str) -> list[dict[str, Any]]:
         """Search notes in the same order as the app search result page."""
-        k = str(keyword or "").lower().strip()
+        k = str(keyword or "").strip()
         if not k:
             return []
-        results: list[dict[str, Any]] = []
-        for note_id in self.feed_ids:
-            note = self.get_note(note_id)
-            if not note:
-                continue
-            title = str(note.get("title") or "").lower()
-            content = str(note.get("content") or "").lower()
-            category = str(note.get("category") or "").lower()
-            if k in title or k in content or k in category:
-                results.append(note)
-        return results
+        return list(self.device.query("searchNotes", {"keyword": k})["items"])
 
     def sorted_search_notes(self, keyword: str, sort: str = "comprehensive") -> list[dict[str, Any]]:
         """Return notes ordered like the search result page."""
@@ -1070,25 +692,23 @@ class Redbook(BaseApp):
     def find_user_by_name(self, name: str) -> dict | None:
         """
         Find user by name (partial match, case insensitive).
-        
+
+        Catalog users are tried first, then the current user and runtime-only users.
+
         Args:
             name: Search name
-            
+
         Returns:
             User dict or None
         """
         name_lower = name.lower()
-        for uid in self.base_user_ids:
-            user = self.view_user(uid) or {}
-            if name_lower in (user.get("name") or "").lower():
-                return user
-        for uid, user in self.view_users_by_id.items():
-            if uid in self.base_user_ids:
-                continue
+        base_ids = set(self.base_user_ids)
+        ordered = sorted(self.view_users_by_id.items(), key=lambda item: item[0] not in base_ids)
+        for _uid, user in ordered:
             if name_lower in (user.get("name") or "").lower():
                 return user
         return None
-    
+
     def is_following(self, user_id: str) -> bool:
         """Check if current user follows given user."""
         return user_id in self.following_ids
@@ -1321,18 +941,8 @@ class Redbook(BaseApp):
         label = _CATEGORY_LABELS.get(str(category_key or ""))
         if not label:
             return []
-
-        out: list[dict[str, Any]] = []
-        for note_id in self.feed_ids:
-            note = self.notes_by_id.get(note_id)
-            if not note:
-                continue
-            if str(note.get("category") or "") != str(label):
-                continue
-            out.append(note)
-            if len(out) >= min(limit, max(display_count, 1)):
-                break
-        return out
+        count = min(limit, max(display_count, 1))
+        return list(self.device.query("feed", {"category": label, "limit": count})["items"])
 
     def visible_discover_replyable_notes(self, category: str = "recommend", limit: int = 40) -> list[dict[str, Any]]:
         """Visible discover notes that have at least one root comment."""

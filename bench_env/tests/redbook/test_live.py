@@ -26,6 +26,8 @@ the toggle), so they get a dedicated ``answer_fn`` that reads ``curr_obs``.
 from __future__ import annotations
 
 import json
+from functools import lru_cache
+from pathlib import Path
 from typing import Awaitable, Callable
 
 import pytest
@@ -238,6 +240,13 @@ async def _drive_reply_first_feed_comment(env, task):
 
 # ── hybrid answer fns (need post-action state) ──────────────────────────
 
+@lru_cache(maxsize=1)
+def _catalog_notes_by_id() -> dict:
+    """Raw catalog notes, read independently of the judge's view (an oracle)."""
+    path = Path(__file__).resolve().parents[3] / "apps" / "RedBook" / "data" / "notes.json"
+    return {str(n["id"]): n for n in json.loads(path.read_text(encoding="utf-8"))}
+
+
 def _answer_like_feed_report(task, init_obs, _curr_obs):
     # Derive the expected post-action likes count from INIT state plus the
     # known +1 from the driver's toggleLike — NOT from `curr.view_note()`.
@@ -260,7 +269,7 @@ def _answer_like_feed_report(task, init_obs, _curr_obs):
     # Read raw base/state count (bypass view-layer derivation). If the user
     # already liked this note in init, toggleLike un-likes it (count - 1);
     # otherwise it adds the like (count + 1).
-    base_note = rb_init.base_notes_by_id.get(note_id) or rb_init.state_notes.get(note_id) or {}
+    base_note = _catalog_notes_by_id().get(note_id) or rb_init.state_notes.get(note_id) or {}
     raw_likes_value = base_note.get("likes") if isinstance(base_note, dict) else None
     try:
         raw_likes = int(float(raw_likes_value)) if raw_likes_value is not None else 0

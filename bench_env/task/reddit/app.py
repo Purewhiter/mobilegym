@@ -1,20 +1,20 @@
 """
 Reddit app state accessor.
+
+Posts and comments as the user sees them (catalog plus this state's posts,
+comments, edits and deletions) come from the device server's Reddit module
+through `DeviceView`; this file never merges catalog and state itself.
 """
 
 from __future__ import annotations
 
 import re
-import json
-from functools import cached_property, lru_cache
-from pathlib import Path
+from functools import cached_property
 from typing import Any
 
+from bench_env.env.device_view import DeviceView
 from bench_env.task.base import BaseApp
 from bench_env.task.utils import norm
-
-_REDDIT_DATA_DIR = Path(__file__).resolve().parents[3] / "apps" / "Reddit" / "data"
-_POSTS_JSON = _REDDIT_DATA_DIR / "posts.json"
 
 REDDIT_CHAT_THREADS_CHANGES = ["chatThreads"]
 REDDIT_CHAT_REPLIES_CHANGES = ["chatReplies"]
@@ -33,55 +33,9 @@ REDDIT_SETTINGS_CHANGES = ["settings"]
 REDDIT_DEEP_THREAD_REPLY_AND_DELETE_CHANGES = REDDIT_CHAT_REPLIES_CHANGES + REDDIT_CHAT_THREADS_CHANGES
 
 
-@lru_cache(maxsize=1)
-def load_reddit_posts() -> list[dict[str, Any]]:
-    data = json.loads(_POSTS_JSON.read_text(encoding="utf-8"))
-    posts = data.get("posts", []) if isinstance(data, dict) else data
-    return posts if isinstance(posts, list) else []
-
-
-@lru_cache(maxsize=1)
-def _base_posts_by_id() -> dict[str, dict[str, Any]]:
-    return {
-        str(post["id"]): post
-        for post in load_reddit_posts()
-        if isinstance(post, dict) and post.get("id") is not None
-    }
-
-
-@lru_cache(maxsize=1)
-def _base_comments_by_id() -> dict[str, dict[str, Any]]:
-    out: dict[str, dict[str, Any]] = {}
-    for post in load_reddit_posts():
-        if not isinstance(post, dict) or post.get("id") is None:
-            continue
-        post_id = str(post["id"])
-        comments = post.get("commentsData") or []
-        if not isinstance(comments, list):
-            continue
-        for comment in comments:
-            if isinstance(comment, dict) and comment.get("id") is not None:
-                out[str(comment["id"])] = {**comment, "postId": post_id}
-    return out
-
-
-def interleave_by_subreddit(posts: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    groups: dict[str, list[dict[str, Any]]] = {}
-    for post in posts:
-        key = str(post.get("subreddit") or "unknown")
-        groups.setdefault(key, []).append(post)
-    out: list[dict[str, Any]] = []
-    keys = sorted(groups)
-    added = True
-    while added:
-        added = False
-        for key in keys:
-            items = groups.get(key) or []
-            if not items:
-                continue
-            out.append(items.pop(0))
-            added = True
-    return out
+def _catalog() -> DeviceView:
+    """Catalog-only queries (no user state involved)."""
+    return DeviceView("reddit", {})
 
 
 def _post_text(post: dict[str, Any]) -> str:
@@ -155,12 +109,12 @@ class Reddit(BaseApp):
         仍然落在初始 20 条窗口内，需要 Agent 滚动一段。Returns the post at that
         fixed fixture rank（fixture 不足时回退到最后一个）。
         """
-        posts = interleave_by_subreddit(load_reddit_posts())
-        if not posts:
+        feed = _catalog().query("catalogPostIds")
+        if not feed:
             raise RuntimeError("任务设计错误：Reddit fixture posts 为空，无法采样首页帖子")
 
-        feed_rank = min(15, len(posts))
-        post = posts[feed_rank - 1]
+        feed_rank = min(15, len(feed))
+        post = _catalog().query("catalogPost", {"id": feed[feed_rank - 1]})
 
         return {
             "feed_rank": feed_rank,
@@ -170,10 +124,11 @@ class Reddit(BaseApp):
 
     @staticmethod
     def fixture_post(index: int = 0) -> dict[str, Any]:
-        posts = load_reddit_posts()
-        if not posts:
+        """Catalog post at ``index`` in posts.json order."""
+        ids = _catalog().query("catalogPostIds", {"order": "file"})
+        if not ids:
             raise RuntimeError("任务设计错误：Reddit fixture posts 为空")
-        return posts[index]
+        return _catalog().query("catalogPost", {"id": ids[index]})
 
     @staticmethod
     def sample_fixture_post(env_state: dict[str, Any], rng: Any) -> dict[str, Any]:
@@ -625,103 +580,43 @@ class Reddit(BaseApp):
         value = self.get("user", {}) or {}
         return value if isinstance(value, dict) else {}
 
+    @cached_property
+    def device(self) -> DeviceView:
+        """This state as the device server's Reddit module sees it."""
+        return DeviceView("reddit", self.raw)
+
     def base_post(self, post_id: str) -> dict[str, Any] | None:
-        return _base_posts_by_id().get(str(post_id))
+        return self.device.query("catalogPost", {"id": str(post_id)})
 
     def state_post(self, post_id: str) -> dict[str, Any] | None:
         post = self.state_posts.get(str(post_id))
         return post if isinstance(post, dict) else None
 
     def view_post(self, post_id: str) -> dict[str, Any] | None:
-        pid = str(post_id)
-        overlay = self.state_posts
-        if pid in overlay:
-            post = overlay.get(pid)
-            if post is None:
-                return None
-            if not isinstance(post, dict):
-                return None
-            return post
-        return self.base_post(pid)
+        """A post as the user sees it (``None`` when absent or deleted)."""
+        return self.device.query("viewPost", {"id": str(post_id)})
 
     def base_comment(self, post_id: str, comment_id: str) -> dict[str, Any] | None:
-        pid = str(post_id)
-        cid = str(comment_id)
-        post = self.base_post(pid)
-        if not isinstance(post, dict):
-            return None
-        raw_comments = post.get("commentsData") or []
-        if not isinstance(raw_comments, list):
-            return None
-        for comment in raw_comments:
-            if isinstance(comment, dict) and str(comment.get("id")) == cid:
-                return {**comment, "postId": pid}
-        return None
+        return self.device.query("catalogComment", {"id": str(comment_id), "postId": str(post_id)})
 
     def state_comment(self, comment_id: str) -> dict[str, Any] | None:
         comment = self.state_comments.get(str(comment_id))
         return comment if isinstance(comment, dict) else None
 
     def view_comment(self, comment_id: str, post_id: str | None = None) -> dict[str, Any] | None:
-        cid = str(comment_id)
-        if cid in self.state_comments:
-            comment = self.state_comments.get(cid)
-            if comment is None:
-                return None
-            if not isinstance(comment, dict):
-                return None
-            return comment
+        """A comment as the user sees it; with ``post_id``, catalog comments of that post only."""
+        args: dict[str, Any] = {"id": str(comment_id)}
         if post_id is not None:
-            return self.base_comment(str(post_id), cid)
-        return _base_comments_by_id().get(cid)
+            args["postId"] = str(post_id)
+        return self.device.query("viewComment", args)
 
     def view_posts_list(self) -> list[dict[str, Any]]:
-        seen: set[str] = set()
-        out = []
-        for indexed_id in self.user["postIds"]:
-            post = self.view_post(str(indexed_id))
-            if not isinstance(post, dict) or post.get("id") is None:
-                continue
-            pid = str(post["id"])
-            if pid in seen:
-                continue
-            seen.add(pid)
-            out.append(post)
-        for post in load_reddit_posts():
-            if not isinstance(post, dict) or post.get("id") is None:
-                continue
-            pid = str(post["id"])
-            view = self.view_post(pid)
-            if not isinstance(view, dict) or pid in seen:
-                continue
-            seen.add(pid)
-            out.append(view)
-        return out
+        """The user's own posts first, then catalog posts in feed order."""
+        return self.device.query("viewPosts")
 
     def view_comments_list(self, post_id: str) -> list[dict[str, Any]]:
-        pid = str(post_id)
-        post = self.base_post(pid)
-        fixture_comments = []
-        if isinstance(post, dict):
-            raw_comments = post.get("commentsData") or []
-            if isinstance(raw_comments, list):
-                fixture_comments = [
-                    self.view_comment(str(comment.get("id")), pid)
-                    for comment in raw_comments
-                    if isinstance(comment, dict) and comment.get("id") is not None
-                ]
-                fixture_comments = [comment for comment in fixture_comments if isinstance(comment, dict)]
-        seen = {str(comment.get("id")) for comment in fixture_comments if isinstance(comment, dict)}
-        runtime_comments = []
-        for comment in self.state_comments.values():
-            if not isinstance(comment, dict) or str(comment.get("postId")) != pid:
-                continue
-            cid = str(comment.get("id"))
-            if not cid or cid in seen:
-                continue
-            seen.add(cid)
-            runtime_comments.append(comment)
-        return [*fixture_comments, *runtime_comments]
+        """A post's catalog comments, then this state's comments on it."""
+        return self.device.query("viewComments", {"postId": str(post_id)})
 
     def check_created_post(
         self,

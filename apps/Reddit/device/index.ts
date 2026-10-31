@@ -21,6 +21,7 @@ import { getUserAvatar, processPosts } from '../data/catalog';
 import type { RedditUser } from '../state';
 import type { Comment, RedditCommentsOverlay, RedditPost, RedditPostsOverlay, RedditSettings } from '../types';
 import { collectRedditCommentDeletionIds } from '../utils/commentTree';
+import { resolveRedditComment, resolveRedditComments, resolveRedditPost, resolveRedditPosts } from '../utils/view';
 
 export type ChatMessage = {
   id: string;
@@ -51,6 +52,9 @@ const DEFAULT_USERNAME = 'Embarrassed_Fee8630';
 interface RedditCatalogExtras {
   /** Feed order, without `commentsData`. */
   posts: RedditPost[];
+  postsById: Map<string, RedditPost>;
+  /** Post ids in `posts.json` order (before feed interleaving). */
+  fileOrder: string[];
   /** Fixture comments per post, with `postId` filled in. */
   commentsByPost: Map<string, Comment[]>;
   commentById: Map<string, Comment>;
@@ -83,7 +87,13 @@ function loadCatalog(root: string, appAssetsBase: string, cdnBase: string): Cata
     } as RedditPost;
   });
 
-  const extras: RedditCatalogExtras = { posts, commentsByPost, commentById };
+  const extras: RedditCatalogExtras = {
+    posts,
+    postsById: new Map(posts.map((post) => [String(post.id), post])),
+    fileOrder: raw.map((post) => String(post.id)),
+    commentsByPost,
+    commentById,
+  };
   return { collections: new Map(), extras: extras as unknown as Record<string, unknown> };
 }
 
@@ -322,9 +332,47 @@ function createCommands(appAssetsBase: string): AppModule<RedditDeviceState>['co
   };
 }
 
-// ── Queries (catalog only) ──────────────────────────────────────────
+// ── Queries ─────────────────────────────────────────────────────────
+
+const catalogComment = (ctx: Ctx, id: string, postId?: string): Comment | undefined => (
+  postId === undefined
+    ? extras(ctx).commentById.get(id)
+    : extras(ctx).commentsByPost.get(postId)?.find((comment) => String(comment.id) === id)
+);
+
+const optionalId = (value: unknown) => (value === undefined || value === null ? undefined : String(value));
 
 const queries: AppModule<RedditDeviceState>['queries'] = {
+  // Catalog merged with this session's state (judges and samplers), through
+  // the same functions as the page hooks.
+  viewPosts(ctx) {
+    return resolveRedditPosts(extras(ctx).posts, ctx.state.posts ?? {}, ctx.state.user?.postIds ?? []);
+  },
+  viewPost(ctx, args) {
+    return resolveRedditPost(ctx.state.posts ?? {}, extras(ctx).postsById, String(args.id ?? ''));
+  },
+  viewComments(ctx, args) {
+    const postId = String(args.postId ?? '');
+    return resolveRedditComments(extras(ctx).commentsByPost.get(postId) ?? [], ctx.state.comments ?? {}, postId);
+  },
+  /** A comment by id; with `postId`, catalog comments of that post only. */
+  viewComment(ctx, args) {
+    const id = String(args.id ?? '');
+    return resolveRedditComment(ctx.state.comments ?? {}, catalogComment(ctx, id, optionalId(args.postId)), id);
+  },
+
+  // Catalog only.
+  catalogPost(ctx, args) {
+    return extras(ctx).postsById.get(String(args.id ?? '')) ?? null;
+  },
+  catalogComment(ctx, args) {
+    return catalogComment(ctx, String(args.id ?? ''), optionalId(args.postId)) ?? null;
+  },
+  /** Catalog post ids in feed order, or in `posts.json` order with `order: 'file'`. */
+  catalogPostIds(ctx, args) {
+    return args.order === 'file' ? extras(ctx).fileOrder : extras(ctx).posts.map((post) => String(post.id));
+  },
+
   /** Every catalog post in feed order, without comment threads. */
   posts(ctx) {
     return extras(ctx).posts;

@@ -17,6 +17,7 @@ from typing import Any, Optional, Tuple
 from playwright.async_api import async_playwright, Browser, BrowserContext, Page, Playwright
 
 from bench_env.logger import get_logger
+from bench_env.env import device_view
 from bench_env.env.base import Action, ActionType, BaseMobileEnv, Observation, StepResult
 from bench_env.task import TaskRegistry, JudgeInput, JudgeResult, BaseTask
 
@@ -390,6 +391,9 @@ class MobileGymEnv(BaseMobileEnv):
             raise ValueError(f"delay_after_action must be >= 0, got {delay_after_action}")
         
         self.url = url
+        # Judges and samplers view device-backed app state through this server
+        # unless one was configured explicitly (MOBILE_GYM_DEVICE_URL, tests).
+        device_view.use_env_url(url)
         self.headless = headless
         self.browser_type = browser_type
         self.proxy = proxy

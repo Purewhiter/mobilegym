@@ -7,18 +7,17 @@
  */
 import type { XPost, XUser } from '../types';
 import { normalizeXPostTemporalFields, getJustNowLabel } from './formatTime';
-import { resolveXRuntimePosts, type XRuntimePostTable } from './runtimePostResolver';
+import {
+  resolveXRuntimePosts,
+  runtimeCommentCounts,
+  withRelationshipDerivedStats,
+  type XRuntimeMeSlice,
+  type XRuntimePostTable,
+} from './runtimePostResolver';
+
+export type { XRuntimeMeSlice };
 
 const REPLY_ROOT_ID_PATTERN = /^r_(p_[0-9]+)/;
-
-/** Runtime slice of the me user that participates in view-time stat derivation. */
-export interface XRuntimeMeSlice {
-  id: string;
-  likedPostIds: string[];
-  retweetedPostIds: string[];
-  followedUserIds: string[];
-  followerUserIds: string[];
-}
 
 export function buildRetweetShell(meUserId: string, source: XPost): XPost {
   return {
@@ -28,46 +27,6 @@ export function buildRetweetShell(meUserId: string, source: XPost): XPost {
     time: getJustNowLabel(),
     stats: { ...source.stats },
     retweetedPostId: source.id,
-  };
-}
-
-export function runtimeCommentCounts(posts: XRuntimePostTable | undefined): Map<string, number> {
-  const counts = new Map<string, number>();
-  for (const post of Object.values(posts ?? {})) {
-    if (!post || typeof post.id !== 'string') continue;
-    const threadId = post.threadId;
-    if (!threadId) continue;
-    counts.set(threadId, (counts.get(threadId) ?? 0) + 1);
-  }
-  return counts;
-}
-
-/**
- * 把 me 的 like / retweet / 新增 comment 量叠加到 post.stats 上,
- * 给 UI 显示"当前用户的互动也算进去"的体感。
- */
-function withRelationshipDerivedStats(
-  post: XPost,
-  me: XRuntimeMeSlice,
-  commentCounts: Map<string, number>,
-): XPost {
-  const stats = post.stats;
-  if (!stats) return post;
-
-  const likesDelta = me.likedPostIds.includes(post.id) ? 1 : 0;
-  const retweetsDelta = me.retweetedPostIds.includes(post.id) ? 1 : 0;
-  const commentsDelta = commentCounts.get(post.id) ?? 0;
-
-  if (!likesDelta && !retweetsDelta && !commentsDelta) return post;
-
-  return {
-    ...post,
-    stats: {
-      ...stats,
-      likes: Math.max(0, (stats.likes ?? 0) + likesDelta),
-      retweets: Math.max(0, (stats.retweets ?? 0) + retweetsDelta),
-      comments: Math.max(0, (stats.comments ?? 0) + commentsDelta),
-    },
   };
 }
 

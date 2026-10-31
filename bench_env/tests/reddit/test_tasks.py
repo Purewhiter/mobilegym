@@ -8,6 +8,7 @@ import copy
 import inspect
 import json
 import ast
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
@@ -15,8 +16,15 @@ import pytest
 
 from bench_env.task.base import BaseTask
 from bench_env.task.reddit import tasks as _tasks_module
-from bench_env.task.reddit.app import Reddit, load_reddit_posts
+from bench_env.task.reddit.app import Reddit
 from bench_env.tests.conftest import make_judge_input
+
+
+@lru_cache(maxsize=1)
+def load_reddit_posts() -> list[dict[str, Any]]:
+    """Raw catalog posts, read independently of the judge's view (an oracle)."""
+    path = Path(__file__).resolve().parents[3] / "apps" / "Reddit" / "data" / "posts.json"
+    return json.loads(path.read_text(encoding="utf-8"))["posts"]
 
 ALL_TASK_CLASSES: list[type[BaseTask]] = [
     obj

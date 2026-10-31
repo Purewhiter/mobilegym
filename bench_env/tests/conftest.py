@@ -15,12 +15,17 @@ Usage:
 from __future__ import annotations
 
 import json
+import socket
+import subprocess
+import time
+import urllib.request
 from pathlib import Path
 from typing import Any
 
 import pytest
 import pytest_asyncio
 
+from bench_env.env import device_view
 from bench_env.env.mobile_gym import MobileGymEnv
 from bench_env.env.base import Observation
 from bench_env.task.judge import JudgeInput
@@ -60,6 +65,52 @@ async def env(request) -> MobileGymEnv:
     await e.start()
     yield e
     await e.close()
+
+
+# ── Device server (judges of device-backed apps view state through it) ──
+
+_REPO_ROOT = Path(__file__).resolve().parents[2]
+
+
+@pytest.fixture(scope="session", autouse=True)
+def device_server(tmp_path_factory):
+    """A standalone device server for the whole test run.
+
+    Judges and samplers of device-backed apps (RedBook, X, Reddit) read merged
+    records from the device server instead of merging catalog and state in
+    Python. Offline tests get their own server process here; set
+    ``MOBILE_GYM_DEVICE_URL`` to use a running simulator instead.
+    """
+    if device_view.is_configured():
+        yield device_view.base_url()
+        return
+    bundle = tmp_path_factory.mktemp("device") / "device-server.mjs"
+    subprocess.run(
+        ["node", str(_REPO_ROOT / "scripts" / "server" / "build_device_server.mjs"), str(bundle)],
+        cwd=_REPO_ROOT, check=True, capture_output=True,
+    )
+    with socket.socket() as s:
+        s.bind(("127.0.0.1", 0))
+        port = s.getsockname()[1]
+    proc = subprocess.Popen(
+        ["node", str(bundle), "--port", str(port), "--root", str(_REPO_ROOT), "--lazy"],
+        cwd=_REPO_ROOT, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE,
+    )
+    url = f"http://127.0.0.1:{port}"
+    deadline = time.monotonic() + 30
+    while True:
+        try:
+            urllib.request.urlopen(f"{url}/__device/health", timeout=1).read()
+            break
+        except Exception:
+            if proc.poll() is not None or time.monotonic() > deadline:
+                proc.kill()
+                raise RuntimeError(f"device server did not start: {proc.stderr.read().decode(errors='replace')}")
+            time.sleep(0.1)
+    device_view.configure(url)
+    yield url
+    proc.terminate()
+    proc.wait(timeout=10)
 
 
 # ── Defaults.json (for offline tests) ──────────────────────────────

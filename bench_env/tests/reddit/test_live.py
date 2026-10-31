@@ -15,7 +15,9 @@ Coverage: 16 Reddit tasks × {positive, negative} = 32 tests.
 from __future__ import annotations
 
 import json
-from typing import Awaitable, Callable
+from functools import lru_cache
+from pathlib import Path
+from typing import Any, Awaitable, Callable
 
 import pytest
 
@@ -24,7 +26,13 @@ from bench_env.env.mobile_gym import MobileGymEnv
 from bench_env.task.base import BaseTask
 from bench_env.task.judge import JudgeInput, JudgeResult
 from bench_env.task.reddit import tasks as reddit_tasks
-from bench_env.task.reddit.app import load_reddit_posts
+
+
+@lru_cache(maxsize=1)
+def load_reddit_posts() -> list[dict[str, Any]]:
+    """Raw catalog posts, read independently of the judge's view (an oracle)."""
+    path = Path(__file__).resolve().parents[3] / "apps" / "Reddit" / "data" / "posts.json"
+    return json.loads(path.read_text(encoding="utf-8"))["posts"]
 
 
 pytestmark = [pytest.mark.live, pytest.mark.asyncio(loop_scope="session")]

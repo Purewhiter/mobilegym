@@ -109,7 +109,7 @@ Overlay-completeness rule — overlays must store **complete entities** at all t
 | absent | exists | Plain base, no runtime change — `view_post(id)` falls back to base |
 | absent | absent | No such entity |
 
-Why "complete entities only" matters: `__SIM__.setState({ ...patch }, { deep: true })` is a write command, **not** a long-term data shape. Deep-merging a partial onto an absent overlay would silently create a runtime entity that fails the schema. To inject a scenario, read the full entity through the App accessor first (`base_note("id")` or `view_note("id")`), mutate fields, then write the full entity back.
+Why "complete entities only" matters: `__SIM__.setState({ ...patch }, { deep: true })` is a write command, **not** a long-term data shape. Deep-merging a partial onto an absent overlay would silently create a runtime entity that fails the schema. To inject a scenario, read the full entity through the App accessor first (`state_note("id")` or `view_note("id")`; device-backed accessors get `view_*` records from the device server), mutate fields, then write the full entity back.
 
 `setState` deep-merge semantics:
 

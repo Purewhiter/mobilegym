@@ -13,6 +13,7 @@ Served at `/__device` by the Vite plugin in dev and preview, and by `device/main
 | Page store | `createDeviceAppStore` in `os/device/deviceStore.ts` | Mirror of the session; actions call commands |
 | Client | `os/device/DeviceClient.ts` | One request queue per page; a reset bumps the generation and abandons queued work |
 | Preload | `apps/<App>/data/loader.ts` `preload()` | Called by the OS `waitForData` hook: `await useXStore.ensureSynced()`, plus `prefetchDeviceQuery(...)` for catalog data the first screen needs |
+| Python views | `bench_env/env/device_view.py` | `DeviceView(app_id, state)`: imports a state snapshot (initial or final) into a scratch session and answers the module's queries, so judges and samplers read catalog-plus-state records without merging in Python |
 
 ## Choosing how an app uses it
 
@@ -32,6 +33,7 @@ With `syncSetState` the page is the authority: every write (`setState`, or `set`
 - **New ids, display labels and random values are made on the page** (TimeService / RandomService) and passed to commands, so they follow the page's clock, locale and episode seed.
 - **A command that toggles derives the new value on the server** (or through `optimistic`); never send `!currentValue` read from the mirror without `optimistic`, or two quick taps send the same value.
 - **Submits that navigate away await the command** and go through `os/hooks/useSubmitOnce`, so a second tap does not submit twice and a late answer does not navigate after the user left.
+- **Catalog and state are merged in one place: the app's device module.** Judges and samplers read merged records through `DeviceView` (RedBook, X and Reddit expose `view*` / `feed*` queries for this); they never load catalog JSON and re-derive the merge in Python. When the page merges too, it calls the same pure functions as the module (`apps/X/utils/runtimePostResolver.ts`, `apps/Reddit/utils/view.ts`).
 - **Catalog URLs the server returns are final** (CDN and `/@app-assets/` bases are module options); see [`../app/media-assets.md`](../app/media-assets.md).
 - After changing a device module, restart the dev server: the module is loaded once per server process.
 

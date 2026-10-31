@@ -167,16 +167,6 @@ def _first_two_distinct_keyword_posts() -> tuple[dict[str, Any], str, dict[str, 
 
 
 class TestXAccessor:
-    def test_resolved_posts_preserves_retweet_list_reverse_order(self):
-        state = copy.deepcopy(BASE_STATE)
-        posts = [post for post in BASE_POSTS if isinstance(post, dict) and post.get("id")][:3]
-        retweeted_ids = [str(post["id"]) for post in posts]
-        state["user"]["retweetedPostIds"] = retweeted_ids
-
-        resolved_ids = [post.get("id") for post in X(state).resolved_posts()[:3]]
-
-        assert resolved_ids == [f"retweet_{post_id}" for post_id in reversed(retweeted_ids)]
-
     def test_find_user_id_by_handle_is_case_sensitive(self):
         app = X(copy.deepcopy(BASE_STATE))
 
@@ -259,8 +249,7 @@ class TestXAccessor:
 
     def test_sample_search_keyword_pair_raises_with_one_post_even_if_trends_exist(self, monkeypatch):
         monkeypatch.setattr(
-            "bench_env.task.x.app._X_POSTS_JSON_CACHE",
-            [{"id": "p1", "content": "hello world", "authorId": "u1"}],
+            X, "view_posts", lambda self: [{"id": "p1", "content": "hello world", "authorId": "u1"}],
         )
         env_state = {
             "apps": {
@@ -378,12 +367,11 @@ class TestXAccessor:
         assert calls["count"] == 1
 
     def test_sample_follow_target_stops_after_first_random_valid_post(self, monkeypatch):
-        # 隔离掉 base users/posts cache, 让 sampler 只看到 fixture 数据
+        # 隔离掉 catalog, 让 sampler 只看到 fixture 数据
         monkeypatch.setattr(
-            "bench_env.task.x.app._X_USERS_JSON_CACHE",
-            {f"u{i}": {"id": f"u{i}", "name": f"User {i}"} for i in range(20)},
+            X, "view_posts",
+            lambda self: [post for post in self.state_posts.values() if isinstance(post, dict)],
         )
-        monkeypatch.setattr("bench_env.task.x.app._X_POSTS_JSON_CACHE", [])
         env_state = {
             "apps": {
                 "x": {

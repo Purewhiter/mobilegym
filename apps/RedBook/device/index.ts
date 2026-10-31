@@ -93,7 +93,12 @@ function loadCatalog(root: string, cdnBase: string, appAssetsBase: string): Cata
       ['notes', { order: notes.map(n => n.id), byId: notesById }],
       ['users', { order: [...usersById.keys()], byId: usersById }],
     ]),
-    extras: { baseCommentToNote, usersByIdObject: Object.fromEntries(usersById) },
+    extras: {
+      baseCommentToNote,
+      usersByIdObject: Object.fromEntries(usersById),
+      // users.json order; commenters added above have no profile of their own.
+      profileUserIds: users.map(u => u.id),
+    },
   };
 }
 
@@ -230,7 +235,8 @@ function feedIds(ctx: Ctx): string[] {
   const runtimeOnly: Array<{ id: string; createdAt: number }> = [];
   for (const [id, value] of Object.entries(notes)) {
     if (value === null) tombstones.add(id);
-    else if (value && !catalog.byId.has(id)) runtimeOnly.push({ id, createdAt: value.createdAt ?? 0 });
+    // Non-numeric createdAt (raw relative seeds like "-2d6h") sorts as 0.
+    else if (value && !catalog.byId.has(id)) runtimeOnly.push({ id, createdAt: Number(value.createdAt) || 0 });
   }
   runtimeOnly.sort((a, b) => b.createdAt - a.createdAt);
   const out = runtimeOnly.map(n => n.id);
@@ -448,6 +454,20 @@ function withAuthors(ctx: Ctx, items: Note[]) {
 }
 
 const queries: AppModule<RedBookDeviceState>['queries'] = {
+  /** Visible note ids in feed order. */
+  feedIds(ctx) {
+    return feedIds(ctx);
+  },
+  /** Users with a profile: the current user, users.json order, then users only this session has. */
+  profileUserIds(ctx) {
+    const catalog = ctx.catalog.extras.profileUserIds as string[];
+    const known = new Set(catalog);
+    return {
+      current: ctx.state.user.id,
+      catalog,
+      runtime: Object.keys(ctx.state.users || {}).filter(id => !known.has(id)),
+    };
+  },
   /** Feed page; optional category label, author filter, and like-count sort. */
   feed(ctx, args) {
     let notes = feedIds(ctx).map(id => viewNote(ctx, id)).filter((n): n is Note => Boolean(n));
@@ -488,9 +508,9 @@ const queries: AppModule<RedBookDeviceState>['queries'] = {
     const matches = feedIds(ctx)
       .map(id => viewNote(ctx, id))
       .filter((n): n is Note => Boolean(n) && (
-        n!.title.toLowerCase().includes(keyword)
-        || n!.content.toLowerCase().includes(keyword)
-        || Boolean(n!.category?.toLowerCase().includes(keyword))
+        String(n!.title ?? '').toLowerCase().includes(keyword)
+        || String(n!.content ?? '').toLowerCase().includes(keyword)
+        || String(n!.category ?? '').toLowerCase().includes(keyword)
       ));
     switch (args.sort) {
       case 'latest': matches.sort((a, b) => b.createdAt - a.createdAt); break;
@@ -506,7 +526,7 @@ const queries: AppModule<RedBookDeviceState>['queries'] = {
     if (!keyword) return [];
     return userIds(ctx)
       .map(id => viewUser(ctx, id))
-      .filter((u): u is User => Boolean(u) && u!.name.toLowerCase().includes(keyword));
+      .filter((u): u is User => Boolean(u) && String(u!.name ?? '').toLowerCase().includes(keyword));
   },
 };
 

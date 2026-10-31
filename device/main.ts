@@ -3,7 +3,7 @@
  * Node process, for deployments that serve the built page from nginx
  * (scripts/server/start_nginx_gateway.sh). Serves `/__device/*`.
  *
- *   node device-server.mjs --port 4190 --root <repo> [--cdn-base /cdn] [--base /sim/] [--shard 0]
+ *   node device-server.mjs --port 4190 --root <repo> [--cdn-base /cdn] [--base /sim/] [--shard 0] [--lazy]
  *
  * Bundle first (scripts/server/build_device_server.mjs); app modules are
  * plain TypeScript.
@@ -31,9 +31,12 @@ const shard = shardArg === undefined ? undefined : Number(shardArg);
 const { server, handler } = createDeviceServer({ root, cdnBase, appAssetsBase: `${base}/@app-assets/`, shard });
 
 // Load every catalog now, so the first page of a run does not pay for it.
-const started = Date.now();
-server.warmCatalogs();
-console.log(`[device] catalogs ready in ${Date.now() - started}ms (${server.appIds().join(', ')})`);
+// `--lazy` skips that (tests that touch a few apps): catalogs load on first use.
+if (!process.argv.includes('--lazy')) {
+  const started = Date.now();
+  server.warmCatalogs();
+  console.log(`[device] catalogs ready in ${Date.now() - started}ms (${server.appIds().join(', ')})`);
+}
 
 const PREFIX = '/__device';
 
