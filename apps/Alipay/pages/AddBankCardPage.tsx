@@ -13,7 +13,7 @@ import { localizeBankName } from '../utils/localizeBankName';
 import { routes } from '../routes';
 
 export const AddBankCardPage: React.FC = () => {
-  const { nav, back } = useAlipayGestures();
+  const { nav, back, bindTap } = useAlipayGestures();
   const s = useAlipayStrings();
   const { navigator } = useContext(UNSAFE_NavigationContext);
   const locale = useLocale();
@@ -94,7 +94,7 @@ export const AddBankCardPage: React.FC = () => {
     <div className="bg-app-bg h-full w-full flex flex-col pt-10">
       <div className="fixed top-0 left-0 right-0 h-10 bg-app-bg z-10 pointer-events-none"></div>
       <div className="sticky top-0 z-20 bg-app-bg px-4 pt-4 pb-3 flex items-center justify-between">
-        <button onClick={() => setShowExitDialog(true)} className="p-1 -ml-1 active:opacity-70">
+        <button {...bindTap({ kind: 'action', id: 'bankCardAdd.exit.open' }, { onTrigger: () => setShowExitDialog(true) })} className="p-1 -ml-1 active:opacity-70">
           <IcNavBack size={24} className="text-gray-800" />
         </button>
         <span className="text-lg font-medium text-gray-900">{s.add_bank_card_title}</span>
@@ -173,7 +173,7 @@ export const AddBankCardPage: React.FC = () => {
                 </div>
                 <button
                   className="text-xs px-4 py-1.5 rounded-full bg-[#EAF2FF] text-app-primary active:bg-[#DDEBFF]"
-                  onClick={() => setSelectedBank(b)}
+                  {...bindTap({ kind: 'action', id: 'bankCardAdd.bank.select' }, { params: { id: b.id }, onTrigger: () => setSelectedBank(b) })}
                 >
                   {s.add_bank_card_add}
                 </button>
@@ -199,14 +199,14 @@ export const AddBankCardPage: React.FC = () => {
                   <div className="text-xs text-gray-400 mt-0.5">{s.add_bank_card_sms_verify}</div>
                 </div>
               </div>
-              <button className="p-2 -mr-2 active:opacity-70" onClick={() => setSelectedBank(null)}>
+              <button className="p-2 -mr-2 active:opacity-70" {...bindTap({ kind: 'action', id: 'bankCardAdd.sheet.close' }, { onTrigger: () => setSelectedBank(null) })}>
                 <IcClose size={18} className="text-gray-600" />
               </button>
             </div>
 
             <button
               className="mt-4 w-full h-11 rounded-full bg-app-primary text-white font-medium active:bg-app-primary/90"
-              onClick={() => openVerify(selectedBank)}
+              {...bindTap({ kind: 'action', id: 'bankCardAdd.verify.open' }, { onTrigger: () => openVerify(selectedBank) })}
             >
               {s.add_bank_card_agree_and_add}
             </button>
@@ -226,7 +226,7 @@ export const AddBankCardPage: React.FC = () => {
             </div>
             <button
               className="w-full py-3 border-t border-gray-100 text-base font-medium text-app-primary active:bg-blue-50"
-              onClick={() => setNoCardDialog(false)}
+              {...bindTap({ kind: 'action', id: 'bankCardAdd.noCard.dismiss' }, { onTrigger: () => setNoCardDialog(false) })}
             >
               {s.add_bank_card_confirm}
             </button>
@@ -257,18 +257,20 @@ export const AddBankCardPage: React.FC = () => {
             <div className="flex gap-3 px-4 mt-5">
               <button
                 className="flex-1 py-3 rounded-full border border-gray-200 text-sm font-medium text-gray-900 active:bg-gray-50"
-                onClick={() => {
-                  setShowExitDialog(false);
-                  if (!popToAlipayBankCardsList(navigator)) {
-                    back();
-                  }
-                }}
+                {...bindTap({ kind: 'action', id: 'bankCardAdd.exit.confirm' }, {
+                  onTrigger: () => {
+                    setShowExitDialog(false);
+                    if (!popToAlipayBankCardsList(navigator)) {
+                      back();
+                    }
+                  },
+                })}
               >
                   {s.add_bank_card_quit}
               </button>
               <button
                 className="flex-1 py-3 rounded-full bg-app-primary text-sm font-medium text-white active:opacity-90"
-                onClick={() => setShowExitDialog(false)}
+                {...bindTap({ kind: 'action', id: 'bankCardAdd.exit.cancel' }, { onTrigger: () => setShowExitDialog(false) })}
               >
                   {s.add_bank_card_continue}
               </button>

@@ -27,7 +27,7 @@ export function useAppNavigationHandler(appId: string, options: Options) {
   const navigate = useNavigate();
   const location = useLocation();
   const { navigator } = useContext(UNSAFE_NavigationContext);
-  const { taskId } = useActivityContext();
+  const { taskId, activityId } = useActivityContext();
 
   // Sync the shadow history tracker on every location change.
   useEffect(() => {
@@ -40,6 +40,14 @@ export function useAppNavigationHandler(appId: string, options: Options) {
     path: location.pathname + location.search,
   });
   const navigateRef = useRef<(path: string, opts?: NavOptions) => void>(() => {});
+
+  // Route of this activity, whichever task it lives in (tooling reads the top activity's).
+  useEffect(() => {
+    if (!activityId) return;
+    const route = () => routeRef.current;
+    AppNavigatorRegistry.setActivityRoute(activityId, route);
+    return () => AppNavigatorRegistry.clearActivityRoute(activityId, route);
+  }, [activityId]);
   const isForegroundRef = useRef(false);
 
   optionsRef.current = options;

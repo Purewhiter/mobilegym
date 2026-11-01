@@ -272,13 +272,8 @@ export const BillsPage: React.FC = () => {
     const params: Record<string, string> = {};
     if (values.minAmount) params.minAmount = values.minAmount;
     if (values.maxAmount) params.maxAmount = values.maxAmount;
-    if (values.quickFilter) params.quickFilters = values.quickFilter;
     if (values.category) params.categories = values.category;
-    nav.replace(routes.bill, {}, { search: { minAmount: params.minAmount, maxAmount: params.maxAmount, categories: params.categories, quickFilters: params.quickFilters } });
-  };
-
-  const closeFilter = () => {
-    nav.replace(routes.bill, {}, { search: { modal: null }, keep: ['minAmount', 'maxAmount', 'categories', 'quickFilters'] });
+    nav.replace(routes.bill, {}, { search: { minAmount: params.minAmount, maxAmount: params.maxAmount, categories: params.categories, quickFilters: values.quickFilter || undefined } });
   };
 
   const openMonthPickerFor = (year: number, month: number) => {
@@ -429,7 +424,7 @@ export const BillsPage: React.FC = () => {
       <BillFilterDrawer
         open={isFilterOpen}
         initialValues={appliedFilters}
-        onClose={closeFilter}
+        closeBind={bindNav(routes.bill, { search: { modal: null }, keep: ['minAmount', 'maxAmount', 'categories', 'quickFilters'], replace: true })}
         onApply={applyFilters}
       />
 

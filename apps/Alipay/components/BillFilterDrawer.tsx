@@ -1,6 +1,7 @@
 import React from 'react';
 import { useLocale } from '@/apps/Alipay/locale';
 import { BILL_CATEGORIES, BILL_QUICK_FILTERS } from '../constants';
+import { useAlipayGestures } from '../hooks/useAlipayGestures';
 import { useAlipayStrings } from '../hooks/useAlipayStrings';
 import { IcClose } from '../res/icons';
 import type { AlipayBillCategoryId, AlipayBillQuickFilterId } from '../types';
@@ -11,7 +12,8 @@ import { IconRenderer } from './IconRenderer';
 type BillFilterDrawerProps = {
   open: boolean;
   initialValues: BillFilterValues;
-  onClose: () => void;
+  /** Tap binding that closes the drawer (bindNav from the page). */
+  closeBind: React.HTMLAttributes<HTMLElement>;
   onApply: (values: BillFilterValues) => void;
 };
 
@@ -20,10 +22,11 @@ const sanitizeAmountInput = (value: string) => value.replace(/[^\d.]/g, '').repl
 export const BillFilterDrawer: React.FC<BillFilterDrawerProps> = ({
   open,
   initialValues,
-  onClose,
+  closeBind,
   onApply,
 }) => {
   const s = useAlipayStrings();
+  const { bindTap } = useAlipayGestures();
   const isEnglish = useLocale() === 'en';
   const [draft, setDraft] = React.useState<BillFilterValues>(initialValues);
 
@@ -58,11 +61,11 @@ export const BillFilterDrawer: React.FC<BillFilterDrawerProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end bg-black/35" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-end bg-black/35" {...closeBind}>
       <div className="w-full rounded-t-3xl bg-app-surface px-5 pb-[calc(env(safe-area-inset-bottom)+20px)] pt-5 shadow-2xl" onClick={e => e.stopPropagation()}>
         <div className="mb-5 flex items-center justify-between">
           <div className="text-[15px] font-semibold text-gray-900">{s.filter}</div>
-          <button onClick={onClose} className="rounded-full p-1 text-gray-400">
+          <button {...closeBind} className="rounded-full p-1 text-gray-400">
             <IcClose size={20} />
           </button>
         </div>
@@ -76,7 +79,7 @@ export const BillFilterDrawer: React.FC<BillFilterDrawerProps> = ({
                 return (
                   <button
                     key={item.id}
-                    onClick={() => toggleQuickFilter(item.id)}
+                    {...bindTap({ kind: 'action', id: 'bill.filter.quickFilter.toggle' }, { params: { id: item.id }, onTrigger: () => toggleQuickFilter(item.id) })}
                     className={`rounded-xl px-3 py-3 text-sm ${
                       selected
                         ? 'border border-app-primary bg-app-primary/10 font-medium text-app-primary'
@@ -131,7 +134,7 @@ export const BillFilterDrawer: React.FC<BillFilterDrawerProps> = ({
                 return (
                   <button
                     key={item.id}
-                    onClick={() => toggleCategory(item.id)}
+                    {...bindTap({ kind: 'action', id: 'bill.filter.category.toggle' }, { params: { id: item.id }, onTrigger: () => toggleCategory(item.id) })}
                     className="flex flex-col items-center justify-start"
                   >
                     <div
@@ -155,13 +158,13 @@ export const BillFilterDrawer: React.FC<BillFilterDrawerProps> = ({
 
         <div className="mt-6 flex gap-3">
           <button
-            onClick={resetDraft}
+            {...bindTap({ kind: 'action', id: 'bill.filter.reset' }, { onTrigger: resetDraft })}
             className="flex-1 rounded-full border border-gray-200 bg-white py-3 text-base text-gray-600"
           >
             {s.reset}
           </button>
           <button
-            onClick={() => onApply(draft)}
+            {...bindTap({ kind: 'action', id: 'bill.filter.apply' }, { onTrigger: () => onApply(draft) })}
             className="flex-1 rounded-full bg-[#2B7CFF] py-3 text-base font-medium text-white"
           >
             {s.confirm_2}

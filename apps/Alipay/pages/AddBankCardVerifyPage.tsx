@@ -45,7 +45,7 @@ const RECHARGE_RETURN_PATH = '/balance/recharge';
 const MULTI_RECHARGE_RETURN_PATH = '/balance/recharge?modal=multi';
 
 export const AddBankCardVerifyPage: React.FC = () => {
-  const { bindBack, nav, back } = useAlipayGestures();
+  const { bindBack, bindTap, nav, back } = useAlipayGestures();
   const s = useAlipayStrings();
   const locale = useLocale();
   const isEnglish = locale === 'en';
@@ -134,7 +134,7 @@ export const AddBankCardVerifyPage: React.FC = () => {
     return (
       <div className="bg-app-bg h-full w-full flex flex-col pt-10">
         <div className="px-4 py-3 flex items-center justify-end flex-shrink-0">
-          <button onClick={handleDone} className="text-sm text-gray-900 active:opacity-70">{s.add_bank_card_verify_done}</button>
+          <button {...bindTap({ kind: 'action', id: 'bankCardVerify.done' }, { onTrigger: handleDone })} className="text-sm text-gray-900 active:opacity-70">{s.add_bank_card_verify_done}</button>
         </div>
 
         <div className="flex flex-col items-center px-6 pt-8 pb-10">
@@ -185,7 +185,7 @@ export const AddBankCardVerifyPage: React.FC = () => {
     <div className="bg-app-bg h-full w-full flex flex-col pt-10">
       <div className="fixed top-0 left-0 right-0 h-10 bg-app-bg z-10 pointer-events-none"></div>
       <div className="sticky top-0 z-20 bg-app-bg px-4 pt-4 pb-3 flex items-center justify-between">
-        <button onClick={() => setShowExitDialog(true)} className="p-1 -ml-1 active:opacity-70">
+        <button {...bindTap({ kind: 'action', id: 'bankCardVerify.exit.open' }, { onTrigger: () => setShowExitDialog(true) })} className="p-1 -ml-1 active:opacity-70">
           <IcNavBack size={24} className="text-gray-800" />
         </button>
         <span className="text-lg font-medium text-gray-900">{s.add_bank_card_verify_title}</span>
@@ -248,7 +248,7 @@ export const AddBankCardVerifyPage: React.FC = () => {
             <button
               className={`active:opacity-70 ${counter > 0 ? 'text-gray-400' : 'text-app-primary'}`}
               disabled={counter > 0}
-              onClick={() => sendCode()}
+              {...(counter > 0 ? {} : bindTap({ kind: 'action', id: 'bankCardVerify.code.resend' }, { onTrigger: () => sendCode() }))}
             >
               {counter > 0 ? s.add_bank_card_verify_resend.replace('{seconds}', String(counter)) : s.add_bank_card_verify_resend_idle}
             </button>
@@ -268,13 +268,13 @@ export const AddBankCardVerifyPage: React.FC = () => {
             <div className="flex border-t border-gray-100">
               <button
                 className="flex-1 py-3 text-sm text-gray-600 active:bg-gray-50 border-r border-gray-100"
-                onClick={() => { setShowExitDialog(false); back(); }}
+                {...bindTap({ kind: 'action', id: 'bankCardVerify.exit.confirm' }, { onTrigger: () => { setShowExitDialog(false); back(); } })}
               >
                 {s.add_bank_card_verify_exit}
               </button>
               <button
                 className="flex-1 py-3 text-sm text-app-primary font-medium active:bg-blue-50"
-                onClick={() => setShowExitDialog(false)}
+                {...bindTap({ kind: 'action', id: 'bankCardVerify.exit.cancel' }, { onTrigger: () => setShowExitDialog(false) })}
               >
                 {s.add_bank_card_verify_continue}
               </button>

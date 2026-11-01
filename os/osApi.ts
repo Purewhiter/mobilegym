@@ -45,6 +45,7 @@ export function buildOsApi(osStateForApi: OSState & { activeAppId: string | null
       handleBack: handleSystemBack,
       getState: () => ({ ...TaskManager.getState(), activeAppId: getActiveAppId(TaskManager.getState()) }),
       getAppRoute: (appId?: AppId | string) => AppNavigatorRegistry.getAppRoute(appId),
+      getActivityRoute: (activityId: string) => AppNavigatorRegistry.getActivityRoute(activityId),
       openApp,
       startActivity,
       startActivityForResult,

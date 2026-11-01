@@ -18,6 +18,8 @@ export interface ActivityNavigator {
 const registry = new Map<string, AppNavigator>();
 const backOverrideRegistry = new Map<string, () => boolean>();
 const activityRegistry = new Map<string, ActivityNavigator>();
+// Every mounted activity's current route, including ones on top of another app's task.
+const activityRoutes = new Map<string, () => AppRouteInfo>();
 
 export const APP_NAVIGATOR_READY_EVENT = 'os:navigator-ready';
 export const ACTIVITY_NAVIGATOR_READY_EVENT = 'os:activity-navigator-ready';
@@ -86,6 +88,18 @@ export const AppNavigatorRegistry = {
 
   getActivity(activityId: string) {
     return activityRegistry.get(activityId);
+  },
+
+  setActivityRoute(activityId: string, route: () => AppRouteInfo) {
+    activityRoutes.set(activityId, route);
+  },
+
+  clearActivityRoute(activityId: string, route: () => AppRouteInfo) {
+    if (activityRoutes.get(activityId) === route) activityRoutes.delete(activityId);
+  },
+
+  getActivityRoute(activityId: string): AppRouteInfo | null {
+    return activityRoutes.get(activityId)?.() ?? null;
   },
 
   getActivityBackHandler(activityId: string) {

@@ -3,6 +3,7 @@ import { IcClose, IcBuilding } from '../res/icons';
 import { MinusCircle } from 'lucide-react';
 import { AmountKeyboard } from './AmountKeyboard';
 import type { AlipayBankCard } from '../types';
+import { useAlipayGestures } from '../hooks/useAlipayGestures';
 import { useAlipayStrings } from '../hooks/useAlipayStrings';
 import { useLocale } from '@/apps/Alipay/locale';
 import { localizeBankName } from '../utils/localizeBankName';
@@ -35,6 +36,7 @@ export const MultiCardRechargeModal: React.FC<{
     onSubmit: (rows: MultiRechargeRow[]) => void;
 }> = ({ visible, totalAmount, boundCards, onClose, onAddMoreCards, onSubmit }) => {
     const s = useAlipayStrings();
+    const { bindTap } = useAlipayGestures();
     const locale = useLocale();
     const isEnglish = locale === 'en';
     const [rows, setRows] = React.useState<MultiRechargeRow[]>([]);
@@ -119,7 +121,7 @@ export const MultiCardRechargeModal: React.FC<{
                 <div className="px-4 pt-4 pb-3 flex items-center justify-between bg-white flex-shrink-0">
                     <div className="w-6" />
                     <div className="text-base font-medium text-gray-900">{s.multi_card_recharge_title}</div>
-                    <button className="p-1 -mr-1 active:opacity-70" onClick={onClose}>
+                    <button className="p-1 -mr-1 active:opacity-70" {...bindTap({ kind: 'action', id: 'multiRecharge.close' }, { onTrigger: onClose })}>
                         <IcClose size={22} className="text-gray-500" />
                     </button>
                 </div>
@@ -128,7 +130,7 @@ export const MultiCardRechargeModal: React.FC<{
                     <div className="px-4 py-3 bg-white border-t border-gray-100 flex justify-center">
                         <button
                             className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-[#F5F7FA] text-xs text-gray-700 active:bg-[#EEF2F6]"
-                            onClick={onAddMoreCards}
+                            {...bindTap({ kind: 'action', id: 'multiRecharge.addCard' }, { onTrigger: onAddMoreCards })}
                         >
                             <span className="text-gray-500">＋</span>
                             <span>{s.multi_card_recharge_choose_more}</span>
@@ -187,7 +189,7 @@ export const MultiCardRechargeModal: React.FC<{
                         <button
                             className="w-full h-12 rounded-full bg-app-primary text-white font-medium text-base disabled:opacity-50 active:scale-[0.99] transition-transform"
                             disabled={!canSubmit}
-                            onClick={() => onSubmit(rows)}
+                            {...(canSubmit ? bindTap({ kind: 'action', id: 'multiRecharge.submit' }, { onTrigger: () => onSubmit(rows) }) : {})}
                         >
                             {s.multi_card_recharge_next}
                         </button>

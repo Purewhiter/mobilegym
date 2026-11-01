@@ -6,6 +6,8 @@ interface OSApi {
   state: OSState & { activeAppId?: AppId | null };
   getState(): OSState & { activeAppId?: AppId | null };
   getAppRoute(appId?: AppId | string): AppRouteInfo | null;
+  /** Current route of one activity (an app's page started on top of another task included). */
+  getActivityRoute(activityId: string): AppRouteInfo | null;
   launchApp(id: AppId): void;
   launchTaskById(taskId: string): void;
   goHome(): void;

@@ -21,11 +21,17 @@ What is explored is bounded and set by options or by
 - `setup`: per node, steps run on arriving there, as a user would: `{"type":
   text, "into": selector}`, `{"tap": selector}` (Playwright selectors), `{"wait":
   ms}` (a list that appears after a fake search), `{"hideKeyboard": true}` (a
-  page that focuses its text box on open). A list of such lists gives
+  page that focuses its text box on open), `{"typeEval": js, "into": selector}`
+  (text computed in the page: the code in the latest SMS) and `{"setState":
+  patch}` (data one variant needs: password-free payment switched on). A list of such lists gives
   variants, each explored as its own instance (search for a contact, search
   for a feature).
 - `seed`: a `__SIM__.setState` patch applied after every reset, for data the
   default state lacks (a subscription to open, a blacklisted friend).
+- `entries`: pages other apps open directly, explored as extra starting pages:
+  a path (`__OS__.openApp(app, path)`, a notification) or `{"from": appId,
+  "intent": {...}}` (`__OS__.startActivityForResult` from that app's task:
+  12306 paying through the Alipay cashier).
 
 Every tagged control (data-trigger / data-action) is tapped, long-pressed or
 double-tapped as its tag says, each time from a reset simulator with frozen
@@ -190,6 +196,7 @@ def load_config(app: str, args: argparse.Namespace) -> dict:
     config.setdefault("prefer", {})
     config.setdefault("setup", {})
     config.setdefault("seed", None)
+    config.setdefault("entries", [])
     return config
 
 
@@ -206,16 +213,16 @@ class Device:
     def __init__(self, page, url: str, app: str, config: dict, routes: "Routes | None", wait_ms: int):
         self.page, self.url, self.app, self.config, self.routes, self.wait_ms = page, url, app, config, routes, wait_ms
         self.setup_errors: set[str] = set()
-        # The app's URL, or HOME once system back has left the app; with the task's activity
-        # count, and the app history depth only while the app's own single activity is on top
-        # (an activity started on top, or the app inside another task, has a history of its own).
+        # The URL of the page on top (the top activity of the active task, so a cashier
+        # started over the app counts), or HOME once system back has left the app; with
+        # that activity's history depth and the task's activity count.
         self.where_js = f"""() => {{
           const s = window.__OS__.state;
           if (s?.activeAppId !== '{app}') return null;
-          const route = window.__OS__.getAppRoute('{app}');
           const task = s.tasks.find(t => t.taskId === s.activeTaskId);
-          const own = task?.rootAppId === '{app}' && task.stack.length === 1;
-          return {{ path: route?.path, depth: own ? route?.depth : undefined, activities: task?.stack.length }};
+          const top = task?.stack[task.stack.length - 1];
+          const route = (top && window.__OS__.getActivityRoute(top.activityId)) || window.__OS__.getAppRoute('{app}');
+          return {{ path: route?.path, depth: route?.depth, activities: task?.stack.length, top: top?.activityId }};
         }}"""
 
     async def settle(self) -> None:
@@ -238,7 +245,8 @@ class Device:
         await page.wait_for_function(f"() => window.__OS__.state?.activeAppId === '{self.app}'", timeout=10000)
         await self.settle()
 
-    async def where(self) -> tuple[str, int | None, int | None]:
+    async def where(self) -> tuple[str, int | None, tuple[int, str] | None]:
+        """URL on top, its history depth, and (activity count, top activity id)."""
         info = await self.page.evaluate(self.where_js)
         if not info:
             return "HOME", None, None
@@ -246,7 +254,7 @@ class Device:
         if path not in self.routes.name_of_path:
             self.routes.name_of_path[path] = await self.page.evaluate(
                 "([app, path]) => window.__SIM__.matchRoute(app, path)", [self.app, path])
-        return info["path"], info.get("depth"), info.get("activities")
+        return info["path"], info.get("depth"), (info.get("activities") or 0, info.get("top") or "")
 
     async def current(self) -> str:
         return (await self.where())[0]
@@ -264,6 +272,20 @@ class Device:
         # Wait for the control to render and settle (a page still animating in
         # has it under the old page), then tap it where an agent would.
         page, point = self.page, None
+        if "entry" in step:
+            # Opened from outside the app: a path (a notification, a deep link) or an
+            # intent with its payload (another app paying through the cashier).
+            entry = step["entry"]
+            if isinstance(entry, str):
+                await page.evaluate("([app, path]) => window.__OS__.openApp(app, path)", [self.app, entry])
+            else:
+                # Sent from the caller app's task, as on a phone (12306 paying through Alipay).
+                await page.evaluate("(app) => window.__OS__.openApp(app)", entry["from"])
+                await self.settle()
+                await page.evaluate("([app, intent]) => window.__OS__.startActivityForResult(app, intent, () => {})",
+                                    [self.app, entry["intent"]])
+            await self.settle()
+            return True
         for _ in range(max(1, patience_ms // 200)):
             item = await self.find(step)
             point = item and await page.evaluate(LOCATE_JS, item["i"])
@@ -307,12 +329,17 @@ class Device:
             await self.page.locator(target).first.wait_for(state="visible", timeout=5000)
         if "wait" in step:
             await self.page.wait_for_timeout(step["wait"])
+        elif "setState" in step:
+            # Data this variant of the page needs (password-free payment switched on).
+            await self.page.evaluate("(patch) => window.__SIM__.setState(patch, { deep: true, reload: false })", step["setState"])
         elif "hideKeyboard" in step:
             if await self.page.evaluate("() => window.__OS__.keyboard?.isVisible?.()"):
                 await self.page.evaluate("() => window.__OS__.handleBack()")
-        elif "type" in step:
+        elif "type" in step or "typeEval" in step:
+            # typeEval: text computed in the page, such as the code in the latest SMS.
+            text = step["type"] if "type" in step else await self.page.evaluate(step["typeEval"])
             await self.page.click(step["into"], timeout=5000)
-            await self.page.evaluate("(text) => window.__SIM_INPUT__.type(text, { clear: true })", step["type"])
+            await self.page.evaluate("(text) => window.__SIM_INPUT__.type(text, { clear: true })", text)
             await self.settle()
             if await self.page.evaluate("() => window.__OS__.keyboard?.isVisible?.()"):
                 await self.page.evaluate("() => window.__OS__.handleBack()")
@@ -356,8 +383,10 @@ class Device:
             mode = "back"
         elif after == "HOME":
             mode = "exit"
-        elif (activities_after or 0) > (activities_before or 0):
-            mode = "activity"
+        elif activities_after != activities_before:
+            # Another activity is on top: depths of two routers do not compare.
+            mode = "finish" if activities_after and activities_before and activities_after[0] < activities_before[0] \
+                else "activity"
         elif depth_before is None or depth_after is None:
             mode = "unknown"
         else:
@@ -435,6 +464,16 @@ async def explore(url: str, app: str, config: dict, max_pages: int, wait_ms: int
             return keys
 
         start_keys = admit(start_landed, start, [])
+        # Pages other apps open directly (a cashier for a payment), explored as extra starts.
+        entry_nodes: list[tuple[str, str]] = []
+        for entry in config["entries"]:
+            step = {"entry": entry}
+            await first.fresh()
+            await first.perform(step)
+            url = await first.current()
+            if url != "HOME":
+                entry_nodes.append((routes.node_of(url), json.dumps(entry, ensure_ascii=False)))
+                start_keys += admit(f"{url}\n{await first.signature()}", url, [step])
         edges: dict[str, dict] = {}
         actions: dict[str, set[str]] = {}
         unreachable: list[str] = []
@@ -522,13 +561,18 @@ async def explore(url: str, app: str, config: dict, max_pages: int, wait_ms: int
         "unmatched": sorted(n for n in reached if n.startswith("UNMATCHED:")),
         "unreachable": unreachable,
         "setupErrors": sorted({e for d in devices for e in d.setup_errors}),
-        "tasks": action_tasks(app, start_node, nodes, out_edges),
+        "entries": [{"node": n, "entry": e} for n, e in entry_nodes],
+        "tasks": action_tasks(app, start_node, nodes, out_edges, entry_nodes),
     }
 
 
-def action_tasks(app: str, start: str, nodes: list[dict], edges: list[dict]) -> list[dict]:
-    """For every action, the shortest tap path from the start page to the page that has it."""
-    graph: dict[str, list[tuple[str, str]]] = {}
+def action_tasks(app: str, start: str, nodes: list[dict], edges: list[dict],
+                 entries: list[tuple[str, str]] = ()) -> list[dict]:
+    """For every action, the shortest tap path from the start page to the page that has it.
+
+    A page another app opens (an entry) counts as one step away, through `entry:<how>`.
+    """
+    graph: dict[str, list[tuple[str, str]]] = {start: [(node, f"entry:{how}") for node, how in entries]}
     for e in edges:
         if e["kind"] == "back":
             continue

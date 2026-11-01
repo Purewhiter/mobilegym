@@ -199,7 +199,7 @@ export const TransferAmountPage: React.FC = () => {
         <div className="mb-4 flex w-full flex-col rounded-xl bg-app-surface p-6 shadow-sm">
           <div className="mb-6 text-sm text-gray-800">{s.transfer_amount}</div>
 
-          <div className="mb-6 flex min-w-0 items-center border-b border-gray-100 pb-4" onClick={() => setIsAmountInputActive(true)}>
+          <div className="mb-6 flex min-w-0 items-center border-b border-gray-100 pb-4" {...bindTap({ kind: 'action', id: 'transferAmount.amount.focus' }, { onTrigger: () => setIsAmountInputActive(true) })}>
             <span className="mr-4 text-[clamp(24px,7vw,32px)] font-bold text-gray-900">¥</span>
             <input
               ref={amountInputRef}

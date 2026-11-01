@@ -17,7 +17,7 @@ export const RechargePage: React.FC = () => {
   const { bankCards, recordTransfer } = useAlipayStore();
   const s = useAlipayStrings();
   const paymentPassword = useAlipayStore(s => s.userInfo.paymentPassword);
-  const { bindBack, nav, back } = useAlipayGestures();
+  const { bindBack, bindNav, bindTap, nav, back } = useAlipayGestures();
   const locale = useLocale();
   const isEnglish = locale === 'en';
   const [searchParams] = useSearchParams();
@@ -49,10 +49,6 @@ export const RechargePage: React.FC = () => {
 
   const boundCards = bankCards.filter(c => c.bound);
   const [selectedCard, setSelectedCard] = useState<typeof bankCards[number] | null>(boundCards[0] || bankCards[0] || null);
-
-  const openMulti = () => {
-    nav.push(routes.balanceRecharge, {}, { search: { modal: 'multi' } });
-  };
 
   const closeMulti = () => {
     setMultiRows(null);
@@ -193,7 +189,7 @@ export const RechargePage: React.FC = () => {
           </div>
 
           {moreExpanded && (
-            <div className="flex items-center justify-between py-2 active:bg-gray-50 rounded-lg -mx-2 px-2" onClick={openMulti}>
+            <div className="flex items-center justify-between py-2 active:bg-gray-50 rounded-lg -mx-2 px-2" {...bindNav(routes.balanceRecharge, { search: { modal: 'multi' } })}>
               <span className="text-sm text-gray-900">{s.recharge_page_multi_card} <span className="text-gray-400 ml-2">{s.recharge_page_multi_card_hint}</span></span>
               <IcNavForward size={16} className="text-gray-400 flex-shrink-0" />
             </div>
@@ -201,7 +197,7 @@ export const RechargePage: React.FC = () => {
 
           <button
             className="w-full flex items-center justify-center gap-1 py-2 text-xs text-gray-400 active:text-gray-500"
-            onClick={() => setMoreExpanded(v => !v)}
+            {...bindTap({ kind: 'action', id: 'recharge.more.toggle' }, { onTrigger: () => setMoreExpanded(v => !v) })}
           >
             <span>{moreExpanded ? s.recharge_page_collapse : s.recharge_page_expand}</span>
             {moreExpanded
@@ -218,7 +214,7 @@ export const RechargePage: React.FC = () => {
           <button
             className="w-full bg-app-primary text-white py-3 rounded-full font-medium text-lg disabled:opacity-50 shadow-lg shadow-blue-200 active:scale-[0.98] transition-transform"
             disabled={!amount || Number(amount) <= 0}
-            onClick={handleRecharge}
+            {...(amount && Number(amount) > 0 ? bindTap<HTMLButtonElement>({ kind: 'action', id: 'recharge.submit' }, { onTrigger: handleRecharge }) : {})}
           >
             {s.recharge_page_confirm}
           </button>
