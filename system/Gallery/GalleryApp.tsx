@@ -377,13 +377,14 @@ const FloatingTabPill: React.FC<{ activeTab: HomeTab; onTabChange: (tab: HomeTab
 // ============================================================================
 const PhotoGridItem: React.FC<{
   item: MediaItem;
-  onClick: () => void;
+  /** Tap binding that opens the photo (bindNav); not applied in select mode. */
+  openBind: React.HTMLAttributes<HTMLElement>;
   isSelected?: boolean;
   isSelectMode?: boolean;
   onSelect?: () => void;
   onLongPress?: () => void;
   showFavorite?: boolean;
-}> = ({ item, onClick, isSelected, isSelectMode, onSelect, onLongPress, showFavorite }) => {
+}> = ({ item, openBind, isSelected, isSelectMode, onSelect, onLongPress, showFavorite }) => {
   const favorites = useFavorites();
   const favorite = favorites.has(item.path);
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -409,7 +410,7 @@ const PhotoGridItem: React.FC<{
     clearTimer();
   };
   
-  const handleClick = () => {
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     if (isLongPress.current) {
       isLongPress.current = false;
       return;
@@ -417,13 +418,14 @@ const PhotoGridItem: React.FC<{
     if (isSelectMode) {
       onSelect?.();
     } else {
-      onClick();
+      openBind.onClick?.(event);
     }
   };
   
   return (
     <div 
       className="relative aspect-square overflow-hidden group"
+      {...(isSelectMode ? {} : openBind)}
       onClick={handleClick}
       onContextMenu={(e) => e.preventDefault()}
       onPointerDown={handlePointerDown}
@@ -480,7 +482,7 @@ const PhotoGridItem: React.FC<{
 // Photos Page
 // ============================================================================
 const PhotosPage: React.FC<{ onSelectModeChange?: (active: boolean) => void }> = ({ onSelectModeChange }) => {
-  const { nav } = useGalleryGestures();
+  const { bindNav } = useGalleryGestures();
   const s = useAppStrings(strings, stringsEn);
   const [items, setItems] = useState<MediaItem[]>([]);
   const [selectMode, setSelectMode] = useState(false);
@@ -582,7 +584,7 @@ const PhotosPage: React.FC<{ onSelectModeChange?: (active: boolean) => void }> =
             </button>,
             <button
               type="button"
-              onClick={() => nav.push(routes.favorites)}
+              {...bindNav(routes.favorites)}
               className="w-10 h-10 flex items-center justify-center active:opacity-60"
               aria-label={s.filter_label}
             >
@@ -633,7 +635,7 @@ const PhotosPage: React.FC<{ onSelectModeChange?: (active: boolean) => void }> =
               <PhotoGridItem
                 key={item.id}
                 item={item}
-                onClick={() => nav.push(routes.photo, { path: encodeURIComponent(item.path) })}
+                openBind={bindNav(routes.photo, { params: { path: encodeURIComponent(item.path) } })}
                 isSelectMode={selectMode}
                 isSelected={selected.has(item.path)}
                 onSelect={() => handleSelect(item.path)}
@@ -702,7 +704,7 @@ const PhotosPage: React.FC<{ onSelectModeChange?: (active: boolean) => void }> =
 // Albums Page
 // ============================================================================
 const AlbumsPage: React.FC = () => {
-  const { nav } = useGalleryGestures();
+  const { bindNav } = useGalleryGestures();
   const s = useAppStrings(strings, stringsEn);
   const [albums, setAlbums] = useState<Album[]>([]);
   const [moreCounts, setMoreCounts] = useState({
@@ -766,7 +768,7 @@ const AlbumsPage: React.FC = () => {
               {systemAlbums.map(album => (
                 <button
                   key={album.id}
-                  onClick={() => nav.push(routes.album, { albumId: album.id })}
+                  {...bindNav(routes.album, { params: { albumId: album.id } })}
                   className="text-left active:scale-[0.98] transition-transform"
                 >
                   <div className="aspect-square bg-slate-100 rounded-2xl overflow-hidden border border-slate-100">
@@ -802,7 +804,7 @@ const AlbumsPage: React.FC = () => {
                   {appAlbums.map(album => (
                     <button
                       key={album.id}
-                      onClick={() => nav.push(routes.album, { albumId: album.id })}
+                      {...bindNav(routes.album, { params: { albumId: album.id } })}
                       className="text-left active:scale-[0.98] transition-transform"
                     >
                       <div className="aspect-square bg-slate-100 rounded-2xl overflow-hidden border border-slate-100">
@@ -960,7 +962,7 @@ const AlbumsPage: React.FC = () => {
 // Favorites Page
 // ============================================================================
 const FavoritesPage: React.FC = () => {
-  const { nav } = useGalleryGestures();
+  const { bindNav } = useGalleryGestures();
   const s = useAppStrings(strings, stringsEn);
   const favorites = useFavorites();
   const [items, setItems] = useState<MediaItem[]>([]);
@@ -1003,7 +1005,7 @@ const FavoritesPage: React.FC = () => {
               <PhotoGridItem
                 key={item.id}
                 item={item}
-                onClick={() => nav.push(routes.photo, { path: encodeURIComponent(item.path) }, { search: { from: 'favorites' } })}
+                openBind={bindNav(routes.photo, { params: { path: encodeURIComponent(item.path) }, search: { from: 'favorites' } })}
               />
             ))}
           </div>
@@ -1017,7 +1019,7 @@ const FavoritesPage: React.FC = () => {
 // Album Detail Page
 // ============================================================================
 const AlbumDetailPage: React.FC = () => {
-  const { nav, back, bindBack } = useGalleryGestures();
+  const { back, bindBack, bindNav } = useGalleryGestures();
   const { albumId } = useParams<{ albumId: string }>();
   const s = useAppStrings(strings, stringsEn);
   const [items, setItems] = useState<MediaItem[]>([]);
@@ -1121,7 +1123,7 @@ const AlbumDetailPage: React.FC = () => {
                     <PhotoGridItem
                       key={item.id}
                       item={item}
-                      onClick={() => nav.push(routes.photo, { path: encodeURIComponent(item.path) }, { search: { album: albumId || '' } })}
+                      openBind={bindNav(routes.photo, { params: { path: encodeURIComponent(item.path) }, search: { album: albumId || '' } })}
                       isSelectMode={selectMode}
                       isSelected={selected.has(item.path)}
                       onSelect={() => handleSelect(item.path)}
@@ -1223,6 +1225,8 @@ type MoreMenuItem = {
   icon: React.ReactNode;
   label: string;
   onClick?: () => void;
+  /** Tap binding (bindNav) for rows that open another dialog; replaces onClick. */
+  bind?: React.ButtonHTMLAttributes<HTMLButtonElement>;
   hasMore?: boolean;
 };
 
@@ -1248,6 +1252,7 @@ const MorePopup: React.FC<{
                   key={idx}
                   type="button"
                   onClick={opt.onClick}
+                  {...opt.bind}
                   className="w-full px-3 py-1 flex items-center gap-2.5 active:bg-slate-100 transition-colors"
                 >
                   <div className="w-7 h-7 flex items-center justify-center text-slate-700 shrink-0">
@@ -1410,7 +1415,7 @@ const RenameDialog: React.FC<{
 // Photo Viewer Page
 // ============================================================================
 const PhotoViewerPage: React.FC = () => {
-  const { nav, back, bindBack } = useGalleryGestures();
+  const { nav, back, bindBack, bindNav } = useGalleryGestures();
   const location = useLocation();
   const { path } = useParams<{ path: string }>();
   const { activityId } = useActivityContext();
@@ -1451,29 +1456,11 @@ const PhotoViewerPage: React.FC = () => {
   // useParams returns the URL-decoded :path segment; transitions expect the
   // encoded form (matching photo.open's `encodeURIComponent(item.path)` convention).
   const encodedPath = decodedPath ? encodeURIComponent(decodedPath) : '';
-  const openMore = () => {
-    if (isIntentMode) {
-      nav.push(routes.intentView, {}, { search: { modal: 'more' } });
-      return;
-    }
-    if (!encodedPath) return;
-    nav.push(routes.photo, { path: encodedPath }, { search: { modal: 'more' }, keep: ['album', 'from'] });
-  };
-  const openDetails = () => {
-    if (isIntentMode) {
-      nav.replace(routes.intentView, {}, { search: { modal: 'details' } });
-      return;
-    }
-    if (!encodedPath) return;
-    nav.replace(routes.photo, { path: encodedPath }, { search: { modal: 'details' }, keep: ['album', 'from'] });
-  };
-  const openRename = () => {
-    if (isIntentMode) {
-      nav.replace(routes.intentView, {}, { search: { modal: 'rename' } });
-      return;
-    }
-    if (!encodedPath) return;
-    nav.replace(routes.photo, { path: encodedPath }, { search: { modal: 'rename' }, keep: ['album', 'from'] });
+  // The "more" menu is pushed; details / rename replace it. Without a photo path there is nothing to open.
+  const bindModal = (modal: 'more' | 'details' | 'rename', replace: boolean) => {
+    if (isIntentMode) return bindNav(routes.intentView, { search: { modal }, replace });
+    if (!encodedPath) return undefined;
+    return bindNav(routes.photo, { params: { path: encodedPath }, search: { modal }, keep: ['album', 'from'], replace });
   };
   const closeModal = () => back();
 
@@ -1716,7 +1703,7 @@ const PhotoViewerPage: React.FC = () => {
           </button>
           <button
             type="button"
-            onClick={openMore}
+            {...bindModal('more', false)}
             className="flex flex-col items-center gap-1 text-slate-800 active:opacity-60"
             aria-label={s.viewer_more}
           >
@@ -1746,7 +1733,7 @@ const PhotoViewerPage: React.FC = () => {
           [
             { icon: <IcAddTo size={22} strokeWidth={1.6} />, label: s.more_menu_add_to, onClick: closeModal },
             { icon: <IcWallpaper size={22} strokeWidth={1.6} />, label: s.more_menu_set_wallpaper, onClick: closeModal },
-            { icon: <IcInfo size={22} strokeWidth={1.6} />, label: s.more_menu_details, onClick: openDetails },
+            { icon: <IcInfo size={22} strokeWidth={1.6} />, label: s.more_menu_details, bind: bindModal('details', true) },
           ],
           [
             { icon: <IcGeneratePdf size={22} strokeWidth={1.6} />, label: s.more_menu_generate_pdf, onClick: closeModal },
@@ -1758,7 +1745,7 @@ const PhotoViewerPage: React.FC = () => {
           ],
           [
             { icon: <IcClipboard size={22} strokeWidth={1.6} />, label: s.more_menu_clipboard, onClick: closeModal },
-            { icon: <IcRename size={22} strokeWidth={1.6} />, label: s.more_menu_rename, onClick: openRename },
+            { icon: <IcRename size={22} strokeWidth={1.6} />, label: s.more_menu_rename, bind: bindModal('rename', true) },
           ],
         ]}
       />

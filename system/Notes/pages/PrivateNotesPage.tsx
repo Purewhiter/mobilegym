@@ -33,9 +33,9 @@ function snippet(text: string) {
 
 const PrivateCard: React.FC<{
   note: Note;
-  onOpen: () => void;
+  openBind: React.ButtonHTMLAttributes<HTMLButtonElement>;
   onActions: () => void;
-}> = ({ note, onOpen, onActions }) => {
+}> = ({ note, openBind, onActions }) => {
   const s = useAppStrings(strings, stringsEn);
   const title = note.title.trim() || s.untitled;
   const content = snippet(note.content);
@@ -43,7 +43,7 @@ const PrivateCard: React.FC<{
   return (
     <div className="bg-app-surface rounded-[16px] px-5 py-4 shadow-[0_1px_0_rgba(0,0,0,0.04)] mb-3 break-inside-avoid">
       <div className="flex items-start justify-between gap-3">
-        <button className="flex-1 text-left active:opacity-80" onClick={onOpen}>
+        <button className="flex-1 text-left active:opacity-80" {...openBind}>
           <div className="flex items-center gap-2">
             <div className="text-[16px] font-medium text-black truncate">{title}</div>
             <IcLock size={14} className="text-black/40" />
@@ -68,7 +68,7 @@ const PrivateCard: React.FC<{
 };
 
 export const PrivateNotesPage: React.FC = () => {
-  const { nav, bindBack } = useNotesGestures();
+  const { bindNav, bindBack } = useNotesGestures();
   const privateNotes = useNotesStore(selectPrivateNotes);
   const unhideNote = useNotesStore(s => s.unhideNote);
   const deleteNote = useNotesStore(s => s.deleteNote);
@@ -130,7 +130,7 @@ export const PrivateNotesPage: React.FC = () => {
               <PrivateCard
                 key={n.id}
                 note={n}
-                onOpen={() => nav.push(routes.note, { id: n.id })}
+                openBind={bindNav(routes.note, { params: { id: n.id } })}
                 onActions={() => setActive(n)}
               />
             ))

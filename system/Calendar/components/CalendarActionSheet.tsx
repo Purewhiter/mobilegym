@@ -5,7 +5,9 @@ export interface CalendarActionSheetItem {
   title: string;
   subtitle?: string;
   icon?: React.ReactNode;
-  onClick: () => void;
+  /** Either a handler, or a tap binding from the page (bindNav) that tags the row. */
+  onClick?: () => void;
+  bind?: React.ButtonHTMLAttributes<HTMLButtonElement>;
 }
 
 export const CalendarActionSheet: React.FC<{
@@ -44,8 +46,10 @@ export const CalendarActionSheet: React.FC<{
               <button
                 key={it.id}
                 className="w-full flex items-center gap-3 px-5 py-4 text-left active:bg-black/5 dark:active:bg-white/5"
-                onClick={() => {
-                  it.onClick();
+                {...it.bind}
+                onClick={(event) => {
+                  if (it.bind?.onClick) it.bind.onClick(event);
+                  else it.onClick?.();
                   onClose();
                 }}
               >

@@ -56,7 +56,7 @@ const BrowserNavigationHandler: React.FC = () => {
 };
 
 // --- Home Component ---
-const BrowserHome: React.FC<{ onNavigate: (url: string) => void }> = ({ onNavigate }) => {
+const BrowserHome: React.FC<{ onNavigate: (url: string) => void; bindOpen: (url: string) => React.HTMLAttributes<HTMLElement> }> = ({ onNavigate, bindOpen }) => {
     const [input, setInput] = useState('');
 
     const recommendations = [
@@ -102,7 +102,7 @@ const BrowserHome: React.FC<{ onNavigate: (url: string) => void }> = ({ onNaviga
                 {recommendations.map((item) => (
                     <button
                         key={item.name}
-                        onClick={() => onNavigate(item.url)}
+                        {...bindOpen(item.url)}
                         className="flex flex-col items-center gap-2 group active:scale-95 transition-transform"
                     >
                         <div className={`w-14 h-14 ${item.color} rounded-2xl flex items-center justify-center shadow-sm overflow-hidden border border-slate-100 group-hover:shadow-md transition-shadow`}>
@@ -164,11 +164,11 @@ const BrowserView: React.FC<{ url: string }> = ({ url }) => {
 const TabsOverlay: React.FC<{
     tabs: Tab[],
     activeTabId: string,
-    onCloseTab: (id: string, e: React.MouseEvent) => void,
-    onSelectTab: (id: string) => void,
-    onNewTab: () => void,
+    bindCloseTab: (id: string) => React.HTMLAttributes<HTMLElement>,
+    bindSelectTab: (tab: Tab) => React.HTMLAttributes<HTMLElement>,
+    newTab: React.HTMLAttributes<HTMLElement>,
     onCloseOverlay: () => void
-}> = ({ tabs, activeTabId, onCloseTab, onSelectTab, onNewTab, onCloseOverlay }) => {
+}> = ({ tabs, activeTabId, bindCloseTab, bindSelectTab, newTab, onCloseOverlay }) => {
     return (
         <div className="absolute inset-0 z-[1000] bg-slate-900/95 backdrop-blur-xl flex flex-col animate-in slide-in-from-bottom" style={{ animationDuration: 'var(--app-duration-medium)' }}>
             <div className="h-16 flex items-center justify-between px-6 shrink-0">
@@ -180,7 +180,7 @@ const TabsOverlay: React.FC<{
                 {tabs.map((tab) => (
                     <div
                         key={tab.id}
-                        onClick={() => onSelectTab(tab.id)}
+                        {...bindSelectTab(tab)}
                         className={`aspect-[3/4] rounded-2xl p-4 flex flex-col relative overflow-hidden transition-all ${tab.id === activeTabId ? 'ring-4 ring-blue-500 scale-100' : 'bg-white/10 scale-95'}`}
                     >
                         <div className="flex-1 bg-white/5 rounded-lg flex items-center justify-center mb-2">
@@ -189,7 +189,7 @@ const TabsOverlay: React.FC<{
                         <div className="text-xs text-white font-medium truncate mb-1">{tab.title || '新标签页'}</div>
                         <div className="text-[10px] text-white/40 truncate">{tab.url}</div>
                         <button
-                            onClick={(e) => onCloseTab(tab.id, e)}
+                            {...bindCloseTab(tab.id)}
                             className="absolute top-2 right-2 w-7 h-7 bg-black/40 rounded-full flex items-center justify-center text-white"
                         >
                             <IcClose size={14} />
@@ -197,7 +197,7 @@ const TabsOverlay: React.FC<{
                     </div>
                 ))}
                 <button
-                    onClick={onNewTab}
+                    {...newTab}
                     className="aspect-[3/4] rounded-2xl border-2 border-dashed border-white/20 flex flex-col items-center justify-center gap-2 text-white/40 active:bg-white/5 transition-colors"
                 >
                     <IcAdd size={32} />
@@ -210,7 +210,7 @@ const TabsOverlay: React.FC<{
 
 // --- Main App Logic ---
 const BrowserContent: React.FC = () => {
-    const { nav, back, bindBack } = useBrowserGestures();
+    const { nav, back, bindBack, bindNav, bindTap } = useBrowserGestures();
     const location = useLocation();
     const { navigator } = React.useContext(UNSAFE_NavigationContext);
 
@@ -236,7 +236,7 @@ const BrowserContent: React.FC = () => {
         }
     }, [activeTab.url, trackVisitedUrl]);
 
-    const handleNavigate = (input: string) => {
+    const toUrl = (input: string) => {
         let target = input.trim();
         if (!target.startsWith('http')) {
             if (target.includes('.') && !target.includes(' ')) {
@@ -245,18 +245,35 @@ const BrowserContent: React.FC = () => {
                 target = `https://www.bing.com/search?q=${encodeURIComponent(target)}`;
             }
         }
-        navigateTab(activeTabId, target);
+        return target;
+    };
+
+    const handleNavigate = (input: string) => {
+        navigateTab(activeTabId, toUrl(input));
         nav.push(routes.view);
     };
 
-    const handleNewTab = () => {
-        storeAddTab();
-        setIsTabsOverlayOpen(false);
-        nav.replace(routes.home);
+    const bindOpenUrl = (input: string) => bindNav(routes.view, { beforeTrigger: () => navigateTab(activeTabId, toUrl(input)) });
+
+    const bindSelectTab = (tab: { id: string; url?: string }) => {
+        const select = () => {
+            setActiveTabId(tab.id);
+            setIsTabsOverlayOpen(false);
+        };
+        return tab.url
+            ? bindNav(routes.view, { beforeTrigger: select })
+            : bindNav(routes.home, { replace: true, beforeTrigger: select });
     };
 
-    const handleCloseTab = (id: string, e: React.MouseEvent) => {
-        e.stopPropagation();
+    const newTab = bindNav(routes.home, {
+        replace: true,
+        beforeTrigger: () => {
+            storeAddTab();
+            setIsTabsOverlayOpen(false);
+        },
+    });
+
+    const handleCloseTab = (id: string) => {
         const result = storeCloseTab(id);
         if (id === activeTabId || tabs.length === 1) {
             if (result.newActiveTabHasUrl) {
@@ -278,7 +295,7 @@ const BrowserContent: React.FC = () => {
             {/* Content */}
             <div className="flex-1 relative flex flex-col overflow-hidden">
                 <Routes>
-                    <Route path="/" element={<BrowserHome onNavigate={handleNavigate} />} />
+                    <Route path="/" element={<BrowserHome onNavigate={handleNavigate} bindOpen={bindOpenUrl} />} />
                     <Route path="/view" element={<BrowserView url={activeTab.url} />} />
                 </Routes>
             </div>
@@ -302,12 +319,14 @@ const BrowserContent: React.FC = () => {
                 </button>
 
                 <button
-                    onClick={() => {
-                        if (activeTab.url) {
-                            storeGoHome(activeTabId);
-                        }
-                        nav.replace(routes.home);
-                    }}
+                    {...bindNav(routes.home, {
+                        replace: true,
+                        beforeTrigger: () => {
+                            if (activeTab.url) {
+                                storeGoHome(activeTabId);
+                            }
+                        },
+                    })}
                     className={`w-14 h-14 flex items-center justify-center rounded-[20px] transition-all ${location.pathname === '/' ? 'bg-blue-500 text-white shadow-lg' : 'text-slate-500 active:bg-slate-50'}`}
                 >
                     <IcHome size={dimens.bottom_home_icon_size} />
@@ -331,18 +350,13 @@ const BrowserContent: React.FC = () => {
                 <TabsOverlay
                     tabs={tabs}
                     activeTabId={activeTabId}
-                    onCloseTab={handleCloseTab}
-                    onSelectTab={(id) => {
-                        setActiveTabId(id);
-                        setIsTabsOverlayOpen(false);
-                        const target = tabs.find(t => t.id === id);
-                        if (target?.url) {
-                            nav.push(routes.view);
-                        } else {
-                            nav.replace(routes.home);
-                        }
-                    }}
-                    onNewTab={handleNewTab}
+                    bindCloseTab={(id) => bindTap({ kind: 'action', id: 'browser.tabs.item.close' }, {
+                        params: { id },
+                        stopPropagation: true,
+                        onTrigger: () => handleCloseTab(id),
+                    })}
+                    bindSelectTab={bindSelectTab}
+                    newTab={newTab}
                     onCloseOverlay={() => setIsTabsOverlayOpen(false)}
                 />
             )}

@@ -11,20 +11,20 @@ import { routes } from '../routes';
 export type NotesTab = 'notes' | 'todo';
 
 export const BottomTabBar: React.FC<{ active: NotesTab }> = ({ active }) => {
-  const { nav } = useNotesGestures();
+  const { bindNav } = useNotesGestures();
   const bottomPad = bottomGestureHeight;
   const s = useAppStrings(strings, stringsEn);
 
   const Tab: React.FC<{
     tab: NotesTab;
     label: string;
-    onClick: () => void;
-  }> = ({ tab, label, onClick }) => {
+    bind: React.ButtonHTMLAttributes<HTMLButtonElement>;
+  }> = ({ tab, label, bind }) => {
     const isActive = tab === active;
     const labelColor = isActive ? '#000' : colors.text_secondary;
     return (
       <button
-        onClick={onClick}
+        {...bind}
         className="flex flex-col items-center justify-center gap-1 flex-1 h-full active:opacity-70"
         aria-current={isActive ? 'page' : undefined}
       >
@@ -42,12 +42,12 @@ export const BottomTabBar: React.FC<{ active: NotesTab }> = ({ active }) => {
         <Tab
           tab="notes"
           label={s.notes}
-          onClick={() => nav.replace(routes.home)}
+          bind={bindNav(routes.home, { replace: true })}
         />
         <Tab
           tab="todo"
           label={s.todo}
-          onClick={() => nav.replace(routes.todo)}
+          bind={bindNav(routes.todo, { replace: true })}
         />
       </div>
     </div>

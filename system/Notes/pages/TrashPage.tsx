@@ -29,9 +29,9 @@ function snippet(text: string) {
 
 const TrashCard: React.FC<{
   note: Note;
-  onOpen: () => void;
+  openBind: React.ButtonHTMLAttributes<HTMLButtonElement>;
   onActions: () => void;
-}> = ({ note, onOpen, onActions }) => {
+}> = ({ note, openBind, onActions }) => {
   const s = useAppStrings(strings, stringsEn);
   const title = note.title.trim() || s.untitled;
   const content = snippet(note.content);
@@ -40,7 +40,7 @@ const TrashCard: React.FC<{
   return (
     <div className="bg-app-surface rounded-[16px] px-5 py-4 shadow-[0_1px_0_rgba(0,0,0,0.04)] mb-3">
       <div className="flex items-start justify-between gap-3">
-        <button className="flex-1 text-left active:opacity-80" onClick={onOpen}>
+        <button className="flex-1 text-left active:opacity-80" {...openBind}>
           <div className="text-[16px] font-medium text-black truncate">{title}</div>
           <div className="mt-2 text-[13px] truncate" style={{ color: colors.text_secondary }}>
             {content || s.no_content}
@@ -62,7 +62,7 @@ const TrashCard: React.FC<{
 };
 
 export const TrashPage: React.FC = () => {
-  const { nav, bindBack } = useNotesGestures();
+  const { bindNav, bindBack } = useNotesGestures();
   const trashedNotes = useNotesStore(selectTrashedNotes);
   const restoreNote = useNotesStore(s => s.restoreNote);
   const deleteNoteForever = useNotesStore(s => s.deleteNoteForever);
@@ -141,7 +141,7 @@ export const TrashPage: React.FC = () => {
               <TrashCard
                 key={n.id}
                 note={n}
-                onOpen={() => nav.push(routes.note, { id: n.id })}
+                openBind={bindNav(routes.note, { params: { id: n.id } })}
                 onActions={() => setActive(n)}
               />
             ))

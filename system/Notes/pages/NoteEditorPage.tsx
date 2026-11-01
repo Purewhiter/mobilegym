@@ -56,7 +56,7 @@ function formatHeaderTime(timestamp: number, s: typeof strings) {
 
 export const NoteEditorPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const { back, bindBack, nav } = useNotesGestures();
+  const { back, bindBack, bindTap, nav } = useNotesGestures();
   const {
     notes,
     folders,
@@ -263,7 +263,7 @@ export const NoteEditorPage: React.FC = () => {
       <div className="shrink-0 bg-app-surface" style={{ paddingTop: topPad }}>
         <div className="h-12 px-4 flex items-center">
           <button
-            onClick={handleDone}
+            {...bindTap({ kind: 'action', id: 'notes.editor.back' }, { onTrigger: handleDone })}
             className="w-10 h-10 -ml-2 flex items-center justify-center active:opacity-70"
             aria-label={s.action_back}
           >
@@ -289,7 +289,7 @@ export const NoteEditorPage: React.FC = () => {
                 <IcRedo size={22} className="text-[#c8c8c8]" />
               </button>
               <button
-                onClick={handleDone}
+                {...bindTap({ kind: 'action', id: 'notes.editor.done' }, { onTrigger: handleDone })}
                 className="w-10 h-10 -mr-1 flex items-center justify-center active:opacity-70"
                 aria-label={s.action_done}
               >
@@ -342,12 +342,14 @@ export const NoteEditorPage: React.FC = () => {
                 </button>
                 <button
                   className="h-9 px-4 rounded-[14px] bg-app-surface text-[14px] text-[#ff3b30] active:opacity-80"
-                  onClick={() => {
-                    const ok = window.confirm(s.confirm_permanent_delete);
-                    if (!ok) return;
-                    deleteNoteForever(existing.id);
-                    nav.replace(routes.trash);
-                  }}
+                  {...bindTap({ kind: 'action', id: 'notes.editor.deleteForever' }, {
+                    onTrigger: () => {
+                      const ok = window.confirm(s.confirm_permanent_delete);
+                      if (!ok) return;
+                      deleteNoteForever(existing.id);
+                      nav.replace(routes.trash);
+                    },
+                  })}
                 >
                   {s.action_permanent_delete}
                 </button>

@@ -68,7 +68,7 @@ const ThemeStoreNavigationHandler: React.FC = () => {
 function ThemeStoreHomePage() {
   const s = useAppStrings(strings, stringsEn);
   const { themeService, version } = useTheme();
-  const { nav } = useThemeStoreGestures();
+  const { bindNav } = useThemeStoreGestures();
   const [tab, setTab] = useState<StoreTab>('themes');
   const [items, setItems] = useState<ThemeMeta[]>([]);
   const [loading, setLoading] = useState(true);
@@ -194,7 +194,7 @@ function ThemeStoreHomePage() {
                 <button
                   key={themeMeta.id}
                   className="bg-app-surface rounded-2xl overflow-hidden border border-black/5 shadow-sm text-left"
-                  onClick={() => nav.push(routes.item, { kind: tab === 'themes' ? 'theme' : tab === 'fonts' ? 'font' : 'aod', id: themeMeta.id })}
+                  {...bindNav(routes.item, { params: { kind: tab === 'themes' ? 'theme' : tab === 'fonts' ? 'font' : 'aod', id: themeMeta.id } })}
                 >
                   <div className="h-(--app-card-preview-height) w-full bg-black/5">
                     {previewUrl ? <img src={previewUrl} alt={themeMeta.title} className="h-full w-full object-cover" /> : null}

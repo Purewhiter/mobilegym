@@ -20,7 +20,7 @@ interface ContactOption {
 }
 
 export const NewMessagePage: React.FC = () => {
-    const { nav, bindBack } = useSmsGestures();
+    const { nav, bindBack, bindTap } = useSmsGestures();
     const s = useAppStrings(strings, stringsEn);
     const location = useLocation();
     const { activityId } = useActivityContext();
@@ -214,7 +214,7 @@ export const NewMessagePage: React.FC = () => {
                             <button
                                 className={`w-11 h-11 flex items-center justify-center rounded-full ${canSend ? 'bg-app-primary' : 'bg-gray-200'}`}
                                 onPointerDown={(e) => e.preventDefault()}
-                                onClick={handleSend}
+                                {...bindTap({ kind: 'action', id: 'sms.newMessage.send' }, { onTrigger: handleSend })}
                                 aria-disabled={!canSend}
                             >
                                 <SendArrowIcon active={canSend} />

@@ -15,7 +15,7 @@ const toYmd = (d: Date) => {
 };
 
 export const CalendarDateJumpPage: React.FC = () => {
-  const { nav, bindBack } = useCalendarGestures();
+  const { nav, bindBack, bindTap } = useCalendarGestures();
   const selectedDate = useCalendarStore(selectSelectedDate);
   const setSelectedDate = useCalendarStore(s => s.setSelectedDate);
   const s = useAppStrings(strings, stringsEn);
@@ -52,7 +52,7 @@ export const CalendarDateJumpPage: React.FC = () => {
         </div>
 
         <button
-          onClick={apply}
+          {...bindTap({ kind: 'action', id: 'calendar.dateJump.confirm' }, { onTrigger: apply })}
           className="mt-6 w-full bg-[#3482FF] text-white rounded-2xl py-3 text-[16px] active:opacity-90"
         >
           {s.calculate_jump}

@@ -16,7 +16,7 @@ import { routes } from '../routes';
 const calIcon = (name: string) => name ? `/@app-assets/Calendar/icons/${name}.svg` : '';
 
 export const CalendarNewEventPage: React.FC = () => {
-    const { back, nav, bindBack } = useCalendarGestures();
+    const { back, nav, bindBack, bindTap } = useCalendarGestures();
     const { eventId } = useParams();
     const selectedDate = useCalendarStore(selectSelectedDate);
     const { settings, createEvent, setSelectedDate, updateEvent, events } = useCalendarStore(
@@ -240,7 +240,7 @@ export const CalendarNewEventPage: React.FC = () => {
                         <MaskIcon src={calIcon('miuix_action_icon_immersion_close_light')} size={22} />
                     </span>
                 </button>
-                <button onClick={handleSave} className="p-2 text-black dark:text-white">
+                <button {...bindTap({ kind: 'action', id: 'calendar.eventEditor.save' }, { onTrigger: handleSave })} className="p-2 text-black dark:text-white">
                     <span className="text-gray-700 dark:text-gray-200">
                         <MaskIcon src={calIcon('miuix_action_icon_immersion_done_light')} size={22} />
                     </span>

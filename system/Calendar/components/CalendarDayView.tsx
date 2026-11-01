@@ -9,7 +9,7 @@ interface CalendarDayViewProps {
         subtitle?: string;
         isHoliday?: boolean;
         daysLeft?: string;
-        onClick?: () => void;
+        bind?: React.ButtonHTMLAttributes<HTMLButtonElement>;
     }>;
 }
 
@@ -77,7 +77,7 @@ export const CalendarDayView: React.FC<CalendarDayViewProps> = ({ date, agendaIt
                         subtitle={item.subtitle}
                         daysLeft={item.daysLeft}
                         isHoliday={item.isHoliday}
-                        onClick={item.onClick}
+                        bind={item.bind}
                     />
                 ))}
             </div>

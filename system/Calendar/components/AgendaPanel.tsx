@@ -9,7 +9,7 @@ interface AgendaItem {
     daysLeft?: string;
     isHoliday?: boolean;
     color?: string;
-    onClick?: () => void;
+    bind?: React.ButtonHTMLAttributes<HTMLButtonElement>;
 }
 
 interface AgendaPanelProps {
@@ -36,7 +36,7 @@ export const AgendaPanel: React.FC<AgendaPanelProps> = ({ lunarTitle, lunarSubti
                         subtitle={item.subtitle}
                         daysLeft={item.daysLeft}
                         isHoliday={item.isHoliday}
-                        onClick={item.onClick}
+                        bind={item.bind}
                     />
                 ))}
             </div>

@@ -35,28 +35,16 @@ export const SettingsItem: React.FC<SettingsItemProps> = ({
     onValueChange,
     showDivider = true,
 }) => {
-    const { nav } = useSmsGestures();
+    const { bindNav } = useSmsGestures();
 
-    const handleClick = () => {
-        if (!isToggle(item) && item.targetPage) {
-            if (item.targetPage === '/settings/free-network-sms') {
-                nav.push(routes.settingsFreeNetworkSms);
-                return;
-            }
-            if (item.targetPage === '/settings/advanced') {
-                nav.push(routes.settingsAdvanced);
-                return;
-            }
-            if (item.targetPage === '/settings/5g-message') {
-                nav.push(routes.settings5gMessage);
-                return;
-            }
-            if (item.targetPage.startsWith('/settings/')) {
-                nav.push(routes.settingsPlaceholder);
-                return;
-            }
-        }
-    };
+    const openTarget = (() => {
+        if (isToggle(item) || !item.targetPage) return undefined;
+        if (item.targetPage === '/settings/free-network-sms') return bindNav(routes.settingsFreeNetworkSms);
+        if (item.targetPage === '/settings/advanced') return bindNav(routes.settingsAdvanced);
+        if (item.targetPage === '/settings/5g-message') return bindNav(routes.settings5gMessage);
+        if (item.targetPage.startsWith('/settings/')) return bindNav(routes.settingsPlaceholder);
+        return undefined;
+    })();
 
     const isToggleItem = isToggle(item);
     const currentValue = value ?? false;
@@ -65,7 +53,7 @@ export const SettingsItem: React.FC<SettingsItemProps> = ({
         <div>
             <div
                 className={`flex items-center px-5 py-3.5 ${!isToggleItem ? 'active:bg-gray-50' : ''}`}
-                onClick={!isToggleItem ? handleClick : undefined}
+                {...openTarget}
             >
                 <div className="flex-1 min-w-0">
                     <div className="text-[16px] text-app-text">{item.title}</div>

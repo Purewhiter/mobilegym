@@ -176,7 +176,7 @@ const EditingTodoItem: React.FC<{
 );
 
 export const TodoListPage: React.FC = () => {
-  const { nav } = useNotesGestures();
+  const { bindNav } = useNotesGestures();
   const { todos, addTodo, toggleTodo, deleteTodo, updateTodoText } = useNotesStore(
     useShallow(s => ({
       todos: s.todos,
@@ -255,9 +255,7 @@ export const TodoListPage: React.FC = () => {
           <div className="flex justify-end items-center gap-3">
             <button
               className="w-10 h-10 flex items-center justify-center active:opacity-70"
-              onClick={() => {
-                nav.push(routes.settings);
-              }}
+              {...bindNav(routes.settings)}
               aria-label={s.settings}
             >
               <IcSettings size={22} className="text-black" />

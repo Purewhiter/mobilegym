@@ -6,19 +6,20 @@ export interface AgendaEventItemProps {
     color?: string;
     isHoliday?: boolean;
     daysLeft?: string;
-    onClick?: () => void;
+    /** Tap binding from the page (bindNav), which tags the item for tooling. */
+    bind?: React.ButtonHTMLAttributes<HTMLButtonElement>;
 }
 
 export const AgendaEventItem: React.FC<AgendaEventItemProps> = ({
     title,
     subtitle,
     daysLeft,
-    onClick,
+    bind,
 }) => {
     return (
         <button
             type="button"
-            onClick={onClick}
+            {...bind}
             className="w-full text-left flex items-center bg-app-surface dark:bg-[#2c2c2e] px-4 py-3.5 rounded-2xl active:bg-black/5 dark:active:bg-white/5"
         >
             <div className="flex-1 min-w-0">

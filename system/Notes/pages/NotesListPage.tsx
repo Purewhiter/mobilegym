@@ -52,10 +52,11 @@ const NoteCard: React.FC<{
   note: Note;
   selectionMode: boolean;
   selected: boolean;
-  onOpen: () => void;
+  /** Tap binding that opens the note (bindNav); not applied in selection mode. */
+  openBind: React.ButtonHTMLAttributes<HTMLButtonElement>;
   onToggleSelected: () => void;
   onLongPress: () => void;
-}> = ({ note, selectionMode, selected, onOpen, onToggleSelected, onLongPress }) => {
+}> = ({ note, selectionMode, selected, openBind, onToggleSelected, onLongPress }) => {
   const s = useAppStrings(strings, stringsEn);
   const title = note.title.trim() || s.untitled;
   const content = snippet(note.content);
@@ -107,6 +108,7 @@ const NoteCard: React.FC<{
       ) : null}
 
       <button
+        {...(selectionMode ? {} : openBind)}
         onClick={(e) => {
           if (didLongPressRef.current) {
             didLongPressRef.current = false;
@@ -115,7 +117,7 @@ const NoteCard: React.FC<{
             return;
           }
           if (selectionMode) onToggleSelected();
-          else onOpen();
+          else openBind.onClick?.(e);
         }}
         className="w-full text-left active:scale-[0.99] transition-transform"
         onContextMenu={(e) => {
@@ -182,7 +184,7 @@ const NoteCard: React.FC<{
 };
 
 export const NotesListPage: React.FC = () => {
-  const { nav } = useNotesGestures();
+  const { bindNav } = useNotesGestures();
   const notes = useNotesStore(selectVisibleNotes);
   const { folders, selectedFolderId, setSelectedFolderId, settings, updateNote, deleteNote, hideNote } =
     useNotesStore(
@@ -326,18 +328,14 @@ export const NotesListPage: React.FC = () => {
               <div className="flex justify-end items-center gap-3">
                 <button
                   className="w-10 h-10 flex items-center justify-center active:opacity-70"
-                  onClick={() => {
-                    nav.push(routes.folders);
-                  }}
+                  {...bindNav(routes.folders)}
                   aria-label={s.folders}
                 >
                   <IcFolder size={22} className="text-black" />
                 </button>
                 <button
                   className="w-10 h-10 flex items-center justify-center active:opacity-70"
-                  onClick={() => {
-                    nav.push(routes.settings);
-                  }}
+                  {...bindNav(routes.settings)}
                   aria-label={s.settings}
                 >
                   <IcSettings size={22} className="text-black" />
@@ -388,7 +386,7 @@ export const NotesListPage: React.FC = () => {
                   note={note}
                   selectionMode={selectionMode}
                   selected={selectedNoteIds.has(note.id)}
-                  onOpen={() => nav.push(routes.note, { id: note.id })}
+                  openBind={bindNav(routes.note, { params: { id: note.id } })}
                   onToggleSelected={() => toggleSelected(note.id)}
                   onLongPress={() => startSelection(note.id)}
                 />
@@ -402,7 +400,7 @@ export const NotesListPage: React.FC = () => {
                   note={note}
                   selectionMode={selectionMode}
                   selected={selectedNoteIds.has(note.id)}
-                  onOpen={() => nav.push(routes.note, { id: note.id })}
+                  openBind={bindNav(routes.note, { params: { id: note.id } })}
                   onToggleSelected={() => toggleSelected(note.id)}
                   onLongPress={() => startSelection(note.id)}
                 />
@@ -420,7 +418,7 @@ export const NotesListPage: React.FC = () => {
       {/* Floating action button */}
       {!selectionMode ? (
         <button
-          onClick={() => nav.push(routes.note, { id: 'new' })}
+          {...bindNav(routes.note, { params: { id: 'new' } })}
           className="absolute rounded-full text-white shadow-2xl flex items-center justify-center active:scale-95 transition-transform"
           style={{
             bottom: fabBottom,

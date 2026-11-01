@@ -25,7 +25,7 @@ const formatRangeCN = (startTs: number, endTs: number, allDay: boolean, allDayLa
 };
 
 export const CalendarEventDetailPage: React.FC = () => {
-  const { back, bindBack, bindNav } = useCalendarGestures();
+  const { back, bindBack, bindNav, bindTap } = useCalendarGestures();
   const { eventId } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
   const showDeleteConfirm = searchParams.get('deleteConfirm') === 'open';
@@ -150,18 +150,20 @@ export const CalendarEventDetailPage: React.FC = () => {
             <div className="h-px bg-gray-200 dark:bg-white/10" />
             <div className="flex">
               <button
-                onClick={() => back()}
+                {...bindTap({ kind: 'action', id: 'calendar.eventDetail.deleteCancel' }, { onTrigger: () => back() })}
                 className="flex-1 py-3 text-[16px] text-blue-500 active:bg-gray-100 dark:active:bg-white/5"
               >
                 {s.cancel}
               </button>
               <div className="w-px bg-gray-200 dark:bg-white/10" />
               <button
-                onClick={() => {
-                  deleteEvent(event.id);
-                  back(); // close dialog
-                  setTimeout(() => back(), 50); // go back to previous page
-                }}
+                {...bindTap({ kind: 'action', id: 'calendar.eventDetail.delete' }, {
+                  onTrigger: () => {
+                    deleteEvent(event.id);
+                    back(); // close dialog
+                    setTimeout(() => back(), 50); // go back to previous page
+                  },
+                })}
                 className="flex-1 py-3 text-[16px] text-red-500 font-semibold active:bg-gray-100 dark:active:bg-white/5"
               >
                 删除

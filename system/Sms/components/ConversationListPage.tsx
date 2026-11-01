@@ -16,10 +16,12 @@ const smsIcon = (name: string) => name ? `/@app-assets/Sms/icons/${name}.svg` : 
 const ToolbarIcon: React.FC<{
     icon: React.ReactNode;
     onClick?: () => void;
-}> = ({ icon, onClick }) => (
+    bind?: React.ButtonHTMLAttributes<HTMLButtonElement>;
+}> = ({ icon, onClick, bind }) => (
     <button
         className="w-10 h-10 flex items-center justify-center text-gray-700 hover:bg-gray-100 rounded-full"
         onClick={onClick}
+        {...bind}
     >
         {icon}
     </button>
@@ -33,7 +35,7 @@ const SmsIcon: React.FC<{ name: string; size?: number }> = ({ name, size = 24 })
 };
 
 export const ConversationListPage: React.FC = () => {
-    const { nav } = useSmsGestures();
+    const { bindNav } = useSmsGestures();
     const { conversations, messagesByConversationId } = useSmsProviderState();
     const s = useAppStrings(strings, stringsEn);
     const [query, setQuery] = React.useState('');
@@ -70,20 +72,13 @@ export const ConversationListPage: React.FC = () => {
             longPressRef.current = null;
         }
     };
-    const handleConversationClick = (conversationId: string) => {
+    // A tap that ends a long press (which opened the menu) does not open the conversation.
+    const handleConversationClick = (event: React.MouseEvent<HTMLElement>, open: React.HTMLAttributes<HTMLElement>) => {
         if (longPressFiredRef.current) {
             longPressFiredRef.current = false;
             return;
         }
-        nav.push(routes.conversation, { conversationId });
-    };
-
-    const handleNewMessage = () => {
-        nav.push(routes.new);
-    };
-
-    const handleSettings = () => {
-        nav.push(routes.settings);
+        open.onClick?.(event);
     };
 
     const showToast = (message: string) => {
@@ -118,7 +113,7 @@ export const ConversationListPage: React.FC = () => {
                         showToast(n > 0 ? `${s.toast_cleared_prefix}${n}${s.toast_cleared_suffix}` : s.toast_no_unread);
                     }}
                 />
-                <ToolbarIcon icon={<SmsIcon name="action_bar_setting" />} onClick={handleSettings} />
+                <ToolbarIcon icon={<SmsIcon name="action_bar_setting" />} bind={bindNav(routes.settings)} />
             </div>
 
             {/* Title */}
@@ -156,12 +151,14 @@ export const ConversationListPage: React.FC = () => {
                     filteredConversations.map((conversation) => {
                         const msgs = messagesByConversationId[conversation.id];
                         const lastMsg = msgs && msgs.length > 0 ? msgs[msgs.length - 1].content : '';
+                        const open = bindNav(routes.conversation, { params: { conversationId: conversation.id } });
                         return (
                             <ConversationItem
                                 key={conversation.id}
                                 conversation={conversation}
                                 preview={lastMsg}
-                                onClick={() => handleConversationClick(conversation.id)}
+                                bind={open}
+                                onClick={(event) => handleConversationClick(event, open)}
                                 onPointerDown={() => handlePointerDown(conversation)}
                                 onPointerUp={cancelLongPress}
                                 onPointerCancel={cancelLongPress}
@@ -212,7 +209,7 @@ export const ConversationListPage: React.FC = () => {
             {/* FAB - New message button */}
             <button
                 className="absolute bottom-6 right-6 w-14 h-14 bg-app-primary rounded-full shadow-lg flex items-center justify-center active:bg-[#06A050]"
-                onClick={handleNewMessage}
+                {...bindNav(routes.new)}
             >
                 <IcAdd size={28} className="text-white" />
             </button>
