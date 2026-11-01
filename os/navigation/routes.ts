@@ -33,9 +33,18 @@ export interface AppRoute<P extends string = string, S extends SearchSpec = Sear
   readonly name: string;
   readonly path: P;
   readonly search: S;
+  /** What the page is, for people and tools reading the graph ("历史会议详情"). */
+  readonly description?: string;
+  /** What a UI state shows, keyed by its query ("dialog=chat": "会议聊天弹窗"). */
+  readonly states?: Readonly<Record<string, string>>;
 }
 
-type RouteDefs = Record<string, { readonly path: string; readonly search?: SearchSpec }>;
+type RouteDefs = Record<string, {
+  readonly path: string;
+  readonly search?: SearchSpec;
+  readonly description?: string;
+  readonly states?: Readonly<Record<string, string>>;
+}>;
 
 export type RouteTable<T extends RouteDefs> = {
   readonly [K in keyof T]: AppRoute<T[K]['path'], T[K]['search'] extends SearchSpec ? T[K]['search'] : Record<never, never>>;
@@ -44,7 +53,7 @@ export type RouteTable<T extends RouteDefs> = {
 export function defineRoutes<const T extends RouteDefs>(defs: T): RouteTable<T> {
   const table: Record<string, AppRoute> = {};
   for (const [name, def] of Object.entries(defs)) {
-    table[name] = { name, path: def.path, search: def.search ?? {} };
+    table[name] = { name, path: def.path, search: def.search ?? {}, description: def.description, states: def.states };
   }
   return table as RouteTable<T>;
 }

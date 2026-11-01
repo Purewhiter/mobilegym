@@ -6,7 +6,7 @@ Generated artifacts are files produced by scripts from source declarations or li
 
 | Artifact | Generator | Output |
 |---|---|---|
-| Explored navigation graph | `python scripts/explore_nav_graph.py <url> <appId> out.json` | the JSON file you name (states, tap and back targets) |
+| Explored navigation graph | `python scripts/explore_nav_graph.py <url> <appId> out.json` | the JSON file you name (page nodes, edges with tap and back targets, unreached routes, action paths) |
 | App state schema | `python scripts/dev/dump_app_state_schema.py` | `docs/api/app-state-schema.md` |
 | IME pinyin dictionary | `node scripts/ime/build_pinyin_dict.mjs` | `os/keyboard/pinyinData.ts` |
 

@@ -22,7 +22,7 @@ export const JoinMeetingPage: React.FC = () => {
     const ongoingMeetings = useMeetingStore(s => s.ongoingMeetings);
     const settings = useMeetingStore(s => s.settings);
     const validateMeetingId = (id: string) => ongoingMeetings.find(m => m.meetingId === id.replace(/\s/g, '')) ?? null;
-    const { bindBack, nav } = useMeetingGestures();
+    const { bindBack, bindTap, nav } = useMeetingGestures();
     const s = useTencentMeetingStrings();
 
     const [meetingId, setMeetingId] = useState('');
@@ -165,7 +165,7 @@ export const JoinMeetingPage: React.FC = () => {
             {/* Submit — flex child, adjustResize handles keyboard offset */}
             <div className="flex-shrink-0 px-4 py-3 bg-white">
                 <button
-                    onClick={handleJoinMeeting}
+                    {...bindTap({ kind: 'action', id: 'join.meeting.submit' }, { onTrigger: handleJoinMeeting })}
                     disabled={!canJoin}
                     className={`w-full py-3 rounded-lg font-medium text-white ${canJoin ? 'bg-[#2f6bff] active:bg-[#2458d6]' : 'bg-[#b7d0ff]'}`}
                 >

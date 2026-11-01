@@ -151,6 +151,10 @@ interface SimApi {
   /** 定向预加载指定 app 的 state 模块 */
   preloadAppStores(appIds: string[]): Promise<void>;
   waitForData(appIds?: string[]): Promise<void>;
+  /** The app's route table (os/navigation/routeTables.ts), or null when it has none. */
+  getRouteTable(appId: string): Promise<import('../navigation/routes').AppRoute[] | null>;
+  /** Name of the app's route a pathname renders, matched as react-router does, or null. */
+  matchRoute(appId: string, pathname: string): Promise<string | null>;
   /** Resolve once the screen has caught up with the last input (os/idle.ts). */
   waitForIdle(options?: import('../idle').WaitForIdleOptions): Promise<import('../idle').WaitForIdleResult>;
   /** Seed for RandomService; set per episode by the benchmark (os/RandomService.ts). */
@@ -272,6 +276,8 @@ declare global {
   interface AppRouteInfo {
     app: string;
     path: string;
+    /** Index of this entry in the app's history (grows on push, same on replace). */
+    depth?: number;
   }
 
   type RequestIdleCallbackHandle = number;

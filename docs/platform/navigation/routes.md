@@ -9,14 +9,20 @@ Every app keeps a **route table** (`routes.ts`): its pages and the finite UI sta
 import { defineRoutes } from '../../os/navigation/routes';
 
 export const routes = defineRoutes({
-  home: { path: '/' },
-  meeting: { path: '/meeting', search: { dialog: ['chat', 'exit'] } },
-  historyDetail: { path: '/history/:meetingId' },
+  home: { path: '/', description: '会议主页' },
+  meeting: {
+    path: '/meeting',
+    search: { dialog: ['chat', 'exit'] },
+    description: '会议进行中',
+    states: { 'dialog=chat': '会议聊天弹窗', 'dialog=exit': '退出会议弹窗' },
+  },
+  historyDetail: { path: '/history/:meetingId', description: '历史会议详情' },
 });
 ```
 
 - `path` uses react-router syntax; `:param` segments are typed and required when jumping there.
 - `search` lists the values a query key can take for discrete UI states (tabs, dialogs, sheets). Keys left out of `search` (a search keyword, an item id) accept any value.
+- `description` and `states` (optional) say what the page and each of its UI states show; they name the nodes of the explored graph. When `states` is given it is the list of states the page really has (`tab=all&sub=system`), otherwise every declared value of each key is one.
 - Every path must also be registered in the app's `<Routes>`.
 
 ## Jumping
@@ -56,14 +62,20 @@ Semantics:
 
 ## Exploring an app's graph
 
-There is no static graph. [`scripts/explore_nav_graph.py`](../../../scripts/explore_nav_graph.py) builds one from a running simulator:
+There is no hand-written graph. [`scripts/explore_nav_graph.py`](../../../scripts/explore_nav_graph.py) builds one from a running simulator:
 
 ```bash
 python scripts/explore_nav_graph.py http://localhost:3000/ tencent_meeting out.json
 python scripts/explore_nav_graph.py --diff before.json after.json
 ```
 
-From every reachable URL it taps each tagged element, records where the tap lands and where system back then lands (`HOME` when back leaves the app), and queues new URLs. Each state is reached again from a reset simulator with frozen simulated time (`--sim-time`), so taps that change data (cancel a meeting) do not break later paths and time labels match. Controls that need typed input first (a meeting number) are not followed. Use the diff before and after any navigation change.
+- **Nodes are pages, not URLs.** Each URL is matched to the route table the way react-router matches it (`__SIM__.matchRoute`); a node is a route plus the UI state its query declares (`/meeting?dialog=chat`). A photo page is one node however many photos there are.
+- **Edges** merge the controls with one tag on a page: source, target, tag id, gesture, push / replace (whether the app's history grew; `activity` when a new activity opened on top), where system back then lands, the controls' text (or their row's, for a switch or icon), and how many were tapped, found COVERED by an overlay, or not tested because the page could not be reached again.
+- **What is explored is bounded and set in `scripts/explore_config/<appId>.json`**: `instancesPerRoute` (instances visited per node, default 2; an instance is a URL plus the controls it shows and their text, so a meeting page reached as host (with “结束会议”) and as guest counts twice), `tapsPerGroup` (controls of one tag tapped per page, default 2), `skip` (ids never tapped), `prefer` (params tapped first, for controls only some items show: a meeting the user hosted) and `inputs` (text typed on a page before tapping, such as a meeting number).
+- Every tap starts from a reset simulator with frozen simulated time (`--sim-time`), reaching its page again by the recorded taps, and every input waits for `__SIM__.waitForIdle`, so two runs on the same build give the same graph.
+- The output also lists routes or declared states never reached (`unreached`: states in `states` must be reached exactly, otherwise each declared value must appear in some reached node), URLs no route matches (`unmatched`), controls that could not be tested, the actions on each node, and for each action the shortest tap path from the start page (`tasks`, the old declarations' action tasks).
+
+Use the diff before and after any navigation change, and read `unreached`: a state missing there usually means a control without a tag, a dialog kept in `useState`, or a page that needs a config entry.
 
 ## How the migration was checked
 

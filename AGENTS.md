@@ -99,7 +99,7 @@ Python-based evaluation framework using Playwright. Tasks are organized into sui
 ### Scripts (`scripts/`)
 
 - **`ime/build_pinyin_dict.mjs`** — Generates IME pinyin dictionary from Rime dict sources
-- **`explore_nav_graph.py`** — Explores a running app's navigation (taps tagged elements, records tap and back targets) and diffs two builds
+- **`explore_nav_graph.py`** — Explores a running app's navigation per page (route + UI state, bounded by `scripts/explore_config/<appId>.json`), records tap and back targets, unreached routes and shortest action paths, and diffs two builds
 - **`lint_store_getters.mjs`** — Detects query getter functions in store actions and consumer subscriptions to them (violating the "Query-style getters in actions" rule in `docs/platform/state/model.md`). Usage: `node scripts/lint_store_getters.mjs [AppName...]`
 
 ## Key Development Rules

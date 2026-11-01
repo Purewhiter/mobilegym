@@ -45,8 +45,12 @@ export function useAppNavigationHandler(appId: string, options: Options) {
   optionsRef.current = options;
 
   useEffect(() => {
-    routeRef.current = { app: appId, path: location.pathname + location.search };
-  }, [appId, location.pathname, location.search]);
+    routeRef.current = {
+      app: appId,
+      path: location.pathname + location.search,
+      depth: (navigator as { index?: number }).index,
+    };
+  }, [appId, navigator, location.pathname, location.search, location.key]);
 
   useEffect(() => {
     const state = TaskManager.getState();

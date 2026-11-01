@@ -25,6 +25,7 @@ import {
   buildSimState,
 } from '../simState';
 import { runAppDataLoaderModule } from '../appDataLoaderReady';
+import { getRouteTable, matchRoute } from '../navigation/routeTables';
 
 export function buildSimApi(): NonNullable<Window['__SIM__']> {
   return {
@@ -47,6 +48,8 @@ export function buildSimApi(): NonNullable<Window['__SIM__']> {
       preloadAppStores: async (_appIds: string[]) => { /* no-op: eager loaded */ },
       /** Resolve once the screen has caught up with the last input (see os/idle.ts). */
       waitForIdle,
+      getRouteTable,
+      matchRoute,
       /** Seed every RandomService draw of this episode (os/RandomService.ts). */
       setRandomSeed: (seed: number) => RandomService.setSeed(seed),
       getRandomSeed: () => RandomService.getSeed(),
