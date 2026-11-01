@@ -7,7 +7,7 @@ import { routes } from '../../routes';
 
 export const ScanPage: React.FC = () => {
   const t = useWechatStrings();
-  const { bindBack, nav } = useWechatGestures();
+  const { bindBack, bindNav } = useWechatGestures();
 
   return (
     <div
@@ -54,7 +54,7 @@ export const ScanPage: React.FC = () => {
       <div className="flex justify-between items-center px-8 pb-6 pt-0 bg-(--app-c-misc-moments-cover-bg)">
         <button
           type="button"
-          onClick={() => nav.push(routes.meQrcode)}
+          {...bindNav(routes.meQrcode)}
           className="flex flex-col items-center gap-2 active:opacity-80"
         >
           <div className="w-11 h-11 rounded-full bg-app-surface/40 flex items-center justify-center">

@@ -149,6 +149,8 @@ export const ChatDetail: React.FC = () => {
   const location = useLocation();
   const searchParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
   const previewMessageId = searchParams.get('view') === 'preview' ? searchParams.get('preview') : null;
+  // The + panel is a UI state in the URL, so system back closes it first.
+  const showChatPlusMenu = searchParams.get('panel') === 'plus';
   const { user, chats, contacts, sendMessage, sendPat } = useWechatStore(useShallow(s => ({
     user: s.user,
     chats: s.chats,
@@ -181,7 +183,6 @@ export const ChatDetail: React.FC = () => {
   }, [chat?.messages, previewMessageId]);
 
   const [inputValue, setInputValue] = useState('');
-  const [showChatPlusMenu, setShowChatPlusMenu] = useState(false);
   const [chatPlusMenuPage, setChatPlusMenuPage] = useState(0);
   const inputRef = React.useRef<HTMLTextAreaElement>(null);
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
@@ -328,7 +329,7 @@ export const ChatDetail: React.FC = () => {
           if (!start) return;
           const dy = Math.abs(e.clientY - start.y);
           const dt = realNow() - start.t;
-          if (dy < 8 && dt < 300) setShowChatPlusMenu(false);
+          if (dy < 8 && dt < 300) nav.back();
         } : undefined}
       >
         {chat.messages?.map((msg) => (
@@ -358,7 +359,7 @@ export const ChatDetail: React.FC = () => {
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={handleKeyDown}
-            onFocus={() => setShowChatPlusMenu(false)}
+            onFocus={() => { if (showChatPlusMenu) nav.back(); }}
             className="w-full bg-app-surface rounded-[6px] px-3 py-2 text-(--app-chat-bubble-text-size) focus:outline-none min-h-(--app-card-height-40) max-h-(--app-card-height-120) shadow-sm resize-none"
             style={{ lineHeight: '24px' }}
           />
@@ -387,11 +388,16 @@ export const ChatDetail: React.FC = () => {
           <button
             type="button"
             className="p-0 border-0 bg-transparent cursor-pointer flex items-center justify-center"
-            onClick={() => {
-              KeyboardService.hide();
-              inputRef.current?.blur();
-              setShowChatPlusMenu((v) => !v);
-            }}
+            {...(showChatPlusMenu
+              ? bindBack()
+              : bindNav(routes.chat, {
+                  params: { id: targetWxid ?? '' },
+                  search: { panel: 'plus' },
+                  beforeTrigger: () => {
+                    KeyboardService.hide();
+                    inputRef.current?.blur();
+                  },
+                }))}
           >
             <IcAddCircle className="w-7 h-7 stroke-[1.5] active:opacity-50" style={{ color: 'var(--app-c-settings-item-text)' }} />
           </button>
@@ -427,10 +433,11 @@ export const ChatDetail: React.FC = () => {
                       const isAlbumEntry = pageIndex === 0 && i === 0 && Boolean(targetWxid);
                       const isFileEntry = pageIndex === 1 && i === 2 && Boolean(targetWxid);
                       let entryProps: Record<string, any> = {};
+                      // The picker replaces the panel's entry: coming back shows the chat with the panel closed.
                       if (isAlbumEntry && targetWxid) {
-                        entryProps = bindNav(routes.chatMediaPicker, { params: { id: targetWxid }, search: { albumId: 'all' } });
+                        entryProps = bindNav(routes.chatMediaPicker, { params: { id: targetWxid }, search: { albumId: 'all' }, replace: true });
                       } else if (isFileEntry && targetWxid) {
-                        entryProps = bindNav(routes.chatSelectFile, { params: { id: targetWxid } });
+                        entryProps = bindNav(routes.chatSelectFile, { params: { id: targetWxid }, replace: true });
                       }
 
                       return (

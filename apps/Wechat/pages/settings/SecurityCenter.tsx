@@ -99,7 +99,7 @@ const DELETION_CONDITION_KEYS = [
 ];
 
 export const AccountDeletionPage: React.FC = () => {
-  const { bindBack, bindNav } = useWechatGestures();
+  const { bindBack, bindNav, bindTap } = useWechatGestures();
   const [agreed, setAgreed] = useState(false);
   const t = useWechatStrings();
 
@@ -144,7 +144,7 @@ export const AccountDeletionPage: React.FC = () => {
           className={`w-4 h-4 rounded-full border flex items-center justify-center ${
             agreed ? 'bg-[#07c160] border-[#07c160]' : 'border-gray-400'
           }`}
-          onClick={() => setAgreed(!agreed)}
+          {...bindTap({ kind: 'action', id: 'account.delete.agree.toggle' }, { onTrigger: () => setAgreed(!agreed) })}
         >
           {agreed && (
             <svg width="10" height="10" viewBox="0 0 10 10" fill="none">

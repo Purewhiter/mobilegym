@@ -438,6 +438,7 @@ const ChatTabContent: React.FC<{
   onToggle: (choice: FileChoice) => void;
 }> = ({ chats, isSelectedPath, onToggle }) => {
   const t = useWechatStrings();
+  const { bindTap } = useWechatGestures();
 
   const fileMessages = useMemo(() => {
     type Entry = { msg: Message; chatName: string };
@@ -491,7 +492,7 @@ const ChatTabContent: React.FC<{
               <button
                 key={msg.id}
                 type="button"
-                onClick={() => onToggle(choice)}
+                {...bindTap<HTMLButtonElement>({ kind: 'action', id: 'chat.selectFile.item.toggle' }, { params: { path: choice.path }, onTrigger: () => onToggle(choice) })}
                 className="w-full flex items-center gap-3 py-3 active:opacity-70"
               >
                 <div className="w-6 h-6 flex items-center justify-center shrink-0">
@@ -537,6 +538,7 @@ const AlbumTabContent: React.FC<{
   onToggle: (choice: FileChoice) => void;
 }> = ({ isSelectedPath, onToggle }) => {
   const t = useWechatStrings();
+  const { bindTap } = useWechatGestures();
   const items = useMemo(() => {
     const list = MediaService.getMediaItems({ albumId: 'all', type: 'image' });
     list.sort((a, b) => b.createdAt - a.createdAt);
@@ -581,7 +583,7 @@ const AlbumTabContent: React.FC<{
                 <button
                   key={item.id}
                   type="button"
-                  onClick={() => onToggle(choice)}
+                  {...bindTap<HTMLButtonElement>({ kind: 'action', id: 'chat.selectFile.item.toggle' }, { params: { path: choice.path }, onTrigger: () => onToggle(choice) })}
                   className="relative aspect-square overflow-hidden rounded bg-(--app-c-search-result-divider) active:opacity-90"
                 >
                   <WechatSmartImage src={item.path} className="w-full h-full object-cover" />

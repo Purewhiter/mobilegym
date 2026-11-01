@@ -7,7 +7,7 @@ import { useLocale } from '@/os/locale';
 import { routes } from '../../routes';
 
 export const WechatLoginPage: React.FC = () => {
-  const { bindBack, nav } = useWechatGestures();
+  const { bindBack, bindNav, bindTap, nav } = useWechatGestures();
   const locale = useLocale();
   const isEnglish = locale === 'en';
   const auth = useWechatStore(s => s.auth);
@@ -302,7 +302,7 @@ export const WechatLoginPage: React.FC = () => {
                   : 'bg-[#e0e0e0] text-[#b2b2b2]'
                 : 'bg-[#e0e0e0] text-[#b2b2b2]'
             }`}
-            onClick={showPasswordFields ? handleLogin : undefined}
+            {...(showPasswordFields ? bindTap({ kind: 'action', id: 'auth.login.submit' }, { onTrigger: handleLogin }) : {})}
             disabled={showPasswordFields ? !canLogin : true}
           >
             {showPasswordFields ? text.login : text.agreeContinue}
@@ -311,11 +311,11 @@ export const WechatLoginPage: React.FC = () => {
 
         <div className="mt-auto pb-8">
           <div className="flex items-center justify-center gap-6 text-[13px] text-[#576b95]">
-            <button onClick={() => nav.push(routes.authForgotPassword)}>{text.forgotPassword}</button>
+            <button {...bindNav(routes.authForgotPassword)}>{text.forgotPassword}</button>
             <div className="w-px h-3 bg-gray-300" />
             <button>{text.exportChatHistory}</button>
             <div className="w-px h-3 bg-gray-300" />
-            <button onClick={() => nav.push(routes.authDevices, {}, { search: { phone: phoneTrimmed } })}>{text.more}</button>
+            <button {...bindNav(routes.authDevices, { search: { phone: phoneTrimmed } })}>{text.more}</button>
           </div>
         </div>
       </div>
