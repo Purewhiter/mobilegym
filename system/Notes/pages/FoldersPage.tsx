@@ -1,10 +1,12 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { IcNavBack, IcAdd, IcDelete, IcEdit, IcLock, IcTrash } from '../res/icons';
 import { SIMULATOR_CONFIG } from '@/os/data';
 const { statusBarHeight, bottomGestureHeight } = SIMULATOR_CONFIG.framework;
 import { useShallow } from 'zustand/react/shallow';
 import { useNotesStore, selectVisibleNotes, selectPrivateNotes, selectTrashedNotes } from '../state';
 import { InputDialog } from '../components/InputDialog';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 import { colors } from '../res/colors';
 import { strings } from '../res/strings';
 import { stringsEn } from '../res/strings.en';
@@ -17,17 +19,17 @@ const FolderRow: React.FC<{
   count: number;
   active: boolean;
   system?: boolean;
-  onSelect: () => void;
-  onRename?: () => void;
-  onDelete?: () => void;
-}> = ({ name, count, active, system, onSelect, onRename, onDelete }) => {
+  selectBind: React.HTMLAttributes<HTMLElement>;
+  renameBind?: React.HTMLAttributes<HTMLElement>;
+  deleteBind?: React.HTMLAttributes<HTMLElement>;
+}> = ({ name, count, active, system, selectBind, renameBind, deleteBind }) => {
   const s = useAppStrings(strings, stringsEn);
   return (
     <div
       className="bg-app-surface rounded-[16px] px-5 py-4 shadow-[0_1px_0_rgba(0,0,0,0.04)] mb-3"
       role="group"
     >
-      <button className="w-full text-left active:opacity-80" onClick={onSelect}>
+      <div className="w-full text-left active:opacity-80" {...selectBind}>
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
             <div className="text-[16px] font-medium text-black truncate">
@@ -41,25 +43,19 @@ const FolderRow: React.FC<{
 
           {!system ? (
             <div className="shrink-0 flex items-center gap-2">
-              {onRename ? (
+              {renameBind ? (
                 <button
                   className="w-9 h-9 rounded-full flex items-center justify-center active:bg-black/5"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onRename();
-                  }}
+                  {...renameBind}
                   aria-label={s.action_rename}
                 >
                   <IcEdit size={18} className="text-black/60" />
                 </button>
               ) : null}
-              {onDelete ? (
+              {deleteBind ? (
                 <button
                   className="w-9 h-9 rounded-full flex items-center justify-center active:bg-black/5"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onDelete();
-                  }}
+                  {...deleteBind}
                   aria-label={s.action_delete}
                 >
                   <IcDelete size={18} className="text-black/60" />
@@ -68,13 +64,13 @@ const FolderRow: React.FC<{
             </div>
           ) : null}
         </div>
-      </button>
+      </div>
     </div>
   );
 };
 
 export const FoldersPage: React.FC = () => {
-  const { back, bindNav, bindBack } = useNotesGestures();
+  const { back, bindNav, bindBack, bindTap } = useNotesGestures();
   const notes = useNotesStore(selectVisibleNotes);
   const privateNotes = useNotesStore(selectPrivateNotes);
   const trashedNotes = useNotesStore(selectTrashedNotes);
@@ -97,7 +93,10 @@ export const FoldersPage: React.FC = () => {
   );
   const s = useAppStrings(strings, stringsEn);
 
-  const [dialog, setDialog] = useState<null | { mode: 'add' | 'rename'; folderId?: string; initial?: string }>(null);
+  // Dialogs live in the URL (?dialog=add|rename|delete&folderId=): system back closes them.
+  const [searchParams] = useSearchParams();
+  const dialog = searchParams.get('dialog');
+  const dialogFolder = folders.find(f => f.id === searchParams.get('folderId'));
 
   const counts = useMemo(() => {
     const map = new Map<string, number>();
@@ -123,7 +122,7 @@ export const FoldersPage: React.FC = () => {
           </button>
           <div className="flex-1 text-[20px] font-medium text-black">{s.folders}</div>
           <button
-            onClick={() => setDialog({ mode: 'add' })}
+            {...bindNav(routes.folders, { search: { dialog: 'add' } })}
             className="w-10 h-10 flex items-center justify-center active:opacity-70"
             aria-label={s.action_new_folder}
           >
@@ -174,46 +173,58 @@ export const FoldersPage: React.FC = () => {
               count={counts.get(f.id) ?? 0}
               active={selectedFolderId === f.id}
               system={f.system}
-              onSelect={() => {
-                setSelectedFolderId(f.id);
-                back();
-              }}
-              onRename={
-                f.system
-                  ? undefined
-                  : () => setDialog({ mode: 'rename', folderId: f.id, initial: f.name })
-              }
-              onDelete={
-                f.system
-                  ? undefined
-                  : () => {
-                      const ok = window.confirm(s.confirm_delete_folder_pre + f.name + s.confirm_delete_folder_post);
-                      if (!ok) return;
-                      deleteFolder(f.id);
-                    }
-              }
+              selectBind={bindTap({ kind: 'action', id: 'notes.folders.select' }, {
+                params: { folderId: f.id },
+                onTrigger: () => {
+                  setSelectedFolderId(f.id);
+                  back();
+                },
+              })}
+              renameBind={f.system ? undefined : bindNav(routes.folders, {
+                search: { dialog: 'rename', folderId: f.id }, stopPropagation: true,
+              })}
+              deleteBind={f.system ? undefined : bindNav(routes.folders, {
+                search: { dialog: 'delete', folderId: f.id }, stopPropagation: true,
+              })}
             />
           ))}
         </div>
       </div>
 
-      {dialog ? (
+      {dialog === 'add' || (dialog === 'rename' && dialogFolder) ? (
         <InputDialog
-          title={dialog.mode === 'add' ? s.action_new_folder : s.action_rename_folder}
+          key={dialog}
+          title={dialog === 'add' ? s.action_new_folder : s.action_rename_folder}
           placeholder={s.confirm_folder_placeholder}
-          initialValue={dialog.initial ?? ''}
-          onCancel={() => setDialog(null)}
+          initialValue={dialog === 'rename' ? dialogFolder?.name ?? '' : ''}
+          onCancel={() => back()}
           onConfirm={(value) => {
-            if (dialog.mode === 'add') {
-              addFolder(value);
-              setDialog(null);
-              return;
-            }
-            if (dialog.mode === 'rename' && dialog.folderId) {
-              renameFolder(dialog.folderId, value);
-              setDialog(null);
-            }
+            if (dialog === 'add') addFolder(value);
+            else if (dialogFolder) renameFolder(dialogFolder.id, value);
+            back();
           }}
+          cancelBind={bindBack()}
+          bindConfirm={(value) => dialog === 'add'
+            ? bindTap({ kind: 'action', id: 'notes.folders.add.confirm' }, { onTrigger: () => { addFolder(value); back(); } })
+            : bindTap({ kind: 'action', id: 'notes.folders.rename.confirm' }, {
+              onTrigger: () => { if (dialogFolder) renameFolder(dialogFolder.id, value); back(); },
+            })}
+        />
+      ) : null}
+
+      {dialog === 'delete' && dialogFolder ? (
+        <ConfirmDialog
+          title={s.dialog_delete_folder_title}
+          message={s.confirm_delete_folder_pre + dialogFolder.name + s.confirm_delete_folder_post}
+          confirmLabel={s.action_delete}
+          danger
+          cancelBind={bindBack()}
+          confirmBind={bindTap({ kind: 'action', id: 'notes.folders.delete.confirm' }, {
+            onTrigger: () => {
+              deleteFolder(dialogFolder.id);
+              back();
+            },
+          })}
         />
       ) : null}
     </div>

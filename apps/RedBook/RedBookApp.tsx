@@ -41,6 +41,8 @@ import FollowListPrivacyPage from './pages/privacy/FollowListPrivacyPage';
 import SystemPermissionPage from './pages/privacy/SystemPermissionPage';
 import PersonalizationPage from './pages/privacy/PersonalizationPage';
 import { EditProfilePage } from './pages/EditProfilePage';
+import { EditProfileFieldPage } from './pages/EditProfileFieldPage';
+import { EditProfileImagePage } from './pages/EditProfileImagePage';
 import { FollowListPage } from './pages/FollowListPage';
 import { UserPage } from './pages/UserPage';
 import { LikesAndCollectionsPage } from './pages/LikesAndCollectionsPage';
@@ -120,6 +122,8 @@ export const RedBookApp: React.FC = () => {
             <Route path="settings/privacy/system-permission" element={<SystemPermissionPage />} />
             <Route path="settings/privacy/personalization" element={<PersonalizationPage />} />
             <Route path="edit-profile" element={<EditProfilePage />} />
+            <Route path="edit-profile/field/:field" element={<EditProfileFieldPage />} />
+            <Route path="edit-profile/image/:type" element={<EditProfileImagePage />} />
             <Route path="user/allUser" element={<FollowListPage />} />
             <Route path="user/:userId" element={<UserPage />} />
             <Route path="message/likes" element={<LikesAndCollectionsPage />} />

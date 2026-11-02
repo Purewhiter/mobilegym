@@ -153,6 +153,7 @@ export const stringsEn: Partial<Record<StringKey, string>> = {
   select_folder_title: 'Select Folder',
 
   // Folder delete confirm
+  dialog_delete_folder_title: 'Delete Folder',
   confirm_delete_folder_pre: 'Delete folder "',
   confirm_delete_folder_post: '"? Notes will be moved to "Unfiled".',
 

@@ -2,11 +2,11 @@ import { defineRoutes } from '../../os/navigation/routes';
 
 /** RedBook's pages and the UI states each keeps in its URL. */
 export const routes = defineRoutes({
-  home: { path: '/', search: { 'modal': ['publish'], 'menu': ['drawer'], 'tab': ['follow', 'discover', 'city'] } },
+  home: { path: '/', search: { 'modal': ['publish'], 'menu': ['drawer'], 'tab': ['follow', 'discover', 'city'], 'dropdown': ['city', 'category'] } },
   market: { path: '/market', search: { 'modal': ['publish'] } },
   message: { path: '/message', search: { 'modal': ['publish'] } },
   me: { path: '/me', search: { 'modal': ['publish'], 'menu': ['drawer'], 'tab': ['notes', 'collects', 'likes', 'comments'], 'sub': ['public', 'private', 'collection'] } },
-  note: { path: '/note/:id', search: { 'modal': ['share'] } },
+  note: { path: '/note/:id', search: { 'modal': ['share', 'commentSort'] } },
   user: { path: '/user/:userId' },
   chat: { path: '/chat/:userId' },
   chatSettings: { path: '/chat/:userId/settings' },
@@ -36,7 +36,9 @@ export const routes = defineRoutes({
   settingsPrivacyFollowList: { path: '/settings/privacy/follow-list' },
   settingsPrivacySystemPermission: { path: '/settings/privacy/system-permission' },
   settingsPrivacyPersonalization: { path: '/settings/privacy/personalization' },
-  editProfile: { path: '/edit-profile' },
+  editProfile: { path: '/edit-profile', search: { 'sheet': ['gender'] } },
+  editProfileField: { path: '/edit-profile/field/:field' },
+  editProfileImage: { path: '/edit-profile/image/:type', search: { 'sheet': ['album'] } },
   userAllUser: { path: '/user/allUser' },
   messageLikes: { path: '/message/likes' },
   messageFollowers: { path: '/message/followers' },

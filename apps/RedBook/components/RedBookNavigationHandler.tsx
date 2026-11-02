@@ -6,7 +6,7 @@ import { realNow } from '../../../os/TimeService';
 
 const EXIT_INTERVAL = 2000; // 2秒内双击退出
 const ROOT_PATHS = ['/', '/market', '/message', '/me'];
-const ROOT_OVERLAY_PARAMS = ['menu', 'modal'];
+const ROOT_OVERLAY_PARAMS = ['menu', 'modal', 'dropdown'];
 
 type RedBookBackIntent =
   | { type: 'history-back' }

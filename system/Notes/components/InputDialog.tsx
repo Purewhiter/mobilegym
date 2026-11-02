@@ -12,6 +12,10 @@ export const InputDialog: React.FC<{
   cancelText?: string;
   onCancel: () => void;
   onConfirm: (value: string) => void;
+  /** Gesture binding for the backdrop and cancel button (system back), used instead of onCancel. */
+  cancelBind?: React.HTMLAttributes<HTMLElement>;
+  /** Gesture binding for the confirm button given the typed value, used instead of onConfirm. */
+  bindConfirm?: (value: string) => React.HTMLAttributes<HTMLElement>;
 }> = ({
   title,
   placeholder = '',
@@ -20,6 +24,8 @@ export const InputDialog: React.FC<{
   cancelText,
   onCancel,
   onConfirm,
+  cancelBind,
+  bindConfirm,
 }) => {
   const s = useAppStrings(strings, stringsEn);
   const confirm = confirmText ?? s.action_confirm;
@@ -35,7 +41,7 @@ export const InputDialog: React.FC<{
     <div className="fixed inset-0 z-[60] flex items-center justify-center">
       <button
         className="absolute inset-0 bg-black/35"
-        onClick={onCancel}
+        {...(cancelBind ?? { onClick: onCancel })}
         aria-label={s.action_close}
       />
 
@@ -63,7 +69,7 @@ export const InputDialog: React.FC<{
           <button
             className="flex-1 h-12 text-[16px] active:bg-black/5"
             style={{ color: colors.text_secondary_strong }}
-            onClick={onCancel}
+            {...(cancelBind ?? { onClick: onCancel })}
           >
             {cancel}
           </button>
@@ -71,7 +77,7 @@ export const InputDialog: React.FC<{
           <button
             className="flex-1 h-12 text-[16px] font-medium active:bg-black/5"
             style={{ color: colors.theme_main }}
-            onClick={() => onConfirm(value)}
+            {...(bindConfirm ? bindConfirm(value) : { onClick: () => onConfirm(value) })}
           >
             {confirm}
           </button>

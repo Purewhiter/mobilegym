@@ -25,6 +25,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useNotesStore } from '../state';
 import { Toast } from '@/os/components/Toast';
 import { ActionSheet } from '../components/ActionSheet';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 import { DateTimeDialog } from '../components/DateTimeDialog';
 import { IcFolderIndicator, IcNoteLock } from '../res/icons';
 import { colors } from '../res/colors';
@@ -102,6 +103,7 @@ export const NoteEditorPage: React.FC = () => {
   const folderPickerOpen = sheet === 'folder';
   const menuOpen = sheet === 'more';
   const reminderOpen = sheet === 'reminder';
+  const deleteForeverOpen = searchParams.get('dialog') === 'deleteForever';
 
   const [toast, setToast] = useState({ message: '', visible: false });
   const toastTimerRef = useRef<number | null>(null);
@@ -339,23 +341,18 @@ export const NoteEditorPage: React.FC = () => {
               <div className="mt-2 flex items-center gap-2">
                 <button
                   className="h-9 px-4 rounded-[14px] bg-app-surface text-[14px] active:opacity-80"
-                  onClick={() => {
-                    restoreNote(existing.id);
-                    showToast(s.toast_restored);
-                  }}
+                  {...bindTap({ kind: 'action', id: 'notes.editor.banner.restore' }, {
+                    onTrigger: () => {
+                      restoreNote(existing.id);
+                      showToast(s.toast_restored);
+                    },
+                  })}
                 >
                   {s.action_restore}
                 </button>
                 <button
                   className="h-9 px-4 rounded-[14px] bg-app-surface text-[14px] text-[#ff3b30] active:opacity-80"
-                  {...bindTap({ kind: 'action', id: 'notes.editor.deleteForever' }, {
-                    onTrigger: () => {
-                      const ok = window.confirm(s.confirm_permanent_delete);
-                      if (!ok) return;
-                      deleteNoteForever(existing.id);
-                      nav.replace(routes.trash);
-                    },
-                  })}
+                  {...bindNav(routes.note, { params: { id: existing.id }, search: { dialog: 'deleteForever' } })}
                 >
                   {s.action_permanent_delete}
                 </button>
@@ -579,16 +576,8 @@ export const NoteEditorPage: React.FC = () => {
                     key: 'delete_forever',
                     label: s.action_permanent_delete,
                     danger: true,
-                    bind: bindTap({ kind: 'action', id: 'notes.editor.menu.deleteForever' }, {
-                      onTrigger: () => {
-                        const ok = window.confirm(s.confirm_permanent_delete);
-                        if (!ok) return;
-                        deleteNoteForever(existing.id);
-                        // Close the menu, then replace the editor with the trash.
-                        back();
-                        nav.replace(routes.trash);
-                      },
-                    }),
+                    // The confirmation replaces the menu: back from it returns to the editor.
+                    bind: bindNav(routes.note, { params: { id: existing.id }, search: { dialog: 'deleteForever' }, replace: true }),
                   },
                 ]
               : [
@@ -660,6 +649,25 @@ export const NoteEditorPage: React.FC = () => {
                 }
               : undefined
           }
+        />
+      ) : null}
+
+      {deleteForeverOpen && existing && isTrashed ? (
+        <ConfirmDialog
+          title={s.action_permanent_delete}
+          message={s.confirm_permanent_delete}
+          confirmLabel={s.action_delete}
+          danger
+          // Closes the dialog directly: system back would first hide the editor's kept-open keyboard.
+          cancelBind={bindTap({ kind: 'action', id: 'notes.editor.dialog.close' }, { onTrigger: () => back() })}
+          confirmBind={bindTap({ kind: 'action', id: 'notes.editor.deleteForever.confirm' }, {
+            onTrigger: () => {
+              deleteNoteForever(existing.id);
+              // Close the dialog, then replace the editor with the trash.
+              back();
+              nav.replace(routes.trash);
+            },
+          })}
         />
       ) : null}
     </div>

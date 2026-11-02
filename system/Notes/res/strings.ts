@@ -155,6 +155,7 @@ export const strings = {
   select_folder_title: '选择文件夹',
 
   // Folder delete confirm (split around folder name)
+  dialog_delete_folder_title: '删除文件夹',
   confirm_delete_folder_pre: '删除文件夹"',
   confirm_delete_folder_post: '"？文件夹内笔记将移到"未分类"。',
 
