@@ -64,10 +64,18 @@ export function useAppNavigationHandler(appId: string, options: Options) {
     const state = TaskManager.getState();
     const task = taskId ? state.tasks.find(t => t.taskId === taskId) : null;
     const isInForeignTask = task != null && task.rootAppId !== appId;
+    // The app-level navigator belongs to the task's root activity. An activity the app
+    // pushed onto its own task (startActivityForResult to itself) gets an activity-level one.
+    const isTaskRoot = task == null || task.stack[0]?.activityId === activityId;
 
-    if (isInForeignTask) {
+    if (isInForeignTask || !isTaskRoot) {
       return;
     }
+    // While another activity sits on top of this one in the same task, back is not ours.
+    const isTaskTop = () => {
+      const current = TaskManager.getState().tasks.find(t => t.taskId === taskId);
+      return !current || current.stack[current.stack.length - 1]?.activityId === activityId;
+    };
 
     navigateRef.current = (path: string, opts?: NavOptions) => {
       const shouldReplace = opts?.replace ?? true;
@@ -88,6 +96,7 @@ export function useAppNavigationHandler(appId: string, options: Options) {
         // 的场景下背景 own-task 实例的 onBack 仍会被调用（消费别人的返回事件）。
         const state = TaskManager.getState();
         if (taskId && state.activeTaskId !== taskId) return false;
+        if (!isTaskTop()) return false;
         return optionsRef.current.onBack();
       },
       route: () => routeRef.current,
@@ -114,6 +123,7 @@ export function useAppNavigationHandler(appId: string, options: Options) {
       if (!isForegroundRef.current) return false;
       const state = TaskManager.getState();
       if (taskId && state.activeTaskId !== taskId) return false;
+      if (!isTaskTop()) return false;
       return !!optionsRef.current.onBack();
     }, 100);
 
@@ -121,7 +131,31 @@ export function useAppNavigationHandler(appId: string, options: Options) {
       unregisterBack();
       AppNavigatorRegistry.unregister(appId);
     };
-  }, [appId, navigate, navigator, taskId]);
+  }, [activityId, appId, navigate, navigator, taskId]);
+
+  // An activity in a foreign task, or one pushed onto its own app's task, has no app-level
+  // navigator: register an activity-level one so the OS can route into it and back reaches it.
+  useEffect(() => {
+    if (!activityId) return;
+    const state = TaskManager.getState();
+    const task = taskId ? state.tasks.find(t => t.taskId === taskId) : null;
+    const isInForeignTask = task != null && task.rootAppId !== appId;
+    const isTaskRoot = task == null || task.stack[0]?.activityId === activityId;
+    if (!isInForeignTask && isTaskRoot) return;
+    const nav = {
+      navigate: (path: string, opts?: NavOptions) => {
+        const directNavigate = (nextPath: string) => navigate(nextPath, { replace: opts?.replace ?? true });
+        if (optionsRef.current.onNavigate) {
+          optionsRef.current.onNavigate(path, directNavigate);
+          return;
+        }
+        directNavigate(path);
+      },
+      back: () => !!optionsRef.current.onBack(),
+    };
+    AppNavigatorRegistry.registerActivity(activityId, nav, appId);
+    return () => AppNavigatorRegistry.unregisterActivity(activityId, nav);
+  }, [activityId, appId, navigate, taskId]);
 
   useEffect(() => {
     const state = TaskManager.getState();

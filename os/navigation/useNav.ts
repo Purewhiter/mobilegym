@@ -52,7 +52,8 @@ export function useNav(): Nav {
     return {
       push: (route, ...args) => jump(false, route as AppRoute, args),
       replace: (route, ...args) => jump(true, route as AppRoute, args),
-      back: (steps = 1) => navigate(-steps),
+      // Guard against a handler passing its click event as the step count.
+      back: (steps?: number) => navigate(-(typeof steps === 'number' ? steps : 1)),
       toPath: (path, options) => navigate(path, options),
     } as Nav;
   }, [navigate, navigator, location.pathname, location.search]);

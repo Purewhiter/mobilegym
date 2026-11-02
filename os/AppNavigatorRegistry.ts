@@ -82,7 +82,9 @@ export const AppNavigatorRegistry = {
     emitNavigatorReady({ activityId, appId });
   },
 
-  unregisterActivity(activityId: string) {
+  /** With `nav`, removes the entry only if it is still that navigator (another may have replaced it). */
+  unregisterActivity(activityId: string, nav?: ActivityNavigator) {
+    if (nav && activityRegistry.get(activityId) !== nav) return;
     activityRegistry.delete(activityId);
   },
 
