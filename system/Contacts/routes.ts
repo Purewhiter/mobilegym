@@ -11,5 +11,5 @@ export const routes = defineRoutes({
   contactsNew: { path: '/contacts/new', description: '新建联系人（小米账号）' },
   settingsCalls: { path: '/settings/calls', description: '电话设置-通话' },
   settingsContacts: { path: '/settings/contacts', description: '电话设置-联系人' },
-  settingsPage: { path: '/settings/page/:pageId', description: '电话设置-偏好页' },
+  settingsPage: { path: '/settings/page/:pageId', search: { dialog: ['list'] }, description: '电话设置-偏好页', states: { 'dialog=list': '选择设置值' } },
 });

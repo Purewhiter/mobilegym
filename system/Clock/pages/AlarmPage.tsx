@@ -16,8 +16,8 @@ const AlarmItem: React.FC<{
   onToggle: () => void;
   onSelectToggle: () => void;
   onSelectionStart: () => void;
-  onEdit?: () => void;
-}> = ({ alarm, selectionMode, selected, onToggle, onSelectToggle, onSelectionStart, onEdit }) => {
+  editBind?: React.HTMLAttributes<HTMLElement>;
+}> = ({ alarm, selectionMode, selected, onToggle, onSelectToggle, onSelectionStart, editBind }) => {
   const s = useAppStrings(strings, stringsEn);
   const { bindLongPress } = useClockGestures();
 
@@ -36,7 +36,7 @@ const AlarmItem: React.FC<{
       <button
         type="button"
         className="flex flex-col text-left flex-1 min-w-0"
-        onClick={() => { if (!selectionMode && onEdit) onEdit(); }}
+        {...(selectionMode ? {} : editBind)}
       >
         <span className="text-[26px] font-medium text-black">{formatAlarmTime(alarm.hour, alarm.minute)}</span>
         <span className="text-[15px] text-gray-400">
@@ -62,8 +62,8 @@ export const AlarmPage: React.FC<{
   selectionMode: boolean;
   selectedIds: Set<string>;
   onToggle: (id: string) => void;
-  onOpenAdd: () => void;
-  onEdit: (alarm: Alarm) => void;
+  addBind: React.HTMLAttributes<HTMLElement>;
+  editBind: (alarm: Alarm) => React.HTMLAttributes<HTMLElement>;
   onSelectToggle: (id: string) => void;
   onSelectionStart: (id: string) => void;
   onExitSelection: () => void;
@@ -74,8 +74,8 @@ export const AlarmPage: React.FC<{
   selectionMode,
   selectedIds,
   onToggle,
-  onOpenAdd,
-  onEdit,
+  addBind,
+  editBind,
   onSelectToggle,
   onSelectionStart,
   onExitSelection,
@@ -133,7 +133,7 @@ export const AlarmPage: React.FC<{
                   onToggle={() => onToggle(alarm.id)}
                   onSelectToggle={() => onSelectToggle(alarm.id)}
                   onSelectionStart={() => onSelectionStart(alarm.id)}
-                  onEdit={() => onEdit(alarm)}
+                  editBind={editBind(alarm)}
                 />
               ))}
             </div>
@@ -150,7 +150,7 @@ export const AlarmPage: React.FC<{
 
       {!selectionMode ? (
         <button
-          onClick={onOpenAdd}
+          {...addBind}
           className="absolute bottom-[112px] right-10 w-14 h-14 rounded-full bg-app-surface text-app-primary flex items-center justify-center shadow-lg"
         >
           <IcAdd size={26} />

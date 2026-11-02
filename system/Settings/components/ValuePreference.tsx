@@ -1,6 +1,7 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { PreferenceItem } from './PreferenceItem';
 import { InputDialog } from './InputDialog';
+import { usePageDialog } from '../hooks/usePageDialog';
 import { useStringPreference } from '../state';
 import { strings } from '../res/strings';
 import { stringsEn } from '../res/strings.en';
@@ -45,7 +46,8 @@ export const ValuePreference: React.FC<{
   itemProps,
 }) => {
   const s = useAppStrings(strings, stringsEn);
-  const [open, setOpen] = useState(false);
+  const dialog = usePageDialog('value');
+  const open = dialog.isOpen({ key: settingKey });
   const [value, setValue] = useStringPreference(settingKey, defaultValue);
 
   const htmlInputType = useMemo(
@@ -64,14 +66,8 @@ export const ValuePreference: React.FC<{
         value={displayValue || undefined}
         showChevron={!!onNavigate}
         showDivider={showDivider}
-        itemProps={itemProps}
-        onClick={() => {
-          if (onNavigate) {
-            onNavigate();
-          } else {
-            setOpen(true);
-          }
-        }}
+        itemProps={itemProps ?? (onNavigate ? undefined : dialog.bindOpen({ key: settingKey }))}
+        onClick={onNavigate}
       />
       <InputDialog
         open={open}
@@ -79,11 +75,16 @@ export const ValuePreference: React.FC<{
         defaultValue={value}
         placeholder={s.enter_value}
         inputType={htmlInputType}
-        onClose={() => setOpen(false)}
+        onClose={dialog.close}
         onConfirm={(v) => {
           setValue(v);
-          setOpen(false);
+          dialog.close();
         }}
+        cancelBind={dialog.cancelBind}
+        bindConfirm={(v) => dialog.bindTap({ kind: 'action', id: 'settings.value.confirm' }, {
+          params: { key: settingKey },
+          onTrigger: () => { setValue(v); dialog.close(); },
+        })}
       />
     </>
   );

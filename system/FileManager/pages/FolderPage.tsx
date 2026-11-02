@@ -524,7 +524,7 @@ export const FolderPage: React.FC = () => {
         onConfirm={handleTransferConfirm}
         isCreateFolderOpen={transferDialog === 'newFolder'}
         onOpenCreateFolder={openTransferCreateFolder}
-        onCloseCreateFolder={back}
+        onCloseCreateFolder={() => back()}
         onCreatedFolder={refreshItems}
       />
 

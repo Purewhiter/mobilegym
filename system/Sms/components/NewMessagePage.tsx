@@ -1,3 +1,4 @@
+import { useSearchParams } from 'react-router-dom';
 import React, { useMemo, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { IcNavBack, IcUser, IcCheck, IcExpand } from '../res/icons';
@@ -12,6 +13,7 @@ import { ensureContactsProviderRegistered } from '../../../os/providers/Contacts
 import { useActivityContext } from '../../../os/ActivityContext';
 import { useSmsGestures } from '../hooks/useSmsGestures';
 import { routes } from '../routes';
+import { KeyboardService } from '../../../os/keyboard/KeyboardService';
 
 interface ContactOption {
     displayName: string;
@@ -20,7 +22,11 @@ interface ContactOption {
 }
 
 export const NewMessagePage: React.FC = () => {
-    const { nav, bindBack, bindTap } = useSmsGestures();
+    const { nav, bindBack, bindTap, bindNav } = useSmsGestures();
+    // The attachment panel and the error dialog live in the URL: system back closes them.
+    const [searchParams] = useSearchParams();
+    const showAttachments = searchParams.get('panel') === 'attachments';
+    const showErrorDialog = searchParams.get('dialog') === 'invalidRecipient';
     const s = useAppStrings(strings, stringsEn);
     const location = useLocation();
     const { activityId } = useActivityContext();
@@ -32,7 +38,6 @@ export const NewMessagePage: React.FC = () => {
         const payload = os?.getIntentPayload?.(activityId) ?? os?.getIntentPayload?.('sms');
         return (payload as { data?: Record<string, any> } | null)?.data;
     }, [activityId]);
-    const [showAttachments, setShowAttachments] = useState(false);
     const [recipient, setRecipient] = useState(
         () => (typeof intentData?.address === 'string' ? intentData.address : null)
             ?? queryParams.get('address')
@@ -45,7 +50,6 @@ export const NewMessagePage: React.FC = () => {
     );
     const [boundPhone, setBoundPhone] = useState<string | null>(null);
     const [showSuggestions, setShowSuggestions] = useState(false);
-    const [showErrorDialog, setShowErrorDialog] = useState(false);
 
     const allContacts = useMemo(() => {
         const result: ContactOption[] = [];
@@ -94,7 +98,12 @@ export const NewMessagePage: React.FC = () => {
         setShowSuggestions(false);
     };
 
-    const toggleAttachments = () => setShowAttachments(!showAttachments);
+    const attachmentsToggle = showAttachments ? bindBack() : bindNav(routes.new, {
+        search: { panel: 'attachments' },
+        keep: ['address', 'body'],
+        // The panel takes the keyboard's place, so system back then closes the panel.
+        beforeTrigger: () => KeyboardService.hide(),
+    });
 
     const handleSend = () => {
         const trimmedRecipient = recipient.trim();
@@ -104,14 +113,15 @@ export const NewMessagePage: React.FC = () => {
             phoneNumber = trimmedRecipient;
         }
         if (!phoneNumber) {
-            setShowErrorDialog(true);
+            nav.push(routes.new, {}, { search: { dialog: 'invalidRecipient' }, keep: ['address', 'body'] });
             return;
         }
         const convId = ensureConversation(trimmedRecipient, phoneNumber);
         if (!convId) return;
         sendMessage(convId, message.trim());
         setMessage('');
-        setShowAttachments(false);
+        // Close the attachment panel first: the conversation replaces the compose page itself.
+        if (showAttachments) nav.back();
         nav.replace(routes.conversation, { conversationId: convId });
     };
 
@@ -186,7 +196,7 @@ export const NewMessagePage: React.FC = () => {
                         <div className="flex items-center px-3 py-2 gap-2">
                             <button
                                 className="w-11 h-11 flex items-center justify-center bg-app-surface rounded-lg"
-                                onClick={toggleAttachments}
+                                {...attachmentsToggle}
                             >
                                 {showAttachments ? (
                                     <IcExpand size={20} className="text-gray-600" />
@@ -239,7 +249,7 @@ export const NewMessagePage: React.FC = () => {
                         <div className="border-t border-gray-100">
                             <button
                                 className="w-full py-3.5 text-[16px] font-medium text-blue-500 active:bg-gray-50"
-                                onClick={() => setShowErrorDialog(false)}
+                                {...bindBack()}
                             >
                                 {s.error_invalid_recipient_ok}
                             </button>

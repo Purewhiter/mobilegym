@@ -9,10 +9,10 @@ import { formatCountdownText, getNextTrigger } from '../utils';
 
 export const AlarmEditModal: React.FC<{
   alarm: Alarm;
-  onClose: () => void;
+  closeBind: React.HTMLAttributes<HTMLElement>;
   onSave: (alarm: Alarm) => void;
   onMoreSettings: (hour: number, minute: number) => void;
-}> = ({ alarm, onClose, onSave, onMoreSettings }) => {
+}> = ({ alarm, closeBind, onSave, onMoreSettings }) => {
   const s = useAppStrings(strings, stringsEn);
   const [hour, setHour] = useState(alarm.hour);
   const [minute, setMinute] = useState(alarm.minute);
@@ -22,19 +22,17 @@ export const AlarmEditModal: React.FC<{
 
   const handleDone = () => {
     onSave({ ...alarm, hour, minute });
-    onClose();
   };
 
   const handleMoreSettings = () => {
     onMoreSettings(hour, minute);
-    onClose();
   };
 
   return (
     <div className="fixed inset-0 z-40 flex items-center justify-center p-4">
       <div
         className="absolute inset-0 bg-black/25 backdrop-blur-md"
-        onClick={onClose}
+        {...closeBind}
         aria-hidden
       />
       <div

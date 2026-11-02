@@ -11,8 +11,10 @@ export const CitySelectorPage: React.FC<{
   selectedCityIds: string[];
   onSelect: (city: WorldCity) => void;
   onClose: () => void;
+  /** System back for the backdrop and close button (onClose stays for drag-dismiss). */
+  closeBind: React.HTMLAttributes<HTMLElement>;
   onAlreadySelected?: () => void;
-}> = ({ cities, selectedCityIds, onSelect, onClose, onAlreadySelected }) => {
+}> = ({ cities, selectedCityIds, onSelect, onClose, closeBind, onAlreadySelected }) => {
   const s = useAppStrings(strings, stringsEn);
   const [query, setQuery] = useState('');
   const [dragOffset, setDragOffset] = useState(0);
@@ -50,7 +52,7 @@ export const CitySelectorPage: React.FC<{
 
   return (
     <div className="absolute inset-0 z-40">
-      <div className="absolute inset-0 bg-black/30" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/30" {...closeBind} />
       <div
         className="absolute top-10 left-0 right-0 bottom-0 bg-app-bg rounded-t-[24px] px-5 pt-4 pb-6 flex flex-col"
         style={{ transform: `translateY(${dragOffset}px)`, transition: !isDragging ? 'transform var(--app-duration-short) var(--app-easing-decelerate)' : undefined }}
@@ -68,7 +70,7 @@ export const CitySelectorPage: React.FC<{
         </div>
 
         <div className="flex items-center justify-between mb-3">
-          <button className="w-10 h-10 flex items-center justify-center text-app-text-muted shrink-0" onClick={onClose}>
+          <button className="w-10 h-10 flex items-center justify-center text-app-text-muted shrink-0" {...closeBind}>
             <IcClose size={26} />
           </button>
           <div className="flex flex-col items-center gap-0.5 min-w-0 flex-1 px-2">

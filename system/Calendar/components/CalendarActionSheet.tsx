@@ -51,15 +51,13 @@ export const CalendarActionSheet: React.FC<{
               <button
                 key={it.id}
                 className="w-full flex items-center gap-3 px-5 py-4 text-left active:bg-black/5 dark:active:bg-white/5"
-                {...it.bind}
-                onClick={(event) => {
-                  if (it.bind?.onClick) {
-                    it.bind.onClick(event);
-                    return;
-                  }
-                  it.onClick?.();
-                  onClose();
-                }}
+                {...(it.bind ?? bindTap({ kind: 'action', id: 'calendar.sheet.select' }, {
+                  params: { item: it.id },
+                  onTrigger: () => {
+                    it.onClick?.();
+                    onClose();
+                  },
+                }))}
               >
                 {it.icon && <div className="shrink-0 text-gray-700 dark:text-gray-200">{it.icon}</div>}
                 <div className="min-w-0 flex-1">

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { Toast } from '@/os/components/Toast';
 import { useLocale } from '@/os/locale';
 import { useAppStrings } from '@/os/useAppStrings';
@@ -144,6 +144,7 @@ const ListSheet: React.FC<{
   onClose: () => void;
   onPick: (value: string) => void;
 }> = ({ open, title, summary, options, value, onClose, onPick }) => {
+  const { bindBack, bindTap } = useContactsGestures();
   const sheetRef = useRef<HTMLDivElement | null>(null);
   const s = useAppStrings(strings, stringsEn);
 
@@ -157,7 +158,7 @@ const ListSheet: React.FC<{
 
   return (
     <div className="fixed inset-0 z-[70] flex items-end justify-center px-3 pb-3">
-      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/40" {...bindBack()} />
       <div
         ref={sheetRef}
         tabIndex={-1}
@@ -175,7 +176,7 @@ const ListSheet: React.FC<{
                 key={option.value}
                 type="button"
                 className="w-full px-6 py-4 text-left text-[16px] active:bg-gray-50 flex items-center justify-between"
-                onClick={() => onPick(option.value)}
+                {...bindTap({ kind: 'action', id: 'contacts.settings.list.select' }, { params: { value: option.value }, onTrigger: () => onPick(option.value) })}
               >
                 <span className={selected ? 'text-[#3482FF] font-medium' : 'text-app-text'}>{option.label}</span>
                 {selected ? <span className="text-[#3482FF] text-[14px] font-medium">{s.settings_selected}</span> : null}
@@ -187,7 +188,7 @@ const ListSheet: React.FC<{
           <button
             type="button"
             className="w-full py-3 rounded-2xl bg-gray-50 text-[16px] font-medium text-app-text active:bg-gray-100"
-            onClick={onClose}
+            {...bindBack()}
           >
             {s.cancel}
           </button>
@@ -205,7 +206,11 @@ const ListRow: React.FC<{
   onMissingOptions: () => void;
 }> = ({ item, settingKey, sims, showDivider = true, onMissingOptions }) => {
   const options = resolveDynamicListOptions(item, sims);
-  const [open, setOpen] = useState(false);
+  // The option sheet lives in the URL (?dialog=list&key=): system back closes it.
+  const { pageId = '' } = useParams<{ pageId: string }>();
+  const [searchParams] = useSearchParams();
+  const { bindNav, back } = useContactsGestures();
+  const open = searchParams.get('dialog') === 'list' && searchParams.get('key') === settingKey;
   const [value, setValue] = useStringPreference(settingKey, item.defaultValue ?? (options[0]?.value ?? ''));
 
   const selectedLabel = useMemo(() => {
@@ -219,13 +224,9 @@ const ListRow: React.FC<{
         summary={item.summary}
         valueText={selectedLabel || undefined}
         showDivider={showDivider}
-        onClick={() => {
-          if (!options.length) {
-            onMissingOptions();
-            return;
-          }
-          setOpen(true);
-        }}
+        {...(options.length
+          ? { bind: bindNav(routes.settingsPage, { params: { pageId }, search: { dialog: 'list', key: settingKey } }) }
+          : { onClick: onMissingOptions })}
       />
 
       <ListSheet
@@ -234,10 +235,10 @@ const ListRow: React.FC<{
         summary={item.summary}
         options={options}
         value={value}
-        onClose={() => setOpen(false)}
+        onClose={() => back()}
         onPick={(nextValue) => {
           setValue(nextValue);
-          setOpen(false);
+          back();
         }}
       />
     </>

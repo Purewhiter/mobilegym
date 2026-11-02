@@ -132,7 +132,7 @@ const WorldClockCityItem: React.FC<{
 
 export const WorldClockPage: React.FC<{
   selectedCities: WorldCity[];
-  onOpenAdd: () => void;
+  addBind: React.HTMLAttributes<HTMLElement>;
   selectionMode: boolean;
   selectedIds: Set<string>;
   onSelectToggle: (id: string) => void;
@@ -141,7 +141,7 @@ export const WorldClockPage: React.FC<{
   onToggleSelectAll: () => void;
 }> = ({
   selectedCities,
-  onOpenAdd,
+  addBind,
   selectionMode,
   selectedIds,
   onSelectToggle,
@@ -201,7 +201,7 @@ export const WorldClockPage: React.FC<{
           </button>
         ) : (
           <>
-            <ToolbarIconButton icon={IcAdd} onClick={onOpenAdd} label={s.toolbar_add} />
+            <ToolbarIconButton icon={IcAdd} bind={addBind} label={s.toolbar_add} />
             <ToolbarIconButton icon={IcMoreVert} label={s.toolbar_more} />
           </>
         )}

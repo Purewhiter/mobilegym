@@ -1,5 +1,6 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef } from 'react';
 import { PreferenceItem } from './PreferenceItem';
+import { usePageDialog } from '../hooks/usePageDialog';
 import { useStringPreference } from '../state';
 import { strings } from '../res/strings';
 import { stringsEn } from '../res/strings.en';
@@ -23,7 +24,8 @@ export const ListPreference: React.FC<{
   onMissingOptions,
 }) => {
   const s = useAppStrings(strings, stringsEn);
-  const [open, setOpen] = useState(false);
+  const dialog = usePageDialog('list');
+  const open = dialog.isOpen({ key: settingKey });
 
   const [value, setValue] = useStringPreference(
     settingKey,
@@ -45,21 +47,12 @@ export const ListPreference: React.FC<{
         value={selectedLabel || undefined}
         showChevron={true}
         showDivider={showDivider}
-        onClick={() => {
-          if (!options.length) {
-            onMissingOptions?.();
-            return;
-          }
-          setOpen(true);
-          requestAnimationFrame(() => {
-            sheetRef.current?.focus();
-          });
-        }}
+        {...(options.length ? { itemProps: dialog.bindOpen({ key: settingKey }) } : { onClick: onMissingOptions })}
       />
 
       {open && (
         <div className="fixed inset-0 z-[70] flex items-end justify-center px-3 pb-3">
-          <div className="absolute inset-0 bg-black/40" onClick={() => setOpen(false)} />
+          <div className="absolute inset-0 bg-black/40" {...dialog.cancelBind} />
           <div
             ref={sheetRef}
             tabIndex={-1}
@@ -81,10 +74,13 @@ export const ListPreference: React.FC<{
                     key={opt.value}
                     type="button"
                     className="w-full px-6 py-4 text-left text-[16px] active:bg-gray-50 flex items-center justify-between"
-                    onClick={() => {
-                      setValue(opt.value);
-                      setOpen(false);
-                    }}
+                    {...dialog.bindTap({ kind: 'action', id: 'settings.list.select' }, {
+                      params: { key: settingKey, value: opt.value },
+                      onTrigger: () => {
+                        setValue(opt.value);
+                        dialog.close();
+                      },
+                    })}
                   >
                     <span className={selected ? 'text-app-primary font-medium' : 'text-app-text'}>
                       {opt.label}
@@ -100,7 +96,7 @@ export const ListPreference: React.FC<{
               <button
                 type="button"
                 className="w-full py-3 rounded-2xl bg-gray-50 text-[16px] font-medium text-app-text active:bg-gray-100"
-                onClick={() => setOpen(false)}
+                {...dialog.cancelBind}
               >
                 {s.cancel}
               </button>

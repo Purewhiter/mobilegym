@@ -6,6 +6,7 @@ import { PreferenceCategory } from './PreferenceCategory';
 import { PreferenceItem } from './PreferenceItem';
 import { Toast } from '@/os/components/Toast';
 import { InputDialog } from './InputDialog';
+import { usePageDialog } from '../hooks/usePageDialog';
 import { useWifiSavedNetworks, useBooleanPreference, useWifiActions } from '../state';
 import { useOsStateStore } from '../../../os/OsStateStore';
 import { ConnectivityManager } from '../../../os/managers/ConnectivityManager';
@@ -58,8 +59,7 @@ export const WifiNetworksPage: React.FC = () => {
     }, 1600);
   };
 
-  const [pwdOpen, setPwdOpen] = useState(false);
-  const pendingRef = useRef<{ ssid: string; security: string }>({ ssid: '', security: 'WPA2' });
+  const connectDialog = usePageDialog('connect');
 
   const list = useMemo(() => {
     const arr = [...nearby];
@@ -98,6 +98,11 @@ export const WifiNetworksPage: React.FC = () => {
     showToast(s.connected);
   };
 
+  // A secured network with no saved password asks for one (?dialog=connect); every other tap acts in place.
+  const needsPassword = (ssid: string, security: string) =>
+    wifiEnabled && connectedSsid !== ssid && security !== 'OPEN'
+    && !savedNetworks.find((n) => n.ssid === ssid)?.password;
+
   const handleTapNetwork = (ssid: string, security: string) => {
     if (!wifiEnabled) {
       showToast(s.please_enable_wlan_first);
@@ -117,8 +122,12 @@ export const WifiNetworksPage: React.FC = () => {
       connectTo(ssid, saved.security, saved.password);
       return;
     }
-    pendingRef.current = { ssid, security };
-    setPwdOpen(true);
+    connectDialog.open({ ssid, security });
+  };
+
+  const connectWithPassword = (pwd: string) => {
+    connectDialog.close();
+    connectTo(connectDialog.param('ssid'), connectDialog.param('security') || 'WPA2', pwd);
   };
 
   return (
@@ -160,7 +169,9 @@ export const WifiNetworksPage: React.FC = () => {
                   value={isConn ? s.connected : undefined}
                   showDivider={idx < list.length - 1}
                   showChevron={false}
-                  onClick={() => handleTapNetwork(ap.ssid, ap.security)}
+                  itemProps={needsPassword(ap.ssid, ap.security)
+                    ? connectDialog.bindOpen({ ssid: ap.ssid, security: ap.security })
+                    : connectDialog.bindTap({ kind: 'action', id: 'settings.wifi.network.tap' }, { onTrigger: () => handleTapNetwork(ap.ssid, ap.security) })}
                 >
                   <div className="flex items-center gap-2 mr-1">
                     {locked ? (
@@ -193,18 +204,18 @@ export const WifiNetworksPage: React.FC = () => {
       </div>
 
       <InputDialog
-        open={pwdOpen}
-        title={`${s.connect} ${pendingRef.current.ssid}`}
+        open={connectDialog.isOpen()}
+        title={`${s.connect} ${connectDialog.param('ssid')}`}
         placeholder={s.enter_password}
         inputType="password"
         allowEmpty={false}
         confirmText={s.connect}
-        onClose={() => setPwdOpen(false)}
-        onConfirm={(pwd) => {
-          const { ssid, security } = pendingRef.current;
-          connectTo(ssid, security, pwd);
-          setPwdOpen(false);
-        }}
+        onClose={connectDialog.close}
+        onConfirm={(pwd) => connectWithPassword(pwd)}
+        cancelBind={connectDialog.cancelBind}
+        bindConfirm={(pwd) => connectDialog.bindTap({ kind: 'action', id: 'settings.wifi.connect.confirm' }, {
+          onTrigger: () => connectWithPassword(pwd),
+        })}
       />
 
       <Toast message={toast.message} visible={toast.visible} />
