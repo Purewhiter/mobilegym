@@ -220,7 +220,7 @@ const AddArtistView: React.FC<{ onAdd: (items: LibraryItem[]) => void, existingN
 export const LibraryPage: React.FC = () => {
   const locale = useLocale();
   const isEnglish = locale === 'en';
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const { bindTap, bindNav } = useSpotifyGestures();
   const s = useSpotifyStrings();
   const { likedSongs, customPlaylists, followedArtists } = useSpotifyStore(useShallow(s => ({
@@ -228,8 +228,8 @@ export const LibraryPage: React.FC = () => {
   })));
   const likedCount = likedSongs?.length || 0;
   const activeFilter = (searchParams.get('filter') ?? 'all') as 'all' | 'playlist' | 'artist';
-  const setActiveFilter = (val: 'all' | 'playlist' | 'artist') =>
-    setSearchParams(p => { if (val === 'all') p.delete('filter'); else p.set('filter', val); return p; }, { replace: true });
+  const bindFilter = (val: 'all' | 'playlist' | 'artist') =>
+    bindNav(routes.library, { search: { filter: val === 'all' ? null : val }, replace: true });
 
   const artistImages = useMemo(() => {
     const images: Record<string, string> = {};
@@ -296,7 +296,7 @@ export const LibraryPage: React.FC = () => {
           {activeFilter !== 'all' && (
             <button
               className="w-8 h-8 rounded-full bg-[#2A2A2A] flex items-center justify-center text-white"
-              onClick={() => setActiveFilter('all')}
+              {...bindFilter('all')}
             >
               ✕
             </button>
@@ -304,7 +304,7 @@ export const LibraryPage: React.FC = () => {
           {(activeFilter === 'all' || activeFilter === 'playlist') && (
             <button
               className={`px-4 py-1.5 rounded-full text-sm font-medium border border-transparent ${activeFilter === 'playlist' ? 'bg-app-primary text-black' : 'bg-[#2A2A2A] text-white'}`}
-              onClick={() => setActiveFilter(activeFilter === 'playlist' ? 'all' : 'playlist')}
+              {...bindFilter(activeFilter === 'playlist' ? 'all' : 'playlist')}
             >{s.library_chip_playlist}</button>
           )}
           {activeFilter === 'playlist' && (
@@ -315,7 +315,7 @@ export const LibraryPage: React.FC = () => {
           {(activeFilter === 'all' || activeFilter === 'artist') && (
             <button
               className={`px-4 py-1.5 rounded-full text-sm font-medium border border-transparent ${activeFilter === 'artist' ? 'bg-app-primary text-black' : 'bg-[#2A2A2A] text-white'}`}
-              onClick={() => setActiveFilter(activeFilter === 'artist' ? 'all' : 'artist')}
+              {...bindFilter(activeFilter === 'artist' ? 'all' : 'artist')}
             >{s.library_chip_artist}</button>
           )}
         </div>

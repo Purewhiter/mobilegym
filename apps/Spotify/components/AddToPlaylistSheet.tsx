@@ -25,7 +25,7 @@ export const AddToPlaylistSheet: React.FC<Props> = ({
 }) => {
   const dragStartY = useRef(0);
   const barRef = useRef<HTMLDivElement>(null);
-  const { nav } = useSpotifyGestures();
+  const { bindNav } = useSpotifyGestures();
   const locale = useLocale();
   const isEnglish = locale === 'en';
   const s = useSpotifyStrings();
@@ -94,10 +94,8 @@ export const AddToPlaylistSheet: React.FC<Props> = ({
     }
   };
 
-  const handleCreateNew = () => {
-    useSpotifyStore.setState({ pendingPlaylistTrack: track });
-    nav.push(routes.create, {}, { search: { view: 'naming' } });
-  };
+  const bindCreateNew = () =>
+    bindNav(routes.create, { search: { view: 'naming' }, beforeTrigger: () => useSpotifyStore.setState({ pendingPlaylistTrack: track }) });
 
   const handleLike = () => {
     toggleLike(track);
@@ -194,7 +192,7 @@ export const AddToPlaylistSheet: React.FC<Props> = ({
             {titleVariant === 'saveLocation' ? s.save_location_title : s.add_to_playlist_title}
           </div>
           <button
-            onClick={handleCreateNew}
+            {...bindCreateNew()}
             className="text-app-accent text-sm font-bold"
           >
             {isEnglish ? 'New playlist' : '新建歌单'}
@@ -240,7 +238,7 @@ export const AddToPlaylistSheet: React.FC<Props> = ({
 
           {/* New playlist row */}
           <button
-            onClick={handleCreateNew}
+            {...bindCreateNew()}
             className="w-full flex items-center py-3 active:bg-white/5 rounded px-2 text-white gap-4"
           >
             <div className="w-14 h-14 rounded bg-[#2A2A2A] flex items-center justify-center flex-shrink-0">

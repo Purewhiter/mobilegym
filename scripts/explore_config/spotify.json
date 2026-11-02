@@ -1,0 +1,76 @@
+{
+  "seed": {
+    "apps": {
+      "spotify": {
+        "customPlaylists": [
+          {
+            "id": "explore_playlist_1",
+            "title": "我的歌单 #1",
+            "subtitle": "歌单 · xiaoming",
+            "cover": "",
+            "type": "playlist"
+          }
+        ]
+      }
+    }
+  },
+  "setup": {
+    "/search/input": [
+      {
+        "type": "周杰伦",
+        "into": "input[type=text]"
+      },
+      {
+        "enter": true
+      },
+      {
+        "wait": 500
+      }
+    ],
+    "/signup/email": [
+      {
+        "type": "explore@example.com",
+        "into": "input[type=email]"
+      }
+    ],
+    "/signup/password": [
+      {
+        "type": "explore-pass-01",
+        "into": "input"
+      }
+    ],
+    "/signup/gender": [
+      {
+        "tap": "div.flex-wrap > button"
+      }
+    ],
+    "/signup/finish": [
+      {
+        "type": "Explorer",
+        "into": "input[type=text]"
+      },
+      {
+        "tap": "text=我同意Spotify使用条款。"
+      }
+    ],
+    "/history": [
+      [],
+      [
+        {
+          "tap": "[data-action='spotify.history.group.toggle']"
+        }
+      ]
+    ],
+    "/signup/artists": [
+      {
+        "tap": "div.flex.flex-col.items-center.gap-2 >> nth=0"
+      },
+      {
+        "tap": "div.flex.flex-col.items-center.gap-2 >> nth=1"
+      },
+      {
+        "tap": "div.flex.flex-col.items-center.gap-2 >> nth=2"
+      }
+    ]
+  }
+}

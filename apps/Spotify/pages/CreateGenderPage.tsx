@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { IcNavBack } from '../res/icons';
 import { useSpotifyGestures } from '../hooks/useSpotifyGestures';
 import { useSpotifyStrings } from '../hooks/useSpotifyStrings';
+import { routes } from '../routes';
 
 export const CreateGenderPage: React.FC = () => {
-  const { bindBack, bindTap } = useSpotifyGestures();
+  const { bindBack, bindNav } = useSpotifyGestures();
   const s = useSpotifyStrings();
   const [selectedGender, setSelectedGender] = useState<string | null>(null);
 
@@ -51,11 +52,7 @@ export const CreateGenderPage: React.FC = () => {
             className={`px-8 py-3 rounded-full text-base font-bold transition-transform active:scale-95 ${selectedGender ? 'bg-white text-black' : 'bg-[#535353] text-app-text-muted'
               }`}
             {...(selectedGender
-              ? bindTap('nav.signupFinish', {
-                  onTrigger: () => {
-                    console.log('Gender selected:', selectedGender);
-                  },
-                })
+              ? bindNav(routes.signupFinish)
               : {})}
           >
             {s.create_account_next}

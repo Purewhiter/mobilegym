@@ -2,10 +2,10 @@ import { defineRoutes } from '../../os/navigation/routes';
 
 /** Spotify's pages and the UI states each keeps in its URL. */
 export const routes = defineRoutes({
-  home: { path: '/', search: { 'drawer': ['sidebar'], 'sheet': ['add_playlist', 'track_menu'] } },
+  home: { path: '/', search: { 'drawer': ['sidebar'], 'sheet': ['add_playlist', 'track_menu'], 'tab': ['all', 'music', 'podcast', 'wrapped'] } },
   search: { path: '/search', search: { 'drawer': ['sidebar'] } },
   searchInput: { path: '/search/input', search: { 'sheet': ['add_playlist', 'track_menu'] } },
-  library: { path: '/library', search: { 'sheet': ['add_artist'], 'drawer': ['sidebar'] } },
+  library: { path: '/library', search: { 'sheet': ['add_artist'], 'drawer': ['sidebar'], 'filter': ['playlist', 'artist'] } },
   premium: { path: '/premium' },
   create: { path: '/create', search: { 'view': ['menu', 'naming'], 'source': ['library'] } },
   playlist: { path: '/playlist/:id', search: { 'sheet': ['add_playlist', 'track_menu'] } },
