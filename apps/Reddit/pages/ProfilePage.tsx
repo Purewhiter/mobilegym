@@ -116,10 +116,10 @@ export const ProfilePage: React.FC = () => {
   const toggleJoin = useRedditStore((st) => st.toggleJoin);
   const storeDeletePost = useRedditStore((st) => st.deleteOwnPost);
   const location = useLocation();
-  const { bindNav, bindBack, back } = useRedditGestures();
+  const { bindNav, bindBack } = useRedditGestures();
   const [moreMenuPostId, setMoreMenuPostId] = React.useState<string | null>(null);
   const [confirmDeletePostId, setConfirmDeletePostId] = React.useState<string | null>(null);
-  const [searchParamsProfile, setSearchParamsProfile] = useSearchParams();
+  const [searchParamsProfile] = useSearchParams();
   const showAccountMenu = searchParamsProfile.get('sheet') === 'account';
 
   const sp = new URLSearchParams(location.search);
@@ -274,7 +274,7 @@ export const ProfilePage: React.FC = () => {
             type="button"
             aria-label="More"
             className="w-10 h-10 rounded-full flex items-center justify-center active:bg-white/10"
-            onClick={() => setSearchParamsProfile(p => { p.set('sheet', 'account'); return p; })}
+            {...bindNav(routes.me, { search: { sheet: 'account' }, keep: ['tab'] })}
           >
             <IcMore className="w-5 h-5 text-white" strokeWidth={2} />
           </button>
@@ -785,7 +785,7 @@ export const ProfilePage: React.FC = () => {
         <div className="fixed inset-0 z-[250]">
           <div
             className="absolute inset-0 bg-black/40"
-            onClick={() => back()}
+            {...bindBack<HTMLDivElement>()}
           />
           <div
             className="absolute left-0 right-0 bottom-0 bg-app-surface rounded-t-3xl shadow-[0_-12px_28px_rgba(0,0,0,0.18)]"
@@ -799,7 +799,7 @@ export const ProfilePage: React.FC = () => {
                 type="button"
                 aria-label="Close"
                 className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center active:bg-gray-200"
-                onClick={() => back()}
+                {...bindBack<HTMLButtonElement>()}
               >
                 <IcClose className="w-5 h-5 text-gray-600" strokeWidth={2} />
               </button>

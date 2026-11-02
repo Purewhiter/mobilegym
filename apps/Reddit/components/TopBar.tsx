@@ -428,7 +428,7 @@ export const TopBar: React.FC<TopBarProps> = ({
           {rightSlot}
           {rightAction === 'search' && (
             <button
-              onClick={() => nav.push(routes.search)}
+              {...bindNav(routes.search)}
               className="w-8 h-8 flex items-center justify-center rounded-full active:bg-gray-100"
               aria-label="Search"
             >

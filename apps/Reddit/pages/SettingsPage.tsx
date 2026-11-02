@@ -12,6 +12,7 @@ import { useRedditStore } from '../state';
 import { useShallow } from 'zustand/react/shallow';
 import { strings } from '../res/strings';
 import { stringsEn } from '../res/strings.en';
+import { routes } from '../routes';
 
 /* ──────────── switch ──────────── */
 interface SwitchProps {
@@ -121,10 +122,10 @@ const ListItem: React.FC<ListItemProps> = ({
 /* ──────────── main settings page ──────────── */
 export const SettingsPage: React.FC = () => {
   const s = useAppStrings(strings, stringsEn);
-  const { bindBack, bindTap, back } = useRedditGestures();
+  const { bindBack, bindTap, bindNav, back } = useRedditGestures();
   const { settings, user } = useRedditStore(useShallow((st) => ({ settings: st.settings, user: st.user })));
   const updateSettings = useRedditStore((st) => st.updateSettings);
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const openLinksSheetOpen = searchParams.get('sheet') === 'openLinks';
   const openLinksLabel = settings.openLinksInApp ? s.settings_in_app : s.settings_default_browser;
 
@@ -334,7 +335,7 @@ export const SettingsPage: React.FC = () => {
             Icon={IcExternalLink}
             rightText={openLinksLabel}
             hasDropdown
-            onClick={() => setSearchParams(p => { p.set('sheet', 'openLinks'); return p; })}
+            {...bindNav(routes.meSettings, { search: { sheet: 'openLinks' } })}
           />
           <ListItem
             label={s.settings_saved_image_attribution}
