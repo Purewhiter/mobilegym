@@ -1,3 +1,4 @@
+import { useLocation } from 'react-router-dom';
 import React, { useState } from 'react';
 import { IcClose, IcExpand, IcCollapse, IcLinkSimple, IcImage, IcPlayCircle, IcList, IcSend, IcSearch, IcShield, IcTag } from '../res/icons';
 import { useRedditGestures } from '../hooks/useRedditGestures';
@@ -196,7 +197,8 @@ export const CreatePage: React.FC = () => {
   const submitOnce = useSubmitOnce();
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
-  const [showTagSheet, setShowTagSheet] = useState(false);
+  // The tags & flair sheet lives in the URL (?sheet=tags): system back closes it.
+  const showTagSheet = new URLSearchParams(useLocation().search).get('sheet') === 'tags';
   const [imageUris, setImageUris] = useState<string[]>([]);
   const [pickingImage, setPickingImage] = useState(false);
 
@@ -228,7 +230,7 @@ export const CreatePage: React.FC = () => {
     if (flair) {
       storeAddFlair(flair);
     }
-    setShowTagSheet(false);
+    back();
   };
 
   const handlePost = () => {
@@ -339,7 +341,7 @@ export const CreatePage: React.FC = () => {
         <div className="mb-5">
           <button
             className="flex items-center bg-gray-200 rounded-full px-4 py-2"
-            onClick={() => selectedCommunity && setShowTagSheet(true)}
+            {...(selectedCommunity ? bindNav(routes.create, { search: { sheet: 'tags' } }) : {})}
           >
             <span className="text-sm font-bold text-gray-600">
               Add tags & flair (optional)
@@ -420,7 +422,7 @@ export const CreatePage: React.FC = () => {
           communityName={selectedCommunity.name}
           existingFlairs={selectedFlairs}
           onApply={handleApplyFlair}
-          onClose={() => setShowTagSheet(false)}
+          onClose={() => back()}
         />
       )}
     </div>

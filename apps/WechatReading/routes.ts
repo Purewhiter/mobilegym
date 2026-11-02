@@ -12,7 +12,7 @@ export const routes = defineRoutes({
   editProfile: { path: '/edit-profile' },
   genderSelection: { path: '/gender-selection' },
   myProfile: { path: '/my-profile', search: { 'tab': ['shelf', 'finished'] } },
-  myReading: { path: '/my-reading', search: { 'tab': ['week', 'month', 'year', 'total', 'history'] } },
+  myReading: { path: '/my-reading', search: { 'tab': ['week', 'month', 'year', 'total', 'history'], 'sheet': ['calendar'] } },
   readingList: { path: '/reading-list', search: { 'category': ['all', 'reading', 'finished'] } },
   bookLists: { path: '/book-lists', search: { 'category': ['all', 'finished'] } },
   bookListsEdit: { path: '/book-lists/edit' },

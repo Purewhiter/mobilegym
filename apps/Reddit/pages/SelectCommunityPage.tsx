@@ -55,7 +55,7 @@ export const COMMUNITIES: CommunityInfo[] = [
 ];
 
 export const SelectCommunityPage: React.FC = () => {
-  const { bindBack, back } = useRedditGestures();
+  const { bindBack, bindTap, back } = useRedditGestures();
   const selectCommunity = useRedditStore((s) => s.selectCommunity);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -111,7 +111,7 @@ export const SelectCommunityPage: React.FC = () => {
           <button
             key={community.id}
             className="flex items-start gap-3 w-full px-4 py-3 text-left active:bg-gray-50"
-            onClick={() => handleSelect(community)}
+            {...bindTap({ kind: 'action', id: 'reddit.create.community.select' }, { params: { id: community.id }, onTrigger: () => handleSelect(community) })}
           >
             {/* Community icon */}
             <div

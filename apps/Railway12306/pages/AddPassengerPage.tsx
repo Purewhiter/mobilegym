@@ -34,7 +34,6 @@ export const AddPassengerPage: React.FC = () => {
   const [idNo, setIdNo] = useState('');
   const [ticketType, setTicketType] = useState(TICKET_TYPES[0]);
   const [phone, setPhone] = useState('');
-  const [showConfirm, setShowConfirm] = useState(false);
   const [alertMsg, setAlertMsg] = useState('');
   const [fieldErrors, setFieldErrors] = useState<{ idNo?: boolean; phone?: boolean }>({});
 
@@ -76,7 +75,7 @@ export const AddPassengerPage: React.FC = () => {
       openAlert(s.add_passenger_duplicate);
       return;
     }
-    setShowConfirm(true);
+    nav.push(routes.addPassenger, {}, { search: { dialog: 'confirm' } });
   };
 
   const handleConfirm = () => {
@@ -90,8 +89,8 @@ export const AddPassengerPage: React.FC = () => {
       ticketType,
     };
     updatePassengers([...passengers, newPassenger]);
-    setShowConfirm(false);
-    back();
+    // Close the dialog and leave the form.
+    back(2);
   };
 
   return (
@@ -207,7 +206,7 @@ export const AddPassengerPage: React.FC = () => {
         />
       )}
 
-      {showConfirm && (
+      {dialog === 'confirm' && (
         <ConfirmDialog
           s={s}
           isEnglish={isEnglish}
@@ -216,8 +215,8 @@ export const AddPassengerPage: React.FC = () => {
           idNo={idNo.trim()}
           phone={phone.trim()}
           ticketType={ticketType}
-          onCancel={() => setShowConfirm(false)}
-          onConfirm={handleConfirm}
+          cancelBind={bindBack()}
+          confirmBind={bindTap({ kind: 'action', id: 'railway.addPassenger.confirm' }, { onTrigger: handleConfirm })}
         />
       )}
 
@@ -312,9 +311,9 @@ const ConfirmDialog: React.FC<{
   idNo: string;
   phone: string;
   ticketType: string;
-  onCancel: () => void;
-  onConfirm: () => void;
-}> = ({ s, isEnglish, idType, name, idNo, phone, ticketType, onCancel, onConfirm }) => {
+  cancelBind: React.HTMLAttributes<HTMLElement>;
+  confirmBind: React.HTMLAttributes<HTMLElement>;
+}> = ({ s, isEnglish, idType, name, idNo, phone, ticketType, cancelBind, confirmBind }) => {
   const rows = [
     { label: `${s.add_passenger_id_type}：`, value: localizeRailwayText(idType, isEnglish) },
     { label: `${s.add_passenger_name}：`, value: name },
@@ -325,7 +324,7 @@ const ConfirmDialog: React.FC<{
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/40" />
+      <div className="absolute inset-0 bg-black/40" {...cancelBind} />
       <div className="relative bg-white rounded-xl w-[300px] overflow-hidden">
         <div className="text-center text-[16px] text-[#333] font-medium pt-5 pb-3">
           {s.add_passenger_confirm_title}
@@ -341,13 +340,13 @@ const ConfirmDialog: React.FC<{
         <div className="flex border-t border-[#F0F2F5]">
           <button
             className="flex-1 py-3.5 text-[15px] text-[#666] border-r border-[#F0F2F5] active:bg-gray-50"
-            onClick={onCancel}
+            {...cancelBind}
           >
             {s.action_cancel}
           </button>
           <button
             className="flex-1 py-3.5 text-[15px] text-white font-medium bg-[#4FA4F7] active:bg-[#3B8DE5] rounded-br-xl"
-            onClick={onConfirm}
+            {...confirmBind}
           >
             {s.action_confirm}
           </button>

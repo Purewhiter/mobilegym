@@ -242,7 +242,8 @@ const MyReadingPage: React.FC = () => {
 
 
   const [currentDate, setCurrentDate] = useState(TimeService.getDate()); // Defaults to today
-  const [showCalendar, setShowCalendar] = useState(false);
+  // The reading calendar lives in the URL (?sheet=calendar): system back closes it.
+  const showCalendar = searchParams.get('sheet') === 'calendar';
   const [selectedBarIndex, setSelectedBarIndex] = useState<number | null>(null);
 
   // Reset selection when view changes
@@ -528,7 +529,7 @@ const MyReadingPage: React.FC = () => {
           <div className="flex items-center justify-between mb-8">
              <div className="text-(--app-settings-item-text-size) font-bold text-(--app-c-my-reading-page-text-3333)">阅读时长分布</div>
              <button 
-               onClick={() => setShowCalendar(true)}
+               {...bindNav(routes.myReading, { search: { sheet: 'calendar' }, keep: ['tab'] })}
                className="p-1.5 rounded-lg hover:bg-(--app-c-tw-bg-gray-50) text-(--app-c-tw-text-gray-400)"
              >
                <IcCalendar size={dimens.icSizeAction} />
@@ -592,7 +593,7 @@ const MyReadingPage: React.FC = () => {
       {showCalendar && (
         <CalendarView 
           records={readingRecords} 
-          onClose={() => setShowCalendar(false)} 
+          onClose={() => nav.back()} 
         />
       )}
     </div>

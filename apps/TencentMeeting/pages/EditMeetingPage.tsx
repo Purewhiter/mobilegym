@@ -1,4 +1,5 @@
 import { useTencentMeetingStrings } from '../hooks/useTencentMeetingStrings';
+import { useLocation } from 'react-router-dom';
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { IcNavForward, IcExpand, IcInfo, IcClose, IcCheck } from '../res/icons';
 import * as TimeService from '../../../os/TimeService';
@@ -192,8 +193,9 @@ const DurationPicker: React.FC<{
     onChange: (duration: number) => void;
     onClose: () => void;
     onConfirm: () => void;
-    onSwitchToEndTime: () => void;
-}> = ({ duration, onChange, onClose, onConfirm, onSwitchToEndTime }) => {
+    /** Opens the end-time picker in this one's place. */
+    switchToEndTimeBind: React.HTMLAttributes<HTMLElement>;
+}> = ({ duration, onChange, onClose, onConfirm, switchToEndTimeBind }) => {
     const s = useTencentMeetingStrings();
     const hourOptions = generateDurationHourOptions(s.picker_suffix_hours);
     const minuteOptions = generateDurationMinuteOptions(s.picker_suffix_minutes);
@@ -215,7 +217,7 @@ const DurationPicker: React.FC<{
                     <PickerColumn options={minuteOptions} value={minutes} onChange={(v) => onChange(hours * 60 + v)} />
                 </div>
                 <div className="border-t border-gray-100 py-4">
-                    <button className="w-full text-center text-[15px] text-gray-600" onClick={onSwitchToEndTime}>
+                    <button className="w-full text-center text-[15px] text-gray-600" {...switchToEndTimeBind}>
                         {s.picker_select_end_time}
                     </button>
                 </div>
@@ -230,8 +232,9 @@ const EndTimePicker: React.FC<{
     onChange: (endTime: number) => void;
     onClose: () => void;
     onConfirm: () => void;
-    onBack: () => void;
-}> = ({ startTime, endTime, onChange, onClose, onConfirm, onBack }) => {
+    /** Goes back to the duration picker in this one's place. */
+    backBind: React.HTMLAttributes<HTMLElement>;
+}> = ({ startTime, endTime, onChange, onClose, onConfirm, backBind }) => {
     const s = useTencentMeetingStrings();
     const dateOptions = generateDateOptions(s);
     const hourOptions = generateHourOptions(s.picker_suffix_hour);
@@ -255,7 +258,7 @@ const EndTimePicker: React.FC<{
             <div className="absolute inset-0 bg-black/30" onClick={onClose}></div>
             <div className="relative bg-app-surface rounded-t-2xl">
                 <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-                    <button onClick={onBack} className="p-1">
+                    <button {...backBind} className="p-1">
                         <IcNavForward size={24} className="text-gray-500 transform rotate-180" />
                     </button>
                     <div className="flex flex-col items-center">
@@ -451,7 +454,8 @@ const formatDurationDisplay = (minutes: number, s: TencentMeetingStrings): strin
 };
 
 export const EditMeetingPage: React.FC = () => {
-    const { bindBack, bindNav } = useMeetingGestures();
+    const { bindBack, bindNav, bindTap, nav } = useMeetingGestures();
+    const pickerParam = new URLSearchParams(useLocation().search).get('picker');
     const currentScheduledMeeting = useMeetingStore(s => s.currentScheduledMeeting);
     const updateScheduledMeeting = useMeetingStore(s => s.updateScheduledMeeting);
     const contacts = useMeetingStore(s => s.contacts);
@@ -476,7 +480,16 @@ export const EditMeetingPage: React.FC = () => {
     }, [s]);
     const [repeatType, setRepeatType] = useState<RepeatType>(meeting?.repeatType ?? 'none');
 
-    const [pickerType, setPickerType] = useState<'none' | 'startTime' | 'duration' | 'endTime' | 'timezone' | 'repeat'>('none');
+    // Pickers live in the URL (?picker=...): system back closes them. Opening one pushes; switching
+    // between duration and end time replaces; closing goes back.
+    type PickerType = 'none' | 'startTime' | 'duration' | 'endTime' | 'timezone' | 'repeat';
+    const pickerType = (pickerParam && pickerParam !== 'invitees' ? pickerParam : 'none') as PickerType;
+    const setPickerType = (next: PickerType) => {
+        if (next === 'none') { nav.back(); return; }
+        (pickerType === 'none' ? nav.push : nav.replace)(routes.meetingEdit, {}, { search: { picker: next } });
+    };
+    const bindPicker = (picker: Exclude<PickerType, 'none'> | 'invitees', beforeTrigger?: () => void) =>
+        bindNav(routes.meetingEdit, { search: { picker }, beforeTrigger });
     const [tempStartTime, setTempStartTime] = useState(startTime);
     const [tempDuration, setTempDuration] = useState(duration);
     const [tempEndTime, setTempEndTime] = useState(startTime + duration * 60000);
@@ -493,7 +506,7 @@ export const EditMeetingPage: React.FC = () => {
     const [allowUploadDoc, setAllowUploadDoc] = useState(meeting?.settings.allowUploadDoc ?? true);
 
     const [invitees, setInvitees] = useState<{ id: string; name: string; avatar?: string }[]>(meeting?.invitees ?? []);
-    const [showInviteesPicker, setShowInviteesPicker] = useState(false);
+    const showInviteesPicker = pickerParam === 'invitees';
 
     const generateRandomPassword = () => {
         const rng = nextStream('meeting.password');
@@ -577,10 +590,10 @@ export const EditMeetingPage: React.FC = () => {
 
                 {/* 时间设置 */}
                 <div className="mt-3 bg-app-surface">
-                    <div onClick={() => { setTempStartTime(startTime); setPickerType('startTime'); }}>
+                    <div {...bindPicker('startTime', () => setTempStartTime(startTime))}>
                         <Row label={s.schedule_start_time} value={formatStartTimeDisplay(startTime, s)} />
                     </div>
-                    <div onClick={() => { setTempDuration(duration); setTempEndTime(startTime + duration * 60000); setPickerType('duration'); }}>
+                    <div {...bindPicker('duration', () => { setTempDuration(duration); setTempEndTime(startTime + duration * 60000); })}>
                         <Row label={s.schedule_duration} value={formatDurationDisplay(duration, s)} />
                     </div>
 
@@ -603,16 +616,16 @@ export const EditMeetingPage: React.FC = () => {
                         </div>
                     </div>
 
-                    <div onClick={() => setPickerType('timezone')}>
+                    <div {...bindPicker('timezone')}>
                         <Row label={s.schedule_timezone} value={timezone} />
                     </div>
-                    <div onClick={() => setPickerType('repeat')}>
+                    <div {...bindPicker('repeat')}>
                         <Row label={s.schedule_repeat} value={formatRepeatDisplay(repeatType, startTime, s)} />
                     </div>
                 </div>
 
                 {/* 参会人 */}
-                <div className="mt-3 bg-app-surface" onClick={() => setShowInviteesPicker(true)}>
+                <div className="mt-3 bg-app-surface" {...bindPicker('invitees')}>
                     <Row label={s.schedule_invitees} value={inviteesValue} />
                 </div>
 
@@ -697,7 +710,10 @@ export const EditMeetingPage: React.FC = () => {
                     onChange={setTempDuration}
                     onClose={() => setPickerType('none')}
                     onConfirm={() => { setDuration(tempDuration); setPickerType('none'); }}
-                    onSwitchToEndTime={() => { setTempEndTime(startTime + tempDuration * 60000); setPickerType('endTime'); }}
+                    switchToEndTimeBind={bindTap('nav.meetingEdit', {
+                        params: { picker: 'endTime' },
+                        onTrigger: () => { setTempEndTime(startTime + tempDuration * 60000); setPickerType('endTime'); },
+                    })}
                 />
             )}
             {pickerType === 'endTime' && (
@@ -711,7 +727,7 @@ export const EditMeetingPage: React.FC = () => {
                         setDuration(newDuration);
                         setPickerType('none');
                     }}
-                    onBack={() => setPickerType('duration')}
+                    backBind={bindTap('nav.meetingEdit', { params: { picker: 'duration' }, onTrigger: () => setPickerType('duration') })}
                 />
             )}
             {pickerType === 'timezone' && (
@@ -731,9 +747,9 @@ export const EditMeetingPage: React.FC = () => {
                 <div className="fixed inset-0 z-50 flex flex-col bg-app-surface">
                     <div className="bg-app-surface pt-10 shrink-0 border-b border-gray-100">
                         <div className="flex items-center justify-between px-4 py-3">
-                            <button onClick={() => setShowInviteesPicker(false)} className="text-[17px] text-gray-900">{s.btn_cancel}</button>
+                            <button {...bindBack()} className="text-[17px] text-gray-900">{s.btn_cancel}</button>
                             <span className="text-[17px] font-medium text-gray-900">{s.schedule_select_invitees}</span>
-                            <button onClick={() => setShowInviteesPicker(false)} className="text-[17px] text-blue-600 font-medium">
+                            <button {...bindBack()} className="text-[17px] text-blue-600 font-medium">
                                 {s.btn_confirm}({invitees.length})
                             </button>
                         </div>

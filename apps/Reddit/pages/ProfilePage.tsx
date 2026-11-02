@@ -116,10 +116,12 @@ export const ProfilePage: React.FC = () => {
   const toggleJoin = useRedditStore((st) => st.toggleJoin);
   const storeDeletePost = useRedditStore((st) => st.deleteOwnPost);
   const location = useLocation();
-  const { bindNav, bindBack } = useRedditGestures();
-  const [moreMenuPostId, setMoreMenuPostId] = React.useState<string | null>(null);
-  const [confirmDeletePostId, setConfirmDeletePostId] = React.useState<string | null>(null);
+  const { bindNav, bindBack, bindTap, back } = useRedditGestures();
   const [searchParamsProfile] = useSearchParams();
+  // The post menu and the delete confirmation live in the URL (?sheet=postMore|deletePost&sheetPostId=).
+  const profileSheet = searchParamsProfile.get('sheet');
+  const moreMenuPostId = profileSheet === 'postMore' ? searchParamsProfile.get('sheetPostId') : null;
+  const confirmDeletePostId = profileSheet === 'deletePost' ? searchParamsProfile.get('sheetPostId') : null;
   const showAccountMenu = searchParamsProfile.get('sheet') === 'account';
 
   const sp = new URLSearchParams(location.search);
@@ -494,7 +496,7 @@ export const ProfilePage: React.FC = () => {
                             <button
                               type="button"
                               aria-label="Post menu"
-                              onClick={() => setMoreMenuPostId(post.id)}
+                              {...bindNav(routes.me, { search: { sheet: 'postMore', sheetPostId: post.id }, keep: ['tab'] })}
                               className="w-8 h-8 rounded-full flex items-center justify-center text-gray-600 active:bg-gray-100"
                             >
                               <IcMoreVert className="w-5 h-5" strokeWidth={2} />
@@ -725,7 +727,7 @@ export const ProfilePage: React.FC = () => {
         <div className="fixed inset-0 z-[250]">
           <div
             className="absolute inset-0 bg-black/40"
-            onClick={() => setMoreMenuPostId(null)}
+            {...bindBack<HTMLDivElement>()}
           />
           <div
             className="absolute left-0 right-0 bottom-0 bg-app-surface rounded-t-3xl px-4 pt-3 pb-8 shadow-[0_-12px_28px_rgba(0,0,0,0.18)]"
@@ -767,10 +769,7 @@ export const ProfilePage: React.FC = () => {
                 <ProfileMoreMenuItem
                   icon={<IcDelete className="w-5 h-5" strokeWidth={2} />}
                   label="Delete"
-                  onClick={() => {
-                    setMoreMenuPostId(null);
-                    setConfirmDeletePostId(moreMenuPostId);
-                  }}
+                  bind={bindNav(routes.me, { search: { sheet: 'deletePost', sheetPostId: moreMenuPostId }, keep: ['tab'], replace: true })}
                 />
               )}
               <ProfileMoreMenuItem icon={<IcFlag className="w-5 h-5" strokeWidth={2} />} label="Report" />
@@ -874,17 +873,19 @@ export const ProfilePage: React.FC = () => {
             <div className="px-5 pb-5 pt-5 flex gap-4">
               <button
                 type="button"
-                onClick={() => setConfirmDeletePostId(null)}
+                {...bindBack()}
                 className="flex-1 h-12 rounded-full bg-gray-200 text-gray-600 font-bold"
               >
                 Cancel
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  deletePost(confirmDeletePostId);
-                  setConfirmDeletePostId(null);
-                }}
+                {...bindTap({ kind: 'action', id: 'profile.post.delete.confirm' }, {
+                  onTrigger: () => {
+                    deletePost(confirmDeletePostId);
+                    back();
+                  },
+                })}
                 className="flex-1 h-12 rounded-full bg-[#E11D48] text-white font-bold"
               >
                 Delete
@@ -900,11 +901,11 @@ export const ProfilePage: React.FC = () => {
 const ProfileMoreMenuItem: React.FC<{
   icon: React.ReactNode;
   label: string;
-  onClick?: () => void;
-}> = ({ icon, label, onClick }) => (
+  bind?: React.HTMLAttributes<HTMLElement>;
+}> = ({ icon, label, bind }) => (
   <button
     type="button"
-    onClick={onClick ?? (() => {})}
+    {...bind}
     className="w-full flex items-center gap-4 px-4 py-3 text-left active:bg-gray-50"
   >
     <div className="w-6 h-6 flex items-center justify-center text-gray-800">{icon}</div>
