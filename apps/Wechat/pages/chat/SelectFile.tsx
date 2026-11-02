@@ -693,7 +693,7 @@ const FileBrowserView: React.FC<{
         {parent != null && (
           <button
             type="button"
-            onClick={() => nav.replace(routes.chatSelectFile, { id: targetWxid! }, { search: { tab: 'file', view: 'browser', dir: parent } })}
+            {...bindNav(routes.chatSelectFile, { params: { id: targetWxid! }, search: { tab: 'file', view: 'browser', dir: parent }, replace: true })}
             className="w-full flex items-center gap-3 px-4 py-3 active:opacity-70 border-b border-app-border"
           >
             <IcFolder size={26} className="text-(--app-c-tw-text-gray-400)" />
@@ -704,13 +704,9 @@ const FileBrowserView: React.FC<{
           <button
             key={node.id}
             type="button"
-            onClick={() => {
-              if (node.type === 'directory') {
-                nav.replace(routes.chatSelectFile, { id: targetWxid! }, { search: { tab: 'file', view: 'browser', dir: node.path } });
-              } else {
-                onPickFile(node);
-              }
-            }}
+            {...(node.type === 'directory'
+              ? bindNav(routes.chatSelectFile, { params: { id: targetWxid! }, search: { tab: 'file', view: 'browser', dir: node.path }, replace: true })
+              : { onClick: () => onPickFile(node) })}
             className="w-full flex items-center gap-3 px-4 py-3 active:opacity-70 border-b border-app-border"
           >
             {node.type === 'directory' ? (

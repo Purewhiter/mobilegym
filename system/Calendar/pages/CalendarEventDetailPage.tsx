@@ -27,7 +27,7 @@ const formatRangeCN = (startTs: number, endTs: number, allDay: boolean, allDayLa
 export const CalendarEventDetailPage: React.FC = () => {
   const { back, bindBack, bindNav, bindTap } = useCalendarGestures();
   const { eventId } = useParams();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const showDeleteConfirm = searchParams.get('deleteConfirm') === 'open';
   const calendarEvents = useCalendarStore(s => s.events);
   const deleteEvent = useCalendarStore(s => s.deleteEvent);
@@ -131,7 +131,7 @@ export const CalendarEventDetailPage: React.FC = () => {
             <MaskIcon src={calIcon('miuix_action_icon_edit_light')} size={22} />
           </button>
           <button
-            onClick={() => setSearchParams(p => { p.set('deleteConfirm', 'open'); return p; })}
+            {...bindNav(routes.event, { params: { eventId: eventId! }, search: { deleteConfirm: 'open' } })}
             className="w-14 h-14 rounded-full bg-white/95 dark:bg-[#1c1c1e]/95 shadow-lg flex items-center justify-center text-red-600 active:scale-95 transition-transform"
             aria-label="删除"
           >

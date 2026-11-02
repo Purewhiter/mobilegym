@@ -5,7 +5,7 @@ export const routes = defineRoutes({
   home: { path: '/', search: { 'menu': ['more'] }, description: '日历首页', states: { 'menu=more': '更多菜单' } },
   settings: { path: '/settings', description: '日历设置页' },
   newEvent: { path: '/new-event', description: '新建日程页' },
-  event: { path: '/event/:eventId', description: '日程详情页' },
+  event: { path: '/event/:eventId', search: { 'deleteConfirm': ['open'] }, description: '日程详情页', states: { 'deleteConfirm=open': '删除日程确认弹窗' } },
   eventEdit: { path: '/event/:eventId/edit', description: '编辑日程页' },
   search: { path: '/search', description: '搜索页' },
   dateJump: { path: '/date-jump', description: '日期跳转页' },

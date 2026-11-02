@@ -306,7 +306,7 @@ export const RechargePage: React.FC = () => {
 
               <button
                 className="w-full flex items-center px-4 py-4 active:bg-gray-50"
-                onClick={() => { setCardSelectorOpen(false); nav.push(routes.bankCardsAdd, {}, { search: { returnTo: '/balance/recharge' } }); }}
+                {...bindNav(routes.bankCardsAdd, { search: { returnTo: '/balance/recharge' }, beforeTrigger: () => setCardSelectorOpen(false) })}
               >
                 <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0 mr-3">
                   <IcCard size={20} className="text-gray-500" />
