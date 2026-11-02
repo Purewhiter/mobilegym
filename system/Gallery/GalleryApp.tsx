@@ -186,36 +186,32 @@ const ConfirmDialog: React.FC<{
   confirmText?: string;
   cancelText?: string;
   danger?: boolean;
-  onConfirm: () => void;
-  onCancel: () => void;
-}> = ({ open, title, message, confirmText, cancelText, danger, onConfirm, onCancel }) => {
+  /** Shown from a URL state: cancel and the backdrop are system back, confirm is an action. */
+  cancelBind: React.HTMLAttributes<HTMLElement>;
+  confirmBind: React.HTMLAttributes<HTMLElement>;
+}> = ({ open, title, message, confirmText, cancelText, danger, cancelBind, confirmBind }) => {
   const s = useAppStrings(strings, stringsEn);
   const effectiveConfirmText = confirmText ?? s.dialog_confirm;
   const effectiveCancelText = cancelText ?? s.dialog_cancel;
   if (!open) return null;
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-      onClick={onCancel}
-    >
-      <div
-        className="bg-app-surface rounded-2xl w-(--app-dialog-width) overflow-hidden shadow-2xl animate-scale-in"
-        onClick={e => e.stopPropagation()}
-      >
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div className="absolute inset-0 bg-black/50" {...cancelBind} />
+      <div className="relative bg-app-surface rounded-2xl w-(--app-dialog-width) overflow-hidden shadow-2xl animate-scale-in">
         <div className="pt-6 pb-4 px-5 text-center">
           <h3 className="text-[17px] font-semibold text-slate-900 mb-2">{title}</h3>
           <p className="text-[14px] text-slate-500 leading-relaxed">{message}</p>
         </div>
         <div className="flex border-t border-slate-200">
           <button
-            onClick={onCancel}
+            {...cancelBind}
             className="flex-1 py-3.5 text-[16px] font-medium text-blue-500 active:bg-slate-50 border-r border-slate-200"
           >
             {effectiveCancelText}
           </button>
           <button
-            onClick={onConfirm}
+            {...confirmBind}
             className={`flex-1 py-3.5 text-[16px] font-semibold active:bg-slate-50 ${
               danger ? 'text-red-500' : 'text-blue-500'
             }`}
@@ -377,101 +373,72 @@ const PhotoGridItem: React.FC<{
   item: MediaItem;
   /** Tap binding that opens the photo (bindNav); not applied in select mode. */
   openBind: React.HTMLAttributes<HTMLElement>;
+  /** Tap binding that toggles the photo in select mode. */
+  selectBind?: React.HTMLAttributes<HTMLElement>;
+  /** Long-press binding that enters select mode; not applied in select mode. */
+  longPressBind?: React.HTMLAttributes<HTMLElement>;
   isSelected?: boolean;
   isSelectMode?: boolean;
-  onSelect?: () => void;
-  onLongPress?: () => void;
   showFavorite?: boolean;
-}> = ({ item, openBind, isSelected, isSelectMode, onSelect, onLongPress, showFavorite }) => {
+}> = ({ item, openBind, selectBind, longPressBind, isSelected, isSelectMode, showFavorite }) => {
   const favorites = useFavorites();
   const favorite = favorites.has(item.path);
-  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const isLongPress = useRef(false);
+  // The click that ends a long press is swallowed: by then select mode is on and the cell would
+  // otherwise toggle the photo it just selected.
+  const pressedAt = useRef(0);
 
-  const clearTimer = () => {
-    if (longPressTimer.current) {
-      clearTimeout(longPressTimer.current);
-      longPressTimer.current = null;
-    }
-  };
-  
-  const handlePointerDown = () => {
-    isLongPress.current = false;
-    clearTimer();
-    longPressTimer.current = setTimeout(() => {
-      isLongPress.current = true;
-      onLongPress?.();
-    }, 500);
-  };
-  
-  const handlePointerUp = () => {
-    clearTimer();
-  };
-  
-  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
-    if (isLongPress.current) {
-      isLongPress.current = false;
-      return;
-    }
-    if (isSelectMode) {
-      onSelect?.();
-    } else {
-      openBind.onClick?.(event);
-    }
-  };
-  
+  // The long press sits on the outer cell and the tap on the inner one: each keeps its own tag.
   return (
-    <div 
+    <div
       className="relative aspect-square overflow-hidden group"
-      {...(isSelectMode ? {} : openBind)}
-      onClick={handleClick}
+      {...(isSelectMode ? {} : longPressBind)}
+      onPointerDownCapture={() => { pressedAt.current = TimeService.realNow(); }}
+      onClickCapture={(e) => { if (TimeService.realNow() - pressedAt.current >= 500) e.stopPropagation(); }}
       onContextMenu={(e) => e.preventDefault()}
-      onPointerDown={handlePointerDown}
-      onPointerUp={handlePointerUp}
-      onPointerCancel={handlePointerUp}
-      onPointerLeave={handlePointerUp}
     >
-      <AsyncImage
-        path={item.path}
-        fallbackUri={item.thumbnailUri || item.uri}
-        className="w-full h-full object-cover transition-transform duration-200 group-active:scale-95"
-        alt={item.name}
-      />
+      <div className="absolute inset-0" {...(isSelectMode ? selectBind : openBind)}>
+        <AsyncImage
+          path={item.path}
+          fallbackUri={item.thumbnailUri || item.uri}
+          className="w-full h-full object-cover transition-transform duration-200 group-active:scale-95"
+          alt={item.name}
+        />
       
-      {/* Video indicator */}
-      {item.type === 'video' && (
-        <div className="absolute bottom-1 left-1 flex items-center gap-1 bg-black/60 rounded-full px-1.5 py-0.5">
-          <IcVideo size={10} className="text-white" />
-          {item.duration && (
-            <span className="text-white text-[9px] font-medium">
-              {Math.floor(item.duration / 60)}:{String(item.duration % 60).padStart(2, '0')}
-            </span>
-          )}
-        </div>
-      )}
+        {/* Video indicator */}
+        {item.type === 'video' && (
+          <div className="absolute bottom-1 left-1 flex items-center gap-1 bg-black/60 rounded-full px-1.5 py-0.5">
+            <IcVideo size={10} className="text-white" />
+            {item.duration && (
+              <span className="text-white text-[9px] font-medium">
+                {Math.floor(item.duration / 60)}:{String(item.duration % 60).padStart(2, '0')}
+              </span>
+            )}
+          </div>
+        )}
       
-      {/* Favorite indicator */}
-      {showFavorite && favorite && !isSelectMode && (
-        <div className="absolute top-1 right-1">
-          <IcHeart size={14} className="text-red-500 fill-red-500 drop-shadow-lg" />
-        </div>
-      )}
+        {/* Favorite indicator */}
+        {showFavorite && favorite && !isSelectMode && (
+          <div className="absolute top-1 right-1">
+            <IcHeart size={14} className="text-red-500 fill-red-500 drop-shadow-lg" />
+          </div>
+        )}
       
-      {/* Selection indicator */}
-      {isSelectMode && (
-        <div className={`absolute top-1.5 right-1.5 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
-          isSelected 
-            ? 'bg-blue-500 border-blue-500' 
-            : 'border-white bg-black/20'
-        }`}>
-          {isSelected && <IcCheck size={12} className="text-white" strokeWidth={3} />}
-        </div>
-      )}
+        {/* Selection indicator */}
+        {isSelectMode && (
+          <div className={`absolute top-1.5 right-1.5 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
+            isSelected 
+              ? 'bg-blue-500 border-blue-500' 
+              : 'border-white bg-black/20'
+          }`}>
+            {isSelected && <IcCheck size={12} className="text-white" strokeWidth={3} />}
+          </div>
+        )}
       
-      {/* Selection overlay */}
-      {isSelectMode && isSelected && (
-        <div className="absolute inset-0 bg-blue-500/20" />
-      )}
+        {/* Selection overlay */}
+        {isSelectMode && isSelected && (
+          <div className="absolute inset-0 bg-blue-500/20" />
+        )}
+      </div>
     </div>
   );
 };
@@ -480,12 +447,20 @@ const PhotoGridItem: React.FC<{
 // Photos Page
 // ============================================================================
 const PhotosPage: React.FC<{ onSelectModeChange?: (active: boolean) => void }> = ({ onSelectModeChange }) => {
-  const { bindNav } = useGalleryGestures();
+  const { bindNav, bindBack, bindTap, bindLongPress, back, nav } = useGalleryGestures();
   const s = useAppStrings(strings, stringsEn);
+  const location = useLocation();
   const [items, setItems] = useState<MediaItem[]>([]);
-  const [selectMode, setSelectMode] = useState(false);
+  // Select mode (?mode=select) and its batch delete confirmation (&dialog=delete) live in the URL:
+  // system back closes the dialog, then leaves select mode.
+  const query = new URLSearchParams(location.search);
+  const selectMode = query.get('mode') === 'select';
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const showDeleteConfirm = selectMode && query.get('dialog') === 'delete';
+
+  useEffect(() => {
+    if (!selectMode) setSelected(new Set());
+  }, [selectMode]);
   const [scrollTop, setScrollTop] = useState(0);
 
   useEffect(() => {
@@ -511,32 +486,21 @@ const PhotosPage: React.FC<{ onSelectModeChange?: (active: boolean) => void }> =
     setSelected(newSelected);
   };
   
-  const handleBatchDelete = () => {
-    if (selected.size === 0) return;
-    setShowDeleteConfirm(true);
-  };
-  
   const confirmBatchDelete = async () => {
-    for (const path of selected) {
+    // Close the dialog first: the deletion below is async, and back must not fire after the user moved on.
+    const paths = new Set(selected);
+    back(2);
+    for (const path of paths) {
       await MediaService.deleteMedia(path);
     }
-    setItems(items.filter(i => !selected.has(i.path)));
-    setSelected(new Set());
-    setSelectMode(false);
-    setShowDeleteConfirm(false);
+    setItems(prev => prev.filter(i => !paths.has(i.path)));
   };
   
   const handleBatchFavorite = () => {
     for (const path of selected) {
       setFavorite(path, true);
     }
-    setSelected(new Set());
-    setSelectMode(false);
-  };
-
-  const exitSelectMode = () => {
-    setSelectMode(false);
-    setSelected(new Set());
+    back();
   };
 
   const toggleSelectAll = () => {
@@ -563,12 +527,12 @@ const PhotosPage: React.FC<{ onSelectModeChange?: (active: boolean) => void }> =
           alwaysShowSmallTitle={false}
           bgClass="bg-app-surface"
           leftContent={
-            <button onClick={exitSelectMode} className="w-10 h-10 flex items-center justify-center -ml-2 active:opacity-60">
+            <button {...bindBack()} className="w-10 h-10 flex items-center justify-center -ml-2 active:opacity-60">
               <IcClose size={28} className="text-slate-900" />
             </button>
           }
           rightContent={
-            <button onClick={toggleSelectAll} className="w-10 h-10 flex items-center justify-center active:opacity-60">
+            <button {...bindTap({ kind: 'action', id: 'gallery.select.all' }, { onTrigger: toggleSelectAll })} className="w-10 h-10 flex items-center justify-center active:opacity-60">
               <IcSelectAll size={28} className={isAllSelected ? 'text-blue-500' : 'text-slate-400'} />
             </button>
           }
@@ -634,15 +598,17 @@ const PhotosPage: React.FC<{ onSelectModeChange?: (active: boolean) => void }> =
                 key={item.id}
                 item={item}
                 openBind={bindNav(routes.photo, { params: { path: encodeURIComponent(item.path) } })}
+                selectBind={bindTap({ kind: 'action', id: 'gallery.select.toggle' }, { onTrigger: () => handleSelect(item.path) })}
+                longPressBind={bindLongPress('nav.home', {
+                  params: { mode: 'select' },
+                  duration: 500,
+                  onTrigger: () => {
+                    setSelected(new Set([item.path]));
+                    nav.push(routes.home, {}, { search: { mode: 'select' } });
+                  },
+                })}
                 isSelectMode={selectMode}
                 isSelected={selected.has(item.path)}
-                onSelect={() => handleSelect(item.path)}
-                onLongPress={() => {
-                  if (!selectMode) {
-                    setSelectMode(true);
-                    setSelected(new Set([item.path]));
-                  }
-                }}
                 showFavorite
               />
             ))}
@@ -654,7 +620,7 @@ const PhotosPage: React.FC<{ onSelectModeChange?: (active: boolean) => void }> =
       {selectMode && (
         <div className="absolute bottom-0 left-0 right-0 bg-app-surface border-t border-slate-100 flex items-center justify-around py-3 z-40 animate-in slide-in-from-bottom-10 duration-200">
           <button
-            onClick={handleBatchFavorite}
+            {...bindTap({ kind: 'action', id: 'gallery.select.favorite' }, { onTrigger: handleBatchFavorite })}
             className="flex flex-col items-center gap-1.5 px-4 active:opacity-60"
           >
             <IcHeart size={22} className="text-slate-700" />
@@ -674,7 +640,7 @@ const PhotosPage: React.FC<{ onSelectModeChange?: (active: boolean) => void }> =
             <span className="text-[11px] text-slate-700">{s.action_share}</span>
           </button>
           <button
-            onClick={handleBatchDelete}
+            {...(selected.size > 0 ? bindNav(routes.home, { search: { dialog: 'delete' }, keep: ['mode'] }) : {})}
             className="flex flex-col items-center gap-1.5 px-4 active:opacity-60"
           >
             <IcDelete size={22} className="text-red-500" />
@@ -691,8 +657,8 @@ const PhotosPage: React.FC<{ onSelectModeChange?: (active: boolean) => void }> =
         confirmText={s.action_delete}
         cancelText={s.dialog_cancel}
         danger
-        onConfirm={confirmBatchDelete}
-        onCancel={() => setShowDeleteConfirm(false)}
+        cancelBind={bindBack()}
+        confirmBind={bindTap({ kind: 'action', id: 'gallery.select.delete.confirm' }, { onTrigger: () => { void confirmBatchDelete(); } })}
       />
     </div>
   );
@@ -1017,13 +983,19 @@ const FavoritesPage: React.FC = () => {
 // Album Detail Page
 // ============================================================================
 const AlbumDetailPage: React.FC = () => {
-  const { back, bindBack, bindNav } = useGalleryGestures();
+  const { bindBack, bindNav, bindTap, bindLongPress, nav } = useGalleryGestures();
   const { albumId } = useParams<{ albumId: string }>();
   const s = useAppStrings(strings, stringsEn);
+  const location = useLocation();
   const [items, setItems] = useState<MediaItem[]>([]);
   const [albumName, setAlbumName] = useState('');
-  const [selectMode, setSelectMode] = useState(false);
+  // Select mode lives in the URL (?mode=select): system back and 完成 leave it.
+  const selectMode = new URLSearchParams(location.search).get('mode') === 'select';
   const [selected, setSelected] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (!selectMode) setSelected(new Set());
+  }, [selectMode]);
 
   useEffect(() => {
     const albums = MediaService.getAlbums();
@@ -1082,10 +1054,7 @@ const AlbumDetailPage: React.FC = () => {
           </div>
         </div>
         <button 
-          onClick={() => {
-            setSelectMode(!selectMode);
-            setSelected(new Set());
-          }}
+          {...(selectMode ? bindBack() : bindNav(routes.album, { params: { albumId: albumId || '' }, search: { mode: 'select' } }))}
           className={`px-3 py-1.5 rounded-full text-sm font-medium mr-2 transition-all ${
             selectMode 
               ? 'bg-blue-500 text-white' 
@@ -1122,15 +1091,17 @@ const AlbumDetailPage: React.FC = () => {
                       key={item.id}
                       item={item}
                       openBind={bindNav(routes.photo, { params: { path: encodeURIComponent(item.path) }, search: { album: albumId || '' } })}
+                      selectBind={bindTap({ kind: 'action', id: 'gallery.album.select.toggle' }, { onTrigger: () => handleSelect(item.path) })}
+                      longPressBind={bindLongPress('nav.album', {
+                        params: { albumId: albumId || '', mode: 'select' },
+                        duration: 500,
+                        onTrigger: () => {
+                          setSelected(new Set([item.path]));
+                          nav.push(routes.album, { albumId: albumId || '' }, { search: { mode: 'select' } });
+                        },
+                      })}
                       isSelectMode={selectMode}
                       isSelected={selected.has(item.path)}
-                      onSelect={() => handleSelect(item.path)}
-                      onLongPress={() => {
-                        if (!selectMode) {
-                          setSelectMode(true);
-                          setSelected(new Set([item.path]));
-                        }
-                      }}
                       showFavorite
                     />
                   ))}
@@ -1413,7 +1384,7 @@ const RenameDialog: React.FC<{
 // Photo Viewer Page
 // ============================================================================
 const PhotoViewerPage: React.FC = () => {
-  const { nav, back, bindBack, bindNav } = useGalleryGestures();
+  const { nav, back, bindBack, bindNav, bindTap } = useGalleryGestures();
   const location = useLocation();
   const { path } = useParams<{ path: string }>();
   const { activityId } = useActivityContext();
@@ -1421,7 +1392,6 @@ const PhotoViewerPage: React.FC = () => {
   const favorites = useFavorites();
   const [item, setItem] = useState<MediaItem | null>(null);
   const [showControls, setShowControls] = useState(true);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isFav, setIsFav] = useState(false);
   const [allItems, setAllItems] = useState<MediaItem[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -1444,7 +1414,7 @@ const PhotoViewerPage: React.FC = () => {
   const searchParams = new URLSearchParams(location.search);
   const albumId = searchParams.get('album');
   const from = searchParams.get('from');
-  const modal = searchParams.get('modal') as 'more' | 'details' | 'rename' | null;
+  const modal = searchParams.get('modal') as 'more' | 'details' | 'rename' | 'delete' | null;
 
   const showToast = (message: string) => {
     setToast({ message, visible: true });
@@ -1455,7 +1425,7 @@ const PhotoViewerPage: React.FC = () => {
   // encoded form (matching photo.open's `encodeURIComponent(item.path)` convention).
   const encodedPath = decodedPath ? encodeURIComponent(decodedPath) : '';
   // The "more" menu is pushed; details / rename replace it. Without a photo path there is nothing to open.
-  const bindModal = (modal: 'more' | 'details' | 'rename', replace: boolean) => {
+  const bindModal = (modal: 'more' | 'details' | 'rename' | 'delete', replace: boolean) => {
     if (isIntentMode) return bindNav(routes.intentView, { search: { modal }, replace });
     if (!encodedPath) return undefined;
     return bindNav(routes.photo, { params: { path: encodedPath }, search: { modal }, keep: ['album', 'from'], replace });
@@ -1540,20 +1510,15 @@ const PhotoViewerPage: React.FC = () => {
     }
   };
   
-  const handleDelete = () => {
-    if (item) {
-      setShowDeleteConfirm(true);
-    }
-  };
-  
   const confirmDelete = async () => {
     if (item) {
-      await MediaService.deleteMedia(item.path);
-      setShowDeleteConfirm(false);
-      if (allItems.length <= 1) {
-        back();
-      } else {
-        const newItems = allItems.filter(i => i.path !== item.path);
+      // Leave synchronously (the dialog, and the viewer when nothing is left): the deletion is async.
+      const deleted = item.path;
+      const last = allItems.length <= 1;
+      back(last ? 2 : 1);
+      await MediaService.deleteMedia(deleted);
+      if (!last) {
+        const newItems = allItems.filter(i => i.path !== deleted);
         setAllItems(newItems);
         setCurrentIndex(Math.min(currentIndex, newItems.length - 1));
       }
@@ -1693,7 +1658,7 @@ const PhotoViewerPage: React.FC = () => {
           </button>
           <button
             type="button"
-            onClick={handleDelete}
+            {...(item ? bindModal('delete', false) : {})}
             className="flex flex-col items-center gap-1 text-slate-800 active:text-red-500"
           >
             <IcDelete size={22} />
@@ -1713,14 +1678,14 @@ const PhotoViewerPage: React.FC = () => {
 
       {/* Delete confirmation dialog */}
       <ConfirmDialog
-        open={showDeleteConfirm}
+        open={modal === 'delete' && !!item}
         title={s.delete_photo_title}
         message={s.delete_photo_confirm_single}
         confirmText={s.action_delete}
         cancelText={s.dialog_cancel}
         danger
-        onConfirm={confirmDelete}
-        onCancel={() => setShowDeleteConfirm(false)}
+        cancelBind={bindBack()}
+        confirmBind={bindTap({ kind: 'action', id: 'gallery.viewer.delete.confirm' }, { onTrigger: () => { void confirmDelete(); } })}
       />
 
       {/* More menu popup */}
