@@ -12,6 +12,8 @@ What is explored is bounded and set by options or by
 - `instancesPerRoute` (default 2): how many instances of one node are visited
   (two photos, two chats). An instance is a URL plus the controls it shows
   and their text, so a meeting page reached as host and as guest counts twice.
+- `instancesPerNode`: the same cap for single nodes (`{"/note/:id": 4}`: the
+  trashed note's editor, reached only after two ordinary notes, has other menus).
 - `tapsPerGroup` (default 2): how many controls with the same tag (the photos
   of a grid) are tapped on one page.
 - `skip`: trigger / action ids never tapped.
@@ -21,7 +23,8 @@ What is explored is bounded and set by options or by
 - `setup`: per node, steps run on arriving there, as a user would: `{"type":
   text, "into": selector}`, `{"tap": selector}` (Playwright selectors), `{"wait":
   ms}` (a list that appears after a fake search), `{"hideKeyboard": true}` (a
-  page that focuses its text box on open), `{"typeEval": js, "into": selector}`
+  page that focuses its text box on open), `{"enter": true}` (submit a search),
+  `{"typeEval": js, "into": selector}`
   (text computed in the page: the code in the latest SMS) and `{"setState":
   patch}` (data one variant needs: password-free payment switched on). A list of such lists gives
   variants, each explored as its own instance (search for a contact, search
@@ -117,6 +120,11 @@ def query_of(url: str) -> dict[str, str]:
     return query
 
 
+def same_state(a: str, b: str) -> bool:
+    """Two query states with the same key=value pairs, in any order."""
+    return sorted(p for p in a.split("&") if p) == sorted(p for p in b.split("&") if p)
+
+
 class Routes:
     """Names nodes after the app's route table, like the old declarations did."""
 
@@ -157,7 +165,8 @@ class Routes:
                 missing.append(r["path"])
                 continue
             if r.get("states"):
-                missing += [f"{r['path']}?{s}" for s in r["states"] if f"{r['path']}?{s}" not in nodes]
+                reached_states = [n.partition("?")[2] for n in nodes]
+                missing += [f"{r['path']}?{s}" for s in r["states"] if not any(same_state(s, x) for x in reached_states)]
                 continue
             pairs = {p for n in nodes for p in n.partition("?")[2].split("&") if p}
             missing += [f"{r['path']}?{k}={v}" for k, values in r["search"].items() for v in values
@@ -170,7 +179,7 @@ class Routes:
         if route is None:
             return None
         if state:
-            return (route.get("states") or {}).get(state)
+            return next((d for s, d in (route.get("states") or {}).items() if same_state(s, state)), None)
         return route.get("description")
 
     def discrete(self, item: dict) -> str:
@@ -194,6 +203,7 @@ def load_config(app: str, args: argparse.Namespace) -> dict:
     config.setdefault("tapsPerGroup", 2)
     config.setdefault("skip", [])
     config.setdefault("prefer", {})
+    config.setdefault("instancesPerNode", {})
     config.setdefault("setup", {})
     config.setdefault("seed", None)
     config.setdefault("entries", [])
@@ -332,6 +342,8 @@ class Device:
         elif "setState" in step:
             # Data this variant of the page needs (password-free payment switched on).
             await self.page.evaluate("(patch) => window.__SIM__.setState(patch, { deep: true, reload: false })", step["setState"])
+        elif "enter" in step:
+            await self.page.evaluate("() => window.__SIM_INPUT__.enter()")
         elif "hideKeyboard" in step:
             if await self.page.evaluate("() => window.__OS__.keyboard?.isVisible?.()"):
                 await self.page.evaluate("() => window.__OS__.handleBack()")
@@ -355,11 +367,15 @@ class Device:
         """
         for _ in range(3):
             await self.fresh()
+            # A setup step that does not fit this instance (no search box on a results
+            # page) is reported in setupErrors; the page is explored as it is.
             for step in path:
-                if not await self.setup(step.get("variant", 0)) or not await self.perform(step):
+                await self.setup(step.get("variant", 0))
+                if not await self.perform(step):
                     break
             else:
-                if await self.current() == target and await self.setup(variant):
+                if await self.current() == target:
+                    await self.setup(variant)
                     return await self.current()
         return None
 
@@ -456,7 +472,7 @@ async def explore(url: str, app: str, config: dict, max_pages: int, wait_ms: int
             for v in range(max(1, len(variants(config["setup"].get(node))))):
                 key = f"{landed}\n#{v}"
                 if key in pages or len(pages) >= max_pages \
-                        or len(instances.setdefault(node, [])) >= config["instancesPerRoute"]:
+                        or len(instances.setdefault(node, [])) >= config["instancesPerNode"].get(node, config["instancesPerRoute"]):
                     continue
                 instances[node].append(url)
                 pages[key] = (url, path, v)

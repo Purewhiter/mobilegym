@@ -1,0 +1,9 @@
+{
+  "seed": { "os": { "providers": { "media": { "favorites": ["/sdcard/Pictures/photo_001.jpg"] } } } },
+  "entries": [
+    {
+      "from": "file_manager",
+      "intent": { "action": "ACTION_VIEW", "type": "image/jpeg", "data": { "stream": "/sdcard/Pictures/photo_001.jpg" } }
+    }
+  ]
+}

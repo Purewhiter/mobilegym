@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLocation } from 'react-router-dom';
 import { CalendarGrid } from '../components/CalendarGrid';
 import { CalendarBottomNav, CalendarViewType } from '../components/CalendarBottomNav';
 import { AgendaPanel } from '../components/AgendaPanel';
@@ -28,7 +29,7 @@ const formatHHmm = (ts: number) => {
 };
 
 const CalendarHomePage: React.FC = () => {
-    const { bindNav } = useCalendarGestures();
+    const { nav, bindNav } = useCalendarGestures();
     const selectedDate = useCalendarStore(selectSelectedDate);
     const setSelectedDate = useCalendarStore(s => s.setSelectedDate);
     const settings = useCalendarStore(s => s.settings);
@@ -36,7 +37,8 @@ const CalendarHomePage: React.FC = () => {
     const s = useAppStrings(strings, stringsEn);
 
     const [activeView, setActiveView] = React.useState<CalendarViewType>('month');
-    const [menuOpen, setMenuOpen] = React.useState(false);
+    // The more menu is a UI state in the URL, so system back closes it.
+    const menuOpen = new URLSearchParams(useLocation().search).get('menu') === 'more';
     const [toast, setToast] = React.useState<{ visible: boolean; message: string }>({ visible: false, message: '' });
 
     const showToast = (message: string) => {
@@ -254,7 +256,7 @@ const CalendarHomePage: React.FC = () => {
                         <MaskIcon src={calIcon('action_bar_new_event_desk_view')} size={22} />
                     </button>
                     <button
-                        onClick={() => setMenuOpen(true)}
+                        {...bindNav(routes.home, { search: { menu: 'more' } })}
                         className="w-10 h-10 rounded-full flex items-center justify-center active:bg-black/5 dark:active:bg-white/5"
                         aria-label="更多"
                     >
@@ -265,31 +267,31 @@ const CalendarHomePage: React.FC = () => {
 
             <CalendarActionSheet
                 open={menuOpen}
-                onClose={() => setMenuOpen(false)}
+                onClose={() => nav.back()}
                 items={[
                     {
                         id: 'date-jump',
                         title: s.action_date_jump,
                         icon: <MaskIcon src={getSystemSymbolUrl(IcSymbolMonths, '2')} size={20} />,
-                        bind: bindNav(routes.dateJump),
+                        bind: bindNav(routes.dateJump, { replace: true }),
                     },
                     {
                         id: 'date-calculate',
                         title: s.action_date_calculate,
                         icon: <MaskIcon src={getSystemSymbolUrl(IcSymbolTune, '2')} size={20} />,
-                        bind: bindNav(routes.dateCalculate),
+                        bind: bindNav(routes.dateCalculate, { replace: true }),
                     },
                     {
                         id: 'subscription',
                         title: s.action_subscription,
                         icon: <MaskIcon src={getSystemSymbolUrl(IcSymbolImport, '2')} size={20} />,
-                        bind: bindNav(routes.subscription),
+                        bind: bindNav(routes.subscription, { replace: true }),
                     },
                     {
                         id: 'desk-theme',
                         title: s.action_desk_theme,
                         icon: <MaskIcon src={getSystemSymbolUrl(IcSymbolTheme, '2')} size={20} />,
-                        bind: bindNav(routes.deskTheme),
+                        bind: bindNav(routes.deskTheme, { replace: true }),
                     },
                     {
                         id: 'share',
@@ -301,7 +303,7 @@ const CalendarHomePage: React.FC = () => {
                         id: 'settings',
                         title: s.action_settings,
                         icon: <MaskIcon src={calIcon('miuix_action_icon_settings_light')} size={20} />,
-                        bind: bindNav(routes.settings),
+                        bind: bindNav(routes.settings, { replace: true }),
                     },
                 ]}
             />

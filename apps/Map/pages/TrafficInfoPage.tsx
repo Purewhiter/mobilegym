@@ -8,7 +8,7 @@ import { localizeMapSettingValue } from '../utils/localizeMapValue';
 import { routes } from '../routes';
 
 export const TrafficInfoPage: React.FC = () => {
-  const { nav, bindBack } = useMapGestures();
+  const { nav, bindBack, bindNav } = useMapGestures();
   const trafficNotifications = useMapStore((s) => s.settings.notifications.traffic);
   const setAllTrafficNotifications = useMapStore((s) => s.setAllTrafficNotifications);
   const [showGlobalPrefsModal, setShowGlobalPrefsModal] = useState(false);
@@ -63,7 +63,7 @@ export const TrafficInfoPage: React.FC = () => {
           <div
             key={item.id}
             className="py-4 border-b border-gray-100 active:bg-gray-50 px-6 cursor-pointer"
-            onClick={() => nav.push(routes.settingsNotificationsTrafficBySubId, { subId: item.id })}
+            {...bindNav(routes.settingsNotificationsTrafficBySubId, { params: { subId: item.id } })}
           >
             <div className="text-[17px] text-gray-900 mb-1">{item.title}</div>
             <div className="text-[13px] text-app-text-muted">

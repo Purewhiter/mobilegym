@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useLocale } from '../../../os/locale';
 import { useEbayStrings } from '../hooks/useEbayStrings';
 import { localizeEbaySortLabel } from '../utils/localize';
+import { useEbayGestures } from '../hooks/useEbayGestures';
 
 export type SortOptionType = 'bestMatch' | 'priceLow' | 'priceHigh' | 'endingSoon' | 'newlyListed' | 'distance';
 
@@ -20,6 +21,7 @@ interface SortModalProps {
 const SortModal: React.FC<SortModalProps> = ({ isOpen, sortOption, onSelect, onClose }) => {
   const locale = useLocale();
   const s = useEbayStrings();
+  const { bindTap } = useEbayGestures();
   const [dragY, setDragY] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const pointerStartY = useRef(0);
@@ -129,10 +131,13 @@ const SortModal: React.FC<SortModalProps> = ({ isOpen, sortOption, onSelect, onC
             <div
               key={option.id}
               className="flex items-center px-4 py-4 active:bg-gray-50 cursor-pointer"
-              onClick={() => {
-                onSelect(option.id);
-                onClose();
-              }}
+              {...bindTap({ kind: 'action', id: 'ebay.sort.select' }, {
+                params: { option: option.id },
+                onTrigger: () => {
+                  onSelect(option.id);
+                  onClose();
+                },
+              })}
             >
               <div
                 className={`w-5 h-5 rounded-full border-2 mr-4 flex items-center justify-center ${

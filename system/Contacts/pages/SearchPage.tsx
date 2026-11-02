@@ -13,7 +13,7 @@ import { routes } from '../routes';
 export const SearchPage: React.FC = () => {
   const locale = useLocale();
   const isEnglish = locale === 'en';
-  const { bindBack, nav } = useContactsGestures();
+  const { bindBack, bindNav } = useContactsGestures();
   const contacts = useContactsList();
   const searchHistory = useContactsStore((state) => state.searchHistory);
   const addSearchHistory = useContactsStore((state) => state.addSearchHistory);
@@ -64,15 +64,17 @@ export const SearchPage: React.FC = () => {
       .slice(0, 50);
   }, [contacts, query]);
 
-  const openContact = (contactId: string) => {
-    const trimmedQuery = query.trim();
-    if (trimmedQuery) addSearchHistory(trimmedQuery);
-    // Opening a contact card is not contacting anyone. `lastContactedAt` is
-    // written by the call / SMS actions on the detail page, where a message
-    // actually goes out -- matching ContactsContract, where LAST_TIME_CONTACTED
-    // tracks communication and browsing leaves no trace.
-    nav.push(routes.contact, { contactId });
-  };
+  // Opening a contact card is not contacting anyone. `lastContactedAt` is
+  // written by the call / SMS actions on the detail page, where a message
+  // actually goes out -- matching ContactsContract, where LAST_TIME_CONTACTED
+  // tracks communication and browsing leaves no trace.
+  const bindOpenContact = (contactId: string) => bindNav(routes.contact, {
+    params: { contactId },
+    beforeTrigger: () => {
+      const trimmedQuery = query.trim();
+      if (trimmedQuery) addSearchHistory(trimmedQuery);
+    },
+  });
 
   return (
     <div className="h-full w-full bg-app-surface">
@@ -183,7 +185,7 @@ export const SearchPage: React.FC = () => {
                       <button
                         type="button"
                         className="w-full px-4 py-4 flex items-center gap-3 active:bg-black/5 text-left"
-                        onClick={() => openContact(contact.id)}
+                        {...bindOpenContact(contact.id)}
                       >
                         <div className="w-10 h-10 rounded-full bg-black/10 flex items-center justify-center flex-shrink-0">
                           <span className="text-[14px] font-semibold text-app-text-muted">

@@ -111,13 +111,16 @@ const PreferenceRow: React.FC<{
   summary?: string;
   showDivider?: boolean;
   onClick?: () => void;
+  /** Tap binding from the page (bindNav), which tags the row; replaces onClick. */
+  bind?: React.ButtonHTMLAttributes<HTMLButtonElement>;
   valueText?: string;
-}> = ({ title, summary, showDivider = true, onClick, valueText }) => (
+}> = ({ title, summary, showDivider = true, onClick, bind, valueText }) => (
   <div>
     <button
       type="button"
       className="w-full px-4 py-4 flex items-center justify-between active:bg-black/5 text-left"
       onClick={onClick}
+      {...bind}
     >
       <div className="flex-1 min-w-0 pr-4">
         <div className="text-[15px] text-app-text">{title}</div>
@@ -245,7 +248,7 @@ const Inner: React.FC = () => {
   const locale = useLocale();
   const isEnglish = locale === 'en';
   const { pageId } = useParams<{ pageId: string }>();
-  const { bindBack, nav } = useContactsGestures();
+  const { bindBack, bindNav } = useContactsGestures();
   const sims = useSimProfiles();
   const s = useAppStrings(strings, stringsEn);
   const rawPage = pageId ? PHONE_SETTINGS_PAGES[pageId] : undefined;
@@ -311,7 +314,7 @@ const Inner: React.FC = () => {
           title={item.title}
           summary={item.summary}
           showDivider={!isLast}
-          onClick={() => nav.push(routes.settingsPage, { pageId: targetPage })}
+          bind={bindNav(routes.settingsPage, { params: { pageId: targetPage } })}
         />
       );
     }

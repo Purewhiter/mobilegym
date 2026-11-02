@@ -1,0 +1,18 @@
+{
+  "instancesPerNode": {
+    "/note/:id": 4,
+    "/note/:id?sheet=more": 4
+  },
+  "seed": {
+    "apps": {
+      "notes": {
+        "notes[id=xn_4]": {
+          "isPrivate": true
+        },
+        "notes[id=xn_5]": {
+          "trashedAt": 1793300000000
+        }
+      }
+    }
+  }
+}

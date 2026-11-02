@@ -32,7 +32,7 @@ import { routes } from './routes';
 
 const ClockShell: React.FC = () => {
   const s = useAppStrings(strings, stringsEn);
-  const { nav, back } = useClockGestures();
+  const { nav, back, bindNav } = useClockGestures();
   const location = useLocation();
   const { navigator } = React.useContext(UNSAFE_NavigationContext);
 
@@ -292,12 +292,7 @@ const ClockShell: React.FC = () => {
       ) : (
         <TabBar
           activeTab={activeTab || 'alarm'}
-          onChange={(tab) => {
-            if (tab === 'alarm') nav.replace(routes.alarm);
-            else if (tab === 'world') nav.replace(routes.world);
-            else if (tab === 'stopwatch') nav.replace(routes.stopwatch);
-            else if (tab === 'timer') nav.replace(routes.timer);
-          }}
+          bindTab={(tab) => bindNav(routes[tab], { replace: true })}
         />
       )}
 

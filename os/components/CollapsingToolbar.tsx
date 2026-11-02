@@ -198,6 +198,8 @@ export const CollapsingLargeTitle = React.forwardRef<HTMLDivElement, CollapsingL
 interface ToolbarIconButtonProps {
   icon: React.FC<{ size?: number; className?: string; strokeWidth?: number }>;
   onClick?: () => void;
+  /** Tap binding from the page (bindNav / bindTap), which tags the button for tooling. */
+  bind?: React.ButtonHTMLAttributes<HTMLButtonElement>;
   className?: string;
   label?: string;
 }
@@ -205,11 +207,13 @@ interface ToolbarIconButtonProps {
 export const ToolbarIconButton: React.FC<ToolbarIconButtonProps> = ({
   icon: Icon,
   onClick,
+  bind,
   className = '',
   label,
 }) => (
   <button
     onClick={onClick}
+    {...bind}
     className={`w-10 h-10 flex items-center justify-center active:opacity-60 ${className}`}
     aria-label={label}
   >

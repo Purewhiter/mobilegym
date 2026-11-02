@@ -1,6 +1,6 @@
 import React, { useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { IcWifi, IcLock, IcUnlock } from '../res/icons';
-import { useNav } from '../../../os/navigation';
+import { useNavGestures } from '../../../os/navigation';
 import { SettingsHeader } from './SettingsHeader';
 import { PreferenceCategory } from './PreferenceCategory';
 import { PreferenceItem } from './PreferenceItem';
@@ -28,7 +28,7 @@ function securityLabel(sec: string): string {
 }
 
 export const WifiNetworksPage: React.FC = () => {
-  const nav = useNav();
+  const { bindNav } = useNavGestures();
   const s = useAppStrings(strings, stringsEn);
   const [wifiEnabled, setWifiEnabled] = useBooleanPreference('wifi_enable', true);
   const savedNetworks = useWifiSavedNetworks();
@@ -181,13 +181,13 @@ export const WifiNetworksPage: React.FC = () => {
             title={s.saved_networks}
             summary={s.view_and_manage_saved_wlan_networks}
             showDivider={true}
-            onClick={() => nav.push(routes.page, { pageId: 'saved_access_points' })}
+            itemProps={bindNav(routes.page, { params: { pageId: 'saved_access_points' } })}
           />
           <PreferenceItem
             title={s.advanced_settings}
             summary={s.proxy_random_mac_network_preferences_etc}
             showDivider={false}
-            onClick={() => nav.push(routes.page, { pageId: 'wifi_configure_settings' })}
+            itemProps={bindNav(routes.page, { params: { pageId: 'wifi_configure_settings' } })}
           />
         </PreferenceCategory>
       </div>

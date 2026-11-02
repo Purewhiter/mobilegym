@@ -9,7 +9,9 @@ export type ActionSheetItem = {
   label: string;
   danger?: boolean;
   disabled?: boolean;
-  onClick: () => void;
+  onClick?: () => void;
+  /** Gesture binding (bindNav / bindTap) used instead of onClick. */
+  bind?: React.HTMLAttributes<HTMLElement>;
 };
 
 export const ActionSheet: React.FC<{
@@ -17,15 +19,17 @@ export const ActionSheet: React.FC<{
   title?: string;
   items: ActionSheetItem[];
   onClose: () => void;
+  /** Gesture binding for the backdrop and cancel button, used instead of onClose. */
+  closeBind?: React.HTMLAttributes<HTMLElement>;
   cancelLabel?: string;
-}> = ({ visible, title, items, onClose, cancelLabel }) => {
+}> = ({ visible, title, items, onClose, closeBind, cancelLabel }) => {
   const s = useAppStrings(strings, stringsEn);
   const label = cancelLabel ?? s.action_cancel;
   if (!visible) return null;
 
   return (
     <div className="fixed inset-0 z-[80]">
-      <button className="absolute inset-0 bg-black/35" onClick={onClose} aria-label={s.action_close} />
+      <button className="absolute inset-0 bg-black/35" {...(closeBind ?? { onClick: onClose })} aria-label={s.action_close} />
       <div className="absolute left-0 right-0 bottom-0 bg-app-surface rounded-t-[24px] overflow-hidden">
         {title ? (
           <div className="px-5 py-4 text-[14px] font-medium text-black">
@@ -38,10 +42,12 @@ export const ActionSheet: React.FC<{
             <button
               key={it.key}
               className="w-full flex items-center justify-between px-3 h-12 rounded-[14px] active:bg-black/5 disabled:opacity-40"
-              onClick={() => {
-                if (it.disabled) return;
-                it.onClick();
-              }}
+              {...(it.bind ?? {
+                onClick: () => {
+                  if (it.disabled) return;
+                  it.onClick?.();
+                },
+              })}
               disabled={it.disabled}
             >
               <div
@@ -59,7 +65,7 @@ export const ActionSheet: React.FC<{
           <button
             className="w-full h-12 rounded-[14px] bg-[#f3f3f3] text-[15px] active:opacity-80"
             style={{ color: colors.text_secondary_strong }}
-            onClick={onClose}
+            {...(closeBind ?? { onClick: onClose })}
           >
             {label}
           </button>

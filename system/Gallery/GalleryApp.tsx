@@ -336,10 +336,8 @@ const GalleryNavigationHandler: React.FC = () => {
 // ============================================================================
 type HomeTab = 'photos' | 'albums';
 
-const FloatingTabPill: React.FC<{ activeTab: HomeTab; onTabChange: (tab: HomeTab) => void }> = ({
-  activeTab,
-  onTabChange
-}) => {
+const FloatingTabPill: React.FC<{ activeTab: HomeTab }> = ({ activeTab }) => {
+  const { bindNav } = useGalleryGestures();
   const s = useAppStrings(strings, stringsEn);
   const tabs: { id: HomeTab; label: string; icon: React.ReactNode }[] = [
     { id: 'photos', label: s.tab_photos, icon: <IcImage size={22} strokeWidth={dimens.icStrokeWidth} /> },
@@ -356,7 +354,7 @@ const FloatingTabPill: React.FC<{ activeTab: HomeTab; onTabChange: (tab: HomeTab
               key={tab.id}
               type="button"
               aria-label={tab.label}
-              onClick={() => onTabChange(tab.id)}
+              {...bindNav(tab.id === 'albums' ? routes.albums : routes.home, { replace: true })}
               className={`w-14 h-11 rounded-full flex items-center justify-center transition-colors ${
                 isActive
                   ? 'text-slate-900 bg-slate-100/80'
@@ -1773,7 +1771,8 @@ const PhotoViewerPage: React.FC = () => {
 // Main Home Page (with tabs)
 // ============================================================================
 const HomePage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<HomeTab>('photos');
+  // Main tabs are pathnames ('/', '/albums'), switched by replace.
+  const activeTab: HomeTab = useLocation().pathname === '/albums' ? 'albums' : 'photos';
   const [isSelectMode, setIsSelectMode] = useState(false);
   
   const renderContent = () => {
@@ -1790,7 +1789,7 @@ const HomePage: React.FC = () => {
   return (
     <div className="h-full relative">
       {renderContent()}
-      {!isSelectMode && <FloatingTabPill activeTab={activeTab} onTabChange={setActiveTab} />}
+      {!isSelectMode && <FloatingTabPill activeTab={activeTab} />}
     </div>
   );
 };
@@ -1842,6 +1841,7 @@ export const GalleryApp: React.FC = () => {
       `}</style>
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/albums" element={<HomePage />} />
         <Route path="/favorites" element={<FavoritesPage />} />
         <Route path="/album/:albumId" element={<AlbumDetailPage />} />
         <Route path="/intent/view" element={<PhotoViewerPage />} />

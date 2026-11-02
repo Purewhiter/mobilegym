@@ -1,0 +1,5 @@
+{
+  "setup": {
+    "/search": [{ "type": "蓝牙", "into": "input" }]
+  }
+}

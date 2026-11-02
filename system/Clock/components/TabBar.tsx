@@ -6,7 +6,8 @@ import { useAppStrings } from '../../../os/useAppStrings';
 
 export type TabKey = 'alarm' | 'world' | 'stopwatch' | 'timer';
 
-export const TabBar: React.FC<{ activeTab: TabKey; onChange: (tab: TabKey) => void }> = ({ activeTab, onChange }) => {
+/** `bindTab` gives each tab's tap binding (bindNav from the page), which tags it for tooling. */
+export const TabBar: React.FC<{ activeTab: TabKey; bindTab: (tab: TabKey) => React.ButtonHTMLAttributes<HTMLButtonElement> }> = ({ activeTab, bindTab }) => {
   const s = useAppStrings(strings, stringsEn);
   const tabs = [
     { id: 'alarm' as const, label: s.alarm_tab, icon: IcAlarm },
@@ -24,7 +25,7 @@ export const TabBar: React.FC<{ activeTab: TabKey; onChange: (tab: TabKey) => vo
           return (
             <button
               key={tab.id}
-              onClick={() => onChange(tab.id)}
+              {...bindTab(tab.id)}
               className={`flex flex-col items-center gap-1 ${isActive ? 'text-black' : 'text-gray-400'}`}
             >
               <Icon size={22} strokeWidth={isActive ? 2.5 : 2} />

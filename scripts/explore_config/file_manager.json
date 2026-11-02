@@ -1,0 +1,6 @@
+{
+  "prefer": {
+    "nav.folder": [{ "path": "/sdcard/Download" }, { "path": "/sdcard/Documents" }],
+    "fileManager.menu.item": [{ "label": "重命名" }, { "label": "详情" }]
+  }
+}

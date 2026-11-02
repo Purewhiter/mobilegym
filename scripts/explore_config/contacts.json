@@ -1,0 +1,22 @@
+{
+  "seed": {
+    "os": {
+      "providers": {
+        "contacts": {
+          "contacts[id=c_zhangsan]": {
+            "phones": [
+              { "id": "p1", "label": "手机", "number": "+86 13800138000", "isPrimary": true },
+              { "id": "p2", "label": "手机", "number": "19943584333" }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "prefer": {
+    "nav.contact": [{ "contactId": "c_zhangsan" }]
+  },
+  "setup": {
+    "/search": [{ "type": "张", "into": "input" }]
+  }
+}

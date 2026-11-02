@@ -1,6 +1,6 @@
 import React, { useMemo, useRef, useState } from 'react';
 import { SettingsHeader } from './SettingsHeader';
-import { useNav } from '../../../os/navigation';
+import { useNavGestures } from '../../../os/navigation';
 import { PreferenceItem } from './PreferenceItem';
 import { Toast } from '@/os/components/Toast';
 import { InputDialog } from './InputDialog';
@@ -11,7 +11,7 @@ import { useAppStrings } from '@/os/useAppStrings';
 import { routes } from '../routes';
 
 export const WifiSavedNetworksPage: React.FC<{ title: string }> = ({ title }) => {
-  const nav = useNav();
+  const { bindNav } = useNavGestures();
   const s = useAppStrings(strings, stringsEn);
   const savedNetworks = useWifiSavedNetworks();
   const connectedSsid = useWifiConnectedSsid();
@@ -78,7 +78,7 @@ export const WifiSavedNetworksPage: React.FC<{ title: string }> = ({ title }) =>
                   value={isConnected ? s.connected : undefined}
                   showDivider={idx < list.length - 1}
                   showChevron={true}
-                  onClick={() => nav.push(routes.page, { pageId: `wifi_saved_network__${encodeURIComponent(n.ssid)}` })}
+                  itemProps={bindNav(routes.page, { params: { pageId: `wifi_saved_network__${encodeURIComponent(n.ssid)}` } })}
                 />
               );
             })}
