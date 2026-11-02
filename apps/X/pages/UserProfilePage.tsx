@@ -1,5 +1,5 @@
 import React from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useLocation } from 'react-router-dom';
 import { useLocale } from '@/os/locale';
 import { IcCalendar, IcBalloon, IcClose, IcLocation, IcRepost, IcStar, IcTabNotifications, IcUserMinus } from '../res/icons';
 import { useXStore, selectEffectiveFollowedSet } from '../state';
@@ -29,7 +29,8 @@ export const UserProfilePage: React.FC = () => {
   const user = profileUser ?? null;
   const isFollowing = (userId: string) => followedSet.has(userId);
   const isFollowed = id ? isFollowing(id) : false;
-  const [showFollowMenu, setShowFollowMenu] = React.useState(false);
+  // The unfollow menu lives in the URL (?sheet=followMenu): system back closes it.
+  const showFollowMenu = new URLSearchParams(useLocation().search).get('sheet') === 'followMenu';
   const retweetMenuPostId = useRetweetSheetPostId();
   const openRetweetMenu = (postId: string) => nav.push(routes.user, { id: id as string }, { search: { sheet: 'retweet', sheetPostId: postId } });
   const [showBookmarkToast, setShowBookmarkToast] = React.useState(false);
@@ -175,7 +176,7 @@ export const UserProfilePage: React.FC = () => {
                 onTrigger: () => {
                   if (!id) return;
                   if (isFollowed) {
-                    setShowFollowMenu(true);
+                    nav.push(routes.user, { id }, { search: { sheet: 'followMenu' } });
                   } else {
                     toggleFollow(id);
                   }
@@ -359,11 +360,11 @@ export const UserProfilePage: React.FC = () => {
 
       {showFollowMenu && (
         <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowFollowMenu(false)} />
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" {...bindBack()} />
           <div className="relative bg-white text-black w-full max-w-sm rounded-t-2xl sm:rounded-2xl overflow-hidden animate-in slide-in-from-bottom-10 fade-in-0 duration-200">
             <div className="p-4 border-b border-gray-100 flex items-center justify-between">
               <div className="font-bold text-lg">{`@${user.id}`}</div>
-              <button onClick={() => setShowFollowMenu(false)} className="p-1 rounded-full hover:bg-gray-100" aria-label={s.follow_menu_close_aria_label}>
+              <button {...bindBack()} className="p-1 rounded-full hover:bg-gray-100" aria-label={s.follow_menu_close_aria_label}>
                 <IcClose size={20} />
               </button>
             </div>
@@ -393,10 +394,12 @@ export const UserProfilePage: React.FC = () => {
 
               <button
                 className="w-full flex items-center gap-3 p-3 hover:bg-red-50 rounded-xl text-left transition-colors text-red-600"
-                onClick={() => {
-                  if (id) toggleFollow(id);
-                  setShowFollowMenu(false);
-                }}
+                {...bindTap({ kind: 'action', id: 'x.user.unfollow' }, {
+                  onTrigger: () => {
+                    if (id) toggleFollow(id);
+                    nav.back();
+                  },
+                })}
               >
                 <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center">
                   <IcUserMinus size={20} />

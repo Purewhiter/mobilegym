@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useWechatStore } from '../../state';
 import { IcClose, IcNavForward, IcCamera } from '../../res/icons';
 import { useWechatGestures } from '../../hooks/useWechatGestures';
@@ -6,7 +7,7 @@ import { useLocale } from '@/os/locale';
 import { routes } from '../../routes';
 
 export const WechatRegisterPage: React.FC = () => {
-  const { bindBack, nav } = useWechatGestures();
+  const { bindBack, bindNav, bindTap, back, nav } = useWechatGestures();
   const locale = useLocale();
   const isEnglish = locale === 'en';
   const auth = useWechatStore(s => s.auth);
@@ -22,7 +23,8 @@ export const WechatRegisterPage: React.FC = () => {
   const [idNumber, setIdNumber] = useState('');
   const [agreed, setAgreed] = useState(false);
   const [error, setError] = useState('');
-  const [confirmPhoneOpen, setConfirmPhoneOpen] = useState(false);
+  // The confirm-phone dialog lives in the URL (?dialog=confirmPhone): system back closes it.
+  const confirmPhoneOpen = new URLSearchParams(useLocation().search).get('dialog') === 'confirmPhone';
   const [codeCooldownSec, setCodeCooldownSec] = useState(0);
 
   const text = isEnglish
@@ -114,9 +116,8 @@ export const WechatRegisterPage: React.FC = () => {
   };
 
   const phoneTrimmed = phone.trim();
-  const handleGetCode = () => setConfirmPhoneOpen(true);
   const confirmSendCode = () => {
-    setConfirmPhoneOpen(false);
+    back();
     const len = Number(auth?.verificationCodeLength || 6) || 6;
     const exp = Number(auth?.verificationCodeExpirySec || 60) || 60;
     requestVerificationCode(phoneTrimmed, len, exp);
@@ -229,7 +230,7 @@ export const WechatRegisterPage: React.FC = () => {
               inputMode="numeric"
             />
             <button
-              onClick={handleGetCode}
+              {...(phoneTrimmed && codeCooldownSec <= 0 ? bindNav(routes.authRegister, { search: { dialog: 'confirmPhone' } }) : {})}
               disabled={!phoneTrimmed || codeCooldownSec > 0}
               className={`ml-3 px-3 py-1.5 rounded text-[12px] ${
                 (phoneTrimmed && codeCooldownSec === 0) ? 'bg-gray-200 text-gray-600 active:bg-gray-300' : 'bg-gray-100 text-gray-400'
@@ -314,14 +315,14 @@ export const WechatRegisterPage: React.FC = () => {
             <div className="flex border-t border-gray-100">
               <button
                 className="flex-1 h-12 text-base text-black active:bg-gray-50"
-                onClick={() => setConfirmPhoneOpen(false)}
+                {...bindBack()}
               >
                 {text.cancel}
               </button>
               <div className="w-[1px] bg-gray-100"></div>
               <button
                 className="flex-1 h-12 text-base text-[#576b95] font-medium active:bg-gray-50"
-                onClick={confirmSendCode}
+                {...bindTap({ kind: 'action', id: 'wechat.register.code.confirm' }, { onTrigger: confirmSendCode })}
               >
                 {text.confirm}
               </button>

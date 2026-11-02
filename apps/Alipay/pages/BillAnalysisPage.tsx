@@ -1,4 +1,6 @@
 import React from 'react';
+import { useLocation } from 'react-router-dom';
+import { routes } from '../routes';
 import { useLocale } from '@/apps/Alipay/locale';
 import * as TimeService from '../../../os/TimeService';
 import { BILL_CATEGORIES } from '../constants';
@@ -147,7 +149,7 @@ const BarChart: React.FC<{ bars: { label: string; value: number; highlight?: boo
 export const BillAnalysisPage: React.FC = () => {
   const s = useAlipayStrings();
   const isEnglish = useLocale() === 'en';
-  const { bindBack } = useAlipayGestures();
+  const { bindBack, bindNav, bindTap, back } = useAlipayGestures();
   const transferRecords = useAlipayStore(state => state.transferRecords);
   const now = TimeService.getDate();
   const currentYear = now.getFullYear();
@@ -156,7 +158,8 @@ export const BillAnalysisPage: React.FC = () => {
   const [direction, setDirection] = React.useState<'expense' | 'income'>('expense');
   const [expandCategories, setExpandCategories] = React.useState(false);
   const [expandRanking, setExpandRanking] = React.useState(false);
-  const [isPickerOpen, setIsPickerOpen] = React.useState(false);
+  // The time picker lives in the URL (?modal=picker): system back closes it.
+  const isPickerOpen = new URLSearchParams(useLocation().search).get('modal') === 'picker';
   const [selectedYear, setSelectedYear] = React.useState(currentYear);
   const [selectedMonth, setSelectedMonth] = React.useState(currentMonth);
   const yearRef = React.useRef<HTMLDivElement>(null);
@@ -260,11 +263,13 @@ export const BillAnalysisPage: React.FC = () => {
     });
   }, [allStats, currentMonth, currentYear, direction, isEnglish, selectedMonth, selectedYear, yearly]);
 
-  const openPicker = () => {
-    setSelectedYear(currentYear);
-    setSelectedMonth(currentMonth);
-    setIsPickerOpen(true);
-  };
+  const pickerBind = bindNav(routes.billAnalysis, {
+    search: { modal: 'picker' },
+    beforeTrigger: () => {
+      setSelectedYear(currentYear);
+      setSelectedMonth(currentMonth);
+    },
+  });
 
   const visibleCategories = expandCategories ? categoryStats : categoryStats.slice(0, 3);
   const visibleRanking = expandRanking ? rankingRecords : rankingRecords.slice(0, 3);
@@ -281,7 +286,7 @@ export const BillAnalysisPage: React.FC = () => {
                 </button>
                 <button className="text-gray-500">{s.custom_time}</button>
               </div>
-              <button onClick={() => setIsPickerOpen(false)} className="text-xl font-light text-gray-400">×</button>
+              <button {...bindBack()} className="text-xl font-light text-gray-400">×</button>
             </div>
             <div className="relative mb-6 flex h-44 justify-center">
               <div className="pointer-events-none absolute left-6 right-6 top-1/2 -translate-y-1/2 border-y border-app-primary/30" style={{ height: 36 }} />
@@ -314,7 +319,7 @@ export const BillAnalysisPage: React.FC = () => {
                 )}
               </div>
             </div>
-            <button className="mb-2 w-full rounded-lg bg-app-primary py-3 text-lg font-medium text-white" onClick={() => setIsPickerOpen(false)}>
+            <button className="mb-2 w-full rounded-lg bg-app-primary py-3 text-lg font-medium text-white" {...bindTap({ kind: 'action', id: 'billAnalysis.picker.confirm' }, { onTrigger: () => back() })}>
               {s.confirm_2}
             </button>
           </div>
@@ -345,7 +350,7 @@ export const BillAnalysisPage: React.FC = () => {
 
       <div className="flex-1 overflow-auto no-scrollbar">
         <div className="flex items-center justify-between bg-white px-4 py-3">
-          <button className="flex items-center text-sm font-medium text-gray-800" onClick={openPicker}>
+          <button className="flex items-center text-sm font-medium text-gray-800" {...pickerBind}>
             {periodLabel(selectedYear, selectedMonth, yearly, isEnglish)}
             <IcExpand size={14} className="ml-1 text-gray-400" />
           </button>

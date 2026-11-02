@@ -97,9 +97,9 @@ export const routes = defineRoutes({
   settingsSecurityCenterDeleteAccount: { path: '/settings/security-center/delete-account', description: '注销账号申请' },
   settingsSecurityCenterDeleteAccountDataWarning: { path: '/settings/security-center/delete-account/data-warning', description: '数据删除警告' },
   settingsSecurityCenterDeleteAccountConfirm: { path: '/settings/security-center/delete-account/confirm', description: '重要提醒确认' },
-  authLogin: { path: '/auth/login', description: '登录页' },
-  authRegister: { path: '/auth/register', description: '注册页' },
-  authForgotPassword: { path: '/auth/forgot-password', description: '找回密码' },
+  authLogin: { path: '/auth/login', search: { 'dialog': ['confirmPhone', 'captcha'] }, description: '登录页', states: { 'dialog=confirmPhone': '确认手机号', 'dialog=captcha': '安全验证' } },
+  authRegister: { path: '/auth/register', search: { 'dialog': ['confirmPhone'] }, description: '注册页', states: { 'dialog=confirmPhone': '确认手机号' } },
+  authForgotPassword: { path: '/auth/forgot-password', search: { 'dialog': ['confirmPhone'] }, description: '找回密码', states: { 'dialog=confirmPhone': '确认手机号' } },
   authTrustDevice: { path: '/auth/trust-device', description: '信任设备确认' },
   authDevices: { path: '/auth/devices', description: '设备管理列表' },
 });

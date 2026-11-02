@@ -92,8 +92,8 @@ export const BillsPage: React.FC = () => {
   const isEnglish = useLocale() === 'en';
   const [searchParams] = useSearchParams();
   const transferRecords = useAlipayStore(state => state.transferRecords);
-  const { bindNav, bindBack, nav } = useAlipayGestures();
-  const [isMonthPickerOpen, setIsMonthPickerOpen] = React.useState(false);
+  const { bindNav, bindBack, bindTap, nav } = useAlipayGestures();
+  // The month picker lives in the URL (?modal=month): system back closes it.
   const now = TimeService.getDate();
   const currentYear = now.getFullYear();
   const currentMonth = now.getMonth() + 1;
@@ -137,6 +137,7 @@ export const BillsPage: React.FC = () => {
     }
   };
 
+  const isMonthPickerOpen = searchParams.get('modal') === 'month';
   const isFilterOpen = searchParams.get('modal') === 'filter';
   const appliedFilters = React.useMemo<BillFilterValues>(() => ({
     quickFilter: (searchParams.get('quickFilters') as AlipayBillQuickFilterId) || null,
@@ -276,17 +277,16 @@ export const BillsPage: React.FC = () => {
     nav.replace(routes.bill, {}, { search: { minAmount: params.minAmount, maxAmount: params.maxAmount, categories: params.categories, quickFilters: values.quickFilter || undefined } });
   };
 
-  const openMonthPickerFor = (year: number, month: number) => {
-    pickerJustOpened.current = true;
-    pickerOpenedAt.current = { year, month };
-    setSelectedYear(year);
-    setSelectedMonth(month);
-    setIsMonthPickerOpen(true);
-  };
-
-  const openMonthPicker = () => {
-    openMonthPickerFor(currentYear, currentMonth);
-  };
+  const bindMonthPicker = (year: number, month: number) => bindNav(routes.bill, {
+    search: { modal: 'month' },
+    keep: ['minAmount', 'maxAmount', 'categories', 'quickFilters'],
+    beforeTrigger: () => {
+      pickerJustOpened.current = true;
+      pickerOpenedAt.current = { year, month };
+      setSelectedYear(year);
+      setSelectedMonth(month);
+    },
+  });
 
   const renderMonthCard = (monthKey: string, records: AlipayTransferRecord[], label: string, isPrimary: boolean) => {
     const summary = summarizeRecords(records);
@@ -297,7 +297,7 @@ export const BillsPage: React.FC = () => {
           <div>
             <button
               className="flex items-center text-xl font-bold text-gray-900"
-              onClick={() => openMonthPickerFor(year, month)}
+              {...bindMonthPicker(year, month)}
             >
               {label}
               <IcExpand size={18} className="ml-1 text-gray-400" />
@@ -343,7 +343,7 @@ export const BillsPage: React.FC = () => {
                 </button>
                 <button className="text-gray-500">{s.custom_time}</button>
               </div>
-              <button onClick={() => setIsMonthPickerOpen(false)} className="text-xl font-light text-gray-400">×</button>
+              <button {...bindBack()} className="text-xl font-light text-gray-400">×</button>
             </div>
 
             <div className="relative mb-6 flex h-[176px] justify-center">
@@ -410,10 +410,12 @@ export const BillsPage: React.FC = () => {
 
             <button
               className="mb-2 w-full rounded-lg bg-app-primary py-3 text-lg font-medium text-white"
-              onClick={() => {
-                setSingleMonthMode(true);
-                setIsMonthPickerOpen(false);
-              }}
+              {...bindTap({ kind: 'action', id: 'bills.monthPicker.confirm' }, {
+                onTrigger: () => {
+                  setSingleMonthMode(true);
+                  nav.back();
+                },
+              })}
             >
               {s.confirm_2}
             </button>
@@ -486,14 +488,9 @@ export const BillsPage: React.FC = () => {
           <div className="absolute left-0 right-0 top-0 z-10 border-b border-gray-100 bg-app-surface px-4 pb-2 pt-2">
             <button
               className="mb-1 flex items-center gap-0.5 text-xs text-gray-700"
-              onClick={() => {
-                if (activeMonthKey) {
-                  const [y, m] = activeMonthKey.split('-').map(Number);
-                  openMonthPickerFor(y, m);
-                } else {
-                  openMonthPicker();
-                }
-              }}
+              {...(activeMonthKey
+                ? bindMonthPicker(...(activeMonthKey.split('-').map(Number) as [number, number]))
+                : bindMonthPicker(currentYear, currentMonth))}
             >
               {stickyData.label}
               <IcExpand size={12} className="text-gray-400" />
@@ -528,7 +525,7 @@ export const BillsPage: React.FC = () => {
               <div className="mt-1 text-sm text-gray-400">{s.bills_try_another}</div>
               <button
                 className="mt-5 rounded-full border border-app-primary px-5 py-2 text-sm text-app-primary"
-                onClick={openMonthPicker}
+                {...bindMonthPicker(currentYear, currentMonth)}
               >
                 {s.bills_view_earlier_bills}
               </button>

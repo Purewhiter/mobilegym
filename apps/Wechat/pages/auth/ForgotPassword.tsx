@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { routes } from '../../routes';
 import { useWechatStore } from '../../state';
 import { useWechatGestures } from '../../hooks/useWechatGestures';
 import { useLocale } from '@/os/locale';
 
 export const WechatForgotPasswordPage: React.FC = () => {
-  const { bindBack, back } = useWechatGestures();
+  const { bindBack, bindTap, back, nav } = useWechatGestures();
   const locale = useLocale();
   const isEnglish = locale === 'en';
 
@@ -16,7 +18,9 @@ export const WechatForgotPasswordPage: React.FC = () => {
   const [verificationCode, setVerificationCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [error, setError] = useState('');
-  const [confirmPhoneOpen, setConfirmPhoneOpen] = useState(false);
+  // The confirm-phone dialog lives in the URL (?dialog=confirmPhone): system back closes it.
+  const [searchParams] = useSearchParams();
+  const confirmPhoneOpen = searchParams.get('dialog') === 'confirmPhone';
   const [codeCooldownSec, setCodeCooldownSec] = useState(0);
 
   const text = isEnglish
@@ -88,11 +92,11 @@ export const WechatForgotPasswordPage: React.FC = () => {
       setError('missing_phone');
       return;
     }
-    setConfirmPhoneOpen(true);
+    nav.push(routes.authForgotPassword, {}, { search: { dialog: 'confirmPhone' } });
   };
 
   const confirmSendCode = () => {
-    setConfirmPhoneOpen(false);
+    back();
     const len = Number(auth?.verificationCodeLength || 6) || 6;
     const exp = Number(auth?.verificationCodeExpirySec || 60) || 60;
     requestVerificationCode(phone.trim(), len, exp);
@@ -141,7 +145,7 @@ export const WechatForgotPasswordPage: React.FC = () => {
             <div className="text-(--app-settings-item-text-size) text-(--app-c-tw-text-gray-500)">{text.verificationCode}</div>
             <button
               className={`text-[14px] ${(!phone.trim() || codeCooldownSec > 0) ? 'text-(--app-c-tw-text-gray-400)' : 'text-app-primary active:opacity-80'}`}
-              onClick={requestCode}
+              {...bindTap({ kind: 'action', id: 'wechat.forgotPassword.code.request' }, { onTrigger: requestCode })}
               disabled={!phone.trim() || codeCooldownSec > 0}
             >
               {codeCooldownSec > 0 ? text.resendCode(codeCooldownSec) : text.getCode}
@@ -174,14 +178,14 @@ export const WechatForgotPasswordPage: React.FC = () => {
             <div className="flex border-t border-gray-100">
               <button
                 className="flex-1 h-12 text-base text-black active:bg-gray-50"
-                onClick={() => setConfirmPhoneOpen(false)}
+                {...bindBack()}
               >
                 {text.cancel}
               </button>
               <div className="w-[1px] bg-gray-100"></div>
               <button
                 className="flex-1 h-12 text-base text-[#576b95] font-medium active:bg-gray-50"
-                onClick={confirmSendCode}
+                {...bindTap({ kind: 'action', id: 'wechat.forgotPassword.code.confirm' }, { onTrigger: confirmSendCode })}
               >
                 {text.confirm}
               </button>

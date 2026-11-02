@@ -1,5 +1,5 @@
 import React from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useLocation } from 'react-router-dom';
 import { useXStore, selectEffectiveFollowedSet } from '../state';
 import { useXHydratedPosts, useXResolvedPostQuery } from '../data/view';
 import { useXGestures } from '../hooks/useXGestures';
@@ -15,10 +15,11 @@ export const PostActivityPage: React.FC = () => {
   const toggleFollow = useXStore(s => s.toggleFollow);
   const followedSet = useXStore(selectEffectiveFollowedSet);
   const isFollowing = (userId: string) => followedSet.has(userId);
-  const { bindBack, bindNav, nav } = useXGestures();
+  const { bindBack, bindNav, bindTap, nav } = useXGestures();
   const s = useXStrings();
   const [activeTab, setActiveTab] = React.useState<'quotes' | 'retweets'>('quotes');
-  const [showSortMenu, setShowSortMenu] = React.useState(false);
+  // The sort menu lives in the URL (?sheet=sort): system back closes it.
+  const showSortMenu = new URLSearchParams(useLocation().search).get('sheet') === 'sort';
   const [sortMethod, setSortMethod] = React.useState<'popular' | 'recent'>('popular');
 
   const quotes = React.useMemo(() => {
@@ -64,7 +65,7 @@ export const PostActivityPage: React.FC = () => {
         <div className="font-bold text-lg">{s.post_activity_title}</div>
         <div className="ml-auto">
           {activeTab === 'quotes' && (
-            <button className="text-app-text p-2" onClick={() => setShowSortMenu(true)} aria-label={s.post_sort_quotes}>
+            <button className="text-app-text p-2" {...bindNav(routes.statusActivity, { params: { id: id as string }, search: { sheet: 'sort' }, keep: ['tab'] })} aria-label={s.post_sort_quotes}>
               <IcSort size={20} />
             </button>
           )}
@@ -206,7 +207,7 @@ export const PostActivityPage: React.FC = () => {
       {/* Sort Menu Bottom Sheet */}
       {showSortMenu && (
         <div className="fixed inset-0 z-[100] flex items-end justify-center sm:items-center">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowSortMenu(false)} />
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" {...bindBack()} />
           <div className="relative bg-white text-black w-full max-w-sm rounded-t-2xl sm:rounded-2xl overflow-hidden animate-in slide-in-from-bottom-10 fade-in-0 duration-200">
             <div className="p-4">
               <div className="font-bold text-lg mb-4 text-center">{s.post_sort_quotes}</div>
@@ -214,7 +215,7 @@ export const PostActivityPage: React.FC = () => {
                 <button
                   key={method}
                   className="w-full flex items-center justify-between p-4 hover:bg-gray-50 rounded-xl transition-colors"
-                  onClick={() => { setSortMethod(method); setShowSortMenu(false); }}
+                  {...bindTap({ kind: 'action', id: 'x.activity.sort.select' }, { params: { sort: method }, onTrigger: () => { setSortMethod(method); nav.back(); } })}
                 >
                   <div className="font-bold text-lg">{method === 'popular' ? s.post_sort_popular : s.post_sort_recent}</div>
                   {sortMethod === method ? (
@@ -228,7 +229,7 @@ export const PostActivityPage: React.FC = () => {
               ))}
             </div>
             <div className="p-2 pt-0">
-              <button className="w-full py-3.5 font-bold rounded-full bg-gray-100 active:bg-gray-200 transition-colors" onClick={() => setShowSortMenu(false)}>
+              <button className="w-full py-3.5 font-bold rounded-full bg-gray-100 active:bg-gray-200 transition-colors" {...bindBack()}>
                 {s.common_cancel}
               </button>
             </div>

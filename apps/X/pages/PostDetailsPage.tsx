@@ -23,10 +23,11 @@ export const PostDetailsPage: React.FC = () => {
   const user = useXStore(selectUser);
   const toggleRetweet = useXStore(s => s.toggleRetweet);
   const { replies: repliesForRoutePost, loading: repliesQueryLoading } = useXRepliesForPost(id || '');
-  const { bindBack, bindNav, nav } = useXGestures();
+  const { bindBack, bindNav, bindTap, nav } = useXGestures();
   const s = useXStrings();
   const [sortMethod, setSortMethod] = React.useState<'relevant' | 'recent' | 'likes'>('relevant');
-  const [showSortMenu, setShowSortMenu] = React.useState(false);
+  // The replies sort menu lives in the URL (?sheet=sort): system back closes it.
+  const showSortMenu = new URLSearchParams(useLocation().search).get('sheet') === 'sort';
   const retweetMenuPostId = useRetweetSheetPostId();
   const openRetweetMenu = (postId: string) => nav.push(routes.status, { id: id as string }, { search: { sheet: 'retweet', sheetPostId: postId } });
   const [showBookmarkToast, setShowBookmarkToast] = React.useState(false);
@@ -225,7 +226,7 @@ export const PostDetailsPage: React.FC = () => {
           <div className="flex items-center justify-between px-4 py-3 border-b border-app-border">
             <div
               className="flex items-center gap-1 font-bold text-app-text cursor-pointer"
-              onClick={() => setShowSortMenu(true)}
+              {...bindNav(routes.status, { params: { id: id as string }, search: { sheet: 'sort' } })}
             >
               <span>{getSortLabel(sortMethod)}</span>
               <IcChevronDown size={16} />
@@ -256,12 +257,12 @@ export const PostDetailsPage: React.FC = () => {
       {/* Sort Menu Bottom Sheet */}
       {showSortMenu && (
         <div className="fixed inset-0 z-[100] flex items-end justify-center sm:items-center">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowSortMenu(false)} />
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" {...bindBack()} />
           <div className="relative bg-white text-black w-full max-w-sm rounded-t-2xl sm:rounded-2xl overflow-hidden animate-in slide-in-from-bottom-10 fade-in-0 duration-200">
             <div className="p-4 border-b border-gray-100 relative">
               <div className="font-bold text-lg text-center">{s.post_sort_replies}</div>
               <button
-                onClick={() => setShowSortMenu(false)}
+                {...bindBack()}
                 className="absolute right-4 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-gray-100"
                 aria-label={s.follow_menu_close_aria_label}
               >
@@ -273,7 +274,7 @@ export const PostDetailsPage: React.FC = () => {
                 <button
                   key={id}
                   className="w-full flex items-center justify-between p-4 hover:bg-gray-50 rounded-xl transition-colors"
-                  onClick={() => { setSortMethod(id); setShowSortMenu(false); }}
+                  {...bindTap({ kind: 'action', id: 'x.status.replies.sort.select' }, { params: { sort: id }, onTrigger: () => { setSortMethod(id); nav.back(); } })}
                 >
                   <span className="font-bold text-base">{getSortLabel(id)}</span>
                   {sortMethod === id
@@ -286,7 +287,7 @@ export const PostDetailsPage: React.FC = () => {
             <div className="p-2 pt-0">
               <button
                 className="w-full py-3.5 font-bold rounded-full bg-gray-100 active:bg-gray-200 transition-colors"
-                onClick={() => setShowSortMenu(false)}
+                {...bindBack()}
               >
                 {s.common_cancel}
               </button>
