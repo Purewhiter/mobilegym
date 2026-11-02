@@ -3,6 +3,7 @@ import { persist, subscribeWithSelector, type PersistStorage, type StorageValue 
 import { immer } from 'zustand/middleware/immer';
 import { cancelPending, debouncedSetItem } from './debouncedPersist';
 import { safeParseJSON } from './utils/safeParseJSON';
+import { mergeIntoDraft } from './utils/statePatch';
 
 type WritableState = Record<string, any>;
 type BoundStore<S extends WritableState> = UseBoundStore<StoreApi<S>>;
@@ -73,18 +74,6 @@ export function snapshotProviders(): Record<string, any> {
 
 export function patchProviders(patch: Record<string, any>, deep: boolean): string[] {
   const patched: string[] = [];
-  const deepMerge = (target: any, source: any): any => {
-    if (source === undefined) return target;
-    if (source === null) return null;
-    if (typeof source !== 'object' || Array.isArray(source)) return source;
-    if (typeof target !== 'object' || target === null || Array.isArray(target)) return source;
-    const result = { ...target };
-    for (const key of Object.keys(source)) {
-      result[key] = deepMerge(target[key], source[key]);
-    }
-    return result;
-  };
-
   for (const [providerName, providerPatch] of Object.entries(patch)) {
     if (providerPatch === undefined || providerPatch === null) continue;
     const store = _providerStoreRefs.get(providerName);
@@ -98,7 +87,9 @@ export function patchProviders(patch: Record<string, any>, deep: boolean): strin
       for (const [k, v] of Object.entries(current as Record<string, any>)) {
         if (typeof v !== 'function') currentData[k] = v;
       }
-      const merged = deepMerge(currentData, providerPatch);
+      // Same merge as app patches, including `arr[field=value]` / `arr[]` keys.
+      const merged = structuredClone(currentData);
+      mergeIntoDraft(merged, providerPatch);
       (store.setState as any)(merged, true);
     } else {
       (store.setState as any)(providerPatch, true);
