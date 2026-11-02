@@ -17,7 +17,7 @@ const TICKET_TYPES = ['成人', '儿童', '学生', '残疾军人'];
 type RailwayStrings = ReturnType<typeof useRailwayStrings>;
 
 export const AddPassengerPage: React.FC = () => {
-  const { bindBack, back, nav } = useRailwayGestures();
+  const { bindBack, bindNav, bindTap, back, nav } = useRailwayGestures();
   const updatePassengers = useRailwayStore(s => s.updatePassengers);
   const passengers = useRailwayStore(s => s.passengers);
   const location = useLocation();
@@ -124,7 +124,7 @@ export const AddPassengerPage: React.FC = () => {
         </div>
 
         <div className="mx-4 mt-3 rounded-lg overflow-hidden">
-          <FormRow label={s.add_passenger_id_type} onClick={() => nav.push(routes.addPassenger, {}, { search: { dialog: 'idType' } })}>
+          <FormRow label={s.add_passenger_id_type} bind={bindNav(routes.addPassenger, { search: { dialog: 'idType' } })}>
             <span className="text-[14px] text-[#333]">{localizeRailwayText(idType, isEnglish)}</span>
           </FormRow>
           <FormRow label={s.add_passenger_name}>
@@ -145,7 +145,7 @@ export const AddPassengerPage: React.FC = () => {
               data-keep-keyboard="true"
             />
           </FormRow>
-          <FormRow label={s.add_passenger_ticket_type} onClick={() => nav.push(routes.addPassenger, {}, { search: { dialog: 'ticketType' } })} border={false}>
+          <FormRow label={s.add_passenger_ticket_type} bind={bindNav(routes.addPassenger, { search: { dialog: 'ticketType' } })} border={false}>
             <span className="text-[14px] text-[#333]">{localizeRailwayText(ticketType, isEnglish)}</span>
           </FormRow>
         </div>
@@ -173,7 +173,7 @@ export const AddPassengerPage: React.FC = () => {
 
         <div className="mx-4 mt-4">
           <button
-            onClick={handleSubmit}
+            {...bindTap<HTMLButtonElement>({ kind: 'action', id: 'railway.addPassenger.submit' }, { onTrigger: handleSubmit })}
             className="w-full h-[44px] rounded-full bg-[#4FA4F7] text-white text-[16px] font-medium active:bg-[#3B8DE5]"
           >
             {s.add_passenger_submit}
@@ -247,17 +247,18 @@ export const AddPassengerPage: React.FC = () => {
 const FormRow: React.FC<{
   label: string;
   children: React.ReactNode;
-  onClick?: () => void;
+  /** Tap binding for a row that opens something. */
+  bind?: React.HTMLAttributes<HTMLDivElement>;
   border?: boolean;
   error?: boolean;
-}> = ({ label, children, onClick, border = true, error }) => (
+}> = ({ label, children, bind, border = true, error }) => (
   <div
-    className={`flex items-center px-4 py-3.5 bg-white ${border ? 'border-b border-[#F0F2F5]' : ''} ${onClick ? 'active:bg-gray-50' : ''}`}
-    onClick={onClick}
+    className={`flex items-center px-4 py-3.5 bg-white ${border ? 'border-b border-[#F0F2F5]' : ''} ${bind ? 'active:bg-gray-50' : ''}`}
+    {...bind}
   >
     <span className={`text-[14px] w-[96px] flex-shrink-0 whitespace-normal leading-tight ${error ? 'text-[#E53935]' : 'text-[#333]'}`}>{label}</span>
     <div className="flex-1 min-w-0 flex items-center">{children}</div>
-    {onClick && <IcNavForward size={16} className="text-[#C0C0C0] flex-shrink-0 ml-1" />}
+    {bind && <IcNavForward size={16} className="text-[#C0C0C0] flex-shrink-0 ml-1" />}
   </div>
 );
 

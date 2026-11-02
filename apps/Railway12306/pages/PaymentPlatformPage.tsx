@@ -24,7 +24,7 @@ function completeOrder(order: OrderRecord): OrderRecord {
 export const PaymentPlatformPage: React.FC = () => {
   const orders = useRailwayStore(s => s.orders);
   const updateOrder = useRailwayStore(s => s.updateOrder);
-  const { bindTap, nav, back } = useRailwayGestures();
+  const { bindTap, bindBack, nav, back } = useRailwayGestures();
   const s = useRailwayStrings();
   const [selectedMethod, setSelectedMethod] = useState<'alipay' | 'jd'>('alipay');
 
@@ -79,13 +79,13 @@ export const PaymentPlatformPage: React.FC = () => {
     <div className="h-full min-h-full bg-[#f1f1f1] flex flex-col relative w-full overflow-hidden z-[200]" data-status-bar-foreground="light">
       <div className="bg-[#4886E0] text-white shrink-0">
         <div className="pt-12 pb-3 px-4 flex items-center gap-3">
-          <button className="w-16 shrink-0 text-left text-[17px] active:opacity-70" onClick={() => back()}>
+          <button className="w-16 shrink-0 text-left text-[17px] active:opacity-70" {...bindBack<HTMLButtonElement>()}>
             {s.orders_title}
           </button>
           <span className="flex-1 min-w-0 px-2 text-center text-[18px] font-medium leading-tight">
             {s.payment_platform_title}
           </span>
-          <button className="w-16 shrink-0 text-right text-[17px] leading-tight active:opacity-70" onClick={() => back()}>
+          <button className="w-16 shrink-0 text-right text-[17px] leading-tight active:opacity-70" {...bindBack<HTMLButtonElement>()}>
             {s.payment_platform_done}
           </button>
         </div>

@@ -13,7 +13,7 @@ const FONT_SIZE_INDEX: Record<string, number> = {
 };
 
 export const FontSizePage: React.FC = () => {
-  const { bindBack, nav } = useRailwayGestures();
+  const { bindBack, bindNav } = useRailwayGestures();
   const settings = useRailwayStore(s => s.settings);
   const updateSettings = useRailwayStore(s => s.updateSettings);
   const [fontSize, setFontSize] = useState(FONT_SIZE_INDEX[settings.fontSize] ?? 1); // 0=小, 1=标准, 2=大
@@ -117,15 +117,14 @@ export const FontSizePage: React.FC = () => {
       <div className="px-6 mt-6">
         <button
           className="w-full py-3 bg-app-primary rounded-lg text-white text-base font-medium"
-          data-trigger="nav.home"
-          data-trigger-type="tap"
-          onClick={() => {
-            updateSettings({
+          {...bindNav(routes.home, {
+            replace: true,
+            popTo: '/my',
+            beforeTrigger: () => updateSettings({
               fontSize: FONT_SIZE_OPTIONS[fontSize] ?? 'medium',
               highContrast,
-            });
-            nav.replace(routes.home, {}, { popTo: '/my' });
-          }}
+            }),
+          })}
         >
           立即切换
         </button>

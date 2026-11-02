@@ -18,16 +18,20 @@ interface SwipeableServiceGridProps {
   items: ServiceItem[];
   columns?: number;
   rowsPerPage?: number;
-  onItemClick?: (id: string) => void;
+  /** Tap binding for an item that opens a page (`bindNav`); items without one do nothing. */
+  bindItem?: (id: string) => React.HTMLAttributes<HTMLElement> | undefined;
   onOverscrollNavigate?: () => void;
+  /** Tap binding for the "release to jump" panel, which goes where `onOverscrollNavigate` does. */
+  overscrollBind?: React.HTMLAttributes<HTMLElement>;
 }
 
 export const SwipeableServiceGrid: React.FC<SwipeableServiceGridProps> = ({
   items,
   columns = 5,
   rowsPerPage = 3,
-  onItemClick,
+  bindItem,
   onOverscrollNavigate,
+  overscrollBind,
 }) => {
   const locale = useLocale();
   const s = useRailwayStrings();
@@ -104,7 +108,7 @@ export const SwipeableServiceGrid: React.FC<SwipeableServiceGridProps> = ({
                   <div
                     key={item.id}
                     className="flex flex-col items-center gap-1 relative active:opacity-70 h-[72px] pt-[15px]"
-                    onClick={() => onItemClick?.(item.id)}
+                    {...bindItem?.(item.id)}
                   >
                     {tag && (
                       <span className="absolute -top-1 right-0 text-[8px] text-white bg-red-500 rounded-full px-1 leading-tight z-10">
@@ -133,7 +137,7 @@ export const SwipeableServiceGrid: React.FC<SwipeableServiceGridProps> = ({
         {onOverscrollNavigate && (
           <div
             className="flex-shrink-0 w-[40%] snap-start flex items-center justify-center py-3"
-            onClick={onOverscrollNavigate}
+            {...overscrollBind}
           >
             <div className="flex flex-col items-center gap-1 text-gray-400">
               {(locale === 'en' ? ['S', 'W', 'I', 'P', 'E'] : ['松', '开', '跳', '转']).map((char) => (

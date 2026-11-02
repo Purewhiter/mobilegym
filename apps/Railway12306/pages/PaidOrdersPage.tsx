@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import { IcNavBack } from '../res/icons';
 import { useRailwayGestures } from '../hooks/useRailwayGestures';
@@ -23,11 +23,11 @@ export const PaidOrdersPage: React.FC = () => {
   const { bindBack, bindNav } = useRailwayGestures();
   const location = useLocation();
   const orders = useRailwayStore(s => s.orders);
-  const [activeTab, setActiveTab] = useState<'pending' | 'history'>('pending');
   const s = useRailwayStrings();
   const isEnglish = useLocale() === 'en';
   const searchParams = new URLSearchParams(location.search);
   const refundDialogOrderId = searchParams.get('dialog') === 'refundNotice' ? searchParams.get('id') : null;
+  const activeTab = searchParams.get('tab') === 'history' ? 'history' : 'pending';
 
   const completedOrders = useMemo(
     () => orders.filter(o => o.status === 'completed' || o.status === 'cancelled'),
@@ -85,14 +85,14 @@ export const PaidOrdersPage: React.FC = () => {
         <div className="flex gap-6 px-4">
           <button
             className={`pb-2 text-[15px] relative ${activeTab === 'pending' ? 'text-white font-medium' : 'text-white/70'}`}
-            onClick={() => setActiveTab('pending')}
+            {...bindNav(routes.paidOrders, { search: { tab: 'pending' }, replace: true })}
           >
             {s.paid_orders_tab_upcoming}
             {activeTab === 'pending' && <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full h-[3px] bg-white rounded-t-sm" />}
           </button>
           <button
             className={`pb-2 text-[15px] relative ${activeTab === 'history' ? 'text-white font-medium' : 'text-white/70'}`}
-            onClick={() => setActiveTab('history')}
+            {...bindNav(routes.paidOrders, { search: { tab: 'history' }, replace: true })}
           >
             {s.paid_orders_tab_history}
             {activeTab === 'history' && <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full h-[3px] bg-white rounded-t-sm" />}

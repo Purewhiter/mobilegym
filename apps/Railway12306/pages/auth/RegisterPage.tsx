@@ -79,7 +79,7 @@ const PASSENGER_TYPES = ['成人', '儿童', '学生', '残疾军人'] as const;
 // ── Component ───────────────────────────────────────────────────────
 
 export const RailwayRegisterPage: React.FC = () => {
-  const { nav, bindBack } = useRailwayGestures();
+  const { nav, bindBack, bindTap } = useRailwayGestures();
 
   const [formData, setFormData] = useState<Record<FieldKey, string>>({
     username: '',
@@ -280,7 +280,7 @@ export const RailwayRegisterPage: React.FC = () => {
         <div className="px-4 pb-4">
           <button
             className="w-full h-11 rounded text-white font-medium bg-app-primary active:opacity-90"
-            onClick={handleSubmit}
+            {...bindTap<HTMLButtonElement>({ kind: 'action', id: 'railway.auth.register.submit' }, { onTrigger: handleSubmit })}
           >
             下一步
           </button>
@@ -374,7 +374,7 @@ export const RailwayRegisterPage: React.FC = () => {
               </button>
               <button
                 className="flex-1 py-3 text-[16px] text-white font-medium bg-[#4B9AFF] rounded-br-xl"
-                onClick={handleConfirmRegister}
+                {...bindTap<HTMLButtonElement>({ kind: 'action', id: 'railway.auth.register.confirm' }, { onTrigger: handleConfirmRegister })}
               >
                 确认
               </button>

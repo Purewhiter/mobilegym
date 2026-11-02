@@ -46,16 +46,20 @@ function formatDuration(departTime: string, arriveTime: string, isEnglish: boole
 export const IncompleteOrdersPage: React.FC = () => {
   const state = useRailwayStore(useShallow(s => ({ orders: s.orders, passengers: s.passengers })));
   const updateOrder = useRailwayStore(s => s.updateOrder);
-  const { bindBack, nav } = useRailwayGestures();
+  const { bindBack, bindNav, bindTap, back, nav } = useRailwayGestures();
   const s = useRailwayStrings();
   const location = useLocation();
   const isEnglish = useLocale() === 'en';
-  const fromOrders = new URLSearchParams(location.search).get('from') === 'orders';
-  const [showAmountSheet, setShowAmountSheet] = useState(false);
+  const query = new URLSearchParams(location.search);
+  const fromOrders = query.get('from') === 'orders';
+  const dialog = query.get('dialog');
+  const showAmountSheet = dialog === 'amount';
+  const showLeaveConfirm = dialog === 'leave';
+  const showCancelConfirm = dialog === 'cancel';
+  const showPaymentSheet = dialog === 'payment';
+  const openDialog = (name: 'amount' | 'leave' | 'cancel' | 'payment') =>
+    bindNav(routes.incompleteOrders, { search: { dialog: name }, keep: ['from'] });
   const [showAllPassengers, setShowAllPassengers] = useState(false);
-  const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
-  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
-  const [showPaymentSheet, setShowPaymentSheet] = useState(false);
   const [currentTs, setCurrentTs] = useState(() => timeNow());
 
   const pendingOrder = useMemo(
@@ -98,7 +102,7 @@ export const IncompleteOrdersPage: React.FC = () => {
     <div className="min-h-full bg-[#FAFAFA] pb-[140px]" data-status-bar-foreground="light">
       <div className="bg-[#4FA4F7] pt-12 pb-3 sticky top-0 z-20">
         <div className="flex items-center justify-between px-4">
-          <button className="flex items-center justify-center p-1" onClick={() => setShowLeaveConfirm(true)}>
+          <button className="flex items-center justify-center p-1" {...openDialog('leave')}>
             <IcNavBack size={26} className="text-white" />
           </button>
           <span className="text-[18px] text-white font-medium">{s.incomplete_orders_title}</span>
@@ -234,7 +238,7 @@ export const IncompleteOrdersPage: React.FC = () => {
       {showAmountSheet && (
         <button
           className="fixed inset-0 bg-black/45 z-[55]"
-          onClick={() => setShowAmountSheet(false)}
+          {...bindBack<HTMLButtonElement>()}
         />
       )}
 
@@ -256,7 +260,7 @@ export const IncompleteOrdersPage: React.FC = () => {
           </span>
           <button
             className="text-[13px] text-[#A5B0BF] flex items-center gap-0.5"
-            onClick={() => setShowAmountSheet(v => !v)}
+            {...(showAmountSheet ? bindBack<HTMLButtonElement>() : openDialog('amount'))}
           >
             <span>{s.incomplete_orders_details}</span>
             {showAmountSheet ? <IcExpand size={16} /> : <IcCollapse size={16} />}
@@ -265,7 +269,7 @@ export const IncompleteOrdersPage: React.FC = () => {
         <div className="flex items-center px-4 pt-2 pb-1">
           <button
             className="flex-1 text-center py-2.5 text-[16px] text-[#8C95A3] h-[46px] flex items-center justify-center"
-            onClick={() => setShowCancelConfirm(true)}
+            {...openDialog('cancel')}
           >
             {s.incomplete_orders_cancel_order}
           </button>
@@ -275,7 +279,7 @@ export const IncompleteOrdersPage: React.FC = () => {
             </button>
             <button
               className="flex-1 h-[42px] rounded-[6px] bg-[#E08D5B] text-white text-[16px] font-medium flex items-center justify-center shadow-[0_2px_6px_rgba(224,141,91,0.3)]"
-              onClick={() => setShowPaymentSheet(true)}
+              {...openDialog('payment')}
             >
               {s.incomplete_orders_pay_now}
             </button>
@@ -295,18 +299,20 @@ export const IncompleteOrdersPage: React.FC = () => {
             <div className="flex border-t border-[#F0F2F5]">
               <button
                 className="flex-1 py-3 text-[16px] text-[#8C95A3] border-r border-[#F0F2F5]"
-                onClick={() => setShowCancelConfirm(false)}
+                {...bindBack<HTMLButtonElement>()}
               >
                 {s.action_cancel}
               </button>
               <button
                 className="flex-1 py-3 text-[16px] text-white font-medium bg-[#4FA4F7] rounded-br-xl"
-                onClick={() => {
-                  updateOrder(pendingOrder.id, { status: 'cancelled' });
-                  setShowCancelConfirm(false);
-                  if (fromOrders) nav.replace(routes.orders);
-                  else nav.replace(routes.home);
-                }}
+                {...bindTap<HTMLButtonElement>({ kind: 'action', id: 'railway.incompleteOrders.cancel.confirm' }, {
+                  onTrigger: () => {
+                    updateOrder(pendingOrder.id, { status: 'cancelled' });
+                    back();
+                    if (fromOrders) nav.replace(routes.orders);
+                    else nav.replace(routes.home);
+                  },
+                })}
               >
                 {s.incomplete_orders_confirm_cancel}
               </button>
@@ -344,17 +350,19 @@ export const IncompleteOrdersPage: React.FC = () => {
             <div className="flex border-t border-[#F0F2F5]">
               <button
                 className="flex-1 py-3 text-[16px] text-[#8C95A3] border-r border-[#F0F2F5]"
-                onClick={() => setShowLeaveConfirm(false)}
+                {...bindBack<HTMLButtonElement>()}
               >
                 {s.action_cancel}
               </button>
               <button
                 className="flex-1 py-3 text-[16px] text-[#4FA4F7] font-medium"
-                onClick={() => {
-                  setShowLeaveConfirm(false);
-                  if (fromOrders) nav.replace(routes.orders);
-                  else nav.replace(routes.home);
-                }}
+                {...bindTap<HTMLButtonElement>({ kind: 'action', id: 'railway.incompleteOrders.leave.confirm' }, {
+                  onTrigger: () => {
+                    back();
+                    if (fromOrders) nav.replace(routes.orders);
+                    else nav.replace(routes.home);
+                  },
+                })}
               >
                 {s.action_confirm}
               </button>
@@ -365,13 +373,13 @@ export const IncompleteOrdersPage: React.FC = () => {
 
       {showPaymentSheet && (
         <div className="fixed inset-0 z-[120] flex flex-col justify-end">
-          <div className="absolute inset-0 bg-black/45" onClick={() => setShowPaymentSheet(false)} />
+          <div className="absolute inset-0 bg-black/45" {...bindBack()} />
           <div className="relative bg-[#FAFAFA] rounded-t-[16px] flex flex-col max-h-[90vh]">
             <div className="relative py-4 shrink-0 bg-white rounded-t-[16px]">
               <div className="text-center text-[16px] font-medium text-[#222]">{s.incomplete_orders_order_payment}</div>
               <button
                 className="absolute right-4 top-4 text-[#999]"
-                onClick={() => setShowPaymentSheet(false)}
+                {...bindBack<HTMLButtonElement>()}
               >
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <line x1="18" y1="6" x2="6" y2="18" />
@@ -485,10 +493,7 @@ export const IncompleteOrdersPage: React.FC = () => {
                 </div>
                 <button
                   className="w-full h-[46px] rounded-[8px] bg-[#4FA4F7] text-white text-[17px] font-medium"
-                  onClick={() => {
-                    setShowPaymentSheet(false);
-                    nav.push(routes.paymentPlatform, {}, { search: { from: fromOrders ? 'orders' : 'home' } });
-                  }}
+                  {...bindNav(routes.paymentPlatform, { search: { from: fromOrders ? 'orders' : 'home' }, replace: true })}
                 >
                   {s.incomplete_orders_go_pay}
                 </button>

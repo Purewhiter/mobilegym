@@ -6,7 +6,7 @@ import { useShallow } from 'zustand/react/shallow';
 import type { TrainFilter, SortMode } from '../services/trainService';
 import { SEAT_FILTER_OPTIONS, TIME_RANGES, applyFilterAndSort, queryTrainStopsWithCatalog } from '../services/trainService';
 import type { StopInfo } from '../services/railwayApi';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import * as TimeService from '../../../os/TimeService';
 import { strings } from '../res/strings';
 import { stringsEn } from '../res/strings.en';
@@ -69,14 +69,14 @@ function hasBerthSeats(train: TrainInfo): boolean {
 interface FilterPanelProps {
   filter: TrainFilter;
   onConfirm: (f: TrainFilter) => void;
-  onCancel: () => void;
   fromStationOptions: string[];
   toStationOptions: string[];
 }
 
-const FilterPanel: React.FC<FilterPanelProps> = ({ filter, onConfirm, onCancel, fromStationOptions, toStationOptions }) => {
+const FilterPanel: React.FC<FilterPanelProps> = ({ filter, onConfirm, fromStationOptions, toStationOptions }) => {
   const [temp, setTemp] = useState<TrainFilter>({ ...filter });
   const s = useAppStrings(strings, stringsEn);
+  const { bindBack, bindTap } = useRailwayGestures();
 
   // 切片 toggle 辅助函数
   const toggleArrayItem = useCallback((key: keyof TrainFilter, value: string | number) => {
@@ -106,12 +106,12 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filter, onConfirm, onCancel, 
   return (
     <div className="fixed inset-0 z-[70]" data-status-bar-foreground="light">
       {/* 遮罩 */}
-      <div className="absolute inset-0 bg-black/40" onClick={onCancel} />
+      <div className="absolute inset-0 bg-black/40" {...bindBack()} />
       {/* 面板 */}
       <div className="absolute bottom-0 left-0 right-0 bg-app-surface rounded-t-2xl max-h-[78vh] flex flex-col animate-slide-up">
         {/* 顶部 */}
         <div className="px-4 py-3 flex-shrink-0">
-          <button className="text-gray-600 text-sm" onClick={onCancel}>{s.action_cancel}</button>
+          <button className="text-gray-600 text-sm" {...bindBack<HTMLButtonElement>()}>{s.action_cancel}</button>
         </div>
 
         {/* 可滚动内容 */}
@@ -243,7 +243,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({ filter, onConfirm, onCancel, 
         {/* 底部按钮 */}
         <div className="absolute bottom-0 left-0 right-0 bg-app-surface border-t border-gray-100 flex gap-3 px-4 py-3 pb-[calc(12px+env(safe-area-inset-bottom))]">
           <button className="flex-1 py-3 rounded-full border border-gray-300 text-gray-600 text-base" onClick={clearAll}>{s.filter_clear}</button>
-          <button className="flex-1 py-3 rounded-full bg-app-primary text-white text-base" onClick={() => onConfirm(temp)}>{s.filter_confirm}</button>
+          <button className="flex-1 py-3 rounded-full bg-app-primary text-white text-base" {...bindTap<HTMLButtonElement>({ kind: 'action', id: 'railway.queryResult.filter.confirm' }, { onTrigger: () => onConfirm(temp) })}>{s.filter_confirm}</button>
         </div>
       </div>
     </div>
@@ -402,7 +402,7 @@ const TrainCard: React.FC<TrainCardProps> = React.memo(({
 
       <div
         className="w-full text-left flex items-start justify-between active:bg-gray-50 px-3 pt-4 pb-2 cursor-pointer"
-        onClick={() => { setShowStops(false); onToggle(index); }}
+        {...bindTap<HTMLDivElement>({ kind: 'action', id: 'railway.queryResult.train.expand' }, { onTrigger: () => { setShowStops(false); onToggle(index); } })}
       >
         {/* 出发 */}
         <div className="w-[66px]">
@@ -593,10 +593,9 @@ export const QueryResultPage: React.FC = () => {
   const setSelectedTrain = useRailwayStore(s => s.setSelectedTrain);
   const setDate = useRailwayStore(s => s.setDate);
   const swapStations = useRailwayStore(s => s.swapStations);
-  const { bindBack, bindTap, bindNav } = useRailwayGestures();
+  const { bindBack, bindTap, bindNav, nav } = useRailwayGestures();
   const s = useAppStrings(strings, stringsEn);
-  const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const activeTab = searchParams.get('tab') || 'direct';
   const showFilterPanel = searchParams.get('filterPanel') === 'open';
   const [filter, setFilter] = useState<TrainFilter>({});
@@ -651,7 +650,8 @@ export const QueryResultPage: React.FC = () => {
     setExpandedTrainIndex(null);
   };
 
-  const setTab = (tab: string) => { setSearchParams({ tab }, { replace: true }); setExpandedTrainIndex(null); };
+  const bindTab = (tab: 'direct' | 'transfer') =>
+    bindNav(routes.queryResult, { search: { tab }, replace: true, beforeTrigger: () => setExpandedTrainIndex(null) });
 
   // 排序/筛选在前端内存中执行，避免触发网络查询
   const filteredTrains = useMemo(
@@ -732,12 +732,11 @@ export const QueryResultPage: React.FC = () => {
   // to avoid the double-render that useEffect would cause.
 
   // 筛选面板
-  const openFilterPanel = () => setSearchParams({ tab: activeTab, filterPanel: 'open' }, { replace: true });
-  const closeFilterPanel = () => setSearchParams({ tab: activeTab }, { replace: true });
+  const openFilterPanel = () => bindNav(routes.queryResult, { search: { tab: activeTab as 'direct' | 'transfer', filterPanel: 'open' } });
   const confirmFilter = (f: TrainFilter) => {
     setFilter(f);
     setExpandedTrainIndex(null);
-    closeFilterPanel();
+    nav.back();
   };
 
   // 高级筛选激活数
@@ -753,7 +752,7 @@ export const QueryResultPage: React.FC = () => {
           </button>
           <button
             className="text-white text-lg font-medium flex items-center gap-1 active:opacity-60"
-            onClick={() => setSearchParams(prev => { prev.set('swapDialog', 'open'); return prev; })}
+            {...bindNav(routes.queryResult, { search: { swapDialog: 'open' }, keep: ['tab', 'filterPanel'] })}
           >
             {from}
             <span className="text-white/80 text-sm">&lt;&gt;</span>
@@ -796,7 +795,7 @@ export const QueryResultPage: React.FC = () => {
         <div className="bg-app-surface flex border-b border-gray-100">
           <button
             className={`flex-1 py-2.5 text-center flex flex-col items-center justify-center relative ${activeTab === 'direct' ? 'text-app-primary' : 'text-gray-500'}`}
-            onClick={() => setTab('direct')}
+            {...bindTab('direct')}
           >
             <div className="flex items-center gap-1">
               <DirectRouteIcon />
@@ -806,7 +805,7 @@ export const QueryResultPage: React.FC = () => {
           </button>
           <button
             className={`flex-1 py-2.5 text-center flex flex-col items-center justify-center relative ${activeTab === 'transfer' ? 'text-app-primary' : 'text-gray-500'}`}
-            onClick={() => setTab('transfer')}
+            {...bindTab('transfer')}
           >
             <div className="flex items-center gap-1">
               <IcSwapAlt size={16} />
@@ -835,7 +834,7 @@ export const QueryResultPage: React.FC = () => {
               {/* 筛选按钮 */}
               <button
                 className={`flex items-center gap-0.5 whitespace-nowrap ml-auto ${advancedCount > 0 ? 'text-app-primary' : 'text-gray-500'}`}
-                onClick={openFilterPanel}
+                {...openFilterPanel()}
               >
                 <IcFilter size={12} />
                 <span>{s.filter_btn}</span>
@@ -997,21 +996,17 @@ export const QueryResultPage: React.FC = () => {
               const displayLabel = isDesc ? item.descLabel : item.ascLabel;
               return (
                 <button key={item.ascLabel} className={`flex-1 flex flex-col items-center justify-center gap-0.5 py-1.5 relative ${active ? 'text-app-primary' : 'text-gray-500'}`}
-                  onClick={() => {
-                    if (item.isFilter) {
-                      openFilterPanel();
-                      return;
-                    }
-                    if (item.asc === 'default') return;
-                    if (isAsc) {
-                      setSort(item.desc);
-                    } else if (isDesc) {
-                      setSort(item.asc);
-                    } else {
-                      setSort(item.asc);
-                    }
-                    setExpandedTrainIndex(null);
-                  }}>
+                  {...(item.isFilter
+                    ? openFilterPanel()
+                    : item.asc === 'default'
+                      ? {}
+                      : bindTap<HTMLButtonElement>({ kind: 'action', id: 'railway.queryResult.sort' }, {
+                          params: { sort: isAsc ? item.desc : item.asc },
+                          onTrigger: () => {
+                            setSort(isAsc ? item.desc : item.asc);
+                            setExpandedTrainIndex(null);
+                          },
+                        }))}>
                   {item.icon && <item.icon size={16} />}
                   <span className="text-[10px]">{displayLabel}</span>
                   {/* 筛选按钮上显示激活数 */}
@@ -1032,7 +1027,7 @@ export const QueryResultPage: React.FC = () => {
             ]).map(item => (
               <button key={item.label}
                 className={`flex-1 flex flex-col items-center justify-center gap-0.5 py-1.5 ${transferSort === item.mode && item.mode !== 'default' ? 'text-app-primary' : 'text-gray-500'}`}
-                onClick={() => item.mode !== 'default' && setTransferSort(item.mode)}
+                {...(item.mode === 'default' ? {} : bindTap<HTMLButtonElement>({ kind: 'action', id: 'railway.queryResult.transferSort' }, { params: { sort: item.mode }, onTrigger: () => setTransferSort(item.mode) }))}
               >
                 {item.icon && <item.icon size={16} />}
                 <span className="text-[10px]">{item.label}</span>
@@ -1047,7 +1042,6 @@ export const QueryResultPage: React.FC = () => {
         <FilterPanel
           filter={filter}
           onConfirm={confirmFilter}
-          onCancel={closeFilterPanel}
           fromStationOptions={fromStationOptions}
           toStationOptions={toStationOptions}
         />
@@ -1056,7 +1050,7 @@ export const QueryResultPage: React.FC = () => {
       {/* 交换发到站确认弹窗 */}
       {showSwapDialog && (
         <div className="fixed inset-0 z-[80] flex items-center justify-center" data-status-bar-foreground="light">
-          <div className="absolute inset-0 bg-black/40" onClick={() => navigate(-1)} />
+          <div className="absolute inset-0 bg-black/40" {...bindBack()} />
           <div className="relative bg-app-surface rounded-2xl w-[280px] overflow-hidden shadow-xl">
             <div className="pt-6 pb-3 px-6 text-center">
               <div className="text-base font-semibold text-gray-900 mb-3">{s.swap_dialog_title}</div>
@@ -1065,17 +1059,19 @@ export const QueryResultPage: React.FC = () => {
             <div className="flex border-t border-gray-200">
               <button
                 className="flex-1 py-3 text-center text-gray-600 text-base border-r border-gray-200 active:bg-gray-50"
-                onClick={() => navigate(-1)}
+                {...bindBack<HTMLButtonElement>()}
               >
                 {s.swap_dialog_cancel}
               </button>
               <button
                 className="flex-1 py-3 text-center text-app-primary text-base font-medium active:bg-blue-50"
-                onClick={() => {
-                  navigate(-1);
-                  swapStations();
-                  setExpandedTrainIndex(null);
-                }}
+                {...bindTap<HTMLButtonElement>({ kind: 'action', id: 'railway.queryResult.swap.confirm' }, {
+                  onTrigger: () => {
+                    nav.back();
+                    swapStations();
+                    setExpandedTrainIndex(null);
+                  },
+                })}
               >
                 {s.swap_dialog_confirm}
               </button>
