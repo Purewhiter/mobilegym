@@ -251,7 +251,7 @@ export const HomePage: React.FC<HomePageProps> = ({ activeTab: urlTab = 'recomme
                             return (
                                 <button
                                     key={tab.key}
-                                    {...(isActive || isDisabled ? {} : bindNav(routes.home, { search: { tab: tab.key }, replace: true }))}
+                                    {...(isActive || isDisabled ? {} : bindNav(routes.home, { search: { tab: tab.key as (typeof routes.home.search.tab)[number] }, replace: true }))}
                                     className={`flex-shrink-0 px-3 py-2 text-[16px] font-medium whitespace-nowrap relative text-center ${isActive ? 'text-app-primary' : 'text-gray-600'} ${isDisabled ? 'opacity-60 pointer-events-none' : ''}`}
                                 >
                                     {tab.label}

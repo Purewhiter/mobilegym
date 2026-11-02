@@ -943,7 +943,7 @@ export const SearchPage: React.FC = () => {
                         key={tab.id}
                         {...(activeTab === tab.id
                             ? {}
-                            : bindNav(routes.searchResults, { search: { tab: tab.id }, keep: ['q'], replace: true }))}
+                            : bindNav(routes.searchResults, { search: { tab: tab.id as (typeof routes.searchResults.search.tab)[number] }, keep: ['q'], replace: true }))}
                         className={`px-4 py-2.5 text-[14px] whitespace-nowrap relative transition-colors ${activeTab === tab.id ? 'text-app-primary font-bold' : 'text-[#61666D]'}`}
                     >
                         {tab.label}

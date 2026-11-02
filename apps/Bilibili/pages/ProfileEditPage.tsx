@@ -9,9 +9,9 @@ import type { BilibiliUser } from '../data';
 import { useBilibiliGestures } from '../hooks/useBilibiliGestures';
 import * as TimeService from '../../../os/TimeService';
 import { routes } from '../routes';
-const ListItem = ({ label, value, isAvatar = false, noBorder = false, noArrow = false, isQr = false, onClick }: any) => (
+const ListItem = ({ label, value, isAvatar = false, noBorder = false, noArrow = false, isQr = false, ...bind }: any) => (
     <div
-        onClick={onClick}
+        {...bind}
         className={`flex justify-between items-center py-3.5 pr-4 bg-app-surface active:bg-gray-50 ${!noBorder ? 'border-b border-gray-100' : ''}`}
     >
         <span className="text-[15px] text-app-text">{label}</span>

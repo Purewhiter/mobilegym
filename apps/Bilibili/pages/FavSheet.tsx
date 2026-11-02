@@ -3,6 +3,7 @@ import { IcPlayCircle, IcAdd, IcCheck } from '../res/icons';
 import { useBilibiliStore } from '../state';
 import { useBilibiliGestures } from '../hooks/useBilibiliGestures';
 import { realNow } from '../../../os/TimeService';
+import { routes } from '../routes';
 
 interface FavToastProps {
   visible: boolean;
@@ -36,11 +37,11 @@ interface FavSheetProps {
   visible: boolean;
   videoId: string;
   onClose: () => void;
-  onCreateFolder: () => void;
   pendingNewFolderId?: string | null;
 }
 
-export const FavSheet: React.FC<FavSheetProps> = ({ visible, videoId, onClose, onCreateFolder, pendingNewFolderId }) => {
+export const FavSheet: React.FC<FavSheetProps> = ({ visible, videoId, onClose, pendingNewFolderId }) => {
+  const { bindBack, bindNav, bindTap } = useBilibiliGestures();
   const biliUser = useBilibiliStore(s => s.user);
   const setFavFolders = useBilibiliStore(s => s.setFavFolders);
   const folders = biliUser.favoritesFolders || [];
@@ -62,6 +63,14 @@ export const FavSheet: React.FC<FavSheetProps> = ({ visible, videoId, onClose, o
   }, [visible, videoId, pendingNewFolderId]);
 
   const [snap, setSnap] = useState<SnapPoint>('half');
+  // A drag-dismiss closes after its animation; system back in between already closed the sheet.
+  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    if (visible) return;
+    if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
+    closeTimerRef.current = null;
+    setSnap('half');
+  }, [visible]);
   const [dragY, setDragY] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const dragStartRef = useRef({ y: 0, snapY: 0, time: 0 });
@@ -100,7 +109,7 @@ export const FavSheet: React.FC<FavSheetProps> = ({ visible, videoId, onClose, o
 
     if (velocity > 0.5 || endY > h * 0.75) {
       setSnap('closed');
-      setTimeout(onClose, 300);
+      closeTimerRef.current = setTimeout(onClose, 300);
     } else if (velocity < -0.5 || endY < h * 0.3) {
       setSnap('full');
     } else {
@@ -129,10 +138,7 @@ export const FavSheet: React.FC<FavSheetProps> = ({ visible, videoId, onClose, o
       <div
         className="absolute inset-0 bg-black/40"
         style={{ transition: 'opacity 300ms' }}
-        onClick={() => {
-          setSnap('closed');
-          setTimeout(onClose, 300);
-        }}
+        {...bindBack<HTMLDivElement>()}
       />
       <div
         ref={sheetRef}
@@ -163,7 +169,7 @@ export const FavSheet: React.FC<FavSheetProps> = ({ visible, videoId, onClose, o
           <span className="text-[15px] font-medium">选择收藏夹</span>
           <button
             className="flex items-center gap-1 text-[13px] text-gray-500 active:opacity-70"
-            onClick={onCreateFolder}
+            {...bindNav(routes.favCreate, { replace: true })}
           >
             <IcAdd size={14} />
             <span>新建收藏夹</span>
@@ -201,7 +207,7 @@ export const FavSheet: React.FC<FavSheetProps> = ({ visible, videoId, onClose, o
         <div className="px-4 py-3 pb-safe border-t border-gray-100" data-no-drag>
           <button
             className="w-full py-2.5 text-center text-[15px] font-medium text-gray-800 active:bg-gray-50 rounded-lg"
-            onClick={handleDone}
+            {...bindTap<HTMLButtonElement>({ kind: 'action', id: 'bilibili.favSheet.done' }, { onTrigger: handleDone })}
           >
             完成
           </button>

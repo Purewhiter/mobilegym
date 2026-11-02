@@ -1,8 +1,9 @@
 import React from 'react';
-import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { SettingLayout, SettingSection, SettingItemSwitch, SettingItemValue, SettingBottomSheet } from './index';
 import { useBilibiliStore } from '../../state';
 import { useBilibiliGestures } from '../../hooks/useBilibiliGestures';
+import { routes } from '../../routes';
 
 const HARASS_OPTIONS = [
   { id: '7days', label: '关注我7天以上的人' },
@@ -14,9 +15,7 @@ const LABELS: Record<string, string> = { '7days': '关注我7天以上的人', f
 
 export const SettingsHarassPage: React.FC = () => {
   const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { back } = useBilibiliGestures();
+  const { back, bindNav } = useBilibiliGestures();
   const setSetting = useBilibiliStore((s) => s.setSetting);
   const oneKey = useBilibiliStore((s) => s.settings.harass.oneKey) ?? false;
   const comment = useBilibiliStore((s) => s.settings.harass.comment) ?? 'all';
@@ -25,7 +24,6 @@ export const SettingsHarassPage: React.FC = () => {
 
   const sheet = searchParams.get('sheet') ?? '';
 
-  const openSheet = (key: string) => navigate(`${location.pathname}?sheet=${key}`);
   const closeSheet = () => back();
 
   const currentValue = sheet === 'comment' ? comment : sheet === 'danmaku' ? danmaku : sheet === 'pm' ? pm : '';
@@ -33,7 +31,6 @@ export const SettingsHarassPage: React.FC = () => {
     if (sheet === 'comment') setSetting('harass.comment', id);
     else if (sheet === 'danmaku') setSetting('harass.danmaku', id);
     else if (sheet === 'pm') setSetting('harass.pm', id);
-    closeSheet();
   };
 
   const sheetTitle = sheet === 'comment' ? '谁可以发评论' : sheet === 'danmaku' ? '谁可以发弹幕' : sheet === 'pm' ? '谁可以发私信' : '';
@@ -48,9 +45,9 @@ export const SettingsHarassPage: React.FC = () => {
         onChange={(v) => setSetting('harass.oneKey', v)}
       />
       <SettingSection title="长期防护" />
-      <SettingItemValue label="谁可以发评论" value={LABELS[comment] ?? '所有人'} onClick={() => openSheet('comment')} />
-      <SettingItemValue label="谁可以发弹幕" value={LABELS[danmaku] ?? '所有人'} onClick={() => openSheet('danmaku')} />
-      <SettingItemValue label="谁可以发私信" value={LABELS[pm] ?? '所有人'} onClick={() => openSheet('pm')} />
+      <SettingItemValue label="谁可以发评论" value={LABELS[comment] ?? '所有人'} bind={bindNav(routes.settingsHarass, { search: { sheet: 'comment' } })} />
+      <SettingItemValue label="谁可以发弹幕" value={LABELS[danmaku] ?? '所有人'} bind={bindNav(routes.settingsHarass, { search: { sheet: 'danmaku' } })} />
+      <SettingItemValue label="谁可以发私信" value={LABELS[pm] ?? '所有人'} bind={bindNav(routes.settingsHarass, { search: { sheet: 'pm' } })} />
       <div className="h-8" />
 
       <SettingBottomSheet
@@ -60,6 +57,7 @@ export const SettingsHarassPage: React.FC = () => {
         onSelect={onSelect}
         onClose={closeSheet}
         open={sheet !== ''}
+        actionId="bilibili.settings.harass.select"
       />
     </SettingLayout>
   );

@@ -9,7 +9,7 @@ const FAN_LABELS: Record<string, string> = { on: '接收提醒', off: '永不提
 const SUPPORT_LABELS: Record<string, string> = { on: '接收消息', off: '不接收' };
 
 export const SettingsMessagePage: React.FC = () => {
-  const { nav } = useBilibiliGestures();
+  const { bindNav } = useBilibiliGestures();
   const setSetting = useBilibiliStore((s) => s.setSetting);
   const messageNotify = useBilibiliStore((s) => s.settings.message.notify) ?? true;
   const smartBlock = useBilibiliStore((s) => s.settings.message.smartBlock) ?? true;
@@ -26,12 +26,12 @@ export const SettingsMessagePage: React.FC = () => {
       <SettingItemSwitch label="私信智能拦截" subtitle="开启后，将自动拦截疑似骚扰和不良的会话" checked={smartBlock} onChange={(v) => setSetting('message.smartBlock', v)} />
       <SettingItemArrow label="消息屏蔽词" subtitle="添加后，将不再接受包含屏蔽词的消息" />
       <SettingSection title="互动通知" />
-      <SettingItemValue label="回复与@" subtitle="你将收到这些人的评论、弹幕等通知提醒" value={REPLY_AT_LABELS[replyAt] ?? '所有人'} onClick={() => nav.push(routes.settingsMessageReplyAt)} />
-      <SettingItemValue label="收到喜欢" subtitle="是否接收点赞等通知提醒" value={REPLY_AT_LABELS[like] ?? '所有人'} onClick={() => nav.push(routes.settingsMessageLike)} />
-      <SettingItemValue label="新增粉丝" subtitle="是否接收新增粉丝通知提醒" value={FAN_LABELS[fan] ?? '接收提醒'} onClick={() => nav.push(routes.settingsMessageFan)} />
+      <SettingItemValue label="回复与@" subtitle="你将收到这些人的评论、弹幕等通知提醒" value={REPLY_AT_LABELS[replyAt] ?? '所有人'} bind={bindNav(routes.settingsMessageReplyAt)} />
+      <SettingItemValue label="收到喜欢" subtitle="是否接收点赞等通知提醒" value={REPLY_AT_LABELS[like] ?? '所有人'} bind={bindNav(routes.settingsMessageLike)} />
+      <SettingItemValue label="新增粉丝" subtitle="是否接收新增粉丝通知提醒" value={FAN_LABELS[fan] ?? '接收提醒'} bind={bindNav(routes.settingsMessageFan)} />
       <SettingSection title="应援团和未关注人" />
-      <SettingItemValue label="应援团消息" value={SUPPORT_LABELS[support] ?? '接收消息'} onClick={() => nav.push(routes.settingsMessageSupport)} />
-      <SettingItemArrow label="未关注人消息" onClick={() => nav.push(routes.settingsMessageUnfollow)} />
+      <SettingItemValue label="应援团消息" value={SUPPORT_LABELS[support] ?? '接收消息'} bind={bindNav(routes.settingsMessageSupport)} />
+      <SettingItemArrow label="未关注人消息" bind={bindNav(routes.settingsMessageUnfollow)} />
       <SettingSection title="联系人" />
       <SettingItemArrow label="黑名单" />
       <div className="h-8" />

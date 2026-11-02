@@ -352,7 +352,7 @@ export const UserProfilePage: React.FC = () => {
                             return (
                                 <button
                                     key={tab.key}
-                                    {...(isActive ? {} : bindNav(routes.user, { params: { mid: mid as string }, search: { tab: tab.key }, replace: true }))}
+                                    {...(isActive ? {} : bindNav(routes.user, { params: { mid: mid as string }, search: { tab: tab.key as (typeof routes.user.search.tab)[number] }, replace: true }))}
                                     className={`flex-1 py-3 text-[14px] font-medium relative ${isActive ? 'text-app-primary' : 'text-[#61666D]'
                                         }`}
                                 >

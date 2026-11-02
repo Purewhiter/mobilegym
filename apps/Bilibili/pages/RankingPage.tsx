@@ -231,7 +231,7 @@ export const RankingPage: React.FC = () => {
                 {TABS.map(tab => (
                     <button
                         key={tab}
-                        {...(activeTab === tab ? {} : bindNav(routes.ranking, { search: { tab: tab }, replace: true }))}
+                        {...(activeTab === tab ? {} : bindNav(routes.ranking, { search: { tab: tab as (typeof routes.ranking.search.tab)[number] }, replace: true }))}
                         className={`flex-shrink-0 px-4 py-2.5 text-[15px] font-medium transition-colors relative ${activeTab === tab ? 'text-app-primary' : 'text-gray-600'
                             }`}
                     >
