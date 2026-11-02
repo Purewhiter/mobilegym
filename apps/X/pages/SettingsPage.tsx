@@ -18,7 +18,7 @@ import { routes } from '../routes';
 
 export const SettingsPage: React.FC = () => {
   const user = useXStore(selectUser);
-  const { bindBack, nav } = useXGestures();
+  const { bindBack, bindNav } = useXGestures();
   const locale = useLocale();
   const isEnglish = locale === 'en';
 
@@ -107,9 +107,7 @@ export const SettingsPage: React.FC = () => {
           <div
             key={index}
             className={`flex items-start px-4 py-4 transition-colors ${item.tapId ? 'cursor-pointer active:bg-gray-50' : 'cursor-default'}`}
-            onClick={() => {
-              if (item.tapId) nav.push(item.tapId);
-            }}
+            {...(item.tapId ? bindNav(item.tapId) : {})}
           >
             <div className="mr-4 mt-0.5 shrink-0 text-gray-500">{item.icon}</div>
             <div className="mr-2 flex-1">

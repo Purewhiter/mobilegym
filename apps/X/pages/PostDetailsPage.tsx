@@ -5,7 +5,7 @@ import { useXHydratedPosts, useXRepliesForPost, useXResolvedPostQuery, useXUsers
 import { useXGestures } from '../hooks/useXGestures';
 import { XImage, XVideo } from '../components/XMedia';
 import { BookmarkToast } from '../components/BookmarkToast';
-import { XRetweetSheet } from '../components/XRetweetSheet';
+import { XRetweetSheet, useRetweetSheetPostId } from '../components/XRetweetSheet';
 import { XPostActionBar } from '../components/XPostActionBar';
 import { useXStrings } from '../hooks/useXStrings';
 import {
@@ -27,7 +27,8 @@ export const PostDetailsPage: React.FC = () => {
   const s = useXStrings();
   const [sortMethod, setSortMethod] = React.useState<'relevant' | 'recent' | 'likes'>('relevant');
   const [showSortMenu, setShowSortMenu] = React.useState(false);
-  const [retweetMenuPostId, setRetweetMenuPostId] = React.useState<string | null>(null);
+  const retweetMenuPostId = useRetweetSheetPostId();
+  const openRetweetMenu = (postId: string) => nav.push(routes.status, { id: id as string }, { search: { sheet: 'retweet', sheetPostId: postId } });
   const [showBookmarkToast, setShowBookmarkToast] = React.useState(false);
   // Loading 派生于查询状态: 帖子 (reply 深链也走这里) 或它的回复还没到。
   const repliesLoading = !!id && !id.startsWith('mock_') && (postLoading || repliesQueryLoading);
@@ -215,7 +216,7 @@ export const PostDetailsPage: React.FC = () => {
               }}
               showCounts
               className="mt-0 max-w-none"
-              onRetweetTrigger={setRetweetMenuPostId}
+              onRetweetTrigger={openRetweetMenu}
               onBookmarkAdded={() => setShowBookmarkToast(true)}
             />
           </div>
@@ -244,7 +245,7 @@ export const PostDetailsPage: React.FC = () => {
             <div className="p-6 text-center text-gray-500">{s.post_loading_replies}</div>
           ) : sortedReplies.length > 0 ? (
             sortedReplies.map((reply: XPost) => (
-              <ReplyItem key={reply.id} reply={reply} onRetweet={setRetweetMenuPostId} users={replyUsers} />
+              <ReplyItem key={reply.id} reply={reply} onRetweet={openRetweetMenu} users={replyUsers} />
             ))
           ) : (
             <div className="p-8 text-center text-gray-500">{s.post_no_replies}</div>
@@ -294,15 +295,7 @@ export const PostDetailsPage: React.FC = () => {
         </div>
       )}
 
-      <XRetweetSheet
-        postId={retweetMenuPostId}
-        onClose={() => setRetweetMenuPostId(null)}
-        onRetweet={toggleRetweet}
-        onQuote={(postId) => {
-          nav.push(routes.compose, {}, { search: { quotedPostId: postId } });
-        }}
-        onViewActivity={(postId) => nav.push(routes.statusActivity, { id: postId }, { search: { tab: 'quotes' } })}
-      />
+      <XRetweetSheet postId={retweetMenuPostId} onRetweet={toggleRetweet} />
 
       {/* Fixed Bottom Reply Bar */}
       <div className="fixed bottom-0 left-0 right-0 border-t border-app-border bg-app-bg z-40">

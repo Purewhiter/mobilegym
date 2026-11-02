@@ -132,7 +132,11 @@ const ChildPageViewport: React.FC<React.PropsWithChildren<{ ownScroll?: boolean 
   ownScroll = false,
 }) => {
   const location = useLocation();
-  const viewportKey = `${location.pathname}${location.search}`;
+  // A sheet opened over the page (?sheet=retweet) keeps the page mounted: its search, tab and scroll stay.
+  const pageSearch = new URLSearchParams(location.search);
+  pageSearch.delete('sheet');
+  pageSearch.delete('sheetPostId');
+  const viewportKey = `${location.pathname}?${pageSearch.toString()}`;
 
   return (
     <div

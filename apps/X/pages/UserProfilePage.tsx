@@ -8,7 +8,7 @@ import { useXGestures } from '../hooks/useXGestures';
 import { useXStrings } from '../hooks/useXStrings';
 import { XImage } from '../components/XMedia';
 import { BookmarkToast } from '../components/BookmarkToast';
-import { XRetweetSheet } from '../components/XRetweetSheet';
+import { XRetweetSheet, useRetweetSheetPostId } from '../components/XRetweetSheet';
 import { XTimelinePostCard } from '../components/XTimelinePostCard';
 import { useElementHeight } from '../hooks/useElementHeight';
 import { shouldShowProfileTopBar } from '../utils/topBarVisibility';
@@ -30,7 +30,8 @@ export const UserProfilePage: React.FC = () => {
   const isFollowing = (userId: string) => followedSet.has(userId);
   const isFollowed = id ? isFollowing(id) : false;
   const [showFollowMenu, setShowFollowMenu] = React.useState(false);
-  const [retweetMenuPostId, setRetweetMenuPostId] = React.useState<string | null>(null);
+  const retweetMenuPostId = useRetweetSheetPostId();
+  const openRetweetMenu = (postId: string) => nav.push(routes.user, { id: id as string }, { search: { sheet: 'retweet', sheetPostId: postId } });
   const [showBookmarkToast, setShowBookmarkToast] = React.useState(false);
   const [activeTab, setActiveTab] = React.useState<'posts' | 'replies' | 'subs' | 'videos' | 'photos' | 'articles'>('posts');
   const rootRef = React.useRef<HTMLDivElement | null>(null);
@@ -218,11 +219,11 @@ export const UserProfilePage: React.FC = () => {
         </div>
 
         <div className="mt-3 flex items-center gap-4 text-sm">
-          <div className="cursor-pointer active:opacity-50" onClick={() => nav.push(routes.connections, { id: id! }, { search: { type: 'following' } })}>
+          <div className="cursor-pointer active:opacity-50" {...bindNav(routes.connections, { params: { id: id! }, search: { type: 'following' } })}>
             <span className="font-bold text-app-text">{user.following}</span>{' '}
             <span className="text-gray-500">{s.profile_following_label}</span>
           </div>
-          <div className="cursor-pointer active:opacity-50" onClick={() => nav.push(routes.connections, { id: id! }, { search: { type: 'followers' } })}>
+          <div className="cursor-pointer active:opacity-50" {...bindNav(routes.connections, { params: { id: id! }, search: { type: 'followers' } })}>
             <span className="font-bold text-app-text">{user.followers}</span>{' '}
             <span className="text-gray-500">{s.profile_followers_label}</span>
           </div>
@@ -348,7 +349,7 @@ export const UserProfilePage: React.FC = () => {
                     </div>
                   ) : null
                 }
-                onRetweetTrigger={setRetweetMenuPostId}
+                onRetweetTrigger={openRetweetMenu}
                 onBookmarkAdded={() => setShowBookmarkToast(true)}
               />
             ));
@@ -407,15 +408,7 @@ export const UserProfilePage: React.FC = () => {
         </div>
       )}
 
-      <XRetweetSheet
-        postId={retweetMenuPostId}
-        onClose={() => setRetweetMenuPostId(null)}
-        onRetweet={toggleRetweet}
-        onQuote={(postId) => {
-          nav.push(routes.compose, {}, { search: { quotedPostId: postId } });
-        }}
-        onViewActivity={(postId) => nav.push(routes.statusActivity, { id: postId }, { search: { tab: 'quotes' } })}
-      />
+      <XRetweetSheet postId={retweetMenuPostId} onRetweet={toggleRetweet} />
 
       <BookmarkToast visible={showBookmarkToast} onClose={() => setShowBookmarkToast(false)} />
     </div>

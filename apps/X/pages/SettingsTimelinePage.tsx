@@ -7,7 +7,7 @@ import { routes } from '../routes';
 
 export const SettingsTimelinePage: React.FC = () => {
   const user = useXStore(selectUser);
-  const { bindBack, nav } = useXGestures();
+  const { bindBack, bindNav } = useXGestures();
   const isEnglish = useLocale() === 'en';
 
   const items = [
@@ -39,7 +39,7 @@ export const SettingsTimelinePage: React.FC = () => {
       </div>
       <div className="flex-1">
         {items.map((item, idx) => (
-          <div key={idx} className="flex cursor-pointer items-start px-4 py-4 transition-colors active:bg-gray-50" onClick={() => item.tapId && nav.push(item.tapId)}>
+          <div key={idx} className="flex cursor-pointer items-start px-4 py-4 transition-colors active:bg-gray-50" {...(item.tapId ? bindNav(item.tapId) : {})}>
             <div className="mr-2 flex-1">
               <div className="mb-0.5 text-[15px] font-medium text-app-text">{item.title}</div>
               <div className="text-[13px] leading-tight text-gray-500">{item.desc}</div>
