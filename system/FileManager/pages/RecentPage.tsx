@@ -92,7 +92,7 @@ export const RecentPage: React.FC = () => {
     const mediaFiles = FileSystem.getMediaFiles();
     const downloadFiles = FileSystem.getFilesByPath('/sdcard/Download');
     const allFiles = Array.from(new Set([...mediaFiles, ...downloadFiles]))
-      .sort((a, b) => b.modifiedAt - a.modifiedAt);
+      .sort(FileSystem.compareByNewest);
     setItems(allFiles);
   };
   

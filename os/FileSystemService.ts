@@ -88,7 +88,6 @@ async function initFileSystemInternal(): Promise<void> {
       // Fresh session: the server seeds the preset sdcard tree. Seed dates in
       // file names are local times, so it needs this page's time zone.
       const seeded = await DeviceClient.putState('fs', {
-        now: TimeService.now(),
         timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       });
       adopt(seeded.state);
@@ -204,6 +203,16 @@ export async function readFile(path: string): Promise<Blob | null> {
   }
 }
 
+const byCodeUnit = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
+
+/**
+ * Newest first; equal times by name, then path, so ties depend neither on node
+ * order nor on the browser locale.
+ */
+export function compareByNewest(a: FSNode, b: FSNode): number {
+  return b.modifiedAt - a.modifiedAt || byCodeUnit(a.name, b.name) || byCodeUnit(a.path, b.path);
+}
+
 /**
  * Get all media files (images and videos)
  */
@@ -227,7 +236,7 @@ export function getMediaFiles(type?: 'image' | 'video' | 'audio'): FSNode[] {
              node.mimeType.startsWith('video/') ||
              node.mimeType.startsWith('audio/');
     })
-    .sort((a, b) => b.modifiedAt - a.modifiedAt);
+    .sort(compareByNewest);
 }
 
 /**
@@ -238,7 +247,7 @@ export function getFilesByPath(pathPattern: string): FSNode[] {
 
   return Array.from(state.nodes.values())
     .filter(node => node.type === 'file' && node.path.startsWith(pattern))
-    .sort((a, b) => b.modifiedAt - a.modifiedAt);
+    .sort(compareByNewest);
 }
 
 /**
