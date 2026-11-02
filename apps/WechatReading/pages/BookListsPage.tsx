@@ -10,8 +10,8 @@ import { routes } from '../routes';
 
 type CategoryId = 'all' | 'reading' | 'finished';
 
-const CATEGORY_MY: CategoryId = 'all';
-const CATEGORY_COLLECTED: CategoryId = 'finished';
+const CATEGORY_MY = 'all' satisfies CategoryId;
+const CATEGORY_COLLECTED = 'finished' satisfies CategoryId;
 
 function formatTemplate(template: string, value: string | number) {
   return template.replace('{0}', String(value));
@@ -44,9 +44,7 @@ const BookListsPage: React.FC = () => {
   const activeSide = category === CATEGORY_COLLECTED ? 'collected' : 'my';
   const myListsCount = 1;
 
-  const setSideTab = (nextCategory: CategoryId) => {
-    setSearchParams({ category: nextCategory }, { replace: true });
-  };
+  const bindSideTab = (nextCategory: typeof CATEGORY_MY | typeof CATEGORY_COLLECTED) => bindNav(routes.bookLists, { search: { category: nextCategory }, replace: true });
 
   return (
     <div className="relative flex h-full flex-col overflow-hidden bg-(--app-c-tw-bg-slate-100)">
@@ -78,7 +76,7 @@ const BookListsPage: React.FC = () => {
         <div className="mt-4 flex gap-1 rounded-full bg-(--app-c-tw-bg-gray-200)/60 p-1 shadow-inner">
           <button
             type="button"
-            onClick={() => setSideTab(CATEGORY_MY)}
+            {...bindSideTab(CATEGORY_MY)}
             className={`flex-1 rounded-full py-2 text-center text-(--app-settings-item-value-size) font-semibold ${
               activeSide === 'my'
                 ? 'bg-app-surface text-(--app-c-tw-text-slate-900) shadow-sm'
@@ -90,7 +88,7 @@ const BookListsPage: React.FC = () => {
           </button>
           <button
             type="button"
-            onClick={() => setSideTab(CATEGORY_COLLECTED)}
+            {...bindSideTab(CATEGORY_COLLECTED)}
             className={`flex-1 rounded-full py-2 text-center text-(--app-settings-item-value-size) font-semibold ${
               activeSide === 'collected'
                 ? 'bg-app-surface text-(--app-c-tw-text-slate-900) shadow-sm'

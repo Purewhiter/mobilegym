@@ -26,6 +26,7 @@ import { useWechatReadingStrings } from '../hooks/useWechatReadingStrings';
 import { formatWechatReadingCount, formatWechatReadingWords } from '../utils/localization';
 import type { BookChapter } from '../data/types';
 import { useNav } from '../../../os/navigation';
+import { useSearchParams } from 'react-router-dom';
 import { useReaderTheme } from '../hooks/useReaderTheme';
 import { resolveReaderTheme } from '../utils/readerTheme';
 import type { ReaderPageBlock } from '../utils/readerPagination';
@@ -142,14 +143,11 @@ export const LocalizedReaderMenu: React.FC<{
   const currentProgress = bookProgress[bookId];
   const [localProgress, setLocalProgress] = useState(0);
   const [localBrightness, setLocalBrightness] = useState(60);
-  const [showPageTurnPanel, setShowPageTurnPanel] = useState(false);
+  const [searchParams] = useSearchParams();
+  const showPageTurnPanel = activeTool === 'typography' && searchParams.get('panel') === 'pageTurn';
   const settings = useWechatReadingStore(s => s.settings);
   const updateSettings = useWechatReadingStore(s => s.updateSettings);
 
-  // Reset page turn panel when tool changes
-  useEffect(() => {
-    if (activeTool !== 'typography') setShowPageTurnPanel(false);
-  }, [activeTool]);
   const progressPointerIdRef = useRef<number | null>(null);
   const brightnessPointerIdRef = useRef<number | null>(null);
   const fontSizePointerIdRef = useRef<number | null>(null);
@@ -471,7 +469,7 @@ export const LocalizedReaderMenu: React.FC<{
               <>
                 {/* ── Page Turn Style Sub-panel ── */}
                 <div className="relative flex items-center justify-between mb-3">
-                  <button type="button" className="p-1 z-10" onClick={() => setShowPageTurnPanel(false)}>
+                  <button type="button" className="p-1 z-10" {...bindTap('nav.read', { params: { bookId, tool: 'typography' }, onTrigger: () => nav.replace(routes.read, { bookId }, { search: { tool: 'typography' } }) })}>
                     <IcExpand size={dimens.icSizeAction} style={{ color: rt.textSecondary }} />
                   </button>
                   <span className="absolute inset-0 flex items-center justify-center text-sm font-bold pointer-events-none" style={{ color: rt.textPrimary }}>{s.page_turn_title}</span>
@@ -501,7 +499,7 @@ export const LocalizedReaderMenu: React.FC<{
                           color: isSelected ? '#3b82f6' : rt.textPrimary,
                           border: isSelected ? '1.5px solid #93c5fd' : '1.5px solid transparent',
                         }}
-                        onClick={() => { updateSettings({ pageTurnStyle: opt.key }); setShowPageTurnPanel(false); nav.replace(routes.read, { bookId }); }}
+                        {...bindTap({ kind: 'action', id: 'reader.pageTurn.select' }, { params: { style: opt.key }, onTrigger: () => { updateSettings({ pageTurnStyle: opt.key }); nav.replace(routes.read, { bookId }); } })}
                       >
                         {opt.label}
                       </button>
@@ -627,7 +625,7 @@ export const LocalizedReaderMenu: React.FC<{
                   type="button"
                   className="flex flex-1 items-center justify-center gap-1 rounded-xl py-3 text-xs font-medium shadow-sm"
                   style={{ backgroundColor: rt.surface, color: rt.textSecondary }}
-                  onClick={() => setShowPageTurnPanel(true)}
+                  {...bindTap('nav.read', { params: { bookId, tool: 'typography', panel: 'pageTurn' }, onTrigger: () => nav.replace(routes.read, { bookId }, { search: { tool: 'typography', panel: 'pageTurn' } }) })}
                 >
                   {{ '仿真翻页': s.page_turn_simulation, '左右滑动': s.page_turn_swipe, '上下滚动': s.page_turn_scroll, '覆盖翻页': s.page_turn_cover }[settings.pageTurnStyle] ?? s.reader_typography_page_turn} <IcNavForward size={dimens.icSizeReaderChevron} style={{ color: rt.textMuted }} />
                 </button>

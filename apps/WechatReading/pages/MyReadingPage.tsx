@@ -231,7 +231,7 @@ const VALID_TABS = ['week', 'month', 'year', 'total', 'history'] as const;
 type TabId = typeof VALID_TABS[number];
 
 const MyReadingPage: React.FC = () => {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const readingRecords = useWechatReadingStore(s => s.readingRecords);
   const finishedBookIds = useWechatReadingStore(selectFinishedBookIds);
   const { bindNav, bindBack, nav } = useWechatReadingGestures();
@@ -240,7 +240,6 @@ const MyReadingPage: React.FC = () => {
     ? searchParams.get('tab')
     : 'week') as TabId;
 
-  const setActiveTab = (tab: TabId) => setSearchParams({ tab }, { replace: true });
 
   const [currentDate, setCurrentDate] = useState(TimeService.getDate()); // Defaults to today
   const [showCalendar, setShowCalendar] = useState(false);
@@ -417,7 +416,7 @@ const MyReadingPage: React.FC = () => {
           {['week', 'month', 'year', 'total', 'history'].map((tab) => (
             <button
               key={tab}
-              onClick={() => setActiveTab(tab as any)}
+              {...bindNav(routes.myReading, { search: { tab: tab as TabId }, replace: true })}
               className={`flex-1 py-1.5 text-(--app-settings-item-text-size) font-medium rounded-full ${
                 activeTab === tab
                   ? 'bg-app-surface text-(--app-c-my-reading-page-text-3333) shadow-sm'
@@ -475,7 +474,6 @@ const MyReadingPage: React.FC = () => {
             <div
               className="flex items-center gap-1 cursor-pointer active:opacity-60"
               {...bindNav(routes.readingList, { search: { category: 'all' } })}
-              onClick={() => nav.push(routes.readingList, {}, { search: { category: 'all' } })}
             >
               <div className="text-(--app-c-my-reading-page-text-3333) font-bold flex items-baseline">
                 <span className="text-sm">读过</span>
@@ -487,7 +485,6 @@ const MyReadingPage: React.FC = () => {
             <div
               className="flex items-center gap-1 cursor-pointer active:opacity-60"
               {...bindNav(routes.readingList, { search: { category: 'finished' } })}
-              onClick={() => nav.push(routes.readingList, {}, { search: { category: 'finished' } })}
             >
               <div className="text-(--app-c-my-reading-page-text-3333) font-bold flex items-baseline">
                 <span className="text-sm">读完</span>
