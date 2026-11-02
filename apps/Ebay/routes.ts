@@ -29,6 +29,6 @@ export const routes = defineRoutes({
   inbox: { path: '/inbox', description: '收件箱页面' },
   cart: { path: '/cart', description: '购物车页面' },
   categories: { path: '/categories', description: '类别页面' },
-  settings: { path: '/settings', description: '设置页面' },
+  settings: { path: '/settings', search: { dialog: ['theme'] }, description: '设置页面', states: { 'dialog=theme': '主题选择' } },
   item: { path: '/item/:id', description: '商品详情页' },
 });

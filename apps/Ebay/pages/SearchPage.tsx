@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
+import { useEntryState } from '../hooks/useEntryState';
 import { IcCamera, IcNavBack, IcCart, IcHeart, IcSort, IcFilter, IcSearch } from '../res/icons';
 import { useEbayGestures } from '../hooks/useEbayGestures';
 import TabBar from '../components/TabBar';
@@ -52,25 +53,29 @@ const SearchPage: React.FC = () => {
   // Search state
   const [searchStep, setSearchStep] = useState<'input' | 'results'>(hasUrlState ? 'results' : 'input');
   const [searchQuery, setSearchQuery] = useState(initQuery);
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(initCategory);
-  const [selectedBrands, setSelectedBrands] = useState<Set<string>>(new Set());
-  const [priceRange, setPriceRange] = useState<{ min: string; max: string }>({ min: '', max: '' });
-  const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
-  const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
-  const [freeShippingOnly, setFreeShippingOnly] = useState(false);
+  const [selectedCategoryId, setSelectedCategoryId] = useEntryState<string | null>('category', initCategory);
+  // Filters, sort and view survive opening an item and coming back (saved per history entry).
+  const [selectedBrands, setSelectedBrands] = useEntryState<Set<string>>('brands', () => new Set());
+  const [priceRange, setPriceRange] = useEntryState<{ min: string; max: string }>('price', { min: '', max: '' });
+  const [selectedConditions, setSelectedConditions] = useEntryState<string[]>('conditions', []);
+  const [selectedLocation, setSelectedLocation] = useEntryState<string | null>('location', null);
+  const [freeShippingOnly, setFreeShippingOnly] = useEntryState('freeShipping', false);
 
   // UI state
-  const [sortOption, setSortOption] = useState<SortOptionType>('bestMatch');
+  const [sortOption, setSortOption] = useEntryState<SortOptionType>('sort', 'bestMatch');
   const sheet = initParams.get('sheet');
   const isSortModalOpen = sheet === 'sort';
   const isFilterDrawerOpen = sheet === 'filter';
-  const [viewMode, setViewMode] = useState<ViewMode>('list');
-  const [buyingFormat, setBuyingFormat] = useState<BuyingFormatFilter>('all');
+  const [viewMode, setViewMode] = useEntryState<ViewMode>('view', 'list');
+  const [buyingFormat, setBuyingFormat] = useEntryState<BuyingFormatFilter>('buyingFormat', 'all');
   const [lastSubmittedQuery, setLastSubmittedQuery] = useState(initQuery);
 
   // URL params sync (handles in-page navigation changes, e.g. category chip clicks).
   // Keyed on q / category only: opening or closing a sheet must not undo filter edits.
+  // Not on mount: the initial state already came from the URL, or from the entry's saved filters.
+  const urlSyncMounted = useRef(false);
   useEffect(() => {
+    if (!urlSyncMounted.current) { urlSyncMounted.current = true; return; }
     if (initCategory) { setSelectedCategoryId(initCategory); setSearchStep('results'); }
     if (initQuery) { setSearchQuery(initQuery); setSearchStep('results'); }
   }, [initCategory, initQuery]);
