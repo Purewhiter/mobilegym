@@ -17,6 +17,8 @@ What is explored is bounded and set by options or by
 - `tapsPerGroup` (default 2): how many controls with the same tag (the photos
   of a grid) are tapped on one page.
 - `skip`: trigger / action ids never tapped.
+- `slow`: per trigger / action id, ms to wait after the tap for a control
+  that answers after a delay of its own (an order "processing" for a second).
 - `prefer`: per trigger id, params to tap first, for controls that only some
   instances show (`{"nav.historyDetail": [{"meetingId": "222 333 444"}]}` opens
   a meeting the user hosted, whose page has the attendee list).
@@ -34,7 +36,8 @@ What is explored is bounded and set by options or by
 - `entries`: pages other apps open directly, explored as extra starting pages:
   a path (`__OS__.openApp(app, path)`, a notification) or `{"from": appId,
   "intent": {...}}` (`__OS__.startActivityForResult` from that app's task:
-  12306 paying through the Alipay cashier).
+  12306 paying through the Alipay cashier) or `{"setState": patch}` (the app
+  in another starting state: signed out, it opens on its login page).
 
 Every tagged control (data-trigger / data-action) is tapped, long-pressed or
 double-tapped as its tag says, each time from a reset simulator with frozen
@@ -65,9 +68,10 @@ from playwright.async_api import async_playwright
 CONFIG_DIR = Path(__file__).parent / "explore_config"
 
 # Visible tagged controls, in DOM order: what an agent could tap on this screen.
+# checkVisibility, not offsetParent: an <svg> icon or a fixed bar has no offsetParent.
 LIST_JS = """() => {
   const els = [...document.querySelectorAll('[data-trigger],[data-action]')]
-    .filter(e => e.offsetParent && e.getBoundingClientRect().width > 0);
+    .filter(e => e.checkVisibility({ visibilityProperty: true }) && e.getBoundingClientRect().width > 0);
   const clean = s => (s || '').trim().replace(/\\s+/g, ' ');
   // A switch or icon has no text of its own: name it by the row around it.
   const label = e => {
@@ -101,7 +105,7 @@ LIST_JS = """() => {
 # there would hit it (not an overlay, dialog backdrop or drawer above it).
 LOCATE_JS = """(i) => {
   const els = [...document.querySelectorAll('[data-trigger],[data-action]')]
-    .filter(e => e.offsetParent && e.getBoundingClientRect().width > 0);
+    .filter(e => e.checkVisibility({ visibilityProperty: true }) && e.getBoundingClientRect().width > 0);
   const e = els[i];
   e.scrollIntoView({ block: 'center', inline: 'center' });
   const r = e.getBoundingClientRect();
@@ -202,6 +206,7 @@ def load_config(app: str, args: argparse.Namespace) -> dict:
     config.setdefault("instancesPerRoute", 2)
     config.setdefault("tapsPerGroup", 2)
     config.setdefault("skip", [])
+    config.setdefault("slow", {})
     config.setdefault("prefer", {})
     config.setdefault("instancesPerNode", {})
     config.setdefault("setup", {})
@@ -288,6 +293,9 @@ class Device:
             entry = step["entry"]
             if isinstance(entry, str):
                 await page.evaluate("([app, path]) => window.__OS__.openApp(app, path)", [self.app, entry])
+            elif "setState" in entry:
+                # The app in another starting state (signed out): its guard routes to where it starts then.
+                await page.evaluate("(patch) => window.__SIM__.setState(patch, { deep: true, reload: false })", entry["setState"])
             else:
                 # Sent from the caller app's task, as on a phone (12306 paying through Alipay).
                 await page.evaluate("(app) => window.__OS__.openApp(app)", entry["from"])
@@ -315,6 +323,8 @@ class Device:
             await page.mouse.dblclick(x, y)
         else:
             await page.mouse.click(x, y)
+        # A control that answers after a delay of its own (a "processing" spinner), not caught by waitForIdle.
+        await page.wait_for_timeout(self.config["slow"].get(step["id"], 0))
         await self.settle()
         return True
 
@@ -335,8 +345,10 @@ class Device:
 
     async def setup_step(self, step: dict) -> None:
         target = step.get("into") or step.get("tap")
-        if target:
-            await self.page.locator(target).first.wait_for(state="visible", timeout=5000)
+        # The first visible match: pages kept mounted underneath have the same inputs, hidden.
+        element = self.page.locator(f"{target} >> visible=true").first if target else None
+        if element:
+            await element.wait_for(state="visible", timeout=5000)
         if "wait" in step:
             await self.page.wait_for_timeout(step["wait"])
         elif "setState" in step:
@@ -350,13 +362,13 @@ class Device:
         elif "type" in step or "typeEval" in step:
             # typeEval: text computed in the page, such as the code in the latest SMS.
             text = step["type"] if "type" in step else await self.page.evaluate(step["typeEval"])
-            await self.page.click(step["into"], timeout=5000)
+            await element.click(timeout=5000)
             await self.page.evaluate("(text) => window.__SIM_INPUT__.type(text, { clear: true })", text)
             await self.settle()
             if await self.page.evaluate("() => window.__OS__.keyboard?.isVisible?.()"):
                 await self.page.evaluate("() => window.__OS__.handleBack()")
         else:
-            await self.page.click(step["tap"], timeout=5000)
+            await element.click(timeout=5000)
         await self.settle()
 
     async def reach(self, path: list[dict], target: str, variant: int) -> str | None:
@@ -413,7 +425,7 @@ class Device:
         for _ in range(presses):
             await self.page.evaluate("() => window.__OS__.handleBack()")
             await self.settle()
-        return {"from": page_url, "to": after, "back": await self.current(), "mode": mode, "sig": landed_sig}
+        return {"from": start, "to": after, "back": await self.current(), "mode": mode, "sig": landed_sig}
 
 
 async def explore(url: str, app: str, config: dict, max_pages: int, wait_ms: int, sim_time: str, workers: int) -> dict:
@@ -454,9 +466,11 @@ async def explore(url: str, app: str, config: dict, max_pages: int, wait_ms: int
 
         async def look(device: Device, key: str):
             page_url, path, variant = pages[key]
-            if await device.reach(path, page_url, variant) is None:
+            shown = await device.reach(path, page_url, variant)
+            if shown is None:
                 return None
-            return await device.controls()
+            # The page its setup leaves (a typed keyword opens the results): its controls are that page's.
+            return shown, await device.controls()
 
         await first.fresh()
         start = await first.current()
@@ -493,18 +507,27 @@ async def explore(url: str, app: str, config: dict, max_pages: int, wait_ms: int
         edges: dict[str, dict] = {}
         actions: dict[str, set[str]] = {}
         unreachable: list[str] = []
+        # Setup that leaves its page (a typed keyword opens the results): node -> node it shows.
+        setup_links: set[tuple[str, str, int]] = set()
+        # Pages only setup shows: listed as reached, but not counted against the instance caps.
+        setup_shown: dict[str, list[str]] = {}
 
         # Breadth first, one level at a time: the pages of a level are looked at and their
         # controls tapped in parallel, then the new pages are taken in a fixed order.
         level = start_keys
         while level:
             jobs = []
-            for key, listing in zip(level, await run_all(level, look)):
-                page_url, path, _ = pages[key]
-                src = routes.node_of(page_url)
-                if listing is None:
+            for key, looked in zip(level, await run_all(level, look)):
+                page_url, path, variant = pages[key]
+                if looked is None:
                     unreachable.append(page_url)
                     continue
+                shown, listing = looked
+                src = routes.node_of(shown)
+                if src != routes.node_of(page_url):
+                    setup_links.add((routes.node_of(page_url), src, variant))
+                    if shown not in setup_shown.setdefault(src, []):
+                        setup_shown[src].append(shown)
                 # Pick at most tapsPerGroup controls of each tag (the photos of a grid are one
                 # group), preferred params first.
                 groups: dict[str, list[dict]] = {}
@@ -563,6 +586,14 @@ async def explore(url: str, app: str, config: dict, max_pages: int, wait_ms: int
             "lost": sum(1 for r in e["results"] if r.get("result") == "SOURCE_LOST"),
         })
 
+    for origin, shown, variant in sorted(setup_links):
+        out_edges.append({
+            "source": origin, "target": shown, "kind": "setup", "id": f"setup#{variant}", "gesture": "setup",
+            "state": "", "mode": "setup", "back": None, "labels": [], "taps": 0, "covered": 0, "lost": 0,
+        })
+
+    for n, urls in setup_shown.items():
+        instances.setdefault(n, []).extend(u for u in urls if u not in instances[n])
     reached = set(instances)
     nodes = [{"id": n, "description": routes.describe(n), "instances": instances[n],
               "actions": sorted(actions.get(n, []))} for n in instances]
