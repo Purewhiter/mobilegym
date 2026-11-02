@@ -22,6 +22,22 @@
     { "setState": { "apps": { "railway12306": { "isLoggedIn": false } } } }
   ],
   "setup": {
+    "/invoice-email": [
+      [],
+      [{ "type": "explore@example.com", "into": "input[placeholder='请输入邮箱地址']" }]
+    ],
+    "/add-passenger": [
+      [],
+      [
+        { "type": "测试乘客", "into": "input[placeholder^='请输入真实姓名']" },
+        { "type": "110101199001011234", "into": "input[placeholder='用于身份核验，请正确填写']" },
+        { "type": "13800000000", "into": "input[placeholder='填写乘车人手机号码']" }
+      ]
+    ],
+    "/auth/register-verify": [
+      [],
+      [{ "type": "000000", "into": "input[placeholder='请输入验证码']" }]
+    ],
     "/query-result?tab=direct": [
       [],
       [{ "tap": "[data-action='railway.queryResult.train.expand'] > div" }]

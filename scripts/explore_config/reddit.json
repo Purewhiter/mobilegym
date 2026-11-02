@@ -31,6 +31,13 @@
     ]
   },
   "setup": {
+    "/create": [
+      [],
+      [
+        { "tap": "[data-trigger='nav.createCommunity']" },
+        { "tap": "[data-action='reddit.create.community.select']" }
+      ]
+    ],
     "/search": [
       [],
       [

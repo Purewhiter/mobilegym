@@ -122,13 +122,16 @@
       }
     ],
     "/bank-cards/add/verify": [
-      {
-        "typeEval": "(() => { const sms = window.__SIM__.getState().os.providers.sms; const all = Object.values(sms.messagesByConversationId || {}).flat().map(m => m.content || ''); const codes = all.map(c => (c.match(/银行】验证码：(\\d{6})/) || [])[1]).filter(Boolean); return codes[codes.length - 1] || ''; })()",
-        "into": "input[type=tel]"
-      },
-      {
-        "wait": 4000
-      }
+      [{ "wait": 7000 }],
+      [
+        {
+          "typeEval": "(() => { const sms = window.__SIM__.getState().os.providers.sms; const all = Object.values(sms.messagesByConversationId || {}).flat().map(m => m.content || ''); const codes = all.map(c => (c.match(/银行】验证码：(\\d{6})/) || [])[1]).filter(Boolean); return codes[codes.length - 1] || ''; })()",
+          "into": "input[type=tel]"
+        },
+        {
+          "wait": 4000
+        }
+      ]
     ],
     "/settings/payment/fast-pay": [
       [

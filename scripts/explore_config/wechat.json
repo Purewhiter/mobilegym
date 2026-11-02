@@ -1,4 +1,5 @@
 {
+  "instancesPerNode": { "/auth/login": 3 },
   "prefer": {
     "nav.momentsByWxid": [
       {
@@ -83,13 +84,34 @@
       }
     ],
     "/auth/login": [
+      [
+        {
+          "type": "17366666695",
+          "into": "input[inputmode=numeric]"
+        },
+        {
+          "type": "wechat_pwd_123",
+          "into": "input[type=password]"
+        }
+      ],
+      [
+        {
+          "setState": { "apps": { "wechat": { "auth": { "accounts[phone=17366666695]": { "requireCaptcha": true } } } } }
+        },
+        {
+          "type": "17366666695",
+          "into": "input[inputmode=numeric]"
+        },
+        {
+          "type": "wechat_pwd_123",
+          "into": "input[type=password]"
+        }
+      ]
+    ],
+    "/auth/forgot-password": [
       {
         "type": "17366666695",
-        "into": "input[inputmode=numeric]"
-      },
-      {
-        "type": "wechat_pwd_123",
-        "into": "input[type=password]"
+        "into": "input[inputmode=numeric] >> nth=0"
       }
     ],
     "/post-moment": [

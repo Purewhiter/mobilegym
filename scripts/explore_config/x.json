@@ -16,6 +16,8 @@
       }
     }
   },
+  "entries": ["/user/OpenAI"],
+  "instancesPerNode": { "/user/:id": 3 },
   "setup": {
     "/search/input": [[], [{ "type": "AI", "into": "input[type=text]" }]]
   }
