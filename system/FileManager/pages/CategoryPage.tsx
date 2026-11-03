@@ -8,6 +8,7 @@ import { useParams } from 'react-router-dom';
 import { IcNavBack, IcFile, IcVideo } from '../res/icons';
 import { FSNode } from '../../../os/types';
 import * as FileSystem from '../../../os/FileSystemService';
+import { useFileSystemVersion } from '@/os/hooks/useFileSystemVersion';
 import { AsyncImage } from '../components/AsyncImage';
 import { getFileIcon, getFileIconColor } from '../utils/fileUtils';
 import { useFileManagerGestures } from '../hooks/useFileManagerGestures';
@@ -27,6 +28,8 @@ export const CategoryPage: React.FC = () => {
     documents: { name: s.category_documents, mimePrefix: 'application/' },
   }[category || ''] || { name: s.category_files, mimePrefix: '' };
   
+  const fsVersion = useFileSystemVersion();
+
   useEffect(() => {
     let files: FSNode[];
     
@@ -41,7 +44,7 @@ export const CategoryPage: React.FC = () => {
     }
     
     setItems(files);
-  }, [category, categoryInfo.mimePrefix]);
+  }, [category, categoryInfo.mimePrefix, fsVersion]);
   
   return (
     <div className="h-full bg-app-surface flex flex-col">

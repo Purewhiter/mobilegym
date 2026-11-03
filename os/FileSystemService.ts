@@ -35,10 +35,33 @@ const state: FileSystemState = {
   initialized: false,
 };
 
+// Readers that keep what they read (a page's file list) re-read when the
+// mirror changes: it fills in after the first request, and every write or
+// reset replaces it.
+let version = 0;
+const listeners = new Set<() => void>();
+
+function changed(): void {
+  version++;
+  listeners.forEach(listener => listener());
+}
+
+/** Call `listener` whenever the mirror changes; returns the unsubscribe. */
+export function subscribe(listener: () => void): () => void {
+  listeners.add(listener);
+  return () => { listeners.delete(listener); };
+}
+
+/** Bumped on every mirror change (for `useSyncExternalStore`). */
+export function getVersion(): number {
+  return version;
+}
+
 function adopt(exported: unknown): void {
   const nodes = ((exported as { nodes?: MirrorNode[] } | null)?.nodes ?? []);
   state.nodes = new Map(nodes.map(n => [n.id, n]));
   state.pathIndex = new Map(nodes.map(n => [n.path, n.id]));
+  changed();
 }
 
 /** Server-down fallback: an empty tree so the OS still boots. */
@@ -77,6 +100,20 @@ export async function initFileSystem(): Promise<void> {
     initPromise = null;
   });
   return initPromise;
+}
+
+/**
+ * `initFileSystem()`, waiting at most `ms`: a request that never answers must
+ * not hold up the caller (an app launch, a reset). The load goes on, and
+ * readers re-read when it lands (`useFileSystemVersion`).
+ */
+export async function initFileSystemWithin(ms: number): Promise<void> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  await Promise.race([
+    initFileSystem(),
+    new Promise<void>(resolve => { timer = setTimeout(resolve, ms); }),
+  ]);
+  clearTimeout(timer);
 }
 
 async function initFileSystemInternal(): Promise<void> {
@@ -394,6 +431,7 @@ export async function clearFileSystemDB(): Promise<void> {
   state.pathIndex.clear();
   state.initialized = false;
   initPromise = null;
+  changed();
 }
 
 export const destroyFileSystemDB = clearFileSystemDB;

@@ -9,7 +9,7 @@ import { resetAllAppStores } from '../createAppStore';
 import { resetAllOsStores } from '../createOsStore';
 import { beginPersistReset, cancelAllPending as cancelAllPendingPersistWrites } from '../debouncedPersist';
 import { DeviceClient } from '../device/DeviceClient';
-import { clearFileSystemDB } from '../FileSystemService';
+import { clearFileSystemDB, initFileSystemWithin } from '../FileSystemService';
 import { OsStateStore } from '../OsStateStore';
 import { TaskManager } from '../TaskManager';
 import TextSelectionService from '../TextSelectionService';
@@ -54,6 +54,12 @@ export async function resetStateCore(): Promise<void> {
   } catch (error) {
     console.error('[SIM] clearFileSystemDB failed (non-fatal, reload will reinit):', error);
   }
+  // Load the new session's file system, as a boot does (OSContext): open pages that
+  // read it fill in again (useFileSystemVersion), and apps already loaded once do
+  // not wait for it again. Awaited: callers reload right after reset, and the page
+  // must have stored the new session id by then, or the server keeps an orphan.
+  // Capped, so a request stuck from the last episode cannot hang the reset.
+  await initFileSystemWithin(5000);
 
   // Second sweep: 关闭 clearFileSystemDB await 窗口期内任何新的 persist 排队。
   cancelAllPendingPersistWrites();

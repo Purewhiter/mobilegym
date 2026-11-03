@@ -25,6 +25,7 @@ import {
 } from './res/icons';
 import * as MediaService from '../../os/MediaService';
 import * as FileSystem from '../../os/FileSystemService';
+import { useFileSystemVersion } from '../../os/hooks/useFileSystemVersion';
 import { Toast } from '../../os/components/Toast';
 import { MediaItem, Album, FSNode } from '../../os/types';
 import { useActivityContext } from '../../os/ActivityContext';
@@ -467,12 +468,14 @@ const PhotosPage: React.FC<{ onSelectModeChange?: (active: boolean) => void }> =
     onSelectModeChange?.(selectMode);
   }, [selectMode, onSelectModeChange]);
 
+  // Re-read when the file system changes (it fills in after launch; writes replace it).
+  const fsVersion = useFileSystemVersion();
   useEffect(() => {
     const loadedItems = MediaService.getMediaItems({ type: 'all' });
     // Sort by date, newest first
     loadedItems.sort((a, b) => b.createdAt - a.createdAt);
     setItems(loadedItems);
-  }, []);
+  }, [fsVersion]);
 
   const subtitle = useMemo(() => getDateRangeLabel(items, s.date_today, s.date_yesterday, s.gallery_month_suffix, s.gallery_day_suffix, s.gallery_year_suffix, s.date_range_separator), [items, s]);
   
@@ -679,6 +682,7 @@ const AlbumsPage: React.FC = () => {
   });
   const [scrollTop, setScrollTop] = useState(0);
   
+  const fsVersion = useFileSystemVersion();
   useEffect(() => {
     const loadedAlbums = MediaService.getAlbums();
     setAlbums(loadedAlbums);
@@ -691,7 +695,7 @@ const AlbumsPage: React.FC = () => {
       documents: screenshotCount,
       selfie: cameraCount,
     }));
-  }, []);
+  }, [fsVersion]);
   
   // Separate into main albums and app albums
   const systemAlbums = albums.filter(a => a.type === 'system');
@@ -931,12 +935,13 @@ const FavoritesPage: React.FC = () => {
   const favorites = useFavorites();
   const [items, setItems] = useState<MediaItem[]>([]);
   
+  const fsVersion = useFileSystemVersion();
   useEffect(() => {
     const allItems = MediaService.getMediaItems({ type: 'all' });
     const favoriteItems = allItems.filter(i => favorites.has(i.path));
     favoriteItems.sort((a, b) => b.createdAt - a.createdAt);
     setItems(favoriteItems);
-  }, [favorites]);
+  }, [favorites, fsVersion]);
   
   return (
     <div className="h-full bg-app-surface flex flex-col">
@@ -989,6 +994,7 @@ const AlbumDetailPage: React.FC = () => {
   const location = useLocation();
   const [items, setItems] = useState<MediaItem[]>([]);
   const [albumName, setAlbumName] = useState('');
+  const fsVersion = useFileSystemVersion();
   // Select mode lives in the URL (?mode=select): system back and 完成 leave it.
   const selectMode = new URLSearchParams(location.search).get('mode') === 'select';
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -1005,7 +1011,7 @@ const AlbumDetailPage: React.FC = () => {
     const loadedItems = MediaService.getMediaItems({ albumId });
     loadedItems.sort((a, b) => b.createdAt - a.createdAt);
     setItems(loadedItems);
-  }, [albumId]);
+  }, [albumId, fsVersion]);
   
   const handleSelect = (path: string) => {
     const newSelected = new Set(selected);

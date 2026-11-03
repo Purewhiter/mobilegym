@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import type { FSNode } from '@/os/types';
 import * as FileSystem from '@/os/FileSystemService';
+import { useFileSystemVersion } from '@/os/hooks/useFileSystemVersion';
 import { IcCheck, IcFolder, IcFolderAdd, IcNavBack, IcNavForward } from '../res/icons';
 import { strings } from '../res/strings';
 import { stringsEn } from '../res/strings.en';
@@ -50,7 +51,9 @@ export const TransferSheet: React.FC<TransferSheetProps> = ({
     setDragOffset(0);
   }, [open]);
 
-  const folders = useMemo(() => {
+  useFileSystemVersion(); // re-render when the mirror changes
+
+  const folders = (() => {
     if (!open) return [];
     const selectedPaths = selectedNodes
       .filter(node => node.type === 'directory')
@@ -60,7 +63,7 @@ export const TransferSheet: React.FC<TransferSheetProps> = ({
       .filter(item => item.type === 'directory')
       .filter(item => !selectedPaths.some(path => item.path === path || item.path.startsWith(`${path}/`)))
       .sort((a, b) => a.name.localeCompare(b.name));
-  }, [currentPath, open, selectedNodes]);
+  })();
 
   const breadcrumbs = useMemo(() => {
     const parts = currentPath.split('/').filter(Boolean);

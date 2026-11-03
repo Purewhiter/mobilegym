@@ -13,6 +13,7 @@ import {
 } from '../res/icons';
 import { FSNode } from '@/os/types';
 import * as FileSystem from '@/os/FileSystemService';
+import { useFileSystemVersion } from '@/os/hooks/useFileSystemVersion';
 import { useFileManagerGestures } from '../hooks/useFileManagerGestures';
 import { TabBar } from '../components/TabBar';
 import { Toast } from '@/os/components/Toast';
@@ -88,6 +89,7 @@ export const BrowseHomePage: React.FC = () => {
   };
   
   const [storageItems, setStorageItems] = useState<FSNode[]>([]);
+  const fsVersion = useFileSystemVersion();
   const [scrollTop, setScrollTop] = useState(0);
   const [toast, setToast] = useState({ message: '', visible: false });
 
@@ -107,7 +109,7 @@ export const BrowseHomePage: React.FC = () => {
   
   useEffect(() => {
     refreshItems();
-  }, []);
+  }, [fsVersion]);
   
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     setScrollTop(e.currentTarget.scrollTop);

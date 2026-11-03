@@ -13,6 +13,7 @@ import { stringsEn } from '../res/strings.en';
 import { useAppStrings } from '@/os/useAppStrings';
 import { FSNode } from '@/os/types';
 import * as FileSystem from '@/os/FileSystemService';
+import { useFileSystemVersion } from '@/os/hooks/useFileSystemVersion';
 import { useFileManagerGestures } from '../hooks/useFileManagerGestures';
 import { AsyncImage } from '../components/AsyncImage';
 import { getFileIcon, getFileIconColor } from '../utils/fileUtils';
@@ -88,6 +89,8 @@ export const RecentPage: React.FC = () => {
     setTimeout(() => setToast({ message: '', visible: false }), 2000);
   };
 
+  const fsVersion = useFileSystemVersion();
+
   const refreshItems = () => {
     const mediaFiles = FileSystem.getMediaFiles();
     const downloadFiles = FileSystem.getFilesByPath('/sdcard/Download');
@@ -98,7 +101,7 @@ export const RecentPage: React.FC = () => {
   
   useEffect(() => {
     refreshItems();
-  }, []);
+  }, [fsVersion]);
   
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     setScrollTop(e.currentTarget.scrollTop);

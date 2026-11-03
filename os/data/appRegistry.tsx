@@ -16,6 +16,7 @@ import PackageManagerService from '../PackageManagerService';
 import { AppErrorBoundary } from '../components/AppErrorBoundary';
 import { AppLaunchSplash } from '../components/AppLaunchSplash';
 import { holdBusy } from '../idle';
+import { initFileSystemWithin } from '../FileSystemService';
 import { runAppDataLoaderModule, type AppDataLoaderModule } from '../appDataLoaderReady';
 
 export const APP_REGISTRY: AppManifest[] = [
@@ -48,6 +49,11 @@ export const dirToAppId = PackageManagerService.dirToAppId;
 const appModules = import.meta.glob<{ default: ComponentType<any> }>(
   ['../../apps/*/*App.tsx', '../../system/*/*App.tsx'],
 );
+
+// Pages read the file system mirror synchronously on mount (a file list, a photo
+// grid), so an app opens once the mirror holds the session's files, or after the
+// cap if the request hangs (its readers re-read when the mirror fills in).
+const FILE_SYSTEM_WAIT_MS = 5000;
 
 // Data loaders: 让 App 的 lazy 包装 await preload + hydrateStore + waitReady
 // 完成后再返回 component。这样 Suspense fallback (AppLaunchSplash) 自动跨越
@@ -83,6 +89,7 @@ for (const [path, importFn] of Object.entries(appModules)) {
     const dataLoaderFn = dataLoaderByAppId.get(appId);
     AppComponents[appId] = lazy(() => {
       const load = (async () => {
+        await initFileSystemWithin(FILE_SYSTEM_WAIT_MS);
         if (dataLoaderFn) {
           const loaderMod = await dataLoaderFn();
           await runAppDataLoaderModule(loaderMod);

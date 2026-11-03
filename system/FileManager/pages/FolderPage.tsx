@@ -12,6 +12,7 @@ import {
 } from '../res/icons';
 import { FSNode } from '@/os/types';
 import * as FileSystem from '@/os/FileSystemService';
+import { useFileSystemVersion } from '@/os/hooks/useFileSystemVersion';
 import { useFileManagerStore, selectClipboardHasItems } from '../state';
 import { getFileIcon, getFileIconColor, isPdfPreviewableFile, isTextPreviewableFile } from '../utils/fileUtils';
 import { InputDialog, FileDetailsDialog, ConfirmDialog, ActionMenu } from '../components/Dialog';
@@ -105,6 +106,8 @@ export const FolderPage: React.FC = () => {
     setTimeout(() => setToast({ message: '', visible: false }), 2000);
   };
   
+  const fsVersion = useFileSystemVersion();
+
   // Load directory contents
   const refreshItems = useCallback(() => {
     const contents = FileSystem.listDirectory(currentPath);
@@ -112,9 +115,12 @@ export const FolderPage: React.FC = () => {
   }, [currentPath]);
   
   useEffect(() => {
-    refreshItems();
     setScrollTop(0);
-  }, [refreshItems]);
+  }, [currentPath]);
+
+  useEffect(() => {
+    refreshItems();
+  }, [refreshItems, fsVersion]);
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     setScrollTop(e.currentTarget.scrollTop);
