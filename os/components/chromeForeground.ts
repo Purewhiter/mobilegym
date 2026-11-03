@@ -29,7 +29,9 @@ export const queryLastForegroundDeclaration = (
   if (root instanceof HTMLElement && root.hasAttribute(attributeName)) {
     return root;
   }
-  const matches = root.querySelectorAll<HTMLElement>(`[${attributeName}]`);
+  // Pages kept on the back stack but not shown (ActivityRouteHost) do not declare the chrome.
+  const matches = [...root.querySelectorAll<HTMLElement>(`[${attributeName}]`)]
+    .filter((el) => !el.closest('[data-resident-screen="hidden"]'));
   return matches.length > 0 ? matches[matches.length - 1] : null;
 };
 

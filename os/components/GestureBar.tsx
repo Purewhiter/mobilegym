@@ -87,7 +87,8 @@ export const GestureBar = () => {
 
     observer.observe(activityContainer, {
       attributes: true,
-      attributeFilter: ['data-status-bar-foreground', 'data-navigation-bar-foreground'],
+      // data-resident-screen: a page on the back stack shown or hidden again changes the declaration in force.
+      attributeFilter: ['data-status-bar-foreground', 'data-navigation-bar-foreground', 'data-resident-screen'],
       childList: true,
       subtree: true,
     });

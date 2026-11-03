@@ -1,18 +1,17 @@
 import { describe, expect, it } from 'vitest';
-import { advanceScreenStack, type ResidentScreen } from '../os/navigation/screenStack';
+import { advanceScreenStack, type ScreenState } from '../os/navigation/screenStack';
 
 type Loc = { path: string };
-type Stack = ResidentScreen<Loc>[];
 
 /** Drive the model like the host does: one call per committed history entry. */
-function driver() {
+function driver(tabs: string[] = []) {
   let seq = 0;
-  let stack: Stack = [];
+  let state: ScreenState<Loc> = { stack: [], parked: [] };
   const go = (path: string, index: number) => {
-    stack = advanceScreenStack(stack, { identity: path.split('?')[0], location: { path } }, index, () => `s${++seq}`);
-    return stack.map((s) => `${s.id}:${s.location.path}@${s.startIndex}`);
+    state = advanceScreenStack(state, { identity: path.split('?')[0], location: { path } }, index, () => `s${++seq}`, (id) => tabs.includes(id));
+    return state.stack.map((s) => `${s.id}:${s.location.path}@${s.startIndex}`);
   };
-  return { go, get stack() { return stack; } };
+  return { go, get parked() { return state.parked.map((s) => `${s.id}:${s.location.path}`); } };
 }
 
 describe('advanceScreenStack', () => {
@@ -65,5 +64,22 @@ describe('advanceScreenStack', () => {
     const d = driver();
     d.go('/page/a', 2);
     expect(d.go('/', 1)).toEqual(['s2:/@1']);
+  });
+
+  it('switching main tabs parks the tab you leave and brings it back', () => {
+    const d = driver(['/', '/me']);
+    d.go('/?tab=discover', 0);
+    expect(d.go('/me', 0)).toEqual(['s2:/me@0']);
+    expect(d.parked).toEqual(['s1:/?tab=discover']);
+    expect(d.go('/?tab=discover', 0)).toEqual(['s1:/?tab=discover@0']);
+    expect(d.parked).toEqual(['s2:/me']);
+  });
+
+  it('a tab under a pushed page stays on the stack; pages are not parked', () => {
+    const d = driver(['/', '/me']);
+    d.go('/', 0);
+    d.go('/note/1', 1);
+    expect(d.go('/', 0)).toEqual(['s1:/@0']);
+    expect(d.parked).toEqual([]);
   });
 });
