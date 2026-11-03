@@ -32,7 +32,7 @@ import { routes } from './routes';
 
 const ClockShell: React.FC = () => {
   const s = useAppStrings(strings, stringsEn);
-  const { nav, back, bindNav, bindBack } = useClockGestures();
+  const { nav, back, bindNav, bindBack, bindTap } = useClockGestures();
   const location = useLocation();
   const { navigator } = React.useContext(UNSAFE_NavigationContext);
 
@@ -53,11 +53,12 @@ const ClockShell: React.FC = () => {
   const showAlarmEditor = sheet === 'editor' || sheet === 'repeat';
   const showRepeat = sheet === 'repeat';
   const showCitySelector = sheet === 'city';
+  // Select mode lives in the URL too (?mode=select on /alarm or /world): back and the close button leave it.
+  const selectionMode = location.pathname === '/alarm' && sheetParams.get('mode') === 'select';
+  const worldClockSelectionMode = location.pathname === '/world' && sheetParams.get('mode') === 'select';
   const [alarmEditorIsEditMode, setAlarmEditorIsEditMode] = useState(false);
   const [showCityExistsToast, setShowCityExistsToast] = useState(false);
-  const [selectionMode, setSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [worldClockSelectionMode, setWorldClockSelectionMode] = useState(false);
   const [worldClockSelectedIds, setWorldClockSelectedIds] = useState<string[]>([]);
   const [editingAlarm, setEditingAlarm] = useState<Alarm>(() => ({
     id: `a-${timeNow()}-${base36(nextStream('clock.alarm'), 4)}`,
@@ -78,31 +79,16 @@ const ClockShell: React.FC = () => {
     return () => clearTimeout(t);
   }, [showCityExistsToast]);
 
+  // Leaving select mode drops the selection.
   useEffect(() => {
-    if (selectionMode && alarms.length === 0) {
-      setSelectionMode(false);
-      setSelectedIds([]);
-    }
-  }, [alarms.length, selectionMode]);
+    if (!selectionMode) setSelectedIds([]);
+  }, [selectionMode]);
 
   useEffect(() => {
-    if (worldClockSelectionMode && selectedCities.length === 0) {
-      setWorldClockSelectionMode(false);
-      setWorldClockSelectedIds([]);
-    }
-  }, [selectedCities.length, worldClockSelectionMode]);
+    if (!worldClockSelectionMode) setWorldClockSelectedIds([]);
+  }, [worldClockSelectionMode]);
 
   const handleBack = useCallback((): boolean => {
-    if (selectionMode) {
-      setSelectionMode(false);
-      setSelectedIds([]);
-      return true;
-    }
-    if (worldClockSelectionMode) {
-      setWorldClockSelectionMode(false);
-      setWorldClockSelectedIds([]);
-      return true;
-    }
     const memoryNavigator = navigator as any;
     const index = typeof memoryNavigator.index === 'number' ? memoryNavigator.index : 0;
     if (index > 0) {
@@ -110,12 +96,7 @@ const ClockShell: React.FC = () => {
       return true;
     }
     return false;
-  }, [
-    back,
-    navigator,
-    selectionMode,
-    worldClockSelectionMode,
-  ]);
+  }, [back, navigator]);
 
   useAppNavigationHandler('clock', { onBack: handleBack });
 
@@ -142,17 +123,12 @@ const ClockShell: React.FC = () => {
   };
 
   const handleSelectionStart = (id: string) => {
-    setSelectionMode(true);
-    setSelectedIds(prev => (prev.includes(id) ? prev : [...prev, id]));
+    setSelectedIds([id]);
+    nav.push(routes.alarm, {}, { search: { mode: 'select' } });
   };
 
   const handleSelectionToggle = (id: string) => {
     setSelectedIds(prev => (prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]));
-  };
-
-  const handleExitSelection = () => {
-    setSelectionMode(false);
-    setSelectedIds([]);
   };
 
   const handleToggleSelectAll = () => {
@@ -166,22 +142,16 @@ const ClockShell: React.FC = () => {
   const handleDeleteSelected = () => {
     if (selectedIds.length === 0) return;
     storeDeleteAlarms(selectedIdSet);
-    setSelectionMode(false);
-    setSelectedIds([]);
+    back();
   };
 
   const handleWorldClockSelectionStart = (id: string) => {
-    setWorldClockSelectionMode(true);
-    setWorldClockSelectedIds(prev => (prev.includes(id) ? prev : [...prev, id]));
+    setWorldClockSelectedIds([id]);
+    nav.push(routes.world, {}, { search: { mode: 'select' } });
   };
 
   const handleWorldClockSelectionToggle = (id: string) => {
     setWorldClockSelectedIds(prev => (prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]));
-  };
-
-  const handleWorldClockExitSelection = () => {
-    setWorldClockSelectionMode(false);
-    setWorldClockSelectedIds([]);
   };
 
   const handleWorldClockToggleSelectAll = () => {
@@ -195,8 +165,7 @@ const ClockShell: React.FC = () => {
   const handleWorldClockDeleteSelected = () => {
     if (worldClockSelectedIds.length === 0) return;
     removeCities(worldClockSelectedIdSet);
-    setWorldClockSelectionMode(false);
-    setWorldClockSelectedIds([]);
+    back();
   };
 
   const handleSelectCity = (city: WorldCity) => {
@@ -223,9 +192,7 @@ const ClockShell: React.FC = () => {
           editBind={(alarm) => bindNav(routes.alarm, { search: { sheet: 'edit', alarmId: alarm.id } })}
           onSelectToggle={handleSelectionToggle}
           onSelectionStart={handleSelectionStart}
-          onExitSelection={handleExitSelection}
           onToggleSelectAll={handleToggleSelectAll}
-          onDeleteSelected={handleDeleteSelected}
         />
       </div>
       <div className="absolute inset-0" style={{ display: activeTab === 'world' ? undefined : 'none' }}>
@@ -236,7 +203,6 @@ const ClockShell: React.FC = () => {
           selectedIds={worldClockSelectedIdSet}
           onSelectToggle={handleWorldClockSelectionToggle}
           onSelectionStart={handleWorldClockSelectionStart}
-          onExitSelection={handleWorldClockExitSelection}
           onToggleSelectAll={handleWorldClockToggleSelectAll}
         />
       </div>
@@ -249,7 +215,7 @@ const ClockShell: React.FC = () => {
       {activeTab === 'alarm' && selectionMode ? (
         <div className="absolute bottom-0 left-0 right-0 bg-app-surface border-t border-gray-100 pb-6 pt-2 z-30 flex items-center justify-center">
           <button
-            onClick={handleDeleteSelected}
+            {...bindTap({ kind: 'action', id: 'clock.alarm.deleteSelected' }, { onTrigger: handleDeleteSelected })}
             className="flex flex-col items-center justify-center gap-1 text-gray-700"
           >
             <IcDelete size={22} strokeWidth={dimens.icStrokeWidth} />
@@ -259,7 +225,7 @@ const ClockShell: React.FC = () => {
       ) : activeTab === 'world' && worldClockSelectionMode ? (
         <div className="absolute bottom-0 left-0 right-0 bg-app-surface border-t border-gray-100 pb-6 pt-2 z-30 flex items-center justify-center">
           <button
-            onClick={handleWorldClockDeleteSelected}
+            {...bindTap({ kind: 'action', id: 'clock.world.deleteSelected' }, { onTrigger: handleWorldClockDeleteSelected })}
             className="flex flex-col items-center justify-center gap-1 text-gray-700"
           >
             <IcDelete size={22} strokeWidth={dimens.icStrokeWidth} />

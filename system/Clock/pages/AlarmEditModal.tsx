@@ -5,6 +5,7 @@ import { stringsEn } from '../res/strings.en';
 import { useAppStrings } from '../../../os/useAppStrings';
 import { getDate } from '../../../os/TimeService';
 import { WheelColumn } from '../components/WheelColumn';
+import { useClockGestures } from '../hooks/useClockGestures';
 import { formatCountdownText, getNextTrigger } from '../utils';
 
 export const AlarmEditModal: React.FC<{
@@ -14,6 +15,7 @@ export const AlarmEditModal: React.FC<{
   onMoreSettings: (hour: number, minute: number) => void;
 }> = ({ alarm, closeBind, onSave, onMoreSettings }) => {
   const s = useAppStrings(strings, stringsEn);
+  const { bindTap } = useClockGestures();
   const [hour, setHour] = useState(alarm.hour);
   const [minute, setMinute] = useState(alarm.minute);
   const now = getDate();
@@ -55,13 +57,13 @@ export const AlarmEditModal: React.FC<{
         </div>
         <div className="flex gap-3 px-6 pb-6 pt-2">
           <button
-            onClick={handleMoreSettings}
+            {...bindTap('nav.alarm', { params: { sheet: 'editor' }, onTrigger: handleMoreSettings })}
             className="flex-1 py-3 rounded-xl bg-gray-100 text-black text-[16px] font-medium"
           >
             {s.alarm_more_settings}
           </button>
           <button
-            onClick={handleDone}
+            {...bindTap({ kind: 'action', id: 'clock.alarm.quickEdit.save' }, { onTrigger: handleDone })}
             className="flex-1 py-3 rounded-xl bg-app-primary text-white text-[16px] font-medium"
           >
             {s.alarm_done}

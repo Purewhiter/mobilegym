@@ -4,6 +4,7 @@ import { strings } from '../res/strings';
 import { stringsEn } from '../res/strings.en';
 import { useAppStrings } from '../../../os/useAppStrings';
 import { IcNavBack, IcNavForward, IcCheck } from '../res/icons';
+import { useClockGestures } from '../hooks/useClockGestures';
 
 type RepeatOption = { id: AlarmRepeat; label: string; subLabel?: string };
 
@@ -14,6 +15,7 @@ export const RepeatSelectorSheet: React.FC<{
   /** System back for the backdrop and close button (onClose stays for drag-dismiss). */
   closeBind: React.HTMLAttributes<HTMLElement>;
 }> = ({ value, onSelect, onClose, closeBind }) => {
+  const { bindTap } = useClockGestures();
   const s = useAppStrings(strings, stringsEn);
   const repeatOptions: RepeatOption[] = [
     { id: 'once', label: s.alarm_repeat_once },
@@ -79,7 +81,7 @@ export const RepeatSelectorSheet: React.FC<{
           {repeatOptions.map(option => (
             <button
               key={option.id}
-              onClick={() => onSelect(option.id)}
+              {...bindTap({ kind: 'action', id: 'clock.alarm.repeat.select' }, { params: { repeat: option.id }, onTrigger: () => onSelect(option.id) })}
               className="w-full px-4 py-5 flex items-center justify-between text-left"
             >
               <span className={`text-[16px] ${value === option.id ? 'text-app-primary font-medium' : 'text-black'}`}>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { IcSearch, IcAdd, IcClose } from '../res/icons';
 import { ConversationItem } from './ConversationItem';
 import { Toast } from '@/os/components/Toast';
@@ -15,12 +15,10 @@ const smsIcon = (name: string) => name ? `/@app-assets/Sms/icons/${name}.svg` : 
 /** Toolbar icon button */
 const ToolbarIcon: React.FC<{
     icon: React.ReactNode;
-    onClick?: () => void;
     bind?: React.ButtonHTMLAttributes<HTMLButtonElement>;
-}> = ({ icon, onClick, bind }) => (
+}> = ({ icon, bind }) => (
     <button
         className="w-10 h-10 flex items-center justify-center text-gray-700 hover:bg-gray-100 rounded-full"
-        onClick={onClick}
         {...bind}
     >
         {icon}
@@ -35,50 +33,26 @@ const SmsIcon: React.FC<{ name: string; size?: number }> = ({ name, size = 24 })
 };
 
 export const ConversationListPage: React.FC = () => {
-    const { bindNav } = useSmsGestures();
+    const { bindNav, bindBack, bindTap, bindLongPress, nav } = useSmsGestures();
     const { conversations, messagesByConversationId } = useSmsProviderState();
     const s = useAppStrings(strings, stringsEn);
     const [query, setQuery] = React.useState('');
     const [toast, setToast] = React.useState<{ visible: boolean; message: string }>({ visible: false, message: '' });
-    const [searchParams, setSearchParams] = useSearchParams();
-    const routerNavigate = useNavigate();
-    const menuConvId = searchParams.get('contextMenu');
+    // The long-press menu and its conversation live in the URL (?menu=context&conversationId=): back closes it.
+    const [searchParams] = useSearchParams();
+    const menuConvId = searchParams.get('menu') === 'context' ? searchParams.get('conversationId') : null;
     const menuConv = React.useMemo(
         () => (menuConvId ? conversations.find((c) => c.id === menuConvId) : null) ?? null,
         [menuConvId, conversations],
     );
 
-    const longPressRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
-    const longPressFiredRef = React.useRef(false);
-
-    const openMenu = (conv: Conversation) => {
-        setSearchParams((p) => { p.set('contextMenu', conv.id); return p; });
-    };
+    const menuBind = (conv: Conversation) => bindLongPress('nav.home', {
+        params: { menu: 'context', conversationId: conv.id },
+        duration: 500,
+        onTrigger: () => nav.push(routes.home, {}, { search: { menu: 'context', conversationId: conv.id } }),
+    });
     const closeMenu = () => {
-        if (menuConvId) routerNavigate(-1);
-    };
-
-    const handlePointerDown = (conv: Conversation) => {
-        longPressFiredRef.current = false;
-        longPressRef.current = setTimeout(() => {
-            longPressRef.current = null;
-            longPressFiredRef.current = true;
-            openMenu(conv);
-        }, 500);
-    };
-    const cancelLongPress = () => {
-        if (longPressRef.current) {
-            clearTimeout(longPressRef.current);
-            longPressRef.current = null;
-        }
-    };
-    // A tap that ends a long press (which opened the menu) does not open the conversation.
-    const handleConversationClick = (event: React.MouseEvent<HTMLElement>, open: React.HTMLAttributes<HTMLElement>) => {
-        if (longPressFiredRef.current) {
-            longPressFiredRef.current = false;
-            return;
-        }
-        open.onClick?.(event);
+        if (menuConvId) nav.back();
     };
 
     const showToast = (message: string) => {
@@ -108,10 +82,12 @@ export const ConversationListPage: React.FC = () => {
             <div className="flex items-center justify-end px-2 h-12 flex-shrink-0">
                 <ToolbarIcon
                     icon={<SmsIcon name="ic_one_click_button" />}
-                    onClick={() => {
-                        const n = markAllRead();
-                        showToast(n > 0 ? `${s.toast_cleared_prefix}${n}${s.toast_cleared_suffix}` : s.toast_no_unread);
-                    }}
+                    bind={bindTap({ kind: 'action', id: 'sms.markAllRead' }, {
+                        onTrigger: () => {
+                            const n = markAllRead();
+                            showToast(n > 0 ? `${s.toast_cleared_prefix}${n}${s.toast_cleared_suffix}` : s.toast_no_unread);
+                        },
+                    })}
                 />
                 <ToolbarIcon icon={<SmsIcon name="action_bar_setting" />} bind={bindNav(routes.settings)} />
             </div>
@@ -134,7 +110,7 @@ export const ConversationListPage: React.FC = () => {
                     {query.trim().length > 0 && (
                         <button
                             className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-gray-100"
-                            onClick={() => setQuery('')}
+                            {...bindTap({ kind: 'action', id: 'sms.search.clear' }, { onTrigger: () => setQuery('') })}
                             aria-label="清空搜索"
                         >
                             <IcClose size={16} className="text-gray-400" />
@@ -151,19 +127,16 @@ export const ConversationListPage: React.FC = () => {
                     filteredConversations.map((conversation) => {
                         const msgs = messagesByConversationId[conversation.id];
                         const lastMsg = msgs && msgs.length > 0 ? msgs[msgs.length - 1].content : '';
-                        const open = bindNav(routes.conversation, { params: { conversationId: conversation.id } });
+                        // The long press sits on the outer row and the tap on the inner one: each keeps its own
+                        // tag, and the click that ends a long press is swallowed by the long-press binding.
                         return (
-                            <ConversationItem
-                                key={conversation.id}
-                                conversation={conversation}
-                                preview={lastMsg}
-                                bind={open}
-                                onClick={(event) => handleConversationClick(event, open)}
-                                onPointerDown={() => handlePointerDown(conversation)}
-                                onPointerUp={cancelLongPress}
-                                onPointerCancel={cancelLongPress}
-                                onPointerLeave={cancelLongPress}
-                            />
+                            <div key={conversation.id} {...menuBind(conversation)} onContextMenu={(e) => e.preventDefault()}>
+                                <ConversationItem
+                                    conversation={conversation}
+                                    preview={lastMsg}
+                                    bind={bindNav(routes.conversation, { params: { conversationId: conversation.id } })}
+                                />
+                            </div>
                         );
                     })
                 )}
@@ -171,33 +144,43 @@ export const ConversationListPage: React.FC = () => {
 
             {/* Context menu overlay */}
             {menuConv && (
-                <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-10" onClick={closeMenu}>
+                <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-10" {...bindBack()}>
                     <div
                         className="bg-white rounded-2xl w-56 overflow-hidden shadow-xl"
                         onClick={(e) => e.stopPropagation()}
                     >
                         {[
-                            { label: s.menu_delete, action: () => { deleteConversation(menuConv.id); closeMenu(); } },
+                            {
+                                label: s.menu_delete,
+                                bind: bindTap({ kind: 'action', id: 'sms.conversation.delete' }, {
+                                    onTrigger: () => { deleteConversation(menuConv.id); closeMenu(); },
+                                }),
+                            },
                             {
                                 label: menuConv.isUnread ? s.menu_mark_read : s.menu_mark_unread,
-                                action: () => {
-                                    if (menuConv.isUnread) markConversationRead(menuConv.id);
-                                    else markConversationUnread(menuConv.id);
-                                    closeMenu();
-                                },
+                                bind: bindTap({ kind: 'action', id: 'sms.conversation.read.toggle' }, {
+                                    onTrigger: () => {
+                                        if (menuConv.isUnread) markConversationRead(menuConv.id);
+                                        else markConversationUnread(menuConv.id);
+                                        closeMenu();
+                                    },
+                                }),
                             },
                             {
                                 label: menuConv.isPinned ? s.menu_unpin : s.menu_pin,
-                                action: () => { pinConversation(menuConv.id, !menuConv.isPinned); closeMenu(); },
+                                bind: bindTap({ kind: 'action', id: 'sms.conversation.pin.toggle' }, {
+                                    onTrigger: () => { pinConversation(menuConv.id, !menuConv.isPinned); closeMenu(); },
+                                }),
                             },
-                            { label: s.menu_block, action: closeMenu },
-                            { label: s.menu_add_contact, action: closeMenu },
-                            { label: s.menu_encrypt, action: closeMenu },
+                            // Not implemented yet: these only close the menu.
+                            { label: s.menu_block, bind: bindBack() },
+                            { label: s.menu_add_contact, bind: bindBack() },
+                            { label: s.menu_encrypt, bind: bindBack() },
                         ].map((item) => (
                             <button
                                 key={item.label}
                                 className="w-full px-5 py-3.5 text-left text-[15px] text-app-text active:bg-gray-50 border-b border-gray-100 last:border-b-0"
-                                onClick={item.action}
+                                {...item.bind}
                             >
                                 {item.label}
                             </button>

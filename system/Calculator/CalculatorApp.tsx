@@ -141,9 +141,13 @@ const CalculatorContent: React.FC = () => {
     return 'text-2xl';
   };
 
-  const Btn = ({ label, onClick, className = '' }: any) => (
+  const { bindTap } = useCalculatorGestures();
+  const digit = (d: string) => bindTap({ kind: 'action', id: 'calculator.digit' }, { params: { digit: d }, onTrigger: () => handleInput(d) });
+  const op = (o: string) => bindTap({ kind: 'action', id: 'calculator.operator' }, { params: { operator: o }, onTrigger: () => handleOp(o) });
+
+  const Btn = ({ label, bind, className = '' }: { label: string; bind: React.HTMLAttributes<HTMLButtonElement>; className?: string }) => (
     <button
-      onClick={onClick}
+      {...bind}
       className={`h-16 w-16 rounded-full text-xl font-medium flex items-center justify-center transition-opacity active:opacity-60 ${className}`}
     >
       {label}
@@ -161,36 +165,36 @@ const CalculatorContent: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-4 gap-4 mb-8">
-        <Btn label="AC" onClick={clear} className="bg-gray-400 text-black" />
-        <Btn label="+/-" onClick={toggleSign} className="bg-gray-400 text-black" />
-        <Btn label="%" onClick={handlePercent} className="bg-gray-400 text-black" />
-        <Btn label="÷" onClick={() => handleOp('/')} className="bg-app-primary" />
+        <Btn label="AC" bind={bindTap({ kind: 'action', id: 'calculator.clear' }, { onTrigger: clear })} className="bg-gray-400 text-black" />
+        <Btn label="+/-" bind={bindTap({ kind: 'action', id: 'calculator.sign.toggle' }, { onTrigger: toggleSign })} className="bg-gray-400 text-black" />
+        <Btn label="%" bind={bindTap({ kind: 'action', id: 'calculator.percent' }, { onTrigger: handlePercent })} className="bg-gray-400 text-black" />
+        <Btn label="÷" bind={op('/')} className="bg-app-primary" />
 
-        <Btn label="7" onClick={() => handleInput('7')} className="bg-gray-800" />
-        <Btn label="8" onClick={() => handleInput('8')} className="bg-gray-800" />
-        <Btn label="9" onClick={() => handleInput('9')} className="bg-gray-800" />
-        <Btn label="×" onClick={() => handleOp('*')} className="bg-app-primary" />
+        <Btn label="7" bind={digit('7')} className="bg-gray-800" />
+        <Btn label="8" bind={digit('8')} className="bg-gray-800" />
+        <Btn label="9" bind={digit('9')} className="bg-gray-800" />
+        <Btn label="×" bind={op('*')} className="bg-app-primary" />
 
-        <Btn label="4" onClick={() => handleInput('4')} className="bg-gray-800" />
-        <Btn label="5" onClick={() => handleInput('5')} className="bg-gray-800" />
-        <Btn label="6" onClick={() => handleInput('6')} className="bg-gray-800" />
-        <Btn label="-" onClick={() => handleOp('-')} className="bg-app-primary" />
+        <Btn label="4" bind={digit('4')} className="bg-gray-800" />
+        <Btn label="5" bind={digit('5')} className="bg-gray-800" />
+        <Btn label="6" bind={digit('6')} className="bg-gray-800" />
+        <Btn label="-" bind={op('-')} className="bg-app-primary" />
 
-        <Btn label="1" onClick={() => handleInput('1')} className="bg-gray-800" />
-        <Btn label="2" onClick={() => handleInput('2')} className="bg-gray-800" />
-        <Btn label="3" onClick={() => handleInput('3')} className="bg-gray-800" />
-        <Btn label="+" onClick={() => handleOp('+')} className="bg-app-primary" />
+        <Btn label="1" bind={digit('1')} className="bg-gray-800" />
+        <Btn label="2" bind={digit('2')} className="bg-gray-800" />
+        <Btn label="3" bind={digit('3')} className="bg-gray-800" />
+        <Btn label="+" bind={op('+')} className="bg-app-primary" />
 
         <div className="col-span-2">
           <button
-            onClick={() => handleInput('0')}
+            {...digit('0')}
             className="h-16 w-full rounded-full bg-gray-800 text-xl font-medium px-8 flex items-center justify-start transition-opacity active:opacity-60"
           >
             0
           </button>
         </div>
-        <Btn label="." onClick={() => handleInput('.')} className="bg-gray-800" />
-        <Btn label="=" onClick={calculate} className="bg-app-primary" />
+        <Btn label="." bind={digit('.')} className="bg-gray-800" />
+        <Btn label="=" bind={bindTap({ kind: 'action', id: 'calculator.equals' }, { onTrigger: calculate })} className="bg-app-primary" />
       </div>
     </div>
   );

@@ -2,7 +2,12 @@ import { defineRoutes } from '../../os/navigation/routes';
 
 /** Sms's pages and the UI states each keeps in its URL. */
 export const routes = defineRoutes({
-  home: { path: '/', description: '会话列表页' },
+  home: {
+    path: '/',
+    search: { menu: ['context'] },
+    description: '会话列表页',
+    states: { 'menu=context': '会话长按菜单' },
+  },
   new: {
     path: '/new',
     search: { dialog: ['invalidRecipient'], panel: ['attachments'] },

@@ -5,6 +5,7 @@ import { stringsEn } from '../res/strings.en';
 import { useAppStrings } from '../../../os/useAppStrings';
 import { IcClose, IcSearch } from '../res/icons';
 import { formatGmtLabel } from '../utils';
+import { useClockGestures } from '../hooks/useClockGestures';
 
 export const CitySelectorPage: React.FC<{
   cities: WorldCity[];
@@ -15,6 +16,7 @@ export const CitySelectorPage: React.FC<{
   closeBind: React.HTMLAttributes<HTMLElement>;
   onAlreadySelected?: () => void;
 }> = ({ cities, selectedCityIds, onSelect, onClose, closeBind, onAlreadySelected }) => {
+  const { bindTap } = useClockGestures();
   const s = useAppStrings(strings, stringsEn);
   const [query, setQuery] = useState('');
   const [dragOffset, setDragOffset] = useState(0);
@@ -89,7 +91,10 @@ export const CitySelectorPage: React.FC<{
             className="bg-transparent outline-none text-[16px] flex-1 placeholder:text-gray-400"
           />
           {query ? (
-            <button className="text-app-primary text-[14px] shrink-0" onClick={() => setQuery('')}>
+            <button
+              className="text-app-primary text-[14px] shrink-0"
+              {...bindTap({ kind: 'action', id: 'clock.world.city.search.clear' }, { onTrigger: () => setQuery('') })}
+            >
               {s.cancel}
             </button>
           ) : null}
@@ -102,14 +107,17 @@ export const CitySelectorPage: React.FC<{
               return (
                 <button
                   key={city.id}
-                  onClick={() => {
-                    if (isSelected) {
-                      onClose();
-                      onAlreadySelected?.();
-                    } else {
-                      onSelect(city);
-                    }
-                  }}
+                  {...bindTap({ kind: 'action', id: 'clock.world.city.add' }, {
+                    params: { cityId: city.id },
+                    onTrigger: () => {
+                      if (isSelected) {
+                        onClose();
+                        onAlreadySelected?.();
+                      } else {
+                        onSelect(city);
+                      }
+                    },
+                  })}
                   className="w-full py-4 flex items-center justify-between text-left border-b border-gray-100 last:border-b-0"
                 >
                   <div>

@@ -7,6 +7,7 @@ import { IcMoreVert, IcPlay, IcPause, IcStop, IcSun } from '../res/icons';
 import { WheelColumn } from '../components/WheelColumn';
 import { pad2 } from '../utils';
 import { now as timeNow } from '../../../os/TimeService';
+import { useClockGestures } from '../hooks/useClockGestures';
 
 const formatTimerValue = (seconds: number) => {
   const hh = Math.floor(seconds / 3600);
@@ -17,6 +18,7 @@ const formatTimerValue = (seconds: number) => {
 
 export const TimerPage: React.FC = () => {
   const s = useAppStrings(strings, stringsEn);
+  const { bindTap } = useClockGestures();
   const [hours, setHours] = useState(0);
   const [minutes, setMinutes] = useState(20);
   const [seconds, setSeconds] = useState(0);
@@ -113,7 +115,7 @@ export const TimerPage: React.FC = () => {
               {presetList.map(item => (
                 <button
                   key={item.label}
-                  onClick={() => applyPreset(item.seconds)}
+                  {...bindTap({ kind: 'action', id: 'clock.timer.preset' }, { params: { seconds: item.seconds }, onTrigger: () => applyPreset(item.seconds) })}
                   className={`py-2 rounded-xl border text-[20px] ${
                     hours * 3600 + minutes * 60 + seconds === item.seconds
                       ? 'bg-gray-200 border-app-border text-gray-800'
@@ -127,7 +129,7 @@ export const TimerPage: React.FC = () => {
             <div className="flex items-center justify-center mt-auto pb-28">
               <button
                 className="px-14 h-14 rounded-full bg-app-surface shadow flex items-center justify-center text-app-primary"
-                onClick={handleStart}
+                {...bindTap({ kind: 'action', id: 'clock.timer.start' }, { onTrigger: handleStart })}
               >
                 <IcPlay size={28} />
               </button>
@@ -156,7 +158,7 @@ export const TimerPage: React.FC = () => {
                   <div className="text-[32px] font-medium text-black">{formatTimerValue(remaining)}</div>
                   <div className="text-[12px] text-gray-400">{s.timer_total_minutes_prefix}{Math.round(total / 60)}{s.timer_total_minutes_suffix}</div>
                   <button
-                    onClick={() => setKeepScreen(!keepScreen)}
+                    {...bindTap({ kind: 'action', id: 'clock.timer.keepScreen.toggle' }, { onTrigger: () => setKeepScreen(!keepScreen) })}
                     className="mt-3 px-4 py-1 rounded-full bg-app-primary text-white text-[12px] flex items-center gap-1"
                   >
                     <IcSun size={14} />
@@ -166,15 +168,15 @@ export const TimerPage: React.FC = () => {
               </div>
             </div>
             <div className="flex items-center justify-center gap-20 pb-28">
-              <button onClick={handleStop} className="w-14 h-14 rounded-full bg-app-surface shadow flex items-center justify-center text-app-primary">
+              <button {...bindTap({ kind: 'action', id: 'clock.timer.stop' }, { onTrigger: handleStop })} className="w-14 h-14 rounded-full bg-app-surface shadow flex items-center justify-center text-app-primary">
                 <IcStop size={20} />
               </button>
               {running ? (
-                <button onClick={handlePause} className="w-14 h-14 rounded-full bg-app-surface shadow flex items-center justify-center text-app-primary">
+                <button {...bindTap({ kind: 'action', id: 'clock.timer.pause' }, { onTrigger: handlePause })} className="w-14 h-14 rounded-full bg-app-surface shadow flex items-center justify-center text-app-primary">
                   <IcPause size={22} />
                 </button>
               ) : (
-                <button onClick={handleResume} className="w-14 h-14 rounded-full bg-app-surface shadow flex items-center justify-center text-app-primary">
+                <button {...bindTap({ kind: 'action', id: 'clock.timer.resume' }, { onTrigger: handleResume })} className="w-14 h-14 rounded-full bg-app-surface shadow flex items-center justify-center text-app-primary">
                   <IcPlay size={22} />
                 </button>
               )}

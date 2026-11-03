@@ -38,6 +38,7 @@ nav.replace(routes.meetingEdit);                                               /
 nav.push(routes.search, {}, { state: { viewportCenter } });
 nav.back();
 nav.toPath(intentRoute, { replace: true });                                    // a path that arrived at runtime
+nav.replaceState({ ...location.state, anchorSide });                             // same URL, new location.state
 ```
 
 Semantics:

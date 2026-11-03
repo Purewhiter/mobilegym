@@ -8,6 +8,7 @@ import { CLOCK_CONFIG } from '../data';
 import { IcClose, IcCheck, IcNavForward } from '../res/icons';
 import { Switch } from '../components/Switch';
 import { WheelColumn } from '../components/WheelColumn';
+import { useClockGestures } from '../hooks/useClockGestures';
 import { formatCountdownText, getNextTrigger, getRepeatLabel } from '../utils';
 
 export const AlarmEditorSheet: React.FC<{
@@ -20,6 +21,7 @@ export const AlarmEditorSheet: React.FC<{
   repeatBind: React.HTMLAttributes<HTMLElement>;
 }> = ({ alarm, isEdit = false, onClose, closeBind, onSave, repeatBind }) => {
   const s = useAppStrings(strings, stringsEn);
+  const { bindTap } = useClockGestures();
   const [hour, setHour] = useState(alarm.hour);
   const [minute, setMinute] = useState(alarm.minute);
   const [vibrate, setVibrate] = useState(alarm.vibrate ?? true);
@@ -85,7 +87,9 @@ export const AlarmEditorSheet: React.FC<{
           </div>
           <button
             className="w-10 h-10 flex items-center justify-center text-black shrink-0"
-            onClick={() => onSave({ ...alarm, hour, minute, note, vibrate, autoDelete })}
+            {...bindTap({ kind: 'action', id: 'clock.alarm.save' }, {
+              onTrigger: () => onSave({ ...alarm, hour, minute, note, vibrate, autoDelete }),
+            })}
           >
             <IcCheck size={26} />
           </button>
@@ -118,11 +122,17 @@ export const AlarmEditorSheet: React.FC<{
             </button>
             <div className="px-4 py-5 flex items-center justify-between">
               <span className="text-[16px] text-black">{s.alarm_vibrate}</span>
-              <Switch value={vibrate} onChange={setVibrate} />
+              <Switch
+                value={vibrate}
+                bind={bindTap({ kind: 'action', id: 'clock.alarm.vibrate.toggle' }, { onTrigger: () => setVibrate(v => !v) })}
+              />
             </div>
             <div className="px-4 py-5 flex items-center justify-between">
               <span className="text-[16px] text-black">{s.alarm_auto_delete}</span>
-              <Switch value={autoDelete} onChange={setAutoDelete} />
+              <Switch
+                value={autoDelete}
+                bind={bindTap({ kind: 'action', id: 'clock.alarm.autoDelete.toggle' }, { onTrigger: () => setAutoDelete(v => !v) })}
+              />
             </div>
           </div>
           <div className="bg-app-surface rounded-2xl px-4 py-5 flex items-center justify-between">

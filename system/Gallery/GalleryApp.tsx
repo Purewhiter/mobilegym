@@ -627,14 +627,14 @@ const PhotosPage: React.FC<{ onSelectModeChange?: (active: boolean) => void }> =
             <span className="text-[11px] text-slate-700">{s.action_favorite}</span>
           </button>
           <button
-            onClick={() => {
-              const paths = Array.from(selected);
-              if (paths.length === 0) return;
-              shareImagesAsIntent(paths);
-            }}
+            {...bindTap({ kind: 'action', id: 'gallery.select.share' }, {
+              onTrigger: () => {
+                const paths = Array.from(selected);
+                if (paths.length === 0) return;
+                shareImagesAsIntent(paths);
+              },
+            })}
             className="flex flex-col items-center gap-1.5 px-4 active:opacity-60"
-            data-action="gallery.select.share"
-            data-action-type="open"
           >
             <IcShare size={22} className="text-slate-700" />
             <span className="text-[11px] text-slate-700">{s.action_share}</span>
@@ -1193,23 +1193,23 @@ function shareImagesAsIntent(paths: string[]): void {
 type MoreMenuItem = {
   icon: React.ReactNode;
   label: string;
-  onClick?: () => void;
-  /** Tap binding (bindNav) for rows that open another dialog; replaces onClick. */
+  /** Tap binding: bindNav for rows that open another dialog, bindBack for rows that only close the menu. */
   bind?: React.ButtonHTMLAttributes<HTMLButtonElement>;
   hasMore?: boolean;
 };
 
 const MorePopup: React.FC<{
   open: boolean;
-  onClose: () => void;
+  /** System back for the backdrop. */
+  closeBind: React.HTMLAttributes<HTMLElement>;
   sections: MoreMenuItem[][];
-}> = ({ open, onClose, sections }) => {
+}> = ({ open, closeBind, sections }) => {
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-[100] flex items-end justify-end pb-[calc(var(--app-bottom-action-bar-height,80px)+8px)] pr-3 pointer-events-none">
       <div
         className="fixed inset-0 bg-black/30 pointer-events-auto"
-        onClick={onClose}
+        {...closeBind}
       />
       <div className="relative bg-white rounded-[13px] w-[182px] overflow-hidden shadow-[0_6px_22px_rgba(0,0,0,0.18)] animate-in fade-in slide-in-from-bottom-4 duration-200 pointer-events-auto">
         {sections.map((section, sectionIdx) => (
@@ -1220,7 +1220,6 @@ const MorePopup: React.FC<{
                 <button
                   key={idx}
                   type="button"
-                  onClick={opt.onClick}
                   {...opt.bind}
                   className="w-full px-3 py-1 flex items-center gap-2.5 active:bg-slate-100 transition-colors"
                 >
@@ -1325,11 +1324,11 @@ const PhotoDetailsDialog: React.FC<{
 // ============================================================================
 const RenameDialog: React.FC<{
   open: boolean;
-  onClose: () => void;
   defaultValue: string;
   onConfirm: (value: string) => void;
-}> = ({ open, onClose, defaultValue, onConfirm }) => {
+}> = ({ open, defaultValue, onConfirm }) => {
   const s = useAppStrings(strings, stringsEn);
+  const { bindBack, bindTap } = useGalleryGestures();
   const [value, setValue] = useState(defaultValue);
 
   useEffect(() => {
@@ -1346,7 +1345,7 @@ const RenameDialog: React.FC<{
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center px-6">
-      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/40" {...bindBack()} />
       <div className="relative bg-app-surface rounded-2xl w-full max-w-[320px] overflow-hidden shadow-2xl animate-scale-in">
         <div className="px-5 pt-5 pb-3">
           <h3 className="text-[17px] font-semibold text-slate-900 text-center mb-4">{s.rename_title}</h3>
@@ -1362,13 +1361,13 @@ const RenameDialog: React.FC<{
         </div>
         <div className="flex border-t border-slate-200">
           <button
-            onClick={onClose}
+            {...bindBack()}
             className="flex-1 py-3.5 text-[16px] font-medium text-blue-500 active:bg-slate-50 border-r border-slate-200"
           >
             {s.dialog_cancel}
           </button>
           <button
-            onClick={handleConfirm}
+            {...bindTap({ kind: 'action', id: 'gallery.viewer.rename.confirm' }, { onTrigger: handleConfirm })}
             disabled={!value.trim()}
             className="flex-1 py-3.5 text-[16px] font-semibold text-blue-500 active:bg-slate-50 disabled:opacity-50"
           >
@@ -1634,10 +1633,8 @@ const PhotoViewerPage: React.FC = () => {
         <div className="flex items-end justify-between">
           <button
             type="button"
-            onClick={() => { if (item) shareImagesAsIntent([item.path]); }}
+            {...bindTap({ kind: 'action', id: 'gallery.viewer.share' }, { onTrigger: () => { if (item) shareImagesAsIntent([item.path]); } })}
             className="flex flex-col items-center gap-1 text-slate-800 active:opacity-60"
-            data-action="gallery.viewer.share"
-            data-action-type="open"
           >
             <IcShare size={22} />
             <span className="text-[11px] font-medium">{s.viewer_send}</span>
@@ -1648,7 +1645,7 @@ const PhotoViewerPage: React.FC = () => {
           </button>
           <button
             type="button"
-            onClick={handleToggleFavorite}
+            {...bindTap({ kind: 'action', id: 'gallery.viewer.favorite.toggle' }, { onTrigger: handleToggleFavorite })}
             className={`flex flex-col items-center gap-1 active:opacity-60 ${
               isFav ? 'text-rose-500' : 'text-slate-800'
             }`}
@@ -1691,23 +1688,23 @@ const PhotoViewerPage: React.FC = () => {
       {/* More menu popup */}
       <MorePopup
         open={modal === 'more'}
-        onClose={closeModal}
+        closeBind={bindBack()}
         sections={[
           [
-            { icon: <IcAddTo size={22} strokeWidth={1.6} />, label: s.more_menu_add_to, onClick: closeModal },
-            { icon: <IcWallpaper size={22} strokeWidth={1.6} />, label: s.more_menu_set_wallpaper, onClick: closeModal },
+            { icon: <IcAddTo size={22} strokeWidth={1.6} />, label: s.more_menu_add_to, bind: bindBack() },
+            { icon: <IcWallpaper size={22} strokeWidth={1.6} />, label: s.more_menu_set_wallpaper, bind: bindBack() },
             { icon: <IcInfo size={22} strokeWidth={1.6} />, label: s.more_menu_details, bind: bindModal('details', true) },
           ],
           [
-            { icon: <IcGeneratePdf size={22} strokeWidth={1.6} />, label: s.more_menu_generate_pdf, onClick: closeModal },
-            { icon: <IcExtract size={22} strokeWidth={1.6} />, label: s.more_menu_extract, hasMore: true, onClick: closeModal },
+            { icon: <IcGeneratePdf size={22} strokeWidth={1.6} />, label: s.more_menu_generate_pdf, bind: bindBack() },
+            { icon: <IcExtract size={22} strokeWidth={1.6} />, label: s.more_menu_extract, hasMore: true, bind: bindBack() },
           ],
           [
-            { icon: <IcDocEdit size={22} strokeWidth={1.6} />, label: s.more_menu_doc_edit, onClick: closeModal },
-            { icon: <IcWatermark size={22} strokeWidth={1.6} />, label: s.more_menu_watermark, onClick: closeModal },
+            { icon: <IcDocEdit size={22} strokeWidth={1.6} />, label: s.more_menu_doc_edit, bind: bindBack() },
+            { icon: <IcWatermark size={22} strokeWidth={1.6} />, label: s.more_menu_watermark, bind: bindBack() },
           ],
           [
-            { icon: <IcClipboard size={22} strokeWidth={1.6} />, label: s.more_menu_clipboard, onClick: closeModal },
+            { icon: <IcClipboard size={22} strokeWidth={1.6} />, label: s.more_menu_clipboard, bind: bindBack() },
             { icon: <IcRename size={22} strokeWidth={1.6} />, label: s.more_menu_rename, bind: bindModal('rename', true) },
           ],
         ]}
@@ -1722,7 +1719,6 @@ const PhotoViewerPage: React.FC = () => {
       {/* Rename dialog */}
       <RenameDialog
         open={modal === 'rename'}
-        onClose={closeModal}
         defaultValue={item.name}
         onConfirm={doRename}
       />

@@ -5,24 +5,14 @@ interface ConversationItemProps {
     conversation: Conversation;
     /** Derived from latest message — not stored on Conversation */
     preview: string;
-    /** Tap binding that opens the conversation (bindNav); `onClick` runs instead of its handler. */
+    /** Tap binding that opens the conversation (bindNav). */
     bind?: React.HTMLAttributes<HTMLElement>;
-    onClick?: (event: React.MouseEvent<HTMLElement>) => void;
-    onPointerDown?: () => void;
-    onPointerUp?: () => void;
-    onPointerCancel?: () => void;
-    onPointerLeave?: () => void;
 }
 
 export const ConversationItem: React.FC<ConversationItemProps> = ({
     conversation,
     preview,
     bind,
-    onClick,
-    onPointerDown,
-    onPointerUp,
-    onPointerCancel,
-    onPointerLeave,
 }) => {
     const {
         sender,
@@ -38,11 +28,6 @@ export const ConversationItem: React.FC<ConversationItemProps> = ({
         <div
             className="flex items-start px-5 py-3.5 active:bg-gray-50"
             {...bind}
-            onClick={onClick}
-            onPointerDown={onPointerDown}
-            onPointerUp={onPointerUp}
-            onPointerCancel={onPointerCancel}
-            onPointerLeave={onPointerLeave}
         >
             {/* Unread indicator */}
             <div className="w-5 flex-shrink-0 flex items-center justify-center pt-4">
