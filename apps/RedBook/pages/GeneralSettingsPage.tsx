@@ -1,8 +1,7 @@
 import { useRedBookStrings } from '../hooks/useRedBookStrings';
-import React from 'react';
+import React, { useRef } from 'react';
 import { IcNavBack, IcNavForward } from '../res/icons';
 const ChevronLeft = IcNavBack, ChevronRight = IcNavForward;
-import { useScrollPosition } from '../hooks/useScrollPosition';
 import { useRedBookStore } from '../state';
 import { useShallow } from 'zustand/react/shallow';
 import { useRedBookGestures } from '../hooks/useRedBookGestures';
@@ -32,7 +31,7 @@ const Switch: React.FC<SwitchProps> = ({ checked, onChange, actionProps }) => {
 export const GeneralSettingsPage: React.FC = () => {
   const s = useRedBookStrings();
   const { bindBack, bindTap } = useRedBookGestures();
-  const scrollRef = useScrollPosition('general_settings');
+  const scrollRef = useRef<HTMLDivElement>(null);
   const { settings, updateSettings } = useRedBookStore(useShallow(s => ({ settings: s.settings, updateSettings: s.updateSettings })));
   const { general } = settings;
 

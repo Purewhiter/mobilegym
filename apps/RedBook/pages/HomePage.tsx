@@ -465,8 +465,11 @@ export const HomePage: React.FC = () => {
           }
       });
   };
+  // Also runs when the page is hidden on the back stack and kept: clear the ref,
+  // or scrolling after it comes back would never load more.
   React.useEffect(() => () => {
       if (scrollRafRef.current != null) cancelAnimationFrame(scrollRafRef.current);
+      scrollRafRef.current = null;
   }, []);
 
   // 图片预加载：只在 (displayCount, feed.length) 组合变化时跑一次。

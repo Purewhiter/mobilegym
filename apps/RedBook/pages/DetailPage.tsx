@@ -162,9 +162,15 @@ export const DetailPage: React.FC = () => {
         setIsDragging(false);
         setIsAnimatingOut(true);
         setDragOffsetX(screenW);
-        // 等动画完成后导航，不重置状态（组件会随路由卸载）
+        // 等动画完成后导航。笔记页留在返回栈里（ActivityRouteHost），返回时要回到原位：
+        // 复位和跳转放在同一个 transition 里（路由自己就用 startTransition），
+        // 一起提交，页面先被隐藏，看不到回弹。
         setTimeout(() => {
-          nav.push(routes.user, { userId: author.id });
+          React.startTransition(() => {
+            nav.push(routes.user, { userId: author.id });
+            setIsAnimatingOut(false);
+            setDragOffsetX(0);
+          });
         }, 250);
       } else {
         // 回弹

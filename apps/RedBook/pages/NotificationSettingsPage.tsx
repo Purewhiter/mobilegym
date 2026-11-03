@@ -1,8 +1,7 @@
 import { useRedBookStrings } from '../hooks/useRedBookStrings';
-import React from 'react';
+import React, { useRef } from 'react';
 import { IcNavBack, IcNavForward } from '../res/icons';
 const ChevronLeft = IcNavBack, ChevronRight = IcNavForward;
-import { useScrollPosition } from '../hooks/useScrollPosition';
 import { useRedBookStore } from '../state';
 import { useShallow } from 'zustand/react/shallow';
 import { useRedBookGestures } from '../hooks/useRedBookGestures';
@@ -33,7 +32,7 @@ const Switch: React.FC<SwitchProps> = ({ checked, onChange, actionProps }) => {
 const NotificationSettingsPage: React.FC = () => {
   const s = useRedBookStrings();
   const { bindTap, bindBack, bindNav } = useRedBookGestures();
-  const scrollRef = useScrollPosition('notification_settings');
+  const scrollRef = useRef<HTMLDivElement>(null);
   const { settings, updateSettings } = useRedBookStore(useShallow(s => ({ settings: s.settings, updateSettings: s.updateSettings })));
   const { notification } = settings;
 
