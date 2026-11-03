@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import React, { useMemo, useSyncExternalStore } from 'react';
 import { IcWifi, IcLock, IcUnlock } from '../res/icons';
 import { useNavGestures } from '../../../os/navigation';
 import { SettingsHeader } from './SettingsHeader';
@@ -16,6 +16,7 @@ import { strings } from '../res/strings';
 import { stringsEn } from '../res/strings.en';
 import { useAppStrings } from '@/os/useAppStrings';
 import { routes } from '../routes';
+import { useTimedToast } from '../hooks/useTimedToast';
 function bandLabel(freqMHz: number): string {
   if (!Number.isFinite(freqMHz)) return '';
   if (freqMHz >= 4900) return '5G';
@@ -49,15 +50,7 @@ export const WifiNetworksPage: React.FC = () => {
     [osDataRevision, connectedSsid, osState.hardware.nearbyWifi],
   );
 
-  const [toast, setToast] = useState<{ visible: boolean; message: string }>({ visible: false, message: '' });
-  const toastTimerRef = useRef<number | undefined>(undefined);
-  const showToast = (message: string) => {
-    setToast({ visible: true, message });
-    if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current);
-    toastTimerRef.current = window.setTimeout(() => {
-      setToast((prev) => ({ ...prev, visible: false }));
-    }, 1600);
-  };
+  const { toast, showToast } = useTimedToast();
 
   const connectDialog = usePageDialog('connect');
 

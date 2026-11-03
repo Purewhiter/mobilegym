@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import React, { useMemo, useSyncExternalStore } from 'react';
 import { IcBluetooth, IcLink, IcLinkOff, IcEdit } from '../res/icons';
 import { SettingsHeader } from './SettingsHeader';
 import { PreferenceCategory } from './PreferenceCategory';
@@ -16,6 +16,7 @@ import { stringsEn } from '../res/strings.en';
 import { useAppStrings } from '@/os/useAppStrings';
 import { useSettingsGestures } from '../hooks/useSettingsGestures';
 import { routes } from '../routes';
+import { useTimedToast } from '../hooks/useTimedToast';
 export const BluetoothDevicesPage: React.FC = () => {
   const { bindNav } = useSettingsGestures();
   const s = useAppStrings(strings, stringsEn);
@@ -35,15 +36,7 @@ export const BluetoothDevicesPage: React.FC = () => {
     [osDataRevision, osState.hardware.nearbyBluetooth, osState.settings.global.bluetoothEnabled],
   );
 
-  const [toast, setToast] = useState<{ visible: boolean; message: string }>({ visible: false, message: '' });
-  const toastTimerRef = useRef<number | undefined>(undefined);
-  const showToast = (message: string) => {
-    setToast({ visible: true, message });
-    if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current);
-    toastTimerRef.current = window.setTimeout(() => {
-      setToast((prev) => ({ ...prev, visible: false }));
-    }, 1600);
-  };
+  const { toast, showToast } = useTimedToast();
 
   const nameDialog = usePageDialog('btName');
 

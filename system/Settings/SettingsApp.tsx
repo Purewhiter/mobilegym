@@ -9,7 +9,6 @@ import { dimens } from './res/dimens';
 import { anim } from './res/anim';
 import {
   MemoryRouter,
-  Routes,
   Route,
   useLocation,
   useNavigate,
@@ -19,6 +18,7 @@ import { SettingsMainPage } from './components/SettingsMainPage';
 import { PreferenceScreenPage } from './components/PreferenceScreen';
 import { SettingsSearchPage } from './components/SettingsSearchPage';
 import { useAppNavigationHandler } from '../../os/hooks/useAppNavigationHandler';
+import { ActivityRouteHost } from '../../os/components/ActivityRouteHost';
 import { useSettingsStore } from './state';
 
 /** Handles back navigation and route observation for the OS */
@@ -91,11 +91,12 @@ const SettingsApp: React.FC = () => {
         <MemoryRouter>
           <SettingsNavigationHandler />
           <div className="h-full w-full bg-app-bg">
-            <Routes>
+            {/* Pages below the top stay as they were left (Fragment back stack), see ActivityRouteHost. */}
+            <ActivityRouteHost>
               <Route path="/" element={<SettingsMainPage />} />
               <Route path="/search" element={<SettingsSearchPage />} />
               <Route path="/page/:pageId" element={<PreferenceScreenPage />} />
-            </Routes>
+            </ActivityRouteHost>
           </div>
         </MemoryRouter>
     </div>

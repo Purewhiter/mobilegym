@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useMemo } from 'react';
 import { SettingsHeader } from './SettingsHeader';
 import { useNavGestures } from '../../../os/navigation';
 import { PreferenceItem } from './PreferenceItem';
@@ -10,6 +10,7 @@ import { stringsEn } from '../res/strings.en';
 import { useAppStrings } from '@/os/useAppStrings';
 import { routes } from '../routes';
 import { usePageDialog } from '../hooks/usePageDialog';
+import { useTimedToast } from '../hooks/useTimedToast';
 
 export const WifiSavedNetworksPage: React.FC<{ title: string }> = ({ title }) => {
   const { bindNav } = useNavGestures();
@@ -19,15 +20,7 @@ export const WifiSavedNetworksPage: React.FC<{ title: string }> = ({ title }) =>
   const [wifiEnabled] = useBooleanPreference('wifi_enable', true);
   const { addWifiSavedNetwork } = useWifiActions();
 
-  const [toast, setToast] = useState<{ visible: boolean; message: string }>({ visible: false, message: '' });
-  const toastTimerRef = useRef<number | undefined>(undefined);
-  const showToast = (message: string) => {
-    setToast({ visible: true, message });
-    if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current);
-    toastTimerRef.current = window.setTimeout(() => {
-      setToast((prev) => ({ ...prev, visible: false }));
-    }, 1600);
-  };
+  const { toast, showToast } = useTimedToast();
 
   const ssidDialog = usePageDialog('ssid');
   const pwdDialog = usePageDialog('password');
