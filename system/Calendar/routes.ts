@@ -1,5 +1,9 @@
 import { defineRoutes } from '../../os/navigation/routes';
 
+export interface CalendarEventRouteState {
+  searchResultIds: readonly string[];
+}
+
 /** Calendar's pages and the UI states each keeps in its URL. */
 export const routes = defineRoutes({
   home: { path: '/', search: { 'menu': ['more'] }, description: '日历首页', states: { 'menu=more': '更多菜单' } },

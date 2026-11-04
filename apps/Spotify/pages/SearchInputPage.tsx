@@ -41,6 +41,7 @@ export const SearchInputPage: React.FC = () => {
   const { bindBack, bindTap, nav, back, bindNav } = useSpotifyGestures();
   const s = useSpotifyStrings();
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const didFocusInput = useRef(false);
   const currentTrack = useSpotifyStore(state => state.currentTrack);
   const playTrack = useSpotifyStore(state => state.playTrack);
   const addToQueue = useSpotifyStore(state => state.addToQueue);
@@ -282,6 +283,8 @@ export const SearchInputPage: React.FC = () => {
   }, [activeFilter, cleanupPendingRequests, removePendingCallback, setSearchResults]);
 
   useEffect(() => {
+    if (didFocusInput.current) return;
+    didFocusInput.current = true;
     inputRef.current?.focus();
   }, []);
 
@@ -331,7 +334,6 @@ export const SearchInputPage: React.FC = () => {
             </div>
             <input
               ref={inputRef}
-              autoFocus
               type="text"
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
@@ -624,6 +626,7 @@ export const SearchInputPage: React.FC = () => {
         <AddToPlaylistSheet
           isOpen={showAddPlaylist}
           track={menuTrack}
+          dismissOnCreate
           titleVariant={addPlaylistTitleVariant}
           backdropProps={bindBack({ stopPropagation: true })}
           onSelect={() => {}}

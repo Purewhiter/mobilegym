@@ -1,4 +1,5 @@
 import React, { useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useLocale } from '@/os/locale';
 import { IcAdd, IcHeart, IcAddCircle, IcLikedIndicator } from '../res/icons';
 import { useSpotifyStore, selectLikedSongIds } from '../state';
@@ -14,6 +15,7 @@ interface Props {
   /** 与「加入歌单」同一套 UI；`saveLocation` 仅替换标题文案（如搜索页已保存曲目） */
   titleVariant?: 'default' | 'saveLocation';
   backdropProps?: React.HTMLAttributes<HTMLDivElement>;
+  dismissOnCreate?: boolean;
   onSelect: (name: string) => void;
   onRemoveFromPlaylist?: (name: string) => void;
   onLike?: () => void;
@@ -21,11 +23,12 @@ interface Props {
 }
 
 export const AddToPlaylistSheet: React.FC<Props> = ({
-  isOpen, track, titleVariant = 'default', backdropProps, onSelect, onRemoveFromPlaylist, onLike, onClose,
+  isOpen, track, titleVariant = 'default', backdropProps, dismissOnCreate, onSelect, onRemoveFromPlaylist, onLike, onClose,
 }) => {
   const dragStartY = useRef(0);
   const barRef = useRef<HTMLDivElement>(null);
   const { bindNav } = useSpotifyGestures();
+  const location = useLocation();
   const locale = useLocale();
   const isEnglish = locale === 'en';
   const s = useSpotifyStrings();
@@ -95,7 +98,11 @@ export const AddToPlaylistSheet: React.FC<Props> = ({
   };
 
   const bindCreateNew = () =>
-    bindNav(routes.create, { search: { view: 'naming' }, beforeTrigger: () => useSpotifyStore.setState({ pendingPlaylistTrack: track }) });
+    bindNav(routes.create, {
+      search: { view: 'naming' },
+      state: dismissOnCreate ? { dismissSheet: location.pathname + location.search } : undefined,
+      beforeTrigger: () => useSpotifyStore.setState({ pendingPlaylistTrack: track }),
+    });
 
   const handleLike = () => {
     toggleLike(track);
