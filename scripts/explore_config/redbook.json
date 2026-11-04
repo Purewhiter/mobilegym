@@ -1,0 +1,42 @@
+{
+  "seed": {
+    "apps": {
+      "redbook": {
+        "searchHistory": [
+          "穿搭",
+          "1231",
+          "歌手2026官宣",
+          "不婚不恋主义",
+          "1231咖啡"
+        ],
+        "history": [
+          "2kvlyjk5h",
+          "9ihedac3e"
+        ]
+      }
+    }
+  },
+  "setup": {
+    "/publish/text": [
+      {
+        "tap": "text=写想法"
+      },
+      {
+        "type": "今天天气不错",
+        "into": "textarea"
+      }
+    ]
+  },
+  "prefer": {
+    "nav.search": [
+      {
+        "q": "穿搭"
+      }
+    ],
+    "nav.user": [
+      {
+        "userId": "xiaoming"
+      }
+    ]
+  }
+}

@@ -13,7 +13,7 @@ const ITEMS = [
 ];
 
 export const SettingsPlaybackPage: React.FC = () => {
-  const { nav } = useBilibiliGestures();
+  const { bindNav } = useBilibiliGestures();
 
   return (
     <SettingLayout title="播放设置">
@@ -21,8 +21,7 @@ export const SettingsPlaybackPage: React.FC = () => {
         <SettingItemArrow
           key={item.route.name}
           label={item.label}
-          onClick={() => nav.push(item.route)}
-          triggerId={`nav.${item.route.name}`}
+          bind={bindNav(item.route)}
         />
       ))}
       <div className="h-8" />

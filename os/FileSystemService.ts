@@ -14,7 +14,7 @@
 import { FSNode } from './types';
 import { FILE_SYSTEM_CONFIG } from './data/fileSystemConfig';
 import * as TimeService from './TimeService';
-import { DeviceClient } from './device/DeviceClient';
+import { DeviceClient, DeviceStaleError } from './device/DeviceClient';
 
 type ContentRef = { seed: string } | { blob: string };
 type MirrorNode = FSNode & { content?: ContentRef };
@@ -35,10 +35,33 @@ const state: FileSystemState = {
   initialized: false,
 };
 
+// Readers that keep what they read (a page's file list) re-read when the
+// mirror changes: it fills in after the first request, and every write or
+// reset replaces it.
+let version = 0;
+const listeners = new Set<() => void>();
+
+function changed(): void {
+  version++;
+  listeners.forEach(listener => listener());
+}
+
+/** Call `listener` whenever the mirror changes; returns the unsubscribe. */
+export function subscribe(listener: () => void): () => void {
+  listeners.add(listener);
+  return () => { listeners.delete(listener); };
+}
+
+/** Bumped on every mirror change (for `useSyncExternalStore`). */
+export function getVersion(): number {
+  return version;
+}
+
 function adopt(exported: unknown): void {
   const nodes = ((exported as { nodes?: MirrorNode[] } | null)?.nodes ?? []);
   state.nodes = new Map(nodes.map(n => [n.id, n]));
   state.pathIndex = new Map(nodes.map(n => [n.path, n.id]));
+  changed();
 }
 
 /** Server-down fallback: an empty tree so the OS still boots. */
@@ -73,28 +96,42 @@ let initPromise: Promise<void> | null = null;
  */
 export async function initFileSystem(): Promise<void> {
   if (state.initialized) return;
-  initPromise ??= initFileSystemInternal().finally(() => {
-    initPromise = null;
-  });
+  if (!initPromise) {
+    const loading = initFileSystemInternal(DeviceClient.generation()).finally(() => {
+      if (initPromise === loading) initPromise = null;
+    });
+    initPromise = loading;
+  }
   return initPromise;
 }
 
-async function initFileSystemInternal(): Promise<void> {
+/**
+ * `initFileSystem()`, waiting at most `ms`: a request that never answers must
+ * not hold up the caller (an app launch, a reset). The load goes on, and
+ * readers re-read when it lands (`useFileSystemVersion`).
+ */
+export async function initFileSystemWithin(ms: number): Promise<void> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  await Promise.race([
+    initFileSystem(),
+    new Promise<void>(resolve => { timer = setTimeout(resolve, ms); }),
+  ]);
+  clearTimeout(timer);
+}
+
+async function initFileSystemInternal(generation: number): Promise<void> {
   try {
     const current = await DeviceClient.getState('fs');
-    if (current.initialized) {
-      adopt(current.state);
-    } else {
-      // Fresh session: the server seeds the preset sdcard tree. Seed dates in
-      // file names are local times, so it needs this page's time zone.
-      const seeded = await DeviceClient.putState('fs', {
-        now: TimeService.now(),
-        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-      });
-      adopt(seeded.state);
-    }
+    if (generation !== DeviceClient.generation()) return;
+    // Fresh sessions seed the preset tree using the page's time zone.
+    const remoteState = current.initialized ? current.state : (await DeviceClient.putState('fs', {
+      timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    })).state;
+    if (generation !== DeviceClient.generation()) return;
+    adopt(remoteState);
     console.log('[FileSystem] Initialized with', state.nodes.size, 'nodes');
   } catch (error) {
+    if (generation !== DeviceClient.generation()) return;
     console.error('[FileSystem] Initialization failed:', error);
     createBaseStateInMemory();
   }
@@ -104,8 +141,12 @@ async function initFileSystemInternal(): Promise<void> {
 
 /** Run a file system command and adopt the resulting tree. */
 async function run<T>(name: string, args: unknown[]): Promise<T> {
+  const generation = DeviceClient.generation();
   await initFileSystem();
-  const call = () => DeviceClient.command<unknown>('fs', name, args, TimeService.now());
+  const call = () => {
+    const now = TimeService.now();
+    return DeviceClient.exclusive(api => api.command<unknown>('fs', name, args, now), generation);
+  };
   let response;
   try {
     response = await call();
@@ -116,6 +157,7 @@ async function run<T>(name: string, args: unknown[]): Promise<T> {
     await initFileSystem();
     response = await call();
   }
+  if (generation !== DeviceClient.generation()) throw new DeviceStaleError();
   adopt(response.state);
   const result = response.result as { id?: string } | null;
   // Hand back the mirror's node object, like the old in-memory API did.
@@ -204,6 +246,16 @@ export async function readFile(path: string): Promise<Blob | null> {
   }
 }
 
+const byCodeUnit = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
+
+/**
+ * Newest first; equal times by name, then path, so ties depend neither on node
+ * order nor on the browser locale.
+ */
+export function compareByNewest(a: FSNode, b: FSNode): number {
+  return b.modifiedAt - a.modifiedAt || byCodeUnit(a.name, b.name) || byCodeUnit(a.path, b.path);
+}
+
 /**
  * Get all media files (images and videos)
  */
@@ -227,7 +279,7 @@ export function getMediaFiles(type?: 'image' | 'video' | 'audio'): FSNode[] {
              node.mimeType.startsWith('video/') ||
              node.mimeType.startsWith('audio/');
     })
-    .sort((a, b) => b.modifiedAt - a.modifiedAt);
+    .sort(compareByNewest);
 }
 
 /**
@@ -238,7 +290,7 @@ export function getFilesByPath(pathPattern: string): FSNode[] {
 
   return Array.from(state.nodes.values())
     .filter(node => node.type === 'file' && node.path.startsWith(pattern))
-    .sort((a, b) => b.modifiedAt - a.modifiedAt);
+    .sort(compareByNewest);
 }
 
 /**
@@ -385,6 +437,7 @@ export async function clearFileSystemDB(): Promise<void> {
   state.pathIndex.clear();
   state.initialized = false;
   initPromise = null;
+  changed();
 }
 
 export const destroyFileSystemDB = clearFileSystemDB;

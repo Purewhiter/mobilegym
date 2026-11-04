@@ -9,7 +9,7 @@ import { routes } from '../../routes';
 
 export const SettingsPage: React.FC = () => {
   const t = useWechatStrings();
-    const { bindNav, nav } = useWechatGestures();
+    const { bindNav } = useWechatGestures();
     const updateSettings = useWechatStore(s => s.updateSettings);
     const logout = useWechatStore(s => s.logout);
 
@@ -106,14 +106,14 @@ export const SettingsPage: React.FC = () => {
             {/* Footer Buttons */}
             <div
                 className="mt-2 text-center h-(--app-settings-item-height) flex items-center justify-center bg-app-surface text-(--app-settings-item-text-size) font-normal active:bg-(--app-c-tw-bg-gray-100) cursor-pointer text-(--app-c-settings-item-text) border-b border-gray-100/50"
-                onClick={() => nav.replace(routes.authLogin)}
+                {...bindNav(routes.authLogin, { replace: true })}
             >
                 {t.settings_switch_account}
             </div>
 
             <div
                 className="mt-2 text-center h-(--app-settings-item-height) flex items-center justify-center bg-app-surface text-(--app-settings-item-text-size) font-normal active:bg-(--app-c-tw-bg-gray-100) cursor-pointer text-(--app-c-settings-item-text)"
-                onClick={() => { logout(); nav.replace(routes.authLogin); }}
+                {...bindNav(routes.authLogin, { replace: true, beforeTrigger: () => logout() })}
             >
                 {t.settings_logout}
             </div>

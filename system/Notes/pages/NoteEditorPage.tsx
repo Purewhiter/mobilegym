@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useTimedToast } from '../../../os/hooks/useTimedToast';
+import { useParams, useSearchParams } from 'react-router-dom';
 import {
   IcNavBack,
   IcCheck,
@@ -56,7 +57,8 @@ function formatHeaderTime(timestamp: number, s: typeof strings) {
 
 export const NoteEditorPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const { back, bindBack, bindTap, nav } = useNotesGestures();
+  const { back, bindBack, bindNav, bindTap, nav } = useNotesGestures();
+  const [searchParams] = useSearchParams();
   const {
     notes,
     folders,
@@ -95,12 +97,14 @@ export const NoteEditorPage: React.FC = () => {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [folderId, setFolderId] = useState<string>('unfiled');
-  const [folderPickerOpen, setFolderPickerOpen] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [reminderOpen, setReminderOpen] = useState(false);
+  const sheet = searchParams.get('sheet');
+  // Closes the sheet directly: system back would first hide the editor's kept-open keyboard.
+  const closeSheet = bindTap({ kind: 'action', id: 'notes.editor.sheet.close' }, { onTrigger: () => back() });
+  const folderPickerOpen = sheet === 'folder';
+  const menuOpen = sheet === 'more';
+  const reminderOpen = sheet === 'reminder';
 
-  const [toast, setToast] = useState({ message: '', visible: false });
-  const toastTimerRef = useRef<number | null>(null);
+  const { toast, showToast } = useTimedToast();
   const saveTimerRef = useRef<number | null>(null);
   const isFirstLoadRef = useRef(true);
   const initTimestampRef = useRef(0);
@@ -109,12 +113,6 @@ export const NoteEditorPage: React.FC = () => {
   const isLocked = !!existing?.locked;
   const isTrashed = !!existing?.trashedAt;
   const isPrivate = !!existing?.isPrivate;
-
-  const showToast = (message: string) => {
-    setToast({ message, visible: true });
-    if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current);
-    toastTimerRef.current = window.setTimeout(() => setToast({ message: '', visible: false }), 1600);
-  };
 
   // Init from route
   useEffect(() => {
@@ -174,6 +172,8 @@ export const NoteEditorPage: React.FC = () => {
     }
 
     if (saveTimerRef.current) window.clearTimeout(saveTimerRef.current);
+    // A new note replaces its URL when created: wait until the open sheet closes.
+    if (isNew && sheet) return;
     saveTimerRef.current = window.setTimeout(() => {
       const t = title.trim();
       const c = content.trim();
@@ -192,11 +192,10 @@ export const NoteEditorPage: React.FC = () => {
     return () => {
       if (saveTimerRef.current) window.clearTimeout(saveTimerRef.current);
     };
-  }, [addNote, content, existing, folderId, id, isNew, isTrashed, nav, title, updateNote]);
+  }, [addNote, content, existing, folderId, id, isNew, isTrashed, nav, sheet, title, updateNote]);
 
   useEffect(() => {
     return () => {
-      if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current);
       if (saveTimerRef.current) window.clearTimeout(saveTimerRef.current);
     };
   }, []);
@@ -313,7 +312,7 @@ export const NoteEditorPage: React.FC = () => {
                 <IcDrawingBoard size={22} className="text-black" />
               </button>
               <button
-                onClick={() => existing && setMenuOpen(true)}
+                {...(existing ? bindNav(routes.note, { params: { id: existing.id }, search: { sheet: 'more' } }) : {})}
                 className="w-10 h-10 -mr-1 flex items-center justify-center active:opacity-70"
                 aria-label={s.action_more}
               >
@@ -366,10 +365,7 @@ export const NoteEditorPage: React.FC = () => {
                 backgroundColor: colors.page_bg,
                 border: `0.5px solid ${colors.hairline_border}`,
               }}
-              onClick={() => {
-                if (existing && isTrashed) return;
-                setFolderPickerOpen(true);
-              }}
+              {...(existing && isTrashed ? {} : bindNav(routes.note, { params: { id: id ?? 'new' }, search: { sheet: 'folder' } }))}
               aria-label={s.folders}
             >
               <span className="ml-4 mr-1">
@@ -514,7 +510,7 @@ export const NoteEditorPage: React.FC = () => {
         <div className="fixed inset-0 z-[70]">
           <button
             className="absolute inset-0 bg-black/35"
-            onClick={() => setFolderPickerOpen(false)}
+            {...closeSheet}
             aria-label={s.action_close}
           />
           <div
@@ -530,11 +526,14 @@ export const NoteEditorPage: React.FC = () => {
                   return (
                     <button
                       key={f.id}
-                      onClick={() => {
-                        setFolderId(f.id);
-                        setFolderPickerOpen(false);
-                        showToast(s.toast_moved_to_editor_prefix + getFolderDisplayName(f, s) + s.toast_moved_to_suffix);
-                      }}
+                      {...bindTap({ kind: 'action', id: 'notes.editor.folder.select' }, {
+                        params: { folderId: f.id },
+                        onTrigger: () => {
+                          setFolderId(f.id);
+                          back();
+                          showToast(s.toast_moved_to_editor_prefix + getFolderDisplayName(f, s) + s.toast_moved_to_suffix);
+                        },
+                      })}
                       className="w-full flex items-center justify-between px-3 h-12 rounded-[14px] active:bg-black/5"
                     >
                       <div className="text-[15px] text-black">{getFolderDisplayName(f, s)}</div>
@@ -551,7 +550,8 @@ export const NoteEditorPage: React.FC = () => {
         visible={menuOpen && !isNew && !!existing}
         title={s.action_more}
         cancelLabel={s.action_cancel}
-        onClose={() => setMenuOpen(false)}
+        onClose={() => back()}
+        closeBind={closeSheet}
         items={
           !existing
             ? []
@@ -560,71 +560,75 @@ export const NoteEditorPage: React.FC = () => {
                   {
                     key: 'restore',
                     label: s.action_restore,
-                    onClick: () => {
-                      restoreNote(existing.id);
-                      setMenuOpen(false);
-                      showToast(s.toast_restored);
-                    },
+                    bind: bindTap({ kind: 'action', id: 'notes.editor.restore' }, {
+                      onTrigger: () => {
+                        restoreNote(existing.id);
+                        back();
+                        showToast(s.toast_restored);
+                      },
+                    }),
                   },
                   {
                     key: 'delete_forever',
                     label: s.action_permanent_delete,
                     danger: true,
-                    onClick: () => {
-                      const ok = window.confirm(s.confirm_permanent_delete);
-                      if (!ok) return;
-                      deleteNoteForever(existing.id);
-                      setMenuOpen(false);
-                      nav.replace(routes.trash);
-                    },
+                    bind: bindTap({ kind: 'action', id: 'notes.editor.menu.deleteForever' }, {
+                      onTrigger: () => {
+                        const ok = window.confirm(s.confirm_permanent_delete);
+                        if (!ok) return;
+                        deleteNoteForever(existing.id);
+                        // Close the menu, then replace the editor with the trash.
+                        back();
+                        nav.replace(routes.trash);
+                      },
+                    }),
                   },
                 ]
               : [
                   {
                     key: 'alarm',
                     label: s.action_set_reminder,
-                    onClick: () => {
-                      setMenuOpen(false);
-                      setReminderOpen(true);
-                    },
+                    bind: bindNav(routes.note, { params: { id: existing.id }, search: { sheet: 'reminder' }, replace: true }),
                   },
                   {
                     key: 'hide',
                     label: isPrivate ? s.action_unset_private : s.action_set_private,
-                    onClick: () => {
-                      if (isPrivate) unhideNote(existing.id);
-                      else hideNote(existing.id);
-                      setMenuOpen(false);
-                      showToast(isPrivate ? s.toast_unset_private : s.toast_set_private);
-                      if (!isPrivate) nav.replace(routes.private);
-                    },
+                    bind: bindTap({ kind: 'action', id: 'notes.editor.togglePrivate' }, {
+                      onTrigger: () => {
+                        if (isPrivate) unhideNote(existing.id);
+                        else hideNote(existing.id);
+                        back();
+                        showToast(isPrivate ? s.toast_unset_private : s.toast_set_private);
+                        // Close the menu, then replace the editor with the private notes.
+                        if (!isPrivate) nav.replace(routes.private);
+                      },
+                    }),
                   },
                   {
                     key: 'send_to_desktop',
                     label: s.action_send_to_desktop,
                     onClick: () => {
-                      setMenuOpen(false);
+                      back();
                       showToast(s.toast_send_desktop_dev);
                     },
                   },
                   {
                     key: 'move_to',
                     label: s.action_move_to,
-                    onClick: () => {
-                      setMenuOpen(false);
-                      setFolderPickerOpen(true);
-                    },
+                    bind: bindNav(routes.note, { params: { id: existing.id }, search: { sheet: 'folder' }, replace: true }),
                   },
                   {
                     key: 'delete',
                     label: s.action_delete,
                     danger: true,
-                    onClick: () => {
-                      deleteNote(existing.id);
-                      setMenuOpen(false);
-                      showToast(s.toast_moved_to_trash);
-                      back();
-                    },
+                    bind: bindTap({ kind: 'action', id: 'notes.editor.delete' }, {
+                      onTrigger: () => {
+                        deleteNote(existing.id);
+                        showToast(s.toast_moved_to_trash);
+                        // Close the menu and leave the editor.
+                        back(2);
+                      },
+                    }),
                   },
                 ]
         }
@@ -634,17 +638,17 @@ export const NoteEditorPage: React.FC = () => {
         <DateTimeDialog
           title={s.action_set_reminder}
           initialTimestamp={existing.alarmAt}
-          onCancel={() => setReminderOpen(false)}
+          onCancel={() => back()}
           onConfirm={(ts) => {
             updateNote(existing.id, { alarmAt: ts });
-            setReminderOpen(false);
+            back();
             showToast(s.toast_reminder_set);
           }}
           onClear={
             typeof existing.alarmAt === 'number'
               ? () => {
                   updateNote(existing.id, { alarmAt: undefined });
-                  setReminderOpen(false);
+                  back();
                   showToast(s.toast_reminder_cleared);
                 }
               : undefined

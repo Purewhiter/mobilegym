@@ -7,6 +7,7 @@ let remote: Record<string, any> | null = null;
 let generation = 0;
 let failNext = false;
 let hold: Promise<void> | null = null;
+let holdSeed: (() => Promise<void>) | null = null;
 let queue: Promise<unknown> = Promise.resolve();
 
 class Stale extends Error {}
@@ -23,6 +24,7 @@ vi.mock('../os/device/DeviceClient', () => {
       return { initialized: Boolean(remote), state: structuredClone(remote) };
     },
     putState: async (_appId: string, state: Record<string, any>) => {
+      await holdSeed?.();
       await answer();
       remote = structuredClone(state);
       return { state: structuredClone(remote) };
@@ -113,6 +115,7 @@ beforeEach(() => {
   generation = 0;
   failNext = false;
   hold = null;
+  holdSeed = null;
 });
 
 describe('device store, page-authoritative (syncSetState)', () => {
@@ -180,6 +183,22 @@ describe('device store, page-authoritative (syncSetState)', () => {
     expect(store.getState().items).toEqual(['x']);
     expect(store.getState().draft).toBe('!');
     expect(remote?.items).toEqual(['x']);
+  });
+
+  it('saves writes made after the initial seed was sent', async () => {
+    const started = deferred();
+    const gate = deferred();
+    holdSeed = () => {
+      started.release();
+      return gate.promise;
+    };
+    const store = pageStore();
+    await started.promise;
+    store.setState((s) => ({ a: s.a + 1 }));
+    gate.release();
+    await settle();
+    expect(store.getState().a).toBe(1);
+    expect(remote?.a).toBe(1);
   });
 
   it('a save that fails after a reset does not carry its writes into the next episode', async () => {

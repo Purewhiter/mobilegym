@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useWechatStore } from '../../state';
 import { CaptchaModal } from '../../components/CaptchaModal';
 import { IcClose } from '../../res/icons';
@@ -7,7 +8,7 @@ import { useLocale } from '@/os/locale';
 import { routes } from '../../routes';
 
 export const WechatLoginPage: React.FC = () => {
-  const { bindBack, nav } = useWechatGestures();
+  const { bindBack, bindNav, bindTap, nav } = useWechatGestures();
   const locale = useLocale();
   const isEnglish = locale === 'en';
   const auth = useWechatStore(s => s.auth);
@@ -22,8 +23,10 @@ export const WechatLoginPage: React.FC = () => {
   const [verificationCode, setVerificationCode] = useState<string>('');
   const [mode, setMode] = useState<'password' | 'code'>('password');
   const [error, setError] = useState<string>('');
-  const [showCaptchaModal, setShowCaptchaModal] = useState(false);
-  const [confirmPhoneOpen, setConfirmPhoneOpen] = useState(false);
+  // The captcha and confirm-phone dialogs live in the URL (?dialog=...): system back closes them.
+  const loginDialog = new URLSearchParams(useLocation().search).get('dialog');
+  const showCaptchaModal = loginDialog === 'captcha';
+  const confirmPhoneOpen = loginDialog === 'confirmPhone';
   const [codeCooldownSec, setCodeCooldownSec] = useState(0);
 
   const text = isEnglish
@@ -133,7 +136,7 @@ export const WechatLoginPage: React.FC = () => {
         return;
       }
       if (res.reason === 'captcha_required') {
-        setShowCaptchaModal(true);
+        nav.push(routes.authLogin, {}, { search: { dialog: 'captcha' } });
         return;
       }
     }
@@ -167,7 +170,7 @@ export const WechatLoginPage: React.FC = () => {
   };
 
   const onCaptchaSuccess = () => {
-    setShowCaptchaModal(false);
+    nav.back();
     setCaptchaPassed(true);
     setTimeout(() => {
       const p = phone.trim();
@@ -184,12 +187,8 @@ export const WechatLoginPage: React.FC = () => {
     }, 500);
   };
 
-  const handleGetCode = () => {
-    setConfirmPhoneOpen(true);
-  };
-
   const confirmSendCode = () => {
-    setConfirmPhoneOpen(false);
+    nav.back();
     const p = phone.trim();
     const len = Number(auth?.verificationCodeLength || 6) || 6;
     const exp = Number(auth?.verificationCodeExpirySec || 60) || 60;
@@ -268,7 +267,7 @@ export const WechatLoginPage: React.FC = () => {
                     inputMode="numeric"
                   />
                   <button
-                    onClick={handleGetCode}
+                    {...(phoneTrimmed && codeCooldownSec <= 0 ? bindNav(routes.authLogin, { search: { dialog: 'confirmPhone' } }) : {})}
                     disabled={!phoneTrimmed || codeCooldownSec > 0}
                     className={`ml-3 px-3 py-1.5 rounded text-[12px] ${
                       (phoneTrimmed && codeCooldownSec === 0) ? 'bg-gray-200 text-gray-600 active:bg-gray-300' : 'bg-gray-100 text-gray-400'
@@ -282,7 +281,7 @@ export const WechatLoginPage: React.FC = () => {
               <div className="mt-3">
                 <button
                   className="text-[14px] text-[#576b95]"
-                  onClick={() => setMode(mode === 'password' ? 'code' : 'password')}
+                  {...bindTap({ kind: 'action', id: 'wechat.login.mode.toggle' }, { onTrigger: () => setMode(mode === 'password' ? 'code' : 'password') })}
                 >
                   {mode === 'password' ? text.smsLogin : text.passwordLogin}
                 </button>
@@ -302,7 +301,7 @@ export const WechatLoginPage: React.FC = () => {
                   : 'bg-[#e0e0e0] text-[#b2b2b2]'
                 : 'bg-[#e0e0e0] text-[#b2b2b2]'
             }`}
-            onClick={showPasswordFields ? handleLogin : undefined}
+            {...(showPasswordFields ? bindTap({ kind: 'action', id: 'auth.login.submit' }, { onTrigger: handleLogin }) : {})}
             disabled={showPasswordFields ? !canLogin : true}
           >
             {showPasswordFields ? text.login : text.agreeContinue}
@@ -311,18 +310,19 @@ export const WechatLoginPage: React.FC = () => {
 
         <div className="mt-auto pb-8">
           <div className="flex items-center justify-center gap-6 text-[13px] text-[#576b95]">
-            <button onClick={() => nav.push(routes.authForgotPassword)}>{text.forgotPassword}</button>
+            <button {...bindNav(routes.authForgotPassword)}>{text.forgotPassword}</button>
             <div className="w-px h-3 bg-gray-300" />
             <button>{text.exportChatHistory}</button>
             <div className="w-px h-3 bg-gray-300" />
-            <button onClick={() => nav.push(routes.authDevices, {}, { search: { phone: phoneTrimmed } })}>{text.more}</button>
+            <button {...bindNav(routes.authDevices, { search: { phone: phoneTrimmed } })}>{text.more}</button>
           </div>
         </div>
       </div>
 
       <CaptchaModal
         open={showCaptchaModal}
-        onClose={() => setShowCaptchaModal(false)}
+        onClose={() => nav.back()}
+        closeBind={bindBack()}
         onSuccess={onCaptchaSuccess}
       />
 
@@ -337,14 +337,14 @@ export const WechatLoginPage: React.FC = () => {
             <div className="flex border-t border-gray-100">
               <button
                 className="flex-1 h-12 text-base text-black active:bg-gray-50"
-                onClick={() => setConfirmPhoneOpen(false)}
+                {...bindBack()}
               >
                 {text.cancel}
               </button>
               <div className="w-[1px] bg-gray-100"></div>
               <button
                 className="flex-1 h-12 text-base text-[#576b95] font-medium active:bg-gray-50"
-                onClick={confirmSendCode}
+                {...bindTap({ kind: 'action', id: 'wechat.login.code.confirm' }, { onTrigger: confirmSendCode })}
               >
                 {text.confirm}
               </button>

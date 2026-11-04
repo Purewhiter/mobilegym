@@ -33,10 +33,7 @@ export const HomePage: React.FC = () => {
   const locale = useLocale();
   const isEnglish = locale === 'en';
 
-  const handleServiceClick = (id: string) => {
-    const transitionId = SERVICE_NAV_MAP[id];
-    if (transitionId) nav.push(transitionId);
-  };
+  const bindService = (id: string) => (SERVICE_NAV_MAP[id] ? bindNav(SERVICE_NAV_MAP[id]) : undefined);
 
   // 只展示出发时间在当前时间之后的行程
   const upcomingTrips = useMemo(() => {
@@ -264,8 +261,9 @@ export const HomePage: React.FC = () => {
           items={config.serviceGrid}
           columns={5}
           rowsPerPage={3}
-          onItemClick={handleServiceClick}
+          bindItem={bindService}
           onOverscrollNavigate={() => nav.push(routes.allApps)}
+          overscrollBind={bindNav(routes.allApps)}
         />
       </div>
 

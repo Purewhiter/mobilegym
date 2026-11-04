@@ -1,0 +1,14 @@
+{
+  "setup": {
+    "/search": [{ "type": "蓝牙", "into": "input" }],
+    "/page/:pageId?dialog=ssid": [{ "type": "TestWiFi", "into": "input" }]
+  },
+  "entries": [
+    "/page/wifi_settings",
+    "/page/saved_wifi",
+    "/page/bluetooth_settings",
+    "/page/launcher_settings",
+    "/page/accessibility_color_and_motion"
+  ],
+  "instancesPerNode": { "/page/:pageId": 7 }
+}

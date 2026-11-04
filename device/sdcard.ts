@@ -5,6 +5,7 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+import { SDCARD_DEFAULT_MODIFIED_AT, SDCARD_MODIFIED_AT } from './sdcardTimes';
 
 export interface SdcardFile {
   path: string;
@@ -22,6 +23,8 @@ export interface SdcardDirectory {
 }
 
 export interface SdcardScan {
+  /** Modified time of `/sdcard` itself: its newest direct entry. */
+  modifiedAt: number;
   totalFiles: number;
   totalDirectories: number;
   files: SdcardFile[];
@@ -60,33 +63,50 @@ export function sdcardMimeType(fileName: string): string {
   return MIME_TYPES[path.extname(fileName).toLowerCase()] || 'application/octet-stream';
 }
 
-function scanDirectory(dir: string, basePath: string, out: { files: SdcardFile[]; directories: SdcardDirectory[] }) {
-  if (!fs.existsSync(dir)) return;
-  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+/** Returns the directory's modified time: its newest direct entry. */
+function scanDirectory(dir: string, basePath: string, out: { files: SdcardFile[]; directories: SdcardDirectory[] }): number {
+  if (!fs.existsSync(dir)) return SDCARD_DEFAULT_MODIFIED_AT;
+  // readdir order depends on the host file system; sort so the seed tree is the same everywhere.
+  const entries = fs.readdirSync(dir, { withFileTypes: true })
+    .sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
+  let newest = -Infinity;
+  for (const entry of entries) {
     // Keep system dot directories (`.data`, `.cache`); skip OS noise and our manifest.
     if (entry.name === '.DS_Store' || entry.name === 'manifest.json') continue;
     const fullPath = path.join(dir, entry.name);
     const relativePath = basePath ? `${basePath}/${entry.name}` : entry.name;
-    const stats = fs.statSync(fullPath);
+    let modifiedAt: number;
     if (entry.isDirectory()) {
-      out.directories.push({ path: '/sdcard/' + relativePath, name: entry.name, modifiedAt: stats.mtimeMs });
-      scanDirectory(fullPath, relativePath, out);
+      const directory: SdcardDirectory = { path: '/sdcard/' + relativePath, name: entry.name, modifiedAt: 0 };
+      out.directories.push(directory);
+      modifiedAt = directory.modifiedAt = scanDirectory(fullPath, relativePath, out);
     } else if (entry.isFile()) {
+      // Fixed times, not the host mtime (see sdcardTimes.ts).
+      if (Object.hasOwn(SDCARD_MODIFIED_AT, relativePath)) {
+        modifiedAt = SDCARD_MODIFIED_AT[relativePath];
+      } else {
+        modifiedAt = SDCARD_DEFAULT_MODIFIED_AT;
+        console.warn(`[sdcard] ${relativePath} has no fixed time in device/sdcardTimes.ts; using the default`);
+      }
       out.files.push({
         path: '/sdcard/' + relativePath,
         uri: '/sdcard/' + relativePath,
         name: entry.name,
         mimeType: sdcardMimeType(entry.name),
-        size: stats.size,
-        modifiedAt: stats.mtimeMs,
+        size: fs.statSync(fullPath).size,
+        modifiedAt,
       });
+    } else {
+      continue;
     }
+    newest = Math.max(newest, modifiedAt);
   }
+  return Number.isFinite(newest) ? newest : SDCARD_DEFAULT_MODIFIED_AT;
 }
 
 /** Scan `sdcardDir` (normally `<root>/public/sdcard`). */
 export function scanSdcard(sdcardDir: string): SdcardScan {
   const out = { files: [] as SdcardFile[], directories: [] as SdcardDirectory[] };
-  scanDirectory(sdcardDir, '', out);
-  return { totalFiles: out.files.length, totalDirectories: out.directories.length, ...out };
+  const modifiedAt = scanDirectory(sdcardDir, '', out);
+  return { modifiedAt, totalFiles: out.files.length, totalDirectories: out.directories.length, ...out };
 }

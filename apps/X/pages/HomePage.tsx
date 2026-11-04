@@ -7,7 +7,7 @@ import { useXGestures } from '../hooks/useXGestures';
 import { useXStrings } from '../hooks/useXStrings';
 import { XImage } from '../components/XMedia';
 import { BookmarkToast } from '../components/BookmarkToast';
-import { XRetweetSheet } from '../components/XRetweetSheet';
+import { XRetweetSheet, useRetweetSheetPostId } from '../components/XRetweetSheet';
 import { XTimelinePostCard } from '../components/XTimelinePostCard';
 import { useElementHeight } from '../hooks/useElementHeight';
 import { useVirtualList } from '../../../os/hooks/useVirtualList';
@@ -23,7 +23,8 @@ export const HomePage: React.FC<{ isActive?: boolean }> = ({ isActive = true }) 
   const location = useLocation();
   const { bindTap, nav, bindNav } = useXGestures(isActive);
   const s = useXStrings();
-  const [retweetMenuPostId, setRetweetMenuPostId] = useState<string | null>(null);
+  const retweetMenuPostId = useRetweetSheetPostId();
+  const openRetweetMenu = (postId: string) => nav.push(routes.home, {}, { search: { sheet: 'retweet', sheetPostId: postId }, keep: ['tab'] });
   const [showBookmarkToast, setShowBookmarkToast] = useState(false);
   const [isTopBarVisible, setIsTopBarVisible] = useState(true);
   const topBarRef = useRef<HTMLDivElement | null>(null);
@@ -48,7 +49,12 @@ export const HomePage: React.FC<{ isActive?: boolean }> = ({ isActive = true }) 
     getItemKey: (index, item) => item.id || `post-${index}`,
   });
 
+  // A new tab starts at the top. Only a real tab change: the page kept on the back stack
+  // (ActivityRouteHost) runs this effect again when shown, and must stay where it was left.
+  const shownTabRef = useRef(activeTab);
   useEffect(() => {
+    if (shownTabRef.current === activeTab) return;
+    shownTabRef.current = activeTab;
     parentRef.current?.scrollTo({ top: 0 });
     virtualizer.scrollToOffset(0);
   }, [activeTab, parentRef, virtualizer]);
@@ -163,7 +169,7 @@ export const HomePage: React.FC<{ isActive?: boolean }> = ({ isActive = true }) 
                     bookmark: activeTab === 'foryou' ? 'home.foryou.post.bookmark' : 'home.following.post.bookmark',
                     share: activeTab === 'foryou' ? 'home.foryou.post.share' : 'home.following.post.share',
                   }}
-                  onRetweetTrigger={setRetweetMenuPostId}
+                  onRetweetTrigger={openRetweetMenu}
                   onBookmarkAdded={() => setShowBookmarkToast(true)}
                   headerRight={
                     activeTab === 'foryou' && !isFollowing(sourceAuthorId) && sourceAuthorId !== user.id ? (
@@ -196,15 +202,7 @@ export const HomePage: React.FC<{ isActive?: boolean }> = ({ isActive = true }) 
         +
       </div>
 
-      <XRetweetSheet
-        postId={retweetMenuPostId}
-        onClose={() => setRetweetMenuPostId(null)}
-        onRetweet={toggleRetweet}
-        onQuote={(postId) => {
-          nav.push(routes.compose, {}, { search: { quotedPostId: postId } });
-        }}
-        onViewActivity={(postId) => nav.push(routes.statusActivity, { id: postId }, { search: { tab: 'quotes' } })}
-      />
+      <XRetweetSheet postId={retweetMenuPostId} onRetweet={toggleRetweet} />
 
       <BookmarkToast visible={showBookmarkToast} onClose={() => setShowBookmarkToast(false)} />
     </div>

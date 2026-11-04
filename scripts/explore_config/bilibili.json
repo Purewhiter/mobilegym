@@ -1,0 +1,30 @@
+{
+  "seed": {
+    "apps": {
+      "bilibili": {
+        "user": {
+          "searchHistory": [
+            "铁壁观察",
+            "凡人修仙传",
+            "熊出没"
+          ]
+        }
+      }
+    }
+  },
+  "entries": [
+    "/video/BVmg00008672?tab=intro"
+  ],
+  "prefer": {
+    "nav.user": [
+      {
+        "mid": "800000025938"
+      }
+    ],
+    "nav.searchResults": [
+      {
+        "q": "铁壁观察"
+      }
+    ]
+  }
+}

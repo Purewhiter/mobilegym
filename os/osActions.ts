@@ -38,11 +38,13 @@ export const navigateToActivity = async (
   const latestState = TaskManager.getState();
   let appId: AppId | undefined = opts?.fallbackAppId;
   let isInForeignTask = false;
+  let isTaskRoot = false;
   for (const task of latestState.tasks) {
     const found = task.stack.find((activity) => activity.activityId === activityId);
     if (found) {
       appId = found.appId;
       isInForeignTask = task.rootAppId !== found.appId;
+      isTaskRoot = task.stack[0]?.activityId === activityId;
       break;
     }
   }
@@ -52,9 +54,12 @@ export const navigateToActivity = async (
   }
 
   const startTime = realNow();
+  // Only a task's root activity may fall back to the app-level navigator: that navigator is the
+  // root's. An activity the app pushed onto its own task (startActivityForResult to itself) waits
+  // for its own router, as one in a foreign task does.
   const nav = await AppNavigatorRegistry.waitForNavigator({
     activityId,
-    appId: isInForeignTask ? undefined : appId,
+    appId: isInForeignTask || !isTaskRoot ? undefined : appId,
     timeoutMs: 5000,
   });
   if (!nav) {
@@ -87,8 +92,10 @@ export const finishTopActivity = (taskId: string, result?: ActivityResult) => {
   }
 
   const isInForeignTask = task.rootAppId !== top.appId;
+  // The app-level navigator is the task root's: finishing an activity stacked on it must not reset it.
+  const isTaskRoot = task.stack[0]?.activityId === top.activityId;
 
-  if (!isInForeignTask) {
+  if (!isInForeignTask && isTaskRoot) {
     const targetNav = AppNavigatorRegistry.get(top.appId)?.navigate;
     if (typeof targetNav === 'function') {
       try { targetNav('/'); } catch { /* ignore */ }
@@ -143,8 +150,9 @@ export const finishActivity = (result?: ActivityResult) => {
   }
 
   const isInForeignTask = activeTask.rootAppId !== top.appId;
+  const isTaskRoot = activeTask.stack[0]?.activityId === top.activityId;
 
-  if (!isInForeignTask) {
+  if (!isInForeignTask && isTaskRoot) {
     const targetNav = AppNavigatorRegistry.get(top.appId)?.navigate;
     if (typeof targetNav === 'function') {
       try { targetNav('/'); } catch { /* ignore */ }

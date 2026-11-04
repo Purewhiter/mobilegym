@@ -37,7 +37,7 @@ export const OrderConfirmPage: React.FC = () => {
   const addOrder = useRailwayStore(s => s.addOrder);
   const cancelPendingOrders = useRailwayStore(s => s.cancelPendingOrders);
   const setSelectedTrain = useRailwayStore(s => s.setSelectedTrain);
-  const { bindBack, bindNav, nav } = useRailwayGestures();
+  const { bindBack, bindNav, bindTap, nav } = useRailwayGestures();
   const s = useAppStrings(strings, stringsEn);
   const location = useLocation();
   const [selectedSeat, setSelectedSeat] = useState('');
@@ -459,14 +459,7 @@ export const OrderConfirmPage: React.FC = () => {
         <button
           className="w-full h-[46px] rounded-[6px] text-white text-[18px] font-medium bg-[#4FA4F7] active:bg-[#3B8DE5]"
           disabled={showProcessing}
-          onClick={(e) => {
-            if (!canSubmit) {
-              // user feedback if needed
-              e.preventDefault();
-            } else {
-              handleSubmit();
-            }
-          }}
+          {...bindTap<HTMLButtonElement>({ kind: 'action', id: 'railway.orderConfirm.submit' }, { onTrigger: handleSubmit })}
         >
           {s.order_submit}
         </button>

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { IcCheck, IcNavBack } from '../res/icons';
 import { useSpotifyGestures } from '../hooks/useSpotifyGestures';
 import { useSpotifyStrings } from '../hooks/useSpotifyStrings';
+import { routes } from '../routes';
 import { useSpotifyStore } from '../state';
 
 const Checkbox = ({
@@ -30,7 +31,7 @@ const Checkbox = ({
 );
 
 export const CreateNamePage: React.FC = () => {
-  const { bindBack, bindTap } = useSpotifyGestures();
+  const { bindBack, bindNav } = useSpotifyGestures();
   const s = useSpotifyStrings();
   const addAccount = useSpotifyStore((state) => state.addAccount);
   const [name, setName] = useState('');
@@ -116,12 +117,7 @@ export const CreateNamePage: React.FC = () => {
               className={`px-8 py-3 rounded-full text-base font-bold transition-transform active:scale-95 ${isValid ? 'bg-white text-black' : 'bg-[#535353] text-app-text-muted'
                 }`}
               {...(isValid
-                ? bindTap('nav.signupArtists', {
-                    onTrigger: () => {
-                      console.log('Create Account', { name, termsAccepted, marketingOptOut, shareData });
-                      addAccount(name);
-                    },
-                  })
+                ? bindNav(routes.signupArtists, { beforeTrigger: () => addAccount(name) })
                 : {})}
             >
               {s.create_name_create_account}

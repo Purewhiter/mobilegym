@@ -1,3 +1,4 @@
+import { useLocation } from 'react-router-dom';
 import React from 'react';
 import { TopBar } from '../components/TopBar';
 import type { RedditPost } from '../types';
@@ -78,7 +79,11 @@ const PostImageCarousel: React.FC<{ images: string[] }> = React.memo(({ images }
     });
   }, [images.length]);
 
-  React.useEffect(() => () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); }, []);
+  // Also runs when the page is hidden on the back stack: clear the ref, or scrolling after it comes back never loads more.
+  React.useEffect(() => () => {
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    rafRef.current = 0;
+  }, []);
 
   return (
     <div className="px-4 relative">
@@ -111,7 +116,7 @@ interface PostCardProps {
   isJoined: boolean;
   onVote: (postId: string, dir: 'up' | 'down') => void;
   onToggleJoin: (communityId: string) => void;
-  onMoreMenu: (postId: string) => void;
+  moreMenuBind: (postId: string) => React.HTMLAttributes<HTMLElement>;
   onPostClick: (e: React.MouseEvent, postId: string) => void;
 }
 
@@ -121,7 +126,7 @@ interface PostCardProps {
 // 由 useRedditFeed 的查询结果保证、voted/isJoined 是原始值、其他 callback 已 useCallback
 // 化或是 Zustand action）。
 const PostCard: React.FC<PostCardProps> = React.memo(({
-  post, voted, isJoined, onVote, onToggleJoin, onMoreMenu, onPostClick,
+  post, voted, isJoined, onVote, onToggleJoin, moreMenuBind, onPostClick,
 }) => {
   const { bindTap, nav, bindNav } = useRedditGestures();
   const communityId = post.subreddit;
@@ -176,7 +181,7 @@ const PostCard: React.FC<PostCardProps> = React.memo(({
             </button>
           )}
           {!post.isAd && (
-            <button type="button" aria-label="Post menu" onClick={() => onMoreMenu(post.id)} className="w-8 h-8 rounded-full flex items-center justify-center text-gray-600 active:bg-gray-100">
+            <button type="button" aria-label="Post menu" {...moreMenuBind(post.id)} className="w-8 h-8 rounded-full flex items-center justify-center text-gray-600 active:bg-gray-100">
               <IcMoreVert className="w-5 h-5" strokeWidth={2} />
             </button>
           )}
@@ -252,13 +257,14 @@ export const HomePage: React.FC = () => {
   })));
   const votePost = useRedditStore((s) => s.votePost);
   const toggleJoin = useRedditStore((s) => s.toggleJoin);
-  const { nav, bindNav } = useRedditGestures();
-  const [postMoreMenuPostId, setPostMoreMenuPostId] = React.useState<string | null>(null);
+  const { nav, bindNav, bindBack } = useRedditGestures();
+  // The post's more menu lives in the URL (?sheet=postMore&sheetPostId=): system back closes it.
+  const homeParams = new URLSearchParams(useLocation().search);
+  const postMoreMenuPostId = homeParams.get('sheet') === 'postMore' ? homeParams.get('sheetPostId') : null;
 
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
   const loadingRef = React.useRef(false);
 
-  const closePostMoreMenu = React.useCallback(() => { setPostMoreMenuPostId(null); }, []);
 
   const handlePostClick = React.useCallback(
     (e: React.MouseEvent, postId: string) => {
@@ -269,7 +275,7 @@ export const HomePage: React.FC = () => {
     [nav],
   );
 
-  const openMoreMenu = React.useCallback((postId: string) => { setPostMoreMenuPostId(postId); }, []);
+  const moreMenuBind = (postId: string) => bindNav(routes.home, { search: { sheet: 'postMore', sheetPostId: postId }, stopPropagation: true });
 
   React.useEffect(() => {
     const container = scrollContainerRef.current;
@@ -302,7 +308,7 @@ export const HomePage: React.FC = () => {
 
       {postMoreMenuPostId && (
         <div className="fixed inset-0 z-[250]">
-          <div className="absolute inset-0 bg-black/40" aria-label="Close post menu" onClick={closePostMoreMenu} />
+          <div className="absolute inset-0 bg-black/40" aria-label="Close post menu" {...bindBack()} />
           <div
             className="absolute left-0 right-0 bottom-0 bg-app-surface rounded-t-3xl px-4 pt-3 pb-8 shadow-[0_-12px_28px_rgba(0,0,0,0.18)]"
             onClick={(e) => e.stopPropagation()}
@@ -358,7 +364,7 @@ export const HomePage: React.FC = () => {
             isJoined={joinedCommunityIds.includes(post.subreddit)}
             onVote={votePost}
             onToggleJoin={toggleJoin}
-            onMoreMenu={openMoreMenu}
+            moreMenuBind={moreMenuBind}
             onPostClick={handlePostClick}
           />
         ))}

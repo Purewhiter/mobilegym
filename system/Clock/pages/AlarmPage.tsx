@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import type { Alarm } from '../types';
 import { strings } from '../res/strings';
 import { stringsEn } from '../res/strings.en';
@@ -16,27 +16,36 @@ const AlarmItem: React.FC<{
   onToggle: () => void;
   onSelectToggle: () => void;
   onSelectionStart: () => void;
-  onEdit?: () => void;
-}> = ({ alarm, selectionMode, selected, onToggle, onSelectToggle, onSelectionStart, onEdit }) => {
+  editBind?: React.HTMLAttributes<HTMLElement>;
+}> = ({ alarm, selectionMode, selected, onToggle, onSelectToggle, onSelectionStart, editBind }) => {
   const s = useAppStrings(strings, stringsEn);
-  const { bindLongPress } = useClockGestures();
+  const { bindLongPress, bindTap } = useClockGestures();
+  // The click that ends a long press is swallowed: by then select mode is on and the row would
+  // otherwise unselect the alarm it just selected.
+  const longPressed = useRef(false);
 
   return (
     <div
       className={`bg-app-surface rounded-2xl px-4 py-4 flex items-center justify-between ${selectionMode && selected ? 'bg-blue-50' : ''}`}
-      {...bindLongPress({ kind: 'action', id: 'alarm.item.selection.enter' }, { duration: 450, onTrigger: () => onSelectionStart() })}
-      onClick={() => { if (selectionMode) onSelectToggle(); }}
-      onContextMenu={(e) => {
-        if (!selectionMode) {
-          e.preventDefault();
-          onSelectionStart();
-        }
+      {...(selectionMode
+        ? bindTap({ kind: 'action', id: 'clock.alarm.select.toggle' }, { params: { alarmId: alarm.id }, onTrigger: onSelectToggle })
+        : bindLongPress('nav.alarm', {
+          params: { mode: 'select' },
+          duration: 450,
+          onTrigger: () => { longPressed.current = true; onSelectionStart(); },
+        }))}
+      onPointerDownCapture={() => { longPressed.current = false; }}
+      onClickCapture={(e) => {
+        if (!longPressed.current) return;
+        longPressed.current = false;
+        e.stopPropagation();
       }}
+      onContextMenu={(e) => e.preventDefault()}
     >
       <button
         type="button"
         className="flex flex-col text-left flex-1 min-w-0"
-        onClick={() => { if (!selectionMode && onEdit) onEdit(); }}
+        {...(selectionMode ? {} : editBind)}
       >
         <span className="text-[26px] font-medium text-black">{formatAlarmTime(alarm.hour, alarm.minute)}</span>
         <span className="text-[15px] text-gray-400">
@@ -50,7 +59,10 @@ const AlarmItem: React.FC<{
         </div>
       ) : (
         <div onClick={e => e.stopPropagation()}>
-          <Switch value={alarm.enabled} onChange={onToggle} />
+          <Switch
+            value={alarm.enabled}
+            bind={bindTap({ kind: 'action', id: 'clock.alarm.enabled.toggle' }, { params: { alarmId: alarm.id }, onTrigger: onToggle })}
+          />
         </div>
       )}
     </div>
@@ -62,27 +74,24 @@ export const AlarmPage: React.FC<{
   selectionMode: boolean;
   selectedIds: Set<string>;
   onToggle: (id: string) => void;
-  onOpenAdd: () => void;
-  onEdit: (alarm: Alarm) => void;
+  addBind: React.HTMLAttributes<HTMLElement>;
+  editBind: (alarm: Alarm) => React.HTMLAttributes<HTMLElement>;
   onSelectToggle: (id: string) => void;
   onSelectionStart: (id: string) => void;
-  onExitSelection: () => void;
   onToggleSelectAll: () => void;
-  onDeleteSelected: () => void;
 }> = ({
   alarms,
   selectionMode,
   selectedIds,
   onToggle,
-  onOpenAdd,
-  onEdit,
+  addBind,
+  editBind,
   onSelectToggle,
   onSelectionStart,
-  onExitSelection,
   onToggleSelectAll,
-  onDeleteSelected,
 }) => {
   const s = useAppStrings(strings, stringsEn);
+  const { bindBack, bindTap } = useClockGestures();
   const [scrollTop, setScrollTop] = useState(0);
   const hasAlarms = alarms.length > 0;
   const allOff = hasAlarms && alarms.every(alarm => !alarm.enabled);
@@ -99,12 +108,15 @@ export const AlarmPage: React.FC<{
         alwaysShowSmallTitle={selectionMode}
         bgClass="bg-app-bg"
         leftContent={selectionMode ? (
-          <button className="w-10 h-10 flex items-center justify-center -ml-2 active:opacity-60" onClick={onExitSelection}>
+          <button className="w-10 h-10 flex items-center justify-center -ml-2 active:opacity-60" {...bindBack()}>
             <IcClose size={28} className="text-app-text" />
           </button>
         ) : undefined}
         rightContent={selectionMode ? (
-          <button onClick={onToggleSelectAll} className="w-10 h-10 flex items-center justify-center active:opacity-60">
+          <button
+            {...bindTap({ kind: 'action', id: 'clock.alarm.selectAll.toggle' }, { onTrigger: onToggleSelectAll })}
+            className="w-10 h-10 flex items-center justify-center active:opacity-60"
+          >
             <IcList size={28} className={isAllSelected ? 'text-app-primary' : 'text-gray-400'} />
           </button>
         ) : (
@@ -133,7 +145,7 @@ export const AlarmPage: React.FC<{
                   onToggle={() => onToggle(alarm.id)}
                   onSelectToggle={() => onSelectToggle(alarm.id)}
                   onSelectionStart={() => onSelectionStart(alarm.id)}
-                  onEdit={() => onEdit(alarm)}
+                  editBind={editBind(alarm)}
                 />
               ))}
             </div>
@@ -150,7 +162,7 @@ export const AlarmPage: React.FC<{
 
       {!selectionMode ? (
         <button
-          onClick={onOpenAdd}
+          {...addBind}
           className="absolute bottom-[112px] right-10 w-14 h-14 rounded-full bg-app-surface text-app-primary flex items-center justify-center shadow-lg"
         >
           <IcAdd size={26} />

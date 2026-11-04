@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import React, { useMemo, useSyncExternalStore } from 'react';
 import { useParams } from 'react-router-dom';
 import { SETTINGS_PAGE_OVERRIDES } from '../data/settingsOverrides';
 import { SettingsHeader } from './SettingsHeader';
@@ -29,6 +29,7 @@ import { useSettingsStrings } from '../res/useSettingsStrings';
 import { useSettingsStore, selectPagesData, selectPagesLoading, selectPagesError } from '../state';
 import { useSettingsGestures } from '../hooks/useSettingsGestures';
 import { routes } from '../routes';
+import { useTimedToast } from '../../../os/hooks/useTimedToast';
 
 const PAGE_ID_ALIASES: Record<string, { targetId: string; title?: string }> = {
   // System: this page is built dynamically; we reuse a close static screen.
@@ -135,27 +136,7 @@ export const PreferenceScreenPage: React.FC = () => {
   const pages = data?.pages ?? null;
   const mainTargetPageTitleMap = useMemo(() => buildMainTargetPageTitleMap(mainSections), [mainSections]);
 
-  const [toast, setToast] = useState<{ visible: boolean; message: string }>({
-    visible: false,
-    message: '',
-  });
-  const toastTimerRef = useRef<number | undefined>(undefined);
-
-  const showToast = (message: string) => {
-    setToast({ visible: true, message });
-    if (toastTimerRef.current) {
-      window.clearTimeout(toastTimerRef.current);
-    }
-    toastTimerRef.current = window.setTimeout(() => {
-      setToast((prev) => ({ ...prev, visible: false }));
-    }, 1600);
-  };
-
-  useEffect(() => {
-    return () => {
-      if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current);
-    };
-  }, []);
+  const { toast, showToast } = useTimedToast();
 
   // Keep info pages reactive: re-render when OS/device state changes.
   // NOTE: Must stay before any early return to keep hook order stable.

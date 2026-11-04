@@ -20,13 +20,10 @@ const ALL_APPS_NAV_MAP: Record<string, AppRoute> = {
 
 export const AllAppsPage: React.FC = () => {
   const config = RAILWAY12306_CONFIG;
-  const { bindBack, nav } = useRailwayGestures();
+  const { bindBack, bindNav } = useRailwayGestures();
   const s = useRailwayStrings();
 
-  const handleItemClick = (id: string) => {
-    const t = ALL_APPS_NAV_MAP[id];
-    if (t) nav.push(t);
-  };
+  const bindItem = (id: string) => (ALL_APPS_NAV_MAP[id] ? bindNav(ALL_APPS_NAV_MAP[id]) : undefined);
 
   const sections = [
     { title: s.all_apps_featured_section, items: config.featuredApps },
@@ -48,7 +45,7 @@ export const AllAppsPage: React.FC = () => {
       {sections.map(section => (
         <div key={section.title} className="mx-3 mt-3 bg-app-surface rounded-xl px-4 py-3">
           <span className="text-base font-medium text-gray-900">{section.title}</span>
-          <ServiceGrid items={section.items} columns={5} onItemClick={handleItemClick} />
+          <ServiceGrid items={section.items} columns={5} bindItem={bindItem} />
         </div>
       ))}
 

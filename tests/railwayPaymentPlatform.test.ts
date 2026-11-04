@@ -34,6 +34,7 @@ vi.mock('../apps/Railway12306/hooks/useRailwayGestures', () => ({
       'data-trigger-type': 'tap',
       onClick: options?.onTrigger,
     }),
+    bindBack: () => ({ 'data-trigger': 'system.back', 'data-trigger-type': 'tap' }),
     go: vi.fn(),
     back: vi.fn(),
   }),

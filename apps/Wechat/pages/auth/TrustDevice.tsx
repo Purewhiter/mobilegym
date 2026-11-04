@@ -6,7 +6,7 @@ import { useLocale } from '@/os/locale';
 
 export const WechatTrustDevicePage: React.FC = () => {
   const location = useLocation();
-  const { bindBack, back } = useWechatGestures();
+  const { bindBack, bindTap, back } = useWechatGestures();
   const locale = useLocale();
   const isEnglish = locale === 'en';
 
@@ -64,11 +64,13 @@ export const WechatTrustDevicePage: React.FC = () => {
       <div className="mt-6 grid grid-cols-2 gap-3">
         <button
           className="h-12 rounded-xl bg-app-primary text-white font-medium active:opacity-90"
-          onClick={() => {
-            if (!phone) return;
-            trustCurrentDevice(phone);
-            back();
-          }}
+          {...bindTap({ kind: 'action', id: 'auth.trustDevice.confirm' }, {
+            onTrigger: () => {
+              if (!phone) return;
+              trustCurrentDevice(phone);
+              back();
+            },
+          })}
         >
           {text.trust}
         </button>

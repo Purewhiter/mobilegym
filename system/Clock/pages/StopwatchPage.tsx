@@ -6,6 +6,7 @@ import { CollapsingToolbar, ToolbarIconButton, TOOLBAR_SPACER_HEIGHT } from '../
 import { IcMoreVert, IcFlag, IcPlay, IcPause, IcStop } from '../res/icons';
 import { pad2 } from '../utils';
 import { now as timeNow } from '../../../os/TimeService';
+import { useClockGestures } from '../hooks/useClockGestures';
 
 const formatStopwatchTime = (ms: number) => {
   const totalCentis = Math.floor(ms / 10);
@@ -46,6 +47,7 @@ const StopwatchDisplay: React.FC<StopwatchDisplayProps> = ({ running, baseElapse
 
 export const StopwatchPage: React.FC = () => {
   const s = useAppStrings(strings, stringsEn);
+  const { bindTap } = useClockGestures();
   const [running, setRunning] = useState(false);
   const [laps, setLaps] = useState<{ id: number; lap: number; total: number }[]>([]);
   const startRef = useRef<number | null>(null);
@@ -114,23 +116,23 @@ export const StopwatchPage: React.FC = () => {
         <div className="flex items-center justify-center gap-20 mt-auto pb-28">
           {running ? (
             <>
-              <button onClick={handleLap} className="px-14 h-14 rounded-full bg-app-surface shadow flex items-center justify-center text-app-primary">
+              <button {...bindTap({ kind: 'action', id: 'clock.stopwatch.lap' }, { onTrigger: handleLap })} className="px-14 h-14 rounded-full bg-app-surface shadow flex items-center justify-center text-app-primary">
                 <IcFlag size={22} />
               </button>
-              <button onClick={handlePause} className="px-14 h-14 rounded-full bg-app-surface shadow flex items-center justify-center text-app-primary">
+              <button {...bindTap({ kind: 'action', id: 'clock.stopwatch.pause' }, { onTrigger: handlePause })} className="px-14 h-14 rounded-full bg-app-surface shadow flex items-center justify-center text-app-primary">
                 <IcPause size={22} />
               </button>
             </>
           ) : baseRef.current === 0 ? (
-            <button onClick={handleStart} className="px-14 h-14 rounded-full bg-app-surface shadow flex items-center justify-center text-app-primary">
+            <button {...bindTap({ kind: 'action', id: 'clock.stopwatch.start' }, { onTrigger: handleStart })} className="px-14 h-14 rounded-full bg-app-surface shadow flex items-center justify-center text-app-primary">
               <IcPlay size={28} />
             </button>
           ) : (
             <>
-              <button onClick={handleReset} className="px-14 h-14 rounded-full bg-app-surface shadow flex items-center justify-center text-app-primary">
+              <button {...bindTap({ kind: 'action', id: 'clock.stopwatch.reset' }, { onTrigger: handleReset })} className="px-14 h-14 rounded-full bg-app-surface shadow flex items-center justify-center text-app-primary">
                 <IcStop size={20} />
               </button>
-              <button onClick={handleStart} className="px-14 h-14 rounded-full bg-app-surface shadow flex items-center justify-center text-app-primary">
+              <button {...bindTap({ kind: 'action', id: 'clock.stopwatch.start' }, { onTrigger: handleStart })} className="px-14 h-14 rounded-full bg-app-surface shadow flex items-center justify-center text-app-primary">
                 <IcPlay size={28} />
               </button>
             </>

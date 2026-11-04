@@ -7,7 +7,8 @@ import { colors, colorsDark } from './res/colors';
 import { colorStates, colorStatesDark } from './res/colors.states';
 import { dimens } from './res/dimens';
 import { anim } from './res/anim';
-import { MemoryRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { MemoryRouter, Route, useLocation } from 'react-router-dom';
+import { ActivityRouteHost } from '../../os/components/ActivityRouteHost';
 import CalendarHomePage from './pages/CalendarHomePage';
 import CalendarSettingsPage from './pages/CalendarSettingsPage';
 import { CalendarNewEventPage } from './pages/CalendarNewEventPage';
@@ -63,7 +64,8 @@ const CalendarApp: React.FC = () => {
             `}</style>
             <MemoryRouter>
                 <CalendarNavigationHandler />
-                <Routes>
+                {/* Pages below the top stay as they were left (Fragment back stack), see ActivityRouteHost. */}
+                <ActivityRouteHost>
                     <Route path="/" element={<CalendarHomePage />} />
                     <Route path="/settings" element={<CalendarSettingsPage />} />
                     <Route path="/new-event" element={<CalendarNewEventPage />} />
@@ -74,7 +76,7 @@ const CalendarApp: React.FC = () => {
                     <Route path="/date-calculate" element={<CalendarDateCalculatePage />} />
                     <Route path="/subscription" element={<CalendarSubscriptionPage />} />
                     <Route path="/desk-theme" element={<CalendarDeskThemePage />} />
-                </Routes>
+                </ActivityRouteHost>
             </MemoryRouter>
         </div>
     );

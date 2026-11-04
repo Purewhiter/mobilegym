@@ -42,10 +42,9 @@ class FavoriteWaterSceneryPhotos(BaseTask):
     # Explicit capture timestamps (epoch ms, Asia/Shanghai) for every water-scenery
     # photo. The gallery sorts by file time, and several of these files' names cannot
     # yield a date (yiheyuan_wanshoushan / mmexport / downloaded_image* / photo_001),
-    # so their seed createdAt/modifiedAt silently falls back to disk mtime — which
-    # git checkout resets to clone time, making "the latest photo" non-deterministic.
-    # We pin both fields here so IMG_20260320_yiheyuan_wanshoushan is unambiguously the
-    # latest of the set on every machine, independent of disk mtime.
+    # so their seed createdAt comes from the seed modifiedAt. device/sdcardTimes.ts
+    # seeds these same times; we still pin both fields here so
+    # IMG_20260320_yiheyuan_wanshoushan stays the latest of the set if that table changes.
     target_times = {
         "/sdcard/DCIM/Camera/IMG_20230325_110540.jpg": 1679713540000,  # 2023-03-25 11:05:40
         "/sdcard/Pictures/photo_001.jpg": 1709254800000,  # 2024-03-01 09:00:00

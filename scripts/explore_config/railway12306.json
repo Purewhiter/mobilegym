@@ -1,0 +1,73 @@
+{
+  "seed": {
+    "apps": {
+      "railway12306": {
+        "orders[]": {
+          "id": "EK90000001",
+          "trainNo": "G7536",
+          "fromStation": "杭州东",
+          "toStation": "上海虹桥",
+          "departTime": "19:15",
+          "arriveTime": "20:12",
+          "date": "2026-11-06",
+          "tickets": [{ "passengerName": "赵宇轩", "ticketType": "学生票", "seatType": "二等座", "seatNo": "06车 15A号", "price": 58 }],
+          "status": "completed",
+          "createTime": "2026-10-29T10:30:00"
+        }
+      }
+    }
+  },
+  "slow": { "railway.orderConfirm.submit": 1500 },
+  "entries": [
+    { "setState": { "apps": { "railway12306": { "isLoggedIn": false } } } }
+  ],
+  "setup": {
+    "/invoice-email": [
+      [],
+      [{ "type": "explore@example.com", "into": "input[placeholder='请输入邮箱地址']" }]
+    ],
+    "/add-passenger": [
+      [],
+      [
+        { "type": "测试乘客", "into": "input[placeholder^='请输入真实姓名']" },
+        { "type": "110101199001011234", "into": "input[placeholder='用于身份核验，请正确填写']" },
+        { "type": "13800000000", "into": "input[placeholder='填写乘车人手机号码']" }
+      ]
+    ],
+    "/auth/register-verify": [
+      [],
+      [{ "type": "000000", "into": "input[placeholder='请输入验证码']" }]
+    ],
+    "/query-result?tab=direct": [
+      [],
+      [{ "tap": "[data-action='railway.queryResult.train.expand'] > div" }]
+    ],
+    "/order-confirm": [
+      [],
+      [
+        { "tap": "[data-trigger='nav.passengers']" },
+        { "tap": "text=王思雨" },
+        { "tap": "text=完成" }
+      ]
+    ],
+    "/auth/login": [
+      [],
+      [
+        { "type": "xuan123456", "into": "input[placeholder='用户名/邮箱/手机号码']" },
+        { "type": "Zhao@2026", "into": "input[type=password]" }
+      ]
+    ],
+    "/auth/register": [
+      [],
+      [
+        { "type": "explore_user1", "into": "input[placeholder^='字母、数字或\"_\"，']" },
+        { "type": "explore_01", "into": "input[placeholder^='字母、数字或\"_\"组合']" },
+        { "type": "explore_01", "into": "input[placeholder='请再次输入密码']" },
+        { "type": "测试", "into": "input[placeholder^='请输入真实姓名']" },
+        { "type": "110101199001011234", "into": "input[placeholder='请输入证件号码']" },
+        { "type": "13000000000", "into": "input[placeholder='请输入手机号码']" },
+        { "tap": "[data-action='railway.auth.register.submit']" }
+      ]
+    ]
+  }
+}

@@ -11,6 +11,7 @@ import hashlib
 import json as json_mod
 import logging
 import random
+import shutil
 from pathlib import Path
 from typing import Any, Optional, Tuple, Union
 from urllib.parse import urlencode
@@ -35,6 +36,14 @@ def _env_message(env: "MobileGymEnv", message: str) -> str:
 
 def _log_env_info(env: "MobileGymEnv", message: str) -> None:
     logger.info(_env_message(env, message))
+
+
+def _dev_shm_bytes() -> int:
+    """Size of /dev/shm, 0 where there is none (macOS, Windows)."""
+    try:
+        return shutil.disk_usage("/dev/shm").total
+    except OSError:
+        return 0
 
 
 def _log_env_debug(env: "MobileGymEnv", message: str) -> None:
@@ -555,6 +564,12 @@ class MobileGymEnv(BaseMobileEnv):
                 # jump 1 CSS px across tasks and replay screenshots differ.
                 "--disable-font-subpixel-positioning",
             ]
+            # Playwright passes --disable-dev-shm-usage (for Docker's 64 MB /dev/shm), which
+            # moves Chromium's shared memory files to /tmp. Many browsers starting at once
+            # can fill a small /tmp disk, and every renderer on the machine then dies in
+            # the same second (SIGTRAP). Keep /dev/shm when it is big enough.
+            if _dev_shm_bytes() >= 4 << 30:
+                launch_args["ignore_default_args"] = ["--disable-dev-shm-usage"]
         if proxy:
             launch_args["proxy"] = {"server": proxy}
         return launch_args
@@ -820,9 +835,7 @@ class MobileGymEnv(BaseMobileEnv):
     async def reset(self, app_ids: list[str] | None = None) -> None:
         """Reset environment and start new episode.
 
-        Retry strategy:
-          attempt 0: resetState() + goto(url) — normal path
-          attempt 1: goto(url) only — in case resetState() itself caused issues
+        A failed attempt reloads the document before retrying the full reset.
 
         goto(url) is used instead of reload() so we always return to the
         correct simulator URL regardless of where the page drifted during
@@ -836,6 +849,7 @@ class MobileGymEnv(BaseMobileEnv):
             app_ids: 需要预加载重型数据的 App ID 列表（如 ['redbook']）。
                      传 None 则加载全部（旧行为）；传 [] 则跳过预加载。
         """
+        device_view.use_env_url(self.url)
         self._step_count = 0
         # Same settle jitter sequence every episode, so replays of the same
         # actions wait the same times.
@@ -874,8 +888,8 @@ class MobileGymEnv(BaseMobileEnv):
                         f"reset failed after {max_retries + 1} attempts (page#{self._page_seq}): {e}"
                     ) from e
                 await asyncio.sleep(0.5 + attempt * 1.0)
-                # Retry: goto only (skip resetState in case it caused the failure)
-                logger.info(f"{self._log_prefix}[page#{self._page_seq}] reset retry: goto only (skipping resetState)")
+                # Replace the document before trying resetState again.
+                logger.info(f"{self._log_prefix}[page#{self._page_seq}] reloading before reset retry")
                 try:
                     await self.page.goto(self._page_url(), wait_until="load", timeout=60000)
                 except Exception as re:
@@ -933,7 +947,9 @@ class MobileGymEnv(BaseMobileEnv):
                 return
         await asyncio.sleep(self.delay_after_action * self._settle_rng.uniform(0.5, 1.125))
 
-    async def get_state(self, *, required_apps: list[str] | None = None) -> dict[str, Any]:
+    async def get_state(
+        self, *, required_apps: list[str] | None = None, require_commit: bool = False
+    ) -> dict[str, Any]:
         """Get current environment state (with retry for incomplete data).
 
         Args:
@@ -943,7 +959,10 @@ class MobileGymEnv(BaseMobileEnv):
         """
         max_attempts = 5
         for attempt in range(max_attempts):
-            state = await self._get_state()
+            if require_commit:
+                state = await asyncio.wait_for(self._get_state(require_commit=True), timeout=30)
+            else:
+                state = await self._get_state()
             if not state or "os" not in state:
                 if attempt < max_attempts - 1:
                     await asyncio.sleep(0.5 + attempt * 0.3)
@@ -969,6 +988,10 @@ class MobileGymEnv(BaseMobileEnv):
                         )
             return state
         raise RuntimeError(f"get_state: incomplete state after {max_attempts} attempts")
+
+    async def get_final_state(self, *, required_apps: list[str] | None = None) -> dict[str, Any]:
+        """Capture the final snapshot after the device acknowledges pending writes."""
+        return await self.get_state(required_apps=required_apps, require_commit=True)
 
     async def get_route(self) -> dict[str, Any]:
         """Get current route info."""
@@ -1366,15 +1389,16 @@ class MobileGymEnv(BaseMobileEnv):
                     return;
                 }
                 // Manual fallback (no reload)
-                try { localStorage.clear(); } catch {}
-                try { sessionStorage.clear(); } catch {}
+                localStorage.clear();
+                sessionStorage.clear();
             }""")
         except Exception as e:
-            # resetState failure is non-fatal — the reload below will clear state anyway
-            logger.warning(
+            # A same-tab navigation preserves the old device session. The outer
+            # retry reloads and tries the reset again before starting an episode.
+            raise RuntimeError(
                 f"{self._log_prefix}[page#{self._page_seq}] _reset_sim() "
-                f"phase=resetState failed (non-fatal): {type(e).__name__}: {e}"
-            )
+                f"phase=resetState failed: {type(e).__name__}: {e}"
+            ) from e
         # Navigate back to self.url from Python — using goto() instead of reload()
         # so we always land on the correct URL regardless of where the page drifted
         # (e.g. external redirect, app-level navigation error during an episode).
@@ -1453,7 +1477,7 @@ class MobileGymEnv(BaseMobileEnv):
         if not wait_result.get("ok"):
             raise RuntimeError(f"{p} _wait_ready phase=waitForData({app_ids}) failed: {wait_result.get('error', 'unknown')}")
 
-    async def _get_state(self) -> Optional[dict]:
+    async def _get_state(self, *, require_commit: bool = False) -> Optional[dict]:
         """Get state via safe JSON serialization + compressed string transfer.
 
         Always serializes to JSON string in browser with a safe replacer
@@ -1463,7 +1487,8 @@ class MobileGymEnv(BaseMobileEnv):
         """
         try:
             result = await self.page.evaluate(
-                """async () => {
+                """async (requireCommit) => {
+                    if (requireCommit) await window.__SIM__?.waitForStateCommit?.();
                     const state = window.__SIM__?.getState?.();
                     if (!state) return null;
                     // Type-only replacer: filter non-serializable types without tracking refs.
@@ -1509,7 +1534,8 @@ class MobileGymEnv(BaseMobileEnv):
                             return btoa(s);
                         })();
                     return {mode: 'gz', data: b64};
-                }"""
+                }""",
+                require_commit,
             )
             if not result:
                 return None
@@ -1518,6 +1544,8 @@ class MobileGymEnv(BaseMobileEnv):
                 return json_mod.loads(raw)
             return json_mod.loads(result["data"])
         except Exception as e:
+            if require_commit:
+                raise
             logger.warning(f"{self._log_prefix} _get_state() failed: {type(e).__name__}: {e}")
             return None
 

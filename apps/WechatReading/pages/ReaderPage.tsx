@@ -241,6 +241,12 @@ export const ReaderPage: React.FC = () => {
                 return true;
             }
 
+            // The page-turn sub-panel sits inside typography: back returns to it.
+            if (sp.get('panel') === 'pageTurn') {
+                nav.replace(routes.read, { bookId: bookId! }, { search: { tool: 'typography' } });
+                return true;
+            }
+
             if (isToolOpen) {
                 nav.replace(routes.read, { bookId: bookId! });
                 setMenuVisible(false);
@@ -355,6 +361,7 @@ export const ReaderPage: React.FC = () => {
         >
             <div
                 className="absolute inset-0 z-10 touch-none"
+                data-reader-tap-zone
                 onPointerDown={onPointerDown}
                 onPointerUp={onPointerUp}
                 onPointerCancel={onPointerCancel}

@@ -1,11 +1,12 @@
-import React, { useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import React, { useMemo, useSyncExternalStore } from 'react';
 import { IcWifi, IcLock, IcUnlock } from '../res/icons';
-import { useNav } from '../../../os/navigation';
+import { useNavGestures } from '../../../os/navigation';
 import { SettingsHeader } from './SettingsHeader';
 import { PreferenceCategory } from './PreferenceCategory';
 import { PreferenceItem } from './PreferenceItem';
 import { Toast } from '@/os/components/Toast';
 import { InputDialog } from './InputDialog';
+import { usePageDialog } from '../hooks/usePageDialog';
 import { useWifiSavedNetworks, useBooleanPreference, useWifiActions } from '../state';
 import { useOsStateStore } from '../../../os/OsStateStore';
 import { ConnectivityManager } from '../../../os/managers/ConnectivityManager';
@@ -15,6 +16,7 @@ import { strings } from '../res/strings';
 import { stringsEn } from '../res/strings.en';
 import { useAppStrings } from '@/os/useAppStrings';
 import { routes } from '../routes';
+import { useTimedToast } from '../../../os/hooks/useTimedToast';
 function bandLabel(freqMHz: number): string {
   if (!Number.isFinite(freqMHz)) return '';
   if (freqMHz >= 4900) return '5G';
@@ -28,7 +30,7 @@ function securityLabel(sec: string): string {
 }
 
 export const WifiNetworksPage: React.FC = () => {
-  const nav = useNav();
+  const { bindNav } = useNavGestures();
   const s = useAppStrings(strings, stringsEn);
   const [wifiEnabled, setWifiEnabled] = useBooleanPreference('wifi_enable', true);
   const savedNetworks = useWifiSavedNetworks();
@@ -48,18 +50,9 @@ export const WifiNetworksPage: React.FC = () => {
     [osDataRevision, connectedSsid, osState.hardware.nearbyWifi],
   );
 
-  const [toast, setToast] = useState<{ visible: boolean; message: string }>({ visible: false, message: '' });
-  const toastTimerRef = useRef<number | undefined>(undefined);
-  const showToast = (message: string) => {
-    setToast({ visible: true, message });
-    if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current);
-    toastTimerRef.current = window.setTimeout(() => {
-      setToast((prev) => ({ ...prev, visible: false }));
-    }, 1600);
-  };
+  const { toast, showToast } = useTimedToast();
 
-  const [pwdOpen, setPwdOpen] = useState(false);
-  const pendingRef = useRef<{ ssid: string; security: string }>({ ssid: '', security: 'WPA2' });
+  const connectDialog = usePageDialog('connect');
 
   const list = useMemo(() => {
     const arr = [...nearby];
@@ -98,6 +91,11 @@ export const WifiNetworksPage: React.FC = () => {
     showToast(s.connected);
   };
 
+  // A secured network with no saved password asks for one (?dialog=connect); every other tap acts in place.
+  const needsPassword = (ssid: string, security: string) =>
+    wifiEnabled && connectedSsid !== ssid && security !== 'OPEN'
+    && !savedNetworks.find((n) => n.ssid === ssid)?.password;
+
   const handleTapNetwork = (ssid: string, security: string) => {
     if (!wifiEnabled) {
       showToast(s.please_enable_wlan_first);
@@ -117,8 +115,12 @@ export const WifiNetworksPage: React.FC = () => {
       connectTo(ssid, saved.security, saved.password);
       return;
     }
-    pendingRef.current = { ssid, security };
-    setPwdOpen(true);
+    connectDialog.open({ ssid, security });
+  };
+
+  const connectWithPassword = (pwd: string) => {
+    connectDialog.close();
+    connectTo(connectDialog.param('ssid'), connectDialog.param('security') || 'WPA2', pwd);
   };
 
   return (
@@ -160,7 +162,9 @@ export const WifiNetworksPage: React.FC = () => {
                   value={isConn ? s.connected : undefined}
                   showDivider={idx < list.length - 1}
                   showChevron={false}
-                  onClick={() => handleTapNetwork(ap.ssid, ap.security)}
+                  itemProps={needsPassword(ap.ssid, ap.security)
+                    ? connectDialog.bindOpen({ ssid: ap.ssid, security: ap.security })
+                    : connectDialog.bindTap({ kind: 'action', id: 'settings.wifi.network.tap' }, { onTrigger: () => handleTapNetwork(ap.ssid, ap.security) })}
                 >
                   <div className="flex items-center gap-2 mr-1">
                     {locked ? (
@@ -181,30 +185,30 @@ export const WifiNetworksPage: React.FC = () => {
             title={s.saved_networks}
             summary={s.view_and_manage_saved_wlan_networks}
             showDivider={true}
-            onClick={() => nav.push(routes.page, { pageId: 'saved_access_points' })}
+            itemProps={bindNav(routes.page, { params: { pageId: 'saved_access_points' } })}
           />
           <PreferenceItem
             title={s.advanced_settings}
             summary={s.proxy_random_mac_network_preferences_etc}
             showDivider={false}
-            onClick={() => nav.push(routes.page, { pageId: 'wifi_configure_settings' })}
+            itemProps={bindNav(routes.page, { params: { pageId: 'wifi_configure_settings' } })}
           />
         </PreferenceCategory>
       </div>
 
       <InputDialog
-        open={pwdOpen}
-        title={`${s.connect} ${pendingRef.current.ssid}`}
+        open={connectDialog.isOpen()}
+        title={`${s.connect} ${connectDialog.param('ssid')}`}
         placeholder={s.enter_password}
         inputType="password"
         allowEmpty={false}
         confirmText={s.connect}
-        onClose={() => setPwdOpen(false)}
-        onConfirm={(pwd) => {
-          const { ssid, security } = pendingRef.current;
-          connectTo(ssid, security, pwd);
-          setPwdOpen(false);
-        }}
+        onClose={connectDialog.close}
+        onConfirm={(pwd) => connectWithPassword(pwd)}
+        cancelBind={connectDialog.cancelBind}
+        bindConfirm={(pwd) => connectDialog.bindTap({ kind: 'action', id: 'settings.wifi.connect.confirm' }, {
+          onTrigger: () => connectWithPassword(pwd),
+        })}
       />
 
       <Toast message={toast.message} visible={toast.visible} />

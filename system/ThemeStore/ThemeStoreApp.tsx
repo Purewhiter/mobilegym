@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { MemoryRouter, Route, Routes, useLocation, useParams } from 'react-router-dom';
+import { MemoryRouter, Route, useLocation, useParams } from 'react-router-dom';
+import { ActivityRouteHost } from '../../os/components/ActivityRouteHost';
 import { IcNavBack, IcLoading } from './res/icons';
 import { useTheme } from '../../os/ThemeContext';
 import type { ThemeMeta } from '../../os/ThemeService';
@@ -68,8 +69,11 @@ const ThemeStoreNavigationHandler: React.FC = () => {
 function ThemeStoreHomePage() {
   const s = useAppStrings(strings, stringsEn);
   const { themeService, version } = useTheme();
-  const { bindNav } = useThemeStoreGestures();
-  const [tab, setTab] = useState<StoreTab>('themes');
+  const { bindNav, bindTap } = useThemeStoreGestures();
+  // The tab lives in the URL (?tab=fonts|aod; none is themes), switched in place.
+  const location = useLocation();
+  const tabParam = new URLSearchParams(location.search).get('tab');
+  const tab: StoreTab = tabParam === 'fonts' || tabParam === 'aod' ? tabParam : 'themes';
   const [items, setItems] = useState<ThemeMeta[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -127,7 +131,7 @@ function ThemeStoreHomePage() {
           <div className="text-base font-semibold text-black">{s.app_name}</div>
           <button
             className="text-sm font-medium text-blue-600"
-            onClick={() => loadItems(true)}
+            {...bindTap({ kind: 'action', id: 'themeStore.refresh' }, { onTrigger: () => loadItems(true) })}
           >
             {s.refresh}
           </button>
@@ -139,7 +143,7 @@ function ThemeStoreHomePage() {
                 'h-8 px-4 rounded-full text-sm font-medium',
                 tab === 'themes' ? 'bg-app-surface text-black shadow-sm' : 'text-app-text-muted'
               )}
-              onClick={() => setTab('themes')}
+              {...bindNav(routes.home, { replace: true })}
             >
               {s.tab_themes}
             </button>
@@ -148,7 +152,7 @@ function ThemeStoreHomePage() {
                 'h-8 px-4 rounded-full text-sm font-medium',
                 tab === 'fonts' ? 'bg-app-surface text-black shadow-sm' : 'text-app-text-muted'
               )}
-              onClick={() => setTab('fonts')}
+              {...bindNav(routes.home, { search: { tab: 'fonts' }, replace: true })}
             >
               {s.tab_fonts}
             </button>
@@ -157,7 +161,7 @@ function ThemeStoreHomePage() {
                 'h-8 px-4 rounded-full text-sm font-medium',
                 tab === 'aod' ? 'bg-app-surface text-black shadow-sm' : 'text-app-text-muted'
               )}
-              onClick={() => setTab('aod')}
+              {...bindNav(routes.home, { search: { tab: 'aod' }, replace: true })}
             >
               {s.tab_aod}
             </button>
@@ -227,7 +231,7 @@ function ThemeStoreHomePage() {
 function StoreItemDetailPage() {
   const s = useAppStrings(strings, stringsEn);
   const { themeService, version } = useTheme();
-  const { bindBack, nav } = useThemeStoreGestures();
+  const { bindBack, bindTap } = useThemeStoreGestures();
   const params = useParams<{ kind: 'theme' | 'font' | 'aod'; id: string }>();
   const kind = params.kind || 'theme';
   const id = params.id || '';
@@ -347,7 +351,7 @@ function StoreItemDetailPage() {
                     <button
                       className="flex-1 h-10 rounded-xl bg-blue-600 text-white text-sm font-semibold disabled:opacity-60"
                       disabled={!!applying}
-                      onClick={() => apply('theme')}
+                      {...bindTap({ kind: 'action', id: 'themeStore.apply.theme' }, { onTrigger: () => apply('theme') })}
                     >
                       {applying === 'theme' ? s.applying : s.apply_full_theme}
                     </button>
@@ -366,14 +370,14 @@ function StoreItemDetailPage() {
                     <button
                       className="flex-1 h-10 rounded-xl bg-black text-white text-sm font-semibold disabled:opacity-60"
                       disabled={!!applying || !supportsIcons}
-                      onClick={() => apply('icons')}
+                      {...bindTap({ kind: 'action', id: 'themeStore.apply.icons' }, { onTrigger: () => apply('icons') })}
                     >
                       {applying === 'icons' ? s.applying : s.apply_icons_only}
                     </button>
                     <button
                       className="flex-1 h-10 rounded-xl bg-black text-white text-sm font-semibold disabled:opacity-60"
                       disabled={!!applying || !supportsWallpaper}
-                      onClick={() => apply('wallpaper')}
+                      {...bindTap({ kind: 'action', id: 'themeStore.apply.wallpaper' }, { onTrigger: () => apply('wallpaper') })}
                     >
                       {applying === 'wallpaper' ? s.applying : s.apply_wallpaper_only}
                     </button>
@@ -413,10 +417,11 @@ const ThemeStoreApp: React.FC = () => {
     <div className="h-full w-full" style={cssVars as React.CSSProperties}>
       <MemoryRouter>
         <ThemeStoreNavigationHandler />
-        <Routes>
+        {/* Pages below the top stay as they were left (Fragment back stack), see ActivityRouteHost. */}
+        <ActivityRouteHost>
           <Route path="/" element={<ThemeStoreHomePage />} />
           <Route path="/item/:kind/:id" element={<StoreItemDetailPage />} />
-        </Routes>
+        </ActivityRouteHost>
       </MemoryRouter>
     </div>
   );

@@ -5,7 +5,7 @@ import { IcNavBack } from '../../res/icons';
 import { routes } from '../../routes';
 
 export const RailwayLoginPage: React.FC = () => {
-  const { bindBack, nav } = useRailwayGestures();
+  const { bindBack, bindNav, bindTap, nav } = useRailwayGestures();
   const { login } = useRailwayStore();
   const [tab, setTab] = useState<'account' | 'fingerprint'>('account');
   const [username, setUsername] = useState('');
@@ -91,20 +91,20 @@ export const RailwayLoginPage: React.FC = () => {
             </div>
 
             <div className="flex justify-end">
-              <button className="text-[12px] text-gray-400" onClick={() => nav.push(routes.authForgotPassword)}>忘记密码？</button>
+              <button className="text-[12px] text-gray-400" {...bindNav(routes.authForgotPassword)}>忘记密码？</button>
             </div>
           </div>
 
           <div className="w-full mt-6 space-y-3">
             <button
-              onClick={handleLogin}
+              {...bindTap<HTMLButtonElement>({ kind: 'action', id: 'railway.auth.login' }, { onTrigger: () => { void handleLogin(); } })}
               disabled={!canSubmit}
               className={`w-full h-11 rounded-md text-[15px] font-medium ${canSubmit ? 'bg-[#1b77ff] text-white active:bg-[#196be6]' : 'bg-[#cfe2ff] text-white'}`}
             >
               登录
             </button>
             <button
-              onClick={() => nav.push(routes.authRegister)}
+              {...bindNav(routes.authRegister)}
               className="w-full h-11 rounded-md text-[15px] font-medium bg-white border border-gray-200 text-gray-600 active:bg-gray-50"
             >
               注册

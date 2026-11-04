@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef, useContext, useCallback, useMemo } from 'react';
-import { MemoryRouter, useNavigate, useLocation, useSearchParams, UNSAFE_NavigationContext, Routes, Route } from 'react-router-dom';
+import { MemoryRouter, useNavigate, useLocation, useSearchParams, UNSAFE_NavigationContext, Route } from 'react-router-dom';
+import { ActivityRouteHost } from '../../os/components/ActivityRouteHost';
 import { getWeatherBundle } from './services/weatherService';
 import type { WeatherBundle } from './types';
 import * as LocationService from '../../os/LocationService';
@@ -998,7 +999,8 @@ const WeatherApp: React.FC = () => {
     <div className="h-full w-full" style={cssVars as React.CSSProperties}>
     <MemoryRouter>
       <WeatherNavigationHandler />
-      <Routes>
+      {/* Pages below the top stay as they were left (Fragment back stack), see ActivityRouteHost. */}
+      <ActivityRouteHost>
         <Route path="/" element={<WeatherContent />} />
         <Route path="/settings" element={<WeatherSettingsPage />} />
         <Route path="/settings/privacy" element={<WeatherPrivacySettingsPage />} />
@@ -1008,7 +1010,7 @@ const WeatherApp: React.FC = () => {
         <Route path="/cities/preview" element={<WeatherCityPreviewPage />} />
         <Route path="/forecast/daily" element={<WeatherDailyForecastPage />} />
         <Route path="/airquality" element={<WeatherAirQualityPage />} />
-      </Routes>
+      </ActivityRouteHost>
     </MemoryRouter>
     </div>
   );

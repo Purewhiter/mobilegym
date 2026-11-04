@@ -1,0 +1,13 @@
+{
+  "setup": {
+    "/search": [
+      {
+        "type": "电风扇",
+        "into": "input[type=text]"
+      },
+      {
+        "enter": true
+      }
+    ]
+  }
+}

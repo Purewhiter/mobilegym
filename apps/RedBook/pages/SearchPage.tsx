@@ -10,6 +10,9 @@ import { useRedBookGestures } from '../hooks/useRedBookGestures';
 import { strings, type StringKey } from '../res/strings';
 import { RedBookFlameIcon } from '../res/icons';
 import { routes } from '../routes';
+
+type SearchTab = (typeof routes.search.search.tab)[number];
+type SortKey = (typeof routes.search.search.sort)[number];
 // Helper for Hot Search Rank Colors
 const getRankColor = (index: number) => {
     if (index === 0) return 'text-app-primary'; // Red
@@ -45,9 +48,9 @@ export const SearchPage: React.FC = () => {
   const inputRef = useRef<HTMLInputElement>(null);
   
   const keyword = searchParams.get('q') || '';
-  const activeTab = searchParams.get('tab') || 'searchpage_all';
+  const activeTab = (searchParams.get('tab') || 'searchpage_all') as SearchTab;
   const panelState = searchParams.get('panel');
-  const sortKey = activeTab === 'searchpage_all' ? (searchParams.get('sort') || 'comprehensive') : 'comprehensive';
+  const sortKey = activeTab === 'searchpage_all' ? (searchParams.get('sort') || 'comprehensive') as SortKey : 'comprehensive';
   const isFilterOpen = activeTab === 'searchpage_all' && panelState === 'filter';
   const isSearching = !!keyword;
   
@@ -57,7 +60,7 @@ export const SearchPage: React.FC = () => {
   // Result Page State
   const [activeSubTab, setActiveSubTab] = useState<StringKey>('general');
 
-  const tabs: StringKey[] = ['searchpage_all', 'users', 'products', 'images', 'searchpage_ask'];
+  const tabs: (SearchTab & StringKey)[] = ['searchpage_all', 'users', 'products', 'images', 'searchpage_ask'];
   const subTabs: StringKey[] = ['general', 'latest', 'movie_releases', 'birthday_quotes', 'day_and_night_rotation'];
   const sortOptions = [
       { key: 'comprehensive', label: 'general' as StringKey },
@@ -102,25 +105,17 @@ export const SearchPage: React.FC = () => {
   // Search Logic
   const handleSearch = (key: string = inputValue) => {
       if (!key.trim()) return;
-      const nextParams: Record<string, string> = { q: key, tab: activeTab };
-      if (activeTab === 'searchpage_all') {
-          nextParams.sort = sortKey;
-      }
       // 根据是否已有搜索词选择 push 或 replace
-      const search = { q: nextParams.q, tab: nextParams.tab, sort: nextParams.sort };
+      const search = { q: key, tab: activeTab, sort: activeTab === 'searchpage_all' ? sortKey : undefined };
       if (keyword) nav.replace(routes.search, {}, { search });
       else nav.push(routes.search, {}, { search });
       
       addSearchHistory(key);
   };
 
-  const handleTabChange = (tab: string) => {
+  const handleTabChange = (tab: SearchTab) => {
       // Tab switching should replace history so Back button always goes to Landing Page
-      const nextParams: Record<string, string> = { tab };
-      if (tab === 'searchpage_all') {
-          nextParams.sort = sortKey;
-      }
-      nav.replace(routes.search, {}, { search: { panel: null, tab: nextParams.tab, sort: nextParams.sort }, keep: ['q'] });
+      nav.replace(routes.search, {}, { search: { panel: null, tab, sort: tab === 'searchpage_all' ? sortKey : undefined }, keep: ['q'] });
   };
 
   const handleOpenFilter = () => {
@@ -321,7 +316,7 @@ export const SearchPage: React.FC = () => {
                               return (
                                   <div
                                       key={option.key}
-                                      {...bindTap('nav.search', { params: { sort: option.key }, onTrigger: () => nav.replace(routes.search, {}, { search: { panel: null, sort: option.key }, keep: ['q', 'tab'] }) })}
+                                      {...bindTap('nav.search', { params: { sort: option.key }, onTrigger: () => nav.replace(routes.search, {}, { search: { panel: null, sort: option.key as SortKey }, keep: ['q', 'tab'] }) })}
                                       className={`px-4 py-2 rounded-[10px] text-[14px] ${isSelected ? 'bg-[#fde8eb] text-app-primary font-medium' : 'bg-[#f5f5f5] text-app-text'}`}
                                   >
                                       {s[option.label]}

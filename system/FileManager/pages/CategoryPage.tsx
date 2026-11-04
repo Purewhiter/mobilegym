@@ -8,6 +8,7 @@ import { useParams } from 'react-router-dom';
 import { IcNavBack, IcFile, IcVideo } from '../res/icons';
 import { FSNode } from '../../../os/types';
 import * as FileSystem from '../../../os/FileSystemService';
+import { useFileSystemVersion } from '@/os/hooks/useFileSystemVersion';
 import { AsyncImage } from '../components/AsyncImage';
 import { getFileIcon, getFileIconColor } from '../utils/fileUtils';
 import { useFileManagerGestures } from '../hooks/useFileManagerGestures';
@@ -16,7 +17,7 @@ import { stringsEn } from '../res/strings.en';
 import { useAppStrings } from '@/os/useAppStrings';
 export const CategoryPage: React.FC = () => {
   const { category } = useParams<{ category: string }>();
-  const { bindBack } = useFileManagerGestures();
+  const { bindBack, bindTap } = useFileManagerGestures();
   const [items, setItems] = useState<FSNode[]>([]);
   const s = useAppStrings(strings, stringsEn);
 
@@ -27,6 +28,8 @@ export const CategoryPage: React.FC = () => {
     documents: { name: s.category_documents, mimePrefix: 'application/' },
   }[category || ''] || { name: s.category_files, mimePrefix: '' };
   
+  const fsVersion = useFileSystemVersion();
+
   useEffect(() => {
     let files: FSNode[];
     
@@ -41,7 +44,7 @@ export const CategoryPage: React.FC = () => {
     }
     
     setItems(files);
-  }, [category, categoryInfo.mimePrefix]);
+  }, [category, categoryInfo.mimePrefix, fsVersion]);
   
   return (
     <div className="h-full bg-app-surface flex flex-col">
@@ -79,20 +82,16 @@ export const CategoryPage: React.FC = () => {
                 <div
                   key={item.id}
                   className="aspect-square bg-gray-100 relative active:opacity-70"
-                  onClick={() => {
-                    if (isImage) {
+                  {...(isImage ? bindTap({ kind: 'action', id: 'file.image.open' }, {
+                    params: { path: item.path },
+                    onTrigger: () => {
                       window.__OS__?.startActivity?.({
                         action: 'ACTION_VIEW',
                         type: item.mimeType,
                         data: { stream: item.path },
                       });
-                    }
-                  }}
-                  {...(isImage ? {
-                    'data-action': 'file.image.open',
-                    'data-action-type': 'open',
-                    'data-action-params': JSON.stringify({ path: item.path }),
-                  } : {})}
+                    },
+                  }) : {})}
                 >
                   <AsyncImage
                     path={item.path}

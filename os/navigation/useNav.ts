@@ -27,6 +27,8 @@ export interface Nav {
   back(steps?: number): void;
   /** Navigate to a path string that arrived at runtime (an intent's route, a deep link). */
   toPath(path: string, options?: { replace?: boolean; state?: unknown }): void;
+  /** Replace the current entry's `location.state`, keeping its URL. */
+  replaceState(state: unknown): void;
 }
 
 export function useNav(): Nav {
@@ -52,8 +54,10 @@ export function useNav(): Nav {
     return {
       push: (route, ...args) => jump(false, route as AppRoute, args),
       replace: (route, ...args) => jump(true, route as AppRoute, args),
-      back: (steps = 1) => navigate(-steps),
+      // Guard against a handler passing its click event as the step count.
+      back: (steps?: number) => navigate(-(typeof steps === 'number' ? steps : 1)),
       toPath: (path, options) => navigate(path, options),
+      replaceState: (state) => navigate(location.pathname + location.search, { replace: true, state }),
     } as Nav;
   }, [navigate, navigator, location.pathname, location.search]);
 }

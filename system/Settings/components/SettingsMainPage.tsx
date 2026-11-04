@@ -11,6 +11,7 @@ import { ChevronRightIcon } from '../res/icons';
 import { useSettingsGestures } from '../hooks/useSettingsGestures';
 import { useLocale } from '../../../os/locale';
 import { routes } from '../routes';
+import { useTimedToast } from '../../../os/hooks/useTimedToast';
 /** Mock dynamic summaries for certain items */
 const DYNAMIC_SUMMARY_KEYS: Record<string, string> = {
   mi_account_settings: 'mi_account_settings_summary',
@@ -73,11 +74,7 @@ export const SettingsMainPage: React.FC = () => {
   }, [locale, s.default_account_name, storedAccountName]);
   const accountAvatarText = accountName.slice(0, 1);
   const [scrollTop, setScrollTop] = React.useState(0);
-  const [toast, setToast] = React.useState<{ visible: boolean; message: string }>({
-    visible: false,
-    message: '',
-  });
-  const toastTimerRef = React.useRef<number | undefined>(undefined);
+  const { toast, showToast } = useTimedToast();
 
   // ── Two-phase collapsing toolbar (sticky + snap) ──
   const scrollRef = React.useRef<HTMLDivElement>(null);
@@ -119,17 +116,8 @@ export const SettingsMainPage: React.FC = () => {
     return () => el.removeEventListener('scrollend', snapToNearest);
   }, [snapToNearest]);
 
-  const showToast = (message: string) => {
-    setToast({ visible: true, message });
-    if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current);
-    toastTimerRef.current = window.setTimeout(() => {
-      setToast((prev) => ({ ...prev, visible: false }));
-    }, 1600);
-  };
-
   React.useEffect(() => {
     return () => {
-      if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current);
       if (snapTimerRef.current) clearTimeout(snapTimerRef.current);
     };
   }, []);
@@ -162,7 +150,7 @@ export const SettingsMainPage: React.FC = () => {
       return;
     }
     showToast(s.this_setting_would_open_a_system_page_on_a_real);
-  }, [getTargetPageId, nav, loading, pages, s]);
+  }, [getTargetPageId, nav, loading, pages, s, showToast]);
 
   const bindOpenPage = React.useCallback(
     (itemId: string, targetPage?: string) =>

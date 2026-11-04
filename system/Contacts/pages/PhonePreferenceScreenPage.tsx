@@ -1,5 +1,6 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useEffect, useMemo, useRef } from 'react';
+import { useTimedToast } from '../../../os/hooks/useTimedToast';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { Toast } from '@/os/components/Toast';
 import { useLocale } from '@/os/locale';
 import { useAppStrings } from '@/os/useAppStrings';
@@ -111,13 +112,16 @@ const PreferenceRow: React.FC<{
   summary?: string;
   showDivider?: boolean;
   onClick?: () => void;
+  /** Tap binding from the page (bindNav), which tags the row; replaces onClick. */
+  bind?: React.ButtonHTMLAttributes<HTMLButtonElement>;
   valueText?: string;
-}> = ({ title, summary, showDivider = true, onClick, valueText }) => (
+}> = ({ title, summary, showDivider = true, onClick, bind, valueText }) => (
   <div>
     <button
       type="button"
       className="w-full px-4 py-4 flex items-center justify-between active:bg-black/5 text-left"
       onClick={onClick}
+      {...bind}
     >
       <div className="flex-1 min-w-0 pr-4">
         <div className="text-[15px] text-app-text">{title}</div>
@@ -141,6 +145,7 @@ const ListSheet: React.FC<{
   onClose: () => void;
   onPick: (value: string) => void;
 }> = ({ open, title, summary, options, value, onClose, onPick }) => {
+  const { bindBack, bindTap } = useContactsGestures();
   const sheetRef = useRef<HTMLDivElement | null>(null);
   const s = useAppStrings(strings, stringsEn);
 
@@ -154,7 +159,7 @@ const ListSheet: React.FC<{
 
   return (
     <div className="fixed inset-0 z-[70] flex items-end justify-center px-3 pb-3">
-      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/40" {...bindBack()} />
       <div
         ref={sheetRef}
         tabIndex={-1}
@@ -172,7 +177,7 @@ const ListSheet: React.FC<{
                 key={option.value}
                 type="button"
                 className="w-full px-6 py-4 text-left text-[16px] active:bg-gray-50 flex items-center justify-between"
-                onClick={() => onPick(option.value)}
+                {...bindTap({ kind: 'action', id: 'contacts.settings.list.select' }, { params: { value: option.value }, onTrigger: () => onPick(option.value) })}
               >
                 <span className={selected ? 'text-[#3482FF] font-medium' : 'text-app-text'}>{option.label}</span>
                 {selected ? <span className="text-[#3482FF] text-[14px] font-medium">{s.settings_selected}</span> : null}
@@ -184,7 +189,7 @@ const ListSheet: React.FC<{
           <button
             type="button"
             className="w-full py-3 rounded-2xl bg-gray-50 text-[16px] font-medium text-app-text active:bg-gray-100"
-            onClick={onClose}
+            {...bindBack()}
           >
             {s.cancel}
           </button>
@@ -202,7 +207,11 @@ const ListRow: React.FC<{
   onMissingOptions: () => void;
 }> = ({ item, settingKey, sims, showDivider = true, onMissingOptions }) => {
   const options = resolveDynamicListOptions(item, sims);
-  const [open, setOpen] = useState(false);
+  // The option sheet lives in the URL (?dialog=list&key=): system back closes it.
+  const { pageId = '' } = useParams<{ pageId: string }>();
+  const [searchParams] = useSearchParams();
+  const { bindNav, back } = useContactsGestures();
+  const open = searchParams.get('dialog') === 'list' && searchParams.get('key') === settingKey;
   const [value, setValue] = useStringPreference(settingKey, item.defaultValue ?? (options[0]?.value ?? ''));
 
   const selectedLabel = useMemo(() => {
@@ -216,13 +225,9 @@ const ListRow: React.FC<{
         summary={item.summary}
         valueText={selectedLabel || undefined}
         showDivider={showDivider}
-        onClick={() => {
-          if (!options.length) {
-            onMissingOptions();
-            return;
-          }
-          setOpen(true);
-        }}
+        {...(options.length
+          ? { bind: bindNav(routes.settingsPage, { params: { pageId }, search: { dialog: 'list', key: settingKey } }) }
+          : { onClick: onMissingOptions })}
       />
 
       <ListSheet
@@ -231,10 +236,10 @@ const ListRow: React.FC<{
         summary={item.summary}
         options={options}
         value={value}
-        onClose={() => setOpen(false)}
+        onClose={() => back()}
         onPick={(nextValue) => {
           setValue(nextValue);
-          setOpen(false);
+          back();
         }}
       />
     </>
@@ -245,23 +250,13 @@ const Inner: React.FC = () => {
   const locale = useLocale();
   const isEnglish = locale === 'en';
   const { pageId } = useParams<{ pageId: string }>();
-  const { bindBack, nav } = useContactsGestures();
+  const { bindBack, bindNav } = useContactsGestures();
   const sims = useSimProfiles();
   const s = useAppStrings(strings, stringsEn);
   const rawPage = pageId ? PHONE_SETTINGS_PAGES[pageId] : undefined;
   const page = useMemo(() => localizePhoneSettingsPage(rawPage, locale), [locale, rawPage]);
 
-  const [toast, setToast] = useState<{ visible: boolean; message: string }>({ visible: false, message: '' });
-  const toastTimerRef = useRef<number | null>(null);
-  const showToast = (message: string) => {
-    setToast({ visible: true, message });
-    if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current);
-    toastTimerRef.current = window.setTimeout(() => setToast({ visible: false, message: '' }), 1600);
-  };
-
-  useEffect(() => () => {
-    if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current);
-  }, []);
+  const { toast, showToast } = useTimedToast(1600);
 
   const title = page?.title || (pageId ? getPhoneSettingsPageTitle(pageId, locale) : s.settings_calls_title);
 
@@ -311,7 +306,7 @@ const Inner: React.FC = () => {
           title={item.title}
           summary={item.summary}
           showDivider={!isLast}
-          onClick={() => nav.push(routes.settingsPage, { pageId: targetPage })}
+          bind={bindNav(routes.settingsPage, { params: { pageId: targetPage } })}
         />
       );
     }

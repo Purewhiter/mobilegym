@@ -361,7 +361,7 @@ export const UserPage: React.FC = () => {
                                     <div
                                         key={note.id + idx}
                                         className="bg-app-surface rounded-[4px] overflow-hidden relative cursor-pointer mb-1"
-                                        onClick={() => nav.push(routes.note, { id: note.id }, { state: { fromAuthorId: user.id } })}
+                                        {...bindNav(routes.note, { params: { id: note.id }, state: { fromAuthorId: user.id } })}
                                     >
                                         {/* Constraint height for masonry items to avoid huge gaps */}
                                         <div className="relative overflow-hidden rounded-[4px] max-h-[220px]">

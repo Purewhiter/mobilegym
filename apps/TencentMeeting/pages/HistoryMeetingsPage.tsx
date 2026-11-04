@@ -7,8 +7,6 @@ import * as TimeService from '../../../os/TimeService';
 import { MeetingRecord } from '../data';
 import { formatMeetingHistoryDate, type TencentMeetingStrings } from '../utils/localization';
 import { routes } from '../routes';
-// 用于持久化搜索状态的 key
-const SEARCH_STATE_KEY = 'history_search_state';
 
 // 格式化时间为 "20:35"
 const formatTime = (timestamp: number): string => {
@@ -90,36 +88,9 @@ export const HistoryMeetingsPage: React.FC = () => {
     const inputRef = useRef<HTMLInputElement>(null);
     const s = useTencentMeetingStrings();
     
-    // 从 sessionStorage 恢复搜索状态
-    const [searchText, setSearchText] = useState(() => {
-        try {
-            const saved = sessionStorage.getItem(SEARCH_STATE_KEY);
-            if (saved) {
-                const { text } = JSON.parse(saved);
-                return text || '';
-            }
-        } catch {}
-        return '';
-    });
-    const [isSearching, setIsSearching] = useState(() => {
-        try {
-            const saved = sessionStorage.getItem(SEARCH_STATE_KEY);
-            if (saved) {
-                const { searching } = JSON.parse(saved);
-                return searching || false;
-            }
-        } catch {}
-        return false;
-    });
-
-    // 持久化搜索状态
-    useEffect(() => {
-        if (isSearching || searchText) {
-            sessionStorage.setItem(SEARCH_STATE_KEY, JSON.stringify({ text: searchText, searching: isSearching }));
-        } else {
-            sessionStorage.removeItem(SEARCH_STATE_KEY);
-        }
-    }, [searchText, isSearching]);
+    // 搜索状态随页面实例保留：从详情页返回时还在（ActivityRouteHost 让本页留在返回栈里）。
+    const [searchText, setSearchText] = useState('');
+    const [isSearching, setIsSearching] = useState(false);
 
     // 如果是搜索模式，自动聚焦输入框（从详情页返回时恢复键盘）
     useEffect(() => {
@@ -162,7 +133,6 @@ export const HistoryMeetingsPage: React.FC = () => {
     const handleCancel = () => {
         setSearchText('');
         setIsSearching(false);
-        sessionStorage.removeItem(SEARCH_STATE_KEY);
         inputRef.current?.blur();
     };
 

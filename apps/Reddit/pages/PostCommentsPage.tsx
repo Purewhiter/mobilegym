@@ -102,6 +102,7 @@ const CommentsImageCarousel: React.FC<{ images: string[] }> = ({ images }) => {
 
   React.useEffect(() => () => {
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    rafRef.current = 0; // also on hide (back stack): scrolling must work again when shown
   }, []);
 
   return (
@@ -150,12 +151,16 @@ export const PostCommentsPage: React.FC = () => {
   const postId = getPostIdFromPath(location.pathname);
   const scrollRef = React.useRef<HTMLDivElement | null>(null);
   const [draft, setDraft] = React.useState('');
-  const [moreMenu, setMoreMenu] = React.useState<{ comment: CommentItem } | null>(null);
-  const [confirmDelete, setConfirmDelete] = React.useState<{ comment: CommentItem } | null>(null);
   const [selectedOwnCommentId, setSelectedOwnCommentId] = React.useState<string | null>(null);
   const inputRef = React.useRef<HTMLInputElement | null>(null);
   const post = useRedditPostById(postId);
   const allComments = useRedditComments(postId);
+  // The comment sheets live in the URL (?sheet=commentMore|deleteConfirm&sheetCommentId=...).
+  const sheetQuery = new URLSearchParams(location.search);
+  const sheet = sheetQuery.get('sheet');
+  const sheetComment = allComments.find((c) => c.id === sheetQuery.get('sheetCommentId'));
+  const moreMenu = sheet === 'commentMore' && sheetComment ? { comment: sheetComment } : null;
+  const confirmDelete = sheet === 'deleteConfirm' && sheetComment ? { comment: sheetComment } : null;
 
   const displayPostUpvotes = React.useMemo(() => {
     const base = parseCompactCount(post?.upvotes);
@@ -245,10 +250,6 @@ export const PostCommentsPage: React.FC = () => {
     },
     [commentsTable, user.username],
   );
-
-  const openMoreMenuFor = React.useCallback((c: CommentItem) => {
-    setMoreMenu({ comment: c });
-  }, []);
 
   const deleteOwnComment = React.useCallback(
     (c: CommentItem) => {
@@ -355,16 +356,14 @@ export const PostCommentsPage: React.FC = () => {
             >
               <button
                 type="button"
-                {...bindTap(
-                  { kind: 'action', id: 'postComments.item.more.open' },
-                  {
-                    params: { postId: postId ?? '', commentId: c.id },
-                    onTrigger: () => {
-                      if (isOwn) setSelectedOwnCommentId(c.id);
-                      setMoreMenu({ comment: c });
-                    },
+                {...bindNav(routes.post, {
+                  params: { postId: postId ?? '' },
+                  search: { sheet: 'commentMore', sheetCommentId: c.id },
+                  keep: ['commentId'],
+                  beforeTrigger: () => {
+                    if (isOwn) setSelectedOwnCommentId(c.id);
                   },
-                )}
+                })}
                 className="w-9 h-9 rounded-full flex items-center justify-center active:bg-gray-100"
                 aria-label="More"
               >
@@ -703,7 +702,7 @@ export const PostCommentsPage: React.FC = () => {
           className="fixed inset-0 z-[500] bg-black/45 flex flex-col justify-end"
           role="dialog"
           aria-modal="true"
-          onClick={() => setMoreMenu(null)}
+          {...bindTap({ kind: 'action', id: 'postComments.sheet.close' }, { onTrigger: () => nav.back() })}
         >
           {/* Comment preview card in shadow area */}
           <div className="px-4 pb-3" onClick={(e) => e.stopPropagation()} onPointerDown={(e) => e.stopPropagation()}>
@@ -728,12 +727,12 @@ export const PostCommentsPage: React.FC = () => {
                 <MoreMenuItem
                   icon={<IcEdit className="w-5 h-5" strokeWidth={2} />}
                   label="Edit"
-                  onClick={() => {
-                    // Close sheet first for a cleaner transition.
-                    setMoreMenu(null);
-                    setSelectedOwnCommentId(null);
-                    nav.push(routes.postEdit, { postId: postId ?? '', commentId: moreMenu.comment.id });
-                  }}
+                  bind={bindNav(routes.postEdit, {
+                    params: { postId: postId ?? '', commentId: moreMenu.comment.id },
+                    // The editor takes the sheet's place, so back returns to the post.
+                    replace: true,
+                    beforeTrigger: () => setSelectedOwnCommentId(null),
+                  })}
                 />
               )}
               <MoreMenuItem icon={<IcShare className="w-5 h-5" strokeWidth={2} />} label="Share" />
@@ -750,10 +749,12 @@ export const PostCommentsPage: React.FC = () => {
                 <MoreMenuItem
                   icon={<IcDelete className="w-5 h-5" strokeWidth={2} />}
                   label="Delete"
-                  onClick={() => {
-                    setMoreMenu(null);
-                    setConfirmDelete({ comment: moreMenu.comment });
-                  }}
+                  bind={bindNav(routes.post, {
+                    params: { postId: postId ?? '' },
+                    search: { sheet: 'deleteConfirm', sheetCommentId: moreMenu.comment.id },
+                    keep: ['commentId'],
+                    replace: true,
+                  })}
                 />
               )}
             </div>
@@ -778,18 +779,21 @@ export const PostCommentsPage: React.FC = () => {
             <div className="px-5 pb-5 pt-5 flex gap-4">
               <button
                 type="button"
-                onClick={() => setConfirmDelete(null)}
+                {...bindTap({ kind: 'action', id: 'postComments.delete.cancel' }, { onTrigger: () => nav.back() })}
                 className="flex-1 h-12 rounded-full bg-gray-200 text-gray-400 font-bold"
               >
                 Cancel
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  deleteOwnComment(confirmDelete.comment);
-                  setConfirmDelete(null);
-                  setSelectedOwnCommentId(null);
-                }}
+                {...bindTap({ kind: 'action', id: 'postComments.delete.confirm' }, {
+                  params: { commentId: confirmDelete.comment.id },
+                  onTrigger: () => {
+                    nav.back();
+                    deleteOwnComment(confirmDelete.comment);
+                    setSelectedOwnCommentId(null);
+                  },
+                })}
                 className="flex-1 h-12 rounded-full bg-[#E11D48] text-white font-bold"
               >
                 Delete
@@ -806,12 +810,13 @@ const MoreMenuItem: React.FC<{
   icon: React.ReactNode;
   label: string;
   tone?: 'normal' | 'danger';
-  onClick?: () => void;
-}> = ({ icon, label, tone = 'normal', onClick }) => {
+  /** Tap binding for an item that does something. */
+  bind?: React.HTMLAttributes<HTMLButtonElement>;
+}> = ({ icon, label, tone = 'normal', bind }) => {
   return (
     <button
       type="button"
-      onClick={onClick ?? (() => {})}
+      {...bind}
       className="w-full flex items-center gap-4 px-5 py-3 text-left active:bg-gray-50"
     >
       <div className={`w-6 h-6 flex items-center justify-center ${tone === 'danger' ? 'text-[#E11D48]' : 'text-gray-800'}`}>

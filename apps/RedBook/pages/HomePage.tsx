@@ -400,15 +400,17 @@ export const HomePage: React.FC = () => {
     tabParamRaw === 'follow' || tabParamRaw === 'discover' || tabParamRaw === 'city'
       ? tabParamRaw
       : 'discover';
-  const { bindTap, back, nav, bindNav } = useRedBookGestures();
+  const { bindTap, back, nav, bindNav, bindBack } = useRedBookGestures();
 
   // Local state for UI only
-  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
+  // The channel and city dropdowns live in the URL (?dropdown=category|city): system back closes them.
+  const dropdown = new URLSearchParams(useLocation().search).get('dropdown');
+  const showCategoryDropdown = dropdown === 'category';
   const [myChannels, setMyChannels] = useState(initialMyChannels);
   const [recChannels, setRecChannels] = useState(initialRecChannels);
   
   // City Dropdown State
-  const [showCityDropdown, setShowCityDropdown] = useState(false);
+  const showCityDropdown = dropdown === 'city';
   const [selectedDistrict, setSelectedDistrict] = useState<StringKey>('popular_areas');
 
   // Each home tab gets its own scroll container so switching tabs never mutates/clamps scrollTop
@@ -463,8 +465,11 @@ export const HomePage: React.FC = () => {
           }
       });
   };
+  // Also runs when the page is hidden on the back stack and kept: clear the ref,
+  // or scrolling after it comes back would never load more.
   React.useEffect(() => () => {
       if (scrollRafRef.current != null) cancelAnimationFrame(scrollRafRef.current);
+      scrollRafRef.current = null;
   }, []);
 
   // 图片预加载：只在 (displayCount, feed.length) 组合变化时跑一次。
@@ -549,7 +554,7 @@ export const HomePage: React.FC = () => {
         {activeTab === 'city' && (
             <div className="relative mt-2">
                 <div className="flex items-center h-[40px] bg-app-surface px-3 border-b border-gray-50">
-                    <div className="flex items-center gap-1 mr-6 cursor-pointer" onClick={() => setShowCityDropdown(!showCityDropdown)}>
+                    <div className="flex items-center gap-1 mr-6 cursor-pointer" {...(showCityDropdown ? bindBack() : bindNav(routes.home, { search: { dropdown: 'city' }, keep: ['tab'] }))}>
                         <span className={`text-[16px] ${showCityDropdown ? 'font-bold text-app-text' : 'text-app-text'}`}>{s.homepage_all}</span>
                         <ChevronDown size={14} className={`text-app-text transition-transform ${showCityDropdown ? 'rotate-180' : ''}`} style={{ transitionDuration: 'var(--app-duration-short)' }} />
                     </div>
@@ -629,7 +634,7 @@ export const HomePage: React.FC = () => {
                 <div className="text-[14px] text-app-text font-bold">{s.my_channels} <span className="text-[11px] font-normal text-app-text-muted ml-2">{s.tap_to_enter_channel}</span></div>
                 <div className="flex items-center gap-3">
                     <button className="bg-gray-100 text-app-text text-[11px] px-3 py-1 rounded-full">{s.homepage_edit}</button>
-                    <ChevronUp size={20} className="text-gray-400" onClick={() => setShowCategoryDropdown(false)} />
+                    <span className="flex" {...bindBack()}><ChevronUp size={20} className="text-gray-400" /></span>
                 </div>
              </div>
              <div className="flex-1 overflow-y-auto px-3 pb-20">
@@ -638,7 +643,7 @@ export const HomePage: React.FC = () => {
                         <div
                             key={c}
                             className={`h-(--app-channel-item-height) flex items-center justify-center text-[13px] rounded-[4px] cursor-pointer ${activeCategory === c ? 'text-app-primary font-bold bg-app-surface border border-app-primary' : 'bg-gray-50 text-app-text'}`}
-                            onClick={() => { setActiveCategory(c); setShowCategoryDropdown(false); }}
+                            {...bindTap({ kind: 'action', id: 'redbook.home.channel.select' }, { params: { channel: c }, onTrigger: () => { setActiveCategory(c); back(); } })}
                         >
                             {s[c]}
                         </div>
@@ -690,7 +695,7 @@ export const HomePage: React.FC = () => {
                     </div>
                     <div
                         className="flex-shrink-0 w-8 flex items-center justify-center cursor-pointer pb-2"
-                        onClick={() => setShowCategoryDropdown(true)}
+                        {...bindNav(routes.home, { search: { dropdown: 'category' }, keep: ['tab'] })}
                     >
                         <ChevronDown size={16} className="text-gray-500" />
                     </div>

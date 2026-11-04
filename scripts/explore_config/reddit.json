@@ -1,0 +1,51 @@
+{
+  "seed": {
+    "apps": {
+      "reddit": {
+        "comments": {
+          "explore_comment_1": {
+            "id": "explore_comment_1",
+            "postId": "post_1rfd79w",
+            "author": "Embarrassed_Fee8630",
+            "body": "Tried it last month, the walls take some getting used to.",
+            "score": 1,
+            "created_utc": 1793300000
+          }
+        },
+        "user": {
+          "commentIds": [
+            "explore_comment_1"
+          ]
+        }
+      }
+    }
+  },
+  "entries": [
+    "/post/post_1rfd79w"
+  ],
+  "prefer": {
+    "nav.post": [
+      {
+        "sheetCommentId": "explore_comment_1"
+      }
+    ]
+  },
+  "setup": {
+    "/create": [
+      [],
+      [
+        { "tap": "[data-trigger='nav.createCommunity']" },
+        { "tap": "[data-action='reddit.create.community.select']" }
+      ]
+    ],
+    "/search": [
+      [],
+      [
+        {
+          "type": "Padel",
+          "into": "input[type=text]"
+        }
+      ]
+    ]
+  }
+}

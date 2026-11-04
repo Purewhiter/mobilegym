@@ -1,0 +1,185 @@
+{
+  "entries": [
+    {
+      "from": "railway12306",
+      "intent": {
+        "action": "ACTION_PAY",
+        "scheme": "alipays",
+        "data": {
+          "amount": 10,
+          "orderId": "explore_order_1",
+          "merchantName": "测试商户",
+          "subject": "测试订单"
+        }
+      }
+    }
+  ],
+  "prefer": {
+    "rechargePassword.keypad.press": [
+      {
+        "digit": "6"
+      }
+    ],
+    "transferPassword.keypad.press": [
+      {
+        "digit": "6"
+      }
+    ],
+    "cashierPassword.keypad.press": [
+      {
+        "digit": "6"
+      }
+    ]
+  },
+  "setup": {
+    "/pay/transfer/to-account": [
+      [
+        {
+          "type": "19999999999",
+          "into": "input[data-action=\"transferToAccount.account.input\"]"
+        },
+        {
+          "hideKeyboard": true
+        }
+      ],
+      [
+        {
+          "type": "13256784311",
+          "into": "input[data-action=\"transferToAccount.account.input\"]"
+        },
+        {
+          "hideKeyboard": true
+        }
+      ]
+    ],
+    "/pay/transfer/amount": [
+      {
+        "tap": "[data-action=\"transferAmount.amount.focus\"]"
+      },
+      {
+        "tap": "[data-action=\"transferAmount.keypad.press\"][data-action-params='{\"digit\":\"1\"}']"
+      }
+    ],
+    "/pay/transfer/amount?modal=password": [
+      {
+        "tap": "[data-action=\"transferPassword.keypad.press\"][data-action-params='{\"digit\":\"1\"}']"
+      },
+      {
+        "tap": "[data-action=\"transferPassword.keypad.press\"][data-action-params='{\"digit\":\"2\"}']"
+      },
+      {
+        "tap": "[data-action=\"transferPassword.keypad.press\"][data-action-params='{\"digit\":\"3\"}']"
+      },
+      {
+        "tap": "[data-action=\"transferPassword.keypad.press\"][data-action-params='{\"digit\":\"4\"}']"
+      },
+      {
+        "tap": "[data-action=\"transferPassword.keypad.press\"][data-action-params='{\"digit\":\"5\"}']"
+      }
+    ],
+    "/balance/recharge": [
+      {
+        "tap": "[data-action=\"recharge.keypad.press\"][data-action-params='{\"digit\":\"1\"}']"
+      }
+    ],
+    "/balance/recharge?modal=password": [
+      {
+        "tap": "[data-action=\"rechargePassword.keypad.press\"][data-action-params='{\"digit\":\"1\"}']"
+      },
+      {
+        "tap": "[data-action=\"rechargePassword.keypad.press\"][data-action-params='{\"digit\":\"2\"}']"
+      },
+      {
+        "tap": "[data-action=\"rechargePassword.keypad.press\"][data-action-params='{\"digit\":\"3\"}']"
+      },
+      {
+        "tap": "[data-action=\"rechargePassword.keypad.press\"][data-action-params='{\"digit\":\"4\"}']"
+      },
+      {
+        "tap": "[data-action=\"rechargePassword.keypad.press\"][data-action-params='{\"digit\":\"5\"}']"
+      }
+    ],
+    "/pay/cashier?modal=password": [
+      {
+        "tap": "[data-action=\"cashierPassword.keypad.press\"][data-action-params='{\"digit\":\"1\"}']"
+      },
+      {
+        "tap": "[data-action=\"cashierPassword.keypad.press\"][data-action-params='{\"digit\":\"2\"}']"
+      },
+      {
+        "tap": "[data-action=\"cashierPassword.keypad.press\"][data-action-params='{\"digit\":\"3\"}']"
+      },
+      {
+        "tap": "[data-action=\"cashierPassword.keypad.press\"][data-action-params='{\"digit\":\"4\"}']"
+      },
+      {
+        "tap": "[data-action=\"cashierPassword.keypad.press\"][data-action-params='{\"digit\":\"5\"}']"
+      }
+    ],
+    "/bank-cards/add": [
+      {
+        "tap": "[data-action=\"bankCardAdd.bank.select\"][data-action-params='{\"id\":\"boc\"}']"
+      }
+    ],
+    "/bank-cards/add/verify": [
+      [{ "wait": 7000 }],
+      [
+        {
+          "typeEval": "(() => { const sms = window.__SIM__.getState().os.providers.sms; const all = Object.values(sms.messagesByConversationId || {}).flat().map(m => m.content || ''); const codes = all.map(c => (c.match(/银行】验证码：(\\d{6})/) || [])[1]).filter(Boolean); return codes[codes.length - 1] || ''; })()",
+          "into": "input[type=tel]"
+        },
+        {
+          "wait": 4000
+        }
+      ]
+    ],
+    "/settings/payment/fast-pay": [
+      [
+        {
+          "setState": {
+            "apps": {
+              "alipay": {
+                "settings": {
+                  "payment": {
+                    "fastPay": {
+                      "enabled": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ],
+      [
+        {
+          "setState": {
+            "apps": {
+              "alipay": {
+                "settings": {
+                  "payment": {
+                    "fastPay": {
+                      "enabled": true,
+                      "noPwdEnabled": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    ],
+    "/bill/search": [
+      {
+        "type": "美团",
+        "into": "input"
+      }
+    ],
+    "/bill?modal=filter": [
+      {
+        "tap": "[data-action=\"bill.filter.quickFilter.toggle\"][data-action-params='{\"id\":\"expense\"}']"
+      }
+    ]
+  }
+}

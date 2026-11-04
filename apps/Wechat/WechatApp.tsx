@@ -2,7 +2,8 @@
 import React, { useCallback, useState, useEffect, useRef } from 'react';
 import { useWechatStrings } from './hooks/useWechatStrings';
 import { RouteScrollContainer } from '../../os/components/RouteScrollContainer';
-import { MemoryRouter as Router, Routes, Route, Outlet, useLocation, useNavigate, UNSAFE_NavigationContext, Navigate } from 'react-router-dom';
+import { MemoryRouter as Router, Route, Outlet, useLocation, useNavigate, UNSAFE_NavigationContext, Navigate } from 'react-router-dom';
+import { ActivityRouteHost } from '../../os/components/ActivityRouteHost';
 import { IcMessageSquare, IcUserAdd, IcScan, IcQrCode } from './res/icons';
 import './styles/index.css';
 import TopBar from './components/TopBar';
@@ -196,6 +197,9 @@ const WechatNavigationHandler: React.FC = () => {
   return null;
 };
 
+/** The main tabs: one instance each, kept while you are on another tab (ActivityRouteHost). */
+const MAIN_TAB_PATHS = ['/', '/contacts', '/discover', '/me'] as const;
+
 const Layout = () => {
   const t = useWechatStrings();
   const location = useLocation();
@@ -203,7 +207,7 @@ const Layout = () => {
   const { bindNav, bindBack, nav } = useWechatGestures();
 
   const searchParams = new URLSearchParams(location.search);
-  const isMainTab = ['/', '/contacts', '/discover', '/me'].includes(path);
+  const isMainTab = (MAIN_TAB_PATHS as readonly string[]).includes(path);
 
   const showPlusMenu = isMainTab && searchParams.get('menu') === 'plus';
   const showCameraMenu = (path === '/moments' || path.startsWith('/moments/')) && searchParams.get('menu') === 'camera';
@@ -232,11 +236,6 @@ const Layout = () => {
     '/settings/security-center/delete-account/confirm',
   ].includes(path) || isChatSearchPage || isChatMediaPickerPage || isChatSelectFilePage || isChatImagePreview;
 
-  const visitedTabs = React.useRef<Set<string>>(new Set([path]));
-  if (isMainTab && !visitedTabs.current.has(path)) {
-    visitedTabs.current.add(path);
-  }
-
   return (
     <div className="relative w-full h-full bg-app-bg flex flex-col overflow-hidden">
       {!isSpecialFullScreen && !isMePage && (
@@ -251,49 +250,20 @@ const Layout = () => {
           paddingBottom: showTabs ? '56px' : '0'
         }}>
 
-        {/* Main Tabs: Always mounted using CSS display to preserve state */}
-        <div
-          data-scroll-container="main"
-          data-scroll-direction="vertical"
-          className="h-full overflow-y-auto no-scrollbar"
-          style={{ display: path === '/' ? 'block' : 'none', paddingTop: '92px' }}
-        >
-          <ChatList />
-        </div>
-
-        {(visitedTabs.current.has('/contacts') || path === '/contacts') && (
-          <div
-            className="h-full overflow-hidden"
-            style={{ display: path === '/contacts' ? 'block' : 'none', paddingTop: '88px' }}
-          >
-            <Contacts />
+        {/* Main tabs keep one instance each, sub-pages stay on the back stack (ActivityRouteHost);
+            each page instance renders its own copy of this layout. */}
+        {path === '/contacts' ? (
+          <div className="h-full overflow-hidden" style={{ paddingTop: '88px' }}>
+            <Outlet />
           </div>
-        )}
-
-        {(visitedTabs.current.has('/discover') || path === '/discover') && (
-          <div
-            data-scroll-container="main"
-            data-scroll-direction="vertical"
+        ) : isMainTab ? (
+          <RouteScrollContainer
             className="h-full overflow-y-auto no-scrollbar"
-            style={{ display: path === '/discover' ? 'block' : 'none', paddingTop: '88px' }}
+            style={{ paddingTop: path === '/' ? '92px' : path === '/discover' ? '88px' : undefined }}
           >
-            <DiscoverPage />
-          </div>
-        )}
-
-        {(visitedTabs.current.has('/me') || path === '/me') && (
-          <div
-            data-scroll-container="main"
-            data-scroll-direction="vertical"
-            className="h-full overflow-y-auto no-scrollbar"
-            style={{ display: path === '/me' ? 'block' : 'none' }}
-          >
-            <Me />
-          </div>
-        )}
-
-        {/* Sub-pages: Use Outlet as usual */}
-        {!isMainTab && (
+            <Outlet />
+          </RouteScrollContainer>
+        ) : (
           <RouteScrollContainer
             className="h-full overflow-y-auto no-scrollbar"
             style={{ paddingTop: (isSpecialFullScreen || isIndividualMomentsPage) ? '0' : '88px' }}
@@ -443,7 +413,8 @@ const WechatLayout: React.FC = () => {
       <WechatNavigationHandler />
       <SessionExpiryWatcher />
       <LoginExpiredModalLayer />
-      <Routes>
+      {/* Pages below the top stay as they were left (Fragment back stack), see ActivityRouteHost. */}
+      <ActivityRouteHost persistent={MAIN_TAB_PATHS}>
         <Route path="/auth/login" element={<WechatLoginPage />} />
         <Route path="/auth/register" element={<WechatRegisterPage />} />
         <Route path="/auth/forgot-password" element={<WechatForgotPasswordPage />} />
@@ -551,7 +522,7 @@ const WechatLayout: React.FC = () => {
           <Route path="wechat-sports/profile/:id" element={<SportsFriendProfile />} />
           <Route path="wechat-sports/privacy" element={<SportsPrivacySettings />} />
         </Route>
-      </Routes>
+      </ActivityRouteHost>
     </Router>
   );
 };

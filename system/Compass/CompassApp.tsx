@@ -7,7 +7,8 @@ import { colors, colorsDark } from './res/colors';
 import { colorStates, colorStatesDark } from './res/colors.states';
 import { dimens } from './res/dimens';
 import { anim } from './res/anim';
-import { MemoryRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { MemoryRouter, Route, Navigate } from 'react-router-dom';
+import { ActivityRouteHost } from '../../os/components/ActivityRouteHost';
 import { CompassNavigationHandler } from './components/CompassNavigationHandler';
 import { CompassPage } from './pages/CompassPage';
 import { LevelPage } from './pages/LevelPage';
@@ -41,13 +42,14 @@ const CompassApp: React.FC = () => {
       <div className="w-full h-full overflow-hidden">
         <MemoryRouter>
           <CompassNavigationHandler />
-          <Routes>
+          {/* Pages below the top stay as they were left (Fragment back stack), see ActivityRouteHost. */}
+          <ActivityRouteHost>
             <Route path="/" element={<CompassPage />} />
             <Route path="/level" element={<LevelPage />} />
             <Route path="/permissions" element={<PermissionsPage />} />
             <Route path="/privacy" element={<PrivacyPolicyPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
+          </ActivityRouteHost>
         </MemoryRouter>
       </div>
     </div>

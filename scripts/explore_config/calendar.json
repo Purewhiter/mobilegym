@@ -1,0 +1,28 @@
+{
+  "seed": {
+    "apps": {
+      "calendar": {
+        "events": [
+          {
+            "id": "explore_event_1",
+            "type": "event",
+            "title": "项目周会",
+            "allDay": false,
+            "startTs": 1793325600000,
+            "endTs": 1793329200000,
+            "reminderMinutesBefore": 15,
+            "alarmEnabled": false
+          }
+        ]
+      }
+    }
+  },
+  "setup": {
+    "/search": [
+      {
+        "type": "项目",
+        "into": "input"
+      }
+    ]
+  }
+}

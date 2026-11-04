@@ -92,7 +92,8 @@ Rules:
 The entry component. The filename **must** end in `App.tsx` and the component **must** be the file's default export — that's how `import.meta.glob('apps/*/*App.tsx')` finds it.
 
 ```tsx
-import { MemoryRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { MemoryRouter, Route, useLocation } from 'react-router-dom';
+import { ActivityRouteHost } from '@/os/components/ActivityRouteHost';
 import { useAppNavigationHandler } from '@/os/hooks/useAppNavigationHandler';
 import { manifest } from './manifest';
 import { useNav } from '@/os/navigation';
@@ -112,10 +113,10 @@ function HabitsAppInner() {
   });
 
   return (
-    <Routes>
+    <ActivityRouteHost>
       <Route path="/" element={<HomePage />} />
       <Route path="/new" element={<NewHabitPage />} />
-    </Routes>
+    </ActivityRouteHost>
   );
 }
 
@@ -128,7 +129,7 @@ export default function HabitsApp() {
 }
 ```
 
-Three non-obvious rules:
+Four non-obvious rules:
 
 1. **`useAppNavigationHandler` must be called inside the `MemoryRouter`.** It registers your app's navigator with `AppNavigatorRegistry` (so the OS can `openApp(id, '/some/path')`), wires the app-level back handler (priority 100) into `BackDispatcher`, broadcasts lifecycle events into `AppLifecycle`, and keeps a shadow `HistoryTracker` in sync so `popTo()` works.
 2. **No `useNavigate()` from `react-router` in pages.** Use `bindNav` / `nav` from `os/navigation` with the app's route table, so every jump is typed and every control is tagged. See [`../navigation/routes.md`](../navigation/routes.md).
@@ -139,6 +140,12 @@ Three non-obvious rules:
   <Outlet />
 </RouteScrollContainer>
 ```
+
+4. **Routed pages go in `<ActivityRouteHost>` (`os/components/ActivityRouteHost.tsx`), a drop-in for `<Routes>` that keeps the back stack like Fragments.** Every page instance on the Activity's back stack stays mounted; the ones below the top sit hidden in a React `<Activity>` with their state and DOM kept, and their scroll offsets are put back when they are shown again. Back returns to a page as it was left; a new push makes a new instance (A → B → A gives two A's); a run of entries with the same pathname is one instance, so URL dialogs stay in their page. Main tabs go in `persistent` (one instance each, kept across tab switches). A layout route (`<Route element={<Layout />}>`) renders once per instance, so it must render the tab page through `<Outlet />`, not keep its own copies of the tabs. Because a hidden page cleans up its effects and runs them again when shown:
+   - an effect that acts (a store write, a jump, a sent message) must be safe to run again, or guard itself with a ref;
+   - visible UI must not wait on a timer that an effect cleanup clears (a toast set in a handler and cleared on unmount stays up): give the timer to an effect, as `os/hooks/useTimedToast` does;
+   - a throttle ref (`if (ref.current) return; ref.current = requestAnimationFrame(...)`) must be reset in the cleanup that cancels it, or the page stops reacting once shown again;
+   - a page that replaces its own URL with another pathname while in use (a new note saved as `/note/<id>`) needs an `identity` that keeps it one instance.
 
 ## `routes.ts`
 

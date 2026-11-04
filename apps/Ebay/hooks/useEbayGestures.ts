@@ -30,5 +30,5 @@ export function useEbayGestures() {
     'data-trigger': 'system.back',
   });
 
-  return { nav, bindNav, bindAction, bindBack, back: nav.back };
+  return { nav, bindNav, bindTap: gestures.bindTap, bindAction, bindBack, back: nav.back };
 }

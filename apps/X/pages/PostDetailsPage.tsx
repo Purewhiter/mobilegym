@@ -5,7 +5,7 @@ import { useXHydratedPosts, useXRepliesForPost, useXResolvedPostQuery, useXUsers
 import { useXGestures } from '../hooks/useXGestures';
 import { XImage, XVideo } from '../components/XMedia';
 import { BookmarkToast } from '../components/BookmarkToast';
-import { XRetweetSheet } from '../components/XRetweetSheet';
+import { XRetweetSheet, useRetweetSheetPostId } from '../components/XRetweetSheet';
 import { XPostActionBar } from '../components/XPostActionBar';
 import { useXStrings } from '../hooks/useXStrings';
 import {
@@ -23,11 +23,13 @@ export const PostDetailsPage: React.FC = () => {
   const user = useXStore(selectUser);
   const toggleRetweet = useXStore(s => s.toggleRetweet);
   const { replies: repliesForRoutePost, loading: repliesQueryLoading } = useXRepliesForPost(id || '');
-  const { bindBack, bindNav, nav } = useXGestures();
+  const { bindBack, bindNav, bindTap, nav } = useXGestures();
   const s = useXStrings();
   const [sortMethod, setSortMethod] = React.useState<'relevant' | 'recent' | 'likes'>('relevant');
-  const [showSortMenu, setShowSortMenu] = React.useState(false);
-  const [retweetMenuPostId, setRetweetMenuPostId] = React.useState<string | null>(null);
+  // The replies sort menu lives in the URL (?sheet=sort): system back closes it.
+  const showSortMenu = new URLSearchParams(useLocation().search).get('sheet') === 'sort';
+  const retweetMenuPostId = useRetweetSheetPostId();
+  const openRetweetMenu = (postId: string) => nav.push(routes.status, { id: id as string }, { search: { sheet: 'retweet', sheetPostId: postId } });
   const [showBookmarkToast, setShowBookmarkToast] = React.useState(false);
   // Loading 派生于查询状态: 帖子 (reply 深链也走这里) 或它的回复还没到。
   const repliesLoading = !!id && !id.startsWith('mock_') && (postLoading || repliesQueryLoading);
@@ -215,7 +217,7 @@ export const PostDetailsPage: React.FC = () => {
               }}
               showCounts
               className="mt-0 max-w-none"
-              onRetweetTrigger={setRetweetMenuPostId}
+              onRetweetTrigger={openRetweetMenu}
               onBookmarkAdded={() => setShowBookmarkToast(true)}
             />
           </div>
@@ -224,7 +226,7 @@ export const PostDetailsPage: React.FC = () => {
           <div className="flex items-center justify-between px-4 py-3 border-b border-app-border">
             <div
               className="flex items-center gap-1 font-bold text-app-text cursor-pointer"
-              onClick={() => setShowSortMenu(true)}
+              {...bindNav(routes.status, { params: { id: id as string }, search: { sheet: 'sort' } })}
             >
               <span>{getSortLabel(sortMethod)}</span>
               <IcChevronDown size={16} />
@@ -244,7 +246,7 @@ export const PostDetailsPage: React.FC = () => {
             <div className="p-6 text-center text-gray-500">{s.post_loading_replies}</div>
           ) : sortedReplies.length > 0 ? (
             sortedReplies.map((reply: XPost) => (
-              <ReplyItem key={reply.id} reply={reply} onRetweet={setRetweetMenuPostId} users={replyUsers} />
+              <ReplyItem key={reply.id} reply={reply} onRetweet={openRetweetMenu} users={replyUsers} />
             ))
           ) : (
             <div className="p-8 text-center text-gray-500">{s.post_no_replies}</div>
@@ -255,12 +257,12 @@ export const PostDetailsPage: React.FC = () => {
       {/* Sort Menu Bottom Sheet */}
       {showSortMenu && (
         <div className="fixed inset-0 z-[100] flex items-end justify-center sm:items-center">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowSortMenu(false)} />
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" {...bindBack()} />
           <div className="relative bg-white text-black w-full max-w-sm rounded-t-2xl sm:rounded-2xl overflow-hidden animate-in slide-in-from-bottom-10 fade-in-0 duration-200">
             <div className="p-4 border-b border-gray-100 relative">
               <div className="font-bold text-lg text-center">{s.post_sort_replies}</div>
               <button
-                onClick={() => setShowSortMenu(false)}
+                {...bindBack()}
                 className="absolute right-4 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-gray-100"
                 aria-label={s.follow_menu_close_aria_label}
               >
@@ -272,7 +274,7 @@ export const PostDetailsPage: React.FC = () => {
                 <button
                   key={id}
                   className="w-full flex items-center justify-between p-4 hover:bg-gray-50 rounded-xl transition-colors"
-                  onClick={() => { setSortMethod(id); setShowSortMenu(false); }}
+                  {...bindTap({ kind: 'action', id: 'x.status.replies.sort.select' }, { params: { sort: id }, onTrigger: () => { setSortMethod(id); nav.back(); } })}
                 >
                   <span className="font-bold text-base">{getSortLabel(id)}</span>
                   {sortMethod === id
@@ -285,7 +287,7 @@ export const PostDetailsPage: React.FC = () => {
             <div className="p-2 pt-0">
               <button
                 className="w-full py-3.5 font-bold rounded-full bg-gray-100 active:bg-gray-200 transition-colors"
-                onClick={() => setShowSortMenu(false)}
+                {...bindBack()}
               >
                 {s.common_cancel}
               </button>
@@ -294,15 +296,7 @@ export const PostDetailsPage: React.FC = () => {
         </div>
       )}
 
-      <XRetweetSheet
-        postId={retweetMenuPostId}
-        onClose={() => setRetweetMenuPostId(null)}
-        onRetweet={toggleRetweet}
-        onQuote={(postId) => {
-          nav.push(routes.compose, {}, { search: { quotedPostId: postId } });
-        }}
-        onViewActivity={(postId) => nav.push(routes.statusActivity, { id: postId }, { search: { tab: 'quotes' } })}
-      />
+      <XRetweetSheet postId={retweetMenuPostId} onRetweet={toggleRetweet} />
 
       {/* Fixed Bottom Reply Bar */}
       <div className="fixed bottom-0 left-0 right-0 border-t border-app-border bg-app-bg z-40">

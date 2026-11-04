@@ -5,7 +5,7 @@ import { useMapStrings } from '../hooks/useMapStrings';
 import { routes } from '../routes';
 
 export const NotificationsPage: React.FC = () => {
-  const { bindBack, nav } = useMapGestures();
+  const { bindBack, nav, bindNav } = useMapGestures();
   const s = useMapStrings();
 
   return (
@@ -23,7 +23,7 @@ export const NotificationsPage: React.FC = () => {
       <div className="flex-1 overflow-y-auto no-scrollbar px-4">
         <div
           className="flex items-center gap-6 py-6 active:bg-gray-50 -mx-4 px-4"
-          onClick={() => nav.push(routes.settingsNotificationsTraffic)}
+          {...bindNav(routes.settingsNotificationsTraffic)}
         >
           <TrafficInfoIcon className="text-app-primary shrink-0 w-6 h-6" />
           <div className="text-[17px] text-gray-900">{s.notification_traffic}</div>
@@ -31,7 +31,7 @@ export const NotificationsPage: React.FC = () => {
 
         <div
           className="flex items-center gap-6 py-6 active:bg-gray-50 -mx-4 px-4"
-          onClick={() => nav.push(routes.settingsNotificationsRecommendations)}
+          {...bindNav(routes.settingsNotificationsRecommendations)}
         >
           <InfoCircleIcon className="text-app-primary shrink-0 w-6 h-6" />
           <div className="text-[17px] text-gray-900">{s.notification_recommendations}</div>

@@ -223,7 +223,6 @@ export const VideoDetailPage: React.FC = () => {
     const [toast, setToast] = useState<{ show: boolean, msg: string }>({ show: false, msg: '' });
 
     const [showFavToast, setShowFavToast] = useState(false);
-    const [showFavSheet, setShowFavSheet] = useState(false);
     const [pendingFolderId, setPendingFolderId] = useState<string | null>(null);
     const favToastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -312,6 +311,11 @@ export const VideoDetailPage: React.FC = () => {
 
     const { liked, disliked, coined, coinCount, favored } = checkInteractions(video!.id);
     const showCoinDialog = searchParams.get('coinDialog') === 'open';
+    const showFavSheet = searchParams.get('favSheet') === 'open';
+    // However the sheet closes (done, backdrop, system back), a folder it was about to select is dropped.
+    useEffect(() => {
+        if (!showFavSheet) setPendingFolderId(null);
+    }, [showFavSheet]);
 
     const handleLikeStart = (e: React.PointerEvent) => {
         // Prevent default browser actions if needed, but scrolling is important.
@@ -467,20 +471,15 @@ export const VideoDetailPage: React.FC = () => {
     const handleOpenFavSheet = useCallback(() => {
         setShowFavToast(false);
         if (favToastTimerRef.current) clearTimeout(favToastTimerRef.current);
-        setShowFavSheet(true);
-    }, []);
-
-    const handleCreateFolderFromSheet = useCallback(() => {
-        setShowFavSheet(false);
-        nav.push(routes.favCreate);
-    }, [nav]);
+        nav.push(routes.video, { bvid: bvid as string }, { search: { tab: activeTab, favSheet: 'open' } });
+    }, [nav, bvid, activeTab]);
 
     useEffect(() => {
         if (pendingNewFavFolderId) {
             const id = pendingNewFavFolderId;
             pendingNewFavFolderId = null;
             setPendingFolderId(id);
-            setShowFavSheet(true);
+            nav.push(routes.video, { bvid: bvid as string }, { search: { tab: activeTab, favSheet: 'open' } });
         }
     });
 
@@ -1165,8 +1164,7 @@ export const VideoDetailPage: React.FC = () => {
             <FavSheet
                 visible={showFavSheet}
                 videoId={video!.id}
-                onClose={() => { setShowFavSheet(false); setPendingFolderId(null); }}
-                onCreateFolder={handleCreateFolderFromSheet}
+                onClose={() => back()}
                 pendingNewFolderId={pendingFolderId}
             />
 

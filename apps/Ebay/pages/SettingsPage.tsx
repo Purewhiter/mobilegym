@@ -1,4 +1,6 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { routes } from '../routes';
 import { IcNavBack } from '../res/icons';
 import { useEbayStore } from '../state';
 import { useEbayGestures } from '../hooks/useEbayGestures';
@@ -13,11 +15,13 @@ type ThemeOption = {
 const THEME_OPTION_IDS: ThemeOption['id'][] = ['light', 'dark', 'battery', 'system'];
 
 const SettingsPage: React.FC = () => {
-  const { bindBack } = useEbayGestures();
+  const { bindBack, bindNav, bindTap, back } = useEbayGestures();
   const s = useEbayStrings();
   const themeId = useEbayStore(st => st.settings.themeId);
   const updateSettings = useEbayStore(st => st.updateSettings);
-  const [isThemeDialogOpen, setIsThemeDialogOpen] = useState(false);
+  // The theme dialog lives in the URL (?dialog=theme): system back closes it.
+  const [searchParams] = useSearchParams();
+  const isThemeDialogOpen = searchParams.get('dialog') === 'theme';
   const themeOptions = useMemo<ThemeOption[]>(() => THEME_OPTION_IDS.map((id) => {
     switch (id) {
       case 'light':
@@ -35,8 +39,7 @@ const SettingsPage: React.FC = () => {
 
   const handleThemeSelect = (option: ThemeOption) => {
     updateSettings({ themeId: option.id });
-    // setTimeout(() => setIsThemeDialogOpen(false), 200); // Optional delay for effect
-    setIsThemeDialogOpen(false);
+    back();
   };
 
   return (
@@ -62,7 +65,7 @@ const SettingsPage: React.FC = () => {
         <Item 
           title={s.settings_theme} 
           subtitle={currentTheme.subtitle}
-          onClick={() => setIsThemeDialogOpen(true)}
+          bind={bindNav(routes.settings, { search: { dialog: 'theme' } })}
         />
         <Item 
           title={s.settings_country} 
@@ -102,8 +105,9 @@ const SettingsPage: React.FC = () => {
 
       {/* Theme Selection Dialog Overlay */}
       {isThemeDialogOpen && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-app-surface rounded-lg w-[85%] max-w-sm shadow-xl overflow-hidden">
+        <div className="absolute inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/50" {...bindBack()} />
+          <div className="relative bg-app-surface rounded-lg w-[85%] max-w-sm shadow-xl overflow-hidden">
             <div className="px-6 py-5">
               <h3 className="text-xl font-bold text-black mb-4">{s.settings_choose_theme}</h3>
               
@@ -112,7 +116,7 @@ const SettingsPage: React.FC = () => {
                   <div 
                     key={option.id} 
                     className="flex items-start cursor-pointer"
-                    onClick={() => handleThemeSelect(option)}
+                    {...bindTap({ kind: 'action', id: 'ebay.settings.theme.select' }, { params: { theme: option.id }, onTrigger: () => handleThemeSelect(option) })}
                   >
                     {/* Radio Button */}
                     <div className="flex-shrink-0 mt-1 mr-4">
@@ -137,7 +141,7 @@ const SettingsPage: React.FC = () => {
             
             <div className="px-6 py-4 flex justify-end">
               <button 
-                onClick={() => setIsThemeDialogOpen(false)}
+                {...bindBack()}
                 className="text-blue-600 font-medium text-base px-2 py-1"
               >
                 {s.settings_cancel}
@@ -156,10 +160,10 @@ const SectionHeader = ({ title }: { title: string }) => (
   </div>
 );
 
-const Item = ({ title, subtitle, onClick }: { title: string; subtitle?: string; onClick?: () => void }) => (
+const Item = ({ title, subtitle, bind }: { title: string; subtitle?: string; bind?: React.HTMLAttributes<HTMLDivElement> }) => (
   <div 
-    className={`px-4 py-4 ${onClick ? 'active:bg-gray-100 cursor-pointer' : ''}`}
-    onClick={onClick}
+    className={`px-4 py-4 ${bind ? 'active:bg-gray-100 cursor-pointer' : ''}`}
+    {...bind}
   >
     <div className="text-base text-black font-normal">{title}</div>
     {subtitle && <div className="text-sm text-app-text-muted mt-1">{subtitle}</div>}

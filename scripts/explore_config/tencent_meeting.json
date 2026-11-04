@@ -2,7 +2,8 @@
   "prefer": {
     "nav.historyDetail": [{ "meetingId": "222 333 444" }]
   },
-  "inputs": {
-    "/join": [{ "selector": "input[inputmode=numeric]", "text": "276760582" }]
+  "setup": {
+    "/join": [{ "type": "276760582", "into": "input[inputmode=numeric]" }],
+    "/meeting": [{ "wait": 2500 }]
   }
 }

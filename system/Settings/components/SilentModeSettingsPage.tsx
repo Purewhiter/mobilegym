@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import React, { useMemo, useSyncExternalStore } from 'react';
 import { IcCheck } from '../res/icons';
 import { SettingsHeader } from './SettingsHeader';
 import { PreferenceCategory } from './PreferenceCategory';
@@ -11,6 +11,7 @@ import { subscribeOsDataRevision } from '../../../os/simState';
 import { strings } from '../res/strings';
 import { stringsEn } from '../res/strings.en';
 import { useAppStrings } from '@/os/useAppStrings';
+import { useTimedToast } from '../../../os/hooks/useTimedToast';
 type RingMode = 'normal' | 'silent' | 'dnd';
 
 function getRingMode(): RingMode {
@@ -27,15 +28,7 @@ export const SilentModeSettingsPage: React.FC = () => {
     () => getRingMode(),
   );
 
-  const [toast, setToast] = useState<{ visible: boolean; message: string }>({ visible: false, message: '' });
-  const toastTimerRef = useRef<number | undefined>(undefined);
-  const showToast = (message: string) => {
-    setToast({ visible: true, message });
-    if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current);
-    toastTimerRef.current = window.setTimeout(() => {
-      setToast((prev) => ({ ...prev, visible: false }));
-    }, 1600);
-  };
+  const { toast, showToast } = useTimedToast();
 
   const setMode = (next: RingMode) => {
     if (next === 'normal') {

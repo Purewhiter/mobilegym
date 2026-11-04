@@ -9,12 +9,12 @@ import { dimens } from './res/dimens';
 import { anim } from './res/anim';
 import {
   MemoryRouter,
-  Routes,
   Route,
   useLocation,
   useNavigate,
   UNSAFE_NavigationContext,
 } from 'react-router-dom';
+import { ActivityRouteHost } from '../../os/components/ActivityRouteHost';
 import { useAppNavigationHandler } from '../../os/hooks/useAppNavigationHandler';
 import { BottomTabBar } from './components/BottomTabBar';
 import { CallsPage } from './pages/CallsPage';
@@ -81,7 +81,8 @@ const ContactsChrome: React.FC = () => {
 
   return (
     <div className="h-full w-full relative bg-app-surface">
-      <Routes>
+      {/* Pages below the top stay as they were left (Fragment back stack), see ActivityRouteHost. */}
+      <ActivityRouteHost persistent={['/', '/contacts', '/business']}>
         <Route path="/" element={<CallsPage />} />
         <Route path="/contacts" element={<ContactsPage />} />
         <Route path="/business" element={<BusinessHallPage />} />
@@ -92,7 +93,7 @@ const ContactsChrome: React.FC = () => {
         <Route path="/settings/calls" element={<PhoneSettingsHomePage />} />
         <Route path="/settings/contacts" element={<PhoneSettingsHomePage />} />
         <Route path="/settings/page/:pageId" element={<PhonePreferenceScreenPage />} />
-      </Routes>
+      </ActivityRouteHost>
 
       {showTabBar ? <BottomTabBar /> : null}
     </div>

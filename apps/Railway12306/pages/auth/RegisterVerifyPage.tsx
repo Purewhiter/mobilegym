@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
+import { routes } from '../../routes';
 import { useRailwayStore } from '../../state';
 import { useRailwayGestures } from '../../hooks/useRailwayGestures';
 import { IcNavBack } from '../../res/icons';
@@ -16,7 +17,7 @@ export interface RegisterFormState {
 }
 
 const RegisterVerifyPage: React.FC = () => {
-  const { back, bindBack } = useRailwayGestures();
+  const { back, bindBack, bindTap, nav } = useRailwayGestures();
   const registerAccount = useRailwayStore(s => s.registerAccount);
   const location = useLocation();
   const formData = (location.state as RegisterFormState | undefined) ?? {
@@ -29,7 +30,13 @@ const RegisterVerifyPage: React.FC = () => {
   );
 
   const [inputCode, setInputCode] = useState('');
-  const [dialogMsg, setDialogMsg] = useState<string | null>(null);
+  const [dialogMsg, setDialogMessage] = useState<string | null>(null);
+  // The error dialog lives in the URL (?dialog=error, the form kept in state): system back closes it.
+  const errorOpen = new URLSearchParams(location.search).get('dialog') === 'error';
+  const setDialogMsg = (msg: string) => {
+    setDialogMessage(msg);
+    nav.push(routes.authRegisterVerify, {}, { search: { dialog: 'error' }, state: location.state });
+  };
   const [smsSent, setSmsSent] = useState(false);
   const codeRef = useRef(verifyCode);
   codeRef.current = verifyCode;
@@ -120,7 +127,7 @@ const RegisterVerifyPage: React.FC = () => {
 
         {/* Send SMS link */}
         <div className="flex justify-end mb-6">
-          <button className="text-app-primary text-[14px]" onClick={handleSendSms}>
+          <button className="text-app-primary text-[14px]" {...bindTap({ kind: 'action', id: 'railway.register.verify.sendSms' }, { onTrigger: handleSendSms })}>
             发送注册短信
           </button>
         </div>
@@ -141,7 +148,7 @@ const RegisterVerifyPage: React.FC = () => {
         <div className="mt-6">
           <button
             className="w-full h-11 rounded bg-app-primary text-white font-medium text-[16px] active:opacity-80"
-            onClick={handleComplete}
+            {...bindTap({ kind: 'action', id: 'railway.register.verify.complete' }, { onTrigger: handleComplete })}
           >
             完成注册
           </button>
@@ -149,7 +156,7 @@ const RegisterVerifyPage: React.FC = () => {
       </div>
 
       {/* Error dialog */}
-      {dialogMsg && (
+      {errorOpen && dialogMsg && (
         <div className="fixed inset-0 z-[120] bg-black/45 flex items-center justify-center px-10">
           <div className="bg-white rounded-xl w-full max-w-[280px] overflow-hidden">
             <div className="px-5 pt-5 pb-4 text-center">
@@ -158,7 +165,7 @@ const RegisterVerifyPage: React.FC = () => {
             </div>
             <button
               className="w-full py-3 text-[16px] text-white font-medium bg-[#4B9AFF] rounded-b-xl"
-              onClick={() => setDialogMsg(null)}
+              {...bindBack()}
             >
               确定
             </button>

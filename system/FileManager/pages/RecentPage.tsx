@@ -13,6 +13,7 @@ import { stringsEn } from '../res/strings.en';
 import { useAppStrings } from '@/os/useAppStrings';
 import { FSNode } from '@/os/types';
 import * as FileSystem from '@/os/FileSystemService';
+import { useFileSystemVersion } from '@/os/hooks/useFileSystemVersion';
 import { useFileManagerGestures } from '../hooks/useFileManagerGestures';
 import { AsyncImage } from '../components/AsyncImage';
 import { getFileIcon, getFileIconColor } from '../utils/fileUtils';
@@ -27,7 +28,7 @@ import { transferNodesToDirectory, shareNodesAsImages, type TransferOperation } 
 import { routes } from '../routes';
 
 export const RecentPage: React.FC = () => {
-  const { nav, back } = useFileManagerGestures();
+  const { nav, back, bindNav, bindTap, bindLongPress } = useFileManagerGestures();
   const location = useLocation();
   const s = useAppStrings(strings, stringsEn);
 
@@ -43,14 +44,6 @@ export const RecentPage: React.FC = () => {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const isLongPress = useRef(false);
-  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const clearLongPressTimer = () => {
-    if (longPressTimer.current) {
-      clearTimeout(longPressTimer.current);
-      longPressTimer.current = null;
-    }
-  };
 
   // Clear selection and reset long press flag when exiting select mode
   useEffect(() => {
@@ -84,13 +77,6 @@ export const RecentPage: React.FC = () => {
     back();
   };
 
-  const openModal = (type: 'delete' | 'more' | 'details' | 'rename', itemId?: string) => {
-    if (type === 'delete') nav.push(routes.recent, {}, { search: { mode: 'select', modal: 'delete' }, keep: ['selected'] });
-    else if (type === 'more') nav.push(routes.recent, {}, { search: { mode: 'select', modal: 'more' }, keep: ['selected'] });
-    else if (type === 'details') nav.replace(routes.recent, {}, { search: { modal: 'details', itemId: (itemId ? { itemId } : {}).itemId } });
-    else if (type === 'rename') nav.replace(routes.recent, {}, { search: { modal: 'rename', itemId: (itemId ? { itemId } : {}).itemId } });
-  };
-
   const closeModal = () => back();
 
   const [items, setItems] = useState<FSNode[]>([]);
@@ -103,17 +89,19 @@ export const RecentPage: React.FC = () => {
     setTimeout(() => setToast({ message: '', visible: false }), 2000);
   };
 
+  const fsVersion = useFileSystemVersion();
+
   const refreshItems = () => {
     const mediaFiles = FileSystem.getMediaFiles();
     const downloadFiles = FileSystem.getFilesByPath('/sdcard/Download');
     const allFiles = Array.from(new Set([...mediaFiles, ...downloadFiles]))
-      .sort((a, b) => b.modifiedAt - a.modifiedAt);
+      .sort(FileSystem.compareByNewest);
     setItems(allFiles);
   };
   
   useEffect(() => {
     refreshItems();
-  }, []);
+  }, [fsVersion]);
   
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     setScrollTop(e.currentTarget.scrollTop);
@@ -185,17 +173,26 @@ export const RecentPage: React.FC = () => {
     }
   };
 
-  const handlePointerDown = (item: FSNode) => {
-    isLongPress.current = false;
-    clearLongPressTimer();
-    longPressTimer.current = setTimeout(() => {
-      isLongPress.current = true;
-      enterSelectMode(item.id);
-    }, 500);
-  };
-
-  const handlePointerUp = () => {
-    clearLongPressTimer();
+  // Tap opens an image in the viewer (toggles the item in select mode); a long press
+  // selects it and enters select mode, after which its click is swallowed by handleItemClick.
+  const itemProps = (item: FSNode) => {
+    if (isSelecting) {
+      return {
+        ...bindTap({ kind: 'action', id: 'fileManager.item.toggleSelect' }, { params: { id: item.id }, onTrigger: () => handleItemClick(item) }),
+        // A new press clears the guard: the simulator's long press sends no trailing click to consume it.
+        onPointerDown: () => { isLongPress.current = false; },
+      };
+    }
+    const open = item.mimeType?.startsWith('image/')
+      ? bindTap({ kind: 'action', id: 'file.image.open' }, { params: { path: item.path }, onTrigger: () => handleItemClick(item) })
+      : {};
+    const select = bindLongPress('nav.recent', {
+      params: { mode: 'select' },
+      duration: 500,
+      onLongPressStart: () => { isLongPress.current = false; },
+      onTrigger: () => enterSelectMode(item.id),
+    });
+    return { ...open, ...select };
   };
 
   const toggleSelectAll = () => {
@@ -303,12 +300,12 @@ export const RecentPage: React.FC = () => {
         alwaysShowSmallTitle={false}
         bgClass="bg-app-surface"
         leftContent={isSelecting ? (
-          <button onClick={exitSelectMode} className="w-10 h-10 flex items-center justify-center -ml-2 active:opacity-60">
+          <button {...bindTap({ kind: 'action', id: 'fileManager.select.exit' }, { onTrigger: exitSelectMode })} className="w-10 h-10 flex items-center justify-center -ml-2 active:opacity-60">
             <IcClose size={28} className="text-app-text" />
           </button>
         ) : undefined}
         rightContent={isSelecting ? (
-          <button onClick={toggleSelectAll} className="w-10 h-10 flex items-center justify-center active:opacity-60">
+          <button {...bindTap({ kind: 'action', id: 'fileManager.select.toggleAll' }, { onTrigger: toggleSelectAll })} className="w-10 h-10 flex items-center justify-center active:opacity-60">
             <IcList size={28} className={isAllSelected ? 'text-blue-500' : 'text-gray-400'} />
           </button>
         ) : undefined}
@@ -333,7 +330,7 @@ export const RecentPage: React.FC = () => {
             <div key={date}>
               {index > 0 && <div className="mx-6 h-[0.5px] bg-gray-100" />}
               <div className="mb-6 mt-4 px-6">
-                <button onClick={() => toggleGroup(date)} className="w-full flex items-center justify-between py-2 active:opacity-60 transition-opacity">
+                <button {...bindTap({ kind: 'action', id: 'recent.group.toggle' }, { params: { date }, onTrigger: () => toggleGroup(date) })} className="w-full flex items-center justify-between py-2 active:opacity-60 transition-opacity">
                   <div className="flex items-center gap-2">
                     <span className="text-[18px] font-medium text-gray-400">{date}</span>
                     <span className="text-[18px] text-gray-300">|</span>
@@ -350,17 +347,8 @@ export const RecentPage: React.FC = () => {
                       const iconColor = isImage ? '' : getFileIconColor(item);
                       return (
                         <div key={item.id}
-                          onClick={() => handleItemClick(item)}
+                          {...itemProps(item)}
                           onContextMenu={(e) => e.preventDefault()}
-                          onPointerDown={() => handlePointerDown(item)}
-                          onPointerUp={handlePointerUp}
-                          onPointerCancel={handlePointerUp}
-                          onPointerLeave={handlePointerUp}
-                          {...(isImage ? {
-                            'data-action': 'file.image.open',
-                            'data-action-type': 'open',
-                            'data-action-params': JSON.stringify({ path: item.path }),
-                          } : {})}
                           className="flex flex-col items-center gap-1 active:opacity-70 transition-opacity relative">
                           <div className={`w-full aspect-square bg-gray-50 rounded-xl overflow-hidden relative border ${isSelected ? 'border-app-primary shadow-[0_0_0_1px_var(--app-primary)]' : 'border-gray-100/50'} flex items-center justify-center`}>
                             {isImage ? <AsyncImage path={item.path} className="w-full h-full object-cover" /> :
@@ -398,12 +386,12 @@ export const RecentPage: React.FC = () => {
         >
           <button
             disabled={!hasSelection}
-            onClick={() => {
-              const ok = shareNodesAsImages(getSelectedNodes());
-              if (!ok) showToast(s.toast_send_no_image);
-            }}
-            data-action="recent.select.send"
-            data-action-type="open"
+            {...(hasSelection ? bindTap({ kind: 'action', id: 'recent.select.send' }, {
+              onTrigger: () => {
+                const ok = shareNodesAsImages(getSelectedNodes());
+                if (!ok) showToast(s.toast_send_no_image);
+              },
+            }) : {})}
             className={actionBtn}
           >
             <div className="w-6 h-6 flex items-center justify-center">
@@ -411,19 +399,19 @@ export const RecentPage: React.FC = () => {
             </div>
             <span className="text-[12px] text-app-text">{s.action_send}</span>
           </button>
-          <button disabled={!hasSelection} onClick={() => openTransferSheet('move')} className={actionBtn}>
+          <button disabled={!hasSelection} {...(hasSelection ? bindTap({ kind: 'action', id: 'fileManager.select.move' }, { onTrigger: () => openTransferSheet('move') }) : {})} className={actionBtn}>
             <div className="w-6 h-6 flex items-center justify-center">
               <IcMove />
             </div>
             <span className="text-[12px] text-app-text">{s.action_move}</span>
           </button>
-          <button disabled={!hasSelection} onClick={() => openModal('delete')} className={actionBtn}>
+          <button disabled={!hasSelection} {...(hasSelection ? bindNav(routes.recent, { search: { mode: 'select', modal: 'delete' }, keep: ['selected'] }) : {})} className={actionBtn}>
             <div className="w-6 h-6 flex items-center justify-center">
               <IcDelete />
             </div>
             <span className="text-[12px] text-app-text">{s.action_delete}</span>
           </button>
-          <button disabled={!hasSelection} onClick={() => openModal('more')} className={actionBtn}>
+          <button disabled={!hasSelection} {...(hasSelection ? bindNav(routes.recent, { search: { mode: 'select', modal: 'more' }, keep: ['selected'] }) : {})} className={actionBtn}>
             <div className="w-6 h-6 flex items-center justify-center">
               <IcMoreCircle />
             </div>
@@ -471,7 +459,7 @@ export const RecentPage: React.FC = () => {
         onConfirm={handleTransferConfirm}
         isCreateFolderOpen={transferDialog === 'newFolder'}
         onOpenCreateFolder={openTransferCreateFolder}
-        onCloseCreateFolder={back}
+        onCloseCreateFolder={() => back()}
         onCreatedFolder={refreshItems}
       />
 

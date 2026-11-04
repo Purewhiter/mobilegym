@@ -86,7 +86,7 @@ export const BalancePage: React.FC = () => {
             </button>
             <button
               className="flex-1 bg-app-primary text-white py-2.5 rounded-lg font-medium text-sm shadow-md shadow-blue-200"
-              onClick={() => nav.push(routes.balanceRecharge)}
+              {...bindNav(routes.balanceRecharge)}
             >
               {s.top_up}
             </button>
@@ -107,7 +107,7 @@ export const BalancePage: React.FC = () => {
             </button>
             <button
               className="flex flex-col items-center relative"
-              onClick={() => nav.push(routes.settingsPaymentBankCards)}
+              {...bindNav(routes.settingsPaymentBankCards)}
             >
               <div className="absolute -top-2 right-1 bg-[#FF4D4F] text-white text-[9px] px-1 rounded-bl-lg rounded-tr-lg">{s.discount}</div>
               <div className="w-10 h-10 rounded-full flex items-center justify-center mb-1 text-gray-600">

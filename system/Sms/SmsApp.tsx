@@ -9,12 +9,12 @@ import { dimens } from './res/dimens';
 import { anim } from './res/anim';
 import {
     MemoryRouter,
-    Routes,
     Route,
     useLocation,
     useNavigate,
     UNSAFE_NavigationContext,
 } from 'react-router-dom';
+import { ActivityRouteHost } from '../../os/components/ActivityRouteHost';
 import { useAppNavigationHandler } from '../../os/hooks/useAppNavigationHandler';
 import { AppNavigatorRegistry } from '../../os/AppNavigatorRegistry';
 import { useActivityContext } from '../../os/ActivityContext';
@@ -39,11 +39,12 @@ const SmsNavigationHandler: React.FC = () => {
     const mem = navigator as { index?: number; entries?: unknown[] };
 
     const handleBackPress = useCallback((): boolean => {
-        if (location.pathname === '/') return false;
+        // The list is the root: back leaves the app there, unless it closes the list's long-press menu first.
+        if (location.pathname === '/' && !location.search) return false;
         if ((mem.index ?? 0) <= 0) return false;
         back();
         return true;
-    }, [back, location.pathname, mem]);
+    }, [back, location.pathname, location.search, mem]);
 
     // Activity-level navigator 注册：用于 OS 在 foreign-task push 时（如 12306 调用 ACTION_VIEW + scheme=sms
     // 把 SMS Activity 推到 12306 task 上）通过 navigateToActivity 把内部路由切到 /new 等目标 route。
@@ -106,7 +107,8 @@ const SmsApp: React.FC = () => {
             <MemoryRouter>
                 <SmsNavigationHandler />
                 <div className="h-full w-full bg-app-bg">
-                    <Routes>
+                    {/* Pages below the top stay as they were left (Fragment back stack), see ActivityRouteHost. */}
+                    <ActivityRouteHost>
                         <Route path="/" element={<ConversationListPage />} />
                         <Route path="/new" element={<NewMessagePage />} />
                         <Route path="/conversation/:conversationId" element={<ConversationDetailPage />} />
@@ -115,7 +117,7 @@ const SmsApp: React.FC = () => {
                         <Route path="/settings/advanced" element={<AdvancedSettingsPage />} />
                         <Route path="/settings/5g-message" element={<FiveGMessagePage />} />
                         <Route path="/settings/*" element={<SettingsPlaceholderPage />} />
-                    </Routes>
+                    </ActivityRouteHost>
                 </div>
             </MemoryRouter>
         </div>

@@ -6,7 +6,7 @@ import { useXMatchUsers, useXRecentSearches, useXSearchPosts } from '../data/vie
 import { useXGestures } from '../hooks/useXGestures';
 import { useXStrings } from '../hooks/useXStrings';
 import { BookmarkToast } from '../components/BookmarkToast';
-import { XRetweetSheet } from '../components/XRetweetSheet';
+import { XRetweetSheet, useRetweetSheetPostId } from '../components/XRetweetSheet';
 import { XTimelinePostCard } from '../components/XTimelinePostCard';
 import { compareXPostsByRecencyDesc } from '../utils/formatTime';
 import { routes } from '../routes';
@@ -24,7 +24,8 @@ export const SearchInputPage: React.FC = () => {
   const locale = useLocale();
   const [inputValue, setInputValue] = React.useState('');
   const [activeTab, setActiveTab] = React.useState<SearchTab>('hot');
-  const [retweetMenuPostId, setRetweetMenuPostId] = React.useState<string | null>(null);
+  const retweetMenuPostId = useRetweetSheetPostId();
+  const openRetweetMenu = (postId: string) => nav.push(routes.searchInput, {}, { search: { sheet: 'retweet', sheetPostId: postId } });
   const [showBookmarkToast, setShowBookmarkToast] = React.useState(false);
   const query = inputValue.trim().toLowerCase();
 
@@ -87,7 +88,7 @@ export const SearchInputPage: React.FC = () => {
           like: 'search.post.like',
           bookmark: 'search.post.bookmark',
         }}
-        onRetweetTrigger={setRetweetMenuPostId}
+        onRetweetTrigger={openRetweetMenu}
         onBookmarkAdded={() => setShowBookmarkToast(true)}
         showCounts
       />
@@ -279,15 +280,7 @@ export const SearchInputPage: React.FC = () => {
         </div>
       )}
 
-      <XRetweetSheet
-        postId={retweetMenuPostId}
-        onClose={() => setRetweetMenuPostId(null)}
-        onRetweet={toggleRetweet}
-        onQuote={postId => {
-          nav.push(routes.compose, {}, { search: { quotedPostId: postId } });
-        }}
-        onViewActivity={postId => nav.push(routes.statusActivity, { id: postId }, { search: { tab: 'quotes' } })}
-      />
+      <XRetweetSheet postId={retweetMenuPostId} onRetweet={toggleRetweet} />
       <BookmarkToast visible={showBookmarkToast} onClose={() => setShowBookmarkToast(false)} />
     </div>
   );

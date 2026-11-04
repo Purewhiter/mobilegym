@@ -38,6 +38,7 @@ nav.replace(routes.meetingEdit);                                               /
 nav.push(routes.search, {}, { state: { viewportCenter } });
 nav.back();
 nav.toPath(intentRoute, { replace: true });                                    // a path that arrived at runtime
+nav.replaceState({ ...location.state, anchorSide });                             // same URL, new location.state
 ```
 
 Semantics:
@@ -70,8 +71,14 @@ python scripts/explore_nav_graph.py --diff before.json after.json
 ```
 
 - **Nodes are pages, not URLs.** Each URL is matched to the route table the way react-router matches it (`__SIM__.matchRoute`); a node is a route plus the UI state its query declares (`/meeting?dialog=chat`). A photo page is one node however many photos there are.
-- **Edges** merge the controls with one tag on a page: source, target, tag id, gesture, push / replace (whether the app's history grew; `activity` when a new activity opened on top), where system back then lands, the controls' text (or their row's, for a switch or icon), and how many were tapped, found COVERED by an overlay, or not tested because the page could not be reached again.
-- **What is explored is bounded and set in `scripts/explore_config/<appId>.json`**: `instancesPerRoute` (instances visited per node, default 2; an instance is a URL plus the controls it shows and their text, so a meeting page reached as host (with “结束会议”) and as guest counts twice), `tapsPerGroup` (controls of one tag tapped per page, default 2), `skip` (ids never tapped), `prefer` (params tapped first, for controls only some items show: a meeting the user hosted) and `inputs` (text typed on a page before tapping, such as a meeting number).
+- **Edges** merge the controls with one tag on a page: source, target, tag id, gesture, push / replace / pop (from the history depth of the activity on top; `activity` / `finish` when an activity opened on top or closed, `exit` when the app was left), where system back then lands, the controls' text (or their row's, for a switch or icon), and how many were tapped, found COVERED by an overlay, or not tested because the page could not be reached again.
+- **What is explored is bounded and set in `scripts/explore_config/<appId>.json`**:
+  - `instancesPerRoute` (instances visited per node, default 2; an instance is a URL plus the controls it shows and their text, so a meeting page reached as host (with “结束会议”) and as guest counts twice) and `tapsPerGroup` (controls of one tag tapped per page, default 2); `instancesPerNode` raises or lowers the first cap for single nodes (`{"/note/:id": 4}`, so the trashed note's editor is reached after two ordinary notes);
+  - `skip` (ids never tapped) and `prefer` (params tapped first, for controls only some items show: a meeting the user hosted, the user's own moments);
+  - `setup`: steps run on arriving at a page, as a user would — type into a field, tap a box, wait for a list behind a fake search, hide the keyboard; a list of step lists gives variants, each explored as its own instance (search for a contact, search for a feature);
+  - `seed`: a `__SIM__.setState` patch applied after every reset, for data the default state lacks (a subscription, a blacklisted friend).
+- `--workers` pages explore in parallel (each its own browser context, so its own device session); pages are explored a level at a time and merged in a fixed order, so the result does not depend on timing.
+- Every tap starts from a full reload. Against `vite dev` each reload fetches hundreds of unbundled modules, so a few explorers at once overload it: data arrives late and pages go missing from the graph. To explore many apps in parallel, explore a build behind the nginx gateway: `scripts/explore_apps.sh OUT_DIR app...` builds, starts `scripts/server/start_nginx_gateway.sh`, explores every app at once and stops the gateway (the explorer accepts the gateway's self-signed certificate). A browser crash is logged with its time (`[hh:mm:ss] page crashed` / `browser disconnected`).
 - Every tap starts from a reset simulator with frozen simulated time (`--sim-time`), reaching its page again by the recorded taps, and every input waits for `__SIM__.waitForIdle`, so two runs on the same build give the same graph.
 - The output also lists routes or declared states never reached (`unreached`: states in `states` must be reached exactly, otherwise each declared value must appear in some reached node), URLs no route matches (`unmatched`), controls that could not be tested, the actions on each node, and for each action the shortest tap path from the start page (`tasks`, the old declarations' action tasks).
 
@@ -86,3 +93,5 @@ The per-app navigation declarations were removed in one change (the Tencent Meet
 - Three controls changed on purpose: they were dead before because the declaration's `from` list was too narrow — Spotify's Timer in a queue sheet opened outside the player, Spotify's "New playlist" in the save sheet on `/library`, and SMS's MMS / SIM rows under advanced settings. They now open their pages.
 
 Behaviour was kept even where the old code differed from its declaration: eBay always pushes (tabs included) and its back pops history directly; FileManager's taps stop propagation and its back pops history directly; Bilibili's jumps within the same page now pass the path params they used to inherit from the current URL.
+
+`ActivityRouteHost` preserves search state when returning from a detail page or playlist. Calendar can continue deleting from the current results, Spotify can continue selecting songs from the filtered list, and WeChat Reading can focus the existing field to replace its query. Keep original coordinate traces for before-and-after comparisons and save any adjusted traces separately when verifying these task flows.

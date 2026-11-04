@@ -9,10 +9,13 @@ import { dimens } from './res/dimens';
 import { anim } from './res/anim';
 import {
   MemoryRouter,
+  Outlet,
+  Route,
   useNavigate,
   useLocation,
   UNSAFE_NavigationContext,
 } from 'react-router-dom';
+import { ActivityRouteHost } from '../../os/components/ActivityRouteHost';
 import { HomePage } from './pages/HomePage';
 import { CommunitiesPage } from './pages/CommunitiesPage';
 import { ChatPage } from './pages/ChatPage';
@@ -76,13 +79,8 @@ const RedditNavigationHandler: React.FC = () => {
 const RedditLayout: React.FC = () => {
   const { pathname, search } = useLocation();
   
-  // Define main tabs for persistent rendering
-  const isHome = pathname === '/';
-  const isCommunities = pathname === '/communities';
   const isChatThread = /^\/chat\/[^/]+$/.test(pathname) && pathname !== '/chat/new';
   const isChatMessageThread = /^\/chat\/[^/]+\/thread\/[^/]+$/.test(pathname);
-  const isChat = pathname === '/chat' || pathname === '/chat/new';
-  const isInbox = pathname === '/inbox';
   const isCreate = pathname === '/create';
   const isSelectCommunity = pathname === '/create/community';
   const isProfile = pathname === '/me';
@@ -118,96 +116,19 @@ const RedditLayout: React.FC = () => {
       data-status-bar-foreground={statusBarForeground}
     >
       <div className="flex-1 overflow-hidden relative">
-        <div style={{ display: isHome ? 'block' : 'none', height: '100%' }}>
-          <HomePage />
-        </div>
-        <div style={{ display: isCommunities ? 'block' : 'none', height: '100%' }}>
-          <CommunitiesPage />
-        </div>
-        <div style={{ display: isChat ? 'block' : 'none', height: '100%' }}>
-          <ChatPage />
-        </div>
-        <div style={{ display: isInbox ? 'block' : 'none', height: '100%' }}>
-          <InboxPage />
-        </div>
-        <div style={{ display: isProfile ? 'block' : 'none', height: '100%' }}>
-          <ProfilePage />
-        </div>
-        <div style={{ display: isUserProfile ? 'block' : 'none', height: '100%' }}>
-          <UserProfilePage />
-        </div>
-        
-        {isEditProfile && (
-          <div className="absolute inset-0 bg-white z-50">
-            <EditProfilePage />
-          </div>
-        )}
-
-        {isSettings && (
-          <div className="absolute inset-0 bg-white z-50">
-            <SettingsPage />
-          </div>
-        )}
-
-        {isCreate && (
-          <div className="absolute inset-0 bg-white z-50">
-             <CreatePage />
-          </div>
-        )}
-
-        {isSelectCommunity && (
-          <div className="absolute inset-0 bg-white z-50">
-            <SelectCommunityPage />
-          </div>
-        )}
-
-        {isChatNew && (
-          <div className="absolute inset-0 bg-white z-50">
-            <NewChatPage />
-          </div>
-        )}
-
-        {isChatThread && (
-          <div className="absolute inset-0 bg-white z-50">
-            <ChatThreadPage />
-          </div>
-        )}
-
-        {isChatMessageThread && (
-          <div className="absolute inset-0 bg-white z-50">
-            <ChatMessageThreadPage />
-          </div>
-        )}
-
-        {isPostComments && (
-          <div className="absolute inset-0 bg-white z-50">
-            <PostCommentsPage />
-          </div>
-        )}
-
-        {isCommentReply && (
-          <div className="absolute inset-0 bg-white z-50">
-            <CommentReplyPage />
-          </div>
-        )}
-
-        {isCommentEdit && (
-          <div className="absolute inset-0 bg-white z-50">
-            <CommentEditPage />
-          </div>
-        )}
-
-        {isSearch && (
-          <div className="absolute inset-0 bg-white z-50">
-            <SearchPage />
-          </div>
-        )}
+        <Outlet />
       </div>
-      
+
       {showTabBar && <BottomTabBar />}
     </div>
   );
 };
+
+/** The main tabs: one instance each, kept while you are on another tab (ActivityRouteHost). */
+const MAIN_TAB_PATHS = ['/', '/communities', '/chat', '/inbox', '/me'] as const;
+
+const tabPage = (page: React.ReactNode) => <div className="h-full">{page}</div>;
+const fullPage = (page: React.ReactNode) => <div className="absolute inset-0 bg-white z-50">{page}</div>;
 
 const RedditApp: React.FC = () => {
   const { isDark } = useDarkMode();
@@ -228,7 +149,28 @@ const RedditApp: React.FC = () => {
     <div className="h-full w-full overflow-hidden" style={cssVars as React.CSSProperties}>
       <MemoryRouter initialEntries={['/']}>
         <RedditNavigationHandler />
-        <RedditLayout />
+        {/* Pages below the top stay as they were left (Fragment back stack), see ActivityRouteHost. */}
+        <ActivityRouteHost persistent={MAIN_TAB_PATHS}>
+          <Route element={<RedditLayout />}>
+            <Route path="/" element={tabPage(<HomePage />)} />
+            <Route path="/communities" element={tabPage(<CommunitiesPage />)} />
+            <Route path="/chat" element={tabPage(<ChatPage />)} />
+            <Route path="/inbox" element={tabPage(<InboxPage />)} />
+            <Route path="/me" element={tabPage(<ProfilePage />)} />
+            <Route path="/user/:id" element={tabPage(<UserProfilePage />)} />
+            <Route path="/me/edit" element={fullPage(<EditProfilePage />)} />
+            <Route path="/me/settings" element={fullPage(<SettingsPage />)} />
+            <Route path="/create" element={fullPage(<CreatePage />)} />
+            <Route path="/create/community" element={fullPage(<SelectCommunityPage />)} />
+            <Route path="/chat/new" element={fullPage(<NewChatPage />)} />
+            <Route path="/chat/:id" element={fullPage(<ChatThreadPage />)} />
+            <Route path="/chat/:id/thread/:threadId" element={fullPage(<ChatMessageThreadPage />)} />
+            <Route path="/post/:id/reply/:commentId" element={fullPage(<CommentReplyPage />)} />
+            <Route path="/post/:id/edit/:commentId" element={fullPage(<CommentEditPage />)} />
+            <Route path="/post/*" element={fullPage(<PostCommentsPage />)} />
+            <Route path="/search" element={fullPage(<SearchPage />)} />
+          </Route>
+        </ActivityRouteHost>
       </MemoryRouter>
     </div>
   );

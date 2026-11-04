@@ -7,10 +7,15 @@ import { colors, colorsDark } from './res/colors';
 import { colorStates, colorStatesDark } from './res/colors.states';
 import { dimens } from './res/dimens';
 import { anim } from './res/anim';
-import { MemoryRouter, Routes, Route } from 'react-router-dom';
+import { MemoryRouter, Route } from 'react-router-dom';
+import { ActivityRouteHost } from '../../os/components/ActivityRouteHost';
 import { preload } from './data/loader';
 import { RedBookNavigationHandler } from './components/RedBookNavigationHandler';
-import { Layout } from './pages/Layout';
+import { Layout, MAIN_TAB_PATHS } from './pages/Layout';
+import { HomePage } from './pages/HomePage';
+import { ShopPage } from './pages/ShopPage';
+import { MessagePage } from './pages/MessagePage';
+import { MePage } from './pages/MePage';
 import { DetailPage } from './pages/DetailPage';
 import { PublishTextEntryPage } from './pages/publish/PublishTextEntryPage';
 import { PublishTextTemplatePage } from './pages/publish/PublishTextTemplatePage';
@@ -83,13 +88,14 @@ export const RedBookApp: React.FC = () => {
       `}</style>
       <MemoryRouter initialEntries={['/?tab=discover']}>
         <RedBookNavigationHandler />
-        <Routes>
+        {/* Main tabs keep one instance each, pages below the top stay as left (see ActivityRouteHost). */}
+        <ActivityRouteHost persistent={MAIN_TAB_PATHS}>
           <Route path="/" element={<Layout />}>
-            <Route index element={<div />} /> {/* Persistent HomePage is handled in Layout */}
-            <Route path="market" element={<div />} /> {/* Persistent ShopPage (Market) is handled in Layout */}
-            <Route path="message" element={<div />} /> {/* Persistent Message is handled in Layout */}
-            <Route path="me" element={<div />} /> {/* Persistent MePage is handled in Layout */}
-            
+            <Route index element={<HomePage />} />
+            <Route path="market" element={<ShopPage />} />
+            <Route path="message" element={<MessagePage />} />
+            <Route path="me" element={<MePage />} />
+
             <Route path="note/:id" element={<DetailPage />} />
             <Route path="publish/text" element={<PublishTextEntryPage />} />
             <Route path="publish/text/template" element={<PublishTextTemplatePage />} />
@@ -128,7 +134,7 @@ export const RedBookApp: React.FC = () => {
             <Route path="addfriend" element={<AddFriendPage />} />
             <Route path="history" element={<HistoryPage />} />
           </Route>
-        </Routes>
+        </ActivityRouteHost>
       </MemoryRouter>
     </div>
   );

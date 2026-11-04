@@ -36,13 +36,11 @@ export const ChatThreadPage: React.FC = () => {
   const storeSeedChatThread = useRedditStore((s) => s.seedChatThread);
   const storeSendChatMessage = useRedditStore((s) => s.sendChatMessage);
   const storeDeleteChatMessage = useRedditStore((s) => s.deleteChatMessage);
-  const { bindBack, bindTap, bindLongPress, bindNav } = useRedditGestures();
+  const { bindBack, bindTap, bindLongPress, bindNav, nav, back } = useRedditGestures();
   const location = useLocation();
   const username = getUsernameFromPath(location.pathname);
 
   const [draft, setDraft] = React.useState('');
-  const [longPressMenu, setLongPressMenu] = React.useState<ChatMessage | null>(null);
-  const [confirmDelete, setConfirmDelete] = React.useState<ChatMessage | null>(null);
   const inputRef = React.useRef<HTMLTextAreaElement | null>(null);
   const messagesEndRef = React.useRef<HTMLDivElement | null>(null);
 
@@ -55,6 +53,14 @@ export const ChatThreadPage: React.FC = () => {
     const list = chatThreads[username];
     return Array.isArray(list) ? (list as ChatMessage[]) : [];
   }, [chatThreads, username]);
+
+  // The message menu and its delete confirmation live in the URL
+  // (?sheet=messageMenu|deleteMessage&sheetMessageId=): system back closes them one at a time.
+  const threadParams = new URLSearchParams(location.search);
+  const threadSheet = threadParams.get('sheet');
+  const sheetMessage = thread.find(m => m.id === threadParams.get('sheetMessageId')) ?? null;
+  const longPressMenu = threadSheet === 'messageMenu' || threadSheet === 'deleteMessage' ? sheetMessage : null;
+  const confirmDelete = threadSheet === 'deleteMessage' ? sheetMessage : null;
 
   // Seed initial message for the demo chats, if empty.
   React.useEffect(() => {
@@ -85,7 +91,7 @@ export const ChatThreadPage: React.FC = () => {
 
   const canSend = draft.trim().length > 0 && !!username;
 
-  const closeLongPressMenu = React.useCallback(() => setLongPressMenu(null), []);
+  const closeLongPressMenu = React.useCallback(() => back(), [back]);
 
   const copyText = React.useCallback((text: string) => {
     ClipboardService.copyText(String(text ?? ''));
@@ -221,7 +227,7 @@ export const ChatThreadPage: React.FC = () => {
                       {
                         duration: 600,
                         params: { username, messageId: m.id },
-                        onTrigger: () => setLongPressMenu(m),
+                        onTrigger: () => nav.push(routes.chatByUsername, { username }, { search: { sheet: 'messageMenu', sheetMessageId: m.id } }),
                       },
                     )}
                   >
@@ -315,7 +321,7 @@ export const ChatThreadPage: React.FC = () => {
             type="button"
             aria-label="Close message menu"
             className="absolute inset-0 bg-black/55"
-            onClick={closeLongPressMenu}
+            {...bindBack()}
           />
 
           {/* content */}
@@ -395,11 +401,7 @@ export const ChatThreadPage: React.FC = () => {
                   id: 'chatThread.message.menu.reply',
                   icon: <IcReply className="w-6 h-6" strokeWidth={2} />,
                   label: 'Reply',
-                  onTrigger: () => {
-                    // Open thread page (same UI as screenshot), then close menus.
-                    setConfirmDelete(null);
-                    setLongPressMenu(null);
-                  },
+                  onTrigger: () => {},
                 },
                 {
                   id: 'chatThread.message.menu.copy',
@@ -423,21 +425,16 @@ export const ChatThreadPage: React.FC = () => {
                   id: 'chatThread.message.menu.delete',
                   icon: <IcDelete className="w-6 h-6" strokeWidth={2} />,
                   label: 'Delete message',
-                  onTrigger: () => {
-                    // Open confirm dialog (do not delete immediately)
-                    setConfirmDelete(longPressMenu);
-                  },
+                  // The confirmation opens over the menu: cancelling returns to the menu.
+                  onTrigger: () => nav.push(routes.chatByUsername, { username }, { search: { sheet: 'deleteMessage', sheetMessageId: longPressMenu.id } }),
                 },
               ].map((item) => (
                 <button
                   key={item.id}
                   type="button"
                   {...(item.id === 'chatThread.message.menu.reply'
-                    ? bindNav(routes.chatThread, { params: { username, messageId: longPressMenu.id }, beforeTrigger: () => {
-                          // Close overlays before navigating.
-                          setConfirmDelete(null);
-                          setLongPressMenu(null);
-                        } })
+                    // The thread replaces the menu: back from it returns to the chat.
+                    ? bindNav(routes.chatThread, { params: { username, messageId: longPressMenu.id }, replace: true })
                     : bindTap(
                         { kind: 'action', id: item.id },
                         {
@@ -464,7 +461,7 @@ export const ChatThreadPage: React.FC = () => {
             type="button"
             aria-label="Close delete dialog"
             className="absolute inset-0 bg-black/35"
-            onClick={() => setConfirmDelete(null)}
+            {...bindBack()}
           />
           <div
             className="relative w-full max-w-[420px] bg-app-surface rounded-2xl shadow-[0_18px_40px_rgba(0,0,0,0.30)] overflow-hidden"
@@ -482,11 +479,13 @@ export const ChatThreadPage: React.FC = () => {
               <button
                 type="button"
                 className="w-full h-12 rounded-full bg-[#0045AC] text-white font-black active:opacity-95"
-                onClick={() => {
-                  deleteMessage(confirmDelete.id);
-                  setConfirmDelete(null);
-                  setLongPressMenu(null);
-                }}
+                {...bindTap({ kind: 'action', id: 'chatThread.message.delete.confirm' }, {
+                  onTrigger: () => {
+                    deleteMessage(confirmDelete.id);
+                    // Close the confirmation and the menu.
+                    back(2);
+                  },
+                })}
               >
                 Yes, Delete
               </button>
@@ -494,7 +493,7 @@ export const ChatThreadPage: React.FC = () => {
               <button
                 type="button"
                 className="w-full h-12 rounded-full bg-gray-200 text-gray-800 font-black active:opacity-95"
-                onClick={() => setConfirmDelete(null)}
+                {...bindBack()}
               >
                 Cancel
               </button>

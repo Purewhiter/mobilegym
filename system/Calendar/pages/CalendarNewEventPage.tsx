@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import { IcNavForward, IcCalendarDays, IcCake, IcBookmark, IcTimer } from '../res/icons';
 import { MaskIcon } from '../components/MaskIcon';
 import { Toast } from '@/os/components/Toast';
@@ -16,7 +16,7 @@ import { routes } from '../routes';
 const calIcon = (name: string) => name ? `/@app-assets/Calendar/icons/${name}.svg` : '';
 
 export const CalendarNewEventPage: React.FC = () => {
-    const { back, nav, bindBack, bindTap } = useCalendarGestures();
+    const { back, nav, bindBack, bindTap, bindNav } = useCalendarGestures();
     const { eventId } = useParams();
     const selectedDate = useCalendarStore(selectSelectedDate);
     const { settings, createEvent, setSelectedDate, updateEvent, events } = useCalendarStore(
@@ -46,7 +46,8 @@ export const CalendarNewEventPage: React.FC = () => {
     const [isAllDay, setIsAllDay] = useState(false);
     const [isAlarm, setIsAlarm] = useState(false);
     const [reminderMinutesBefore, setReminderMinutesBefore] = useState<number | null>(0);
-    const [reminderSheetOpen, setReminderSheetOpen] = useState(false);
+    // The reminder picker lives in the URL (?sheet=reminder): system back closes it.
+    const reminderSheetOpen = new URLSearchParams(useLocation().search).get('sheet') === 'reminder';
     const [toast, setToast] = useState<{ visible: boolean; message: string }>({ visible: false, message: '' });
 
     const showToast = (message: string) => {
@@ -222,7 +223,7 @@ export const CalendarNewEventPage: React.FC = () => {
             <CalendarActionSheet
                 open={reminderSheetOpen}
                 title={s.label_reminder}
-                onClose={() => setReminderSheetOpen(false)}
+                onClose={() => back()}
                 items={[
                     { id: 'none', title: s.remind_none, onClick: () => setReminderMinutesBefore(null) },
                     { id: '0', title: s.label_at_start, onClick: () => setReminderMinutesBefore(0) },
@@ -343,7 +344,12 @@ export const CalendarNewEventPage: React.FC = () => {
 
                     {/* Reminder */}
                     <Row label={s.label_reminder}>
-                        <button onClick={() => setReminderSheetOpen(true)} className="flex items-center gap-1">
+                        <button
+                            {...(eventId
+                                ? bindNav(routes.eventEdit, { params: { eventId }, search: { sheet: 'reminder' } })
+                                : bindNav(routes.newEvent, { search: { sheet: 'reminder' } }))}
+                            className="flex items-center gap-1"
+                        >
                             <span className="text-gray-400">{reminderLabel}</span>
                             <IcNavForward size={18} className="text-gray-300" />
                         </button>

@@ -2,18 +2,18 @@ import { defineRoutes } from '../../os/navigation/routes';
 
 /** RedBook's pages and the UI states each keeps in its URL. */
 export const routes = defineRoutes({
-  home: { path: '/', search: { 'modal': ['publish'], 'menu': ['drawer'] } },
+  home: { path: '/', search: { 'modal': ['publish'], 'menu': ['drawer'], 'tab': ['follow', 'discover', 'city'], 'dropdown': ['city', 'category'] } },
   market: { path: '/market', search: { 'modal': ['publish'] } },
   message: { path: '/message', search: { 'modal': ['publish'] } },
-  me: { path: '/me', search: { 'modal': ['publish'], 'menu': ['drawer'] } },
-  note: { path: '/note/:id', search: { 'modal': ['share'] } },
+  me: { path: '/me', search: { 'modal': ['publish'], 'menu': ['drawer'], 'tab': ['notes', 'collects', 'likes', 'comments'], 'sub': ['public', 'private', 'collection'] } },
+  note: { path: '/note/:id', search: { 'modal': ['share', 'commentSort'] } },
   user: { path: '/user/:userId' },
   chat: { path: '/chat/:userId' },
   chatSettings: { path: '/chat/:userId/settings' },
   publishText: { path: '/publish/text' },
   publishTextTemplate: { path: '/publish/text/template' },
   publishTextFinal: { path: '/publish/text/final' },
-  search: { path: '/search', search: { 'panel': ['filter'] } },
+  search: { path: '/search', search: { 'panel': ['filter'], 'tab': ['searchpage_all', 'searchpage_ask', 'users', 'products', 'images'], 'sort': ['comprehensive', 'latest', 'likes', 'comments', 'collects'] } },
   settings: { path: '/settings' },
   settingsStorage: { path: '/settings/storage' },
   settingsAccount: { path: '/settings/account' },

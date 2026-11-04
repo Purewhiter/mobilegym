@@ -73,7 +73,7 @@ export const ChatSearch: React.FC = () => {
   const t = useWechatStrings();
   const { id } = useParams<{ id: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { bindBack, nav } = useWechatGestures();
+  const { bindBack, bindNav, nav } = useWechatGestures();
   const { user, chats, contacts } = useWechatStore(useShallow(s => ({
     user: s.user,
     chats: s.chats,
@@ -235,11 +235,7 @@ export const ChatSearch: React.FC = () => {
                       key={msg.id}
                       role="button"
                       tabIndex={0}
-                      onClick={() => {
-                        if (id) {
-                          nav.push(routes.chat, { id }, { state: { scrollToMessageId: msg.id } });
-                        }
-                      }}
+                      {...(id ? bindNav(routes.chat, { params: { id }, state: { scrollToMessageId: msg.id } }) : {})}
                       onKeyDown={e => {
                         if (e.key === 'Enter' || e.key === ' ') {
                           e.preventDefault();

@@ -1,5 +1,6 @@
 import { useTencentMeetingStrings } from '../hooks/useTencentMeetingStrings';
 import React, { useState, useRef, useEffect, useMemo } from 'react';
+import { useLocation } from 'react-router-dom';
 import { IcNavForward, IcExpand, IcInfo, IcClose, IcCheck } from '../res/icons';
 import * as TimeService from '../../../os/TimeService';
 import { useMeetingGestures } from '../hooks/useMeetingGestures';
@@ -235,8 +236,9 @@ const DurationPicker: React.FC<{
     onChange: (duration: number) => void;
     onClose: () => void;
     onConfirm: () => void;
-    onSwitchToEndTime: () => void;
-}> = ({ startTime, duration, onChange, onClose, onConfirm, onSwitchToEndTime }) => {
+    /** Opens the end-time picker in this one's place. */
+    switchToEndTimeBind: React.HTMLAttributes<HTMLElement>;
+}> = ({ startTime, duration, onChange, onClose, onConfirm, switchToEndTimeBind }) => {
     const s = useTencentMeetingStrings();
     const hourOptions = generateDurationHourOptions(s.picker_suffix_hours);
     const minuteOptions = generateDurationMinuteOptions(s.picker_suffix_minutes);
@@ -277,7 +279,7 @@ const DurationPicker: React.FC<{
                 <div className="border-t border-gray-100 py-4">
                     <button
                         className="w-full text-center text-[15px] text-gray-600"
-                        onClick={onSwitchToEndTime}
+                        {...switchToEndTimeBind}
                     >
                         {s.picker_select_end_time}
                     </button>
@@ -294,8 +296,9 @@ const EndTimePicker: React.FC<{
     onChange: (endTime: number) => void;
     onClose: () => void;
     onConfirm: () => void;
-    onBack: () => void;
-}> = ({ startTime, endTime, onChange, onClose, onConfirm, onBack }) => {
+    /** Goes back to the duration picker in this one's place. */
+    backBind: React.HTMLAttributes<HTMLElement>;
+}> = ({ startTime, endTime, onChange, onClose, onConfirm, backBind }) => {
     const s = useTencentMeetingStrings();
     const dateOptions = generateDateOptions(s);
     const hourOptions = generateHourOptions(s.picker_suffix_hour);
@@ -339,7 +342,7 @@ const EndTimePicker: React.FC<{
             <div className="relative bg-app-surface rounded-t-2xl">
                 {/* Header */}
                 <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-                    <button onClick={onBack} className="p-1">
+                    <button {...backBind} className="p-1">
                         <IcNavForward size={24} className="text-gray-500 transform rotate-180" />
                     </button>
                     <div className="flex flex-col items-center">
@@ -486,9 +489,11 @@ const RepeatFrequencyPicker: React.FC<{
     startTime: number;
     onSelect: (type: RepeatType) => void;
     onClose: () => void;
-    onOpenCustom: () => void;
-}> = ({ value, startTime, onSelect, onClose, onOpenCustom }) => {
+    /** Opens the custom repeat picker in this one's place. */
+    openCustomBind: React.HTMLAttributes<HTMLElement>;
+}> = ({ value, startTime, onSelect, onClose, openCustomBind }) => {
     const s = useTencentMeetingStrings();
+    const { bindBack, bindTap } = useMeetingGestures();
     const date = TimeService.fromTimestamp(startTime);
     const weekdayNames = getMeetingWeekdayNames(s);
     const weekday = weekdayNames[date.getDay()];
@@ -514,7 +519,7 @@ const RepeatFrequencyPicker: React.FC<{
             {/* Header */}
             <div className="bg-app-surface pt-10 shrink-0 border-b border-gray-100">
                 <div className="flex items-center justify-between px-4 py-3">
-                    <button onClick={onClose} className="p-1">
+                    <button {...bindBack()} className="p-1">
                         <IcNavForward size={24} className="text-gray-900 transform rotate-180" />
                     </button>
                     <span className="text-[17px] font-medium text-gray-900">{s.repeat_title}</span>
@@ -528,7 +533,7 @@ const RepeatFrequencyPicker: React.FC<{
                     <div
                         key={type}
                         className="flex items-center justify-between gap-3 px-4 py-4 active:bg-gray-50"
-                        onClick={() => handleSelect(type)}
+                        {...bindTap({ kind: 'action', id: 'schedule.repeat.select' }, { params: { type }, onTrigger: () => handleSelect(type) })}
                     >
                         <span className="min-w-0 flex-1 text-[16px] leading-snug text-gray-900 break-words">
                             {label}
@@ -544,7 +549,7 @@ const RepeatFrequencyPicker: React.FC<{
                 {/* 自定义 */}
                 <div
                     className="flex items-center justify-between px-4 py-4 active:bg-gray-50"
-                    onClick={onOpenCustom}
+                    {...openCustomBind}
                 >
                     <span className="text-[16px] text-gray-900">{s.repeat_custom}</span>
                     <IcNavForward size={20} className="text-gray-400" />
@@ -1139,8 +1144,12 @@ const EndRepeatPicker: React.FC<{
     onClose: () => void;
 }> = ({ config, startTime, repeatType, customConfig, onChange, onClose }) => {
     const s = useTencentMeetingStrings();
-    const [showDatePicker, setShowDatePicker] = useState(false);
-    const [showCountPicker, setShowCountPicker] = useState(false);
+    const { nav, bindTap } = useMeetingGestures();
+    // Its date / count pickers live in the URL (?picker=endRepeat&sub=date|count): system back closes them.
+    const sub = new URLSearchParams(useLocation().search).get('sub');
+    const showDatePicker = sub === 'date';
+    const showCountPicker = sub === 'count';
+    const openSub = (next: 'date' | 'count') => nav.push(routes.scheduleRegular, {}, { search: { picker: 'endRepeat', sub: next } });
     const [tempDate, setTempDate] = useState(config.endDate);
     const [tempCount, setTempCount] = useState(config.count);
 
@@ -1156,7 +1165,7 @@ const EndRepeatPicker: React.FC<{
             onChange({ ...config, mode: 'date', endDate: newEndDate });
         }
         setTempDate(config.endDate);
-        setShowDatePicker(true);
+        openSub('date');
     };
 
     const handleSelectCountMode = () => {
@@ -1165,23 +1174,21 @@ const EndRepeatPicker: React.FC<{
             onChange({ ...config, mode: 'count' });
         }
         setTempCount(config.count);
-        setShowCountPicker(true);
+        openSub('count');
     };
 
     const handleDateConfirm = () => {
         // 根据选择的日期计算次数
         const newCount = Math.min(50, Math.max(1, calculateCount(startTime, repeatType, customConfig, tempDate)));
         onChange({ ...config, mode: 'date', endDate: tempDate, count: newCount });
-        setShowDatePicker(false);
-        onClose(); // 返回预定会议页面
+        nav.back(2); // 返回预定会议页面（关掉日期选择和结束重复页）
     };
 
     const handleCountConfirm = () => {
         // 根据选择的次数计算结束日期
         const newEndDate = calculateEndDate(startTime, repeatType, customConfig, tempCount);
         onChange({ ...config, mode: 'count', count: tempCount, endDate: newEndDate });
-        setShowCountPicker(false);
-        onClose(); // 返回预定会议页面
+        nav.back(2); // 返回预定会议页面（关掉次数选择和结束重复页）
     };
 
     return (
@@ -1202,7 +1209,7 @@ const EndRepeatPicker: React.FC<{
                 {/* 结束于某天 */}
                 <div
                     className="flex items-center justify-between px-4 py-4 active:bg-gray-50"
-                    onClick={handleSelectDateMode}
+                    {...bindTap('nav.scheduleRegular', { params: { picker: 'endRepeat', sub: 'date' }, onTrigger: handleSelectDateMode })}
                 >
                     <div className="flex items-center gap-2">
                         <span className="text-[16px] text-gray-900">{s.end_repeat_by_date}</span>
@@ -1216,7 +1223,7 @@ const EndRepeatPicker: React.FC<{
                 {/* 限定会议次数 */}
                 <div
                     className="flex items-center justify-between px-4 py-4 active:bg-gray-50"
-                    onClick={handleSelectCountMode}
+                    {...bindTap('nav.scheduleRegular', { params: { picker: 'endRepeat', sub: 'count' }, onTrigger: handleSelectCountMode })}
                 >
                     <div className="flex items-center gap-2">
                         <span className="text-[16px] text-gray-900">{s.end_repeat_by_count}</span>
@@ -1233,7 +1240,7 @@ const EndRepeatPicker: React.FC<{
                 <DatePickerModal
                     value={tempDate}
                     onChange={setTempDate}
-                    onClose={() => setShowDatePicker(false)}
+                    onClose={() => nav.back()}
                     onConfirm={handleDateConfirm}
                 />
             )}
@@ -1243,7 +1250,7 @@ const EndRepeatPicker: React.FC<{
                 <CountPickerModal
                     value={tempCount}
                     onChange={setTempCount}
-                    onClose={() => setShowCountPicker(false)}
+                    onClose={() => nav.back()}
                     onConfirm={handleCountConfirm}
                 />
             )}
@@ -1316,7 +1323,8 @@ const formatDurationDisplay = (minutes: number, s: TencentMeetingStrings): strin
 };
 
 export const ScheduleRegularMeetingPage: React.FC = () => {
-    const { bindBack, bindNav } = useMeetingGestures();
+    const { bindBack, bindNav, bindTap, nav } = useMeetingGestures();
+    const pickerParam = new URLSearchParams(useLocation().search).get('picker');
     const user = useMeetingStore(s => s.user);
     const scheduleMeeting = useMeetingStore(s => s.scheduleMeeting);
     const s = useTencentMeetingStrings();
@@ -1370,7 +1378,16 @@ export const ScheduleRegularMeetingPage: React.FC = () => {
     });
 
     // 选择器状态
-    const [pickerType, setPickerType] = useState<'none' | 'startTime' | 'duration' | 'endTime' | 'timezone' | 'repeat' | 'customRepeat' | 'endRepeat'>('none');
+    // Pickers live in the URL (?picker=...): system back closes them. Opening one pushes; moving
+    // between pickers (duration ⇄ end time, repeat ⇄ custom) replaces; closing goes back.
+    type PickerType = 'none' | 'startTime' | 'duration' | 'endTime' | 'timezone' | 'repeat' | 'customRepeat' | 'endRepeat';
+    const pickerType = (pickerParam && pickerParam !== 'invitees' ? pickerParam : 'none') as PickerType;
+    const setPickerType = (next: PickerType) => {
+        if (next === 'none') { nav.back(); return; }
+        (pickerType === 'none' ? nav.push : nav.replace)(routes.scheduleRegular, {}, { search: { picker: next } });
+    };
+    const bindPicker = (picker: Exclude<PickerType, 'none'> | 'invitees', beforeTrigger?: () => void) =>
+        bindNav(routes.scheduleRegular, { search: { picker }, beforeTrigger });
     const [tempStartTime, setTempStartTime] = useState(startTime);
     const [tempDuration, setTempDuration] = useState(duration);
     const [tempEndTime, setTempEndTime] = useState(startTime + duration * 60000);
@@ -1407,7 +1424,7 @@ export const ScheduleRegularMeetingPage: React.FC = () => {
 
     // 参会人
     const [invitees, setInvitees] = useState<{ id: string; name: string; avatar?: string }[]>([]);
-    const [showInviteesPicker, setShowInviteesPicker] = useState(false);
+    const showInviteesPicker = pickerParam === 'invitees';
     const contacts = useMeetingStore(s => s.contacts);
 
     // 点击完成时预定会议
@@ -1475,17 +1492,13 @@ export const ScheduleRegularMeetingPage: React.FC = () => {
 
                 {/* 时间设置 + 提示框（含加时卡） + 时区 + 重复频率 */}
                 <div className="mt-3 bg-app-surface">
-                    <div onClick={() => {
-                        setTempStartTime(startTime);
-                        setPickerType('startTime');
-                    }}>
+                    <div {...bindPicker('startTime', () => setTempStartTime(startTime))}>
                         <Row label={s.schedule_start_time} value={formatStartTimeDisplay(startTime, s)} />
                     </div>
-                    <div onClick={() => {
+                    <div {...bindPicker('duration', () => {
                         setTempDuration(duration);
                         setTempEndTime(startTime + duration * 60000);
-                        setPickerType('duration');
-                    }}>
+                    })}>
                         <Row label={s.schedule_duration} value={formatDurationDisplay(duration, s)} />
                     </div>
 
@@ -1510,23 +1523,23 @@ export const ScheduleRegularMeetingPage: React.FC = () => {
                     </div>
                 </div>
 
-                    <div onClick={() => setPickerType('timezone')}>
+                    <div {...bindPicker('timezone')}>
                         <Row label={s.schedule_timezone} value={timezone} />
                     </div>
-                    <div onClick={() => setPickerType('repeat')}>
+                    <div {...bindPicker('repeat')}>
                         <Row label={s.schedule_repeat} value={formatRepeatDisplay(repeatType, customRepeatConfig, startTime, s)} />
                     </div>
 
                     {/* 结束重复（仅在有重复频率时显示） */}
                     {repeatType !== 'none' && (
-                        <div onClick={() => setPickerType('endRepeat')}>
+                        <div {...bindPicker('endRepeat')}>
                             <Row label={s.schedule_end_repeat} value={formatEndRepeatDisplay(endRepeatConfig, s)} />
                         </div>
                     )}
                 </div>
 
                 {/* 参会人 - 单独一块 */}
-                <div className="mt-3 bg-app-surface" onClick={() => setShowInviteesPicker(true)}>
+                <div className="mt-3 bg-app-surface" {...bindPicker('invitees')}>
                     <Row
                         label={s.schedule_invitees}
                         value={inviteesValue}
@@ -1644,10 +1657,13 @@ export const ScheduleRegularMeetingPage: React.FC = () => {
                         setDuration(tempDuration);
                         setPickerType('none');
                     }}
-                    onSwitchToEndTime={() => {
-                        setTempEndTime(startTime + tempDuration * 60000);
-                        setPickerType('endTime');
-                    }}
+                    switchToEndTimeBind={bindTap('nav.scheduleRegular', {
+                        params: { picker: 'endTime' },
+                        onTrigger: () => {
+                            setTempEndTime(startTime + tempDuration * 60000);
+                            setPickerType('endTime');
+                        },
+                    })}
                 />
             )}
 
@@ -1664,7 +1680,7 @@ export const ScheduleRegularMeetingPage: React.FC = () => {
                         setDuration(newDuration);
                         setPickerType('none');
                     }}
-                    onBack={() => setPickerType('duration')}
+                    backBind={bindTap('nav.scheduleRegular', { params: { picker: 'duration' }, onTrigger: () => setPickerType('duration') })}
                 />
             )}
 
@@ -1692,16 +1708,19 @@ export const ScheduleRegularMeetingPage: React.FC = () => {
                         }
                     }}
                     onClose={() => setPickerType('none')}
-                    onOpenCustom={() => {
-                        // 初始化临时配置，设置默认选中值
-                        const date = TimeService.fromTimestamp(startTime);
-                        setTempCustomConfig({
-                            ...customRepeatConfig,
-                            weekDays: customRepeatConfig.weekDays.length > 0 ? customRepeatConfig.weekDays : [date.getDay()],
-                            monthDays: customRepeatConfig.monthDays.length > 0 ? customRepeatConfig.monthDays : [date.getDate()],
-                        });
-                        setPickerType('customRepeat');
-                    }}
+                    openCustomBind={bindTap('nav.scheduleRegular', {
+                        params: { picker: 'customRepeat' },
+                        onTrigger: () => {
+                            // 初始化临时配置，设置默认选中值
+                            const date = TimeService.fromTimestamp(startTime);
+                            setTempCustomConfig({
+                                ...customRepeatConfig,
+                                weekDays: customRepeatConfig.weekDays.length > 0 ? customRepeatConfig.weekDays : [date.getDay()],
+                                monthDays: customRepeatConfig.monthDays.length > 0 ? customRepeatConfig.monthDays : [date.getDate()],
+                            });
+                            setPickerType('customRepeat');
+                        },
+                    })}
                 />
             )}
 
@@ -1741,12 +1760,12 @@ export const ScheduleRegularMeetingPage: React.FC = () => {
                     {/* Header */}
                     <div className="bg-app-surface pt-10 shrink-0 border-b border-gray-100">
                         <div className="flex items-center justify-between px-4 py-3">
-                            <button onClick={() => setShowInviteesPicker(false)} className="text-[17px] text-gray-900">
+                            <button {...bindBack()} className="text-[17px] text-gray-900">
                                 {s.btn_cancel}
                             </button>
                             <span className="text-[17px] font-medium text-gray-900">{s.schedule_select_invitees}</span>
                             <button
-                                onClick={() => setShowInviteesPicker(false)}
+                                {...bindBack()}
                                 className="text-[17px] text-blue-600 font-medium"
                             >
                                 {s.btn_confirm}({invitees.length})

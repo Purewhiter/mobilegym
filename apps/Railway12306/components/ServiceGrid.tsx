@@ -9,11 +9,12 @@ interface ServiceGridProps {
   columns?: number;
   iconBg?: string;
   iconColor?: string;
-  onItemClick?: (id: string) => void;
+  /** Tap binding for an item that opens a page (`bindNav`); items without one do nothing. */
+  bindItem?: (id: string) => React.HTMLAttributes<HTMLElement> | undefined;
 }
 
 export const ServiceGrid: React.FC<ServiceGridProps> = ({
-  items, columns = 5, iconBg = 'bg-[#EBF3FF]', iconColor = 'text-app-primary', onItemClick,
+  items, columns = 5, iconBg = 'bg-[#EBF3FF]', iconColor = 'text-app-primary', bindItem,
 }) => {
   const s = useRailwayStrings();
   return (
@@ -25,7 +26,7 @@ export const ServiceGrid: React.FC<ServiceGridProps> = ({
           <div
             key={item.id}
             className="flex flex-col items-center gap-1 relative active:opacity-70"
-            onClick={() => onItemClick?.(item.id)}
+            {...bindItem?.(item.id)}
           >
             {tag && (
               <span className="absolute -top-1 right-0 text-[8px] text-white bg-red-500 rounded-full px-1 leading-tight z-10">

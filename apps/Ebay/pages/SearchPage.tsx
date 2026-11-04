@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
+import { useEntryState } from '../hooks/useEntryState';
 import { IcCamera, IcNavBack, IcCart, IcHeart, IcSort, IcFilter, IcSearch } from '../res/icons';
 import { useEbayGestures } from '../hooks/useEbayGestures';
 import TabBar from '../components/TabBar';
@@ -7,7 +8,7 @@ import FilterDrawer, { type BuyingFormatFilter, type ViewMode } from '../compone
 import { useScrollDirection } from '../hooks/useScrollDirection';
 import { useEbayCategories, useEbaySearch } from '../data/loader';
 import type { ProductItem } from '../types';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { useEbayStore } from '../state';
 import { useEbayStrings } from '../hooks/useEbayStrings';
 import { useLocale } from '../../../os/locale';
@@ -25,13 +26,12 @@ import { routes } from '../routes';
 // ── Main component ────────────────────────────────────────────
 
 const SearchPage: React.FC = () => {
-  const { bindBack, bindNav } = useEbayGestures();
+  const { bindBack, bindNav, bindTap, nav } = useEbayGestures();
   const s = useEbayStrings();
   const locale = useLocale();
   const isEn = locale === 'en';
   const numberLocale = isEn ? 'en-US' : 'zh-CN';
   const locationRouter = useLocation();
-  const routerNavigate = useNavigate();
   const scrollRef = useRef<HTMLDivElement>(null);
   const isTabBarVisible = useScrollDirection();
   const addRecentSearch = useEbayStore(st => st.addRecentSearch);
@@ -53,29 +53,32 @@ const SearchPage: React.FC = () => {
   // Search state
   const [searchStep, setSearchStep] = useState<'input' | 'results'>(hasUrlState ? 'results' : 'input');
   const [searchQuery, setSearchQuery] = useState(initQuery);
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(initCategory);
-  const [selectedBrands, setSelectedBrands] = useState<Set<string>>(new Set());
-  const [priceRange, setPriceRange] = useState<{ min: string; max: string }>({ min: '', max: '' });
-  const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
-  const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
-  const [freeShippingOnly, setFreeShippingOnly] = useState(false);
+  const [selectedCategoryId, setSelectedCategoryId] = useEntryState<string | null>('category', initCategory);
+  // Filters, sort and view survive opening an item and coming back (saved per history entry).
+  const [selectedBrands, setSelectedBrands] = useEntryState<Set<string>>('brands', () => new Set());
+  const [priceRange, setPriceRange] = useEntryState<{ min: string; max: string }>('price', { min: '', max: '' });
+  const [selectedConditions, setSelectedConditions] = useEntryState<string[]>('conditions', []);
+  const [selectedLocation, setSelectedLocation] = useEntryState<string | null>('location', null);
+  const [freeShippingOnly, setFreeShippingOnly] = useEntryState('freeShipping', false);
 
   // UI state
-  const [sortOption, setSortOption] = useState<SortOptionType>('bestMatch');
-  const [isSortModalOpen, setIsSortModalOpen] = useState(false);
-  const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
-  const [viewMode, setViewMode] = useState<ViewMode>('list');
-  const [buyingFormat, setBuyingFormat] = useState<BuyingFormatFilter>('all');
+  const [sortOption, setSortOption] = useEntryState<SortOptionType>('sort', 'bestMatch');
+  const sheet = initParams.get('sheet');
+  const isSortModalOpen = sheet === 'sort';
+  const isFilterDrawerOpen = sheet === 'filter';
+  const [viewMode, setViewMode] = useEntryState<ViewMode>('view', 'list');
+  const [buyingFormat, setBuyingFormat] = useEntryState<BuyingFormatFilter>('buyingFormat', 'all');
   const [lastSubmittedQuery, setLastSubmittedQuery] = useState(initQuery);
 
-  // URL params sync (handles in-page navigation changes, e.g. category chip clicks)
+  // URL params sync (handles in-page navigation changes, e.g. category chip clicks).
+  // Keyed on q / category only: opening or closing a sheet must not undo filter edits.
+  // Not on mount: the initial state already came from the URL, or from the entry's saved filters.
+  const urlSyncMounted = useRef(false);
   useEffect(() => {
-    const params = new URLSearchParams(locationRouter.search);
-    const catParam = params.get('category');
-    const queryParam = params.get('q');
-    if (catParam) { setSelectedCategoryId(catParam); setSearchStep('results'); }
-    if (queryParam) { setSearchQuery(queryParam); setSearchStep('results'); }
-  }, [locationRouter.search]);
+    if (!urlSyncMounted.current) { urlSyncMounted.current = true; return; }
+    if (initCategory) { setSelectedCategoryId(initCategory); setSearchStep('results'); }
+    if (initQuery) { setSearchQuery(initQuery); setSearchStep('results'); }
+  }, [initCategory, initQuery]);
 
   // Results and filter-drawer counts come from the device server (utils/search.ts).
   const searchParams = useMemo(() => ({
@@ -226,12 +229,10 @@ const SearchPage: React.FC = () => {
     setLastSubmittedQuery(nextQuery);
     setSearchStep('results');
     addRecentSearch(nextQuery);
-    routerNavigate(`/search?q=${encodeURIComponent(nextQuery)}`, { replace: true });
+    nav.replace(routes.search, {}, { search: { q: nextQuery } });
   };
 
-  const closeSortModal = () => {
-    setIsSortModalOpen(false);
-  };
+  const closeSortModal = () => nav.back();
 
   const handleFilterReset = () => {
     setSortOption('bestMatch');
@@ -246,7 +247,7 @@ const SearchPage: React.FC = () => {
   };
 
   const handleFilterApply = () => {
-    setIsFilterDrawerOpen(false);
+    nav.back();
     requestSnapshot();
   };
 
@@ -288,7 +289,7 @@ const SearchPage: React.FC = () => {
           <div className="px-4 py-4">
             <div
               className="py-3 text-base text-black font-normal cursor-pointer active:bg-gray-50"
-              onClick={() => handleSearch(s.search_sample_query)}
+              {...bindTap({ kind: 'action', id: 'ebay.search.submit' }, { params: { q: s.search_sample_query }, onTrigger: () => handleSearch(s.search_sample_query) })}
             >
               {s.search_sample_query}
             </div>
@@ -305,17 +306,20 @@ const SearchPage: React.FC = () => {
 
   // ── Results step ──
 
+  // Back and the search box both return to typing the query.
+  const editQuery = bindNav(routes.search, { replace: true, beforeTrigger: () => setSearchStep('input') });
+
   return (
     <div className="h-full bg-app-surface flex flex-col relative">
       {/* Header */}
       <div className="bg-app-surface z-20 flex-shrink-0">
         <div className="px-3 py-2 pt-10 flex items-center space-x-3">
-          <div onClick={() => { setSearchStep('input'); routerNavigate('/search', { replace: true }); }} className="cursor-pointer">
+          <div {...editQuery} className="cursor-pointer">
             <IcNavBack size={24} className="text-black" />
           </div>
           <div
             className="flex-1 bg-gray-100 rounded-full h-10 flex items-center px-3 relative cursor-text"
-            onClick={() => { setSearchStep('input'); routerNavigate('/search', { replace: true }); }}
+            {...editQuery}
           >
             <IcSearch size={18} className="text-black mr-2" />
             <span className="text-black text-base font-normal truncate flex-1">{searchQuery || s.search_placeholder}</span>
@@ -334,14 +338,14 @@ const SearchPage: React.FC = () => {
           <div className="flex items-center space-x-6">
             <button
               className="flex items-center text-blue-600 space-x-1"
-              onClick={() => setIsSortModalOpen(true)}
+              {...bindNav(routes.search, { search: { sheet: 'sort' }, keep: ['q', 'category'] })}
             >
               <span className="text-sm font-bold">{s.search_sort}</span>
               <IcSort size={14} />
             </button>
             <button
               className="flex items-center text-blue-600 space-x-1"
-              onClick={() => setIsFilterDrawerOpen(true)}
+              {...bindNav(routes.search, { search: { sheet: 'filter' }, keep: ['q', 'category'] })}
             >
               <span className="text-sm font-bold">{s.search_filters}</span>
               <IcFilter size={14} />
@@ -404,7 +408,7 @@ const SearchPage: React.FC = () => {
 
       <FilterDrawer
         isOpen={isFilterDrawerOpen}
-        onClose={() => setIsFilterDrawerOpen(false)}
+        onClose={() => nav.back()}
         onApply={handleFilterApply}
         onReset={handleFilterReset}
         sortOption={sortOption}

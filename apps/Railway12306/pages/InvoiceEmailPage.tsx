@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useLocation } from 'react-router-dom';
+import { routes } from '../routes';
 import { IcNavBack, IcInfo } from '../res/icons';
 import { RAILWAY12306_CONFIG } from '../data';
 import { useRailwayStore, maskEmail } from '../state';
@@ -6,7 +8,8 @@ import { useRailwayGestures } from '../hooks/useRailwayGestures';
 import { useRailwayStrings } from '../hooks/useRailwayStrings';
 
 export const InvoiceEmailPage: React.FC = () => {
-  const { bindBack, back } = useRailwayGestures();
+  const { bindBack, bindTap, back, nav } = useRailwayGestures();
+  const location = useLocation();
   const s = useRailwayStrings();
   const savedEmail = useRailwayStore(s => s.invoiceEmail);
   const setInvoiceEmail = useRailwayStore(s => s.setInvoiceEmail);
@@ -15,17 +18,12 @@ export const InvoiceEmailPage: React.FC = () => {
   const defaultDisplay = maskEmail(savedEmail || rawEmail);
 
   const [email, setEmail] = useState(defaultDisplay);
-  const [showDialog, setShowDialog] = useState(false);
+  // The saved notice lives in the URL (?dialog=saved): system back closes it.
 
   const handleSave = () => {
     if (!email.trim() || email === defaultDisplay) return;
     setInvoiceEmail(email.trim());
-    setShowDialog(true);
-  };
-
-  const handleConfirm = () => {
-    setShowDialog(false);
-    back();
+    nav.push(routes.invoiceEmail, {}, { search: { dialog: 'saved' } });
   };
 
   return (
@@ -57,7 +55,7 @@ export const InvoiceEmailPage: React.FC = () => {
       <div className="px-3 mt-4">
         <button
           className="w-full py-3 bg-app-primary rounded-full text-white text-base font-medium active:opacity-80"
-          onClick={handleSave}
+          {...bindTap({ kind: 'action', id: 'railway.invoiceEmail.save' }, { onTrigger: handleSave })}
         >
           {s.action_save}
         </button>
@@ -78,16 +76,17 @@ export const InvoiceEmailPage: React.FC = () => {
       </div>
 
       {/* 成功弹窗 */}
-      {showDialog && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white rounded-2xl w-[280px] overflow-hidden">
+      {new URLSearchParams(location.search).get('dialog') === 'saved' && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/40" {...bindBack()} />
+          <div className="relative bg-white rounded-2xl w-[280px] overflow-hidden">
             <div className="px-6 pt-6 pb-4 text-center">
               <p className="text-lg font-bold text-gray-900 mb-3">{s.common_notice}</p>
               <p className="text-sm text-gray-600">{s.invoice_email_saved_success}</p>
             </div>
             <button
               className="w-full py-3 border-t border-gray-100 text-base font-medium text-app-primary active:bg-gray-50"
-              onClick={handleConfirm}
+              {...bindTap({ kind: 'action', id: 'railway.invoiceEmail.saved.ok' }, { onTrigger: () => back(2) })}
             >
               {s.action_confirm}
             </button>

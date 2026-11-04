@@ -1,9 +1,11 @@
 import React from 'react';
+import { useLocation } from 'react-router-dom';
 import { useLocale } from '@/apps/Alipay/locale';
 import * as TimeService from '../../../os/TimeService';
 import { DefaultAvatar } from '../components/DefaultAvatar';
 import { useAlipayStrings } from '../hooks/useAlipayStrings';
 import { useAlipayGestures } from '../hooks/useAlipayGestures';
+import { routes } from '../routes';
 import { IcClose, IcExpand, IcNavBack, IcSearch } from '../res/icons';
 import { useAlipayStore } from '../state';
 import type { AlipayTransferRecord } from '../types';
@@ -13,7 +15,6 @@ import {
   getBillRefundStatusLabel,
   recordMatchesBillFilters,
 } from '../utils/bills';
-import { routes } from '../routes';
 
 const MONTH_LABELS_EN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -85,7 +86,7 @@ const SearchRecordRow: React.FC<{ record: AlipayTransferRecord; isEnglish: boole
 export const BillSearchPage: React.FC = () => {
   const s = useAlipayStrings();
   const isEnglish = useLocale() === 'en';
-  const { back, bindNav } = useAlipayGestures();
+  const { back, bindNav, bindBack, bindTap } = useAlipayGestures();
   const transferRecords = useAlipayStore(state => state.transferRecords);
   const billSearchHistory = useAlipayStore(state => state.billSearchHistory);
   const addBillSearchHistory = useAlipayStore(state => state.addBillSearchHistory);
@@ -98,7 +99,8 @@ export const BillSearchPage: React.FC = () => {
   const currentMonth = now.getMonth() + 1;
   const keyword = query.trim();
 
-  const [isMonthPickerOpen, setIsMonthPickerOpen] = React.useState(false);
+  // The month picker lives in the URL (?modal=month): system back closes it.
+  const isMonthPickerOpen = new URLSearchParams(useLocation().search).get('modal') === 'month';
   const [selectedYear, setSelectedYear] = React.useState(currentYear);
   const [selectedMonth, setSelectedMonth] = React.useState(currentMonth);
   const [singleMonthMode, setSingleMonthMode] = React.useState(false);
@@ -171,11 +173,13 @@ export const BillSearchPage: React.FC = () => {
     inputRef.current?.focus();
   };
 
-  const openMonthPicker = () => {
-    setSelectedYear(currentYear);
-    setSelectedMonth(currentMonth);
-    setIsMonthPickerOpen(true);
-  };
+  const monthPickerBind = bindNav(routes.billSearch, {
+    search: { modal: 'month' },
+    beforeTrigger: () => {
+      setSelectedYear(currentYear);
+      setSelectedMonth(currentMonth);
+    },
+  });
 
   return (
     <div className="flex h-full flex-col bg-app-surface" data-status-bar-foreground="dark">
@@ -191,7 +195,7 @@ export const BillSearchPage: React.FC = () => {
                 </button>
                 <button className="text-gray-500">{s.custom_time}</button>
               </div>
-              <button onClick={() => setIsMonthPickerOpen(false)} className="text-xl font-light text-gray-400">×</button>
+              <button {...bindBack()} className="text-xl font-light text-gray-400">×</button>
             </div>
 
             <div className="relative mb-6 flex h-44 justify-center">
@@ -254,10 +258,12 @@ export const BillSearchPage: React.FC = () => {
 
             <button
               className="mb-2 w-full rounded-lg bg-app-primary py-3 text-lg font-medium text-white"
-              onClick={() => {
-                setSingleMonthMode(true);
-                setIsMonthPickerOpen(false);
-              }}
+              {...bindTap({ kind: 'action', id: 'billSearch.monthPicker.confirm' }, {
+                onTrigger: () => {
+                  setSingleMonthMode(true);
+                  back();
+                },
+              })}
             >
               {s.confirm_2}
             </button>
@@ -329,7 +335,7 @@ export const BillSearchPage: React.FC = () => {
             <div className="mt-1 text-sm text-gray-400">{s.bill_search_try_another}</div>
             <button
               className="mt-5 rounded-full border border-app-primary px-5 py-2 text-sm text-app-primary"
-              onClick={openMonthPicker}
+              {...monthPickerBind}
             >
               {s.bill_search_view_earlier_bills}
             </button>
@@ -344,7 +350,7 @@ export const BillSearchPage: React.FC = () => {
                   <div className="flex items-center justify-between px-4 py-2">
                     <button
                       className="flex items-center text-sm font-medium text-gray-500"
-                      onClick={openMonthPicker}
+                      {...monthPickerBind}
                     >
                       {label}
                       <IcExpand size={14} className="ml-0.5 text-gray-400" />

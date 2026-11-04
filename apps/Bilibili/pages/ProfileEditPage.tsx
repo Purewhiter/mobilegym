@@ -1,3 +1,4 @@
+import { useLocation } from 'react-router-dom';
 import React, { useState } from 'react';
 import {
     IcNavBack, IcNavForward, IcCalculator,
@@ -9,9 +10,9 @@ import type { BilibiliUser } from '../data';
 import { useBilibiliGestures } from '../hooks/useBilibiliGestures';
 import * as TimeService from '../../../os/TimeService';
 import { routes } from '../routes';
-const ListItem = ({ label, value, isAvatar = false, noBorder = false, noArrow = false, isQr = false, onClick }: any) => (
+const ListItem = ({ label, value, isAvatar = false, noBorder = false, noArrow = false, isQr = false, ...bind }: any) => (
     <div
-        onClick={onClick}
+        {...bind}
         className={`flex justify-between items-center py-3.5 pr-4 bg-app-surface active:bg-gray-50 ${!noBorder ? 'border-b border-gray-100' : ''}`}
     >
         <span className="text-[15px] text-app-text">{label}</span>
@@ -32,16 +33,17 @@ const ListItem = ({ label, value, isAvatar = false, noBorder = false, noArrow = 
 
 // --- Gender Modal ---
 const GenderModal = ({ onClose, onSelect, current }: { onClose: () => void, onSelect: (val: any) => void, current?: string }) => {
+    const { bindBack, bindTap } = useBilibiliGestures();
     const options = ['男', '女', '保密'];
 
     return (
         <div className="fixed inset-0 z-50 flex flex-col justify-end">
-            <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+            <div className="absolute inset-0 bg-black/50" {...bindBack()} />
             <div className="bg-app-surface rounded-t-xl z-10 overflow-hidden animate-slide-up pb-safe">
                 {options.map((opt) => (
                     <div
                         key={opt}
-                        onClick={() => onSelect(opt)}
+                        {...bindTap({ kind: 'action', id: 'bilibili.profileEdit.gender.select' }, { params: { gender: opt }, onTrigger: () => onSelect(opt) })}
                         className={`py-4 text-center text-[16px] border-b border-gray-100 active:bg-gray-50 ${current === opt ? 'text-app-primary' : 'text-app-text'}`}
                     >
                         {opt}
@@ -230,11 +232,13 @@ const BirthdayPicker = ({ onClose, onSelect, initialDate }: { onClose: () => voi
 
 
 export const ProfileEditPage: React.FC = () => {
-    const { bindBack, bindNav } = useBilibiliGestures();
+    const { bindBack, bindNav, back } = useBilibiliGestures();
     const user = useBilibiliStore(s => s.user);
     const updateUser = useBilibiliStore(s => s.updateUser);
-    const [showGenderModal, setShowGenderModal] = useState(false);
-    const [showBirthdayModal, setShowBirthdayModal] = useState(false);
+    // The gender and birthday pickers live in the URL (?sheet=gender|birthday): system back closes them.
+    const sheet = new URLSearchParams(useLocation().search).get('sheet');
+    const showGenderModal = sheet === 'gender';
+    const showBirthdayModal = sheet === 'birthday';
 
     return (
         <div className="flex flex-col h-full bg-app-bg overflow-y-auto relative" data-scroll-container="main" data-scroll-direction="vertical">
@@ -257,12 +261,12 @@ export const ProfileEditPage: React.FC = () => {
                 <ListItem
                     label="性别"
                     value={user.sex || "保密"}
-                    onClick={() => setShowGenderModal(true)}
+                    {...bindNav(routes.profileEdit, { search: { sheet: 'gender' } })}
                 />
                 <ListItem
                     label="出生年月"
                     value={user.birthday || "生日当天会收到祝福"}
-                    onClick={() => setShowBirthdayModal(true)}
+                    {...bindNav(routes.profileEdit, { search: { sheet: 'birthday' } })}
                 />
                 <ListItem
                     label="个性签名"
@@ -295,18 +299,18 @@ export const ProfileEditPage: React.FC = () => {
             {/* Modals */}
             {showGenderModal && (
                 <GenderModal
-                    onClose={() => setShowGenderModal(false)}
+                    onClose={() => back()}
                     current={user.sex}
                     onSelect={(val) => {
                         updateUser({ sex: val });
-                        setShowGenderModal(false);
+                        back();
                     }}
                 />
             )}
 
             {showBirthdayModal && (
                 <BirthdayPicker
-                    onClose={() => setShowBirthdayModal(false)}
+                    onClose={() => back()}
                     initialDate={user.birthday}
                     onSelect={(val) => {
                         updateUser({ birthday: val });

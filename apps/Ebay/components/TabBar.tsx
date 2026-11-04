@@ -31,7 +31,7 @@ const TabBar: React.FC<{ visible?: boolean }> = ({ visible: visibleProp }) => {
         style={{ transition: 'transform var(--app-duration-medium) var(--app-easing-standard)' }}
     >
       <div
-        {...bindNav(routes.home)}
+        {...bindNav(routes.home, { replace: true })}
         className={`flex flex-col items-center justify-center w-full cursor-pointer`}
       >
         <IcTabHome size={24} className={isActive('/') ? activeColor : inactiveColor} strokeWidth={isActive('/') ? 2.5 : 2} />
@@ -39,7 +39,7 @@ const TabBar: React.FC<{ visible?: boolean }> = ({ visible: visibleProp }) => {
       </div>
 
       <div
-        {...bindNav(routes.me)}
+        {...bindNav(routes.me, { replace: true })}
         className={`flex flex-col items-center justify-center w-full cursor-pointer`}
       >
         <IcTabMe size={24} className={isActive('/me') ? activeColor : inactiveColor} strokeWidth={isActive('/me') ? 2.5 : 2} />
@@ -47,7 +47,7 @@ const TabBar: React.FC<{ visible?: boolean }> = ({ visible: visibleProp }) => {
       </div>
 
       <div
-        {...bindNav(routes.search)}
+        {...bindNav(routes.search, { replace: true })}
         className={`flex flex-col items-center justify-center w-full cursor-pointer`}
       >
         <IcSearch size={24} className={isActive('/search') ? activeColor : inactiveColor} strokeWidth={isActive('/search') ? 2.5 : 2} />
@@ -55,7 +55,7 @@ const TabBar: React.FC<{ visible?: boolean }> = ({ visible: visibleProp }) => {
       </div>
 
       <div
-        {...bindNav(routes.inbox)}
+        {...bindNav(routes.inbox, { replace: true })}
         className={`flex flex-col items-center justify-center w-full cursor-pointer`}
       >
         <IcTabBell size={24} className={isActive('/inbox') ? activeColor : inactiveColor} strokeWidth={isActive('/inbox') ? 2.5 : 2} />
@@ -63,7 +63,7 @@ const TabBar: React.FC<{ visible?: boolean }> = ({ visible: visibleProp }) => {
       </div>
 
       <div
-        {...bindNav(routes.sell)}
+        {...bindNav(routes.sell, { replace: true })}
         className={`flex flex-col items-center justify-center w-full cursor-pointer`}
       >
         <IcTabSell size={24} className={isActive('/sell') ? activeColor : inactiveColor} strokeWidth={isActive('/sell') ? 2.5 : 2} />

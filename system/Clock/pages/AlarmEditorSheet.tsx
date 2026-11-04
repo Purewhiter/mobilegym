@@ -8,16 +8,20 @@ import { CLOCK_CONFIG } from '../data';
 import { IcClose, IcCheck, IcNavForward } from '../res/icons';
 import { Switch } from '../components/Switch';
 import { WheelColumn } from '../components/WheelColumn';
+import { useClockGestures } from '../hooks/useClockGestures';
 import { formatCountdownText, getNextTrigger, getRepeatLabel } from '../utils';
 
 export const AlarmEditorSheet: React.FC<{
   alarm: Alarm;
   isEdit?: boolean;
   onClose: () => void;
+  /** System back for the backdrop and close button (onClose stays for drag-dismiss). */
+  closeBind: React.HTMLAttributes<HTMLElement>;
   onSave: (alarm: Alarm) => void;
-  onOpenRepeat: () => void;
-}> = ({ alarm, isEdit = false, onClose, onSave, onOpenRepeat }) => {
+  repeatBind: React.HTMLAttributes<HTMLElement>;
+}> = ({ alarm, isEdit = false, onClose, closeBind, onSave, repeatBind }) => {
   const s = useAppStrings(strings, stringsEn);
+  const { bindTap } = useClockGestures();
   const [hour, setHour] = useState(alarm.hour);
   const [minute, setMinute] = useState(alarm.minute);
   const [vibrate, setVibrate] = useState(alarm.vibrate ?? true);
@@ -57,7 +61,7 @@ export const AlarmEditorSheet: React.FC<{
 
   return (
     <div className="absolute inset-0 z-40">
-      <div className="absolute inset-0 bg-black/30" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/30" {...closeBind} />
       <div
         className="absolute top-10 left-0 right-0 bottom-0 bg-app-bg rounded-t-[24px] px-5 pt-4 pb-6 flex flex-col"
         style={{ transform: `translateY(${dragOffset}px)`, transition: !isDragging ? 'transform var(--app-duration-short) var(--app-easing-decelerate)' : undefined }}
@@ -74,7 +78,7 @@ export const AlarmEditorSheet: React.FC<{
           <div className="w-16 h-1 rounded-full bg-gray-300 -mt-4" aria-hidden />
         </div>
         <div className="flex items-center justify-between mb-4">
-          <button className="w-10 h-10 flex items-center justify-center text-app-text-muted shrink-0" onClick={onClose}>
+          <button className="w-10 h-10 flex items-center justify-center text-app-text-muted shrink-0" {...closeBind}>
             <IcClose size={26} />
           </button>
           <div className="flex flex-col items-center gap-0.5 min-w-0 flex-1 px-2">
@@ -83,7 +87,9 @@ export const AlarmEditorSheet: React.FC<{
           </div>
           <button
             className="w-10 h-10 flex items-center justify-center text-black shrink-0"
-            onClick={() => onSave({ ...alarm, hour, minute, note, vibrate, autoDelete })}
+            {...bindTap({ kind: 'action', id: 'clock.alarm.save' }, {
+              onTrigger: () => onSave({ ...alarm, hour, minute, note, vibrate, autoDelete }),
+            })}
           >
             <IcCheck size={26} />
           </button>
@@ -105,7 +111,7 @@ export const AlarmEditorSheet: React.FC<{
               <span className="text-[16px] text-app-text-muted">{CLOCK_CONFIG.alarmSoundLabel}</span>
             </div>
             <button
-              onClick={onOpenRepeat}
+              {...repeatBind}
               className="w-full px-4 py-5 flex items-center justify-between text-left"
             >
               <span className="text-[16px] text-black">{s.alarm_repeat}</span>
@@ -116,11 +122,17 @@ export const AlarmEditorSheet: React.FC<{
             </button>
             <div className="px-4 py-5 flex items-center justify-between">
               <span className="text-[16px] text-black">{s.alarm_vibrate}</span>
-              <Switch value={vibrate} onChange={setVibrate} />
+              <Switch
+                value={vibrate}
+                bind={bindTap({ kind: 'action', id: 'clock.alarm.vibrate.toggle' }, { onTrigger: () => setVibrate(v => !v) })}
+              />
             </div>
             <div className="px-4 py-5 flex items-center justify-between">
               <span className="text-[16px] text-black">{s.alarm_auto_delete}</span>
-              <Switch value={autoDelete} onChange={setAutoDelete} />
+              <Switch
+                value={autoDelete}
+                bind={bindTap({ kind: 'action', id: 'clock.alarm.autoDelete.toggle' }, { onTrigger: () => setAutoDelete(v => !v) })}
+              />
             </div>
           </div>
           <div className="bg-app-surface rounded-2xl px-4 py-5 flex items-center justify-between">

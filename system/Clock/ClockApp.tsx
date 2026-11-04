@@ -32,7 +32,7 @@ import { routes } from './routes';
 
 const ClockShell: React.FC = () => {
   const s = useAppStrings(strings, stringsEn);
-  const { nav, back } = useClockGestures();
+  const { nav, back, bindNav, bindBack, bindTap } = useClockGestures();
   const location = useLocation();
   const { navigator } = React.useContext(UNSAFE_NavigationContext);
 
@@ -45,15 +45,20 @@ const ClockShell: React.FC = () => {
   const addCity = useClockStore(st => st.addCity);
   const removeCities = useClockStore(st => st.removeCities);
 
-  const [showAlarmEditor, setShowAlarmEditor] = useState(false);
+  // Sheets live in the URL (?sheet=edit|editor|repeat on /alarm, ?sheet=city on /world): back closes them.
+  const sheetParams = new URLSearchParams(location.search);
+  const sheet = sheetParams.get('sheet');
+  // The quick editor names its alarm in the URL (?sheet=edit&alarmId=), so it opens on the right one however reached.
+  const quickEditAlarm = sheet === 'edit' ? alarms.find(a => a.id === sheetParams.get('alarmId')) : undefined;
+  const showAlarmEditor = sheet === 'editor' || sheet === 'repeat';
+  const showRepeat = sheet === 'repeat';
+  const showCitySelector = sheet === 'city';
+  // Select mode lives in the URL too (?mode=select on /alarm or /world): back and the close button leave it.
+  const selectionMode = location.pathname === '/alarm' && sheetParams.get('mode') === 'select';
+  const worldClockSelectionMode = location.pathname === '/world' && sheetParams.get('mode') === 'select';
   const [alarmEditorIsEditMode, setAlarmEditorIsEditMode] = useState(false);
-  const [showAlarmEditModal, setShowAlarmEditModal] = useState(false);
-  const [showRepeat, setShowRepeat] = useState(false);
-  const [showCitySelector, setShowCitySelector] = useState(false);
   const [showCityExistsToast, setShowCityExistsToast] = useState(false);
-  const [selectionMode, setSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [worldClockSelectionMode, setWorldClockSelectionMode] = useState(false);
   const [worldClockSelectedIds, setWorldClockSelectedIds] = useState<string[]>([]);
   const [editingAlarm, setEditingAlarm] = useState<Alarm>(() => ({
     id: `a-${timeNow()}-${base36(nextStream('clock.alarm'), 4)}`,
@@ -74,47 +79,16 @@ const ClockShell: React.FC = () => {
     return () => clearTimeout(t);
   }, [showCityExistsToast]);
 
+  // Leaving select mode drops the selection.
   useEffect(() => {
-    if (selectionMode && alarms.length === 0) {
-      setSelectionMode(false);
-      setSelectedIds([]);
-    }
-  }, [alarms.length, selectionMode]);
+    if (!selectionMode) setSelectedIds([]);
+  }, [selectionMode]);
 
   useEffect(() => {
-    if (worldClockSelectionMode && selectedCities.length === 0) {
-      setWorldClockSelectionMode(false);
-      setWorldClockSelectedIds([]);
-    }
-  }, [selectedCities.length, worldClockSelectionMode]);
+    if (!worldClockSelectionMode) setWorldClockSelectedIds([]);
+  }, [worldClockSelectionMode]);
 
   const handleBack = useCallback((): boolean => {
-    if (selectionMode) {
-      setSelectionMode(false);
-      setSelectedIds([]);
-      return true;
-    }
-    if (worldClockSelectionMode) {
-      setWorldClockSelectionMode(false);
-      setWorldClockSelectedIds([]);
-      return true;
-    }
-    if (showRepeat) {
-      setShowRepeat(false);
-      return true;
-    }
-    if (showAlarmEditModal) {
-      setShowAlarmEditModal(false);
-      return true;
-    }
-    if (showAlarmEditor) {
-      setShowAlarmEditor(false);
-      return true;
-    }
-    if (showCitySelector) {
-      setShowCitySelector(false);
-      return true;
-    }
     const memoryNavigator = navigator as any;
     const index = typeof memoryNavigator.index === 'number' ? memoryNavigator.index : 0;
     if (index > 0) {
@@ -122,20 +96,11 @@ const ClockShell: React.FC = () => {
       return true;
     }
     return false;
-  }, [
-    back,
-    navigator,
-    selectionMode,
-    showAlarmEditModal,
-    showAlarmEditor,
-    showCitySelector,
-    showRepeat,
-    worldClockSelectionMode,
-  ]);
+  }, [back, navigator]);
 
   useAppNavigationHandler('clock', { onBack: handleBack });
 
-  const handleOpenAddAlarm = () => {
+  const prepareAddAlarm = () => {
     setEditingAlarm({
       id: `a-${timeNow()}-${base36(nextStream('clock.alarm'), 4)}`,
       hour: getDate().getHours(),
@@ -146,18 +111,11 @@ const ClockShell: React.FC = () => {
       autoDelete: false,
     });
     setAlarmEditorIsEditMode(false);
-    setShowAlarmEditor(true);
-  };
-
-  const handleOpenEditAlarm = (alarm: Alarm) => {
-    setEditingAlarm(alarm);
-    setShowAlarmEditModal(true);
   };
 
   const handleSaveAlarm = (alarm: Alarm) => {
     saveAlarm(alarm);
-    setShowAlarmEditor(false);
-    setShowAlarmEditModal(false);
+    back();
   };
 
   const handleToggleAlarm = (id: string) => {
@@ -165,17 +123,12 @@ const ClockShell: React.FC = () => {
   };
 
   const handleSelectionStart = (id: string) => {
-    setSelectionMode(true);
-    setSelectedIds(prev => (prev.includes(id) ? prev : [...prev, id]));
+    setSelectedIds([id]);
+    nav.push(routes.alarm, {}, { search: { mode: 'select' } });
   };
 
   const handleSelectionToggle = (id: string) => {
     setSelectedIds(prev => (prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]));
-  };
-
-  const handleExitSelection = () => {
-    setSelectionMode(false);
-    setSelectedIds([]);
   };
 
   const handleToggleSelectAll = () => {
@@ -189,22 +142,16 @@ const ClockShell: React.FC = () => {
   const handleDeleteSelected = () => {
     if (selectedIds.length === 0) return;
     storeDeleteAlarms(selectedIdSet);
-    setSelectionMode(false);
-    setSelectedIds([]);
+    back();
   };
 
   const handleWorldClockSelectionStart = (id: string) => {
-    setWorldClockSelectionMode(true);
-    setWorldClockSelectedIds(prev => (prev.includes(id) ? prev : [...prev, id]));
+    setWorldClockSelectedIds([id]);
+    nav.push(routes.world, {}, { search: { mode: 'select' } });
   };
 
   const handleWorldClockSelectionToggle = (id: string) => {
     setWorldClockSelectedIds(prev => (prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]));
-  };
-
-  const handleWorldClockExitSelection = () => {
-    setWorldClockSelectionMode(false);
-    setWorldClockSelectedIds([]);
   };
 
   const handleWorldClockToggleSelectAll = () => {
@@ -218,14 +165,13 @@ const ClockShell: React.FC = () => {
   const handleWorldClockDeleteSelected = () => {
     if (worldClockSelectedIds.length === 0) return;
     removeCities(worldClockSelectedIdSet);
-    setWorldClockSelectionMode(false);
-    setWorldClockSelectedIds([]);
+    back();
   };
 
   const handleSelectCity = (city: WorldCity) => {
     if (selectedCityIds.includes(city.id)) return;
     addCity(city.id);
-    setShowCitySelector(false);
+    back();
   };
 
   const activeTab = location.pathname.replace('/', '') as TabKey;
@@ -242,24 +188,21 @@ const ClockShell: React.FC = () => {
           selectionMode={selectionMode}
           selectedIds={selectedIdSet}
           onToggle={handleToggleAlarm}
-          onOpenAdd={handleOpenAddAlarm}
-          onEdit={handleOpenEditAlarm}
+          addBind={bindNav(routes.alarm, { search: { sheet: 'editor' }, beforeTrigger: prepareAddAlarm })}
+          editBind={(alarm) => bindNav(routes.alarm, { search: { sheet: 'edit', alarmId: alarm.id } })}
           onSelectToggle={handleSelectionToggle}
           onSelectionStart={handleSelectionStart}
-          onExitSelection={handleExitSelection}
           onToggleSelectAll={handleToggleSelectAll}
-          onDeleteSelected={handleDeleteSelected}
         />
       </div>
       <div className="absolute inset-0" style={{ display: activeTab === 'world' ? undefined : 'none' }}>
         <WorldClockPage
           selectedCities={selectedCities}
-          onOpenAdd={() => setShowCitySelector(true)}
+          addBind={bindNav(routes.world, { search: { sheet: 'city' } })}
           selectionMode={worldClockSelectionMode}
           selectedIds={worldClockSelectedIdSet}
           onSelectToggle={handleWorldClockSelectionToggle}
           onSelectionStart={handleWorldClockSelectionStart}
-          onExitSelection={handleWorldClockExitSelection}
           onToggleSelectAll={handleWorldClockToggleSelectAll}
         />
       </div>
@@ -272,7 +215,7 @@ const ClockShell: React.FC = () => {
       {activeTab === 'alarm' && selectionMode ? (
         <div className="absolute bottom-0 left-0 right-0 bg-app-surface border-t border-gray-100 pb-6 pt-2 z-30 flex items-center justify-center">
           <button
-            onClick={handleDeleteSelected}
+            {...bindTap({ kind: 'action', id: 'clock.alarm.deleteSelected' }, { onTrigger: handleDeleteSelected })}
             className="flex flex-col items-center justify-center gap-1 text-gray-700"
           >
             <IcDelete size={22} strokeWidth={dimens.icStrokeWidth} />
@@ -282,7 +225,7 @@ const ClockShell: React.FC = () => {
       ) : activeTab === 'world' && worldClockSelectionMode ? (
         <div className="absolute bottom-0 left-0 right-0 bg-app-surface border-t border-gray-100 pb-6 pt-2 z-30 flex items-center justify-center">
           <button
-            onClick={handleWorldClockDeleteSelected}
+            {...bindTap({ kind: 'action', id: 'clock.world.deleteSelected' }, { onTrigger: handleWorldClockDeleteSelected })}
             className="flex flex-col items-center justify-center gap-1 text-gray-700"
           >
             <IcDelete size={22} strokeWidth={dimens.icStrokeWidth} />
@@ -292,25 +235,20 @@ const ClockShell: React.FC = () => {
       ) : (
         <TabBar
           activeTab={activeTab || 'alarm'}
-          onChange={(tab) => {
-            if (tab === 'alarm') nav.replace(routes.alarm);
-            else if (tab === 'world') nav.replace(routes.world);
-            else if (tab === 'stopwatch') nav.replace(routes.stopwatch);
-            else if (tab === 'timer') nav.replace(routes.timer);
-          }}
+          bindTab={(tab) => bindNav(routes[tab], { replace: true })}
         />
       )}
 
-      {showAlarmEditModal ? (
+      {quickEditAlarm ? (
         <AlarmEditModal
-          alarm={editingAlarm}
-          onClose={() => setShowAlarmEditModal(false)}
+          alarm={quickEditAlarm}
+          closeBind={bindBack()}
           onSave={handleSaveAlarm}
           onMoreSettings={(hour, minute) => {
-            setEditingAlarm(prev => ({ ...prev, hour, minute }));
-            setShowAlarmEditModal(false);
+            setEditingAlarm({ ...quickEditAlarm, hour, minute });
             setAlarmEditorIsEditMode(true);
-            setShowAlarmEditor(true);
+            // The full editor replaces the quick editor: back from it returns to the list.
+            nav.replace(routes.alarm, {}, { search: { sheet: 'editor' } });
           }}
         />
       ) : null}
@@ -319,9 +257,10 @@ const ClockShell: React.FC = () => {
         <AlarmEditorSheet
           alarm={editingAlarm}
           isEdit={alarmEditorIsEditMode}
-          onClose={() => setShowAlarmEditor(false)}
+          onClose={() => back()}
+          closeBind={bindBack()}
           onSave={handleSaveAlarm}
-          onOpenRepeat={() => setShowRepeat(true)}
+          repeatBind={bindNav(routes.alarm, { search: { sheet: 'repeat' } })}
         />
       ) : null}
 
@@ -329,7 +268,8 @@ const ClockShell: React.FC = () => {
         <RepeatSelectorSheet
           value={editingAlarm.repeat}
           onSelect={repeat => setEditingAlarm(prev => ({ ...prev, repeat }))}
-          onClose={() => setShowRepeat(false)}
+          onClose={() => back()}
+          closeBind={bindBack()}
         />
       ) : null}
 
@@ -338,9 +278,9 @@ const ClockShell: React.FC = () => {
           cities={CLOCK_CONFIG.cities}
           selectedCityIds={selectedCityIds}
           onSelect={handleSelectCity}
-          onClose={() => setShowCitySelector(false)}
+          onClose={() => back()}
+          closeBind={bindBack()}
           onAlreadySelected={() => {
-            setShowCitySelector(false);
             setShowCityExistsToast(true);
           }}
         />

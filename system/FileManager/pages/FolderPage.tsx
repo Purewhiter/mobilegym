@@ -12,6 +12,7 @@ import {
 } from '../res/icons';
 import { FSNode } from '@/os/types';
 import * as FileSystem from '@/os/FileSystemService';
+import { useFileSystemVersion } from '@/os/hooks/useFileSystemVersion';
 import { useFileManagerStore, selectClipboardHasItems } from '../state';
 import { getFileIcon, getFileIconColor, isPdfPreviewableFile, isTextPreviewableFile } from '../utils/fileUtils';
 import { InputDialog, FileDetailsDialog, ConfirmDialog, ActionMenu } from '../components/Dialog';
@@ -29,7 +30,7 @@ import { routes } from '../routes';
 export const FolderPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const location = useLocation();
-  const { nav, back } = useFileManagerGestures();
+  const { nav, back, bindNav, bindTap, bindLongPress } = useFileManagerGestures();
   const clipboardItems = useFileManagerStore(s => s.clipboardItems);
   const clipboardOperation = useFileManagerStore(s => s.clipboardOperation);
   const paste = useFileManagerStore(s => s.paste);
@@ -49,14 +50,6 @@ export const FolderPage: React.FC = () => {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const isLongPress = useRef(false);
-  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const clearLongPressTimer = () => {
-    if (longPressTimer.current) {
-      clearTimeout(longPressTimer.current);
-      longPressTimer.current = null;
-    }
-  };
 
   // Clear selection and reset long press flag when exiting select mode
   useEffect(() => {
@@ -113,6 +106,8 @@ export const FolderPage: React.FC = () => {
     setTimeout(() => setToast({ message: '', visible: false }), 2000);
   };
   
+  const fsVersion = useFileSystemVersion();
+
   // Load directory contents
   const refreshItems = useCallback(() => {
     const contents = FileSystem.listDirectory(currentPath);
@@ -120,9 +115,12 @@ export const FolderPage: React.FC = () => {
   }, [currentPath]);
   
   useEffect(() => {
-    refreshItems();
     setScrollTop(0);
-  }, [refreshItems]);
+  }, [currentPath]);
+
+  useEffect(() => {
+    refreshItems();
+  }, [refreshItems, fsVersion]);
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     setScrollTop(e.currentTarget.scrollTop);
@@ -149,17 +147,32 @@ export const FolderPage: React.FC = () => {
     }
   };
   
-  const handlePointerDown = (item: FSNode) => {
-    isLongPress.current = false;
-    clearLongPressTimer();
-    longPressTimer.current = setTimeout(() => {
-      isLongPress.current = true;
-      enterSelectMode(item.id);
-    }, 500);
-  };
-
-  const handlePointerUp = () => {
-    clearLongPressTimer();
+  // Tap opens a folder, a previewable file or an image (toggles the item in select mode);
+  // a long press selects it and enters select mode, after which its click is swallowed
+  // by handleItemClick. A tap that is an action (opening an image) pairs with a
+  // navigation long press, since one element carries one tag of each kind.
+  const itemProps = (item: FSNode) => {
+    if (isSelecting) {
+      return {
+        ...bindTap({ kind: 'action', id: 'fileManager.item.toggleSelect' }, { params: { id: item.id }, onTrigger: () => handleItemClick(item) }),
+        // A new press clears the guard: the simulator's long press sends no trailing click to consume it.
+        onPointerDown: () => { isLongPress.current = false; },
+      };
+    }
+    const pressOptions = {
+      duration: 500,
+      onLongPressStart: () => { isLongPress.current = false; },
+      onTrigger: () => enterSelectMode(item.id),
+    };
+    const open = item.type === 'directory' ? bindNav(routes.folder, { search: { path: item.path } })
+      : isTextPreviewableFile(item) ? bindNav(routes.text, { search: { path: item.path } })
+      : isPdfPreviewableFile(item) ? bindNav(routes.pdf, { search: { path: item.path } })
+      : null;
+    if (open) return { ...open, ...bindLongPress({ kind: 'action', id: 'fileManager.item.select' }, { params: { id: item.id }, ...pressOptions }) };
+    const image = item.mimeType?.startsWith('image/')
+      ? bindTap({ kind: 'action', id: 'file.image.open' }, { params: { path: item.path }, onTrigger: () => handleItemClick(item) })
+      : {};
+    return { ...image, ...bindLongPress('nav.folder', { params: { mode: 'select' }, ...pressOptions }) };
   };
   
   const getSelectedNodes = (): FSNode[] => items.filter(i => selectedIds.has(i.id));
@@ -326,17 +339,17 @@ export const FolderPage: React.FC = () => {
         showBack={!isSelecting}
         onBack={handleBack}
         leftContent={isSelecting ? (
-          <button onClick={exitSelectMode} className="w-10 h-10 flex items-center justify-center -ml-2 active:opacity-60">
+          <button {...bindTap({ kind: 'action', id: 'fileManager.select.exit' }, { onTrigger: exitSelectMode })} className="w-10 h-10 flex items-center justify-center -ml-2 active:opacity-60">
             <IcClose size={28} className="text-app-text" />
           </button>
         ) : undefined}
         rightContent={isSelecting ? (
-          <button onClick={toggleSelectAll} className="w-10 h-10 flex items-center justify-center active:opacity-60">
+          <button {...bindTap({ kind: 'action', id: 'fileManager.select.toggleAll' }, { onTrigger: toggleSelectAll })} className="w-10 h-10 flex items-center justify-center active:opacity-60">
             <IcList size={28} className={isAllSelected ? 'text-blue-500' : 'text-gray-400'} />
           </button>
         ) : (
           <>
-            <ToolbarIconButton icon={IcFolderAdd} onClick={() => openModal('newFolder')} label={s.toolbar_new_folder} />
+            <ToolbarIconButton icon={IcFolderAdd} bind={bindNav(routes.folder, { search: { modal: 'newFolder' }, keep: ['path', 'mode', 'selected'] })} label={s.toolbar_new_folder} />
             <ToolbarIconButton icon={IcFilter} label={s.toolbar_filter} />
           </>
         )}
@@ -356,7 +369,7 @@ export const FolderPage: React.FC = () => {
             <React.Fragment key={crumb.path}>
               {index > 0 && <IcNavForward size={14} className="text-gray-300 shrink-0" />}
               <button
-                onClick={() => crumb.path !== currentPath && nav.replace(routes.folder, {}, { search: { path: crumb.path } })}
+                {...(crumb.path !== currentPath ? bindNav(routes.folder, { search: { path: crumb.path }, replace: true }) : {})}
                 className={`px-4 py-1.5 rounded-full text-[13px] transition-colors shrink-0 ${
                   index === breadcrumbs.length - 1 ? 'bg-amber-100 text-amber-600 font-medium' : 'bg-gray-100 text-gray-500'
                 }`}
@@ -375,8 +388,8 @@ export const FolderPage: React.FC = () => {
               <span>{clipboardOperation === 'copy' ? s.clipboard_copied : s.clipboard_cut} {clipboardItems.length}{s.item_count_suffix}</span>
             </div>
             <div className="flex items-center gap-2">
-              <button onClick={handlePaste} className="px-3 py-1 bg-blue-500 text-white rounded-lg text-[13px] font-medium">{s.clipboard_paste}</button>
-              <button onClick={clearClipboard} className="w-7 h-7 flex items-center justify-center text-gray-500"><IcClose size={16} /></button>
+              <button {...bindTap({ kind: 'action', id: 'folder.clipboard.paste' }, { onTrigger: handlePaste })} className="px-3 py-1 bg-blue-500 text-white rounded-lg text-[13px] font-medium">{s.clipboard_paste}</button>
+              <button {...bindTap({ kind: 'action', id: 'folder.clipboard.clear' }, { onTrigger: clearClipboard })} className="w-7 h-7 flex items-center justify-center text-gray-500"><IcClose size={16} /></button>
             </div>
           </div>
         )}
@@ -396,29 +409,8 @@ export const FolderPage: React.FC = () => {
                 const isSelected = selectedIds.has(item.id);
                 const isCutting = clipboardOperation === 'cut' && clipboardItems.some(i => i.id === item.id);
                 const isImage = item.mimeType?.startsWith('image/');
-                const triggerId = item.type === 'directory'
-                  ? 'nav.folder'
-                  : isTextPreviewableFile(item)
-                    ? 'nav.text'
-                    : isPdfPreviewableFile(item)
-                      ? 'nav.pdf'
-                      : undefined;
-                const actionAttrs = !triggerId && isImage
-                  ? {
-                      'data-action': 'file.image.open',
-                      'data-action-type': 'open',
-                      'data-action-params': JSON.stringify({ path: item.path }),
-                    }
-                  : undefined;
-
                 return (
-                  <button key={item.id} onClick={() => handleItemClick(item)} onContextMenu={(e) => e.preventDefault()} onPointerDown={() => handlePointerDown(item)} onPointerUp={handlePointerUp} onPointerCancel={handlePointerUp} onPointerLeave={handlePointerUp}
-                    {...(triggerId ? {
-                      'data-trigger': triggerId,
-                      'data-trigger-type': 'tap',
-                      'data-trigger-params': JSON.stringify({ path: item.path }),
-                    } : {})}
-                    {...(actionAttrs ?? {})}
+                  <button key={item.id} {...itemProps(item)} onContextMenu={(e) => e.preventDefault()}
                     className={`w-full flex items-center gap-4 px-4 py-3 active:bg-gray-50 transition-colors ${isSelected ? 'bg-blue-50' : ''} ${isCutting ? 'opacity-50' : ''}`}>
                     <div className="w-14 h-14 rounded-xl bg-gray-50 flex items-center justify-center shrink-0 overflow-hidden">
                       {isImage ? <AsyncImage path={item.path} className="w-full h-full object-cover" /> : 
@@ -456,12 +448,12 @@ export const FolderPage: React.FC = () => {
         >
           <button
             disabled={!hasSelection}
-            onClick={() => {
-              const ok = shareNodesAsImages(getSelectedNodes());
-              if (!ok) showToast(s.toast_send_no_image);
-            }}
-            data-action="folder.select.send"
-            data-action-type="open"
+            {...(hasSelection ? bindTap({ kind: 'action', id: 'folder.select.send' }, {
+              onTrigger: () => {
+                const ok = shareNodesAsImages(getSelectedNodes());
+                if (!ok) showToast(s.toast_send_no_image);
+              },
+            }) : {})}
             className={actionBtn}
           >
             <div className="w-6 h-6 flex items-center justify-center">
@@ -469,19 +461,19 @@ export const FolderPage: React.FC = () => {
             </div>
             <span className="text-[12px] text-app-text">{s.action_send}</span>
           </button>
-          <button disabled={!hasSelection} onClick={() => openTransferSheet('move')} className={actionBtn}>
+          <button disabled={!hasSelection} {...(hasSelection ? bindTap({ kind: 'action', id: 'fileManager.select.move' }, { onTrigger: () => openTransferSheet('move') }) : {})} className={actionBtn}>
             <div className="w-6 h-6 flex items-center justify-center">
               <IcMove />
             </div>
             <span className="text-[12px] text-app-text">{s.action_move}</span>
           </button>
-          <button disabled={!hasSelection} onClick={handleDeleteClick} className={actionBtn}>
+          <button disabled={!hasSelection} {...(hasSelection ? bindTap({ kind: 'action', id: 'fileManager.select.delete' }, { onTrigger: handleDeleteClick }) : {})} className={actionBtn}>
             <div className="w-6 h-6 flex items-center justify-center">
               <IcDelete />
             </div>
             <span className="text-[12px] text-app-text">{s.action_delete}</span>
           </button>
-          <button disabled={!hasSelection} onClick={() => openModal('more')} className={actionBtn}>
+          <button disabled={!hasSelection} {...(hasSelection ? bindNav(routes.folder, { search: { mode: 'select', modal: 'more' }, keep: ['path', 'selected'] }) : {})} className={actionBtn}>
             <div className="w-6 h-6 flex items-center justify-center">
               <IcMoreCircle />
             </div>
@@ -538,7 +530,7 @@ export const FolderPage: React.FC = () => {
         onConfirm={handleTransferConfirm}
         isCreateFolderOpen={transferDialog === 'newFolder'}
         onOpenCreateFolder={openTransferCreateFolder}
-        onCloseCreateFolder={back}
+        onCloseCreateFolder={() => back()}
         onCreatedFolder={refreshItems}
       />
 

@@ -26,13 +26,14 @@ export const CashierPage: React.FC = () => {
   const balance = useAlipayStore(s => s.balance);
   const userInfo = useAlipayStore(s => s.userInfo);
   const s = useAlipayStrings();
-  const { bindTap, back, bindNav } = useAlipayGestures();
+  const { bindTap, back, bindNav, bindBack } = useAlipayGestures();
   const { activityId } = useActivityContext();
   const locale = useLocale();
   const isEnglish = locale === 'en';
   const isPasswordModalVisible = searchParams.get('modal') === 'password';
   const [selectedMethodId, setSelectedMethodId] = useState<string>('huabei');
-  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  // The cancel confirmation lives in the URL (?modal=cancel): system back closes it.
+  const cancelDialogOpen = searchParams.get('modal') === 'cancel';
 
   // Password state
   const [password, setPassword] = useState('');
@@ -64,17 +65,18 @@ export const CashierPage: React.FC = () => {
     }
   };
 
-  const handleClose = () => {
-      setCancelDialogOpen(true);
-  };
+  const closeBind = bindNav(routes.payCashier, {
+    search: { modal: 'cancel' },
+    keep: [...searchParams.keys()].filter(key => key !== 'modal'),
+  });
 
   const handleConfirmCancel = () => {
-    setCancelDialogOpen(false);
-    returnResult({ resultCode: 'CANCELED' });
-  };
-
-  const handleContinuePay = () => {
-    setCancelDialogOpen(false);
+    if ((os?.getIntentPayload?.(activityId) ?? os?.getIntentPayload?.('alipay')) && os?.setResult) {
+      os.setResult({ resultCode: 'CANCELED' });
+    } else {
+      // Close the dialog and leave the cashier.
+      back(2);
+    }
   };
 
   const handlePaymentSuccess = (methodId?: string) => {
@@ -137,6 +139,10 @@ export const CashierPage: React.FC = () => {
       if (password === expectedPassword) {
         calledRef.current = true;
         setTimeout(() => {
+          // Cleared for the page shown again from the back stack (ActivityRouteHost): its effects
+          // run again and must not pay a second time with the old digits.
+          setPassword('');
+          calledRef.current = false;
           handlePaymentSuccess(selectedMethodId);
         }, 200);
       } else {
@@ -179,13 +185,13 @@ export const CashierPage: React.FC = () => {
             <div className="flex gap-3 mt-5">
               <button
                 className="flex-1 py-2.5 rounded-full border border-[#1677FF] text-[#1677FF] text-[15px] font-medium active:bg-blue-50"
-                onClick={handleConfirmCancel}
+                {...bindTap({ kind: 'action', id: 'cashier.cancel.confirm' }, { onTrigger: handleConfirmCancel })}
               >
                 {s.cashier_abandon}
               </button>
               <button
                 className="flex-1 py-2.5 rounded-full bg-[#1677FF] text-white text-[15px] font-medium active:bg-[#1266D9]"
-                onClick={handleContinuePay}
+                {...bindBack()}
               >
                 {s.cashier_continue}
               </button>
@@ -213,7 +219,7 @@ export const CashierPage: React.FC = () => {
         <div className={`flex-1 px-5 pt-4 pb-2 ${isPasswordModalVisible ? 'overflow-hidden' : 'overflow-y-auto'}`}>
           {/* Header */}
           <div className="flex items-center justify-between mb-3 relative">
-            <button onClick={handleClose} className="p-1 -ml-1">
+            <button {...closeBind} className="p-1 -ml-1">
               <IcClose size={20} className="text-gray-400" />
             </button>
             {isPasswordModalVisible && (

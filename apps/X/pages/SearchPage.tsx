@@ -62,7 +62,7 @@ export const SearchPage: React.FC<{ isActive?: boolean }> = ({ isActive = true }
           <div
             key={key}
             className={`px-4 py-2 whitespace-nowrap cursor-pointer relative ${activeTab === key ? 'font-bold' : 'text-gray-500'}`}
-            {...bindNav(routes.search, { search: { tab: key }, replace: true })}
+            {...bindNav(routes.search, { search: { tab: key as (typeof routes.search.search.tab)[number] }, replace: true })}
           >
             {label}
             {activeTab === key && <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-1 bg-blue-500 rounded-full" />}

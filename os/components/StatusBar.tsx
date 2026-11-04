@@ -134,7 +134,8 @@ export const StatusBar = () => {
         childList: true,
         attributes: true,
         subtree: true,
-        attributeFilter: ['data-status-bar-foreground', 'data-status-bar-hidden'],
+        // data-resident-screen: a page on the back stack shown or hidden again changes the declaration in force.
+        attributeFilter: ['data-status-bar-foreground', 'data-status-bar-hidden', 'data-resident-screen'],
       });
     }
 

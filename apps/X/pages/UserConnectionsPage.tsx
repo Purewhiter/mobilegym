@@ -17,7 +17,7 @@ export const UserConnectionsPage: React.FC = () => {
 
   const followedSet = useXStore(selectEffectiveFollowedSet);
   const toggleFollow = useXStore(s => s.toggleFollow);
-  const { bindBack, bindNav, nav } = useXGestures();
+  const { bindBack, bindNav } = useXGestures();
   const s = useXStrings();
 
   const user = useXUser(id || '') ?? null;
@@ -43,11 +43,11 @@ export const UserConnectionsPage: React.FC = () => {
       </div>
 
       <div className="flex border-b border-app-border">
-        <div className={`flex-1 text-center py-3 cursor-pointer relative ${type === 'following' ? 'font-bold text-app-text' : 'text-gray-500'}`} onClick={() => nav.replace(routes.connections, { id: id! }, { search: { type: 'following' } })}>
+        <div className={`flex-1 text-center py-3 cursor-pointer relative ${type === 'following' ? 'font-bold text-app-text' : 'text-gray-500'}`} {...bindNav(routes.connections, { params: { id: id! }, search: { type: 'following' }, replace: true })}>
           {s.connections_tab_following}
           {type === 'following' && <div className="absolute bottom-0 left-0 right-0 h-1 bg-blue-500 rounded-full mx-10" />}
         </div>
-        <div className={`flex-1 text-center py-3 cursor-pointer relative ${type === 'followers' ? 'font-bold text-app-text' : 'text-gray-500'}`} onClick={() => nav.replace(routes.connections, { id: id! }, { search: { type: 'followers' } })}>
+        <div className={`flex-1 text-center py-3 cursor-pointer relative ${type === 'followers' ? 'font-bold text-app-text' : 'text-gray-500'}`} {...bindNav(routes.connections, { params: { id: id! }, search: { type: 'followers' }, replace: true })}>
           {s.connections_tab_followers}
           {type === 'followers' && <div className="absolute bottom-0 left-0 right-0 h-1 bg-blue-500 rounded-full mx-10" />}
         </div>

@@ -1,23 +1,24 @@
 import React from 'react';
+import { useLocation } from 'react-router-dom';
 import { IcRepost, IcCompose, IcBarChart } from '../res/icons';
 import { useXStrings } from '../hooks/useXStrings';
+import { useXGestures } from '../hooks/useXGestures';
+import { routes } from '../routes';
+
+/** The post whose retweet sheet is open: the sheet lives in the URL (?sheet=retweet&sheetPostId=...). */
+export function useRetweetSheetPostId(): string | null {
+  const params = new URLSearchParams(useLocation().search);
+  return params.get('sheet') === 'retweet' ? params.get('sheetPostId') : null;
+}
 
 interface XRetweetSheetProps {
   postId: string | null;
-  onClose: () => void;
   onRetweet: (postId: string) => void;
-  onQuote: (postId: string) => void;
-  onViewActivity: (postId: string) => void;
 }
 
-export const XRetweetSheet: React.FC<XRetweetSheetProps> = ({
-  postId,
-  onClose,
-  onRetweet,
-  onQuote,
-  onViewActivity,
-}) => {
+export const XRetweetSheet: React.FC<XRetweetSheetProps> = ({ postId, onRetweet }) => {
   const s = useXStrings();
+  const { bindBack, bindNav, bindTap, back } = useXGestures();
 
   if (!postId) return null;
 
@@ -29,23 +30,19 @@ export const XRetweetSheet: React.FC<XRetweetSheetProps> = ({
 
   return (
     <div className="fixed inset-0 z-[100] flex items-end justify-center">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" {...bindBack()} />
       <div className="relative bg-white text-black w-full max-w-sm rounded-t-2xl overflow-hidden">
         <div className="p-2 pt-4">
           {items.map(item => (
             <button
               key={item.id}
               className="w-full flex items-center p-4 hover:bg-gray-50 rounded-xl transition-colors text-left"
-              onClick={() => {
-                if (item.id === 'retweet') {
-                  onRetweet(postId);
-                } else if (item.id === 'quote') {
-                  onQuote(postId);
-                } else {
-                  onViewActivity(postId);
-                }
-                onClose();
-              }}
+              {...(item.id === 'retweet'
+                ? bindTap({ kind: 'action', id: 'x.retweetSheet.retweet' }, { onTrigger: () => { onRetweet(postId); back(); } })
+                // Leaving for another page replaces the sheet: back from there returns to the page.
+                : item.id === 'quote'
+                  ? bindNav(routes.compose, { search: { quotedPostId: postId }, replace: true })
+                  : bindNav(routes.statusActivity, { params: { id: postId }, search: { tab: 'quotes' }, replace: true }))}
             >
               <div className="mr-4 text-gray-600">
                 <item.Icon size={24} />
@@ -55,7 +52,7 @@ export const XRetweetSheet: React.FC<XRetweetSheetProps> = ({
           ))}
         </div>
         <div className="p-2 pt-0">
-          <button className="w-full py-3.5 font-bold rounded-full bg-gray-100 active:bg-gray-200 transition-colors" onClick={onClose}>
+          <button className="w-full py-3.5 font-bold rounded-full bg-gray-100 active:bg-gray-200 transition-colors" {...bindBack()}>
             {s.common_cancel}
           </button>
         </div>

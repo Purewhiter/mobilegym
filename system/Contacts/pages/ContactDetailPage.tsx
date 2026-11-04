@@ -37,7 +37,7 @@ export const ContactDetailPage: React.FC = () => {
   const locale = useLocale();
   const isEnglish = locale === 'en';
   const { contactId } = useParams<{ contactId: string }>();
-  const { bindBack, nav, back } = useContactsGestures();
+  const { bindBack, bindNav, back } = useContactsGestures();
   const s = useAppStrings(strings, stringsEn);
   const contact = useContact(contactId);
 
@@ -292,7 +292,7 @@ export const ContactDetailPage: React.FC = () => {
                   <button
                     type="button"
                     className="w-full px-5 py-4 flex items-center justify-between active:bg-black/5 text-left"
-                    onClick={() => nav.push(routes.call, { callLogId: entry.id })}
+                    {...bindNav(routes.call, { params: { callLogId: entry.id } })}
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       <CallTypeBadge type={entry.type ?? 'incoming'} />

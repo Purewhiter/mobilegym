@@ -5,7 +5,7 @@ import { useBilibiliGestures } from '../../hooks/useBilibiliGestures';
 import { routes } from '../../routes';
 
 export const SettingsPlaybackAutoplayPage: React.FC = () => {
-  const { nav } = useBilibiliGestures();
+  const { bindNav } = useBilibiliGestures();
   const setSetting = useBilibiliStore((s) => s.setSetting);
   const dataAuto = useBilibiliStore((s) => s.settings.playback.dataAuto) ?? true;
   const detailAuto = useBilibiliStore((s) => s.settings.playback.detailAuto) ?? true;
@@ -16,8 +16,8 @@ export const SettingsPlaybackAutoplayPage: React.FC = () => {
       <SettingItemSwitch label="流量网络下自动播放" checked={dataAuto} onChange={(v) => setSetting('playback.dataAuto', v)} />
       <SettingItemSwitch label="视频详情页直接播放" subtitle="进入视频详情页后自动播放视频" checked={detailAuto} onChange={(v) => setSetting('playback.detailAuto', v)} />
       <SettingItemSwitch label="视频详情页直接全屏" subtitle="进入视频详情页后自动全屏播放视频" checked={detailFullscreen} onChange={(v) => setSetting('playback.detailFullscreen', v)} />
-      <SettingItemArrow label="动态/活动页单列视频是否自动播放" subtitle="开启自动播放" onClick={() => nav.push(routes.settingsPlaybackAutoplayFeed)} />
-      <SettingItemArrow label="首页自动播放" subtitle="Wi-Fi/免流/移动网络下自动播放" onClick={() => nav.push(routes.settingsPlaybackAutoplayHome)} />
+      <SettingItemArrow label="动态/活动页单列视频是否自动播放" subtitle="开启自动播放" bind={bindNav(routes.settingsPlaybackAutoplayFeed)} />
+      <SettingItemArrow label="首页自动播放" subtitle="Wi-Fi/免流/移动网络下自动播放" bind={bindNav(routes.settingsPlaybackAutoplayHome)} />
       <div className="h-8" />
     </SettingLayout>
   );

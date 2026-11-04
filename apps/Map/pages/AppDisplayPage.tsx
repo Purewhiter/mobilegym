@@ -8,7 +8,7 @@ import { localizeMapSettingValue } from '../utils/localizeMapValue';
 import { routes } from '../routes';
 
 export const AppDisplayPage: React.FC = () => {
-  const { bindBack, nav } = useMapGestures();
+  const { bindBack, nav, bindNav } = useMapGestures();
   const appDisplay = useMapStore((s) => s.settings.appDisplay);
   const updateAppDisplay = useMapStore((s) => s.updateAppDisplay);
   const s = useMapStrings();
@@ -121,7 +121,7 @@ export const AppDisplayPage: React.FC = () => {
       <div className="flex-1 overflow-y-auto no-scrollbar">
         <div
           className="flex items-center justify-between py-4 px-4 border-b border-gray-100 active:bg-gray-50"
-          onClick={() => nav.push(routes.settingsAppDisplayLanguage)}
+          {...bindNav(routes.settingsAppDisplayLanguage)}
         >
           <div className="text-base font-medium text-gray-900">{s.app_display_language}</div>
           <div className="text-sm text-app-text-muted">{localizeMapSettingValue(appDisplay.language, s)}</div>

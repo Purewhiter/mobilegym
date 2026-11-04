@@ -18,9 +18,7 @@ need nothing but a device server::
 Results are cached per (server, app, state, query); treat them as read-only.
 
 The server comes from ``MOBILE_GYM_DEVICE_URL`` or ``configure()``; failing
-those, each bench env points it at its own simulator (the newest env wins).
-One process is expected to use one simulator build: any server of that build
-answers these queries, since a view never touches a page's session.
+those, a view captures the simulator URL of its environment when created.
 """
 
 from __future__ import annotations
@@ -30,7 +28,9 @@ import json
 import os
 import threading
 from collections import OrderedDict
-from typing import Any
+from contextlib import contextmanager
+from contextvars import ContextVar
+from typing import Any, Iterator
 
 from bench_env.env.device_client import DeviceClient, DeviceError
 
@@ -42,8 +42,8 @@ _RESULT_LIMIT = 512
 # short enough that an unreachable server fails a judge instead of hanging a run.
 _TIMEOUT = 20.0
 
-_base_url: str | None = os.environ.get(ENV_VAR) or None
-_explicit = _base_url is not None
+_configured_url: str | None = os.environ.get(ENV_VAR) or None
+_env_url: ContextVar[str | None] = ContextVar("device_view_env_url", default=None)
 _lock = threading.Lock()
 _sessions: OrderedDict[tuple[str, str, str], DeviceClient] = OrderedDict()
 _results: OrderedDict[tuple[str, str, str, str, str], Any] = OrderedDict()
@@ -51,29 +51,40 @@ _results: OrderedDict[tuple[str, str, str, str, str], Any] = OrderedDict()
 
 def configure(base_url: str) -> None:
     """Use the device server mounted at ``base_url`` (the simulator URL)."""
-    global _base_url, _explicit
-    _base_url = base_url.rstrip("/")
-    _explicit = True
+    global _configured_url
+    _configured_url = base_url.rstrip("/")
 
 
 def use_env_url(base_url: str) -> None:
     """Called by each bench env: its simulator, unless one was configured explicitly."""
-    global _base_url
-    if not _explicit:
-        _base_url = base_url.rstrip("/")
+    _env_url.set(base_url.rstrip("/"))
+
+
+@contextmanager
+def using_env_url(url: str | None) -> Iterator[None]:
+    """Bind setup and evaluation, including worker threads, to this environment."""
+    if url is None:
+        yield
+        return
+    token = _env_url.set(url.rstrip("/"))
+    try:
+        yield
+    finally:
+        _env_url.reset(token)
 
 
 def is_configured() -> bool:
-    return bool(_base_url)
+    return bool(_configured_url or _env_url.get())
 
 
 def base_url() -> str:
-    if not _base_url:
+    url = _configured_url or _env_url.get()
+    if not url:
         raise RuntimeError(
             f"no device server configured: start the bench env or set {ENV_VAR} "
             "to a simulator URL (the device server answers at <url>/__device)"
         )
-    return _base_url
+    return url
 
 
 def _digest(state: Any) -> str:
@@ -89,10 +100,13 @@ class DeviceView:
     def __init__(self, app_id: str, state: dict[str, Any] | None):
         self.app_id = app_id
         self._state = state if isinstance(state, dict) else {}
+        self._url = _configured_url or _env_url.get()
         self._digest: str | None = None
 
     def query(self, name: str, args: dict[str, Any] | None = None) -> Any:
-        url = base_url()
+        if self._url is None:
+            self._url = base_url()
+        url = self._url
         if self._digest is None:
             self._digest = _digest(self._state)
         key = (url, self.app_id, self._digest, name, json.dumps(args or {}, sort_keys=True))

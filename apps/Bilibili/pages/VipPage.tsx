@@ -1,3 +1,5 @@
+import { useLocation } from 'react-router-dom';
+import { routes } from '../routes';
 import React, { useState, useEffect } from 'react';
 import { IcNavBack } from '../res/icons';
 import { useBilibiliGestures } from '../hooks/useBilibiliGestures';
@@ -25,9 +27,10 @@ const PACKAGES: VipPackage[] = [
 export const VipPage: React.FC = () => {
   const { user } = useBilibiliStore();
   const updateUser = useBilibiliStore(s => s.updateUser);
-  const { bindBack, bindTap } = useBilibiliGestures();
+  const { bindBack, bindTap, bindNav, back } = useBilibiliGestures();
   const [selectedId, setSelectedId] = useState('year_auto');
-  const [showPayment, setShowPayment] = useState(false);
+  // The payment method sheet lives in the URL (?sheet=payment): system back closes it.
+  const showPayment = new URLSearchParams(useLocation().search).get('sheet') === 'payment';
   const [paymentMethod, setPaymentMethod] = useState<'alipay' | 'wechat' | 'huabei'>('alipay');
 
   useEffect(() => {
@@ -46,9 +49,7 @@ export const VipPage: React.FC = () => {
 
   const selectedPkg = PACKAGES.find(p => p.id === selectedId) || PACKAGES[0];
 
-  const openPaymentSelection = () => {
-    setShowPayment(true);
-  };
+  const paymentSelectionBind = bindNav(routes.vip, { search: { sheet: 'payment' } });
 
   const executePay = () => {
     if (paymentMethod === 'wechat') {
@@ -197,7 +198,7 @@ export const VipPage: React.FC = () => {
             <span className="text-xs text-[#fb7299]">不使用代金券 &gt;</span>
         </div>
 
-        <div className="bg-[#fffcf2] p-3 rounded-lg flex items-start mt-2" onClick={openPaymentSelection}>
+        <div className="bg-[#fffcf2] p-3 rounded-lg flex items-start mt-2" {...paymentSelectionBind}>
             <div className="flex-1 text-xs text-[#b88347]">
                 使用 {payInfo.icon} {payInfo.name}{payInfo.desc}
             </div>
@@ -237,15 +238,15 @@ export const VipPage: React.FC = () => {
       {/* Payment Modal */}
       {showPayment && (
         <div className="fixed inset-0 z-50 flex flex-col justify-end">
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-[1px]" onClick={() => setShowPayment(false)} />
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-[1px]" {...bindBack()} />
             <div className="bg-white rounded-t-xl p-4 animate-slide-up relative z-10 pb-8">
                 <div className="flex justify-between items-center mb-6">
                     <span className="text-lg font-bold">支付方式</span>
-                    <button onClick={() => setShowPayment(false)} className="text-gray-400 text-2xl leading-none">&times;</button>
+                    <button {...bindBack()} className="text-gray-400 text-2xl leading-none">&times;</button>
                 </div>
                 
                 {/* Alipay Option */}
-                <div className="flex items-center justify-between py-3.5 border-b border-gray-50" onClick={() => { setPaymentMethod('alipay'); setShowPayment(false); }}>
+                <div className="flex items-center justify-between py-3.5 border-b border-gray-50" {...bindTap({ kind: 'action', id: 'bilibili.vip.payment.select' }, { params: { method: 'alipay' }, onTrigger: () => { setPaymentMethod('alipay'); back(); } })}>
                     <div className="flex items-center gap-3">
                         <div className="w-6 h-6 bg-[#1677ff] rounded flex items-center justify-center text-white text-xs">支</div>
                         <div>
@@ -261,7 +262,7 @@ export const VipPage: React.FC = () => {
                 </div>
 
                 {/* WeChat Option */}
-                <div className="flex items-center justify-between py-3.5 border-b border-gray-50" onClick={() => { setPaymentMethod('wechat'); setShowPayment(false); }}>
+                <div className="flex items-center justify-between py-3.5 border-b border-gray-50" {...bindTap({ kind: 'action', id: 'bilibili.vip.payment.select' }, { params: { method: 'wechat' }, onTrigger: () => { setPaymentMethod('wechat'); back(); } })}>
                     <div className="flex items-center gap-3">
                         <div className="w-6 h-6 bg-[#07c160] rounded flex items-center justify-center text-white text-xs">微</div>
                         <span className="text-[15px]">微信支付</span>
@@ -272,7 +273,7 @@ export const VipPage: React.FC = () => {
                 </div>
 
                 {/* Huabei Option */}
-                <div className="flex items-center justify-between py-3.5" onClick={() => { setPaymentMethod('huabei'); setShowPayment(false); }}>
+                <div className="flex items-center justify-between py-3.5" {...bindTap({ kind: 'action', id: 'bilibili.vip.payment.select' }, { params: { method: 'huabei' }, onTrigger: () => { setPaymentMethod('huabei'); back(); } })}>
                     <div className="flex items-center gap-3">
                         <div className="w-6 h-6 bg-[#1677ff] rounded flex items-center justify-center text-white text-xs">花</div>
                         <span className="text-[15px]">花呗</span>

@@ -90,19 +90,28 @@ const WorldClockCityItem: React.FC<{
   onSelectionStart: () => void;
 }> = ({ city, cityTime, now, selectionMode, selected, onSelectToggle, onSelectionStart }) => {
   const s = useAppStrings(strings, stringsEn);
-  const { bindLongPress } = useClockGestures();
+  const { bindLongPress, bindTap } = useClockGestures();
+  // The click that ends a long press is swallowed: by then select mode is on and the row would
+  // otherwise unselect the city it just selected.
+  const longPressed = useRef(false);
 
   return (
     <div
       className={`bg-app-surface rounded-2xl px-4 py-5 flex items-center justify-between ${selectionMode && selected ? 'bg-blue-50' : ''}`}
-      {...bindLongPress({ kind: 'action', id: 'world.city.selection.enter' }, { duration: 450, onTrigger: () => onSelectionStart() })}
-      onClick={() => { if (selectionMode) onSelectToggle(); }}
-      onContextMenu={(e) => {
-        if (!selectionMode) {
-          e.preventDefault();
-          onSelectionStart();
-        }
+      {...(selectionMode
+        ? bindTap({ kind: 'action', id: 'clock.world.select.toggle' }, { params: { cityId: city.id }, onTrigger: onSelectToggle })
+        : bindLongPress('nav.world', {
+          params: { mode: 'select' },
+          duration: 450,
+          onTrigger: () => { longPressed.current = true; onSelectionStart(); },
+        }))}
+      onPointerDownCapture={() => { longPressed.current = false; }}
+      onClickCapture={(e) => {
+        if (!longPressed.current) return;
+        longPressed.current = false;
+        e.stopPropagation();
       }}
+      onContextMenu={(e) => e.preventDefault()}
     >
       <div className="flex items-center gap-3 min-w-0">
         {selectionMode && (
@@ -132,24 +141,23 @@ const WorldClockCityItem: React.FC<{
 
 export const WorldClockPage: React.FC<{
   selectedCities: WorldCity[];
-  onOpenAdd: () => void;
+  addBind: React.HTMLAttributes<HTMLElement>;
   selectionMode: boolean;
   selectedIds: Set<string>;
   onSelectToggle: (id: string) => void;
   onSelectionStart: (id: string) => void;
-  onExitSelection: () => void;
   onToggleSelectAll: () => void;
 }> = ({
   selectedCities,
-  onOpenAdd,
+  addBind,
   selectionMode,
   selectedIds,
   onSelectToggle,
   onSelectionStart,
-  onExitSelection,
   onToggleSelectAll,
 }) => {
   const s = useAppStrings(strings, stringsEn);
+  const { bindBack, bindTap } = useClockGestures();
   const [now, setNow] = useState(() => getDate());
   const [scrollTop, setScrollTop] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -191,17 +199,20 @@ export const WorldClockPage: React.FC<{
         alwaysShowSmallTitle={selectionMode}
         bgClass="bg-app-bg"
         leftContent={selectionMode ? (
-          <button className="w-10 h-10 flex items-center justify-center -ml-2 active:opacity-60" onClick={onExitSelection}>
+          <button className="w-10 h-10 flex items-center justify-center -ml-2 active:opacity-60" {...bindBack()}>
             <IcClose size={28} className="text-app-text" />
           </button>
         ) : undefined}
         rightContent={selectionMode ? (
-          <button onClick={onToggleSelectAll} className="w-10 h-10 flex items-center justify-center active:opacity-60">
+          <button
+            {...bindTap({ kind: 'action', id: 'clock.world.selectAll.toggle' }, { onTrigger: onToggleSelectAll })}
+            className="w-10 h-10 flex items-center justify-center active:opacity-60"
+          >
             <IcList size={28} className={isAllSelected ? 'text-app-primary' : 'text-gray-400'} />
           </button>
         ) : (
           <>
-            <ToolbarIconButton icon={IcAdd} onClick={onOpenAdd} label={s.toolbar_add} />
+            <ToolbarIconButton icon={IcAdd} bind={addBind} label={s.toolbar_add} />
             <ToolbarIconButton icon={IcMoreVert} label={s.toolbar_more} />
           </>
         )}

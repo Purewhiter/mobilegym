@@ -1,9 +1,12 @@
 import React, { useState, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   IcClose, IcNavBack, IcNavForward, IcExpand, IcGrid, IcList,
   IcMonitor, IcCamera, IcSettings, IcCheck, IcSearch,
 } from '../res/icons';
 import { useEbayStrings } from '../hooks/useEbayStrings';
+import { useEbayGestures } from '../hooks/useEbayGestures';
+import { routes } from '../routes';
 import { useLocale } from '../../../os/locale';
 import type { SortOptionType } from './SortModal';
 import { SORT_OPTION_IDS } from './SortModal';
@@ -36,8 +39,8 @@ type FilterSubPage =
 
 // ── Helper components (file-level, stable identity) ────────────
 
-const FilterItem = ({ label, value, onClick }: { label: string; value?: string; onClick?: () => void }) => (
-  <div className="flex justify-between items-center px-4 py-4 border-b border-gray-100 cursor-pointer active:bg-gray-50" onClick={onClick}>
+const FilterItem = ({ label, value, bind }: { label: string; value?: string; bind?: React.HTMLAttributes<HTMLDivElement> }) => (
+  <div className="flex justify-between items-center px-4 py-4 border-b border-gray-100 cursor-pointer active:bg-gray-50" {...bind}>
     <span className="text-base text-black">{label}</span>
     <div className="flex items-center">
       {value && <span className="text-app-text-muted text-sm mr-2">{value}</span>}
@@ -155,7 +158,12 @@ const FilterDrawer: React.FC<FilterDrawerProps> = (props) => {
     { id: '亚洲', label: localizeEbayLocationLabel('亚洲', locale) },
   ], [locale, s.filter_location_preset, s.filter_location_us_only]);
 
-  const [activeFilterSubPage, setActiveFilterSubPage] = useState<FilterSubPage | null>(null);
+  const [searchParams] = useSearchParams();
+  const activeFilterSubPage = searchParams.get('filterPage') as FilterSubPage | null;
+  const { bindNav, bindBack, nav } = useEbayGestures();
+  // Sub-pages stack on the drawer in the URL (?sheet=filter&filterPage=…); back closes one.
+  const openSubPage = (page: FilterSubPage, beforeTrigger?: () => void) =>
+    bindNav(routes.search, { search: { filterPage: page }, keep: ['q', 'category', 'sheet'], beforeTrigger });
   const [isMoreContentExpanded, setIsMoreContentExpanded] = useState(false);
   const [brandSearchQuery, setBrandSearchQuery] = useState('');
 
@@ -168,12 +176,11 @@ const FilterDrawer: React.FC<FilterDrawerProps> = (props) => {
     return localizeEbayLocationLabel(selectedLocation, locale);
   }, [locale, locationOptions, selectedLocation]);
 
-  const closeSubPage = () => setActiveFilterSubPage(null);
+  const closeSubPage = () => nav.back();
 
   const handleReset = () => {
     onReset();
     setIsMoreContentExpanded(false);
-    setActiveFilterSubPage(null);
     setBrandSearchQuery('');
   };
 
@@ -242,7 +249,7 @@ const FilterDrawer: React.FC<FilterDrawerProps> = (props) => {
           {/* Header */}
           <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between pt-10">
             <div className="flex items-center">
-              <button onClick={onClose} className="mr-3">
+              <button {...bindBack()} className="mr-3">
                 <IcClose size={24} className="text-black" />
               </button>
               <h2 className="text-xl font-bold text-black">{s.filter_title}</h2>
@@ -254,14 +261,14 @@ const FilterDrawer: React.FC<FilterDrawerProps> = (props) => {
 
           {/* Filter items */}
           <div className="flex-1 overflow-y-auto">
-            <FilterItem label={s.filter_sort} value={sortLabel} onClick={() => setActiveFilterSubPage('sort')} />
-            <FilterItem label={s.filter_buying_format} value={buyingFormatLabel} onClick={() => setActiveFilterSubPage('buyingFormat')} />
-            <FilterItem label={s.filter_condition} value={conditionLabel} onClick={() => setActiveFilterSubPage('condition')} />
-            <FilterItem label={s.filter_price} value={priceLabel} onClick={() => setActiveFilterSubPage('price')} />
-            <FilterItem label={s.filter_category} value={categoryLabel} onClick={() => setActiveFilterSubPage('category')} />
-            <FilterItem label={s.filter_brand} value={selectedBrands.size ? Array.from(selectedBrands).join(', ') : ''} onClick={() => { setActiveFilterSubPage('brand'); setBrandSearchQuery(''); }} />
-            <FilterItem label={s.filter_location} value={locationLabel} onClick={() => setActiveFilterSubPage('location')} />
-            <FilterItem label={s.filter_shipping} onClick={() => setActiveFilterSubPage('shipping')} />
+            <FilterItem label={s.filter_sort} value={sortLabel} bind={openSubPage('sort')} />
+            <FilterItem label={s.filter_buying_format} value={buyingFormatLabel} bind={openSubPage('buyingFormat')} />
+            <FilterItem label={s.filter_condition} value={conditionLabel} bind={openSubPage('condition')} />
+            <FilterItem label={s.filter_price} value={priceLabel} bind={openSubPage('price')} />
+            <FilterItem label={s.filter_category} value={categoryLabel} bind={openSubPage('category')} />
+            <FilterItem label={s.filter_brand} value={selectedBrands.size ? Array.from(selectedBrands).join(', ') : ''} bind={openSubPage('brand', () => setBrandSearchQuery(''))} />
+            <FilterItem label={s.filter_location} value={locationLabel} bind={openSubPage('location')} />
+            <FilterItem label={s.filter_shipping} bind={openSubPage('shipping')} />
 
             <div className="py-4 text-center border-t border-gray-100">
               <button
@@ -282,7 +289,7 @@ const FilterDrawer: React.FC<FilterDrawerProps> = (props) => {
               </div>
             </div>
 
-            <div className="px-4 py-4 border-t border-gray-100 flex items-center justify-between cursor-pointer" onClick={() => setActiveFilterSubPage('custom')}>
+            <div className="px-4 py-4 border-t border-gray-100 flex items-center justify-between cursor-pointer" {...openSubPage('custom')}>
               <span className="text-base text-black">{s.filter_custom}</span>
               <IcSettings size={24} className="text-app-text-muted" />
             </div>
@@ -313,7 +320,7 @@ const FilterDrawer: React.FC<FilterDrawerProps> = (props) => {
           <div className="w-[85%] h-full bg-app-surface flex flex-col animate-in slide-in-from-right duration-300 relative" onClick={(e) => e.stopPropagation()}>
             {/* Sub-page header */}
             <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between pt-10 flex-shrink-0">
-              <button onClick={closeSubPage} aria-label={s.filter_back} className="mr-3">
+              <button {...bindBack()} aria-label={s.filter_back} className="mr-3">
                 <IcNavBack size={24} className="text-black" />
               </button>
               <h3 className="text-xl font-bold text-black">{subPageTitle[activeFilterSubPage]}</h3>

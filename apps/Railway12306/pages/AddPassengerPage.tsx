@@ -17,7 +17,7 @@ const TICKET_TYPES = ['成人', '儿童', '学生', '残疾军人'];
 type RailwayStrings = ReturnType<typeof useRailwayStrings>;
 
 export const AddPassengerPage: React.FC = () => {
-  const { bindBack, back, nav } = useRailwayGestures();
+  const { bindBack, bindNav, bindTap, back, nav } = useRailwayGestures();
   const updatePassengers = useRailwayStore(s => s.updatePassengers);
   const passengers = useRailwayStore(s => s.passengers);
   const location = useLocation();
@@ -34,7 +34,6 @@ export const AddPassengerPage: React.FC = () => {
   const [idNo, setIdNo] = useState('');
   const [ticketType, setTicketType] = useState(TICKET_TYPES[0]);
   const [phone, setPhone] = useState('');
-  const [showConfirm, setShowConfirm] = useState(false);
   const [alertMsg, setAlertMsg] = useState('');
   const [fieldErrors, setFieldErrors] = useState<{ idNo?: boolean; phone?: boolean }>({});
 
@@ -76,7 +75,7 @@ export const AddPassengerPage: React.FC = () => {
       openAlert(s.add_passenger_duplicate);
       return;
     }
-    setShowConfirm(true);
+    nav.push(routes.addPassenger, {}, { search: { dialog: 'confirm' } });
   };
 
   const handleConfirm = () => {
@@ -90,8 +89,8 @@ export const AddPassengerPage: React.FC = () => {
       ticketType,
     };
     updatePassengers([...passengers, newPassenger]);
-    setShowConfirm(false);
-    back();
+    // Close the dialog and leave the form.
+    back(2);
   };
 
   return (
@@ -124,7 +123,7 @@ export const AddPassengerPage: React.FC = () => {
         </div>
 
         <div className="mx-4 mt-3 rounded-lg overflow-hidden">
-          <FormRow label={s.add_passenger_id_type} onClick={() => nav.push(routes.addPassenger, {}, { search: { dialog: 'idType' } })}>
+          <FormRow label={s.add_passenger_id_type} bind={bindNav(routes.addPassenger, { search: { dialog: 'idType' } })}>
             <span className="text-[14px] text-[#333]">{localizeRailwayText(idType, isEnglish)}</span>
           </FormRow>
           <FormRow label={s.add_passenger_name}>
@@ -145,7 +144,7 @@ export const AddPassengerPage: React.FC = () => {
               data-keep-keyboard="true"
             />
           </FormRow>
-          <FormRow label={s.add_passenger_ticket_type} onClick={() => nav.push(routes.addPassenger, {}, { search: { dialog: 'ticketType' } })} border={false}>
+          <FormRow label={s.add_passenger_ticket_type} bind={bindNav(routes.addPassenger, { search: { dialog: 'ticketType' } })} border={false}>
             <span className="text-[14px] text-[#333]">{localizeRailwayText(ticketType, isEnglish)}</span>
           </FormRow>
         </div>
@@ -173,7 +172,7 @@ export const AddPassengerPage: React.FC = () => {
 
         <div className="mx-4 mt-4">
           <button
-            onClick={handleSubmit}
+            {...bindTap<HTMLButtonElement>({ kind: 'action', id: 'railway.addPassenger.submit' }, { onTrigger: handleSubmit })}
             className="w-full h-[44px] rounded-full bg-[#4FA4F7] text-white text-[16px] font-medium active:bg-[#3B8DE5]"
           >
             {s.add_passenger_submit}
@@ -207,7 +206,7 @@ export const AddPassengerPage: React.FC = () => {
         />
       )}
 
-      {showConfirm && (
+      {dialog === 'confirm' && (
         <ConfirmDialog
           s={s}
           isEnglish={isEnglish}
@@ -216,8 +215,8 @@ export const AddPassengerPage: React.FC = () => {
           idNo={idNo.trim()}
           phone={phone.trim()}
           ticketType={ticketType}
-          onCancel={() => setShowConfirm(false)}
-          onConfirm={handleConfirm}
+          cancelBind={bindBack()}
+          confirmBind={bindTap({ kind: 'action', id: 'railway.addPassenger.confirm' }, { onTrigger: handleConfirm })}
         />
       )}
 
@@ -247,17 +246,18 @@ export const AddPassengerPage: React.FC = () => {
 const FormRow: React.FC<{
   label: string;
   children: React.ReactNode;
-  onClick?: () => void;
+  /** Tap binding for a row that opens something. */
+  bind?: React.HTMLAttributes<HTMLDivElement>;
   border?: boolean;
   error?: boolean;
-}> = ({ label, children, onClick, border = true, error }) => (
+}> = ({ label, children, bind, border = true, error }) => (
   <div
-    className={`flex items-center px-4 py-3.5 bg-white ${border ? 'border-b border-[#F0F2F5]' : ''} ${onClick ? 'active:bg-gray-50' : ''}`}
-    onClick={onClick}
+    className={`flex items-center px-4 py-3.5 bg-white ${border ? 'border-b border-[#F0F2F5]' : ''} ${bind ? 'active:bg-gray-50' : ''}`}
+    {...bind}
   >
     <span className={`text-[14px] w-[96px] flex-shrink-0 whitespace-normal leading-tight ${error ? 'text-[#E53935]' : 'text-[#333]'}`}>{label}</span>
     <div className="flex-1 min-w-0 flex items-center">{children}</div>
-    {onClick && <IcNavForward size={16} className="text-[#C0C0C0] flex-shrink-0 ml-1" />}
+    {bind && <IcNavForward size={16} className="text-[#C0C0C0] flex-shrink-0 ml-1" />}
   </div>
 );
 
@@ -311,9 +311,9 @@ const ConfirmDialog: React.FC<{
   idNo: string;
   phone: string;
   ticketType: string;
-  onCancel: () => void;
-  onConfirm: () => void;
-}> = ({ s, isEnglish, idType, name, idNo, phone, ticketType, onCancel, onConfirm }) => {
+  cancelBind: React.HTMLAttributes<HTMLElement>;
+  confirmBind: React.HTMLAttributes<HTMLElement>;
+}> = ({ s, isEnglish, idType, name, idNo, phone, ticketType, cancelBind, confirmBind }) => {
   const rows = [
     { label: `${s.add_passenger_id_type}：`, value: localizeRailwayText(idType, isEnglish) },
     { label: `${s.add_passenger_name}：`, value: name },
@@ -324,7 +324,7 @@ const ConfirmDialog: React.FC<{
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/40" />
+      <div className="absolute inset-0 bg-black/40" {...cancelBind} />
       <div className="relative bg-white rounded-xl w-[300px] overflow-hidden">
         <div className="text-center text-[16px] text-[#333] font-medium pt-5 pb-3">
           {s.add_passenger_confirm_title}
@@ -340,13 +340,13 @@ const ConfirmDialog: React.FC<{
         <div className="flex border-t border-[#F0F2F5]">
           <button
             className="flex-1 py-3.5 text-[15px] text-[#666] border-r border-[#F0F2F5] active:bg-gray-50"
-            onClick={onCancel}
+            {...cancelBind}
           >
             {s.action_cancel}
           </button>
           <button
             className="flex-1 py-3.5 text-[15px] text-white font-medium bg-[#4FA4F7] active:bg-[#3B8DE5] rounded-br-xl"
-            onClick={onConfirm}
+            {...confirmBind}
           >
             {s.action_confirm}
           </button>

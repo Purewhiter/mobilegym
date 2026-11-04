@@ -1,6 +1,6 @@
 # Device Server
 
-App state lives in a per-page **device session** on the device server (`device/`), not in `localStorage`. The page store is a mirror of that session, so components and `__SIM__.getState().apps.<appId>` keep reading plain store fields. One server process holds every session; read-only catalogs are loaded once per process and shared by all sessions.
+App state lives in a per-page **device session** on the device server (`device/`). The page store mirrors that session, so components and `__SIM__.getState().apps.<appId>` keep reading plain store fields. Each server process owns its sessions and loads one copy of the read-only catalogs for them to share.
 
 Served at `/__device` by the Vite plugin in dev and preview, and by `device/main.ts` behind the nginx gateway (`scripts/server/start_nginx_gateway.sh`).
 
@@ -11,7 +11,7 @@ Served at `/__device` by the Vite plugin in dev and preview, and by `device/main
 | Engine | `device/engine.ts` | Sessions, per-app state, catalog overlay, commands, queries |
 | App module | `apps/<App>/device/index.ts`, or `device/stateOnly.ts` | Catalog loader, commands, queries for one app; registered in `device/server.ts` |
 | Page store | `createDeviceAppStore` in `os/device/deviceStore.ts` | Mirror of the session; actions call commands |
-| Client | `os/device/DeviceClient.ts` | One request queue per page; a reset bumps the generation and abandons queued work |
+| Client | `os/device/DeviceClient.ts` | One request queue per session generation. A reset aborts in-flight requests and starts a fresh queue. |
 | Preload | `apps/<App>/data/loader.ts` `preload()` | Called by the OS `waitForData` hook: `await useXStore.ensureSynced()`, plus `prefetchDeviceQuery(...)` for catalog data the first screen needs |
 | Python views | `bench_env/env/device_view.py` | `DeviceView(app_id, state)`: imports a state snapshot (initial or final) into a scratch session and answers the module's queries, so judges and samplers read catalog-plus-state records without merging in Python |
 
@@ -24,6 +24,8 @@ Served at `/__device` by the Vite plugin in dev and preview, and by `device/main
 | State logic that stays on the page, small data | `createStateOnlyModule(appId)` + `createDeviceAppStore(..., { syncSetState: true })` | Weather, WeChat, Alipay, system apps |
 
 With `syncSetState` the page is the authority: every write (`setState`, or `set` inside an action) applies at once and schedules a save of the server fields as they are when the save runs. Actions stay synchronous; migrating such an app only swaps `createAppStoreWithActions` for `createDeviceAppStore`. Keys the app used to leave out of persistence (`partialize`) become `localKeys`.
+
+The benchmark waits for `__SIM__.waitForStateCommit()` before capturing the final snapshot. The API waits for pending commands and retries unsaved page writes once. If a save still fails, the episode reports an environment error instead of judging uncommitted state.
 
 ## Rules
 

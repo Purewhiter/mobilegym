@@ -31,7 +31,7 @@ const state = window.__SIM__.getState();
 // → { os: {...}, apps: { wechat: {...}, alipay: {...}, ... } }
 ```
 
-This is the **only** state the benchmark trusts for judging. The full `getState()` schema, including per-app snapshots, is documented in [app-state-schema.md](app-state-schema.md). Key trees:
+This snapshot is the benchmark's source of runtime state. Catalog-backed judges combine it with shared catalog data through the device server. The full `getState()` schema, including per-app snapshots, is documented in [app-state-schema.md](app-state-schema.md). Key trees:
 
 - `state.os.settings` — `global` / `system` / `secure` / app-specific
 - `state.os.hardware` — battery, wifi, cellular, sensors
@@ -41,9 +41,13 @@ This is the **only** state the benchmark trusts for judging. The full `getState(
 - `state.os.services` — registered service snapshots other than clipboard / notifications
 - `state.apps.<appId>` — each app's runtime overlay
 
+### `__SIM__.waitForStateCommit()`
+
+Waits for queued device operations and retries unsaved browser-authoritative writes once. It rejects if writes remain unsaved or the device session resets while it waits. The benchmark calls it before reading the final state.
+
 ### `__SIM__.reset()`
 
-Clears all simulator state (localStorage + in-memory stores) and reloads the page.
+Clears simulator state, discards the device session, and reloads the page.
 
 ```js
 await window.__SIM__.reset();

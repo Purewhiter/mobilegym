@@ -8,7 +8,7 @@ import { localizeMapSettingValue } from '../utils/localizeMapValue';
 import { routes } from '../routes';
 
 export const RecommendationsPage: React.FC = () => {
-  const { nav, bindBack } = useMapGestures();
+  const { nav, bindBack, bindNav } = useMapGestures();
   const recNotifications = useMapStore((s) => s.settings.notifications.recommendations);
   const setAllRecNotifications = useMapStore((s) => s.setAllRecNotifications);
   const [showGlobalPrefsModal, setShowGlobalPrefsModal] = useState(false);
@@ -60,7 +60,7 @@ export const RecommendationsPage: React.FC = () => {
           <div
             key={item.id}
             className="py-4 border-b border-gray-100 active:bg-gray-50 px-6 cursor-pointer"
-            onClick={() => nav.push(routes.settingsNotificationsRecommendationsBySubId, { subId: item.id })}
+            {...bindNav(routes.settingsNotificationsRecommendationsBySubId, { params: { subId: item.id } })}
           >
             <div className="text-[17px] text-gray-900 mb-1">{item.title}</div>
             <div className="text-[13px] text-app-text-muted">

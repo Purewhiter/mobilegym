@@ -45,6 +45,10 @@ export const RechargePaymentModal: React.FC<RechargePaymentModalProps> = ({
       if (password === expectedPassword) {
         calledRef.current = true;
         setTimeout(() => {
+          // Cleared for the page shown again from the back stack (ActivityRouteHost): its effects
+          // run again and must not pay a second time with the old digits.
+          setPassword('');
+          calledRef.current = false;
           onSuccess();
         }, 200);
       } else {

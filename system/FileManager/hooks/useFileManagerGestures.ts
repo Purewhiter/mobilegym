@@ -23,5 +23,5 @@ export function useFileManagerGestures() {
     'data-trigger-type': 'tap' as const,
   });
 
-  return { nav, bindNav, bindBack, back: nav.back };
+  return { nav, bindNav, bindBack, bindTap: gestures.bindTap, bindLongPress: gestures.bindLongPress, back: nav.back };
 }

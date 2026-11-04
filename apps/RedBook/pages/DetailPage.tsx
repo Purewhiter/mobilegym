@@ -95,7 +95,8 @@ export const DetailPage: React.FC = () => {
   const [replyToCommentId, setReplyToCommentId] = useState<string | undefined>(undefined);
   const [replyToUsername, setReplyToUsername] = useState<string | undefined>(undefined);
   const [sortOrder, setSortOrder] = useState<'default' | 'latest' | 'hot'>('default');
-  const [showSortMenu, setShowSortMenu] = useState(false);
+  // The comment sort menu lives in the URL (?modal=commentSort): system back closes it.
+  const showSortMenu = searchParams.get('modal') === 'commentSort';
   const inputRef = useRef<HTMLInputElement>(null);
 
   const swiperPointerState = useRef<{ startX: number; currentX: number; pointerId: number } | null>(null);
@@ -161,9 +162,15 @@ export const DetailPage: React.FC = () => {
         setIsDragging(false);
         setIsAnimatingOut(true);
         setDragOffsetX(screenW);
-        // 等动画完成后导航，不重置状态（组件会随路由卸载）
+        // 等动画完成后导航。笔记页留在返回栈里（ActivityRouteHost），返回时要回到原位：
+        // 复位和跳转放在同一个 transition 里（路由自己就用 startTransition），
+        // 一起提交，页面先被隐藏，看不到回弹。
         setTimeout(() => {
-          nav.push(routes.user, { userId: author.id });
+          React.startTransition(() => {
+            nav.push(routes.user, { userId: author.id });
+            setIsAnimatingOut(false);
+            setDragOffsetX(0);
+          });
         }, 250);
       } else {
         // 回弹
@@ -450,10 +457,9 @@ export const DetailPage: React.FC = () => {
                         <div className="text-[13px] text-gray-900 font-bold">{s.total_prefix} {note.comments} {s.comments_suffix}</div>
                         <div
                           className="relative"
-                          {...bindTap(
-                            { kind: 'action', id: 'note.comment.sortMenu.toggle' },
-                            { params: { to: !showSortMenu }, stopPropagation: true, onTrigger: () => setShowSortMenu(!showSortMenu) },
-                          )}
+                          {...(showSortMenu
+                            ? bindBack({ stopPropagation: true })
+                            : bindNav(routes.note, { params: { id: id || '' }, search: { modal: 'commentSort' }, state: location.state, stopPropagation: true }))}
                         >
                             <ListFilter size={16} className="text-gray-400 cursor-pointer" />
 
@@ -469,10 +475,10 @@ export const DetailPage: React.FC = () => {
                                             key={option.value}
                                             className={`px-4 py-2.5 text-[14px] flex items-center justify-between cursor-pointer active:bg-gray-50 ${sortOrder === option.value ? 'text-app-text font-medium' : 'text-[#666]'}`}
                                             {...(option.value === 'default'
-                                              ? bindTap({ kind: 'action', id: 'note.comment.sort.select.default' }, { stopPropagation: true, onTrigger: () => { setSortOrder('default'); setShowSortMenu(false); } })
+                                              ? bindTap({ kind: 'action', id: 'note.comment.sort.select.default' }, { stopPropagation: true, onTrigger: () => { setSortOrder('default'); back(); } })
                                               : option.value === 'latest'
-                                                ? bindTap({ kind: 'action', id: 'note.comment.sort.select.latest' }, { stopPropagation: true, onTrigger: () => { setSortOrder('latest'); setShowSortMenu(false); } })
-                                                : bindTap({ kind: 'action', id: 'note.comment.sort.select.hot' }, { stopPropagation: true, onTrigger: () => { setSortOrder('hot'); setShowSortMenu(false); } }))}
+                                                ? bindTap({ kind: 'action', id: 'note.comment.sort.select.latest' }, { stopPropagation: true, onTrigger: () => { setSortOrder('latest'); back(); } })
+                                                : bindTap({ kind: 'action', id: 'note.comment.sort.select.hot' }, { stopPropagation: true, onTrigger: () => { setSortOrder('hot'); back(); } }))}
                                         >
                                             <span>{option.label}</span>
                                             {sortOrder === option.value && <Check size={14} className="text-app-primary" />}
@@ -485,7 +491,7 @@ export const DetailPage: React.FC = () => {
                 </div>
 
                 {/* Backdrop for closing menu */}
-                {showSortMenu && <div className="fixed inset-0 z-0" onClick={() => setShowSortMenu(false)} />}
+                {showSortMenu && <div className="fixed inset-0 z-0" {...bindBack()} />}
 
                 {/* Inline Comment Input Trigger */}
                 <div className="flex items-center gap-3 mb-6">

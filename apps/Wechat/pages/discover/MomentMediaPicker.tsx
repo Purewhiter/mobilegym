@@ -140,13 +140,10 @@ export const MomentMediaPickerPage: React.FC = () => {
     }
   };
 
-  const openPreview = (index: number, previewScope: 'all' | 'selected') => {
-    if (isChatMediaPicker && targetWxid) {
-      nav.replace(routes.chatMediaPicker, { id: targetWxid }, { search: { menu: 'preview', index: index, scope: previewScope }, keep: ['albumId'] });
-      return;
-    }
-    nav.replace(routes.momentsMediaPicker, {}, { search: { menu: 'preview', index: index, scope: previewScope }, keep: ['albumId'] });
-  };
+  const bindPreview = (index: number, previewScope: 'all' | 'selected') =>
+    isChatMediaPicker && targetWxid
+      ? bindNav(routes.chatMediaPicker, { params: { id: targetWxid }, search: { menu: 'preview', index, scope: previewScope }, keep: ['albumId'], replace: true })
+      : bindNav(routes.momentsMediaPicker, { search: { menu: 'preview', index, scope: previewScope }, keep: ['albumId'], replace: true });
 
   const toggleSelectByPreviewIndex = () => {
     const item = previewList[previewIndex];
@@ -405,7 +402,7 @@ export const MomentMediaPickerPage: React.FC = () => {
                   <div
                     key={item.id}
                     className="relative aspect-square bg-(--app-c-overlay-dark-bg) overflow-hidden"
-                    onClick={() => openPreview(idx, 'all')}
+                    {...bindPreview(idx, 'all')}
                   >
                     <WechatSmartImage
                       src={item.path}
@@ -414,10 +411,11 @@ export const MomentMediaPickerPage: React.FC = () => {
                     />
 
                     <button
-                      onClick={e => {
-                        e.stopPropagation();
-                        toggleSelect(item);
-                      }}
+                      {...bindTap<HTMLButtonElement>({ kind: 'action', id: 'mediaPicker.item.toggleSelect' }, {
+                        params: { id: item.id },
+                        stopPropagation: true,
+                        onTrigger: () => toggleSelect(item),
+                      })}
                       className="absolute top-2 right-2 w-7 h-7 rounded-full border-2 border-white/70 bg-black/20 flex items-center justify-center"
                     >
                       {isSelected && (
@@ -437,7 +435,7 @@ export const MomentMediaPickerPage: React.FC = () => {
           <div className="h-(--app-settings-item-height) bg-(--app-c-common-text-primary) flex items-center px-4 border-t border-white/10 relative">
             <button
               disabled={selectedIds.length === 0}
-              onClick={() => openPreview(0, 'selected')}
+              {...(selectedIds.length > 0 ? bindPreview(0, 'selected') : {})}
               className={`text-(--app-chat-bubble-text-size) ${
                 selectedIds.length > 0 ? 'text-white' : 'text-white/30'
               }`}

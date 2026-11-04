@@ -1,13 +1,12 @@
 import { useRedBookStrings } from '../hooks/useRedBookStrings';
-import React from 'react';
+import React, { useRef } from 'react';
 import { IcNavBack, IcNavForward, IcUser, IcSettings, IcBell, IcLanguages, IcLock, IcDelete, IcSliders, IcLocation, IcGrid, IcUmbrella, IcLab, IcHeadphone, IcInfo } from '../res/icons';
 const ChevronLeft = IcNavBack, ChevronRight = IcNavForward, UserCircle = IcUser, Settings = IcSettings, Bell = IcBell, Languages = IcLanguages, Lock = IcLock, Trash2 = IcDelete, Sliders = IcSliders, MapPin = IcLocation, LayoutGrid = IcGrid, Umbrella = IcUmbrella, FlaskConical = IcLab, Headphones = IcHeadphone, Info = IcInfo;
 import { useRedBookStore } from '../state';
-import { useScrollPosition } from '../hooks/useScrollPosition';
 import { useRedBookGestures } from '../hooks/useRedBookGestures';
 import { routes } from '../routes';
 export const SettingsPage: React.FC = () => {
-  const scrollRef = useScrollPosition('settings_main');
+  const scrollRef = useRef<HTMLDivElement>(null);
   const { logout, clearHistory, settings } = useRedBookStore();
   const { bindNav, bindBack } = useRedBookGestures();
   const s = useRedBookStrings();

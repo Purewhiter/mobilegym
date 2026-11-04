@@ -6,13 +6,23 @@ interface CaptchaModalProps {
   open: boolean;
   onClose: () => void;
   onSuccess: () => void;
+  /** Tagged binding for the close button (bindBack when the modal lives in the URL). */
+  closeBind?: React.HTMLAttributes<HTMLElement>;
 }
 
-export const CaptchaModal: React.FC<CaptchaModalProps> = ({ open, onClose, onSuccess }) => {
+export const CaptchaModal: React.FC<CaptchaModalProps> = ({ open, onClose, onSuccess, closeBind }) => {
   const [sliderValue, setSliderValue] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [success, setSuccess] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  // The success callback closes the dialog; dismissed before it fires (close, back), it must not.
+  const successTimerRef = useRef<number | undefined>(undefined);
+  useEffect(() => {
+    if (open) return;
+    window.clearTimeout(successTimerRef.current);
+    successTimerRef.current = undefined;
+  }, [open]);
+  useEffect(() => () => window.clearTimeout(successTimerRef.current), []);
   const [targetPct, setTargetPct] = useState(() => 35 + next('wechat.captcha') * 35);
   const [trackWidth, setTrackWidth] = useState(0);
   const sliderRef = useRef<HTMLDivElement>(null);
@@ -59,12 +69,14 @@ export const CaptchaModal: React.FC<CaptchaModalProps> = ({ open, onClose, onSuc
 
   const handleDragEnd = () => {
     if (!isDragging) return;
+    if (successTimerRef.current !== undefined) return; // already solved, closing
     setIsDragging(false);
     
     const piecePos = Math.min(78, Math.max(0, sliderValue * 0.78));
     if (Math.abs(piecePos - targetPct) < 5) {
       setSuccess(true);
-      setTimeout(() => {
+      successTimerRef.current = window.setTimeout(() => {
+        successTimerRef.current = undefined;
         onSuccess();
       }, 500);
     } else {
@@ -89,7 +101,7 @@ export const CaptchaModal: React.FC<CaptchaModalProps> = ({ open, onClose, onSuc
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onMouseMove={handleDragMove} onTouchMove={handleDragMove} onMouseUp={handleDragEnd} onTouchEnd={handleDragEnd}>
       <div className="bg-white w-[340px] rounded-md overflow-hidden flex flex-col">
         <div className="bg-[#1b77ff] text-white px-4 pt-3 pb-3 relative">
-          <button onClick={onClose} className="absolute right-2 top-2 p-2">
+          <button {...(closeBind ?? { onClick: onClose })} className="absolute right-2 top-2 p-2">
             <IcClose size={18} className="text-white" />
           </button>
           <div className="text-[14px] leading-5">安全验证</div>

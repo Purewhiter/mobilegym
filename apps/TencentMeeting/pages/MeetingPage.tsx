@@ -49,7 +49,8 @@ const formatDuration = (ms: number) => {
 
 export const MeetingPage: React.FC = () => {
     const location = useLocation();
-    const { bindNav, bindBack } = useMeetingGestures();
+    const { bindNav, bindBack, bindTap, nav } = useMeetingGestures();
+    const back = () => nav.back();
     const { user, activeMeeting, pendingMeetingConfig } = useMeetingStore(useShallow(s => ({
         user: s.user,
         activeMeeting: s.activeMeeting,
@@ -68,12 +69,17 @@ export const MeetingPage: React.FC = () => {
     const [isEntering, setIsEntering] = useState(true); // 正在进入会议状态
 
     // UI State
-    const [isMoreOpen, setIsMoreOpen] = useState(false);
-    const [isManageMembersOpen, setIsManageMembersOpen] = useState(false);
-    const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null); // For profile sheet
+    // The more menu, member list, member card and rename dialog live in the URL
+    // (?panel=more|members, ?sheet=member&memberId=, ?dialog=rename): system back closes them one at a time.
+    const meetingParams = new URLSearchParams(location.search);
+    const isMoreOpen = meetingParams.get('panel') === 'more';
+    const isManageMembersOpen = meetingParams.get('panel') === 'members';
+    const coveredByMembers = isManageMembersOpen ? 'invisible' : '';
+    const selectedMemberId = meetingParams.get('sheet') === 'member' ? meetingParams.get('memberId') : null; // For profile sheet
+    const bindMember = (memberId: string) => bindNav(routes.meeting, { search: { sheet: 'member', memberId }, keep: ['panel'] });
     const [renamingId, setRenamingId] = useState<string | null>(null);
     const [renameText, setRenameText] = useState('');
-    const [showRenameDialog, setShowRenameDialog] = useState(false);
+    const showRenameDialog = meetingParams.get('dialog') === 'rename' && !!renamingId;
 
     // Start meeting if not already started
     useEffect(() => {
@@ -234,8 +240,8 @@ export const MeetingPage: React.FC = () => {
                 </button>
             </div>
 
-            {/* Main Content */}
-            <div className="flex-1 flex flex-col justify-center items-center pb-20">
+            {/* Main Content — hidden under the members sheet, which covers it (its controls can't be tapped there) */}
+            <div className={`flex-1 flex flex-col justify-center items-center pb-20 ${coveredByMembers}`}>
                 {isEntering ? (
                     // 正在进入会议
                     <span className="text-white text-lg">{s.meeting_entering}</span>
@@ -246,9 +252,7 @@ export const MeetingPage: React.FC = () => {
                             <div
                                 key={participant.id}
                                 className="flex flex-col items-center"
-                                onClick={() => {
-                                    setSelectedMemberId(participant.id);
-                                }}
+                                {...bindMember(participant.id)}
                             >
                                 <div className="relative">
                                     <div className="w-14 h-14 rounded-full bg-blue-600 overflow-hidden flex items-center justify-center border-2 border-transparent active:border-white/50">
@@ -298,7 +302,7 @@ export const MeetingPage: React.FC = () => {
             </div>
 
             {/* Floating Chat/Notes Bar */}
-            <div className="px-4 mb-4 flex items-center justify-between">
+            <div className={`px-4 mb-4 flex items-center justify-between ${coveredByMembers}`}>
                 {/* Chat input */}
                 <div
                     className="bg-[#3a3a3a] rounded-full h-10 flex min-w-0 items-center px-3 flex-1 mr-4 active:opacity-70"
@@ -560,7 +564,7 @@ export const MeetingPage: React.FC = () => {
             )}
 
             {/* Bottom Control Bar */}
-            <div className="bg-[#232526] px-4 pb-6 pt-3 flex justify-between items-center rounded-t-2xl">
+            <div className={`bg-[#232526] px-4 pb-6 pt-3 flex justify-between items-center rounded-t-2xl ${coveredByMembers}`}>
                 {/* Mute */}
                 <div
                     className="flex flex-col items-center gap-1 active:opacity-70"
@@ -609,7 +613,7 @@ export const MeetingPage: React.FC = () => {
                 {/* Participants */}
                 <div
                     className="flex flex-col items-center gap-1 active:opacity-70"
-                    onClick={() => setIsManageMembersOpen(true)}
+                    {...bindNav(routes.meeting, { search: { panel: 'members' } })}
                 >
                     <div className="w-8 h-8 flex items-center justify-center">
                         <IcParticipants size={24} className="text-white" />
@@ -620,7 +624,7 @@ export const MeetingPage: React.FC = () => {
                 {/* More with red dot */}
                 <div
                     className="flex flex-col items-center gap-1 active:opacity-70"
-                    onClick={() => setIsMoreOpen(true)}
+                    {...bindNav(routes.meeting, { search: { panel: 'more' } })}
                 >
                     <div className="w-8 h-8 flex items-center justify-center relative">
                         <IcMore size={24} className="text-white" />
@@ -632,14 +636,14 @@ export const MeetingPage: React.FC = () => {
 
             {/* More Sheet */}
             {isMoreOpen && (
-                <div className="absolute inset-0 z-50 flex flex-col justify-end bg-black/50" onClick={() => setIsMoreOpen(false)}>
+                <div className="absolute inset-0 z-50 flex flex-col justify-end bg-black/50" onClick={() => back()}>
                     <div className="bg-[#232526] rounded-t-xl p-4" onClick={e => e.stopPropagation()}>
                         <div className="grid grid-cols-4 gap-4">
                             <div
                                 className="flex flex-col items-center gap-2 active:opacity-70"
                                 onClick={() => {
                                     updateMeetingSettings({ isRecording: !activeMeeting?.settings.isRecording });
-                                    setIsMoreOpen(false);
+                                    back();
                                 }}
                             >
                                 <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${activeMeeting?.settings.isRecording ? 'bg-red-500' : 'bg-[#3a3a3a]'}`}>
@@ -653,7 +657,7 @@ export const MeetingPage: React.FC = () => {
                                 onClick={() => {
                                     const nextLayout = activeMeeting?.settings.layout === 'gallery' ? 'speaker' : 'gallery';
                                     updateMeetingSettings({ layout: nextLayout });
-                                    setIsMoreOpen(false);
+                                    back();
                                 }}
                             >
                                 <div className="w-12 h-12 rounded-xl bg-[#3a3a3a] flex items-center justify-center">
@@ -666,7 +670,7 @@ export const MeetingPage: React.FC = () => {
                                 className="flex flex-col items-center gap-2 active:opacity-70"
                                 onClick={() => {
                                     updateMeetingSettings({ captionEnabled: !activeMeeting?.settings.captionEnabled });
-                                    setIsMoreOpen(false);
+                                    back();
                                 }}
                             >
                                 <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${activeMeeting?.settings.captionEnabled ? 'bg-blue-600' : 'bg-[#3a3a3a]'}`}>
@@ -684,7 +688,7 @@ export const MeetingPage: React.FC = () => {
                         </div>
                         <button
                             className="w-full mt-6 py-3 bg-[#3a3a3a] rounded-lg text-white font-medium"
-                            onClick={() => setIsMoreOpen(false)}
+                            {...bindBack()}
                         >
                             {s.btn_cancel}
                         </button>
@@ -699,7 +703,7 @@ export const MeetingPage: React.FC = () => {
                     <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
                         <IcSettings size={24} className="text-gray-600" />
                         <span className="text-[17px] font-medium text-black">{s.meeting_manage_members}</span>
-                        <button onClick={() => setIsManageMembersOpen(false)}>
+                        <button {...bindBack()}>
                             <IcClose size={24} className="text-gray-600" />
                         </button>
                     </div>
@@ -726,7 +730,7 @@ export const MeetingPage: React.FC = () => {
                             <div
                                 key={p.id}
                                 className="flex items-center justify-between px-4 py-3 active:bg-gray-50 border-b border-gray-50"
-                                onClick={() => setSelectedMemberId(p.id)}
+                                {...bindMember(p.id)}
                             >
                                 <div className="flex items-center gap-3">
                                     <div className="w-10 h-10 rounded-full bg-blue-600 overflow-hidden flex items-center justify-center">
@@ -779,7 +783,7 @@ export const MeetingPage: React.FC = () => {
 
             {/* Participant Profile Sheet */}
             {selectedMemberId && (
-                <div className="absolute inset-0 z-[60] flex flex-col justify-end bg-black/50" onClick={() => setSelectedMemberId(null)}>
+                <div className="absolute inset-0 z-[60] flex flex-col justify-end bg-black/50" onClick={() => back()}>
                     <div className="bg-app-surface rounded-t-xl overflow-hidden animate-slide-up" onClick={e => e.stopPropagation()}>
                         {/* Header / Bg */}
                         <div className="h-24 bg-gradient-to-b from-blue-50 to-white relative">
@@ -823,11 +827,13 @@ export const MeetingPage: React.FC = () => {
                             <div className="mt-2">
                                 <div
                                     className="flex items-center justify-between py-4 border-b border-gray-50 active:bg-gray-50"
-                                    onClick={() => {
-                                        const p = activeMeeting?.participants.find(p => p.id === selectedMemberId);
-                                        if (p) updateParticipant(selectedMemberId, { isMuted: !p.isMuted });
-                                        setSelectedMemberId(null);
-                                    }}
+                                    {...bindTap({ kind: 'action', id: 'meeting.member.mute' }, {
+                                        onTrigger: () => {
+                                            const p = activeMeeting?.participants.find(p => p.id === selectedMemberId);
+                                            if (p) updateParticipant(selectedMemberId, { isMuted: !p.isMuted });
+                                            back();
+                                        },
+                                    })}
                                 >
                                     <span className="text-base text-black">
                                         {activeMeeting?.participants.find(p => p.id === selectedMemberId)?.isMuted ? s.meeting_unmute : s.meeting_mute}
@@ -838,15 +844,18 @@ export const MeetingPage: React.FC = () => {
                                 {(selectedMemberId === user.id || isHost) && (
                                     <div
                                         className="flex items-center justify-between py-4 active:bg-gray-50"
-                                        onClick={() => {
-                                            const p = activeMeeting?.participants.find(p => p.id === selectedMemberId);
-                                            if (p) {
-                                                setRenameText(p.name);
-                                                setRenamingId(p.id);
-                                                setShowRenameDialog(true);
-                                                setSelectedMemberId(null);
-                                            }
-                                        }}
+                                        {...bindTap('nav.meeting', {
+                                            params: { dialog: 'rename' },
+                                            onTrigger: () => {
+                                                const p = activeMeeting?.participants.find(p => p.id === selectedMemberId);
+                                                if (p) {
+                                                    setRenameText(p.name);
+                                                    setRenamingId(p.id);
+                                                    // The rename dialog takes the member card's place.
+                                                    nav.replace(routes.meeting, {}, { search: { dialog: 'rename' }, keep: ['panel'] });
+                                                }
+                                            },
+                                        })}
                                     >
                                         <span className="text-base text-black">{s.meeting_rename}</span>
                                         <IcEdit2 size={20} className="text-gray-400" />
@@ -872,7 +881,7 @@ export const MeetingPage: React.FC = () => {
                         <div className="flex gap-3">
                             <button
                                 className="flex-1 py-2 text-gray-500 bg-gray-100 rounded-lg"
-                                onClick={() => setShowRenameDialog(false)}
+                                {...bindBack()}
                             >
                                 {s.btn_cancel}
                             </button>
@@ -882,7 +891,7 @@ export const MeetingPage: React.FC = () => {
                                     if (renamingId) {
                                         updateParticipant(renamingId, { name: renameText });
                                     }
-                                    setShowRenameDialog(false);
+                                    back();
                                     setRenamingId(null);
                                 }}
                             >

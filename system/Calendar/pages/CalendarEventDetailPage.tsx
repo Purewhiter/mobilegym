@@ -1,5 +1,5 @@
 import React from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useLocation, useParams, useSearchParams } from 'react-router-dom';
 import { MaskIcon } from '../components/MaskIcon';
 import { useCalendarStore } from '../state';
 import { strings } from '../res/strings';
@@ -7,7 +7,7 @@ import { stringsEn } from '../res/strings.en';
 import { useAppStrings } from '@/os/useAppStrings';
 import { useCalendarGestures } from '../hooks/useCalendarGestures';
 import * as TimeService from '@/os/TimeService';
-import { routes } from '../routes';
+import { routes, type CalendarEventRouteState } from '../routes';
 const calIcon = (name: string) => name ? `/@app-assets/Calendar/icons/${name}.svg` : '';
 
 const formatRangeCN = (startTs: number, endTs: number, allDay: boolean, allDayLabel: string) => {
@@ -25,9 +25,10 @@ const formatRangeCN = (startTs: number, endTs: number, allDay: boolean, allDayLa
 };
 
 export const CalendarEventDetailPage: React.FC = () => {
-  const { back, bindBack, bindNav, bindTap } = useCalendarGestures();
+  const { nav, back, bindBack, bindNav, bindTap } = useCalendarGestures();
   const { eventId } = useParams();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const detailState = useLocation().state as CalendarEventRouteState | null;
+  const [searchParams] = useSearchParams();
   const showDeleteConfirm = searchParams.get('deleteConfirm') === 'open';
   const calendarEvents = useCalendarStore(s => s.events);
   const deleteEvent = useCalendarStore(s => s.deleteEvent);
@@ -60,6 +61,23 @@ export const CalendarEventDetailPage: React.FC = () => {
       </div>
     );
   }
+
+  const handleDelete = () => {
+    deleteEvent(event.id);
+    if (detailState?.searchResultIds) {
+      const { searchResultIds } = detailState;
+      const index = searchResultIds.indexOf(event.id);
+      const remainingIds = new Set(useCalendarStore.getState().events.map(e => e.id));
+      const stillExists = (id: string) => remainingIds.has(id);
+      const nextId = searchResultIds.slice(index + 1).find(stillExists)
+        ?? searchResultIds.slice(0, index).reverse().find(stillExists);
+      if (nextId) {
+        nav.push(routes.event, { eventId: nextId }, { popTo: routes.search.path, state: detailState });
+        return;
+      }
+    }
+    back(2);
+  };
 
   return (
     <div className="flex flex-col h-full bg-app-bg dark:bg-black text-black dark:text-white">
@@ -131,7 +149,7 @@ export const CalendarEventDetailPage: React.FC = () => {
             <MaskIcon src={calIcon('miuix_action_icon_edit_light')} size={22} />
           </button>
           <button
-            onClick={() => setSearchParams(p => { p.set('deleteConfirm', 'open'); return p; })}
+            {...bindNav(routes.event, { params: { eventId: event.id }, search: { deleteConfirm: 'open' }, state: detailState })}
             className="w-14 h-14 rounded-full bg-white/95 dark:bg-[#1c1c1e]/95 shadow-lg flex items-center justify-center text-red-600 active:scale-95 transition-transform"
             aria-label="删除"
           >
@@ -158,11 +176,7 @@ export const CalendarEventDetailPage: React.FC = () => {
               <div className="w-px bg-gray-200 dark:bg-white/10" />
               <button
                 {...bindTap({ kind: 'action', id: 'calendar.eventDetail.delete' }, {
-                  onTrigger: () => {
-                    deleteEvent(event.id);
-                    back(); // close dialog
-                    setTimeout(() => back(), 50); // go back to previous page
-                  },
+                  onTrigger: handleDelete,
                 })}
                 className="flex-1 py-3 text-[16px] text-red-500 font-semibold active:bg-gray-100 dark:active:bg-white/5"
               >

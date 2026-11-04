@@ -2,32 +2,26 @@
 
 This document is the high-level overview of how MobileGym is put together. For the formal rules and contracts behind each layer, follow the links in this `platform/` directory.
 
-For the canonical figure (also shown in the [top-level README](../../README.md)), see [`../../assets/arch.png`](../../assets/arch.png).
+The [README figure](../../assets/arch.png) shows the simulator's capabilities and how its data composes. The diagram below shows where the components run and how they communicate.
 
-## The three layers
+## Runtime components
 
-MobileGym is a single Vite project — not a monorepo — with three layers stacked top to bottom:
+MobileGym uses one Vite project for the browser simulator and a Node device server. The Python benchmark harness drives the browser and can query the device server during setup and judging.
 
 ```
-┌────────────────────────────────────────────────────────────────────┐
-│ 🧪 Benchmark layer    bench_env/    (Python · Playwright)          │
-│    Tasks · judges · runners · agents · splits                      │
-└──────────────────────────────────┬─────────────────────────────────┘
-                                   │  window.__SIM__ / __OS__
-                                   │  __SIM_INPUT__ / __SIM_QUERY__
-┌──────────────────────────────────┴─────────────────────────────────┐
-│ 📱 Apps layer        apps/ , system/    (TS · React)               │
-│    manifests · declarative navigation · per-app state stores       │
-└──────────────────────────────────┬─────────────────────────────────┘
-                                   │  IntentResolver · BackDispatcher
-                                   │  AppLifecycle · ContentProvider
-┌──────────────────────────────────┴─────────────────────────────────┐
-│ 🪟 OS layer          os/    (TS · React · Zustand)                 │
-│    SystemShell · TaskManager · services · managers · providers     │
-└────────────────────────────────────────────────────────────────────┘
+bench_env/ (Python)
+  ├─ Playwright ──> Browser simulator
+  │                 ├─ apps/ and system/   React pages, routes, store mirrors
+  │                 ├─ os/                tasks, intents, settings, providers
+  │                 └─ os/device/ ── HTTP /__device ──┐
+  └─ DeviceView ────── HTTP /__device ─────────────────┤
+                                                       v
+                                               device/ (Node)
+                                               shared catalogs, per-device
+                                               state, filesystem and blobs
 ```
 
-Each layer talks to the one below it through a stable contract, and only the layer above. The agent never sees JavaScript — it only ever consumes screenshots and emits actions.
+The harness uses `__SIM__` and the browser's other runtime APIs for setup, input, and snapshots. Model agents consume screenshots and emit actions.
 
 ## OS layer (`os/`)
 
@@ -69,7 +63,7 @@ This is the trick that makes deterministic judging cheap. Each app separates its
 1. **World data** — large, mostly read-only public entities (posts, products, stations, places). Lives outside snapshots.
 2. **Runtime overlay** — small, mutable per-environment state (current user, settings, drafts, likes, sent messages, per-entity overrides on world data).
 
-App views compose the two at render time, with the runtime overlay taking precedence. **Only the runtime overlay is included in environment snapshots** that the benchmark compares for judging. This keeps snapshots tiny and stable while still capturing every agent-induced change.
+Catalog-backed app modules merge the two on the device server, with runtime changes taking precedence. Snapshots carry the app's runtime state and the OS state. Shared catalog records stay outside the snapshot.
 
 See the architecture figure on the README or [`state/model.md`](state/model.md) for details.
 
@@ -78,6 +72,12 @@ See the architecture figure on the README or [`state/model.md`](state/model.md) 
 Each app keeps a route table (`routes.ts`): its pages and the discrete UI states each keeps in its URL. Jumps are typed code against it (`bindNav(routes.x, ...)`, `nav.push / replace / back` from `os/navigation`), and every bound control is tagged in the DOM. There is no static transition graph: `scripts/explore_nav_graph.py` builds the graph from a running simulator by tapping every tagged control.
 
 See [`navigation/routes.md`](navigation/routes.md).
+
+## Device server (`device/`)
+
+The server holds each simulated phone's app state and filesystem in a device session. Catalogs are loaded once per Node process and shared across sessions. Catalog-backed apps issue commands and queries through `DeviceClient`. Apps using `syncSetState` update their browser stores synchronously and save the changed state to the session.
+
+The browser keeps its session across reloads in the same tab. An episode reset starts a fresh session and detaches requests from the previous one. Vite mounts `/__device` in dev and preview. The nginx gateway routes a session's requests to the Node shard that owns it. See [`state/device-server.md`](state/device-server.md).
 
 ## Benchmark layer (`bench_env/`)
 
@@ -114,7 +114,7 @@ judge = task.evaluate(JudgeInput(init_obs=init_obs, last_obs=last_obs))
 
 Each task ships a deterministic `check_goals(input) -> list[CheckResult]` method that inspects the structured `init` and `final` snapshots and returns one record per goal. AnswerSheet-typed tasks additionally provide `get_answer()` which produces the expected answer values. The base implementation in `bench_env/task/base.py` composes these into a final `JudgeResult` with success rate, progress rate, and side-effect flags.
 
-> ⚖️ Simulator state-mode judges are sub-millisecond and deterministic, with no VLM API calls during scoring. VLM judging is available for real-device runs, explicit `--judge-mode vlm`, or auto mode with a configured judge model; use state mode for RL-scale evaluation where millions of judgments make visual judging cost-prohibitive.
+State-mode judges can query merged catalog and runtime records through `DeviceView`. It imports the initial or final app snapshot into a scratch session on the selected device server and uses the same queries as the app. State scoring uses no VLM API calls. VLM judging is available for real-device runs, explicit `--judge-mode vlm`, or auto mode with a configured judge model.
 
 ### Agents
 
@@ -129,7 +129,7 @@ For the complete agent contract, see [../guides/add-an-agent.md](../guides/add-a
 
 ## How a snapshot works
 
-When the benchmark calls `__SIM__.getState()`, it gets back a single JSON object with this shape:
+Before taking the final snapshot, the benchmark waits for device writes to be acknowledged. `__SIM__.getState()` reads the browser's state mirrors and returns a JSON object with the following shape.
 
 ```jsonc
 {
@@ -155,7 +155,7 @@ When the benchmark calls `__SIM__.getState()`, it gets back a single JSON object
 }
 ```
 
-This is the **only** state the benchmark trusts for judging. The full `__SIM__.getState()` schema, including per-app snapshots, is auto-generated at [../api/app-state-schema.md](../api/app-state-schema.md).
+The snapshot is the source of runtime state for the judge. Catalog-backed judges combine it with shared catalog data through the device server. The full `__SIM__.getState()` schema is in [../api/app-state-schema.md](../api/app-state-schema.md).
 
 ## Where to go next
 

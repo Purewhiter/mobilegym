@@ -258,7 +258,7 @@ export const SpacePage: React.FC = () => {
                         return (
                             <div
                                 key={tab.key}
-                                {...(isActive ? {} : bindNav(routes.space, { search: { tab: tab.key }, replace: true }))}
+                                {...(isActive ? {} : bindNav(routes.space, { search: { tab: tab.key as (typeof routes.space.search.tab)[number] }, replace: true }))}
                                 className={`flex-1 flex justify-center py-3 text-[15px] font-medium relative transition-colors cursor-pointer ${isActive ? 'text-app-primary' : 'text-[#61666D]'}`}
                             >
                                 {tab.label}

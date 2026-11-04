@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useMemo } from 'react';
 import { SettingsHeader } from './SettingsHeader';
 import { useNav } from '../../../os/navigation';
 import { PreferenceCategory } from './PreferenceCategory';
@@ -13,6 +13,7 @@ import {
 import { strings } from '../res/strings';
 import { stringsEn } from '../res/strings.en';
 import { useAppStrings } from '@/os/useAppStrings';
+import { useTimedToast } from '../../../os/hooks/useTimedToast';
 
 export const WifiSavedNetworkDetailPage: React.FC<{ ssid: string }> = ({ ssid }) => {
   const nav = useNav(); const back = nav.back;
@@ -25,15 +26,7 @@ export const WifiSavedNetworkDetailPage: React.FC<{ ssid: string }> = ({ ssid })
   const network = useMemo(() => savedNetworks.find((n) => n.ssid === ssid), [savedNetworks, ssid]);
   const isConnected = connectedSsid === ssid;
 
-  const [toast, setToast] = useState<{ visible: boolean; message: string }>({ visible: false, message: '' });
-  const toastTimerRef = useRef<number | undefined>(undefined);
-  const showToast = (message: string) => {
-    setToast({ visible: true, message });
-    if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current);
-    toastTimerRef.current = window.setTimeout(() => {
-      setToast((prev) => ({ ...prev, visible: false }));
-    }, 1600);
-  };
+  const { toast, showToast } = useTimedToast();
 
   if (!network) {
     return (

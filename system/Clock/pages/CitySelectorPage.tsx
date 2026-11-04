@@ -5,14 +5,18 @@ import { stringsEn } from '../res/strings.en';
 import { useAppStrings } from '../../../os/useAppStrings';
 import { IcClose, IcSearch } from '../res/icons';
 import { formatGmtLabel } from '../utils';
+import { useClockGestures } from '../hooks/useClockGestures';
 
 export const CitySelectorPage: React.FC<{
   cities: WorldCity[];
   selectedCityIds: string[];
   onSelect: (city: WorldCity) => void;
   onClose: () => void;
+  /** System back for the backdrop and close button (onClose stays for drag-dismiss). */
+  closeBind: React.HTMLAttributes<HTMLElement>;
   onAlreadySelected?: () => void;
-}> = ({ cities, selectedCityIds, onSelect, onClose, onAlreadySelected }) => {
+}> = ({ cities, selectedCityIds, onSelect, onClose, closeBind, onAlreadySelected }) => {
+  const { bindTap } = useClockGestures();
   const s = useAppStrings(strings, stringsEn);
   const [query, setQuery] = useState('');
   const [dragOffset, setDragOffset] = useState(0);
@@ -50,7 +54,7 @@ export const CitySelectorPage: React.FC<{
 
   return (
     <div className="absolute inset-0 z-40">
-      <div className="absolute inset-0 bg-black/30" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/30" {...closeBind} />
       <div
         className="absolute top-10 left-0 right-0 bottom-0 bg-app-bg rounded-t-[24px] px-5 pt-4 pb-6 flex flex-col"
         style={{ transform: `translateY(${dragOffset}px)`, transition: !isDragging ? 'transform var(--app-duration-short) var(--app-easing-decelerate)' : undefined }}
@@ -68,7 +72,7 @@ export const CitySelectorPage: React.FC<{
         </div>
 
         <div className="flex items-center justify-between mb-3">
-          <button className="w-10 h-10 flex items-center justify-center text-app-text-muted shrink-0" onClick={onClose}>
+          <button className="w-10 h-10 flex items-center justify-center text-app-text-muted shrink-0" {...closeBind}>
             <IcClose size={26} />
           </button>
           <div className="flex flex-col items-center gap-0.5 min-w-0 flex-1 px-2">
@@ -87,7 +91,10 @@ export const CitySelectorPage: React.FC<{
             className="bg-transparent outline-none text-[16px] flex-1 placeholder:text-gray-400"
           />
           {query ? (
-            <button className="text-app-primary text-[14px] shrink-0" onClick={() => setQuery('')}>
+            <button
+              className="text-app-primary text-[14px] shrink-0"
+              {...bindTap({ kind: 'action', id: 'clock.world.city.search.clear' }, { onTrigger: () => setQuery('') })}
+            >
               {s.cancel}
             </button>
           ) : null}
@@ -100,14 +107,17 @@ export const CitySelectorPage: React.FC<{
               return (
                 <button
                   key={city.id}
-                  onClick={() => {
-                    if (isSelected) {
-                      onClose();
-                      onAlreadySelected?.();
-                    } else {
-                      onSelect(city);
-                    }
-                  }}
+                  {...bindTap({ kind: 'action', id: 'clock.world.city.add' }, {
+                    params: { cityId: city.id },
+                    onTrigger: () => {
+                      if (isSelected) {
+                        onClose();
+                        onAlreadySelected?.();
+                      } else {
+                        onSelect(city);
+                      }
+                    },
+                  })}
                   className="w-full py-4 flex items-center justify-between text-left border-b border-gray-100 last:border-b-0"
                 >
                   <div>

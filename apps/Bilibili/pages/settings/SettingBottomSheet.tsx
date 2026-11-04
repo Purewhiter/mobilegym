@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavGestures } from '../../../../os/navigation';
 
 export type SheetOption = { id: string; label: string };
 
@@ -10,7 +11,10 @@ export const SettingBottomSheet: React.FC<{
   onSelect: (id: string) => void;
   onClose: () => void;
   open: boolean;
-}> = ({ title, options, value, onSelect, onClose, open }) => {
+  /** Action id the options are tagged with (`params.option` = option id). */
+  actionId: string;
+}> = ({ title, options, value, onSelect, onClose, open, actionId }) => {
+  const { bindTap } = useNavGestures();
   if (!open) return null;
 
   return (
@@ -35,10 +39,13 @@ export const SettingBottomSheet: React.FC<{
               <div
                 key={opt.id}
                 className="flex items-center justify-between px-4 py-3.5 active:bg-gray-50 cursor-pointer border-b border-gray-100"
-                onClick={() => {
-                  onSelect(opt.id);
-                  onClose();
-                }}
+                {...bindTap({ kind: 'action', id: actionId }, {
+                  params: { option: opt.id },
+                  onTrigger: () => {
+                    onSelect(opt.id);
+                    onClose();
+                  },
+                })}
               >
                 <span className={`text-[15px] ${isSelected ? 'text-[#FB7299]' : 'text-gray-900'}`}>
                   {opt.label}

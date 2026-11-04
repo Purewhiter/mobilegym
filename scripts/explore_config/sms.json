@@ -1,0 +1,29 @@
+{
+  "setup": {
+    "/new": [
+      [
+        {
+          "type": "13800138000",
+          "into": "input[type=text] >> nth=0"
+        },
+        {
+          "tap": "text=张三"
+        },
+        {
+          "type": "你好",
+          "into": "input[placeholder=\"短信\"]"
+        }
+      ],
+      [
+        {
+          "type": "abc",
+          "into": "input[type=text] >> nth=0"
+        },
+        {
+          "type": "你好",
+          "into": "input[placeholder=\"短信\"]"
+        }
+      ]
+    ]
+  }
+}

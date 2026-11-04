@@ -1,11 +1,15 @@
 import React, { useEffect } from 'react';
+import { useCalendarGestures } from '../hooks/useCalendarGestures';
 
 export interface CalendarActionSheetItem {
   id: string;
   title: string;
   subtitle?: string;
   icon?: React.ReactNode;
-  /** Either a handler, or a tap binding from the page (bindNav) that tags the row. */
+  /**
+   * Either a handler (the sheet closes after it), or a tap binding from the page
+   * (bindNav) that tags the row and itself leaves the sheet (it replaces the sheet's entry).
+   */
   onClick?: () => void;
   bind?: React.ButtonHTMLAttributes<HTMLButtonElement>;
 }
@@ -16,6 +20,7 @@ export const CalendarActionSheet: React.FC<{
   items: CalendarActionSheetItem[];
   onClose: () => void;
 }> = ({ open, title, items, onClose }) => {
+  const { bindTap } = useCalendarGestures();
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
@@ -46,12 +51,13 @@ export const CalendarActionSheet: React.FC<{
               <button
                 key={it.id}
                 className="w-full flex items-center gap-3 px-5 py-4 text-left active:bg-black/5 dark:active:bg-white/5"
-                {...it.bind}
-                onClick={(event) => {
-                  if (it.bind?.onClick) it.bind.onClick(event);
-                  else it.onClick?.();
-                  onClose();
-                }}
+                {...(it.bind ?? bindTap({ kind: 'action', id: 'calendar.sheet.select' }, {
+                  params: { item: it.id },
+                  onTrigger: () => {
+                    it.onClick?.();
+                    onClose();
+                  },
+                }))}
               >
                 {it.icon && <div className="shrink-0 text-gray-700 dark:text-gray-200">{it.icon}</div>}
                 <div className="min-w-0 flex-1">
@@ -66,7 +72,7 @@ export const CalendarActionSheet: React.FC<{
         <div className="mx-3 mb-3 rounded-3xl overflow-hidden bg-app-surface dark:bg-[#1c1c1e] shadow-xl">
           <button
             className="w-full px-5 py-4 text-[16px] text-app-text dark:text-gray-100 active:bg-black/5 dark:active:bg-white/5"
-            onClick={onClose}
+            {...bindTap({ kind: 'action', id: 'calendar.sheet.cancel' }, { onTrigger: onClose })}
           >
             取消
           </button>

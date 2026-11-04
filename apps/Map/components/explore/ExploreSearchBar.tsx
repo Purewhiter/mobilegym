@@ -3,6 +3,7 @@ import googleMapsBrandIcon from '../../assets/google_maps_icon_2020.svg';
 import googleMicBrandIcon from '../../assets/google_mic.svg';
 import { EXPLORE_CATEGORIES } from '../../constants';
 import type { Nav } from '../../../../os/navigation';
+import { useMapGestures } from '../../hooks/useMapGestures';
 import { useMapStrings } from '../../hooks/useMapStrings';
 import { routes } from '../../routes';
 
@@ -14,6 +15,7 @@ export const ExploreSearchBar: React.FC<{
   searchNearby: (type: string) => void;
 }> = ({ mapInstance, nav, profileTriggerProps, searchNearby }) => {
   const s = useMapStrings();
+  const { bindTap } = useMapGestures();
 
   return (
     <div className="pt-12 px-4 pb-2 bg-gradient-to-b from-white/90 via-white/50 to-transparent">
@@ -21,10 +23,13 @@ export const ExploreSearchBar: React.FC<{
       <img src={googleMapsBrandIcon} className="w-6 h-6 mr-3 shrink-0" width={24} height={24} alt="Google Maps" />
       <div
         className="flex-1 text-app-text-muted text-lg truncate"
-        onClick={() => {
-          const mc = mapInstance?.getCenter();
-          nav.push(routes.search, {}, mc ? { state: { viewportCenter: { lat: mc.lat(), lng: mc.lng() } } } : undefined);
-        }}
+        {...bindTap('nav.search', {
+          // The map's centre when tapped goes along, so the search starts there.
+          onTrigger: () => {
+            const mc = mapInstance?.getCenter();
+            nav.push(routes.search, {}, mc ? { state: { viewportCenter: { lat: mc.lat(), lng: mc.lng() } } } : undefined);
+          },
+        })}
       >
         {s.search_placeholder}
       </div>
@@ -46,7 +51,7 @@ export const ExploreSearchBar: React.FC<{
           key={cat.searchType}
           type="button"
           className="flex items-center gap-1.5 bg-app-surface px-4 py-2 rounded-full shadow-sm border border-gray-100 whitespace-nowrap active:bg-gray-50"
-          onClick={() => searchNearby(cat.searchType)}
+          {...bindTap({ kind: 'action', id: 'map.explore.category.search' }, { params: { type: cat.searchType }, onTrigger: () => searchNearby(cat.searchType) })}
         >
           <cat.icon size={16} className="text-gray-600" />
           <span className="text-sm text-gray-700 font-medium">{s[cat.labelKey]}</span>

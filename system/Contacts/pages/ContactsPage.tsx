@@ -29,12 +29,15 @@ const ContactRow: React.FC<{
   name: string;
   showDivider?: boolean;
   onClick?: () => void;
-}> = ({ name, showDivider = true, onClick }) => (
+  /** Tap binding from the page (bindNav), which tags the row; replaces onClick. */
+  bind?: React.ButtonHTMLAttributes<HTMLButtonElement>;
+}> = ({ name, showDivider = true, onClick, bind }) => (
   <div className="bg-app-surface">
     <button
       type="button"
       className="w-full px-6 py-4 flex items-center justify-between active:bg-black/5 text-left"
       onClick={onClick}
+      {...bind}
     >
       <span className="text-[18px] text-app-text">{name}</span>
       <IcNavForward className="w-5 h-5 text-gray-300" />
@@ -102,7 +105,7 @@ export const ContactsPage: React.FC = () => {
   const locale = useLocale();
   const isEnglish = locale === 'en';
   const contacts = useContactsList();
-  const { bindNav, nav } = useContactsGestures();
+  const { bindNav } = useContactsGestures();
   const [searchParams] = useSearchParams();
   const favOnly = searchParams.get('fav') === 'true';
   const s = useAppStrings(strings, stringsEn);
@@ -252,11 +255,9 @@ export const ContactsPage: React.FC = () => {
                   key={contact.id}
                   name={contact.displayName}
                   showDivider={index < list.length - 1}
-                  onClick={() => {
-                    // Browsing to a contact is not contacting them -- see the
-                    // note in SearchPage.openContact.
-                    nav.push(routes.contact, { contactId: contact.id });
-                  }}
+                  // Browsing to a contact is not contacting them -- see the
+                  // note in SearchPage.openContact.
+                  bind={bindNav(routes.contact, { params: { contactId: contact.id } })}
                 />
               ))}
             </div>

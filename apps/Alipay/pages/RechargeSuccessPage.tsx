@@ -20,7 +20,7 @@ const selectRecentRecharges = memoSelector(
 );
 
 export const RechargeSuccessPage: React.FC = () => {
-  const { nav, back, bindBack } = useAlipayGestures();
+  const { back, bindBack, bindNav, bindTap } = useAlipayGestures();
   const s = useAlipayStrings();
   const locale = useLocale();
   const isEnglish = locale === 'en';
@@ -74,7 +74,7 @@ export const RechargeSuccessPage: React.FC = () => {
         <div className="px-6 pb-8 pt-4 flex-shrink-0">
           <button
             className="w-full bg-app-primary text-white font-medium py-3 rounded-full active:opacity-90"
-            onClick={() => back()}
+            {...bindTap({ kind: 'action', id: 'rechargeSuccess.done' }, { onTrigger: () => back() })}
           >
             {s.recharge_success_done}
           </button>
@@ -94,7 +94,7 @@ export const RechargeSuccessPage: React.FC = () => {
       <div className="px-4 py-3 flex items-center justify-between">
         <div />
         <span className="text-lg font-medium">{s.recharge_success_title}</span>
-        <button onClick={() => nav.replace(routes.home)} className="text-sm text-white">{s.recharge_success_home}</button>
+        <button {...bindNav(routes.home, { replace: true })} className="text-sm text-white">{s.recharge_success_home}</button>
       </div>
 
       <div className="flex flex-col items-center mt-8 mb-10">
@@ -137,7 +137,7 @@ export const RechargeSuccessPage: React.FC = () => {
       <div className="px-6 pb-8 pt-4 flex-shrink-0">
         <button
           className="w-full bg-white text-app-primary font-medium py-3 rounded-full shadow-lg active:bg-gray-50"
-          onClick={() => nav.replace(routes.balance, {}, { popTo: '/balance' })}
+          {...bindNav(routes.balance, { replace: true, popTo: '/balance' })}
         >
           {s.recharge_success_done}
         </button>

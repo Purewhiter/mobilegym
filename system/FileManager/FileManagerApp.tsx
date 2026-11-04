@@ -18,7 +18,8 @@ import { colors, colorsDark } from './res/colors';
 import { colorStates, colorStatesDark } from './res/colors.states';
 import { dimens } from './res/dimens';
 import { anim } from './res/anim';
-import { MemoryRouter, Routes, Route } from 'react-router-dom';
+import { MemoryRouter, Route } from 'react-router-dom';
+import { ActivityRouteHost } from '../../os/components/ActivityRouteHost';
 import { FileManagerNavigationHandler } from './components/FileManagerNavigationHandler';
 import { BrowseHomePage } from './pages/BrowseHomePage';
 import { RecentPage } from './pages/RecentPage';
@@ -46,7 +47,8 @@ export const FileManagerApp: React.FC = () => {
     <div className="h-full w-full" style={cssVars as React.CSSProperties}>
       <MemoryRouter>
         <FileManagerNavigationHandler />
-        <Routes>
+        {/* Pages below the top stay as they were left (Fragment back stack), see ActivityRouteHost. */}
+        <ActivityRouteHost persistent={['/', '/recent', '/cloud']}>
           {/* Main tab routes - each page includes TabBar */}
           <Route path="/" element={<BrowseHomePage />} />
           <Route path="/recent" element={<RecentPage />} />
@@ -59,7 +61,7 @@ export const FileManagerApp: React.FC = () => {
 
           {/* Category views */}
           <Route path="/category/:category" element={<CategoryPage />} />
-        </Routes>
+        </ActivityRouteHost>
       </MemoryRouter>
     </div>
   );

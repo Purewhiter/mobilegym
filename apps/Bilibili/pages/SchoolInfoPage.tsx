@@ -1,11 +1,13 @@
 import React, { useState, useMemo } from 'react';
+import { useLocation } from 'react-router-dom';
+import { routes } from '../routes';
 import { IcNavBack, IcNavForward, IcSearch, IcClose } from '../res/icons';
 const ChevronLeft = IcNavBack, ChevronRight = IcNavForward, Search = IcSearch, X = IcClose;
 import { UNIVERSITIES } from '../data/schoolData';
 import { useBilibiliStore } from '../state';
 import { useBilibiliGestures } from '../hooks/useBilibiliGestures';
 export const SchoolInfoPage: React.FC = () => {
-    const { bindBack, back } = useBilibiliGestures();
+    const { bindBack, bindNav, bindTap, back, nav } = useBilibiliGestures();
     const user = useBilibiliStore(s => s.user);
     const updateUser = useBilibiliStore(s => s.updateUser);
 
@@ -14,9 +16,11 @@ export const SchoolInfoPage: React.FC = () => {
     const [enrollmentYear, setEnrollmentYear] = useState(user.enrollmentYear || '');
 
     // UI State
-    const [isSearchOpen, setIsSearchOpen] = useState(false);
-    const [isYearPickerOpen, setIsYearPickerOpen] = useState(false);
-    const [showSuccessModal, setShowSuccessModal] = useState(false);
+    // School search, year picker and the saved notice live in the URL (?sheet=...): system back closes them.
+    const sheet = new URLSearchParams(useLocation().search).get('sheet');
+    const isSearchOpen = sheet === 'search';
+    const isYearPickerOpen = sheet === 'year';
+    const showSuccessModal = sheet === 'success';
 
     // Search State
     const [searchTerm, setSearchTerm] = useState('');
@@ -40,7 +44,7 @@ export const SchoolInfoPage: React.FC = () => {
         });
 
         // Show success modal
-        setShowSuccessModal(true);
+        nav.push(routes.profileSchool, {}, { search: { sheet: 'success' } });
     };
 
     const handleDelete = () => {
@@ -78,7 +82,7 @@ export const SchoolInfoPage: React.FC = () => {
                         )}
                     </div>
                     <button
-                        onClick={() => setIsSearchOpen(false)}
+                        {...bindBack()}
                         className="text-[15px] text-app-text"
                     >
                         取消
@@ -90,10 +94,7 @@ export const SchoolInfoPage: React.FC = () => {
                     {filteredUniversities.map(uni => (
                         <div
                             key={uni.id}
-                            onClick={() => {
-                                setSchoolName(uni.name);
-                                setIsSearchOpen(false);
-                            }}
+                            {...bindTap({ kind: 'action', id: 'bilibili.school.search.select' }, { params: { schoolId: uni.id }, onTrigger: () => { setSchoolName(uni.name); back(); } })}
                             className="flex items-center justify-between px-4 py-4 border-b border-gray-50 active:bg-gray-50 bg-app-surface"
                         >
                             <span className="text-[15px] text-app-text">{uni.name}</span>
@@ -115,21 +116,21 @@ export const SchoolInfoPage: React.FC = () => {
             <div className="fixed inset-0 z-50 flex flex-col justify-end bg-black/50">
                 <div
                     className="absolute inset-0"
-                    onClick={() => setIsYearPickerOpen(false)}
+                    {...bindBack()}
                 />
                 <div className="bg-app-surface rounded-t-xl overflow-hidden w-full relative z-10">
                     {/* Header */}
                     <div className="flex justify-between items-center px-4 py-3 border-b border-gray-100 bg-app-surface">
                         <button
                             className="text-app-text-muted text-[15px]"
-                            onClick={() => setIsYearPickerOpen(false)}
+                            {...bindBack()}
                         >
                             取消
                         </button>
                         <span className="text-[16px] font-medium text-app-text">入学年份</span>
                         <button
                             className="text-app-primary text-[15px]"
-                            onClick={() => setIsYearPickerOpen(false)}
+                            {...bindTap({ kind: 'action', id: 'bilibili.school.year.confirm' }, { onTrigger: () => back() })}
                         >
                             确定
                         </button>
@@ -168,10 +169,7 @@ export const SchoolInfoPage: React.FC = () => {
                 <div className="bg-app-surface rounded-lg w-full max-w-sm p-6 flex flex-col items-center animate-in fade-in zoom-in duration-200">
                     <button
                         className="absolute top-4 right-4 text-gray-400"
-                        onClick={() => {
-                            setShowSuccessModal(false);
-                            back();
-                        }}
+                        {...bindTap({ kind: 'action', id: 'bilibili.school.success.close' }, { onTrigger: () => back(2) })}
                     >
                         <X size={20} />
                     </button>
@@ -188,10 +186,7 @@ export const SchoolInfoPage: React.FC = () => {
 
                     <button
                         className="w-full py-2.5 text-app-text text-[14px] font-medium active:bg-gray-50 rounded"
-                        onClick={() => {
-                            setShowSuccessModal(false);
-                            back();
-                        }}
+                        {...bindTap({ kind: 'action', id: 'bilibili.school.success.back' }, { onTrigger: () => back(2) })}
                     >
                         返回
                     </button>
@@ -209,7 +204,7 @@ export const SchoolInfoPage: React.FC = () => {
                 </button>
                 <h1 className="text-[17px] font-medium text-app-text">学校信息</h1>
                 <button
-                    onClick={handleSave}
+                    {...bindTap({ kind: 'action', id: 'bilibili.school.save' }, { onTrigger: handleSave })}
                     className={`text-[15px] font-medium ${schoolName ? 'text-app-text' : 'text-app-text-muted'}`}
                     disabled={!schoolName}
                 >
@@ -220,7 +215,7 @@ export const SchoolInfoPage: React.FC = () => {
             {/* Form */}
             <div className="mt-2 bg-app-surface">
                 <div
-                    onClick={() => setIsSearchOpen(true)}
+                    {...bindNav(routes.profileSchool, { search: { sheet: 'search' } })}
                     className="flex justify-between items-center px-4 py-4 border-b border-gray-50 active:bg-gray-50 transition-colors"
                 >
                     <div className="text-[15px] text-app-text">
@@ -233,7 +228,7 @@ export const SchoolInfoPage: React.FC = () => {
                 </div>
 
                 <div
-                    onClick={() => setIsYearPickerOpen(true)}
+                    {...bindNav(routes.profileSchool, { search: { sheet: 'year' } })}
                     className="flex justify-between items-center px-4 py-4 active:bg-gray-50 transition-colors"
                 >
                     <div className="text-[15px] text-app-text">入学年份</div>

@@ -23,6 +23,7 @@ type Next = (err?: unknown) => void;
 
 const MAX_JSON_BYTES = 32 * 1024 * 1024;
 const MAX_BLOB_BYTES = 128 * 1024 * 1024;
+const INLINE_BLOB_TYPE = /^(?:image\/(?:avif|bmp|gif|jpeg|png|webp|x-icon)|(?:audio|video)\/[a-z0-9.+-]+)$/i;
 
 async function readBody(req: IncomingMessage, limit: number): Promise<Buffer> {
   const declared = Number(req.headers['content-length']);
@@ -58,8 +59,13 @@ function send(res: ServerResponse, status: number, body: unknown): void {
 export function createDeviceHttpHandler(server: DeviceServer) {
   return async (req: IncomingMessage, res: ServerResponse, next: Next): Promise<void> => {
     // Mounted under /__device, so req.url is the remainder ("/sessions/...").
-    const url = new URL(req.url ?? '/', 'http://device.local');
-    const parts = url.pathname.split('/').filter(Boolean).map(decodeURIComponent);
+    let parts: string[];
+    try {
+      const url = new URL(req.url ?? '/', 'http://device.local');
+      parts = url.pathname.split('/').filter(Boolean).map(decodeURIComponent);
+    } catch {
+      return send(res, 400, { error: 'invalid device request path' });
+    }
     const method = req.method ?? 'GET';
     try {
       if (parts[0] === 'health' && method === 'GET') {
@@ -88,7 +94,11 @@ export function createDeviceHttpHandler(server: DeviceServer) {
         if (parts.length === 4 && method === 'GET') {
           if (!blob) throw new DeviceError(404, `unknown blob ${parts[3]}`);
           res.statusCode = 200;
-          res.setHeader('Content-Type', blob.type);
+          const inline = INLINE_BLOB_TYPE.test(blob.type.split(';', 1)[0].trim());
+          res.setHeader('Content-Type', inline ? blob.type : 'application/octet-stream');
+          res.setHeader('X-Content-Type-Options', 'nosniff');
+          res.setHeader('Content-Security-Policy', "sandbox; default-src 'none'");
+          if (!inline) res.setHeader('Content-Disposition', 'attachment');
           res.setHeader('Content-Length', String(blob.data.length));
           // Blob ids are never reused within a session, so the bytes never change.
           res.setHeader('Cache-Control', 'private, max-age=31536000, immutable');
@@ -137,7 +147,7 @@ export function createDeviceHttpHandler(server: DeviceServer) {
     } catch (err) {
       const status = err instanceof DeviceError ? err.status : 500;
       const message = err instanceof Error ? err.message : String(err);
-      if (status === 500) console.error('[device] request failed:', method, url.pathname, err);
+      if (status === 500) console.error('[device] request failed:', method, req.url, err);
       return send(res, status, { error: message });
     }
   };

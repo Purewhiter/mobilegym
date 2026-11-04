@@ -7,14 +7,13 @@ type SettingItemVariant = 'arrow' | 'switch' | 'value';
 export const SettingItemArrow: React.FC<{
   label: string;
   subtitle?: string;
-  triggerId?: string;
-  onClick?: () => void;
+  /** Tap binding (`bindNav` / `bindTap`) for an item that does something. */
+  bind?: React.HTMLAttributes<HTMLDivElement>;
   children?: React.ReactNode;
-}> = ({ label, subtitle, triggerId, onClick, children }) => (
+}> = ({ label, subtitle, bind, children }) => (
   <div
     className="flex items-center justify-between px-4 py-3.5 active:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
-    onClick={onClick}
-    {...(triggerId ? { 'data-trigger': triggerId, 'data-trigger-type': 'tap' as const } : {})}
+    {...bind}
   >
     <div className="flex-1 min-w-0">
       <div className="text-[15px] text-gray-900">{label}</div>
@@ -67,13 +66,12 @@ export const SettingItemValue: React.FC<{
   label: string;
   subtitle?: string;
   value: string;
-  triggerId?: string;
-  onClick?: () => void;
-}> = ({ label, subtitle, value, triggerId, onClick }) => (
+  /** Tap binding (`bindNav` / `bindTap`) for an item that does something. */
+  bind?: React.HTMLAttributes<HTMLDivElement>;
+}> = ({ label, subtitle, value, bind }) => (
   <div
     className="flex items-center justify-between px-4 py-3.5 active:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
-    onClick={onClick}
-    {...(triggerId ? { 'data-trigger': triggerId, 'data-trigger-type': 'tap' as const } : {})}
+    {...bind}
   >
     <div className="flex-1 min-w-0">
       <div className="text-[15px] text-gray-900">{label}</div>

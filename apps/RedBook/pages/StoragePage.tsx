@@ -1,8 +1,7 @@
 import { useRedBookStrings } from '../hooks/useRedBookStrings';
-import React from 'react';
+import React, { useRef } from 'react';
 import { IcNavBack } from '../res/icons';
 const ChevronLeft = IcNavBack;
-import { useScrollPosition } from '../hooks/useScrollPosition';
 import { useRedBookStore } from '../state';
 import { useRedBookGestures } from '../hooks/useRedBookGestures';
 
@@ -16,7 +15,7 @@ function formatStorageSize(bytes: number): string {
 export const StoragePage: React.FC = () => {
     const s = useRedBookStrings();
     const { bindBack, bindTap } = useRedBookGestures();
-    const scrollRef = useScrollPosition('storage_settings');
+    const scrollRef = useRef<HTMLDivElement>(null);
     const { storage, clearCache } = useRedBookStore();
 
     const cacheSizeBytes = storage?.cacheSizeBytes ?? 0;

@@ -14,6 +14,7 @@ from typing import Any, Optional, TYPE_CHECKING
 from urllib.parse import urlparse
 
 from bench_env.logger import get_logger
+from bench_env.env import device_view
 from bench_env.env.base import ActionType
 from bench_env.task.judge import JudgeResult, JudgeInput
 from bench_env.config import RunnerConfig
@@ -68,8 +69,8 @@ class Evaluator:
                 self._evaluate_with_vlm, task, exec_result, episode
             )
         else:
-            # State evaluation is fast (pure CPU), no need for thread
-            return self._evaluate_with_state(task, init_obs, last_obs, exec_result)
+            # Some state judges query the device server over blocking HTTP.
+            return await asyncio.to_thread(self._evaluate_with_state, task, init_obs, last_obs, exec_result)
     
     def _evaluate_with_state(self, task, init_obs, last_obs, exec_result) -> JudgeResult:
         """State-based evaluation using JSON state matching.
@@ -197,7 +198,8 @@ class Controller:
         Returns:
             tuple: (initial_obs, params_dict)
         """
-        initial_obs = await task.setup(env)
+        with device_view.using_env_url(getattr(env, "url", None)):
+            initial_obs = await task.setup(env)
 
         # Grounded mode: inject answer_sheet state after _post_sample.
         # Skipped on envs without state injection (e.g. real device has no
@@ -361,13 +363,16 @@ class Controller:
             )
             # Re-fetch final state with retry for reliable judging
             try:
-                final_state = await env.get_state(
+                get_final_state = getattr(env, "get_final_state", env.get_state)
+                final_state = await get_final_state(
                     required_apps=list(task.apps) if task.apps else None
                 )
                 from dataclasses import replace as dc_replace
                 obs = dc_replace(obs, state=final_state)
             except Exception as e:
-                logger.warning(f"Final state re-fetch failed: {type(e).__name__}: {e}")
+                error = f"Final state capture failed: {type(e).__name__}: {e}"
+                logger.warning(error)
+                exec_result = dc_replace(exec_result, error=error)
             return exec_result, initial_obs, obs, episode, task
 
         except Exception as e:
@@ -640,7 +645,8 @@ class BaseRunner(ABC):
         with sw.phase("eval"):
             if not exec_result.error and init_obs and last_obs:
                 try:
-                    judge = await evaluator.evaluate(task, init_obs, last_obs, exec_result, episode)
+                    with device_view.using_env_url(getattr(env, "url", None)):
+                        judge = await evaluator.evaluate(task, init_obs, last_obs, exec_result, episode)
                 except Exception as eval_err:
                     logger.error(f"[{task.id}] evaluator.evaluate() crashed: {type(eval_err).__name__}: {eval_err}")
                     exec_result = dc_replace(

@@ -238,7 +238,7 @@ export const RecentPlayedPage: React.FC = () => {
                         <div key={group.sourceId} className="mb-2">
                             {/* Group header */}
                             <div
-                                onClick={() => toggleGroup(group.sourceId)}
+                                {...bindTap<HTMLDivElement>({ kind: 'action', id: 'spotify.history.group.toggle' }, { onTrigger: () => toggleGroup(group.sourceId) })}
                                 className="flex items-center gap-3 p-2 -mx-2 rounded-lg active:bg-white/10 cursor-pointer"
                             >
                                 <GroupCover group={group} />

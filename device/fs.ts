@@ -152,19 +152,24 @@ class Tree {
   }
 }
 
-function seedState(scan: SdcardScan, now: number, timeZone: string): FsState {
+/**
+ * The preset tree has fixed times (device/sdcardTimes.ts) and so fixed ids: it
+ * does not depend on the machine or on when the session was seeded.
+ */
+function seedState(scan: SdcardScan, timeZone: string): FsState {
   const tree = new Tree({});
   tree.add({
     id: 'root', name: '/', type: 'directory', parentId: null, path: '/',
-    size: 0, createdAt: now, modifiedAt: now, storage: 'memory',
+    size: 0, createdAt: scan.modifiedAt, modifiedAt: scan.modifiedAt, storage: 'memory',
   });
-  for (const dir of FILE_SYSTEM_CONFIG.presetStructure) tree.ensureDirectory(dir.path, now);
-  for (const dir of scan.directories) tree.ensureDirectory(dir.path, now);
+  for (const dir of FILE_SYSTEM_CONFIG.presetStructure) tree.ensureDirectory(dir.path, scan.modifiedAt);
+  // Parents come before their children in the scan, so each gets its own time.
+  for (const dir of scan.directories) tree.ensureDirectory(dir.path, dir.modifiedAt);
   for (const file of scan.files) {
     const filePath = normalizePath(file.path);
-    const parent = tree.ensureDirectory(parentPath(filePath), now);
+    const parent = tree.ensureDirectory(parentPath(filePath), scan.modifiedAt);
     if (!parent) continue;
-    const modifiedAt = file.modifiedAt || now;
+    const modifiedAt = file.modifiedAt;
     tree.add({
       id: `seed_${filePath.replace(/\//g, '_')}`,
       name: file.name,
@@ -328,8 +333,8 @@ const commands: AppModule<FsState>['commands'] = {
     });
   },
   /** Back to the preset sdcard tree (`__SIM_FS__.reset()`). */
-  reset(ctx, _args, { now }) {
-    ctx.state = seedState(ctx.catalog.extras.scan as SdcardScan, now, ctx.state.timeZone);
+  reset(ctx) {
+    ctx.state = seedState(ctx.catalog.extras.scan as SdcardScan, ctx.state.timeZone);
     collectBlobs(ctx);
   },
 };
@@ -342,11 +347,10 @@ export function createFsModule(): AppModule<FsState> {
     },
     materialize() {},
     exportState: ctx => ({ nodes: Object.values(ctx.state.nodes) }),
-    /** `{ now, timeZone }` from the page seeds the preset tree. */
+    /** `{ timeZone }` from the page seeds the preset tree. */
     importState(raw, catalog) {
-      const { now, timeZone } = (raw ?? {}) as { now?: number; timeZone?: string };
-      if (typeof now !== 'number') throw new DeviceError(400, 'fs state needs { now, timeZone }');
-      return seedState(catalog.extras.scan as SdcardScan, now, timeZone || 'UTC');
+      const { timeZone } = (raw ?? {}) as { timeZone?: string };
+      return seedState(catalog.extras.scan as SdcardScan, timeZone || 'UTC');
     },
     commands,
     queries: {},

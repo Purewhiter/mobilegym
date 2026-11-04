@@ -1,13 +1,14 @@
 import React, { useCallback, useEffect, useContext, useRef } from 'react';
 import {
   MemoryRouter,
-  Routes,
   Route,
   useNavigate,
   useLocation,
   Outlet,
   UNSAFE_NavigationContext,
 } from 'react-router-dom';
+import { RouteScrollContainer } from '../../os/components/RouteScrollContainer';
+import { ActivityRouteHost } from '../../os/components/ActivityRouteHost';
 import { IcTabHome, IcTabSearch, IcTabNotifications, IcTabMessages, IcTabGrok } from './res/icons';
 import { HomePage } from './pages/HomePage';
 import { SearchPage } from './pages/SearchPage';
@@ -132,7 +133,11 @@ const ChildPageViewport: React.FC<React.PropsWithChildren<{ ownScroll?: boolean 
   ownScroll = false,
 }) => {
   const location = useLocation();
-  const viewportKey = `${location.pathname}${location.search}`;
+  // A sheet opened over the page (?sheet=retweet) keeps the page mounted: its search, tab and scroll stay.
+  const pageSearch = new URLSearchParams(location.search);
+  pageSearch.delete('sheet');
+  pageSearch.delete('sheetPostId');
+  const viewportKey = `${location.pathname}?${pageSearch.toString()}`;
 
   return (
     <div
@@ -155,6 +160,9 @@ function withChildPageViewport(
   return <ChildPageViewport ownScroll={options?.ownScroll}>{element}</ChildPageViewport>;
 }
 
+/** The main tabs: one instance each, kept while you are on another tab (ActivityRouteHost). */
+const MAIN_TAB_PATHS = ['/', '/search', '/grok', '/notifications', '/messages'] as const;
+
 const Layout = () => {
     const { pathname } = useLocation();
     const { bindNav } = useXGestures();
@@ -175,82 +183,26 @@ const Layout = () => {
       { id: 'messages', path: '/messages', icon: IcTabMessages, tapProps: bindNav(routes.messages, { search: { tab: 'all' }, replace: true }) },
     ] as const;
 
-    const isHome = pathname === '/';
-    const isSearch = pathname === '/search';
-    const isGrok = pathname === '/grok';
-    const isNotifications = pathname === '/notifications';
-    const isMessages = pathname === '/messages';
-
-    // Check if current path corresponds to one of the main tabs
-    // We treat these as "root" tabs that stay mounted
-    const isMainTab = isHome || isSearch || isGrok || isNotifications || isMessages;
+    const isMainTab = (MAIN_TAB_PATHS as readonly string[]).includes(pathname);
+    // Home scrolls its own feed; the other tabs scroll as a whole page.
+    const tabScrolls = isMainTab && pathname !== '/';
 
     return (
         <div className="h-full flex flex-col bg-app-bg text-app-text">
             <XDrawer isOpen={isDrawerOpen} />
             <div className="flex-1 overflow-hidden relative">
-                {/* Main Tabs - Persistent (Hidden when not active) */}
-                <div
-                    className="absolute inset-0 h-full w-full overflow-hidden"
-                    style={{
-                      visibility: isHome ? 'visible' : 'hidden',
-                      pointerEvents: isHome ? 'auto' : 'none',
-                    }}
-                    aria-hidden={!isHome}
-                >
-                    <HomePage isActive={isHome} />
-                </div>
-                <div
-                    className="absolute inset-0 h-full w-full overflow-y-auto no-scrollbar"
-                    style={{
-                      visibility: isSearch ? 'visible' : 'hidden',
-                      pointerEvents: isSearch ? 'auto' : 'none',
-                    }}
-                    aria-hidden={!isSearch}
-                    data-scroll-container={isSearch ? 'main' : undefined}
-                    data-scroll-direction={isSearch ? 'vertical' : undefined}
-                >
-                    <SearchPage isActive={isSearch} />
-                </div>
-                <div
-                    className="absolute inset-0 h-full w-full overflow-y-auto no-scrollbar"
-                    style={{
-                      visibility: isGrok ? 'visible' : 'hidden',
-                      pointerEvents: isGrok ? 'auto' : 'none',
-                    }}
-                    aria-hidden={!isGrok}
-                    data-scroll-container={isGrok ? 'main' : undefined}
-                    data-scroll-direction={isGrok ? 'vertical' : undefined}
-                >
-                    <GrokPage isActive={isGrok} />
-                </div>
-                <div
-                    className="absolute inset-0 h-full w-full overflow-y-auto no-scrollbar"
-                    style={{
-                      visibility: isNotifications ? 'visible' : 'hidden',
-                      pointerEvents: isNotifications ? 'auto' : 'none',
-                    }}
-                    aria-hidden={!isNotifications}
-                    data-scroll-container={isNotifications ? 'main' : undefined}
-                    data-scroll-direction={isNotifications ? 'vertical' : undefined}
-                >
-                    <NotificationsPage isActive={isNotifications} />
-                </div>
-                <div
-                    className="absolute inset-0 h-full w-full overflow-y-auto no-scrollbar"
-                    style={{
-                      visibility: isMessages ? 'visible' : 'hidden',
-                      pointerEvents: isMessages ? 'auto' : 'none',
-                    }}
-                    aria-hidden={!isMessages}
-                    data-scroll-container={isMessages ? 'main' : undefined}
-                    data-scroll-direction={isMessages ? 'vertical' : undefined}
-                >
-                    <MessagesPage isActive={isMessages} />
-                </div>
-
-                {/* Child Pages - Each route owns its own viewport */}
-                {!isMainTab && <Outlet />}
+                {/* Main tabs keep one instance each, child pages own their viewport (see ActivityRouteHost). */}
+                {tabScrolls ? (
+                    <RouteScrollContainer className="absolute inset-0 h-full w-full overflow-y-auto no-scrollbar">
+                        <Outlet />
+                    </RouteScrollContainer>
+                ) : isMainTab ? (
+                    <div className="absolute inset-0 h-full w-full overflow-hidden">
+                        <Outlet />
+                    </div>
+                ) : (
+                    <Outlet />
+                )}
             </div>
             
             {/* Bottom Tab Bar - Only on main tabs */}
@@ -303,15 +255,16 @@ export const XApp: React.FC = () => {
       <MemoryRouter initialEntries={['/?tab=foryou']}>
         <div className="h-full w-full">
           <XNavigationHandler />
-          <Routes>
+          {/* Pages below the top stay as they were left (Fragment back stack), see ActivityRouteHost. */}
+          <ActivityRouteHost persistent={MAIN_TAB_PATHS}>
             <Route path="/compose" element={<ComposePage />} />
             <Route path="/messages/:id" element={<ChatPage />} />
             <Route path="/" element={<Layout />}>
-              <Route index element={<div />} />
-              <Route path="search" element={<div />} />
-              <Route path="grok" element={<div />} />
-              <Route path="notifications" element={<div />} />
-              <Route path="messages" element={<div />} />
+              <Route index element={<HomePage />} />
+              <Route path="search" element={<SearchPage />} />
+              <Route path="grok" element={<GrokPage />} />
+              <Route path="notifications" element={<NotificationsPage />} />
+              <Route path="messages" element={<MessagesPage />} />
               <Route path="profile" element={withChildPageViewport(<ProfilePage />)} />
               <Route path="user/:id" element={withChildPageViewport(<UserProfilePage />)} />
               <Route path="connections/:id" element={withChildPageViewport(<UserConnectionsPage />)} />
@@ -390,7 +343,7 @@ export const XApp: React.FC = () => {
                 element={withChildPageViewport(<SettingsTimelineHomeTagsPage />)}
               />
             </Route>
-          </Routes>
+          </ActivityRouteHost>
         </div>
       </MemoryRouter>
     </div>

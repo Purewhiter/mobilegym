@@ -9,6 +9,7 @@ import { strings } from '../res/strings';
 import { stringsEn } from '../res/strings.en';
 import { useAppStrings } from '@/os/useAppStrings';
 import * as TimeService from '@/os/TimeService';
+import { useFileManagerGestures } from '../hooks/useFileManagerGestures';
 
 // ============================================================================
 // Base Dialog
@@ -55,6 +56,7 @@ export const InputDialog: React.FC<InputDialogProps> = ({
   open, onClose, title, placeholder, defaultValue = '', onConfirm, confirmText
 }) => {
   const s = useAppStrings(strings, stringsEn);
+  const { bindTap } = useFileManagerGestures();
   const effectiveConfirmText = confirmText ?? s.dialog_confirm;
   const [value, setValue] = useState(defaultValue);
   
@@ -82,13 +84,13 @@ export const InputDialog: React.FC<InputDialogProps> = ({
       />
       <div className="flex gap-3 mt-5">
         <button
-          onClick={onClose}
+          {...bindTap({ kind: 'action', id: 'fileManager.dialog.cancel' }, { onTrigger: onClose })}
           className="flex-1 py-3 rounded-xl bg-gray-100 text-[15px] font-medium text-gray-700"
         >
           {s.dialog_cancel}
         </button>
         <button
-          onClick={handleConfirm}
+          {...bindTap({ kind: 'action', id: 'fileManager.input.confirm' }, { onTrigger: handleConfirm })}
           disabled={!value.trim()}
           className="flex-1 py-3 rounded-xl bg-blue-500 text-[15px] font-medium text-white disabled:opacity-50"
         >
@@ -118,6 +120,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   confirmText, cancelText, isDestructive = false
 }) => {
   const s = useAppStrings(strings, stringsEn);
+  const { bindTap } = useFileManagerGestures();
   const effectiveCancelText = cancelText ?? s.dialog_cancel;
   const effectiveConfirmText = confirmText ?? s.dialog_confirm;
   if (!open) return null;
@@ -135,13 +138,13 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
         
         <div className="flex gap-3 p-6 pt-2">
           <button
-            onClick={onClose}
+            {...bindTap({ kind: 'action', id: 'fileManager.dialog.cancel' }, { onTrigger: onClose })}
             className="flex-1 py-4 rounded-2xl bg-gray-50 text-[17px] font-medium text-app-text active:bg-gray-100 transition-colors"
           >
             {effectiveCancelText}
           </button>
           <button
-            onClick={onConfirm}
+            {...bindTap({ kind: 'action', id: 'fileManager.confirm.ok' }, { onTrigger: onConfirm })}
             className={`flex-1 py-4 rounded-2xl bg-gray-50 text-[17px] font-medium active:bg-gray-100 transition-colors ${
               isDestructive ? 'text-red-500' : 'text-blue-500'
             }`}
@@ -168,6 +171,7 @@ interface ActionMenuProps {
 }
 
 export const ActionMenu: React.FC<ActionMenuProps> = ({ open, onClose, options }) => {
+  const { bindTap } = useFileManagerGestures();
   if (!open) return null;
 
   return (
@@ -181,7 +185,7 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({ open, onClose, options }
           {options.map((opt, index) => (
             <button
               key={index}
-              onClick={opt.onClick}
+              {...bindTap({ kind: 'action', id: 'fileManager.menu.item' }, { params: { label: opt.label }, onTrigger: opt.onClick })}
               className={`w-full px-6 py-3.5 text-left text-[16px] active:bg-gray-50 transition-colors ${
                 opt.destructive ? 'text-red-500' : 'text-app-text'
               }`}
@@ -204,6 +208,7 @@ export const FileDetailsDialog: React.FC<{
   file: FSNode | null;
 }> = ({ open, onClose, file }) => {
   const s = useAppStrings(strings, stringsEn);
+  const { bindTap } = useFileManagerGestures();
   if (!open || !file) return null;
   
   const formatDate = (timestamp: number) => {
@@ -262,7 +267,7 @@ export const FileDetailsDialog: React.FC<{
         {/* Button */}
         <div className="px-6 pb-8 mt-2">
           <button
-            onClick={onClose}
+            {...bindTap({ kind: 'action', id: 'fileManager.dialog.cancel' }, { onTrigger: onClose })}
             className="w-full py-4 rounded-[24px] bg-[#f2f2f2] text-[20px] font-normal text-app-text active:opacity-60 transition-opacity"
           >
             {s.dialog_got_it}

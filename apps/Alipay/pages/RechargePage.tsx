@@ -17,7 +17,7 @@ export const RechargePage: React.FC = () => {
   const { bankCards, recordTransfer } = useAlipayStore();
   const s = useAlipayStrings();
   const paymentPassword = useAlipayStore(s => s.userInfo.paymentPassword);
-  const { bindBack, nav, back } = useAlipayGestures();
+  const { bindBack, bindNav, bindTap, nav, back } = useAlipayGestures();
   const locale = useLocale();
   const isEnglish = locale === 'en';
   const [searchParams] = useSearchParams();
@@ -26,13 +26,14 @@ export const RechargePage: React.FC = () => {
   const amountInputRef = useRef<HTMLInputElement>(null);
   const [isAmountInputActive, setIsAmountInputActive] = useState(false);
   const [moreExpanded, setMoreExpanded] = useState(false);
-  const [cardSelectorOpen, setCardSelectorOpen] = useState(false);
   const getBankName = React.useCallback((name: string) => localizeBankName(name, isEnglish), [isEnglish]);
 
   const modal = searchParams.get('modal');
   const multiOpen = modal === 'multi' || modal === 'multiPay';
   const isPasswordVisible = modal === 'password';
   const isMultiPayVisible = modal === 'multiPay';
+  // The card selector lives in the URL (?modal=cards): system back closes it.
+  const cardSelectorOpen = modal === 'cards';
 
   useEffect(() => {
     const t = setTimeout(() => setIsAmountInputActive(true), 120);
@@ -49,10 +50,6 @@ export const RechargePage: React.FC = () => {
 
   const boundCards = bankCards.filter(c => c.bound);
   const [selectedCard, setSelectedCard] = useState<typeof bankCards[number] | null>(boundCards[0] || bankCards[0] || null);
-
-  const openMulti = () => {
-    nav.push(routes.balanceRecharge, {}, { search: { modal: 'multi' } });
-  };
 
   const closeMulti = () => {
     setMultiRows(null);
@@ -151,7 +148,7 @@ export const RechargePage: React.FC = () => {
         <div className="text-sm text-gray-500 px-1">{s.recharge_page_method}</div>
 
         {/* Card Selection */}
-        <div className="bg-white p-4 rounded-xl flex items-center justify-between active:bg-gray-50" onClick={() => setCardSelectorOpen(true)}>
+        <div className="bg-white p-4 rounded-xl flex items-center justify-between active:bg-gray-50" {...bindNav(routes.balanceRecharge, { search: { modal: 'cards' } })}>
           <div className="flex items-center gap-3 min-w-0">
             <div className="w-8 h-8 rounded-full bg-red-50 flex items-center justify-center flex-shrink-0">
               <IcBuilding className="text-[#E60012]" size={20} />
@@ -193,7 +190,7 @@ export const RechargePage: React.FC = () => {
           </div>
 
           {moreExpanded && (
-            <div className="flex items-center justify-between py-2 active:bg-gray-50 rounded-lg -mx-2 px-2" onClick={openMulti}>
+            <div className="flex items-center justify-between py-2 active:bg-gray-50 rounded-lg -mx-2 px-2" {...bindNav(routes.balanceRecharge, { search: { modal: 'multi' } })}>
               <span className="text-sm text-gray-900">{s.recharge_page_multi_card} <span className="text-gray-400 ml-2">{s.recharge_page_multi_card_hint}</span></span>
               <IcNavForward size={16} className="text-gray-400 flex-shrink-0" />
             </div>
@@ -201,7 +198,7 @@ export const RechargePage: React.FC = () => {
 
           <button
             className="w-full flex items-center justify-center gap-1 py-2 text-xs text-gray-400 active:text-gray-500"
-            onClick={() => setMoreExpanded(v => !v)}
+            {...bindTap({ kind: 'action', id: 'recharge.more.toggle' }, { onTrigger: () => setMoreExpanded(v => !v) })}
           >
             <span>{moreExpanded ? s.recharge_page_collapse : s.recharge_page_expand}</span>
             {moreExpanded
@@ -218,7 +215,7 @@ export const RechargePage: React.FC = () => {
           <button
             className="w-full bg-app-primary text-white py-3 rounded-full font-medium text-lg disabled:opacity-50 shadow-lg shadow-blue-200 active:scale-[0.98] transition-transform"
             disabled={!amount || Number(amount) <= 0}
-            onClick={handleRecharge}
+            {...(amount && Number(amount) > 0 ? bindTap<HTMLButtonElement>({ kind: 'action', id: 'recharge.submit' }, { onTrigger: handleRecharge }) : {})}
           >
             {s.recharge_page_confirm}
           </button>
@@ -266,16 +263,16 @@ export const RechargePage: React.FC = () => {
 
       {/* Card Selector Sheet */}
       {cardSelectorOpen && (
-        <div className="fixed inset-0 z-[100] bg-black/60 flex items-end justify-center" onClick={() => setCardSelectorOpen(false)}>
+        <div className="fixed inset-0 z-[100] flex items-end justify-center">
+          <div className="absolute inset-0 bg-black/60" {...bindBack()} />
           <div
-            className="w-full max-w-[480px] bg-white rounded-t-2xl overflow-hidden flex flex-col"
+            className="relative w-full max-w-[480px] bg-white rounded-t-2xl overflow-hidden flex flex-col"
             style={{ maxHeight: '70vh' }}
-            onClick={e => e.stopPropagation()}
           >
             <div className="px-4 pt-4 pb-3 flex items-center justify-between flex-shrink-0">
               <div className="w-6" />
               <div className="text-base font-medium text-gray-900">{s.recharge_page_select_method}</div>
-              <button className="p-1 -mr-1 active:opacity-70" onClick={() => setCardSelectorOpen(false)}>
+              <button className="p-1 -mr-1 active:opacity-70" {...bindBack()}>
                 <IcClose size={22} className="text-gray-500" />
               </button>
             </div>
@@ -287,7 +284,7 @@ export const RechargePage: React.FC = () => {
                   <button
                     key={card.id}
                     className="w-full flex items-center px-4 py-4 border-b border-gray-100 active:bg-gray-50"
-                    onClick={() => { setSelectedCard(card); setCardSelectorOpen(false); }}
+                    {...bindTap({ kind: 'action', id: 'recharge.card.select' }, { params: { cardId: card.id }, onTrigger: () => { setSelectedCard(card); back(); } })}
                   >
                     <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0 mr-3">
                       <IcBuilding size={20} className="text-app-primary" />
@@ -310,7 +307,7 @@ export const RechargePage: React.FC = () => {
 
               <button
                 className="w-full flex items-center px-4 py-4 active:bg-gray-50"
-                onClick={() => { setCardSelectorOpen(false); nav.push(routes.bankCardsAdd, {}, { search: { returnTo: '/balance/recharge' } }); }}
+                {...bindNav(routes.bankCardsAdd, { search: { returnTo: '/balance/recharge' }, replace: true })}
               >
                 <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0 mr-3">
                   <IcCard size={20} className="text-gray-500" />

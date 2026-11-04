@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, {  } from 'react';
 import { IcNavForward } from '../res/icons';
 import { SettingsHeader } from './SettingsHeader';
 import { PreferenceCategory } from './PreferenceCategory';
@@ -13,6 +13,7 @@ import type { AppManifest } from '../../../os/types/manifest';
 import { strings } from '../res/strings';
 import { stringsEn } from '../res/strings.en';
 import { useAppStrings } from '@/os/useAppStrings';
+import { useTimedToast } from '../../../os/hooks/useTimedToast';
 function prefKey(appId: string, field: string): string {
   return `notif.app.${appId}.${field}`;
 }
@@ -66,15 +67,7 @@ export const NotificationAppDetailPage: React.FC<{ appId: string }> = ({ appId }
   const manifest = (isValidAppId(appId) ? getAppManifest(appId) : undefined) as AppManifest | undefined;
   const resolvedAppId = (isValidAppId(appId) ? (appId as AppId) : null);
 
-  const [toast, setToast] = useState<{ visible: boolean; message: string }>({ visible: false, message: '' });
-  const toastTimerRef = useRef<number | undefined>(undefined);
-  const showToast = (message: string) => {
-    setToast({ visible: true, message });
-    if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current);
-    toastTimerRef.current = window.setTimeout(() => {
-      setToast((prev) => ({ ...prev, visible: false }));
-    }, 1600);
-  };
+  const { toast, showToast } = useTimedToast();
 
   if (!manifest || !resolvedAppId) {
     return (

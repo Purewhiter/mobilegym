@@ -1,0 +1,24 @@
+{
+  "seed": {
+    "apps": {
+      "x": {
+        "posts": {
+          "explore_post_1": {
+            "id": "explore_post_1",
+            "authorId": "xiaoming_dev",
+            "content": "周末把博客重新部署了一遍，顺手写了篇踩坑记录。",
+            "createdAt": "2026-10-30T08:00:00.000Z",
+            "time": "13小时",
+            "stats": { "comments": 0, "retweets": 0, "likes": 0, "views": 12 }
+          }
+        },
+        "user": { "postIds": ["explore_post_1"] }
+      }
+    }
+  },
+  "entries": ["/user/OpenAI"],
+  "instancesPerNode": { "/user/:id": 3 },
+  "setup": {
+    "/search/input": [[], [{ "type": "AI", "into": "input[type=text]" }]]
+  }
+}

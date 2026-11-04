@@ -1,0 +1,133 @@
+{
+  "instancesPerNode": { "/auth/login": 3 },
+  "prefer": {
+    "nav.momentsByWxid": [
+      {
+        "wxid": "xiaoming001"
+      }
+    ],
+    "nav.chat": [
+      {
+        "id": "wxid_blank_001"
+      }
+    ]
+  },
+  "seed": {
+    "apps": {
+      "wechat": {
+        "subscriptions": [
+          {
+            "id": "sub_explore",
+            "membershipType": "哔哩哔哩大会员",
+            "price": 25,
+            "billingCycle": "monthly",
+            "autoRenew": true,
+            "createdAt": 1761800000000,
+            "source": "bilibili"
+          }
+        ],
+        "contacts[wxid=wxid_liuyang_sky]": {
+          "isBlacklisted": true
+        },
+        "chats[id=wxid_blank_001]": {
+          "messages[]": {
+            "id": "msg_explore_image",
+            "type": "image",
+            "content": "/sdcard/Pictures/photo_001.jpg",
+            "senderId": "wxid_blank_001",
+            "timestamp": 1761826000000
+          }
+        }
+      }
+    }
+  },
+  "setup": {
+    "/discover/nearby": [
+      {
+        "wait": 1800
+      }
+    ],
+    "/settings/security-center/delete-account": [
+      {
+        "tap": "[data-action=\"account.delete.agree.toggle\"]"
+      }
+    ],
+    "/face-to-face-group": [
+      {
+        "tap": "[data-action=\"faceToFace.pin.input\"]:text-is(\"1\")"
+      },
+      {
+        "tap": "[data-action=\"faceToFace.pin.input\"]:text-is(\"2\")"
+      },
+      {
+        "tap": "[data-action=\"faceToFace.pin.input\"]:text-is(\"3\")"
+      }
+    ],
+    "/search": [
+      [
+        {
+          "type": "Boss",
+          "into": "input[type=text]"
+        }
+      ],
+      [
+        {
+          "type": "微信运动",
+          "into": "input[type=text]"
+        }
+      ]
+    ],
+    "/chat/:id/chat-search": [
+      {
+        "type": "好",
+        "into": "input"
+      }
+    ],
+    "/auth/login": [
+      [
+        {
+          "type": "17366666695",
+          "into": "input[inputmode=numeric]"
+        },
+        {
+          "type": "wechat_pwd_123",
+          "into": "input[type=password]"
+        }
+      ],
+      [
+        {
+          "setState": { "apps": { "wechat": { "auth": { "accounts[phone=17366666695]": { "requireCaptcha": true } } } } }
+        },
+        {
+          "type": "17366666695",
+          "into": "input[inputmode=numeric]"
+        },
+        {
+          "type": "wechat_pwd_123",
+          "into": "input[type=password]"
+        }
+      ]
+    ],
+    "/auth/forgot-password": [
+      {
+        "type": "17366666695",
+        "into": "input[inputmode=numeric] >> nth=0"
+      }
+    ],
+    "/post-moment": [
+      {
+        "hideKeyboard": true
+      }
+    ],
+    "/moments/media-picker": [
+      {
+        "tap": "[data-action=\"mediaPicker.item.toggleSelect\"] >> nth=0"
+      }
+    ],
+    "/chat/:id/select-file?tab=album": [
+      {
+        "tap": "[data-action=\"chat.selectFile.item.toggle\"] >> nth=0"
+      }
+    ]
+  }
+}

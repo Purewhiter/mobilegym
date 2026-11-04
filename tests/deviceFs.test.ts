@@ -34,7 +34,7 @@ describe('device file system', () => {
     server = new DeviceServer(root);
     server.register(createFsModule());
     session = server.createSession();
-    server.importState(session, 'fs', { now: 10_000, timeZone: 'Asia/Shanghai' });
+    server.importState(session, 'fs', { timeZone: 'Asia/Shanghai' });
   });
 
   it('seeds the preset tree without copying content', () => {
@@ -106,7 +106,7 @@ describe('device file system', () => {
 
   it('keeps sessions isolated', () => {
     const other = server.createSession();
-    server.importState(other, 'fs', { now: 10_000, timeZone: 'UTC' });
+    server.importState(other, 'fs', { timeZone: 'UTC' });
     run('delete', '/sdcard/Documents/note.txt');
     const otherNodes = (server.exportState(other, 'fs') as { nodes: FsNode[] }).nodes;
     expect(otherNodes.some(n => n.path === '/sdcard/Documents/note.txt')).toBe(true);

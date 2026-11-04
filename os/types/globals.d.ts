@@ -6,6 +6,8 @@ interface OSApi {
   state: OSState & { activeAppId?: AppId | null };
   getState(): OSState & { activeAppId?: AppId | null };
   getAppRoute(appId?: AppId | string): AppRouteInfo | null;
+  /** Current route of one activity (an app's page started on top of another task included). */
+  getActivityRoute(activityId: string): AppRouteInfo | null;
   launchApp(id: AppId): void;
   launchTaskById(taskId: string): void;
   goHome(): void;
@@ -157,6 +159,7 @@ interface SimApi {
   matchRoute(appId: string, pathname: string): Promise<string | null>;
   /** Resolve once the screen has caught up with the last input (os/idle.ts). */
   waitForIdle(options?: import('../idle').WaitForIdleOptions): Promise<import('../idle').WaitForIdleResult>;
+  waitForStateCommit(): Promise<void>;
   /** Seed for RandomService; set per episode by the benchmark (os/RandomService.ts). */
   setRandomSeed(seed: number): void;
   getRandomSeed(): number;

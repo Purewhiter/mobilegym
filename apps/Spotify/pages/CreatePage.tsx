@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { IcAperture, IcMusic, IcUsers } from '../res/icons';
-import { useSearchParams } from 'react-router-dom';
+import { useLocation, useSearchParams } from 'react-router-dom';
 import { useSpotifyStore } from '../state';
 import { useShallow } from 'zustand/react/shallow';
 import { useSpotifyGestures } from '../hooks/useSpotifyGestures';
@@ -16,6 +16,7 @@ export const CreatePage: React.FC = () => {
   const { bindTap, bindBack, back, nav, bindNav } = useSpotifyGestures();
   const s = useSpotifyStrings();
   const [searchParams] = useSearchParams();
+  const dismissSheet: string | undefined = useLocation().state?.dismissSheet;
 
   const view = searchParams.get('view') ?? 'menu';
   const source = searchParams.get('source'); // 'library' or null
@@ -55,7 +56,12 @@ export const CreatePage: React.FC = () => {
     void submitOnce(async () => {
       newPlaylistId = (await createPlaylist(name, pendingTrack))?.id ?? null;
     }, () => {
-      if (newPlaylistId) nav.replace(routes.playlist, { id: newPlaylistId });
+      if (!newPlaylistId) return;
+      if (dismissSheet) {
+        nav.push(routes.playlist, { id: newPlaylistId }, { popTo: dismissSheet, popToInclusive: true });
+      } else {
+        nav.replace(routes.playlist, { id: newPlaylistId });
+      }
     });
   };
 

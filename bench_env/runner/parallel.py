@@ -3,6 +3,7 @@
 import asyncio
 from typing import Any, Callable, Optional
 
+from bench_env.env import device_view
 from bench_env.runner.base import BaseRunner, EpisodeResult, Evaluator, RunnerConfig
 from bench_env.logger import add_log_file, get_logger
 
@@ -374,9 +375,10 @@ class ParallelRunner(BaseRunner):
                     # Evaluate
                     judge = None
                     if not exec_result.error and init_obs and last_obs:
-                        judge = await self.evaluator.evaluate(
-                            task, init_obs, last_obs, exec_result, episode
-                        )
+                        with device_view.using_env_url(getattr(env, "url", None)):
+                            judge = await self.evaluator.evaluate(
+                                task, init_obs, last_obs, exec_result, episode
+                            )
                     
                     result = EpisodeResult(
                         task_id=task.id, task_name=task.description, suite=task.suite,

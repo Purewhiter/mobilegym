@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { IcNavBack, IcExpand } from '../res/icons';
 import { AttachmentPanel } from './AttachmentPanel';
 import { Toast } from '@/os/components/Toast';
@@ -11,6 +11,8 @@ import { strings } from '../res/strings';
 import { stringsEn } from '../res/strings.en';
 import { useAppStrings } from '@/os/useAppStrings';
 import { useSmsGestures } from '../hooks/useSmsGestures';
+import { routes } from '../routes';
+import { KeyboardService } from '../../../os/keyboard/KeyboardService';
 
 const Bubble: React.FC<{
     outgoing: boolean;
@@ -52,7 +54,10 @@ const Bubble: React.FC<{
 };
 
 export const ConversationDetailPage: React.FC = () => {
-    const { bindBack } = useSmsGestures();
+    const { bindBack, bindNav, nav } = useSmsGestures();
+    // The attachment panel lives in the URL (?panel=attachments): system back closes it.
+    const [searchParams] = useSearchParams();
+    const showAttachments = searchParams.get('panel') === 'attachments';
     const { conversationId } = useParams<{ conversationId: string }>();
     const { conversations, messagesByConversationId } = useSmsProviderState();
     const conversation = useMemo(
@@ -66,7 +71,6 @@ export const ConversationDetailPage: React.FC = () => {
     const s = useAppStrings(strings, stringsEn);
 
     const [text, setText] = useState('');
-    const [showAttachments, setShowAttachments] = useState(false);
     const [toast, setToast] = useState<{ visible: boolean; message: string }>({ visible: false, message: '' });
 
     const listRef = useRef<HTMLDivElement | null>(null);
@@ -93,7 +97,7 @@ export const ConversationDetailPage: React.FC = () => {
         if (!canSend || !conversationId || !conversation) return;
         const content = text.trim();
         setText('');
-        setShowAttachments(false);
+        if (showAttachments) nav.back();
         sendMessage(conversationId, content);
     };
 
@@ -156,7 +160,14 @@ export const ConversationDetailPage: React.FC = () => {
                 <div className="flex items-center px-3 py-2 gap-2">
                     <button
                         className="w-11 h-11 flex items-center justify-center bg-app-surface rounded-lg"
-                        onClick={() => setShowAttachments((v) => !v)}
+                        {...(showAttachments || !conversationId
+                            ? bindBack()
+                            : bindNav(routes.conversation, {
+                                params: { conversationId },
+                                search: { panel: 'attachments' },
+                                // The panel takes the keyboard's place, so system back then closes the panel.
+                                beforeTrigger: () => KeyboardService.hide(),
+                            }))}
                     >
                         {showAttachments ? (
                             <IcExpand size={20} className="text-gray-600" />

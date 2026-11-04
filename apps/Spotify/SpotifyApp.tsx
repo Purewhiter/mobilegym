@@ -1,5 +1,6 @@
 import React, { useCallback, useRef } from 'react';
-import { MemoryRouter, Outlet, Route, Routes, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { MemoryRouter, Route, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { ActivityRouteHost } from '../../os/components/ActivityRouteHost';
 import { UNSAFE_NavigationContext } from 'react-router';
 import { applySkinToThemeColors } from '../../os/SkinService';
 import { useDarkMode } from '../../os/hooks/useDarkMode';
@@ -181,7 +182,12 @@ const BottomTabBar: React.FC = () => {
   );
 };
 
-const Layout: React.FC = () => {
+/**
+ * Main tabs stay mounted here (shown or hidden by path, the create sheet over the
+ * last tab); every other page is a resident instance in `children`, an
+ * ActivityRouteHost whose tab entries render nothing.
+ */
+const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const { bindTap, bindBack, back, bindNav } = useSpotifyGestures();
@@ -235,9 +241,9 @@ const Layout: React.FC = () => {
       {/* Create overlay - rendered on top of the current tab */}
       {isCreate && searchParams.get('view') !== 'naming' && <CreatePage />}
 
-      {!isMainTab && <Outlet />}
+      <div style={{ display: isMainTab ? 'none' : 'block', height: '100%' }}>{children}</div>
 
-      {/* Naming page renders as full-screen overlay via Outlet when on /create?view=naming */}
+      {/* Naming page renders as a full-screen overlay when on /create?view=naming */}
       {isCreate && searchParams.get('view') === 'naming' && <CreatePage />}
 
       {!isPlayerPage && <LikedToastBanner />}
@@ -283,17 +289,19 @@ export const SpotifyApp: React.FC = () => {
       <div className="h-full w-full" style={cssVars as React.CSSProperties}>
         <MemoryRouter initialEntries={['/?tab=all']}>
           <NavigationHandler />
-          <Routes>
-            <Route path="/" element={<Layout />}>
-              <Route index element={<HomePage />} />
+          <Layout>
+            {/* Pages below the top stay as they were left (Fragment back stack), see ActivityRouteHost.
+                Main tabs and the create sheet are drawn by Layout: their entries render nothing here. */}
+            <ActivityRouteHost>
+              <Route index element={null} />
               <Route path="playlist/:id" element={<PlaylistPage />} />
-              <Route path="search" element={<SearchPage />} />
+              <Route path="search" element={null} />
               <Route path="search/input" element={<SearchInputPage />} />
               <Route path="video/:id" element={<ShortVideoPage />} />
               <Route path="category/:id" element={<CategoryPage />} />
-              <Route path="library" element={<LibraryPage />} />
-              <Route path="premium" element={<PremiumPage />} />
-              <Route path="create" element={<CreatePage />} />
+              <Route path="library" element={null} />
+              <Route path="premium" element={null} />
+              <Route path="create" element={null} />
               <Route path="artist/:name" element={<ArtistPage />} />
               <Route path="liked-songs" element={<LikedSongsPage />} />
               <Route path="premium/payment" element={<PaymentPage />} />
@@ -320,8 +328,8 @@ export const SpotifyApp: React.FC = () => {
               <Route path="signup/finish" element={<CreateNamePage />} />
               <Route path="signup/artists" element={<ChooseArtistsPage />} />
               <Route path="signup/complete" element={<SignupCompletePage />} />
-            </Route>
-          </Routes>
+            </ActivityRouteHost>
+          </Layout>
         </MemoryRouter>
       </div>
     );

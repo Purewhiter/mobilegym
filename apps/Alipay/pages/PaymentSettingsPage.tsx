@@ -12,7 +12,7 @@ type Row = {
 
 export const PaymentSettingsPage: React.FC = () => {
   const s = useAlipayStrings();
-  const { bindNav, bindBack, nav } = useAlipayGestures();
+  const { bindNav, bindBack } = useAlipayGestures();
 
   const groups: Row[][] = [
     [
@@ -59,9 +59,9 @@ export const PaymentSettingsPage: React.FC = () => {
                   : row.id === 'fastPay'
                     ? bindNav(routes.settingsPaymentFastPay)
                     : row.id === 'payPassword'
-                    ? { onClick: () => nav.push(routes.settingsPaymentPassword) }
+                    ? bindNav(routes.settingsPaymentPassword)
                     : row.id === 'autoPay'
-                        ? { onClick: () => nav.push(routes.settingsPaymentSubscriptions) }
+                        ? bindNav(routes.settingsPaymentSubscriptions)
                         : {})}
               >
                 <span className="text-sm font-medium text-gray-800">{row.label}</span>

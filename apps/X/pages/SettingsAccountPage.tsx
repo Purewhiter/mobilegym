@@ -7,7 +7,7 @@ import { routes } from '../routes';
 
 export const SettingsAccountPage: React.FC = () => {
   const user = useXStore(selectUser);
-  const { bindBack, nav } = useXGestures();
+  const { bindBack, bindNav } = useXGestures();
   const isEnglish = useLocale() === 'en';
 
   const menuItems = [
@@ -60,9 +60,7 @@ export const SettingsAccountPage: React.FC = () => {
           <div
             key={index}
             className="flex cursor-pointer items-start px-4 py-4 transition-colors active:bg-gray-50"
-            onClick={() => {
-              if (item.tapId) nav.push(item.tapId);
-            }}
+            {...(item.tapId ? bindNav(item.tapId) : {})}
           >
             <div className="mr-4 mt-0.5 shrink-0 text-gray-500">{item.icon}</div>
             <div className="mr-2 flex-1">

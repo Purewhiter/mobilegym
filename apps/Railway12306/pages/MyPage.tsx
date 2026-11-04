@@ -47,10 +47,7 @@ export const MyPage: React.FC = () => {
   const { user, travelGuide, commonFunctions, warmServices, infoServices } = config;
   const s = useRailwayStrings();
 
-  const handleNav = (map: Record<string, AppRoute>) => (id: string) => {
-    const t = map[id];
-    if (t) nav.push(t);
-  };
+  const bindItemIn = (map: Record<string, AppRoute>) => (id: string) => (map[id] ? bindNav(map[id]) : undefined);
 
   // 监听滚动位置，切换顶栏透明→白色
   const topBarRef = useRef<HTMLDivElement>(null);
@@ -148,7 +145,7 @@ export const MyPage: React.FC = () => {
         <div className="border-b border-gray-100 pb-2 mb-3">
           <span className="text-base font-medium text-gray-900">{s.my_travel_guide_title}</span>
         </div>
-        <ServiceGrid items={travelGuide} columns={4} onItemClick={handleNav(GUIDE_NAV_MAP)} />
+        <ServiceGrid items={travelGuide} columns={4} bindItem={bindItemIn(GUIDE_NAV_MAP)} />
       </div>
 
       {/* 常用功能 */}
@@ -156,7 +153,7 @@ export const MyPage: React.FC = () => {
         <div className="border-b border-gray-100 pb-2 mb-3">
           <span className="text-base font-medium text-gray-900">{s.my_common_features_title}</span>
         </div>
-        <ServiceGrid items={[...commonFunctions, { id: 'invoice', name: s.service_invoice, icon: 'Receipt', color: '#3B99FC' }]} columns={4} onItemClick={handleNav(FUNC_NAV_MAP)} />
+        <ServiceGrid items={[...commonFunctions, { id: 'invoice', name: s.service_invoice, icon: 'Receipt', color: '#3B99FC' }]} columns={4} bindItem={bindItemIn(FUNC_NAV_MAP)} />
       </div>
 
       {/* 温馨服务 */}
@@ -171,7 +168,7 @@ export const MyPage: React.FC = () => {
               <div
                 key={item.id}
                 className="flex flex-col items-center gap-1.5 active:opacity-70"
-                onClick={() => handleNav(WARM_NAV_MAP)(item.id)}
+                {...bindItemIn(WARM_NAV_MAP)(item.id)}
               >
                 <Icon size={24} className="text-gray-500" />
                 <span className="text-xs text-gray-700 text-center">{localizeRailwayItemName(item.id, item.name, s)}</span>

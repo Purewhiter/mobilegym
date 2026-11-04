@@ -1,6 +1,7 @@
 
 import React, { useCallback, useEffect } from 'react';
-import { MemoryRouter, Routes, Route, useLocation, useSearchParams, Outlet } from 'react-router-dom';
+import { MemoryRouter, Route, useLocation, useSearchParams, Outlet } from 'react-router-dom';
+import { ActivityRouteHost } from '../../os/components/ActivityRouteHost';
 import { useAppNavigationHandler } from '../../os/hooks/useAppNavigationHandler';
 import { useWechatReadingStore } from './state';
 import ReadingPage from './pages/ReadingPage';
@@ -74,40 +75,24 @@ const NavigationHandler: React.FC = () => {
     return null;
 };
 
-// Main Layout that manages the constant presence of the 4 primary tabs
+// Main layout: tab bar on the 4 primary tabs, each page instance renders its own copy
 const Layout: React.FC = () => {
     const location = useLocation();
     const pathname = location.pathname;
     const isSelectMode = new URLSearchParams(location.search).get('select') === 'true';
 
     // Define which paths constitute the main tabs
-    const isMainTab = ['/', '/bookshelf', '/audiobooks', '/me'].includes(pathname);
+    const isMainTab = (MAIN_TAB_PATHS as readonly string[]).includes(pathname);
 
     return (
         <div className="flex flex-col h-full bg-white text-(--app-c-tw-text-slate-900) font-sans select-none overflow-hidden relative">
             <div className="flex-1 relative w-full overflow-hidden"
                 style={{ paddingBottom: (isMainTab && !isSelectMode) ? '56px' : '0' }}>
 
-                {/* 4 Primary Tabs: Always mounted, toggled by CSS display */}
-                <div className="h-full" style={{ display: pathname === '/' ? 'block' : 'none' }}>
-                    <ReadingPage />
+                {/* Main tabs keep one instance each, sub-pages stay on the back stack (ActivityRouteHost) */}
+                <div className={isMainTab ? 'h-full' : 'h-full bg-white'}>
+                    <Outlet />
                 </div>
-                <div className="h-full" style={{ display: pathname === '/bookshelf' ? 'block' : 'none' }}>
-                    <BookshelfPage />
-                </div>
-                <div className="h-full" style={{ display: pathname === '/audiobooks' ? 'block' : 'none' }}>
-                    <AudiobooksPage />
-                </div>
-                <div className="h-full" style={{ display: pathname === '/me' ? 'block' : 'none' }}>
-                    <MePage />
-                </div>
-
-                {/* Sub-pages: Rendered exclusively via Outlet (standard Route behavior) */}
-                {!isMainTab && (
-                    <div className="h-full bg-white">
-                        <Outlet />
-                    </div>
-                )}
             </div>
 
             {/* TabBar only visible on main paths AND not in select mode */}
@@ -136,12 +121,13 @@ export const WechatReadingApp: React.FC = () => {
         <div className="h-full w-full" style={cssVars as React.CSSProperties}>
         <MemoryRouter>
                 <NavigationHandler />
-                <Routes>
+                {/* Pages below the top stay as they were left (Fragment back stack), see ActivityRouteHost. */}
+                <ActivityRouteHost persistent={MAIN_TAB_PATHS}>
                     <Route path="/" element={<Layout />}>
-                        <Route index element={<div />} /> {/* Occupied by ReadingPage in Layout */}
-                        <Route path="bookshelf" element={<div />} /> {/* Occupied by BookshelfPage in Layout */}
-                        <Route path="audiobooks" element={<div />} /> {/* Occupied by AudiobooksPage in Layout */}
-                        <Route path="me" element={<div />} /> {/* Occupied by MePage in Layout */}
+                        <Route index element={<ReadingPage />} />
+                        <Route path="bookshelf" element={<BookshelfPage />} />
+                        <Route path="audiobooks" element={<AudiobooksPage />} />
+                        <Route path="me" element={<MePage />} />
 
                         <Route path="search" element={<SearchPage />} />
                         <Route path="categories" element={<CategoryListPage />} />
@@ -172,7 +158,7 @@ export const WechatReadingApp: React.FC = () => {
                         <Route path="wallet/coins" element={<CoinsPage />} />
                         <Route path="wallet/transactions" element={<TransactionsPage />} />
                     </Route>
-                </Routes>
+                </ActivityRouteHost>
         </MemoryRouter>
         </div>
     );

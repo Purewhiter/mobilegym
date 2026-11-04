@@ -173,7 +173,7 @@ const MediaResultItem: React.FC<{ item: any; type: 'anime' | 'movie' }> = ({ ite
 };
 
 const RichUserCard: React.FC<{ user: any; videoById: Map<string, any> }> = ({ user, videoById }) => {
-    const { bindTap, nav, bindNav } = useBilibiliGestures();
+    const { bindTap, nav, bindNav, bindBack, back } = useBilibiliGestures();
     const locale = useLocale();
     const toggleFollow = useBilibiliStore(s => s.toggleFollow);
     const biliUser = useBilibiliStore(s => s.user);
@@ -181,7 +181,9 @@ const RichUserCard: React.FC<{ user: any; videoById: Map<string, any> }> = ({ us
         const mid = String(id);
         return (biliUser.followingList || []).some(u => String(u.mid) === mid);
     };
-    const [showMenu, setShowMenu] = useState(false);
+    // The followed user's menu lives in the URL (?sheet=userMenu&sheetMid=): system back closes it.
+    const menuParams = new URLSearchParams(useLocation().search);
+    const showMenu = menuParams.get('sheet') === 'userMenu' && menuParams.get('sheetMid') === String(user.mid);
 
     // Hydrate videos
     const recentVideos = (user.videos || []).slice(0, 3).map((v: any) => {
@@ -223,10 +225,7 @@ const RichUserCard: React.FC<{ user: any; videoById: Map<string, any> }> = ({ us
 
                 {isFollowing(user.mid) ? (
                     <button
-                        {...bindTap(
-                            { kind: 'action', id: 'search.user.menu.open' },
-                            { stopPropagation: true, onTrigger: () => setShowMenu(true) },
-                        )}
+                        {...bindNav(routes.searchResults, { search: { sheet: 'userMenu', sheetMid: String(user.mid) }, keep: ['q', 'tab'], stopPropagation: true })}
                         className="h-8 w-[92px] rounded-full bg-[#E3E5E7] text-[#61666D] flex items-center justify-center gap-1 font-medium text-[13px] whitespace-nowrap leading-none active:bg-[#d0d3d6] transition-colors flex-none"
                     >
                         <Menu size={14} />
@@ -295,14 +294,11 @@ const RichUserCard: React.FC<{ user: any; videoById: Map<string, any> }> = ({ us
                 <div className="fixed inset-0 z-[100] flex flex-col justify-end text-base">
                     <div
                         className="absolute inset-0 bg-black/50"
-                        {...bindTap(
-                            { kind: 'action', id: 'search.user.menu.close' },
-                            { stopPropagation: true, onTrigger: () => setShowMenu(false) },
-                        )}
+                        {...bindBack({ stopPropagation: true })}
                     />
                     <div className="bg-app-surface rounded-t-xl z-20 overflow-hidden" onClick={(e) => e.stopPropagation()}>
-                        <div className="py-3.5 text-center text-app-text border-b border-gray-100 active:bg-gray-50" onClick={() => setShowMenu(false)}>{locale === 'en' ? 'Add to special follows' : '加入特别关注'}</div>
-                        <div className="py-3.5 text-center text-app-text border-b border-gray-100 active:bg-gray-50" onClick={() => setShowMenu(false)}>{locale === 'en' ? 'Set group' : '设置分组'}</div>
+                        <div className="py-3.5 text-center text-app-text border-b border-gray-100 active:bg-gray-50" {...bindBack({ stopPropagation: true })}>{locale === 'en' ? 'Add to special follows' : '加入特别关注'}</div>
+                        <div className="py-3.5 text-center text-app-text border-b border-gray-100 active:bg-gray-50" {...bindBack({ stopPropagation: true })}>{locale === 'en' ? 'Set group' : '设置分组'}</div>
                         <div
                             className="py-3.5 text-center text-app-primary border-b border-gray-100 active:bg-gray-50"
                             {...bindTap(
@@ -310,7 +306,7 @@ const RichUserCard: React.FC<{ user: any; videoById: Map<string, any> }> = ({ us
                                 {
                                     onTrigger: () => {
                                         toggleFollow(String(user.mid));
-                                        setShowMenu(false);
+                                        back();
                                     },
                                 },
                             )}
@@ -318,7 +314,7 @@ const RichUserCard: React.FC<{ user: any; videoById: Map<string, any> }> = ({ us
                             {locale === 'en' ? 'Unfollow' : '取消关注'}
                         </div>
                         <div className="h-1.5 bg-app-bg" />
-                        <div className="py-3.5 text-center text-app-text active:bg-gray-50" onClick={() => setShowMenu(false)}>{locale === 'en' ? 'Cancel' : '取消'}</div>
+                        <div className="py-3.5 text-center text-app-text active:bg-gray-50" {...bindBack({ stopPropagation: true })}>{locale === 'en' ? 'Cancel' : '取消'}</div>
                     </div>
                 </div>
             )}
@@ -364,7 +360,7 @@ const VideoResultItem: React.FC<{ video: any; authorByName: Map<string, any> }> 
 };
 
 const UserResultItem: React.FC<{ user: any }> = ({ user }) => {
-    const { bindTap, nav, bindNav } = useBilibiliGestures();
+    const { bindTap, nav, bindNav, bindBack, back } = useBilibiliGestures();
     const locale = useLocale();
     const toggleFollow = useBilibiliStore(s => s.toggleFollow);
     const biliUser = useBilibiliStore(s => s.user);
@@ -372,7 +368,9 @@ const UserResultItem: React.FC<{ user: any }> = ({ user }) => {
         const mid = String(id);
         return (biliUser.followingList || []).some(u => String(u.mid) === mid);
     };
-    const [showMenu, setShowMenu] = useState(false);
+    // The followed user's menu lives in the URL (?sheet=userMenu&sheetMid=): system back closes it.
+    const menuParams = new URLSearchParams(useLocation().search);
+    const showMenu = menuParams.get('sheet') === 'userMenu' && menuParams.get('sheetMid') === String(user.mid);
 
     return (
         <div
@@ -410,10 +408,7 @@ const UserResultItem: React.FC<{ user: any }> = ({ user }) => {
 
             {isFollowing(user.mid) ? (
                 <button
-                    {...bindTap(
-                        { kind: 'action', id: 'search.user.menu.open' },
-                        { stopPropagation: true, onTrigger: () => setShowMenu(true) },
-                    )}
+                    {...bindNav(routes.searchResults, { search: { sheet: 'userMenu', sheetMid: String(user.mid) }, keep: ['q', 'tab'], stopPropagation: true })}
                     className="h-7 w-[86px] rounded-full bg-[#E3E5E7] text-[#61666D] flex items-center justify-center gap-1 font-medium text-[12px] whitespace-nowrap leading-none active:bg-[#d0d3d6] transition-colors flex-none"
                 >
                     <Menu size={12} />
@@ -440,14 +435,11 @@ const UserResultItem: React.FC<{ user: any }> = ({ user }) => {
                 <div className="fixed inset-0 z-[100] flex flex-col justify-end text-base cursor-default">
                     <div
                         className="absolute inset-0 bg-black/50"
-                        {...bindTap(
-                            { kind: 'action', id: 'search.user.menu.close' },
-                            { stopPropagation: true, onTrigger: () => setShowMenu(false) },
-                        )}
+                        {...bindBack({ stopPropagation: true })}
                     />
                     <div className="bg-app-surface rounded-t-xl z-20 overflow-hidden" onClick={(e) => e.stopPropagation()}>
-                        <div className="py-3.5 text-center text-app-text border-b border-gray-100 active:bg-gray-50" onClick={() => setShowMenu(false)}>{locale === 'en' ? 'Add to special follows' : '加入特别关注'}</div>
-                        <div className="py-3.5 text-center text-app-text border-b border-gray-100 active:bg-gray-50" onClick={() => setShowMenu(false)}>{locale === 'en' ? 'Set group' : '设置分组'}</div>
+                        <div className="py-3.5 text-center text-app-text border-b border-gray-100 active:bg-gray-50" {...bindBack({ stopPropagation: true })}>{locale === 'en' ? 'Add to special follows' : '加入特别关注'}</div>
+                        <div className="py-3.5 text-center text-app-text border-b border-gray-100 active:bg-gray-50" {...bindBack({ stopPropagation: true })}>{locale === 'en' ? 'Set group' : '设置分组'}</div>
                         <div
                             className="py-3.5 text-center text-app-primary border-b border-gray-100 active:bg-gray-50"
                             {...bindTap(
@@ -455,7 +447,7 @@ const UserResultItem: React.FC<{ user: any }> = ({ user }) => {
                                 {
                                     onTrigger: () => {
                                         toggleFollow(String(user.mid));
-                                        setShowMenu(false);
+                                        back();
                                     },
                                 },
                             )}
@@ -463,7 +455,7 @@ const UserResultItem: React.FC<{ user: any }> = ({ user }) => {
                             {locale === 'en' ? 'Unfollow' : '取消关注'}
                         </div>
                         <div className="h-1.5 bg-app-bg" />
-                        <div className="py-3.5 text-center text-app-text active:bg-gray-50" onClick={() => setShowMenu(false)}>{locale === 'en' ? 'Cancel' : '取消'}</div>
+                        <div className="py-3.5 text-center text-app-text active:bg-gray-50" {...bindBack({ stopPropagation: true })}>{locale === 'en' ? 'Cancel' : '取消'}</div>
                     </div>
                 </div>
             )}
@@ -943,7 +935,7 @@ export const SearchPage: React.FC = () => {
                         key={tab.id}
                         {...(activeTab === tab.id
                             ? {}
-                            : bindNav(routes.searchResults, { search: { tab: tab.id }, keep: ['q'], replace: true }))}
+                            : bindNav(routes.searchResults, { search: { tab: tab.id as (typeof routes.searchResults.search.tab)[number] }, keep: ['q'], replace: true }))}
                         className={`px-4 py-2.5 text-[14px] whitespace-nowrap relative transition-colors ${activeTab === tab.id ? 'text-app-primary font-bold' : 'text-[#61666D]'}`}
                     >
                         {tab.label}

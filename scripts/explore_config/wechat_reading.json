@@ -1,0 +1,9 @@
+{
+  "setup": {
+    "/read/:bookId": [{ "tap": "[data-reader-tap-zone]" }],
+    "/search": [[], [{ "type": "纳瓦尔", "into": "input[type=text]" }]]
+  },
+  "prefer": {
+    "nav.book": [{ "bookId": "4" }]
+  }
+}

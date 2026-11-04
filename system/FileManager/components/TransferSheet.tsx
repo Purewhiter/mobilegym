@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import type { FSNode } from '@/os/types';
 import * as FileSystem from '@/os/FileSystemService';
+import { useFileSystemVersion } from '@/os/hooks/useFileSystemVersion';
 import { IcCheck, IcFolder, IcFolderAdd, IcNavBack, IcNavForward } from '../res/icons';
 import { strings } from '../res/strings';
 import { stringsEn } from '../res/strings.en';
@@ -8,6 +9,7 @@ import { useAppStrings } from '@/os/useAppStrings';
 import type { TransferOperation } from '../utils/fileOperations';
 import * as TimeService from '@/os/TimeService';
 import { InputDialog } from './Dialog';
+import { useFileManagerGestures } from '../hooks/useFileManagerGestures';
 
 interface TransferSheetProps {
   open: boolean;
@@ -36,6 +38,7 @@ export const TransferSheet: React.FC<TransferSheetProps> = ({
   onCreatedFolder,
 }) => {
   const s = useAppStrings(strings, stringsEn);
+  const { bindTap } = useFileManagerGestures();
   const [currentPath, setCurrentPath] = useState(ROOT_PATH);
   const [dragOffset, setDragOffset] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -48,7 +51,9 @@ export const TransferSheet: React.FC<TransferSheetProps> = ({
     setDragOffset(0);
   }, [open]);
 
-  const folders = useMemo(() => {
+  useFileSystemVersion(); // re-render when the mirror changes
+
+  const folders = (() => {
     if (!open) return [];
     const selectedPaths = selectedNodes
       .filter(node => node.type === 'directory')
@@ -58,7 +63,7 @@ export const TransferSheet: React.FC<TransferSheetProps> = ({
       .filter(item => item.type === 'directory')
       .filter(item => !selectedPaths.some(path => item.path === path || item.path.startsWith(`${path}/`)))
       .sort((a, b) => a.name.localeCompare(b.name));
-  }, [currentPath, open, selectedNodes]);
+  })();
 
   const breadcrumbs = useMemo(() => {
     const parts = currentPath.split('/').filter(Boolean);
@@ -143,21 +148,21 @@ export const TransferSheet: React.FC<TransferSheetProps> = ({
         </div>
 
         <div className="flex items-center justify-between mb-4">
-          <button className="w-10 h-10 flex items-center justify-center text-app-text shrink-0" onClick={handleBack}>
+          <button className="w-10 h-10 flex items-center justify-center text-app-text shrink-0" {...bindTap({ kind: 'action', id: 'fileManager.transfer.back' }, { onTrigger: handleBack })}>
             <IcNavBack size={28} />
           </button>
           <span className="text-[24px] font-medium flex-1 text-center truncate px-2">{title}</span>
           <div className="flex items-center gap-2 shrink-0">
             <button
               className="w-10 h-10 flex items-center justify-center text-app-text"
-              onClick={onOpenCreateFolder}
+              {...bindTap({ kind: 'action', id: 'fileManager.transfer.newFolder' }, { onTrigger: onOpenCreateFolder })}
               aria-label={s.transfer_new_folder}
             >
               <IcFolderAdd size={28} />
             </button>
             <button
               className="w-10 h-10 flex items-center justify-center text-app-text"
-              onClick={() => onConfirm(currentPath)}
+              {...bindTap({ kind: 'action', id: 'fileManager.transfer.confirm' }, { onTrigger: () => onConfirm(currentPath) })}
               aria-label={s.dialog_confirm}
             >
               <IcCheck size={30} />
@@ -170,7 +175,7 @@ export const TransferSheet: React.FC<TransferSheetProps> = ({
             <React.Fragment key={crumb.path}>
               {index > 0 && <IcNavForward size={15} className="text-gray-300 shrink-0" />}
               <button
-                onClick={() => setCurrentPath(crumb.path)}
+                {...bindTap({ kind: 'action', id: 'fileManager.transfer.crumb.open' }, { params: { path: crumb.path }, onTrigger: () => setCurrentPath(crumb.path) })}
                 className={`px-4 py-2 rounded-full text-[14px] shrink-0 ${
                   index === breadcrumbs.length - 1 ? 'bg-amber-100 text-amber-600 font-medium' : 'bg-gray-100 text-gray-500'
                 }`}
@@ -192,7 +197,7 @@ export const TransferSheet: React.FC<TransferSheetProps> = ({
               {folders.map(folder => (
                 <button
                   key={folder.id}
-                  onClick={() => setCurrentPath(folder.path)}
+                  {...bindTap({ kind: 'action', id: 'fileManager.transfer.folder.open' }, { params: { path: folder.path }, onTrigger: () => setCurrentPath(folder.path) })}
                   className="w-full flex items-center gap-4 px-1 py-4 active:bg-gray-50 rounded-xl transition-colors"
                 >
                   <div className="w-14 h-14 rounded-xl bg-gray-50 flex items-center justify-center shrink-0">

@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { IcFileText, IcNavBack } from '../res/icons';
 import * as FileSystem from '@/os/FileSystemService';
+import { useFileSystemVersion } from '@/os/hooks/useFileSystemVersion';
 import { useFileManagerGestures } from '../hooks/useFileManagerGestures';
 import { strings } from '../res/strings';
 import { stringsEn } from '../res/strings.en';
@@ -25,13 +26,17 @@ export const TextPreviewPage: React.FC = () => {
     return parts[parts.length - 1] || s.text_preview_no_file;
   }, [path, s.text_preview_no_file]);
 
-  const file = useMemo(() => (path ? FileSystem.getNode(path) : null), [path]);
+  useFileSystemVersion(); // re-render when the mirror changes
+  const file = path ? FileSystem.getNode(path) : null;
+  // Every write replaces the mirror's node objects: reload only when this file itself changes
+  // (an overwrite points it at new content even when size and time stay the same).
+  const fileKey = file ? `${file.id}:${file.type}:${file.size}:${file.modifiedAt}:${FileSystem.getFileUri(file.path)}` : null;
 
   useEffect(() => {
     let cancelled = false;
 
     async function loadText() {
-      if (!path || !file || file.type !== 'file') {
+      if (!path || !fileKey || FileSystem.getNode(path)?.type !== 'file') {
         setLoadState({ status: 'error', text: '' });
         return;
       }
@@ -53,7 +58,7 @@ export const TextPreviewPage: React.FC = () => {
     return () => {
       cancelled = true;
     };
-  }, [file, path]);
+  }, [fileKey, path]);
 
   return (
     <div className="h-full bg-app-surface flex flex-col">

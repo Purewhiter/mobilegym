@@ -13,6 +13,7 @@ import {
 } from '../res/icons';
 import { FSNode } from '@/os/types';
 import * as FileSystem from '@/os/FileSystemService';
+import { useFileSystemVersion } from '@/os/hooks/useFileSystemVersion';
 import { useFileManagerGestures } from '../hooks/useFileManagerGestures';
 import { TabBar } from '../components/TabBar';
 import { Toast } from '@/os/components/Toast';
@@ -29,7 +30,7 @@ import * as TimeService from '@/os/TimeService';
 import { transferNodesToDirectory, type TransferOperation } from '../utils/fileOperations';
 import { routes } from '../routes';
 export const BrowseHomePage: React.FC = () => {
-  const { nav, back } = useFileManagerGestures();
+  const { nav, back, bindNav, bindTap, bindLongPress } = useFileManagerGestures();
   const location = useLocation();
   const s = useAppStrings(strings, stringsEn);
 
@@ -45,14 +46,6 @@ export const BrowseHomePage: React.FC = () => {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const isLongPress = useRef(false);
-  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const clearLongPressTimer = () => {
-    if (longPressTimer.current) {
-      clearTimeout(longPressTimer.current);
-      longPressTimer.current = null;
-    }
-  };
 
   // Clear selection and reset long press flag when exiting select mode
   useEffect(() => {
@@ -91,18 +84,12 @@ export const BrowseHomePage: React.FC = () => {
     back();
   };
 
-  const openModal = (type: 'delete' | 'more' | 'details' | 'rename', itemId?: string) => {
-    if (type === 'delete') nav.push(routes.home, {}, { search: { mode: 'select', modal: 'delete' }, keep: ['selected'] });
-    else if (type === 'more') nav.push(routes.home, {}, { search: { mode: 'select', modal: 'more' }, keep: ['selected'] });
-    else if (type === 'details') nav.replace(routes.home, {}, { search: { modal: 'details', itemId: (itemId ? { itemId } : {}).itemId } });
-    else if (type === 'rename') nav.replace(routes.home, {}, { search: { modal: 'rename', itemId: (itemId ? { itemId } : {}).itemId } });
-  };
-
   const closeModal = () => {
     back();
   };
   
   const [storageItems, setStorageItems] = useState<FSNode[]>([]);
+  const fsVersion = useFileSystemVersion();
   const [scrollTop, setScrollTop] = useState(0);
   const [toast, setToast] = useState({ message: '', visible: false });
 
@@ -122,7 +109,7 @@ export const BrowseHomePage: React.FC = () => {
   
   useEffect(() => {
     refreshItems();
-  }, []);
+  }, [fsVersion]);
   
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     setScrollTop(e.currentTarget.scrollTop);
@@ -142,17 +129,27 @@ export const BrowseHomePage: React.FC = () => {
     else if (isPdfPreviewableFile(item)) nav.push(routes.pdf, {}, { search: { path: item.path } });
   };
 
-  const handlePointerDown = (item: FSNode) => {
-    isLongPress.current = false;
-    clearLongPressTimer();
-    longPressTimer.current = setTimeout(() => {
-      isLongPress.current = true;
-      enterSelectMode(item.id);
-    }, 500);
-  };
-
-  const handlePointerUp = () => {
-    clearLongPressTimer();
+  // Tap opens a folder or a previewable file (toggles it in select mode); a long press
+  // selects it and enters select mode, after which its click is swallowed by handleItemClick.
+  const itemProps = (item: FSNode) => {
+    if (isSelecting) {
+      return {
+        ...bindTap({ kind: 'action', id: 'fileManager.item.toggleSelect' }, { params: { id: item.id }, onTrigger: () => handleItemClick(item) }),
+        // A new press clears the guard: the simulator's long press sends no trailing click to consume it.
+        onPointerDown: () => { isLongPress.current = false; },
+      };
+    }
+    const open = item.type === 'directory' ? bindNav(routes.folder, { search: { path: item.path } })
+      : isTextPreviewableFile(item) ? bindNav(routes.text, { search: { path: item.path } })
+      : isPdfPreviewableFile(item) ? bindNav(routes.pdf, { search: { path: item.path } })
+      : {};
+    const select = bindLongPress({ kind: 'action', id: 'fileManager.item.select' }, {
+      params: { id: item.id },
+      duration: 500,
+      onLongPressStart: () => { isLongPress.current = false; },
+      onTrigger: () => enterSelectMode(item.id),
+    });
+    return { ...open, ...select };
   };
 
   const toggleSelectAll = () => {
@@ -277,12 +274,12 @@ export const BrowseHomePage: React.FC = () => {
         alwaysShowSmallTitle={false}
         bgClass="bg-app-surface"
         leftContent={isSelecting ? (
-          <button onClick={exitSelectMode} className="w-10 h-10 flex items-center justify-center -ml-2 active:opacity-60">
+          <button {...bindTap({ kind: 'action', id: 'fileManager.select.exit' }, { onTrigger: exitSelectMode })} className="w-10 h-10 flex items-center justify-center -ml-2 active:opacity-60">
             <IcClose size={28} className="text-app-text" />
           </button>
         ) : undefined}
         rightContent={isSelecting ? (
-          <button onClick={toggleSelectAll} className="w-10 h-10 flex items-center justify-center active:opacity-60">
+          <button {...bindTap({ kind: 'action', id: 'fileManager.select.toggleAll' }, { onTrigger: toggleSelectAll })} className="w-10 h-10 flex items-center justify-center active:opacity-60">
             <IcList size={28} className={isAllSelected ? 'text-blue-500' : 'text-gray-400'} />
           </button>
         ) : (
@@ -319,7 +316,7 @@ export const BrowseHomePage: React.FC = () => {
             {categories.map(cat => (
               <button
                 key={cat.id}
-                onClick={() => nav.push(routes.category, { category: cat.id })}
+                {...bindNav(routes.category, { params: { category: cat.id } })}
                 className="flex items-center gap-4 p-4 bg-gray-50/80 rounded-[20px] active:scale-[0.98] transition-transform"
               >
                 <div className={`w-11 h-11 rounded-xl ${cat.color} flex items-center justify-center shrink-0`}>
@@ -361,12 +358,8 @@ export const BrowseHomePage: React.FC = () => {
               return (
                 <button
                   key={item.id}
-                  onClick={() => handleItemClick(item)}
+                  {...itemProps(item)}
                   onContextMenu={(e) => e.preventDefault()}
-                  onPointerDown={() => handlePointerDown(item)}
-                  onPointerUp={handlePointerUp}
-                  onPointerCancel={handlePointerUp}
-                  onPointerLeave={handlePointerUp}
                   className={`flex items-center gap-4 w-full py-3 px-2 active:bg-gray-50 transition-colors rounded-xl ${
                     isSelected ? 'bg-blue-50' : ''
                   }`}
@@ -425,19 +418,19 @@ export const BrowseHomePage: React.FC = () => {
             </div>
             <span className="text-[12px] text-app-text">{s.action_send}</span>
           </button>
-          <button onClick={() => openTransferSheet('move')} className="flex flex-col items-center gap-1.5 px-4 active:opacity-60">
+          <button {...bindTap({ kind: 'action', id: 'fileManager.select.move' }, { onTrigger: () => openTransferSheet('move') })} className="flex flex-col items-center gap-1.5 px-4 active:opacity-60">
             <div className="w-6 h-6 flex items-center justify-center">
               <IcMove />
             </div>
             <span className="text-[12px] text-app-text">{s.action_move}</span>
           </button>
-          <button onClick={() => openModal('delete')} className="flex flex-col items-center gap-1.5 px-4 active:opacity-60">
+          <button {...bindNav(routes.home, { search: { mode: 'select', modal: 'delete' }, keep: ['selected'] })} className="flex flex-col items-center gap-1.5 px-4 active:opacity-60">
             <div className="w-6 h-6 flex items-center justify-center">
               <IcDelete />
             </div>
             <span className="text-[12px] text-app-text">{s.action_delete}</span>
           </button>
-          <button onClick={() => openModal('more')} className="flex flex-col items-center gap-1.5 px-4 active:opacity-60">
+          <button {...bindNav(routes.home, { search: { mode: 'select', modal: 'more' }, keep: ['selected'] })} className="flex flex-col items-center gap-1.5 px-4 active:opacity-60">
             <div className="w-6 h-6 flex items-center justify-center">
               <IcMoreCircle />
             </div>
@@ -484,7 +477,7 @@ export const BrowseHomePage: React.FC = () => {
         onConfirm={handleTransferConfirm}
         isCreateFolderOpen={transferDialog === 'newFolder'}
         onOpenCreateFolder={openTransferCreateFolder}
-        onCloseCreateFolder={back}
+        onCloseCreateFolder={() => back()}
         onCreatedFolder={refreshItems}
       />
       

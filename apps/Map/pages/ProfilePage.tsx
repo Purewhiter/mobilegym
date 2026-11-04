@@ -12,7 +12,7 @@ import { useMapStrings } from '../hooks/useMapStrings';
 import { routes } from '../routes';
 
 export const ProfilePage: React.FC = () => {
-  const { nav, bindBack } = useMapGestures();
+  const { nav, bindBack, bindNav } = useMapGestures();
   const s = useMapStrings();
 
   return (
@@ -52,7 +52,7 @@ export const ProfilePage: React.FC = () => {
       <div className="mx-4 bg-app-surface rounded-3xl shadow-sm overflow-hidden flex flex-col">
         <button
           className="w-full flex items-center gap-4 p-4 active:bg-gray-50 border-b border-gray-100"
-          onClick={() => nav.push(routes.settings)}
+          {...bindNav(routes.settings)}
         >
           <IcSettings size={24} className="text-gray-600" />
           <span className="text-[15px] text-gray-900">{s.profile_settings}</span>
