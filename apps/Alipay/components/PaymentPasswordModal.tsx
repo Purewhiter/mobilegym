@@ -75,6 +75,10 @@ export const PaymentPasswordModal: React.FC<PaymentPasswordModalProps> = ({
       if (password === expectedPassword) {
         calledRef.current = true;
         setTimeout(() => {
+          // Cleared for the page shown again from the back stack (ActivityRouteHost): its effects
+          // run again and must not pay a second time with the old digits.
+          setPassword('');
+          calledRef.current = false;
           onSuccess(selectedMethodId);
         }, 200);
       } else {
