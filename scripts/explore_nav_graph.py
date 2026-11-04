@@ -52,6 +52,12 @@ tasks).
 
     python scripts/explore_nav_graph.py http://localhost:3000/ tencent_meeting new.json
     python scripts/explore_nav_graph.py --diff old.json new.json
+
+Every tap starts from a full page reload. Against `vite dev` that reload asks
+for hundreds of unbundled modules, so more than a couple of explorers at once
+overload it (late data, lost pages). For many apps in parallel, explore a build
+behind the nginx gateway: `scripts/explore_apps.sh OUT_DIR app...` (the explorer
+accepts the gateway's self-signed certificate).
 """
 
 from __future__ import annotations
@@ -59,6 +65,11 @@ from __future__ import annotations
 import argparse
 import asyncio
 import json
+import re
+import shutil
+import sys
+import time
+import weakref
 from collections import deque
 from pathlib import Path
 from urllib.parse import parse_qsl, urlsplit
@@ -66,6 +77,50 @@ from urllib.parse import parse_qsl, urlsplit
 from playwright.async_api import async_playwright
 
 CONFIG_DIR = Path(__file__).parent / "explore_config"
+
+
+def stamp() -> str:
+    return time.strftime("%H:%M:%S")
+
+
+def shm_launch_args() -> dict:
+    """Let Chromium keep shared memory in /dev/shm when it is big enough.
+
+    Playwright passes --disable-dev-shm-usage (for Docker's 64 MB /dev/shm), which
+    moves Chromium's shared memory files to /tmp. Many browsers starting at once can
+    fill a small /tmp disk; every renderer on the machine then fails to map shared
+    memory and dies in the same second (SIGTRAP).
+    """
+    try:
+        if shutil.disk_usage("/dev/shm").total >= 4 << 30:
+            return {"ignore_default_args": ["--disable-dev-shm-usage"]}
+    except OSError:
+        pass
+    return {}
+
+
+CRASHED: "weakref.WeakSet" = weakref.WeakSet()
+
+
+def visible_selector(target: str) -> str:
+    m = re.fullmatch(r"(.*?)\s*>>\s*nth=(-?\d+)", target)
+    return f"{m.group(1)} >> visible=true >> nth={m.group(2)}" if m else f"{target} >> visible=true"
+
+
+def watch(page):
+    """Log a renderer crash and close the page, so calls waiting on it fail instead of hanging."""
+    async def close() -> None:
+        try:
+            await page.close()
+        except Exception:
+            pass
+
+    def crashed(_):
+        CRASHED.add(page)
+        print(f"[{stamp()}] page crashed", file=sys.stderr, flush=True)
+        asyncio.ensure_future(close())
+    page.on("crash", crashed)
+    return page
 
 # Visible tagged controls, in DOM order: what an agent could tap on this screen.
 # checkVisibility, not offsetParent: an <svg> icon or a fixed bar has no offsetParent.
@@ -345,8 +400,9 @@ class Device:
 
     async def setup_step(self, step: dict) -> None:
         target = step.get("into") or step.get("tap")
-        # The first visible match: pages kept mounted underneath have the same inputs, hidden.
-        element = self.page.locator(f"{target} >> visible=true").first if target else None
+        # Visible matches only: pages kept on the back stack underneath have the same inputs,
+        # hidden. A trailing `>> nth=K` counts among the visible ones.
+        element = self.page.locator(visible_selector(target)).first if target else None
         if element:
             await element.wait_for(state="visible", timeout=5000)
         if "wait" in step:
@@ -432,11 +488,20 @@ async def explore(url: str, app: str, config: dict, max_pages: int, wait_ms: int
     # Frozen simulated time: labels such as "in 5 min" stay the same across the reloads.
     url = url + ("&" if "?" in url else "?") + f"simTime={sim_time}&simTimeFlowing=0"
     async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=True)
+        # The nginx gateway serves HTTPS with a self-signed certificate.
+        browser = await p.chromium.launch(headless=True, args=["--ignore-certificate-errors"], **shm_launch_args())
+        # A crash names its time, so crashes across explorers can be lined up with system logs.
+        closing = False
+        browser.on("disconnected", lambda _: closing or print(f"[{stamp()}] browser disconnected", file=sys.stderr, flush=True))
+        # How a renderer died: termination status and exit code / signal number.
+        cdp = await browser.new_browser_cdp_session()
+        cdp.on("Target.targetCrashed", lambda e: print(
+            f"[{stamp()}] renderer died: status={e.get('status')} code={e.get('errorCode')}", file=sys.stderr, flush=True))
+        await cdp.send("Target.setDiscoverTargets", {"discover": True})
         devices = []
         for _ in range(workers):
-            context = await browser.new_context(viewport={"width": 360, "height": 800})
-            devices.append(Device(await context.new_page(), url, app, config, None, wait_ms))
+            context = await browser.new_context(viewport={"width": 360, "height": 800}, ignore_https_errors=True)
+            devices.append(Device(watch(await context.new_page()), url, app, config, None, wait_ms))
 
         first = devices[0]
         await first.page.goto(url)
@@ -459,7 +524,29 @@ async def explore(url: str, app: str, config: dict, max_pages: int, wait_ms: int
             async def worker(device: Device) -> None:
                 while not queue.empty():
                     n = queue.get_nowait()
-                    results[n] = await work(device, jobs[n])
+                    for attempt in range(3):
+                        setup_errors = set(device.setup_errors)
+                        try:
+                            results[n] = await work(device, jobs[n])
+                            break
+                        except Exception as error:
+                            # A crashed renderer: the job starts from a reset anyway, so redo it on a new page.
+                            lost = device.page
+                            if not (lost in CRASHED or lost.is_closed()) or attempt == 2:
+                                raise
+                            print(f"[{stamp()}] page lost ({type(error).__name__}), job redone on a new page",
+                                  file=sys.stderr, flush=True)
+                            try:
+                                await lost.close()
+                            except Exception:
+                                pass
+                            # The failed attempt's setup errors and data must not leak into the retry:
+                            # the new page shares the context's storage, so reset the simulator on it first.
+                            device.setup_errors = setup_errors
+                            device.page = watch(await lost.context.new_page())
+                            await device.page.goto(device.url)
+                            await device.page.wait_for_function("() => window.__SIM__?.resetState", timeout=60000)
+                            await device.page.evaluate("() => window.__SIM__.resetState()")
 
             await asyncio.gather(*(worker(d) for d in devices))
             return results
@@ -567,6 +654,7 @@ async def explore(url: str, app: str, config: dict, max_pages: int, wait_ms: int
                     continue
                 taken = {k: v for k, v in step.items() if k != "text"} | {"variant": variant}
                 level += admit(f"{after}\n{landed_sig}", after, path + [taken])
+        closing = True
         await browser.close()
 
     # Merge each edge's taps: where they land, as nodes.

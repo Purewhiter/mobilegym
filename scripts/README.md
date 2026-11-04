@@ -6,6 +6,7 @@
 
 - `lint_store_getters.mjs`
 - `explore_nav_graph.py`：在运行中的模拟器上逐个点击带标签的元素，记录点击和随后返回各落到哪个 URL；`--diff` 比较两个构建的导航图（用于导航改动前后对拍，见 `docs/platform/navigation/routes.md`）
+- `explore_apps.sh OUT_DIR app...`：先 build，再用 nginx 网关起服务，并行探索多个 App 的导航图（多个 App 一起探索时不要用 vite dev，它扛不住每次点击后的整页重载）
 
 这些是导航图探索、状态 store 检查等正式开发入口。
 
