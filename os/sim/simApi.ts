@@ -5,6 +5,7 @@
 
 import { getStateSetter, getStore, readPersistedAppState, writePersistedAppState } from '../createAppStore';
 import { idleState, waitForIdle } from '../idle';
+import { waitForStateCommit } from '../device/deviceStore';
 import { endPersistReset, flushAll } from '../debouncedPersist';
 import { getTimeConfig, now, formatTime, formatDate, getDayOfWeek } from '../TimeService';
 import * as RandomService from '../RandomService';
@@ -48,6 +49,7 @@ export function buildSimApi(): NonNullable<Window['__SIM__']> {
       preloadAppStores: async (_appIds: string[]) => { /* no-op: eager loaded */ },
       /** Resolve once the screen has caught up with the last input (see os/idle.ts). */
       waitForIdle,
+      waitForStateCommit,
       getRouteTable,
       matchRoute,
       /** Seed every RandomService draw of this episode (os/RandomService.ts). */

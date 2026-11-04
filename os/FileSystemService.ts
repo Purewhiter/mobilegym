@@ -14,7 +14,7 @@
 import { FSNode } from './types';
 import { FILE_SYSTEM_CONFIG } from './data/fileSystemConfig';
 import * as TimeService from './TimeService';
-import { DeviceClient } from './device/DeviceClient';
+import { DeviceClient, DeviceStaleError } from './device/DeviceClient';
 
 type ContentRef = { seed: string } | { blob: string };
 type MirrorNode = FSNode & { content?: ContentRef };
@@ -96,9 +96,12 @@ let initPromise: Promise<void> | null = null;
  */
 export async function initFileSystem(): Promise<void> {
   if (state.initialized) return;
-  initPromise ??= initFileSystemInternal().finally(() => {
-    initPromise = null;
-  });
+  if (!initPromise) {
+    const loading = initFileSystemInternal(DeviceClient.generation()).finally(() => {
+      if (initPromise === loading) initPromise = null;
+    });
+    initPromise = loading;
+  }
   return initPromise;
 }
 
@@ -116,21 +119,19 @@ export async function initFileSystemWithin(ms: number): Promise<void> {
   clearTimeout(timer);
 }
 
-async function initFileSystemInternal(): Promise<void> {
+async function initFileSystemInternal(generation: number): Promise<void> {
   try {
     const current = await DeviceClient.getState('fs');
-    if (current.initialized) {
-      adopt(current.state);
-    } else {
-      // Fresh session: the server seeds the preset sdcard tree. Seed dates in
-      // file names are local times, so it needs this page's time zone.
-      const seeded = await DeviceClient.putState('fs', {
-        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-      });
-      adopt(seeded.state);
-    }
+    if (generation !== DeviceClient.generation()) return;
+    // Fresh sessions seed the preset tree using the page's time zone.
+    const remoteState = current.initialized ? current.state : (await DeviceClient.putState('fs', {
+      timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    })).state;
+    if (generation !== DeviceClient.generation()) return;
+    adopt(remoteState);
     console.log('[FileSystem] Initialized with', state.nodes.size, 'nodes');
   } catch (error) {
+    if (generation !== DeviceClient.generation()) return;
     console.error('[FileSystem] Initialization failed:', error);
     createBaseStateInMemory();
   }
@@ -140,8 +141,12 @@ async function initFileSystemInternal(): Promise<void> {
 
 /** Run a file system command and adopt the resulting tree. */
 async function run<T>(name: string, args: unknown[]): Promise<T> {
+  const generation = DeviceClient.generation();
   await initFileSystem();
-  const call = () => DeviceClient.command<unknown>('fs', name, args, TimeService.now());
+  const call = () => {
+    const now = TimeService.now();
+    return DeviceClient.exclusive(api => api.command<unknown>('fs', name, args, now), generation);
+  };
   let response;
   try {
     response = await call();
@@ -152,6 +157,7 @@ async function run<T>(name: string, args: unknown[]): Promise<T> {
     await initFileSystem();
     response = await call();
   }
+  if (generation !== DeviceClient.generation()) throw new DeviceStaleError();
   adopt(response.state);
   const result = response.result as { id?: string } | null;
   // Hand back the mirror's node object, like the old in-memory API did.

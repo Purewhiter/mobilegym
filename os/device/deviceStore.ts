@@ -59,6 +59,23 @@ const getVersion = (appId: string) => () => versions.get(appId) ?? 0;
 
 /** Per-app sync hooks, used by queries. `force` re-syncs even if already synced. */
 const readyHooks = new Map<string, (force?: boolean) => Promise<void>>();
+const pageSaves = new Map<string, { retry: () => void; isDirty: () => boolean }>();
+
+/** Wait for server commands and confirm that browser-authoritative writes reached the session. */
+export async function waitForStateCommit(): Promise<void> {
+  const generation = DeviceClient.generation();
+  const wait = async () => {
+    await DeviceClient.whenIdle();
+    if (DeviceClient.generation() !== generation) throw new DeviceStaleError();
+  };
+  await wait();
+  for (const save of pageSaves.values()) {
+    if (save.isDirty()) save.retry();
+  }
+  await wait();
+  const dirtyApps = [...pageSaves].filter(([, save]) => save.isDirty()).map(([appId]) => appId);
+  if (dirtyApps.length) throw new Error(`Device state was not saved for: ${dirtyApps.join(', ')}`);
+}
 
 const isUninitialized = (err: unknown) => (err as { status?: number })?.status === 409;
 
@@ -210,14 +227,17 @@ export function createDeviceAppStore<
   const syncNow = (gen: number) =>
     DeviceClient.exclusive(async (api) => {
       const current = await api.getState(appId);
-      if (current.initialized) return { state: current.state, seeded: false };
-      // Seeding saves the page's state, unsaved writes included.
+      if (current.initialized) return current.state;
+      // Seeding saves the writes included when the PUT is sent. Writes made
+      // while it is in flight still need to be replayed and saved.
+      const seededWrites = unsaved.length;
       const seeded = (await seed(api)).state;
-      if (options.syncSetState) unsaved = [];
-      return { state: seeded, seeded: true };
-    }, gen).then(({ state, seeded }) => {
+      if (DeviceClient.generation() !== gen) throw new DeviceStaleError();
+      unsaved = unsaved.slice(seededWrites);
+      return seeded;
+    }, gen).then((state) => {
       adopt(state);
-      if (seeded || !unsaved.length) return;
+      if (!unsaved.length) return;
       // Page writes not saved yet are not in the session: apply them again on
       // top of it. Page-only keys kept their values through the adoption, so
       // they must not be written a second time.
@@ -379,6 +399,7 @@ export function createDeviceAppStore<
   );
 
   if (options.syncSetState) {
+    pageSaves.set(appId, { retry: scheduleSave, isDirty: () => unsaved.length > 0 });
     store.setState = syncedSet;
     void ensureSynced().catch(() => {});
   }

@@ -50,12 +50,17 @@ createServer((req, res) => {
   };
   if (rest === null) return notFound();
   req.url = rest;
-  void handler(req, res, (err?: unknown) => {
+  const onError = (err?: unknown) => {
     if (!err) return notFound();
     console.error('[device] request failed', err);
+    if (res.headersSent) {
+      res.destroy();
+      return;
+    }
     res.statusCode = 500;
     res.end(JSON.stringify({ error: String(err) }));
-  });
+  };
+  void handler(req, res, onError).catch(onError);
 }).listen(port, host, () => {
   console.log(`[device] shard ${shard ?? '-'} listening on http://${host}:${port}${PREFIX}`);
 });

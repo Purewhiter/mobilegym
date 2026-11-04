@@ -37,7 +37,7 @@ export async function resetStateCore(): Promise<void> {
   beginPersistReset();
   // Device-backed app data lives in the device session: drop it so the next
   // page load starts a fresh phone.
-  await DeviceClient.resetSession();
+  const deletingSession = DeviceClient.resetSession();
   resetAllAppStores();
   resetAllOsStores();
   OsStateStore.reset();
@@ -59,6 +59,7 @@ export async function resetStateCore(): Promise<void> {
   // not wait for it again. Awaited: callers reload right after reset, and the page
   // must have stored the new session id by then, or the server keeps an orphan.
   // Capped, so a request stuck from the last episode cannot hang the reset.
+  await deletingSession;
   await initFileSystemWithin(5000);
 
   // Second sweep: 关闭 clearFileSystemDB await 窗口期内任何新的 persist 排队。

@@ -93,3 +93,5 @@ The per-app navigation declarations were removed in one change (the Tencent Meet
 - Three controls changed on purpose: they were dead before because the declaration's `from` list was too narrow — Spotify's Timer in a queue sheet opened outside the player, Spotify's "New playlist" in the save sheet on `/library`, and SMS's MMS / SIM rows under advanced settings. They now open their pages.
 
 Behaviour was kept even where the old code differed from its declaration: eBay always pushes (tabs included) and its back pops history directly; FileManager's taps stop propagation and its back pops history directly; Bilibili's jumps within the same page now pass the path params they used to inherit from the current URL.
+
+`ActivityRouteHost` preserves search state when returning from a detail page or playlist. Calendar can continue deleting from the current results, Spotify can continue selecting songs from the filtered list, and WeChat Reading can focus the existing field to replace its query. Keep original coordinate traces for before-and-after comparisons and save any adjusted traces separately when verifying these task flows.
