@@ -7,7 +7,8 @@ import { colors, colorsDark } from './res/colors';
 import { colorStates, colorStatesDark } from './res/colors.states';
 import { dimens } from './res/dimens';
 import { anim } from './res/anim';
-import { MemoryRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { MemoryRouter, Route, Navigate } from 'react-router-dom';
+import { ActivityRouteHost } from '../../os/components/ActivityRouteHost';
 import { EbayNavigationHandler } from './components/EbayNavigationHandler';
 import HomePage from './pages/HomePage';
 import MePage from './pages/MePage';
@@ -38,7 +39,8 @@ export const EbayApp: React.FC = () => {
       <MemoryRouter initialEntries={['/']}>
         <EbayNavigationHandler />
         <div className="h-full w-full" data-ebay-root>
-          <Routes>
+          {/* Pages below the top stay as they were left (Fragment back stack), see ActivityRouteHost. */}
+          <ActivityRouteHost persistent={['/', '/me', '/inbox', '/sell']}>
             <Route path="/" element={<HomePage />} />
             <Route path="/me" element={<MePage />} />
             <Route path="/search" element={<SearchPage />} />
@@ -49,7 +51,7 @@ export const EbayApp: React.FC = () => {
             <Route path="/categories" element={<CategoriesPage />} />
             <Route path="/item/:id" element={<ItemDetailPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
+          </ActivityRouteHost>
         </div>
       </MemoryRouter>
     </div>

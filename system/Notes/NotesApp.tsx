@@ -1,11 +1,12 @@
 import React, { useContext, useCallback, useEffect, useRef } from 'react';
 import {
   MemoryRouter,
-  Routes,
   Route,
   useLocation,
   UNSAFE_NavigationContext,
+  type Location,
 } from 'react-router-dom';
+import { ActivityRouteHost } from '../../os/components/ActivityRouteHost';
 import NotesListPage from './pages/NotesListPage';
 import NoteEditorPage from './pages/NoteEditorPage';
 import TodoListPage from './pages/TodoListPage';
@@ -73,6 +74,13 @@ const NotesNavigationHandler: React.FC = () => {
 
 
 /** Notes App root component */
+/**
+ * One editor instance per note page: saving a new note replaces `/note/new`
+ * with `/note/<id>` while the user types, and the editor must keep its focus.
+ */
+const noteScreen = (location: Location) =>
+  location.pathname.startsWith('/note/') ? '/note' : location.pathname;
+
 const NotesApp: React.FC = () => {
   const { isDark } = useDarkMode();
   const s = useAppStrings(strings, stringsEn);
@@ -93,7 +101,8 @@ const NotesApp: React.FC = () => {
       <MemoryRouter>
         <NotesNavigationHandler />
         <div className="h-full w-full bg-white relative overflow-hidden">
-          <Routes>
+          {/* Pages below the top stay as they were left (Fragment back stack), see ActivityRouteHost. */}
+          <ActivityRouteHost persistent={['/', '/todo']} identity={noteScreen}>
             <Route path="/" element={<NotesListPage />} />
             <Route path="/todo" element={<TodoListPage />} />
             <Route path="/folders" element={<FoldersPage />} />
@@ -101,7 +110,7 @@ const NotesApp: React.FC = () => {
             <Route path="/trash" element={<TrashPage />} />
             <Route path="/private" element={<PrivateNotesPage />} />
             <Route path="/note/:id" element={<NoteEditorPage />} />
-          </Routes>
+          </ActivityRouteHost>
         </div>
       </MemoryRouter>
     </div>

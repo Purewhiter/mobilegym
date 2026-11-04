@@ -9,7 +9,8 @@ import { colors, colorsDark } from './res/colors';
 import { colorStates, colorStatesDark } from './res/colors.states';
 import { dimens } from './res/dimens';
 import { anim } from './res/anim';
-import { MemoryRouter, Routes, Route, useLocation, Outlet } from 'react-router-dom';
+import { MemoryRouter, Route, useLocation, Outlet } from 'react-router-dom';
+import { ActivityRouteHost } from '../../os/components/ActivityRouteHost';
 import { RouteScrollContainer } from '../../os/components/RouteScrollContainer';
 import { IcTabHome, IcTabFinance, IcTabVideo, IcTabMessage, IcTabMe, IcScan, IcQrCode, IcBus, IcWalletCards, IcSecureCheck, IcFastPay, IcTicket, IcTaxi, IcMovie, IcTransfer, IcCard, IcPhone, IcGrid, IcApp, IcPiggyBank, IcCoins, IcTrend, IcShield, IcReceive, IcMore, IcNavBack, IcSearch, IcAdd, IcExpand, IcNavForward, IcSettings, IcHeadphone, IcArrow, IcHelp, IcClock, IcClose, IcFile, IcChart, IcWallet, IcCircle, IcDroplet, IcBusiness, IcBank, IcBuilding, IcMedical, IcHeart } from './res/icons';
 import { useAlipayStore, computeUnread } from './state';
@@ -167,15 +168,9 @@ const Layout: React.FC = () => {
         className="flex-1 overflow-y-auto overflow-x-hidden no-scrollbar"
         rememberPaths={MAIN_TAB_PATHS}
       >
-        {/* 主 Tab 常驻挂载，使用条件渲染控制显示 */}
-        {pathname === '/' && <HomePage />}
-        {pathname === '/finance' && <FinancePage />}
-        {pathname === '/video' && <VideoPage />}
-        {pathname === '/messages' && <MessagesPage />}
-        {pathname === '/my' && <MyPage />}
-
-        {/* 子页面互斥渲染 */}
-        {!isMainTab && <Outlet />}
+        {/* 每个页面实例各有一份 Layout（ActivityRouteHost）：子页面留在返回栈里；
+            主 Tab 切换时照旧重建，位置由 rememberPaths 记住 */}
+        <Outlet />
       </RouteScrollContainer>
       
       {showTabBar && <TabBar />}
@@ -202,7 +197,8 @@ export const AlipayApp: React.FC = () => {
     <div className="w-full h-full bg-app-bg overflow-hidden">
         <MemoryRouter>
           <AlipayNavigationHandler />
-          <Routes>
+          {/* Pages below the top stay as they were left (Fragment back stack), see ActivityRouteHost. */}
+          <ActivityRouteHost>
             <Route path="/" element={<Layout />}>
               <Route index element={<HomePage />} />
               <Route path="finance" element={<FinancePage />} />
@@ -256,7 +252,7 @@ export const AlipayApp: React.FC = () => {
               <Route path="pay/transfer/success" element={<TransferSuccessPage />} />
               <Route path="pay/cashier" element={<CashierPage />} />
             </Route>
-          </Routes>
+          </ActivityRouteHost>
         </MemoryRouter>
       </div>
     </div>

@@ -16,12 +16,6 @@ export const GeneralSettingsPage: React.FC = () => {
   const s = useAlipayStrings();
   const selfScrollRef = React.useRef<HTMLDivElement | null>(null);
   const refreshSoundEnabled = settings.general.refreshSoundEnabled;
-  const persistSelfScroll = () => {
-    try {
-      const top = selfScrollRef.current?.scrollTop ?? 0;
-      window.sessionStorage.setItem('alipay_scroll_settings_general_inner_v1', String(top));
-    } catch {}
-  };
   const darkModeRightText = (() => {
     const follow = settings.general.darkMode.followSystem;
     const mode = settings.general.darkMode.mode;
@@ -72,29 +66,6 @@ export const GeneralSettingsPage: React.FC = () => {
     ],
   ];
 
-  React.useEffect(() => {
-    try {
-      const raw = window.sessionStorage.getItem('alipay_scroll_settings_general_inner_v1');
-      const top = raw ? Number(raw) : 0;
-      if (!Number.isFinite(top) || top <= 0) return;
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          if (selfScrollRef.current) selfScrollRef.current.scrollTop = top;
-        });
-      });
-      const t = window.setTimeout(() => {
-        if (selfScrollRef.current) selfScrollRef.current.scrollTop = top;
-      }, 50);
-      return () => window.clearTimeout(t);
-    } catch {}
-  }, []);
-
-  React.useEffect(() => {
-    return () => {
-      persistSelfScroll();
-    };
-  }, []);
-
   return (
     <div className="bg-app-bg h-full w-full flex flex-col pt-10">
       <div className="fixed top-0 left-0 right-0 h-10 bg-app-surface z-10 pointer-events-none"></div>
@@ -110,7 +81,6 @@ export const GeneralSettingsPage: React.FC = () => {
       <div
         ref={selfScrollRef}
         className="flex-1 overflow-auto no-scrollbar px-4 py-3 space-y-3"
-        onScroll={persistSelfScroll}
       >
         {groups.map((rows, gi) => (
           <div key={gi} className="bg-app-surface rounded-xl overflow-hidden shadow-sm divide-y divide-gray-100">
@@ -138,19 +108,19 @@ export const GeneralSettingsPage: React.FC = () => {
                   key={row.id}
                   className="flex items-center justify-between px-4 py-4 active:bg-gray-50"
                   {...(row.id === 'language'
-                    ? bindNav(routes.settingsGeneralLanguage, { beforeTrigger: persistSelfScroll })
+                    ? bindNav(routes.settingsGeneralLanguage)
                     : row.id === 'fontSize'
-                      ? bindNav(routes.settingsGeneralFontSize, { beforeTrigger: persistSelfScroll })
+                      ? bindNav(routes.settingsGeneralFontSize)
                       : row.id === 'darkMode'
-                        ? bindNav(routes.settingsGeneralDarkMode, { beforeTrigger: persistSelfScroll })
+                        ? bindNav(routes.settingsGeneralDarkMode)
                         : row.id === 'speedMode'
-                          ? bindNav(routes.settingsGeneralSpeedMode, { beforeTrigger: persistSelfScroll })
+                          ? bindNav(routes.settingsGeneralSpeedMode)
                           : row.id === 'clipboard'
-                            ? bindNav(routes.settingsGeneralClipboard, { beforeTrigger: persistSelfScroll })
+                            ? bindNav(routes.settingsGeneralClipboard)
                             : row.id === 'myManage'
-                              ? bindNav(routes.settingsGeneralMyManage, { beforeTrigger: persistSelfScroll })
+                              ? bindNav(routes.settingsGeneralMyManage)
                               : row.id === 'homeManage'
-                                ? bindNav(routes.settingsGeneralHomeManage, { beforeTrigger: persistSelfScroll })
+                                ? bindNav(routes.settingsGeneralHomeManage)
                                 : {})}
                 >
                   <span className="text-sm font-medium text-gray-800">{row.label}</span>

@@ -2,7 +2,8 @@ import React, { useCallback, useState, useEffect, useRef, useMemo } from 'react'
 import { dimensToCssVars, themeToCssVars } from '../../os/utils/themeToCssVars';
 import { applySkinToThemeColors } from '../../os/SkinService';
 import { useDarkMode } from '../../os/hooks/useDarkMode';
-import { MemoryRouter, useLocation, UNSAFE_NavigationContext, Routes, Route } from 'react-router-dom';
+import { MemoryRouter, useLocation, UNSAFE_NavigationContext, Route } from 'react-router-dom';
+import { ActivityRouteHost } from '../../os/components/ActivityRouteHost';
 import { IcGlobe, IcBack, IcForward, IcRefresh, IcHome, IcSearch, IcShield, IcNavBack, IcNavForward, IcTabs, IcMoreHoriz, IcClose, IcAdd } from './res/icons';
 import { manifest } from './manifest';
 import { colors, colorsDark } from './res/colors';
@@ -287,10 +288,11 @@ const BrowserContent: React.FC = () => {
 
             {/* Content */}
             <div className="flex-1 relative flex flex-col overflow-hidden">
-                <Routes>
+                {/* Pages below the top stay as they were left (Fragment back stack), see ActivityRouteHost. */}
+                <ActivityRouteHost>
                     <Route path="/" element={<BrowserHome onNavigate={handleNavigate} bindOpen={bindOpenUrl} />} />
                     <Route path="/view" element={<BrowserView url={activeTab.url} />} />
-                </Routes>
+                </ActivityRouteHost>
             </div>
 
             {/* Bottom Bar */}

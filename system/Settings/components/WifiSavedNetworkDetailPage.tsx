@@ -13,7 +13,7 @@ import {
 import { strings } from '../res/strings';
 import { stringsEn } from '../res/strings.en';
 import { useAppStrings } from '@/os/useAppStrings';
-import { useTimedToast } from '../hooks/useTimedToast';
+import { useTimedToast } from '../../../os/hooks/useTimedToast';
 
 export const WifiSavedNetworkDetailPage: React.FC<{ ssid: string }> = ({ ssid }) => {
   const nav = useNav(); const back = nav.back;

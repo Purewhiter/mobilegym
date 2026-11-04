@@ -79,7 +79,11 @@ const PostImageCarousel: React.FC<{ images: string[] }> = React.memo(({ images }
     });
   }, [images.length]);
 
-  React.useEffect(() => () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); }, []);
+  // Also runs when the page is hidden on the back stack: clear the ref, or scrolling after it comes back never loads more.
+  React.useEffect(() => () => {
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    rafRef.current = 0;
+  }, []);
 
   return (
     <div className="px-4 relative">

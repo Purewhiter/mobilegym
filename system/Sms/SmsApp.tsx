@@ -9,12 +9,12 @@ import { dimens } from './res/dimens';
 import { anim } from './res/anim';
 import {
     MemoryRouter,
-    Routes,
     Route,
     useLocation,
     useNavigate,
     UNSAFE_NavigationContext,
 } from 'react-router-dom';
+import { ActivityRouteHost } from '../../os/components/ActivityRouteHost';
 import { useAppNavigationHandler } from '../../os/hooks/useAppNavigationHandler';
 import { AppNavigatorRegistry } from '../../os/AppNavigatorRegistry';
 import { useActivityContext } from '../../os/ActivityContext';
@@ -107,7 +107,8 @@ const SmsApp: React.FC = () => {
             <MemoryRouter>
                 <SmsNavigationHandler />
                 <div className="h-full w-full bg-app-bg">
-                    <Routes>
+                    {/* Pages below the top stay as they were left (Fragment back stack), see ActivityRouteHost. */}
+                    <ActivityRouteHost>
                         <Route path="/" element={<ConversationListPage />} />
                         <Route path="/new" element={<NewMessagePage />} />
                         <Route path="/conversation/:conversationId" element={<ConversationDetailPage />} />
@@ -116,7 +117,7 @@ const SmsApp: React.FC = () => {
                         <Route path="/settings/advanced" element={<AdvancedSettingsPage />} />
                         <Route path="/settings/5g-message" element={<FiveGMessagePage />} />
                         <Route path="/settings/*" element={<SettingsPlaceholderPage />} />
-                    </Routes>
+                    </ActivityRouteHost>
                 </div>
             </MemoryRouter>
         </div>

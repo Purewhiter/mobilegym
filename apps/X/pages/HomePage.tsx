@@ -49,7 +49,12 @@ export const HomePage: React.FC<{ isActive?: boolean }> = ({ isActive = true }) 
     getItemKey: (index, item) => item.id || `post-${index}`,
   });
 
+  // A new tab starts at the top. Only a real tab change: the page kept on the back stack
+  // (ActivityRouteHost) runs this effect again when shown, and must stay where it was left.
+  const shownTabRef = useRef(activeTab);
   useEffect(() => {
+    if (shownTabRef.current === activeTab) return;
+    shownTabRef.current = activeTab;
     parentRef.current?.scrollTo({ top: 0 });
     virtualizer.scrollToOffset(0);
   }, [activeTab, parentRef, virtualizer]);

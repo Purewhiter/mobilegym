@@ -10,7 +10,7 @@ import { stringsEn } from '../res/strings.en';
 import { useAppStrings } from '@/os/useAppStrings';
 import { routes } from '../routes';
 import { usePageDialog } from '../hooks/usePageDialog';
-import { useTimedToast } from '../hooks/useTimedToast';
+import { useTimedToast } from '../../../os/hooks/useTimedToast';
 
 export const WifiSavedNetworksPage: React.FC<{ title: string }> = ({ title }) => {
   const { bindNav } = useNavGestures();

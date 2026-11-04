@@ -1,7 +1,9 @@
 import { useTencentMeetingStrings } from './hooks/useTencentMeetingStrings';
 
 import React, { useCallback, useEffect, useState } from 'react';
-import { MemoryRouter, Route, Routes, useLocation, Outlet } from 'react-router-dom';
+import { MemoryRouter, Route, useLocation, Outlet } from 'react-router-dom';
+import { RouteScrollContainer } from '../../os/components/RouteScrollContainer';
+import { ActivityRouteHost } from '../../os/components/ActivityRouteHost';
 import { useAppNavigationHandler } from '../../os/hooks/useAppNavigationHandler';
 
 import { HomePage } from './pages/HomePage';
@@ -86,29 +88,23 @@ const TabBar = () => {
     );
 };
 
+/** The main tabs: one instance each, kept while you are on another tab (ActivityRouteHost). */
+const MAIN_TAB_PATHS = ['/', '/contacts', '/me'] as const;
+
 const Layout = () => {
     const { pathname } = useLocation();
-    
-    // Show home page for root path
-    const showHome = pathname === '/';
-    const isMainTab = ['/', '/contacts', '/me'].includes(pathname);
-    
+    const isMainTab = (MAIN_TAB_PATHS as readonly string[]).includes(pathname);
+
     return (
         <div className="flex flex-col h-full bg-white select-none">
             <div className="flex-1 overflow-hidden relative">
-                {/* Main Tabs (Persistent) */}
-                <div style={{ display: showHome ? 'block' : 'none' }} className="h-full overflow-auto no-scrollbar">
-                    <HomePage />
-                </div>
-                <div style={{ display: pathname === '/contacts' ? 'block' : 'none' }} className="h-full overflow-auto no-scrollbar">
-                    <ContactsPage />
-                </div>
-                <div style={{ display: pathname === '/me' ? 'block' : 'none' }} className="h-full overflow-auto no-scrollbar">
-                    <MePage />
-                </div>
-
-                {/* Sub-pages (Dynamic) */}
-                {!isMainTab && <Outlet />}
+                {isMainTab ? (
+                    <RouteScrollContainer className="h-full overflow-auto no-scrollbar">
+                        <Outlet />
+                    </RouteScrollContainer>
+                ) : (
+                    <Outlet />
+                )}
             </div>
 
             {/* Show TabBar if it's a main tab */}
@@ -137,12 +133,12 @@ export const MeetingApp: React.FC = () => {
         <div className="h-full w-full" style={cssVars as React.CSSProperties}>
             <MemoryRouter>
                 <MeetingNavigationHandler />
-                <Routes>
+                {/* Pages below the top stay as they were left (Fragment back stack), see ActivityRouteHost. */}
+                <ActivityRouteHost persistent={MAIN_TAB_PATHS}>
                     <Route path="/" element={<Layout />}>
-                        {/* Main logic handled in Layout, these routes are just for matching */}
-                        <Route index element={<div />} />
-                        <Route path="contacts" element={<div />} />
-                        <Route path="me" element={<div />} />
+                        <Route index element={<HomePage />} />
+                        <Route path="contacts" element={<ContactsPage />} />
+                        <Route path="me" element={<MePage />} />
 
                         {/* Sub pages */}
                         <Route path="join" element={<JoinMeetingPage />} />
@@ -164,7 +160,7 @@ export const MeetingApp: React.FC = () => {
                         {/* Messages (tab state via query params) */}
                         <Route path="messages" element={<MessagesPage />} />
                     </Route>
-                </Routes>
+                </ActivityRouteHost>
             </MemoryRouter>
         </div>
     );

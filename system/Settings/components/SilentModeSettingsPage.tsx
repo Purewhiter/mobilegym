@@ -11,7 +11,7 @@ import { subscribeOsDataRevision } from '../../../os/simState';
 import { strings } from '../res/strings';
 import { stringsEn } from '../res/strings.en';
 import { useAppStrings } from '@/os/useAppStrings';
-import { useTimedToast } from '../hooks/useTimedToast';
+import { useTimedToast } from '../../../os/hooks/useTimedToast';
 type RingMode = 'normal' | 'silent' | 'dnd';
 
 function getRingMode(): RingMode {

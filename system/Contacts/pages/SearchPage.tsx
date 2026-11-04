@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useTimedToast } from '../../../os/hooks/useTimedToast';
 import { Toast } from '@/os/components/Toast';
 import { useLocale } from '@/os/locale';
 import { useAppStrings } from '@/os/useAppStrings';
@@ -23,18 +24,7 @@ export const SearchPage: React.FC = () => {
 
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
-  const [toast, setToast] = useState<{ visible: boolean; message: string }>({ visible: false, message: '' });
-  const toastTimerRef = useRef<number | null>(null);
-
-  const showToast = (message: string) => {
-    setToast({ visible: true, message });
-    if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current);
-    toastTimerRef.current = window.setTimeout(() => setToast({ visible: false, message: '' }), 1400);
-  };
-
-  useEffect(() => () => {
-    if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current);
-  }, []);
+  const { toast, showToast } = useTimedToast(1400);
 
   useEffect(() => {
     const trimmedQuery = query.trim();

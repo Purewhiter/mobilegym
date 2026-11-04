@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useTimedToast } from '../../../os/hooks/useTimedToast';
 import { useParams, useSearchParams } from 'react-router-dom';
 import {
   IcNavBack,
@@ -105,8 +106,7 @@ export const NoteEditorPage: React.FC = () => {
   const reminderOpen = sheet === 'reminder';
   const deleteForeverOpen = searchParams.get('dialog') === 'deleteForever';
 
-  const [toast, setToast] = useState({ message: '', visible: false });
-  const toastTimerRef = useRef<number | null>(null);
+  const { toast, showToast } = useTimedToast();
   const saveTimerRef = useRef<number | null>(null);
   const isFirstLoadRef = useRef(true);
   const initTimestampRef = useRef(0);
@@ -115,12 +115,6 @@ export const NoteEditorPage: React.FC = () => {
   const isLocked = !!existing?.locked;
   const isTrashed = !!existing?.trashedAt;
   const isPrivate = !!existing?.isPrivate;
-
-  const showToast = (message: string) => {
-    setToast({ message, visible: true });
-    if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current);
-    toastTimerRef.current = window.setTimeout(() => setToast({ message: '', visible: false }), 1600);
-  };
 
   // Init from route
   useEffect(() => {
@@ -204,7 +198,6 @@ export const NoteEditorPage: React.FC = () => {
 
   useEffect(() => {
     return () => {
-      if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current);
       if (saveTimerRef.current) window.clearTimeout(saveTimerRef.current);
     };
   }, []);

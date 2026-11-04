@@ -7,7 +7,8 @@ import { colors, colorsDark } from './res/colors';
 import { colorStates, colorStatesDark } from './res/colors.states';
 import { anim } from './res/anim';
 import { dimens } from './res/dimens';
-import { MemoryRouter, Routes, Route, useLocation, useNavigate, Outlet, UNSAFE_NavigationContext, useSearchParams } from 'react-router-dom';
+import { MemoryRouter, Route, useLocation, useNavigate, Outlet, UNSAFE_NavigationContext, useSearchParams } from 'react-router-dom';
+import { ActivityRouteHost } from '../../os/components/ActivityRouteHost';
 import { useAppNavigationHandler } from '../../os/hooks/useAppNavigationHandler';
 import { IcTabHome, IcTabFollowing, IcTabPublish, IcTabShop, IcTabMe } from './res/icons';
 import { useBilibiliGestures } from './hooks/useBilibiliGestures';
@@ -100,6 +101,21 @@ const TabBarItem = ({ active, icon: Icon, label, isBig = false, ...props }: any)
     </div>
 );
 
+/** The main tabs: one instance each, kept while you are on another tab (ActivityRouteHost). */
+const MAIN_TAB_PATHS = ['/', '/following', '/shop', '/me'] as const;
+
+/** The following page's last sub-tab, shared by every page instance's tab bar. */
+const FollowingTabMemory = React.createContext<{
+    lastFollowingTab: 'all' | 'video';
+    setLastFollowingTab: (tab: 'all' | 'video') => void;
+}>({ lastFollowingTab: 'all', setLastFollowingTab: () => {} });
+
+/** Home reads its own ?tab: each page instance renders its own location. */
+const HomeRoute = () => {
+    const [searchParams] = useSearchParams();
+    return <HomePage activeTab={searchParams.get('tab') || 'recommend'} />;
+};
+
 const Layout = () => {
     const { pathname } = useLocation();
     const [searchParams] = useSearchParams();
@@ -129,52 +145,28 @@ const Layout = () => {
 
     const isMainTab = isHome || isFollowing || isShop || isMe;
 
-    // 获取当前首页的 tab 参数（仅在 Home 路由时有效）
-    // Layout 会保持多个主 Tab 页常驻挂载，因此不能直接把当前 location 的 ?tab 传给 HomePage
-    // （否则会被 /following?tab=all 等污染）。
-    const homeTabParam = searchParams.get('tab') || 'recommend';
-    const [lastHomeTab, setLastHomeTab] = React.useState(homeTabParam);
-    useEffect(() => {
-        if (isHome) {
-            setLastHomeTab(homeTabParam);
-        }
-    }, [isHome, homeTabParam]);
-
     // 关注页内部 Tab 记忆：
     // - 默认进入 “全部”
     // - 若用户在关注页切到 “视频”，再去别的主 Tab（如“我的”）再回来，应恢复为 “视频”
-    // - 注意：不要被 Home 的 ?tab=recommend 等污染，因此仅在 isFollowing 时更新
-    const followingTabParamRaw = searchParams.get('tab');
-    const followingTabParam = followingTabParamRaw === 'video' ? 'video' : 'all';
-    const [lastFollowingTab, setLastFollowingTab] = React.useState<'all' | 'video'>('all');
+    // - 每个页面实例有自己的 Layout（ActivityRouteHost），记忆放在 host 外的 context 里；
+    //   只有正在显示的关注页更新它（隐藏实例的 effect 已清理）
+    const followingTabParam = searchParams.get('tab') === 'video' ? 'video' : 'all';
+    const { lastFollowingTab, setLastFollowingTab } = React.useContext(FollowingTabMemory);
     useEffect(() => {
         if (isFollowing) {
             setLastFollowingTab(followingTabParam);
         }
-    }, [isFollowing, followingTabParam]);
+    }, [isFollowing, followingTabParam, setLastFollowingTab]);
 
     return (
         <div className="flex flex-col h-full bg-app-bg text-app-text overflow-hidden">
-            {/* Content Area */}
+            {/* Content Area: main tabs keep one instance each (ActivityRouteHost) */}
             <div className="flex-1 overflow-hidden relative">
-                {/* Persistent Views for Main Tabs */}
-                {/* We use display:none to keep them mounted */}
-                <div style={{ display: isHome ? 'block' : 'none', height: '100%' }}>
-                    <HomePage activeTab={lastHomeTab} />
-                </div>
-                <div style={{ display: isFollowing ? 'block' : 'none', height: '100%' }}>
-                    <FollowingPage />
-                </div>
-                <div style={{ display: isShop ? 'block' : 'none', height: '100%' }}>
-                    <ShopPage />
-                </div>
-                <div style={{ display: isMe ? 'block' : 'none', height: '100%' }}>
-                    <MePage />
-                </div>
-
-                {/* Sub-pages rendered via Outlet */}
-                {/* When not on a main tab, the above divs are hidden, and Outlet takes over */}
-                {!isMainTab && (
+                {isMainTab ? (
+                    <div style={{ height: '100%' }}>
+                        <Outlet />
+                    </div>
+                ) : (
                     <div className="absolute inset-0 bg-white z-10 w-full h-full">
                         <Outlet />
                     </div>
@@ -218,6 +210,8 @@ const Layout = () => {
 
 export const BilibiliApp: React.FC = () => {
     const { isDark } = useDarkMode();
+    const [lastFollowingTab, setLastFollowingTab] = React.useState<'all' | 'video'>('all');
+    const followingTabMemory = React.useMemo(() => ({ lastFollowingTab, setLastFollowingTab }), [lastFollowingTab]);
     const themeColors = isDark
         ? { ...manifest.theme.colors, ...(manifest.theme.colorsDark ?? {}) }
         : manifest.theme.colors;
@@ -234,14 +228,14 @@ export const BilibiliApp: React.FC = () => {
         <div className="h-full w-full" style={cssVars as React.CSSProperties}>
             <MemoryRouter initialEntries={['/?tab=recommend']}>
                 <BilibiliNavigationHandler />
-                <Routes>
+                <FollowingTabMemory.Provider value={followingTabMemory}>
+                {/* Pages below the top stay as they were left (Fragment back stack), see ActivityRouteHost. */}
+                <ActivityRouteHost persistent={MAIN_TAB_PATHS}>
                     <Route path="/" element={<Layout />}>
-                        {/* Main Tab Routes - These are effectively handled by Layout's persistent views,
-                            but we need Route definitions to match the path. Element can be empty/null because Layout renders the component manually. */}
-                        <Route index element={null} />
-                        <Route path="following" element={null} />
-                        <Route path="shop" element={null} />
-                        <Route path="me" element={null} />
+                        <Route index element={<HomeRoute />} />
+                        <Route path="following" element={<FollowingPage />} />
+                        <Route path="shop" element={<ShopPage />} />
+                        <Route path="me" element={<MePage />} />
 
                         {/* Sub Pages - Dynamically mounted/unmounted via Outlet */}
                         <Route path="search" element={<SearchPage />} />
@@ -297,7 +291,8 @@ export const BilibiliApp: React.FC = () => {
                         <Route path="settings/timer" element={<SettingsTimerPage />} />
                         <Route path="settings/sleep" element={<SettingsSleepPage />} />
                     </Route>
-                </Routes>
+                </ActivityRouteHost>
+                </FollowingTabMemory.Provider>
             </MemoryRouter>
         </div>
     );

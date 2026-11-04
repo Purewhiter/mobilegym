@@ -71,6 +71,7 @@ const ProfilePostImageCarousel: React.FC<{ images: string[] }> = ({ images }) =>
 
   React.useEffect(() => () => {
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    rafRef.current = 0; // also on hide (back stack): scrolling must work again when shown
   }, []);
 
   return (

@@ -10,7 +10,8 @@
  * - Multi-select mode for batch operations
  */
 import React, { useCallback, useState, useEffect, useMemo, useRef, useSyncExternalStore } from 'react';
-import { MemoryRouter, Routes, Route, useParams, useLocation, useNavigate, UNSAFE_NavigationContext } from 'react-router-dom';
+import { MemoryRouter, Route, useParams, useLocation, useNavigate, UNSAFE_NavigationContext } from 'react-router-dom';
+import { ActivityRouteHost } from '../../os/components/ActivityRouteHost';
 import { AppNavigatorRegistry } from '../../os/AppNavigatorRegistry';
 import {
   IcNavBack, IcNavForward, IcClose,
@@ -1806,14 +1807,15 @@ export const GalleryApp: React.FC = () => {
           scrollbar-width: none;
         }
       `}</style>
-      <Routes>
+      {/* Pages below the top stay as they were left (Fragment back stack), see ActivityRouteHost. */}
+      <ActivityRouteHost persistent={['/', '/albums']}>
         <Route path="/" element={<HomePage />} />
         <Route path="/albums" element={<HomePage />} />
         <Route path="/favorites" element={<FavoritesPage />} />
         <Route path="/album/:albumId" element={<AlbumDetailPage />} />
         <Route path="/intent/view" element={<PhotoViewerPage />} />
         <Route path="/photo/:path" element={<PhotoViewerPage />} />
-      </Routes>
+      </ActivityRouteHost>
     </MemoryRouter>
     </div>
   );

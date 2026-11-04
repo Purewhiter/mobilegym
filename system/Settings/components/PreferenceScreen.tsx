@@ -29,7 +29,7 @@ import { useSettingsStrings } from '../res/useSettingsStrings';
 import { useSettingsStore, selectPagesData, selectPagesLoading, selectPagesError } from '../state';
 import { useSettingsGestures } from '../hooks/useSettingsGestures';
 import { routes } from '../routes';
-import { useTimedToast } from '../hooks/useTimedToast';
+import { useTimedToast } from '../../../os/hooks/useTimedToast';
 
 const PAGE_ID_ALIASES: Record<string, { targetId: string; title?: string }> = {
   // System: this page is built dynamically; we reuse a close static screen.

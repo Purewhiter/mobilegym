@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { MemoryRouter, Route, Routes, useLocation, useParams } from 'react-router-dom';
+import { MemoryRouter, Route, useLocation, useParams } from 'react-router-dom';
+import { ActivityRouteHost } from '../../os/components/ActivityRouteHost';
 import { IcNavBack, IcLoading } from './res/icons';
 import { useTheme } from '../../os/ThemeContext';
 import type { ThemeMeta } from '../../os/ThemeService';
@@ -416,10 +417,11 @@ const ThemeStoreApp: React.FC = () => {
     <div className="h-full w-full" style={cssVars as React.CSSProperties}>
       <MemoryRouter>
         <ThemeStoreNavigationHandler />
-        <Routes>
+        {/* Pages below the top stay as they were left (Fragment back stack), see ActivityRouteHost. */}
+        <ActivityRouteHost>
           <Route path="/" element={<ThemeStoreHomePage />} />
           <Route path="/item/:kind/:id" element={<StoreItemDetailPage />} />
-        </Routes>
+        </ActivityRouteHost>
       </MemoryRouter>
     </div>
   );

@@ -16,7 +16,7 @@ import { strings } from '../res/strings';
 import { stringsEn } from '../res/strings.en';
 import { useAppStrings } from '@/os/useAppStrings';
 import { routes } from '../routes';
-import { useTimedToast } from '../hooks/useTimedToast';
+import { useTimedToast } from '../../../os/hooks/useTimedToast';
 function bandLabel(freqMHz: number): string {
   if (!Number.isFinite(freqMHz)) return '';
   if (freqMHz >= 4900) return '5G';

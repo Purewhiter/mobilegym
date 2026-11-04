@@ -16,7 +16,7 @@ import { stringsEn } from '../res/strings.en';
 import { useAppStrings } from '@/os/useAppStrings';
 import { useSettingsGestures } from '../hooks/useSettingsGestures';
 import { routes } from '../routes';
-import { useTimedToast } from '../hooks/useTimedToast';
+import { useTimedToast } from '../../../os/hooks/useTimedToast';
 export const BluetoothDevicesPage: React.FC = () => {
   const { bindNav } = useSettingsGestures();
   const s = useAppStrings(strings, stringsEn);

@@ -93,7 +93,13 @@ export function XVideo({ src, poster, className, active = true, autoLoad = false
   const referrerPolicy = src?.includes('twimg.com') && !useProxy ? 'no-referrer' : undefined;
   const containerClassName = ['relative w-full overflow-hidden bg-app-bg', className].filter(Boolean).join(' ');
 
+  // Only a new source resets the player: a page kept on the back stack (ActivityRouteHost)
+  // runs its effects again when shown, and should come back as it was left.
+  const sourceRef = React.useRef<string | null>(null);
   React.useEffect(() => {
+    const source = `${src}|${poster}|${autoLoad}`;
+    if (sourceRef.current === source) return;
+    sourceRef.current = source;
     setHasError(false);
     setLoaded(autoLoad);
     setUseProxy(false);

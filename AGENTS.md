@@ -144,6 +144,7 @@ Convention details:
 - Only tag controls that actually do something — no tags on unimplemented placeholders
 - Scrollable containers need `data-scroll-container` + `data-scroll-direction` attributes
 - A layout scroller around routed pages (`<Outlet />` / `<Routes>`) must be `os/components/RouteScrollContainer` (new page starts at top, back restores, `rememberPaths` for main tabs); a plain div lets pages inherit each other's scroll position, which varies with frame timing
+- An App's routed pages go in `os/components/ActivityRouteHost` (drop-in for `<Routes>`, main tabs in `persistent`): pages below the top of the back stack stay mounted but hidden, and run their effects again when shown, so effects must be safe to repeat and visible UI must not wait on timers an effect cleanup clears. Rules in `docs/platform/app/module-contract.md`
 
 ### State and Data
 

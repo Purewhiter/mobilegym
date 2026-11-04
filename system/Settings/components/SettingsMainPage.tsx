@@ -11,7 +11,7 @@ import { ChevronRightIcon } from '../res/icons';
 import { useSettingsGestures } from '../hooks/useSettingsGestures';
 import { useLocale } from '../../../os/locale';
 import { routes } from '../routes';
-import { useTimedToast } from '../hooks/useTimedToast';
+import { useTimedToast } from '../../../os/hooks/useTimedToast';
 /** Mock dynamic summaries for certain items */
 const DYNAMIC_SUMMARY_KEYS: Record<string, string> = {
   mi_account_settings: 'mi_account_settings_summary',

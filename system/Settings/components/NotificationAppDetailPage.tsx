@@ -13,7 +13,7 @@ import type { AppManifest } from '../../../os/types/manifest';
 import { strings } from '../res/strings';
 import { stringsEn } from '../res/strings.en';
 import { useAppStrings } from '@/os/useAppStrings';
-import { useTimedToast } from '../hooks/useTimedToast';
+import { useTimedToast } from '../../../os/hooks/useTimedToast';
 function prefKey(appId: string, field: string): string {
   return `notif.app.${appId}.${field}`;
 }

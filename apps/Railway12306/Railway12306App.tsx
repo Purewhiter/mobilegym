@@ -1,9 +1,15 @@
 import React, { useCallback, useEffect, useRef } from 'react';
 import { RouteScrollContainer } from '../../os/components/RouteScrollContainer';
 import {
-  MemoryRouter, Routes, Route, Navigate, useLocation, useNavigate, Outlet,
+  MemoryRouter,
+  Route,
+  Navigate,
+  useLocation,
+  useNavigate,
+  Outlet,
   UNSAFE_NavigationContext,
 } from 'react-router-dom';
+import { ActivityRouteHost } from '../../os/components/ActivityRouteHost';
 import { useNav } from '../../os/navigation';
 import { useRailwayGestures } from './hooks/useRailwayGestures';
 import { useAppNavigationHandler } from '../../os/hooks/useAppNavigationHandler';
@@ -196,37 +202,11 @@ const Layout: React.FC = () => {
   return (
     <div className="relative w-full h-full bg-app-bg flex flex-col overflow-hidden">
       <div className="flex-1 relative w-full overflow-hidden">
-        {pathname === '/' && (
-          <div data-scroll-container="main" data-scroll-direction="vertical" className="h-full overflow-y-auto no-scrollbar">
-            <HomePage />
-          </div>
-        )}
-        {pathname === '/travel' && (
-          <div data-scroll-container="main" data-scroll-direction="vertical" className="h-full overflow-y-auto no-scrollbar">
-            <TravelServicePage />
-          </div>
-        )}
-        {pathname === '/orders' && (
-          <div data-scroll-container="main" data-scroll-direction="vertical" className="h-full overflow-y-auto no-scrollbar">
-            <OrdersPage />
-          </div>
-        )}
-        {pathname === '/member' && (
-          <div data-scroll-container="main" data-scroll-direction="vertical" className="h-full overflow-y-auto no-scrollbar">
-            <MemberPage />
-          </div>
-        )}
-        {pathname === '/my' && (
-          <div data-scroll-container="main" data-scroll-direction="vertical" className="h-full overflow-y-auto no-scrollbar">
-            <MyPage />
-          </div>
-        )}
-
-        {!isMainTab && (
-          <RouteScrollContainer className="h-full overflow-y-auto no-scrollbar">
-            <Outlet />
-          </RouteScrollContainer>
-        )}
+        {/* Each page instance renders its own layout (ActivityRouteHost): sub-pages stay on the
+            back stack; main tabs are rebuilt on every switch, as before. */}
+        <RouteScrollContainer className="h-full overflow-y-auto no-scrollbar">
+          <Outlet />
+        </RouteScrollContainer>
       </div>
 
       {isMainTab && <TabBar />}
@@ -260,18 +240,19 @@ const Railway12306App: React.FC = () => {
       <div className="w-full h-full overflow-hidden">
         <MemoryRouter>
           <RailwayNavigationHandler />
-          <Routes>
+          {/* Pages below the top stay as they were left (Fragment back stack), see ActivityRouteHost. */}
+          <ActivityRouteHost>
             <Route path="/auth/login" element={<RailwayLoginPage />} />
             <Route path="/auth/register" element={<RailwayRegisterPage />} />
             <Route path="/auth/register-verify" element={<RegisterVerifyPage />} />
             <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/" element={<AuthGuard><Layout /></AuthGuard>}>
-              {/* Main tab routes (rendered conditionally in Layout, Route entries suppress "No routes matched" warnings) */}
-              <Route index element={null} />
-              <Route path="travel" element={null} />
-              <Route path="orders" element={null} />
-              <Route path="member" element={null} />
-              <Route path="my" element={null} />
+              {/* Main tabs */}
+              <Route index element={<HomePage />} />
+              <Route path="travel" element={<TravelServicePage />} />
+              <Route path="orders" element={<OrdersPage />} />
+              <Route path="member" element={<MemberPage />} />
+              <Route path="my" element={<MyPage />} />
               <Route path="station-select" element={<StationSelectPage />} />
               <Route path="date-select" element={<DateSelectPage />} />
               <Route path="query-result" element={<QueryResultPage />} />
@@ -312,7 +293,7 @@ const Railway12306App: React.FC = () => {
               <Route path="refund-success" element={<RefundSuccessPage />} />
               <Route path="order-detail" element={<OrderDetailPage />} />
             </Route>
-          </Routes>
+          </ActivityRouteHost>
         </MemoryRouter>
       </div>
     </div>

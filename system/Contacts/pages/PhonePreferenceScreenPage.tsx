@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
+import { useTimedToast } from '../../../os/hooks/useTimedToast';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { Toast } from '@/os/components/Toast';
 import { useLocale } from '@/os/locale';
@@ -255,17 +256,7 @@ const Inner: React.FC = () => {
   const rawPage = pageId ? PHONE_SETTINGS_PAGES[pageId] : undefined;
   const page = useMemo(() => localizePhoneSettingsPage(rawPage, locale), [locale, rawPage]);
 
-  const [toast, setToast] = useState<{ visible: boolean; message: string }>({ visible: false, message: '' });
-  const toastTimerRef = useRef<number | null>(null);
-  const showToast = (message: string) => {
-    setToast({ visible: true, message });
-    if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current);
-    toastTimerRef.current = window.setTimeout(() => setToast({ visible: false, message: '' }), 1600);
-  };
-
-  useEffect(() => () => {
-    if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current);
-  }, []);
+  const { toast, showToast } = useTimedToast(1600);
 
   const title = page?.title || (pageId ? getPhoneSettingsPageTitle(pageId, locale) : s.settings_calls_title);
 
