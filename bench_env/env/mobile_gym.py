@@ -11,6 +11,7 @@ import hashlib
 import json as json_mod
 import logging
 import random
+import shutil
 from pathlib import Path
 from typing import Any, Optional, Tuple, Union
 from urllib.parse import urlencode
@@ -35,6 +36,14 @@ def _env_message(env: "MobileGymEnv", message: str) -> str:
 
 def _log_env_info(env: "MobileGymEnv", message: str) -> None:
     logger.info(_env_message(env, message))
+
+
+def _dev_shm_bytes() -> int:
+    """Size of /dev/shm, 0 where there is none (macOS, Windows)."""
+    try:
+        return shutil.disk_usage("/dev/shm").total
+    except OSError:
+        return 0
 
 
 def _log_env_debug(env: "MobileGymEnv", message: str) -> None:
@@ -555,6 +564,12 @@ class MobileGymEnv(BaseMobileEnv):
                 # jump 1 CSS px across tasks and replay screenshots differ.
                 "--disable-font-subpixel-positioning",
             ]
+            # Playwright passes --disable-dev-shm-usage (for Docker's 64 MB /dev/shm), which
+            # moves Chromium's shared memory files to /tmp. Many browsers starting at once
+            # can fill a small /tmp disk, and every renderer on the machine then dies in
+            # the same second (SIGTRAP). Keep /dev/shm when it is big enough.
+            if _dev_shm_bytes() >= 4 << 30:
+                launch_args["ignore_default_args"] = ["--disable-dev-shm-usage"]
         if proxy:
             launch_args["proxy"] = {"server": proxy}
         return launch_args
