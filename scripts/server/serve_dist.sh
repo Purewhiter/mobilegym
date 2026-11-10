@@ -31,9 +31,15 @@ cd "$ROOT_DIR" || exit 1
 
 DIST_INDEX="$ROOT_DIR/dist/index.html"
 
-# mtime in epoch seconds: BSD stat (macOS) first, then GNU stat (Linux)
+# mtime in epoch seconds. Detect GNU vs BSD first: on GNU/Linux,
+# `stat -f %m FILE` still writes stdout (treating %m as a filename) before
+# exiting non-zero, which would pollute dist_ts if we fell through with ||.
 file_mtime() {
-    stat -f %m "$1" 2>/dev/null || stat -c %Y "$1" 2>/dev/null
+    if stat --version >/dev/null 2>&1; then
+        stat -c %Y "$1" 2>/dev/null
+    else
+        stat -f %m "$1" 2>/dev/null
+    fi
 }
 
 needs_build=0

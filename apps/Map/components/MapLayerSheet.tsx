@@ -1,5 +1,6 @@
 import React from 'react';
 import { IcClose, IcMap, IcBus, IcBike, TrafficInfoIcon } from '../res/icons';
+import { useMapBackHandler } from '../hooks/useMapBackHandler';
 import { useMapStrings } from '../hooks/useMapStrings';
 
 /** hybrid = 卫星影像 + 道路与 POI 标注（对应客户端「卫星」开关的常见效果） */
@@ -168,8 +169,18 @@ export const MapLayerSheet: React.FC<MapLayerSheetProps> = ({
 }) => {
   const s = useMapStrings();
 
-  // 弹窗可见性由 URL (?layers=open) 驱动：系统返回键 pop 掉该 history 条目即自动关闭，
-  // 无需再注册自定义 back handler。
+  // URL (?layers=open) drives visibility, but MapNavigationHandler runs
+  // dispatchMapBackHandlers() before history back(). A lower-priority sheet
+  // (e.g. PlaceResultsSheet at 400) would otherwise consume Back first and
+  // leave ?layers=open stuck. Register above those overlays while open.
+  useMapBackHandler(
+    () => {
+      onClose();
+      return true;
+    },
+    { enabled: open, priority: 900, scope: 'any' },
+  );
+
   if (!open) return null;
 
   return (

@@ -28,8 +28,10 @@ class HumanAgent(BaseAgent):
     - Type 'c' or 'continue': Continue to next step (for step-by-step mode)
     - Type 'a <text>' or 'answer <text>': Submit ANSWER without ending task
 
-    Action commands (drive the device from the terminal / a piped stdin,
-    coordinates in screenshot pixel space, same convention as LLM agents):
+    Action commands (drive the device from the terminal / a piped stdin).
+    Pointer coordinates are screenshot pixels; they are converted to the
+    default env ``norm_0_1000`` space using ``config.screen_size`` (which
+    must match the emitted screenshot, including CSS wire-scale mode):
     - 't x y'            CLICK at (x, y)
     - 'dt x y'           DOUBLE_TAP at (x, y)
     - 'lp x y'           LONG_PRESS at (x, y)
@@ -113,7 +115,10 @@ class HumanAgent(BaseAgent):
                 data={"value": 0.1},
             )
 
-        parsed = self._parse_action_command(raw_input)
+        parsed = self._parse_action_command(
+            raw_input,
+            screen_size=self.config.screen_size,
+        )
         if parsed is not None:
             print(f"[Human] {parsed.action_type.value}: {parsed.data}")
             return parsed
@@ -128,9 +133,28 @@ class HumanAgent(BaseAgent):
         )
 
     @staticmethod
-    def _parse_action_command(raw: str) -> Action | None:
+    def _pixels_to_norm(point: list[int], screen_size: tuple[int, int]) -> list[int]:
+        """Convert screenshot-pixel coordinates to env ``norm_0_1000``."""
+        width, height = screen_size
+        if width <= 0 or height <= 0:
+            raise ValueError(f"Invalid screen_size: {screen_size}")
+        x, y = point
+        return [
+            max(0, min(999, int(round(x / width * 1000)))),
+            max(0, min(999, int(round(y / height * 1000)))),
+        ]
+
+    @staticmethod
+    def _parse_action_command(
+        raw: str,
+        screen_size: tuple[int, int] = (1080, 2400),
+    ) -> Action | None:
         """Parse a terminal action command into an Action, or None if it is
-        not an action command (falls through to the COMPLETE default)."""
+        not an action command (falls through to the COMPLETE default).
+
+        Pointer commands accept screenshot pixels and emit ``norm_0_1000``
+        points so the default CLI environment interprets them correctly.
+        """
         parts = raw.split()
         if not parts:
             return None
@@ -144,18 +168,26 @@ class HumanAgent(BaseAgent):
             except ValueError:
                 return None
 
+        def norm_point(px: list[int]) -> list[int]:
+            return HumanAgent._pixels_to_norm(px, screen_size)
+
         if cmd == 't' and (p := ints(2)):
-            return Action(ActionType.CLICK, {"point": p}, summary=f"Human tap {p}")
+            n = norm_point(p)
+            return Action(ActionType.CLICK, {"point": n}, summary=f"Human tap {p} -> norm {n}")
         if cmd == 'dt' and (p := ints(2)):
-            return Action(ActionType.DOUBLE_TAP, {"point": p}, summary=f"Human double-tap {p}")
+            n = norm_point(p)
+            return Action(ActionType.DOUBLE_TAP, {"point": n}, summary=f"Human double-tap {p} -> norm {n}")
         if cmd == 'lp' and (p := ints(2)):
-            return Action(ActionType.LONG_PRESS, {"point": p}, summary=f"Human long-press {p}")
+            n = norm_point(p)
+            return Action(ActionType.LONG_PRESS, {"point": n}, summary=f"Human long-press {p} -> norm {n}")
         if cmd == 's' and (p := ints(4)):
-            return Action(ActionType.SWIPE, {"point1": p[:2], "point2": p[2:]},
-                          summary=f"Human swipe {p[:2]} -> {p[2:]}")
+            n1, n2 = norm_point(p[:2]), norm_point(p[2:])
+            return Action(ActionType.SWIPE, {"point1": n1, "point2": n2},
+                          summary=f"Human swipe {p[:2]} -> {p[2:]} (norm {n1} -> {n2})")
         if cmd == 'd' and (p := ints(4)):
-            return Action(ActionType.DRAG, {"point1": p[:2], "point2": p[2:]},
-                          summary=f"Human drag {p[:2]} -> {p[2:]}")
+            n1, n2 = norm_point(p[:2]), norm_point(p[2:])
+            return Action(ActionType.DRAG, {"point1": n1, "point2": n2},
+                          summary=f"Human drag {p[:2]} -> {p[2:]} (norm {n1} -> {n2})")
         if cmd == 'i':
             text = raw[len(parts[0]):].strip()
             return Action(ActionType.TYPE, {"value": text}, summary=f"Human type: {text}")

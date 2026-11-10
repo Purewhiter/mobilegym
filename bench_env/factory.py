@@ -54,9 +54,22 @@ def create_agent(config: ConfigType, llm: Any = None) -> Any:
     
     agent_cls = get_agent_class(agent_name)
 
+    physical_size = tuple(getattr(config, "physical_size", (1080, 2400)))
+    # Agent coordinate parsers (e.g. UI-TARS smart_resize) must match the
+    # screenshot the model actually sees. CSS wire scale emits the CSS
+    # viewport (physical / device_scale_factor), not the physical framebuffer.
+    wire_scale = getattr(config, "screenshot_wire_scale", "device") or "device"
+    if wire_scale == "css":
+        dpr = float(getattr(config, "device_scale_factor", 3) or 3)
+        if dpr <= 0:
+            raise ValueError(f"device_scale_factor must be > 0, got {dpr}")
+        screen_size = (int(physical_size[0] / dpr), int(physical_size[1] / dpr))
+    else:
+        screen_size = physical_size
+
     # Human agent 不需要 LLM
     if agent_cls is HumanAgent:
-        return agent_cls(AgentConfig(verbose=verbose))
+        return agent_cls(AgentConfig(verbose=verbose, screen_size=screen_size))
 
     if llm is None:
         raise ValueError("LLM required for AI agents")
@@ -70,10 +83,9 @@ def create_agent(config: ConfigType, llm: Any = None) -> Any:
         model_args["max_tokens"] = config.max_tokens
 
     no_stream = getattr(config, "no_stream", False)
-    physical_size = getattr(config, "physical_size", (1080, 2400))
     agent_config = AgentConfig(
         model_args=model_args, verbose=verbose, stream=not no_stream,
-        screen_size=tuple(physical_size),
+        screen_size=screen_size,
     )
 
     return agent_cls(llm=llm, config=agent_config)
