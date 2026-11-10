@@ -69,7 +69,12 @@ def create_agent(config: ConfigType, llm: Any = None) -> Any:
 
     # Human agent 不需要 LLM
     if agent_cls is HumanAgent:
-        return agent_cls(AgentConfig(verbose=verbose, screen_size=screen_size))
+        return agent_cls(AgentConfig(
+            verbose=verbose,
+            screen_size=screen_size,
+            coord_space=getattr(config, "coord_space", "norm_0_1000"),
+            physical_size=tuple(physical_size),
+        ))
 
     if llm is None:
         raise ValueError("LLM required for AI agents")
@@ -134,6 +139,8 @@ async def create_env(config: ConfigType) -> Any:
         # Pixel 7 defaults (与 EnvPool 保持一致)
         # NOTE: physical_size = viewport_size × device_scale_factor，
         #       修改 viewport 或 scale 时须同步更新 physical_size
+        wire_scale = getattr(config, "screenshot_wire_scale", "device") or "device"
+        dpr = float(getattr(config, "device_scale_factor", 3) or 3)
         env = MobileGymEnv(
             url=env_url,
             headless=headless,
@@ -143,7 +150,8 @@ async def create_env(config: ConfigType) -> Any:
             verbose=verbose,
             viewport_size=(360, 800),
             physical_size=physical_size,
-            device_scale_factor=3,
+            device_scale_factor=dpr,
+            screenshot_wire_scale=wire_scale,
         )
         await env.start()
         return env

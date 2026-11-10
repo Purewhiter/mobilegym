@@ -55,7 +55,13 @@ class AgentConfig:
     verbose: bool = False
     stream: bool = True
     info_reply: Any = field(default_factory=lambda: _default_info_reply)
-    screen_size: tuple[int, int] = (1080, 2400)  # 设备物理分辨率（像素）
+    screen_size: tuple[int, int] = (1080, 2400)  # Screenshot pixel basis (matches wire scale)
+    # Environment coordinate contract the agent should emit into. Human pointer
+    # commands are always typed in screenshot pixels and converted to this space.
+    coord_space: str = "norm_0_1000"
+    # Physical framebuffer size used when coord_space == "physical" and the
+    # screenshot basis (screen_size) differs under CSS wire scale.
+    physical_size: tuple[int, int] = (1080, 2400)
 
 
 @dataclass

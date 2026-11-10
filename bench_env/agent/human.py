@@ -29,9 +29,10 @@ class HumanAgent(BaseAgent):
     - Type 'a <text>' or 'answer <text>': Submit ANSWER without ending task
 
     Action commands (drive the device from the terminal / a piped stdin).
-    Pointer coordinates are screenshot pixels; they are converted to the
-    default env ``norm_0_1000`` space using ``config.screen_size`` (which
-    must match the emitted screenshot, including CSS wire-scale mode):
+    Pointer coordinates are screenshot pixels relative to ``config.screen_size``
+    (must match the emitted screenshot, including CSS wire-scale mode). They
+    are converted to ``config.coord_space`` before the env sees them
+    (``norm_0_1000`` by default; ``physical`` / ``norm_0_1`` are preserved):
     - 't x y'            CLICK at (x, y)
     - 'dt x y'           DOUBLE_TAP at (x, y)
     - 'lp x y'           LONG_PRESS at (x, y)
@@ -118,6 +119,8 @@ class HumanAgent(BaseAgent):
         parsed = self._parse_action_command(
             raw_input,
             screen_size=self.config.screen_size,
+            coord_space=getattr(self.config, "coord_space", "norm_0_1000"),
+            physical_size=getattr(self.config, "physical_size", self.config.screen_size),
         )
         if parsed is not None:
             print(f"[Human] {parsed.action_type.value}: {parsed.data}")
@@ -145,15 +148,47 @@ class HumanAgent(BaseAgent):
         ]
 
     @staticmethod
+    def _convert_point(
+        point: list[int],
+        screen_size: tuple[int, int],
+        coord_space: str = "norm_0_1000",
+        physical_size: tuple[int, int] | None = None,
+    ) -> list[int] | list[float]:
+        """Convert screenshot-pixel coordinates into the env coordinate space."""
+        width, height = screen_size
+        if width <= 0 or height <= 0:
+            raise ValueError(f"Invalid screen_size: {screen_size}")
+        if coord_space == "norm_0_1000":
+            return HumanAgent._pixels_to_norm(point, screen_size)
+        if coord_space == "norm_0_1":
+            x, y = point
+            return [x / width, y / height]
+        if coord_space == "physical":
+            pw, ph = physical_size or screen_size
+            if pw <= 0 or ph <= 0:
+                raise ValueError(f"Invalid physical_size: {physical_size}")
+            x, y = point
+            return [
+                max(0, min(pw - 1, int(round(x / width * pw)))),
+                max(0, min(ph - 1, int(round(y / height * ph)))),
+            ]
+        raise ValueError(
+            f"Unsupported coord_space '{coord_space}'. "
+            f"Valid options: norm_0_1000, norm_0_1, physical"
+        )
+
+    @staticmethod
     def _parse_action_command(
         raw: str,
         screen_size: tuple[int, int] = (1080, 2400),
+        coord_space: str = "norm_0_1000",
+        physical_size: tuple[int, int] | None = None,
     ) -> Action | None:
         """Parse a terminal action command into an Action, or None if it is
         not an action command (falls through to the COMPLETE default).
 
-        Pointer commands accept screenshot pixels and emit ``norm_0_1000``
-        points so the default CLI environment interprets them correctly.
+        Pointer commands accept screenshot pixels and emit points in
+        ``coord_space`` so the paired environment interprets them correctly.
         """
         parts = raw.split()
         if not parts:
@@ -168,26 +203,31 @@ class HumanAgent(BaseAgent):
             except ValueError:
                 return None
 
-        def norm_point(px: list[int]) -> list[int]:
-            return HumanAgent._pixels_to_norm(px, screen_size)
+        def convert_point(px: list[int]):
+            return HumanAgent._convert_point(
+                px,
+                screen_size,
+                coord_space=coord_space,
+                physical_size=physical_size,
+            )
 
         if cmd == 't' and (p := ints(2)):
-            n = norm_point(p)
-            return Action(ActionType.CLICK, {"point": n}, summary=f"Human tap {p} -> norm {n}")
+            n = convert_point(p)
+            return Action(ActionType.CLICK, {"point": n}, summary=f"Human tap {p} -> {coord_space} {n}")
         if cmd == 'dt' and (p := ints(2)):
-            n = norm_point(p)
-            return Action(ActionType.DOUBLE_TAP, {"point": n}, summary=f"Human double-tap {p} -> norm {n}")
+            n = convert_point(p)
+            return Action(ActionType.DOUBLE_TAP, {"point": n}, summary=f"Human double-tap {p} -> {coord_space} {n}")
         if cmd == 'lp' and (p := ints(2)):
-            n = norm_point(p)
-            return Action(ActionType.LONG_PRESS, {"point": n}, summary=f"Human long-press {p} -> norm {n}")
+            n = convert_point(p)
+            return Action(ActionType.LONG_PRESS, {"point": n}, summary=f"Human long-press {p} -> {coord_space} {n}")
         if cmd == 's' and (p := ints(4)):
-            n1, n2 = norm_point(p[:2]), norm_point(p[2:])
+            n1, n2 = convert_point(p[:2]), convert_point(p[2:])
             return Action(ActionType.SWIPE, {"point1": n1, "point2": n2},
-                          summary=f"Human swipe {p[:2]} -> {p[2:]} (norm {n1} -> {n2})")
+                          summary=f"Human swipe {p[:2]} -> {p[2:]} ({coord_space} {n1} -> {n2})")
         if cmd == 'd' and (p := ints(4)):
-            n1, n2 = norm_point(p[:2]), norm_point(p[2:])
+            n1, n2 = convert_point(p[:2]), convert_point(p[2:])
             return Action(ActionType.DRAG, {"point1": n1, "point2": n2},
-                          summary=f"Human drag {p[:2]} -> {p[2:]} (norm {n1} -> {n2})")
+                          summary=f"Human drag {p[:2]} -> {p[2:]} ({coord_space} {n1} -> {n2})")
         if cmd == 'i':
             text = raw[len(parts[0]):].strip()
             return Action(ActionType.TYPE, {"value": text}, summary=f"Human type: {text}")

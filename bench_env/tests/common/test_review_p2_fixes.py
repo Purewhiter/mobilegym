@@ -1,4 +1,4 @@
-"""Regression coverage for the four P2 findings on PR #34 (2026-11-09 review)."""
+"""Regression coverage for P2 findings on PR #34 (2026-11-09 / 2026-11-10 reviews)."""
 
 from __future__ import annotations
 
@@ -8,6 +8,8 @@ import subprocess
 import textwrap
 from pathlib import Path
 
+from unittest.mock import AsyncMock, patch
+
 import pytest
 
 from bench_env.agent.base import AgentConfig
@@ -15,7 +17,7 @@ from bench_env.agent.human import HumanAgent
 from bench_env.agent.uitars import UITarsAgent
 from bench_env.config import RunnerConfig
 from bench_env.env.base import ActionType
-from bench_env.factory import create_agent
+from bench_env.factory import create_agent, create_env
 
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -171,3 +173,82 @@ def test_create_human_agent_gets_screen_size() -> None:
     agent = create_agent(config)
     assert isinstance(agent, HumanAgent)
     assert agent.config.screen_size == (360, 800)
+
+
+def test_human_physical_coord_space_preserves_screenshot_pixels() -> None:
+    """`--coord-space physical` must not force norm_0_1000 conversion."""
+    action = HumanAgent._parse_action_command(
+        "t 540 1200",
+        screen_size=(1080, 2400),
+        coord_space="physical",
+        physical_size=(1080, 2400),
+    )
+    assert action is not None
+    assert action.action_type == ActionType.CLICK
+    assert action.data["point"] == [540, 1200]
+
+
+def test_human_physical_coord_space_scales_css_screenshot_to_physical() -> None:
+    action = HumanAgent._parse_action_command(
+        "t 180 400",
+        screen_size=(360, 800),
+        coord_space="physical",
+        physical_size=(1080, 2400),
+    )
+    assert action is not None
+    assert action.data["point"] == [540, 1200]
+
+
+def test_create_human_agent_receives_coord_space() -> None:
+    config = RunnerConfig(
+        agent="human",
+        model_name="dummy",
+        physical_size=(1080, 2400),
+        coord_space="physical",
+        quiet=True,
+    )
+    agent = create_agent(config)
+    assert isinstance(agent, HumanAgent)
+    assert agent.config.coord_space == "physical"
+    assert agent.config.physical_size == (1080, 2400)
+    assert agent.config.screen_size == (1080, 2400)
+
+    action = HumanAgent._parse_action_command(
+        "t 540 1200",
+        screen_size=agent.config.screen_size,
+        coord_space=agent.config.coord_space,
+        physical_size=agent.config.physical_size,
+    )
+    assert action is not None
+    assert action.data["point"] == [540, 1200]
+
+
+@pytest.mark.asyncio
+async def test_create_env_forwards_css_wire_scale_for_api_path() -> None:
+    """SerialRunner.from_config / create_env must honor screenshot_wire_scale."""
+    config = RunnerConfig(
+        agent="uitars",
+        model_name="dummy",
+        physical_size=(1080, 2400),
+        screenshot_wire_scale="css",
+        quiet=True,
+    )
+
+    class _DummyLLM:
+        pass
+
+    agent = create_agent(config, llm=_DummyLLM())
+    assert agent.config.screen_size == (360, 800)
+
+    with patch("bench_env.env.MobileGymEnv.start", new_callable=AsyncMock) as start:
+        env = await create_env(config)
+        start.assert_awaited()
+
+    assert env.screenshot_wire_scale == "css"
+    assert env.physical_width == 1080
+    assert env.physical_height == 2400
+    # Agent basis matches CSS observation basis under the API path.
+    assert agent.config.screen_size == (
+        int(env.physical_width / env.dpr),
+        int(env.physical_height / env.dpr),
+    )
