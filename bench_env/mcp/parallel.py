@@ -125,7 +125,7 @@ async def run_parallel(args, selection: dict, client: str, extra_worker_args: Se
                     if result_is_error(result):
                         row = result
                         raise RuntimeError(result["execution"].get("error") or "Episode evaluation failed")
-                    if job["returncode"] or not client_exit.get("batch_complete"):
+                    if not client_exit.get("batch_complete"):
                         status = client_exit.get("batch_status", "incomplete")
                         raise RuntimeError(client_exit.get("error") or
                                            f"Batch ended with status {status} (client exit {job['returncode']})")

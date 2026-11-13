@@ -124,7 +124,7 @@ async def test_codex_retries_only_infrastructure_failures_in_fresh_sessions(tmp_
             pid = 1_000_000
 
             async def wait(self):
-                return 2 if lost_connection else 0
+                return 2 if lost_connection or task_id == "demo.abort" else 0
 
         return Process()
 
@@ -138,6 +138,9 @@ async def test_codex_retries_only_infrastructure_failures_in_fresh_sessions(tmp_
     rows = {r["id"]: r for r in map(json.loads, (directory / "results.jsonl").read_text().splitlines())}
     assert rows["demo.retry"]["is_success"]
     assert not rows["demo.abort"]["is_error"]
+    jobs = {j["task_id"]: j for j in json.loads((directory / "jobs.json").read_text())}
+    assert jobs["demo.abort"]["returncode"] == 2
+    assert jobs["demo.abort"]["status"] == "completed"
     assert rows["demo.budget"]["is_error"] and rows["demo.budget"]["max_steps"] == 45
     meta = json.loads((directory / "meta.json").read_text())
     assert meta["task_max_steps"] == {"demo.retry": 30, "demo.abort": 30, "demo.budget": 45}

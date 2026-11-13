@@ -33,8 +33,8 @@ from bench_env.mcp.protocol import (
     MODEL_RESPONSE_LOG_KIND, OBSERVATION_FORMAT, RESPONSE_FORMAT, THOUGHT_KIND,
     get_protocol, protocol_sha256,
 )
-from bench_env.runner.serial import SerialRunner
 from bench_env.metrics import result_is_error
+from bench_env.runner.serial import SerialRunner
 
 
 def render_view(view: dict) -> list[types.TextContent | types.ImageContent]:
@@ -107,6 +107,7 @@ async def serve(args, protocol_stdout) -> None:
     if recorder.run_dir:
         add_log_file(recorder.run_dir / "console.log")
     runner_task: asyncio.Task | None = None
+    env = None
 
     def write_batch_status(status, completed_episodes):
         path = args.run_dir / BATCH_STATUS_FILE
@@ -133,6 +134,7 @@ async def serve(args, protocol_stdout) -> None:
         await bridge.close(status)
 
     async def run_batch():
+        nonlocal env
         status = BATCH_FINISHED
         try:
             agent = GenericAgentV2(bridge, AgentConfig(verbose=False, stream=False))
@@ -203,13 +205,16 @@ async def serve(args, protocol_stdout) -> None:
             await server.run(read, write, server.create_initialization_options())
     finally:
         await bridge.close("client_disconnected")
-        if runner_task is not None and not runner_task.done():
-            runner_task.cancel()
-            await asyncio.gather(runner_task, return_exceptions=True)
-        if runner_task is not None and bridge.close_reason == "client_disconnected":
-            await finish_batch("client_disconnected")
-        elif runner_task is None:
-            write_batch_status("client_disconnected", 0)
+        if bridge.close_reason == "client_disconnected":
+            if runner_task is None:
+                write_batch_status("client_disconnected", 0)
+            else:
+                if not runner_task.done():
+                    runner_task.cancel()
+                    await asyncio.gather(runner_task, return_exceptions=True)
+                if env is not None:
+                    await env.close()
+                await finish_batch("client_disconnected")
 
 
 def main():

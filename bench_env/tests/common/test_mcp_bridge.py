@@ -5,8 +5,10 @@ import json
 
 import pytest
 
+from bench_env import factory
 from bench_env.agent.base import AgentConfig
 from bench_env.agent.generic_v2 import GenericAgentV2
+from bench_env.config import RunnerConfig
 from bench_env.env.base import ActionType, Observation, StepResult
 from bench_env.env.stopwatch import StopWatch
 from bench_env.env.recorder import RunRecorder
@@ -439,3 +441,30 @@ main()
                 assert "[评测结束]" not in result.content[0].text
     status = json.loads((run_dir / "batch_status.json").read_text())
     assert status == {"status": "infrastructure_error", "completed_episodes": 0, "expected_episodes": 1}
+
+
+@pytest.mark.asyncio
+async def test_cancelled_simulator_start_releases_partial_browser(monkeypatch):
+    import bench_env.env
+
+    started = asyncio.Event()
+    closed = asyncio.Event()
+
+    class StartingEnvironment:
+        def __init__(self, **kwargs):
+            pass
+
+        async def start(self):
+            started.set()
+            await asyncio.Future()
+
+        async def close(self):
+            closed.set()
+
+    monkeypatch.setattr(bench_env.env, "MobileGymEnv", StartingEnvironment)
+    startup = asyncio.create_task(factory.create_env(RunnerConfig(agent="generic_v2", model_name=None)))
+    await started.wait()
+    startup.cancel()
+    with pytest.raises(asyncio.CancelledError):
+        await startup
+    assert closed.is_set()

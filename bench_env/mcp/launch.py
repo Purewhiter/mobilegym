@@ -55,7 +55,7 @@ def record_client_exit(run_dir: Path, task_ids: list[str], returncode: int,
         status_file = run_dir / BATCH_STATUS_FILE
         if status_file.is_file():
             status = json.loads(status_file.read_text(encoding="utf-8"))["status"]
-        complete = (returncode == 0 and error is None and status == BATCH_FINISHED
+        complete = (error is None and status == BATCH_FINISHED
                     and [row["id"] for row in rows] == task_ids and completed == len(task_ids)
                     and (run_dir / "summary.json").is_file())
     except (KeyError, TypeError, ValueError, OSError) as exc:

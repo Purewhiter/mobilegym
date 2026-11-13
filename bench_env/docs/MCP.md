@@ -91,8 +91,9 @@ artifacts after each session. `client_exit.json` records the path under
 directory contains aggregate results, worker logs, and `jobs.json`.
 `--retry-errors` gives an infrastructure failure one fresh attempt using the
 same task and seed. Failed attempts keep their artifacts. A valid episode
-with a failing score stays in the results. Unresolved infrastructure errors
-give the batch a nonzero exit status.
+with a failing score stays in the results. The worker's CLI exit code is
+recorded alongside the server's completion status. Unresolved infrastructure
+errors give the parallel batch a nonzero exit status.
 
 ### Pi Agent
 
