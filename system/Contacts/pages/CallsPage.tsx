@@ -124,10 +124,10 @@ const DialpadOverlay: React.FC<{
   };
 
   return (
-    <div className="absolute inset-0 z-30">
-      <div className="absolute inset-0 bg-black/0" {...close} />
+    <div className="absolute inset-x-0 top-0 bottom-[86px] z-30 flex flex-col">
+      <div className="flex-1 bg-black/0" {...close} />
 
-      <div className="absolute left-0 right-0 bottom-[86px] bg-app-surface rounded-t-[24px] shadow-[0_-12px_28px_rgba(0,0,0,0.10)] overflow-hidden">
+      <div className="shrink-0 bg-app-surface rounded-t-[24px] shadow-[0_-12px_28px_rgba(0,0,0,0.10)] overflow-hidden">
         <div className="px-6 pt-5 pb-2">
           <div className="relative flex items-center justify-center min-h-[44px]">
             <div className="text-center text-[28px] font-semibold tracking-wider text-app-text min-h-[36px] px-10">
