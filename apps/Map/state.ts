@@ -1,4 +1,5 @@
-import { createAppStoreWithActions, registerStateAdapter } from '../../os/createAppStore';
+import { registerStateAdapter } from '../../os/createAppStore';
+import { createDeviceAppStore } from '../../os/device/deviceStore';
 import { MAP_CONFIG } from './data';
 import * as LocationService from '../../os/LocationService';
 import { now as timeNow } from '../../os/TimeService';
@@ -186,6 +187,16 @@ function normalizeSearchHistoryFromConfig(raw: unknown): MapSearchHistoryEntry[]
   return out;
 }
 
+/** Already in the stored shape: adopting it again must not hand out new ids. */
+function isNormalizedSearchHistory(raw: unknown): boolean {
+  return Array.isArray(raw) && raw.every((item) => {
+    if (!item || typeof item !== 'object') return false;
+    const o = item as Record<string, unknown>;
+    return typeof o.id === 'string' && o.id !== '' && typeof o.text === 'string' && o.text.trim() !== ''
+      && (o.kind === 'query' || (o.kind === 'place' && typeof o.placeId === 'string'));
+  });
+}
+
 let pendingPlaceSelectionSeq = 0;
 
 // ── Initial state ──────────────────────────────────────────────────
@@ -217,10 +228,24 @@ const initialState: MapState = {
 
 // ── Store ──────────────────────────────────────────────────────────
 
-const mapStore = createAppStoreWithActions<MapState, MapActions>(
+// State lives in the device server session (device/stateOnly.ts); the actions
+// below run here as before and every write is saved there. The live view
+// (location, current results and sheets, SDK handles) is page-only, as it was
+// when the store left it out of persistence.
+const mapStore = createDeviceAppStore<MapState, MapActions>(
   'map',
   initialState,
-  (set) => ({
+  {
+    localKeys: ['_temp', 'currentLocation', 'currentView'],
+    syncSetState: true,
+    migrateLocalStorage: true,
+    // Snapshots injected by tasks may carry history entries in an older shape.
+    normalize: (state) =>
+      (isNormalizedSearchHistory(state.searchHistory)
+        ? null
+        : { searchHistory: normalizeSearchHistoryFromConfig(state.searchHistory) }),
+  },
+  (_device, set) => ({
     refreshLocation: () => {
       set((s) => ({
         currentLocation: { ...DEFAULT_COORDS },
@@ -518,25 +543,6 @@ const mapStore = createAppStoreWithActions<MapState, MapActions>(
       }));
     },
   }),
-  {
-    partialize: (state) => {
-      const result: Record<string, any> = {};
-      for (const [k, v] of Object.entries(state)) {
-        if (typeof v === 'function') continue;
-        if (k === '_temp' || k === 'currentLocation' || k === 'currentView') continue;
-        result[k] = v;
-      }
-      return result as Partial<MapState>;
-    },
-    afterHydration: () => {
-      // persist 可能在 create 期间同步完成，此时 `const mapStore = …` 尚未赋值，不能直接引用 mapStore
-      queueMicrotask(() => {
-        mapStore.setState((s) => ({
-          searchHistory: normalizeSearchHistoryFromConfig(s.searchHistory),
-        }));
-      });
-    },
-  },
 );
 
 export const useMapStore = mapStore;

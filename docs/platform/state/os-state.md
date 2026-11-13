@@ -12,7 +12,7 @@ OS state is the Android-like device model owned by `OsStateStore`, managers, pro
 | `os.permissions` | yes (`os_state`) | Per-app permission states. Persistent like real Android — runtime permissions survive app restart and "device reboot" (simulator refresh) until the user revokes them. `PermissionService` is a thin facade over `OsStateStore.permissions`, not a separate store. |
 | `os.preferences` | yes (`os_state`) | Generic preference bucket reachable through `routeSetPreference()` when no Manager owns the key. |
 | `os.build` / `os.telephony` | yes, but **separately** under `__os_scenario_overrides__` | Factory-immutable data; managed by `os/managers/registry.ts` override mechanism so bench scenarios can inject device model / IMEI / carrier without touching the regular state path. Not part of `OsStateStore`. |
-| `os.providers` | yes, per-provider keys (`provider_sms`, `provider_contacts`, `provider_media`) | Contacts, SMS, media and other shared content providers. |
+| `os.providers` | yes, in the device session (`provider_sms`, `provider_contacts`, `provider_media`), not in localStorage | Contacts, SMS, media and other shared content providers. See [`device-server.md`](device-server.md#content-providers). |
 | `os.clipboard` | yes (`os_clipboard_v1`) | Clipboard contents — persisted so paste survives across sessions. |
 | `os.notifications` | no (volatile) | Active notifications. Cleared on reload. |
 | `os.services` runtime | no (volatile) | Shade, keyboard, text-selection menu. Cleared on reload. |
@@ -69,7 +69,6 @@ Keys actually used by the current code:
 | `os_state` | OsStateStore | Settings, hardware, permissions, preferences. |
 | `__os_scenario_overrides__` | `os/managers/registry.ts` | Build + telephony overrides for bench scenarios. Separate from `os_state` so scenario injects don't pollute user-facing state. |
 | `os_clipboard_v1` | ClipboardService | Persisted clipboard contents. |
-| `provider_sms` / `provider_contacts` / `provider_media` | Provider stores | Per-provider persistence. |
 | `launcher` | Launcher | Pinned apps, layout. |
 | `<manifest.id>` | App stores | One key per installed app, named exactly `manifest.id` (no suffix). |
 

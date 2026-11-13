@@ -78,48 +78,54 @@ const BrowserHome: React.FC<{ onNavigate: (url: string) => void; bindOpen: (url:
     };
 
     return (
-        <div className="flex-1 flex flex-col items-center justify-center px-8 bg-app-surface animate-in fade-in overflow-hidden" style={{ animationDuration: 'var(--app-duration-long)' }}>
-            <div className="mb-12 flex flex-col items-center">
-                <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-[24px] flex items-center justify-center shadow-lg shadow-blue-200 mb-6">
-                    <IcGlobe size={40} className="text-white" />
+        <div className="h-full flex flex-col pt-10 bg-app-surface animate-in fade-in" style={{ animationDuration: 'var(--app-duration-long)' }}>
+            <div
+                className="min-h-0 flex-1 flex flex-col items-center justify-center-safe overflow-y-auto px-8 pb-10"
+                data-scroll-container="main"
+                data-scroll-direction="vertical"
+            >
+                <div className="mb-12 flex shrink-0 flex-col items-center">
+                    <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-[24px] flex items-center justify-center shadow-lg shadow-blue-200 mb-6">
+                        <IcGlobe size={40} className="text-white" />
+                    </div>
+                    <h1 className="text-2xl font-bold tracking-tight text-slate-800">Browser</h1>
                 </div>
-                <h1 className="text-2xl font-bold tracking-tight text-slate-800">Browser</h1>
-            </div>
 
-            <form onSubmit={handleSubmit} className="w-full max-w-md relative group mb-12">
-                <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors">
-                    <IcSearch size={20} />
+                <form onSubmit={handleSubmit} className="w-full max-w-md shrink-0 relative group mb-12">
+                    <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors">
+                        <IcSearch size={20} />
+                    </div>
+                    <input
+                        type="text"
+                        value={input}
+                        onChange={(e) => setInput(e.target.value)}
+                        placeholder="搜索或输入网址"
+                        className="w-full h-16 pl-14 pr-6 bg-slate-100/80 backdrop-blur-sm rounded-[24px] text-lg outline-none border-2 border-transparent focus:border-blue-500/20 focus:bg-white focus:shadow-xl transition-all"
+                    />
+                </form>
+
+                <div className="w-full max-w-md shrink-0 grid grid-cols-4 gap-y-8">
+                    {recommendations.map((item) => (
+                        <button
+                            key={item.name}
+                            {...bindOpen(item.url)}
+                            className="flex flex-col items-center gap-2 group active:scale-95 transition-transform"
+                        >
+                            <div className={`w-14 h-14 ${item.color} rounded-2xl flex items-center justify-center shadow-sm overflow-hidden border border-slate-100 group-hover:shadow-md transition-shadow`}>
+                                <img
+                                    src={item.icon}
+                                    alt=""
+                                    className="w-8 h-8 object-contain"
+                                    onError={(e) => {
+                                        (e.currentTarget as HTMLImageElement).parentElement!.classList.add('bg-slate-50');
+                                        (e.currentTarget as HTMLImageElement).src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiM5NGExYjIiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBjbGFzcz0ibHVjaWRlIGx1Y2lkZS1nbG9iZSI+PGNpcmNsZSBjeD0iMTIiIGN5PSIxMiIgcj0iMTAiLz48cGF0aCBkPSJNMTIgMmExNS4zIDE1LjMgMCAwIDEgMCAyMCIvPjxwYXRoIGQ9Ik0xMiAyYTE1LjMgMTUuMyAwIDAgMCAwIDIwIi8+PHBhdGggZD0iTTIgMTJoMjAiLz48L3N2Zz4=';
+                                    }}
+                                />
+                            </div>
+                            <span className="text-[12px] font-medium text-slate-600 truncate w-full text-center px-1">{item.name}</span>
+                        </button>
+                    ))}
                 </div>
-                <input
-                    type="text"
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    placeholder="搜索或输入网址"
-                    className="w-full h-16 pl-14 pr-6 bg-slate-100/80 backdrop-blur-sm rounded-[24px] text-lg outline-none border-2 border-transparent focus:border-blue-500/20 focus:bg-white focus:shadow-xl transition-all"
-                />
-            </form>
-
-            <div className="w-full max-w-md grid grid-cols-4 gap-y-8">
-                {recommendations.map((item) => (
-                    <button
-                        key={item.name}
-                        {...bindOpen(item.url)}
-                        className="flex flex-col items-center gap-2 group active:scale-95 transition-transform"
-                    >
-                        <div className={`w-14 h-14 ${item.color} rounded-2xl flex items-center justify-center shadow-sm overflow-hidden border border-slate-100 group-hover:shadow-md transition-shadow`}>
-                            <img
-                                src={item.icon}
-                                alt=""
-                                className="w-8 h-8 object-contain"
-                                onError={(e) => {
-                                    (e.currentTarget as HTMLImageElement).parentElement!.classList.add('bg-slate-50');
-                                    (e.currentTarget as HTMLImageElement).src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiM5NGExYjIiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBjbGFzcz0ibHVjaWRlIGx1Y2lkZS1nbG9iZSI+PGNpcmNsZSBjeD0iMTIiIGN5PSIxMiIgcj0iMTAiLz48cGF0aCBkPSJNMTIgMmExNS4zIDE1LjMgMCAwIDEgMCAyMCIvPjxwYXRoIGQ9Ik0xMiAyYTE1LjMgMTUuMyAwIDAgMCAwIDIwIi8+PHBhdGggZD0iTTIgMTJoMjAiLz48L3N2Zz4=';
-                                }}
-                            />
-                        </div>
-                        <span className="text-[12px] font-medium text-slate-600 truncate w-full text-center px-1">{item.name}</span>
-                    </button>
-                ))}
             </div>
         </div>
     );
@@ -130,7 +136,7 @@ const BrowserView: React.FC<{ url: string }> = ({ url }) => {
     const [isLoading, setIsLoading] = useState(true);
 
     return (
-        <div className="flex-1 flex flex-col min-h-0 bg-app-surface overflow-hidden relative">
+        <div className="h-full flex flex-col min-h-0 bg-app-surface overflow-hidden relative">
             <div className="pt-8 bg-white/80 backdrop-blur-md border-b border-slate-100 shrink-0">
                 <div className="h-12 flex items-center px-4">
                     <div className="flex-1 bg-slate-100 px-3 py-1.5 rounded-lg flex items-center gap-2 overflow-hidden">

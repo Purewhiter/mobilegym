@@ -240,9 +240,6 @@ __os_scenario_overrides__          build + telephony overrides           yes
 <manifest.id>                      App's Zustand store (one key per      yes
                                     installed app; no suffix)
 launcher                           Pinned apps + launcher layout         yes
-provider_contacts                  ContactsProvider store                yes
-provider_sms                       SmsProvider store                     yes
-provider_media                     MediaProvider store                   yes
 os_clipboard_v1                    ClipboardService                      yes
 (in-memory only)                   TaskManager, NotificationService,     no — reboot
                                     KeyboardService, SystemShadeService,

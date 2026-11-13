@@ -32,7 +32,10 @@ export interface DeviceServerOptions {
 }
 
 export function createDeviceServer(options: DeviceServerOptions) {
-  const server = new DeviceServer(options.root, options.shard);
+  // Apps whose state logic stays on the page (createDeviceAppStore syncSetState:
+  // WeChat, Alipay, the system apps, ...) are not listed: the session just
+  // stores what the page shows, which the state-only module does for any app id.
+  const server = new DeviceServer(options.root, options.shard, createStateOnlyModule);
   server.register(createFsModule());
   const appAssetsBase = options.appAssetsBase ?? '/@app-assets/';
   server.register(createRedBookModule({ cdnBase: options.cdnBase, appAssetsBase }));
@@ -42,10 +45,5 @@ export function createDeviceServer(options: DeviceServerOptions) {
   server.register(createXModule({ cdnBase: options.cdnBase }));
   server.register(createEbayModule());
   server.register(createSpotifyModule());
-  // Apps whose state logic stays on the page (createDeviceAppStore syncSetState).
-  for (const appId of [
-    'weather', 'wechat_reading', 'tencent_meeting', 'wechat', 'alipay',
-    'browser', 'calendar', 'clock', 'compass', 'contacts', 'file_manager', 'notes', 'settings', 'sms', 'answer_sheet',
-  ]) server.register(createStateOnlyModule(appId));
   return { server, handler: createDeviceHttpHandler(server) };
 }

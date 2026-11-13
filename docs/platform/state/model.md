@@ -717,7 +717,7 @@ Both go through `resetStateCore()` in `os/sim/simResetCore.ts`, which runs in a 
 
 `reset()` calls `_resetStateCore()` then `window.location.reload()`. `resetState()` does the same work without the reload — useful when the test harness will reload the page itself.
 
-Provider stores reset through step 3 (the registry walk) but their localStorage keys (`provider_sms`, `provider_contacts`, `provider_media`) are also wiped by step 6's `localStorage.clear()`.
+Provider stores reset through step 3 (the registry walk). Their data lives in the device session (`provider_sms`, `provider_contacts`, `provider_media`), which the reset drops; the next session is seeded with the defaults.
 
 ### Inject
 

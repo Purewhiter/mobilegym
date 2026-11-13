@@ -1021,26 +1021,17 @@ class MobileGymEnv(BaseMobileEnv):
                 }
             })
         """
-        try:
-            # setState resolves once device-backed apps hold the patch too.
-            await self.page.evaluate(
-                """({patch, deep, reload}) => {
-                    if (window.__SIM__?.setState) {
-                        return window.__SIM__.setState(patch, {deep, reload});
-                    }
-                }""",
-                {"patch": patch, "deep": deep, "reload": reload}
-            )
-        except Exception as e:
-            # With reload=True the page navigates away mid-evaluate; that is expected.
-            if not reload and self.verbose:
-                logger.warning(f"set_state failed: {e}")
+        # Wait for the device to acknowledge the patch before navigating away.
+        await self.page.evaluate(
+            """async ({patch, deep, reload}) => {
+                await window.__SIM__.setState(patch, {deep, reload: false});
+                if (reload) await window.__SIM__.waitForStateCommit?.();
+            }""",
+            {"patch": patch, "deep": deep, "reload": reload},
+        )
         if reload:
-            try:
-                await self._wait_ready()
-            except Exception as e:
-                if self.verbose:
-                    logger.warning(f"set_state reload failed: {e}")
+            await self.page.reload(wait_until="load")
+            await self._wait_ready()
 
     async def open_app(self, app_name: str, timeout_ms: int = 8000, wait_stable: bool = False) -> None:
         """

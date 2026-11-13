@@ -16,7 +16,9 @@ import PackageManagerService from '../PackageManagerService';
 import { AppErrorBoundary } from '../components/AppErrorBoundary';
 import { AppLaunchSplash } from '../components/AppLaunchSplash';
 import { holdBusy } from '../idle';
-import { initFileSystemWithin } from '../FileSystemService';
+import { awaitLaunchData } from '../device/deviceStore';
+import { initFileSystem } from '../FileSystemService';
+import { ensureProvidersSynced } from '../providers/providerStore';
 import { runAppDataLoaderModule, type AppDataLoaderModule } from '../appDataLoaderReady';
 
 export const APP_REGISTRY: AppManifest[] = [
@@ -52,7 +54,8 @@ const appModules = import.meta.glob<{ default: ComponentType<any> }>(
 
 // Pages read the file system mirror synchronously on mount (a file list, a photo
 // grid), so an app opens once the mirror holds the session's files, or after the
-// cap if the request hangs (its readers re-read when the mirror fills in).
+// cap if the request hangs (its readers re-read when the mirror fills in). An app
+// that opened without them is an environment error for the episode.
 const FILE_SYSTEM_WAIT_MS = 5000;
 
 // Data loaders: 让 App 的 lazy 包装 await preload + hydrateStore + waitReady
@@ -89,7 +92,11 @@ for (const [path, importFn] of Object.entries(appModules)) {
     const dataLoaderFn = dataLoaderByAppId.get(appId);
     AppComponents[appId] = lazy(() => {
       const load = (async () => {
-        await initFileSystemWithin(FILE_SYSTEM_WAIT_MS);
+        // Shared data the app reads on its first render: files, and contacts / SMS / media.
+        await Promise.all([
+          awaitLaunchData('fs.init', initFileSystem(), FILE_SYSTEM_WAIT_MS),
+          awaitLaunchData('providers.sync', ensureProvidersSynced(), FILE_SYSTEM_WAIT_MS),
+        ]);
         if (dataLoaderFn) {
           const loaderMod = await dataLoaderFn();
           await runAppDataLoaderModule(loaderMod);

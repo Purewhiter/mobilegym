@@ -5,7 +5,7 @@
 
 import { getStateSetter, getStore, readPersistedAppState, writePersistedAppState } from '../createAppStore';
 import { idleState, waitForIdle } from '../idle';
-import { waitForStateCommit } from '../device/deviceStore';
+import { deviceQueryFailures, waitForStateCommit } from '../device/deviceStore';
 import { endPersistReset, flushAll } from '../debouncedPersist';
 import { getTimeConfig, now, formatTime, formatDate, getDayOfWeek } from '../TimeService';
 import * as RandomService from '../RandomService';
@@ -27,6 +27,7 @@ import {
 } from '../simState';
 import { runAppDataLoaderModule } from '../appDataLoaderReady';
 import { getRouteTable, matchRoute } from '../navigation/routeTables';
+import { ensureProvidersSynced } from '../providers/providerStore';
 
 export function buildSimApi(): NonNullable<Window['__SIM__']> {
   return {
@@ -50,6 +51,8 @@ export function buildSimApi(): NonNullable<Window['__SIM__']> {
       /** Resolve once the screen has caught up with the last input (see os/idle.ts). */
       waitForIdle,
       waitForStateCommit,
+      /** Data the page went without in this episode: failed queries, apps launched before shared data arrived (they fail `waitForStateCommit`). */
+      deviceQueryFailures,
       getRouteTable,
       matchRoute,
       /** Seed every RandomService draw of this episode (os/RandomService.ts). */
@@ -66,6 +69,9 @@ export function buildSimApi(): NonNullable<Window['__SIM__']> {
           await runAppDataLoaderModule(mod);
         };
   
+        // Contacts / SMS / media belong to the phone, not to one app: every task waits for them.
+        await ensureProvidersSynced();
+
         const entries: { appId: string; importFn: () => Promise<any> }[] = [];
         for (const [appId, importFn] of dataLoaderByAppId) {
           if (!has(appId)) continue;
@@ -211,13 +217,13 @@ export function buildSimApi(): NonNullable<Window['__SIM__']> {
           return result;
         };
   
-        if (patch.os && typeof patch.os === 'object') {
-          applyOsStatePatch(patch.os, { source: 'external' });
-        }
-  
-        // Device-backed apps apply patches asynchronously (sync, merge, push to the server).
+        // Device-backed apps and providers apply patches asynchronously (sync, merge, push to the server).
         const pending: Promise<void>[] = [];
-  
+
+        if (patch.os && typeof patch.os === 'object') {
+          pending.push(...applyOsStatePatch(patch.os, { source: 'external' }));
+        }
+
         if (patch.apps && typeof patch.apps === 'object') {
           for (const [appId, appPatch] of Object.entries(patch.apps)) {
             if (appPatch === undefined || appPatch === null) continue;

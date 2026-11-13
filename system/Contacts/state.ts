@@ -2,6 +2,7 @@ import { useCallback, useSyncExternalStore } from 'react';
 import { createDeviceAppStore } from '../../os/device/deviceStore';
 import ContentResolver from '../../os/ContentResolver';
 import { ensureContactsProviderRegistered } from '../../os/providers/ContactsProvider';
+import { createContentSnapshot } from '../../os/providers/contentSnapshot';
 import { CONTACTS_CONFIG } from './data';
 import type { Contact, ContactId } from './types';
 import * as TimeService from '../../os/TimeService';
@@ -106,41 +107,20 @@ function queryContacts(uri: string): Contact[] {
   }
 }
 
-let _contactsSnapshot: Contact[] | null = null;
-let _starredSnapshot: Contact[] | null = null;
-
-function ensureContactsSnapshots() {
-  if (_contactsSnapshot && _starredSnapshot) return;
-  _contactsSnapshot = queryContacts('content://contacts/contacts');
-  _starredSnapshot = queryContacts('content://contacts/contacts/starred');
-}
-
-function refreshContactsSnapshots() {
-  _contactsSnapshot = queryContacts('content://contacts/contacts');
-  _starredSnapshot = queryContacts('content://contacts/contacts/starred');
-}
-
-function subscribeContacts(listener: () => void): () => void {
-  return ContentResolver.registerContentObserver('content://contacts/contacts', () => {
-    refreshContactsSnapshots();
-    listener();
-  });
-}
+// Read again after any change to the contacts, also one made while no page was showing them.
+const contactsSnapshot = createContentSnapshot('content://contacts/contacts', () =>
+  queryContacts('content://contacts/contacts'));
+const starredSnapshot = createContentSnapshot('content://contacts/contacts', () =>
+  queryContacts('content://contacts/contacts/starred'));
+const NO_CONTACTS: Contact[] = [];
 
 export function useContactsList(): Contact[] {
-  return useSyncExternalStore(
-    subscribeContacts,
-    () => {
-      ensureContactsSnapshots();
-      return _contactsSnapshot ?? [];
-    },
-    () => [],
-  );
+  return useSyncExternalStore(contactsSnapshot.subscribe, contactsSnapshot.get, () => NO_CONTACTS);
 }
 
 export function useContact(contactId?: string): Contact | undefined {
   return useSyncExternalStore(
-    subscribeContacts,
+    contactsSnapshot.subscribe,
     () => {
       if (!contactId) return undefined;
       return queryContacts(`content://contacts/contacts/${contactId}`)[0];
@@ -186,12 +166,5 @@ export function recordLastContacted(contactId: ContactId): void {
 }
 
 export function useStarredContacts(): Contact[] {
-  return useSyncExternalStore(
-    subscribeContacts,
-    () => {
-      ensureContactsSnapshots();
-      return _starredSnapshot ?? [];
-    },
-    () => [],
-  );
+  return useSyncExternalStore(starredSnapshot.subscribe, starredSnapshot.get, () => NO_CONTACTS);
 }

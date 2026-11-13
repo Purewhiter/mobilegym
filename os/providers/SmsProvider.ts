@@ -1,6 +1,6 @@
 import ContentProvider from '../ContentProvider';
 import ContentResolver from '../ContentResolver';
-import { createOsStore } from '../createOsStore';
+import { createProviderStore } from './providerStore';
 import { NotificationService } from '../NotificationService';
 import * as TimeService from '../TimeService';
 import { ensureContactsProviderRegistered } from './ContactsProvider';
@@ -29,15 +29,8 @@ const defaultState: SmsProviderState = {
   messagesByConversationId: structuredClone(smsDefaults.messagesByConversationId) as MessagesByConversationId,
 };
 
-export const useSmsProviderStore = createOsStore<SmsProviderState>(
-  'provider.sms',
-  defaultState,
-  {
-    persistName: 'provider_sms',
-    registerToServiceRegistry: false,
-    registerToProviderRegistry: true,
-  },
-);
+// Kept in the device session (see providerStore.ts), not in localStorage.
+export const useSmsProviderStore = createProviderStore<SmsProviderState>('sms', defaultState);
 
 function updateConversationThread(
   conversationId: string,

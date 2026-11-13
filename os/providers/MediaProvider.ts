@@ -1,7 +1,7 @@
 import type { MediaItem } from '../types';
 import ContentProvider from '../ContentProvider';
 import ContentResolver from '../ContentResolver';
-import { createOsStore } from '../createOsStore';
+import { createProviderStore } from './providerStore';
 import type { ContentUri, ContentValues, Cursor } from '../types/content';
 import * as MediaService from '../MediaService';
 import BroadcastBus, { ACTION_MEDIA_SCANNER_SCAN_FILE } from '../BroadcastBus';
@@ -41,15 +41,8 @@ const defaultState: MediaProviderState = {
   favorites: structuredClone((mediaDefaults as { favorites?: string[] }).favorites ?? []) as string[],
 };
 
-export const useMediaProviderStore = createOsStore<MediaProviderState>(
-  'provider.media',
-  defaultState,
-  {
-    persistName: 'provider_media',
-    registerToServiceRegistry: false,
-    registerToProviderRegistry: true,
-  },
-);
+// Kept in the device session (see providerStore.ts), not in localStorage.
+export const useMediaProviderStore = createProviderStore<MediaProviderState>('media', defaultState);
 
 export class MediaProvider extends ContentProvider {
   query(uri: ContentUri, _projection?: string[]): Cursor<any> {

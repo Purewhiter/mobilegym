@@ -1,5 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+vi.mock('../os/device/DeviceClient', async () => {
+  const { createStateOnlyModule } = await import('../device/stateOnly');
+  const { memoryDeviceClient } = await import('./support/memoryDevice');
+  return memoryDeviceClient([createStateOnlyModule('map')]);
+});
+
 function createLocalStorageMock() {
   const store = new Map<string, string>();
   return {
@@ -31,6 +37,7 @@ describe('Map locale', () => {
     const mapLocale = await import('../apps/Map/locale');
     const osLocale = await import('../os/locale');
     const { useMapStore } = await import('../apps/Map/state');
+    await useMapStore.ensureSynced();
 
     expect(mapLocale.getLocale()).toBe('zh-Hans');
 

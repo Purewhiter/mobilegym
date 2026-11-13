@@ -15,6 +15,7 @@ import { FSNode } from './types';
 import { FILE_SYSTEM_CONFIG } from './data/fileSystemConfig';
 import * as TimeService from './TimeService';
 import { DeviceClient, DeviceStaleError } from './device/DeviceClient';
+import { recordDeviceFailure } from './device/deviceStore';
 
 type ContentRef = { seed: string } | { blob: string };
 type MirrorNode = FSNode & { content?: ContentRef };
@@ -133,6 +134,8 @@ async function initFileSystemInternal(generation: number): Promise<void> {
   } catch (error) {
     if (generation !== DeviceClient.generation()) return;
     console.error('[FileSystem] Initialization failed:', error);
+    // The page goes on with a preset tree, not the session's files: the episode is not judged.
+    recordDeviceFailure('fs.init', error, generation);
     createBaseStateInMemory();
   }
   state.initialized = true;

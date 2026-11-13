@@ -160,6 +160,7 @@ interface SimApi {
   /** Resolve once the screen has caught up with the last input (os/idle.ts). */
   waitForIdle(options?: import('../idle').WaitForIdleOptions): Promise<import('../idle').WaitForIdleResult>;
   waitForStateCommit(): Promise<void>;
+  deviceQueryFailures(): { query: string; message: string }[];
   /** Seed for RandomService; set per episode by the benchmark (os/RandomService.ts). */
   setRandomSeed(seed: number): void;
   getRandomSeed(): number;

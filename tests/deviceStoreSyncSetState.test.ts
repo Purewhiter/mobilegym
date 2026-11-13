@@ -6,11 +6,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 let remote: Record<string, any> | null = null;
 let generation = 0;
 let failNext = false;
+let failPut: 'expired' | 'unavailable' | null = null;
 let hold: Promise<void> | null = null;
 let holdSeed: (() => Promise<void>) | null = null;
 let queue: Promise<unknown> = Promise.resolve();
 
 class Stale extends Error {}
+class Expired extends Error {}
 
 const answer = async () => {
   await new Promise((resolve) => setTimeout(resolve, 2));
@@ -26,6 +28,10 @@ vi.mock('../os/device/DeviceClient', () => {
     putState: async (_appId: string, state: Record<string, any>) => {
       await holdSeed?.();
       await answer();
+      const failure = failPut;
+      failPut = null;
+      if (failure === 'expired') throw new Expired();
+      if (failure === 'unavailable') throw new Error('HTTP 503');
       remote = structuredClone(state);
       return { state: structuredClone(remote) };
     },
@@ -45,10 +51,17 @@ vi.mock('../os/device/DeviceClient', () => {
       generation: () => generation,
       sessionId: async () => `s${generation}`,
       hold: () => {},
+      whenIdle: () => queue.then(() => {}),
       exclusive: <T,>(fn: (a: typeof api) => Promise<T>, origin = generation) => {
-        const result = queue.then(() => {
+        const result = queue.then(async () => {
           if (origin !== generation) throw new Stale();
-          return fn(api);
+          try {
+            return await fn(api);
+          } catch (error) {
+            if (!(error instanceof Expired)) throw error;
+            remote = null;
+            return fn(api);
+          }
         });
         queue = result.catch(() => {});
         return result;
@@ -60,7 +73,9 @@ vi.mock('../os/device/DeviceClient', () => {
 
 let resetHook: (() => void) | null = null;
 let inject: ((patch: (s: any) => any) => Promise<void>) | null = null;
+const legacy = new Map<string, Record<string, unknown>>();
 vi.mock('../os/createAppStore', () => ({
+  readPersistedAppState: (id: string) => legacy.get(id),
   registerAppStore: (_id: string, _store: unknown, reset: () => void) => {
     resetHook = reset;
   },
@@ -69,15 +84,15 @@ vi.mock('../os/createAppStore', () => ({
   },
 }));
 
-const { createDeviceAppStore } = await import('../os/device/deviceStore');
+const { createDeviceAppStore, waitForStateCommit } = await import('../os/device/deviceStore');
 
 type S = { items: string[]; a: number; b: number; flag: boolean; draft: string };
 const initial: S = { items: [], a: 0, b: 0, flag: false, draft: '' };
 let n = 0;
 
-function pageStore() {
+function pageStore(migrateLocalStorage = false) {
   return createDeviceAppStore<S, { add: (item: string) => void }>(
-    `page-${++n}`, initial, { localKeys: ['draft'], syncSetState: true },
+    `page-${++n}`, initial, { localKeys: ['draft'], syncSetState: true, migrateLocalStorage },
     (_d, set, get) => ({ add: (item) => set({ items: [...get().items, item] }) }),
   );
 }
@@ -112,10 +127,12 @@ const settle = () => new Promise((resolve) => setTimeout(resolve, 60));
 
 beforeEach(() => {
   remote = null;
-  generation = 0;
+  generation += 1;
   failNext = false;
+  failPut = null;
   hold = null;
   holdSeed = null;
+  legacy.clear();
 });
 
 describe('device store, page-authoritative (syncSetState)', () => {
@@ -144,6 +161,24 @@ describe('device store, page-authoritative (syncSetState)', () => {
     expect(remote).toMatchObject({ a: 9, b: 1 });
   });
 
+  it('moves legacy state into an existing session and keeps concurrent page writes', async () => {
+    const id = `page-${n + 1}`;
+    legacy.set(id, { items: ['legacy'], a: 4, draft: 'old UI' });
+    remote = { items: [], a: 0, b: 7, flag: false };
+    vi.stubGlobal('localStorage', { removeItem: (key: string) => legacy.delete(key) });
+    try {
+      const store = pageStore(true);
+      store.setState((state) => ({ items: [...state.items, 'new'], draft: 'new UI' }));
+      await store.ensureSynced();
+      await waitForStateCommit();
+      expect(remote).toEqual({ items: ['legacy', 'new'], a: 4, b: 7, flag: false });
+      expect(store.getState()).toMatchObject({ items: ['legacy', 'new'], draft: 'new UI' });
+      expect(legacy.has(id)).toBe(false);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   it('keeps writes made while an injection is in flight', async () => {
     const store = pageStore();
     await store.ensureSynced();
@@ -158,6 +193,74 @@ describe('device store, page-authoritative (syncSetState)', () => {
     await settle();
     expect(store.getState()).toMatchObject({ a: 5, b: 1 });
     expect(remote).toMatchObject({ a: 5, b: 1 });
+  });
+
+  it('commits an append once when the session expires during the patch', async () => {
+    const store = pageStore();
+    await store.ensureSynced();
+    failPut = 'expired';
+    const append = vi.fn((s) => ({ items: [...s.items, 'injected'] }));
+    await inject!(append);
+    expect(append).toHaveBeenCalledTimes(1);
+    expect(store.getState().items).toEqual(['injected']);
+    expect(remote?.items).toEqual(['injected']);
+    await expect(waitForStateCommit()).resolves.toBeUndefined();
+  });
+
+  it('keeps a rejected patch out of the mirror and fails the commit check', async () => {
+    const store = pageStore();
+    await store.ensureSynced();
+    failPut = 'unavailable';
+    const observe = vi.fn();
+    const unsubscribe = store.subscribe(observe);
+    try {
+      await expect(inject!((s) => ({ items: [...s.items, 'injected'] }))).rejects.toThrow('HTTP 503');
+      expect(observe).not.toHaveBeenCalled();
+      expect(store.getState().items).toEqual([]);
+      expect(remote?.items).toEqual([]);
+      await expect(waitForStateCommit()).rejects.toThrow('HTTP 503');
+    } finally {
+      unsubscribe();
+    }
+  });
+
+  it('keeps a later page write to the same field while a patch is in flight', async () => {
+    const store = pageStore();
+    await store.ensureSynced();
+    const started = deferred();
+    const gate = deferred();
+    holdSeed = () => {
+      started.release();
+      return gate.promise;
+    };
+    const injected = inject!(() => ({ a: 5 }));
+    await started.promise;
+    store.setState({ a: 7 });
+    gate.release();
+    await injected;
+    await expect(waitForStateCommit()).resolves.toBeUndefined();
+    expect(store.getState().a).toBe(7);
+    expect(remote?.a).toBe(7);
+  });
+
+  it('rebases a concurrent functional append onto the acknowledged patch', async () => {
+    const store = pageStore();
+    await store.ensureSynced();
+    const started = deferred();
+    const gate = deferred();
+    holdSeed = () => {
+      started.release();
+      return gate.promise;
+    };
+    const injected = inject!((s) => ({ items: [...s.items, 'injected'], draft: 'injected draft' }));
+    await started.promise;
+    store.setState((s) => ({ items: [...s.items, 'page'], b: s.b + 1 }));
+    store.setState({ draft: 'page draft' });
+    gate.release();
+    await injected;
+    await expect(waitForStateCommit()).resolves.toBeUndefined();
+    expect(store.getState()).toMatchObject({ items: ['injected', 'page'], b: 1, draft: 'page draft' });
+    expect(remote).toMatchObject({ items: ['injected', 'page'], b: 1 });
   });
 
   it('a failed save is followed by the next one carrying the page state', async () => {

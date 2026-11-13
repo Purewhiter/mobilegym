@@ -72,13 +72,51 @@ export function snapshotProviders(): Record<string, any> {
   return out;
 }
 
-export function patchProviders(patch: Record<string, any>, deep: boolean): string[] {
+/** Patches a provider whose data lives in the device session (os/providers/providerStore.ts). */
+type ProviderSetter = (applyPatch: (current: Record<string, any>) => Record<string, any>) => Promise<void>;
+const _providerSetters = new Map<string, ProviderSetter>();
+
+/**
+ * List a provider store created elsewhere (device-backed: its data is in the
+ * device session, not in localStorage). It takes part in `os.providers`
+ * snapshots, resets and patches like one made by `createOsStore`.
+ */
+export function registerProviderStore(
+  key: string,
+  store: { getState: () => any },
+  reset: () => void,
+  setter: ProviderSetter,
+): void {
+  _providerRegistry.set(key, { name: key, getState: store.getState, reset });
+  _providerSetters.set(key, setter);
+}
+
+/**
+ * Merge `patch` into the named providers. `patched`: the ones changed at once
+ * (the caller tells their observers). `pending`: for providers kept in the
+ * device session, promises that resolve once the session holds the patch; they
+ * sync with it first, so the patch lands on real data, and tell their observers
+ * themselves.
+ */
+export function patchProviders(patch: Record<string, any>, deep: boolean): { patched: string[]; pending: Promise<void>[] } {
   const patched: string[] = [];
+  const pending: Promise<void>[] = [];
   for (const [providerName, providerPatch] of Object.entries(patch)) {
     if (providerPatch === undefined || providerPatch === null) continue;
+    const setter = _providerSetters.get(providerName);
+    if (setter) {
+      pending.push(setter((current) => {
+        if (!deep) return providerPatch;
+        // Same merge as app patches, including `arr[field=value]` / `arr[]` keys.
+        const merged = structuredClone(current);
+        mergeIntoDraft(merged, providerPatch);
+        return merged;
+      }));
+      continue;
+    }
     const store = _providerStoreRefs.get(providerName);
     if (!store) {
-      console.warn(`[patchProviders] unknown provider '${providerName}', registered:`, [..._providerStoreRefs.keys()]);
+      console.warn(`[patchProviders] unknown provider '${providerName}', registered:`, [..._providerRegistry.keys()]);
       continue;
     }
     if (deep) {
@@ -96,7 +134,7 @@ export function patchProviders(patch: Record<string, any>, deep: boolean): strin
     }
     patched.push(providerName);
   }
-  return patched;
+  return { patched, pending };
 }
 
 /** @internal — exposed only for unit tests */

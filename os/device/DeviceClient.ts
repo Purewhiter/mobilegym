@@ -3,9 +3,10 @@
  *
  * One page = one session. The session id lives in sessionStorage, so a reload
  * keeps the same phone while every page (and every bench worker) gets its
- * own. Requests to one session are serialized: a state push followed by a
+ * own. Writes to one session are serialized: a state push followed by a
  * command always reaches the server in that order. `exclusive()` runs several
- * requests in one queue slot when they must not be interleaved.
+ * requests in one queue slot when they must not be interleaved. Queries wait
+ * for the writes queued before them and then run side by side.
  *
  * `resetSession()` starts a new generation: work queued or in flight for the
  * old session is dropped (it rejects with `DeviceStaleError`), so nothing from
@@ -136,7 +137,16 @@ const isUnknownSession = (err: unknown) =>
  * getting here; work from an earlier generation is abandoned, not run in the
  * next episode's session.
  */
-function enqueue<T>(fn: (sid: string, signal: AbortSignal) => Promise<T>, origin = generation): Promise<T> {
+function enqueue<T>(
+  fn: (sid: string, signal: AbortSignal) => Promise<T>,
+  origin = generation,
+  /**
+   * A read: it waits for the requests queued before it (so it sees their
+   * writes) but nothing waits for it, so reads run side by side and a slow one
+   * holds up neither the next read nor the next command.
+   */
+  readOnly = false,
+): Promise<T> {
   const gen = origin;
   if (gen !== generation) return Promise.reject(new DeviceStaleError());
   const { signal } = controller;
@@ -151,9 +161,12 @@ function enqueue<T>(fn: (sid: string, signal: AbortSignal) => Promise<T>, origin
     } catch (err) {
       if (!isUnknownSession(err) || gen !== generation) throw err;
       // The server forgot the session (restart): open a fresh one and retry once.
-      storeSession(null);
-      sessionPromise = null;
-      currentSession = null;
+      // Reads running side by side can all find it gone; only the first replaces it.
+      if (currentSession === sid) {
+        storeSession(null);
+        sessionPromise = null;
+        currentSession = null;
+      }
       const nextSid = await session();
       if (gen !== generation) throw new DeviceStaleError();
       result = await fn(nextSid, signal);
@@ -165,7 +178,8 @@ function enqueue<T>(fn: (sid: string, signal: AbortSignal) => Promise<T>, origin
     throw err;
   });
   const settle = () => settleOne(gen);
-  queue = run.then(settle, settle);
+  const settled = run.then(settle, settle);
+  if (!readOnly) queue = settled;
   return run;
 }
 
@@ -252,8 +266,9 @@ export const DeviceClient = {
     return DeviceClient.exclusive(api => api.command<S>(appId, name, args, now));
   },
 
+  /** Runs after the writes queued before it, alongside other queries. */
   query<T>(appId: string, name: string, args: Record<string, unknown>): Promise<T> {
-    return DeviceClient.exclusive(api => api.query<T>(appId, name, args));
+    return enqueue((sid, signal) => sessionApi(sid, signal).query<T>(appId, name, args), undefined, true);
   },
 
   /**

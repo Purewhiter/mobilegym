@@ -47,6 +47,7 @@ import { CollapsingToolbar, CollapsingLargeTitle, TOOLBAR_SPACER_HEIGHT } from '
 import * as TimeService from '@/os/TimeService';
 import { useGalleryGestures } from './hooks/useGalleryGestures';
 import { ensureMediaProviderRegistered } from '../../os/providers/MediaProvider';
+import { createContentSnapshot } from '../../os/providers/contentSnapshot';
 import { routes } from './routes';
 
 // ============================================================================
@@ -64,17 +65,11 @@ function buildFavoritePaths(): string[] {
   }
 }
 
-let _favoritePathsSnapshot = buildFavoritePaths();
-
-function subscribeFavorites(listener: () => void): () => void {
-  return ContentResolver.registerContentObserver('content://media', () => {
-    _favoritePathsSnapshot = buildFavoritePaths();
-    listener();
-  });
-}
+// Read again after any change to the media, also one made while the gallery was not showing.
+const favoritesSnapshot = createContentSnapshot('content://media', buildFavoritePaths);
 
 function useFavorites(): Set<string> {
-  const favoritePaths = useSyncExternalStore(subscribeFavorites, () => _favoritePathsSnapshot, () => _favoritePathsSnapshot);
+  const favoritePaths = useSyncExternalStore(favoritesSnapshot.subscribe, favoritesSnapshot.get, favoritesSnapshot.get);
   return useMemo(() => new Set(favoritePaths), [favoritePaths]);
 }
 

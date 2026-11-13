@@ -44,8 +44,13 @@ async function readBody(req: IncomingMessage, limit: number): Promise<Buffer> {
 async function readJson(req: IncomingMessage): Promise<Record<string, unknown>> {
   const body = await readBody(req, MAX_JSON_BYTES);
   if (!body.length) return {};
-  const parsed = JSON.parse(body.toString('utf8'));
-  return parsed && typeof parsed === 'object' ? parsed : {};
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(body.toString('utf8'));
+  } catch {
+    throw new DeviceError(400, 'request body is not valid JSON');
+  }
+  return parsed && typeof parsed === 'object' ? (parsed as Record<string, unknown>) : {};
 }
 
 function send(res: ServerResponse, status: number, body: unknown): void {
@@ -129,8 +134,12 @@ export function createDeviceHttpHandler(server: DeviceServer) {
       if (kind === 'commands' && parts[5] && method === 'POST') {
         const body = await readJson(req);
         const args = Array.isArray(body.args) ? body.args : [];
-        const now = typeof body.now === 'number' ? body.now : Date.now();
-        return send(res, 200, server.runCommand(session, appId, parts[5], args, { now }));
+        // The caller's simulated clock (TimeService.now()). No fallback to this
+        // host's clock: a command stamped with real time breaks replays silently.
+        if (typeof body.now !== 'number' || !Number.isFinite(body.now)) {
+          throw new DeviceError(400, `command ${appId}.${parts[5]} needs a numeric "now"`);
+        }
+        return send(res, 200, server.runCommand(session, appId, parts[5], args, { now: body.now }));
       }
       if (kind === 'queries' && parts[5] && method === 'POST') {
         const body = await readJson(req);

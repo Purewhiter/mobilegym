@@ -14,6 +14,10 @@ type ParsedContentUri = {
 
 const providers = new Map<string, ContentProvider>();
 
+function containsPath(parent: string, child: string): boolean {
+  return parent === child || child.startsWith(parent.endsWith('/') ? parent : `${parent}/`);
+}
+
 function parseUri(uri: ContentUri): ParsedContentUri {
   const raw = String(uri ?? '').trim();
   if (!raw) throw new Error('[ContentResolver] URI is required');
@@ -122,7 +126,9 @@ export const ContentResolver = {
         return;
       }
       if (parsed.authority !== target.authority) return;
-      if (!parsed.path.startsWith(target.path)) return;
+      // An observer hears changes below its URI, and changes to anything it is part of
+      // (`content://contacts` changed as a whole: a patch, a reset, the session's data arriving).
+      if (!containsPath(target.path, parsed.path) && !containsPath(parsed.path, target.path)) return;
       cb(changedUri);
     });
   },

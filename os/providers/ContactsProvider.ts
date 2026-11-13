@@ -1,6 +1,6 @@
 import ContentProvider from '../ContentProvider';
 import ContentResolver from '../ContentResolver';
-import { createOsStore } from '../createOsStore';
+import { createProviderStore } from './providerStore';
 import * as TimeService from '../TimeService';
 import type { ContentUri, ContentValues, Cursor } from '../types/content';
 import type { Contact, ContactEmail, ContactPhone } from '../../system/Contacts/types';
@@ -65,15 +65,8 @@ const defaultState: ContactsProviderState = {
   contacts: structuredClone(contactsDefaults.contacts) as Contact[],
 };
 
-export const useContactsProviderStore = createOsStore<ContactsProviderState>(
-  'provider.contacts',
-  defaultState,
-  {
-    persistName: 'provider_contacts',
-    registerToServiceRegistry: false,
-    registerToProviderRegistry: true,
-  },
-);
+// Kept in the device session (see providerStore.ts), not in localStorage.
+export const useContactsProviderStore = createProviderStore<ContactsProviderState>('contacts', defaultState);
 
 export class ContactsProvider extends ContentProvider {
   query(uri: ContentUri, projection?: string[]): Cursor<any> {

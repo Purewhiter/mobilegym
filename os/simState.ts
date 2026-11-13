@@ -168,8 +168,12 @@ function applyHardwarePatch(patch: Record<string, any>): void {
   if (hwRest) mutateOsState((s) => { mergeIntoDraft(s.hardware, hwRest); });
 }
 
-export function applyOsStatePatch(osPatch: Record<string, any>, options?: DeviceSetOptions): void {
-  if (!osPatch || typeof osPatch !== 'object') return;
+/**
+ * Apply an `os` patch. Everything applies at once except providers kept in the
+ * device session: the returned promises resolve once the session holds them.
+ */
+export function applyOsStatePatch(osPatch: Record<string, any>, options?: DeviceSetOptions): Promise<void>[] {
+  if (!osPatch || typeof osPatch !== 'object') return [];
   if (osPatch.build && typeof osPatch.build === 'object') {
     setBuildOverrides(osPatch.build);
   }
@@ -193,11 +197,13 @@ export function applyOsStatePatch(osPatch: Record<string, any>, options?: Device
     });
   }
   if (osPatch.providers && typeof osPatch.providers === 'object') {
-    const patchedNames = patchProviders(osPatch.providers as Record<string, any>, true);
-    for (const name of patchedNames) {
+    const { patched, pending } = patchProviders(osPatch.providers as Record<string, any>, true);
+    for (const name of patched) {
       try { ContentResolver.notifyChange(`content://${name}`); } catch { /* noop */ }
     }
+    return pending;
   }
+  return [];
 }
 
 export function buildSimState(runtime: RuntimeSnapshot): { os: Record<string, unknown>; apps: Record<string, unknown> } {

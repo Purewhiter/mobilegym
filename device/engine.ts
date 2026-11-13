@@ -12,6 +12,8 @@
  * one session, so no locking is needed inside a process.
  */
 
+import { randomBytes } from 'node:crypto';
+
 export type DeviceRecord = { id: string; [key: string]: unknown };
 
 export interface CatalogCollection {
@@ -83,6 +85,8 @@ export interface SessionBlob {
 /** Sessions idle this long are dropped (the page opens a new one on its next request). */
 const SESSION_IDLE_TTL_MS = 2 * 60 * 60 * 1000;
 const MAX_SESSIONS = 2000;
+/** Shape of a manifest id; anything else is not an app and gets no fallback module. */
+const APP_ID = /^[a-z][a-z0-9_]{0,63}$/;
 /** Bytes of uploaded file content one session may hold. */
 export const MAX_SESSION_BLOB_BYTES = 512 * 1024 * 1024;
 
@@ -140,6 +144,12 @@ export class DeviceServer {
   constructor(
     private readonly root: string,
     private readonly shard?: number,
+    /**
+     * Module for an app id nothing registered, made on its first request. With
+     * it, an app that keeps its state logic on the page needs no entry here:
+     * its `createDeviceAppStore(manifest.id, ...)` is enough.
+     */
+    private readonly fallback?: (appId: string) => AppModule<any>,
   ) {}
 
   register<S>(module: AppModule<S>): void {
@@ -153,7 +163,9 @@ export class DeviceServer {
   createSession(): Session {
     this.evictSessions();
     const prefix = this.shard === undefined ? 's' : `s${this.shard}-`;
-    const id = `${prefix}${Date.now().toString(36)}${(this.nextSessionSeq++).toString(36)}`;
+    // The id is the only thing a request needs to read or change a session, so
+    // it must not be guessable from another one: 96 random bits after the sequence.
+    const id = `${prefix}${Date.now().toString(36)}${(this.nextSessionSeq++).toString(36)}-${randomBytes(12).toString('hex')}`;
     const session = new Session(id);
     this.sessions.set(id, session);
     return session;
@@ -197,11 +209,13 @@ export class DeviceServer {
   importState(session: Session, appId: string, raw: unknown): unknown {
     const module = this.module(appId);
     const slot: AppSlot = { state: module.importState(raw, this.catalog(module)), overlay: new Map() };
-    session.apps.set(appId, slot);
     const ctx = this.context(session, module, slot);
     module.materialize(ctx);
+    const state = module.exportState(ctx);
+    slot.state = ctx.state;
+    session.apps.set(appId, slot);
     session.version += 1;
-    return module.exportState(ctx);
+    return state;
   }
 
   exportState(session: Session, appId: string): unknown {
@@ -215,12 +229,20 @@ export class DeviceServer {
     const command = module.commands[name];
     if (!command) throw new DeviceError(404, `unknown command ${appId}.${name}`);
     const slot = this.slot(session, appId);
-    const ctx = this.context(session, module, slot);
+    // Commands replace state and records, so copy the overlay tables and
+    // publish the new slot only once the command can return its snapshot.
+    const next: AppSlot = {
+      state: slot.state,
+      overlay: new Map([...slot.overlay].map(([collection, records]) => [collection, new Map(records)])),
+    };
+    const ctx = this.context(session, module, next);
     const result = command(ctx, args, input);
-    slot.state = ctx.state;
     module.materialize(ctx);
+    const state = module.exportState(ctx);
+    next.state = ctx.state;
+    session.apps.set(appId, next);
     session.version += 1;
-    return { result, state: module.exportState(ctx), version: session.version };
+    return { result, state, version: session.version };
   }
 
   runQuery(session: Session, appId: string, name: string, args: Record<string, unknown>) {
@@ -243,7 +265,11 @@ export class DeviceServer {
   }
 
   private module(appId: string): AppModule<unknown> {
-    const module = this.modules.get(appId);
+    let module = this.modules.get(appId);
+    if (!module && this.fallback && APP_ID.test(appId)) {
+      module = this.fallback(appId) as AppModule<unknown>;
+      this.modules.set(appId, module);
+    }
     if (!module) throw new DeviceError(404, `unknown app ${appId}`);
     return module;
   }

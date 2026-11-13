@@ -18,7 +18,7 @@
 import { useEffect, useReducer, useRef, useSyncExternalStore } from 'react';
 import { create, type StoreApi, type UseBoundStore } from 'zustand';
 
-import { registerAppStore, registerStateSetter } from '../createAppStore';
+import { readPersistedAppState, registerAppStore, registerStateSetter } from '../createAppStore';
 import * as TimeService from '../TimeService';
 import { DeviceClient, DeviceStaleError, type DeviceSessionApi } from './DeviceClient';
 
@@ -75,6 +75,72 @@ export async function waitForStateCommit(): Promise<void> {
   await wait();
   const dirtyApps = [...pageSaves].filter(([, save]) => save.isDirty()).map(([appId]) => appId);
   if (dirtyApps.length) throw new Error(`Device state was not saved for: ${dirtyApps.join(', ')}`);
+  // A rejected state patch or missing data invalidates the episode, even if
+  // the caller caught the error and continued.
+  const failed = deviceQueryFailures();
+  if (failed.length) {
+    const shown = failed.slice(0, 5).map((f) => `${f.query} (${f.message})`).join('; ');
+    throw new Error(`Device data was missing during this episode: ${shown}${failed.length > 5 ? `; and ${failed.length - 5} more` : ''}`);
+  }
+}
+
+// ── Data failures of this episode ──────────────────────────────────
+
+export interface DeviceQueryFailure {
+  /** The failed operation, e.g. `appId.queryName`, `appId.setState`, or `providers.sync`. */
+  query: string;
+  message: string;
+}
+
+let queryFailures: { generation: number; list: DeviceQueryFailure[] } = { generation: -1, list: [] };
+
+/**
+ * Record that the page went without data it needed. It counts against the
+ * episode `generation` the work started in; work left over from an earlier
+ * episode is dropped.
+ */
+export function recordDeviceFailure(what: string, err: unknown, generation = DeviceClient.generation()): void {
+  if (generation !== DeviceClient.generation()) return;
+  if (queryFailures.generation !== generation) queryFailures = { generation, list: [] };
+  queryFailures.list.push({ query: what, message: err instanceof Error ? err.message : String(err) });
+}
+
+function recordQueryFailure(appId: string, name: string, err: unknown): void {
+  recordDeviceFailure(`${appId}.${name}`, err);
+}
+
+/**
+ * Data failures since the last reset: failed queries, rejected state patches,
+ * and shared data an app opened without (`awaitLaunchData`).
+ * `waitForStateCommit()` fails the episode on any.
+ */
+export function deviceQueryFailures(): DeviceQueryFailure[] {
+  return queryFailures.generation === DeviceClient.generation() ? [...queryFailures.list] : [];
+}
+
+/**
+ * Wait for shared data an app reads on its first render, at most `ms`. A
+ * request that never answers must not hold up the launch, so the app opens
+ * anyway (the load goes on and its readers re-read when it lands), but it
+ * opened without that data: the episode records it like a failed query.
+ * A reset while waiting abandons the load and records nothing.
+ */
+export async function awaitLaunchData(what: string, load: Promise<unknown>, ms: number): Promise<void> {
+  const generation = DeviceClient.generation();
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const failure = await Promise.race([
+    load.then(
+      () => null,
+      (err: unknown) => (err instanceof DeviceStaleError ? null : err ?? new Error('failed')),
+    ),
+    new Promise<Error>((resolve) => {
+      timer = setTimeout(() => resolve(new Error(`not loaded within ${ms}ms`)), ms);
+    }),
+  ]);
+  clearTimeout(timer);
+  if (!failure) return;
+  console.error(`[device] app launched without ${what}`, failure);
+  recordDeviceFailure(what, failure, generation);
 }
 
 const isUninitialized = (err: unknown) => (err as { status?: number })?.status === 409;
@@ -105,6 +171,16 @@ function commandArgs(appId: string, name: string, args: unknown[]): unknown[] {
   console.warn(`[device] ${appId}.${name}: ignoring a UI event passed as a command argument`);
   return args.slice(0, index);
 }
+
+/** Patches a store from outside: gets a function that applies the caller's patch to a given state. */
+export type DeviceStateSetter = (applyPatch: (current: Record<string, any>) => Record<string, any>) => Promise<void>;
+
+export interface DeviceStoreRegistrar {
+  store: (id: string, store: StoreApi<any>, reset: () => void) => void;
+  setter: (id: string, setter: DeviceStateSetter) => void;
+}
+
+const appRegistrar: DeviceStoreRegistrar = { store: registerAppStore, setter: registerStateSetter };
 
 export interface DeviceStoreHelpers {
   /** Run a server command; resolves to the command's return value. */
@@ -139,6 +215,14 @@ export function createDeviceAppStore<
     syncSetState?: boolean;
     /** Fix up state adopted from the session (old or injected snapshots). */
     normalize?: (state: S) => Partial<S> | null;
+    /** Move state from the old localStorage key into the session. */
+    migrateLocalStorage?: boolean;
+    /**
+     * Where the store is listed for reset and for external patches. App stores
+     * go in the app registry (the default, `__SIM__.getState().apps`); other
+     * owners of session state (content providers) pass their own.
+     */
+    register?: DeviceStoreRegistrar;
   },
   actionCreator: (
     helpers: DeviceStoreHelpers,
@@ -147,6 +231,7 @@ export function createDeviceAppStore<
   ) => A,
 ): UseBoundStore<StoreApi<S & A>> & { ensureSynced: (force?: boolean) => Promise<void> } {
   const localKeys = new Set<string>(options.localKeys as string[]);
+  const registrar = options.register ?? appRegistrar;
 
   const serverData = (state: Record<string, any>): Record<string, any> => {
     const out: Record<string, any> = {};
@@ -158,7 +243,20 @@ export function createDeviceAppStore<
 
   /** With `syncSetState`: apply here, then save what the page shows. */
   const syncedSet = ((partial: unknown, replace?: boolean) => {
+    const before = store.getState() as Record<string, unknown>;
     localSet(partial as Partial<S & A>, replace as false);
+    // A write that touched only page-only keys (a sheet opening, a loading
+    // flag) changes nothing the session holds: no save, and a sync keeps it anyway.
+    const after = store.getState() as Record<string, unknown>;
+    const keys = new Set([...Object.keys(before), ...Object.keys(after)]);
+    let changed = false;
+    for (const key of keys) {
+      if (localKeys.has(key) || Object.is(before[key], after[key])) continue;
+      if (typeof before[key] === 'function' && typeof after[key] === 'function') continue;
+      changed = true;
+      break;
+    }
+    if (!changed) return;
     // Until a save takes it in, a sync would overwrite this write with the
     // session's state: keep it to apply again on top of that.
     unsaved.push({ partial, replace: Boolean(replace) });
@@ -182,6 +280,15 @@ export function createDeviceAppStore<
   let serverState: Record<string, unknown> | null = null;
   /** syncSetState: page writes no save has taken in yet, oldest first. */
   let unsaved: { partial: unknown; replace: boolean }[] = [];
+
+  const applyWrites = (state: Record<string, any>, writes: typeof unsaved) => {
+    let next = state;
+    for (const { partial, replace } of writes) {
+      const update = typeof partial === 'function' ? partial(next) : partial;
+      next = replace ? update : { ...next, ...update };
+    }
+    return next;
+  };
 
   const plain = (state: Record<string, any>): Record<string, any> => {
     const out: Record<string, any> = {};
@@ -226,15 +333,32 @@ export function createDeviceAppStore<
   /** Adopt the session's state, or seed the session with this page's state. */
   const syncNow = (gen: number) =>
     DeviceClient.exclusive(async (api) => {
-      const current = await api.getState(appId);
-      if (current.initialized) return current.state;
+      const current = await api.getState<S>(appId);
+      let legacy: Record<string, any> | undefined;
+      if (options.migrateLocalStorage) {
+        try { legacy = readPersistedAppState(appId); } catch { /* Storage may be disabled. */ }
+      }
+      const clearLegacy = () => {
+        if (legacy && DeviceClient.generation() === gen) {
+          try { localStorage.removeItem(appId); } catch { /* Storage may be disabled. */ }
+        }
+      };
+      if (current.initialized && !legacy) return current.state;
       // Seeding saves the writes included when the PUT is sent. Writes made
       // while it is in flight still need to be replayed and saved.
       const seededWrites = unsaved.length;
-      const seeded = (await seed(api)).state;
+      let response;
+      if (legacy) {
+        const restored = applyWrites({ ...store.getInitialState(), ...current.state, ...serverData(legacy) }, unsaved);
+        const normalized = { ...restored, ...options.normalize?.(restored as S) };
+        response = await api.putState(appId, serverData(normalized));
+      } else {
+        response = await seed(api);
+      }
       if (DeviceClient.generation() !== gen) throw new DeviceStaleError();
+      clearLegacy();
       unsaved = unsaved.slice(seededWrites);
-      return seeded;
+      return response.state;
     }, gen).then((state) => {
       adopt(state);
       if (!unsaved.length) return;
@@ -362,7 +486,7 @@ export function createDeviceAppStore<
     });
   }
 
-  registerAppStore(appId, store as unknown as StoreApi<any>, () => {
+  registrar.store(appId, store as unknown as StoreApi<any>, () => {
     synced = null;
     saveQueued = false;
     unsaved = [];
@@ -372,29 +496,67 @@ export function createDeviceAppStore<
     bumpVersion(appId);
   });
 
-  registerStateSetter(appId, (applyPatch) =>
+  registrar.setter(appId, (applyPatch) =>
     busy((async () => {
       // Patch the session's real state: sync first, then merge and push in one
       // queue slot, after the commands queued before it have been adopted.
       const gen = DeviceClient.generation();
-      await syncedFor(gen);
-      const pushed = await DeviceClient.exclusive(async (api) => {
-        const view = plain(store.getState());
-        localSet(applyPatch(view) as Partial<S & A>);
-        const fixed = options.normalize?.(store.getState());
-        if (fixed) localSet(fixed as Partial<S & A>);
-        const nextView = plain(store.getState());
-        // Optimistic updates still pending stay visible but out of the payload:
-        // their commands will apply them in the session.
+      const patch = (state: Record<string, any>) => {
+        const next = { ...state, ...applyPatch(state) };
+        return { ...next, ...options.normalize?.(next as S) };
+      };
+      const localChanges = new Map<string, unknown>();
+      const prepare = () => {
+        const before = store.getState();
+        const view = plain(before);
+        const next = patch(view);
+        for (const [key, value] of Object.entries(next)) {
+          if ((options.syncSetState || localKeys.has(key)) && !Object.is(view[key], value)) {
+            localChanges.set(key, value);
+          }
+        }
+        // Pending optimistic commands will apply their own changes.
         const payload = options.syncSetState || !pending.length || !serverState
-          ? nextView
-          : applyPatch({ ...view, ...serverState });
-        return api.putState(appId, serverData(payload));
-      }, gen);
-      // The page is the authority (syncSetState): writes made during the PUT
-      // are in the mirror and their save is queued behind it -- keep them.
-      if (options.syncSetState) bumpVersion(appId);
-      else adopt(pushed.state);
+          ? next
+          : patch({ ...view, ...serverState });
+        // Page-only writes can happen during the PUT without scheduling a save.
+        const unsubscribe = store.subscribe((current, previous) => {
+          for (const key of localChanges.keys()) {
+            if (localKeys.has(key) && !Object.is(current[key], previous[key])) localChanges.delete(key);
+          }
+        });
+        return { payload: serverData(payload), unsubscribe, before, queuedWrites: unsaved.length };
+      };
+      let prepared: ReturnType<typeof prepare> | undefined;
+      try {
+        await syncedFor(gen);
+        const pushed = await DeviceClient.exclusive((api) => {
+          // A replacement session receives the same snapshot on retry.
+          prepared ??= prepare();
+          return api.putState(appId, prepared.payload);
+        }, gen);
+        if (DeviceClient.generation() !== gen) throw new DeviceStaleError();
+        const laterWrites = prepared ? unsaved.slice(prepared.queuedWrites) : [];
+        if (prepared && localChanges.size && laterWrites.length) {
+          // Rebase page writes that ran against the old mirror. In particular,
+          // two appends to the same array both survive. Their save is queued.
+          const current = store.getState();
+          const next = applyWrites({ ...prepared.before, ...Object.fromEntries(localChanges) }, laterWrites);
+          for (const key of localKeys) {
+            if (!localChanges.has(key)) (next as Record<string, unknown>)[key] = current[key];
+          }
+          localSet(next as S & A, true);
+        } else if (localChanges.size) {
+          localSet(Object.fromEntries(localChanges) as Partial<S & A>);
+        }
+        if (options.syncSetState) bumpVersion(appId);
+        else adopt(pushed.state);
+      } catch (err) {
+        recordDeviceFailure(`${appId}.setState`, err, gen);
+        throw err;
+      } finally {
+        prepared?.unsubscribe();
+      }
     })()),
   );
 
@@ -413,7 +575,18 @@ interface QueryEntry {
   version: number;
   data: unknown;
   inflight?: Promise<void>;
+  /** Why the last fetch failed, and the data version it was for. */
+  error?: { cause: unknown; version: number };
 }
+
+/** Waits before a failed query is tried again; after the last one the error is shown. */
+const QUERY_RETRY_DELAYS_MS = [200, 800];
+
+/** A request the server refused as wrong (unknown query, bad arguments): trying again gives the same answer. */
+const isRejectedRequest = (err: unknown) => {
+  const status = (err as { status?: number })?.status;
+  return typeof status === 'number' && status >= 400 && status < 500;
+};
 
 const MAX_CACHED_QUERIES = 200;
 const queryCache = new Map<string, QueryEntry>();
@@ -446,7 +619,8 @@ function fetchQuery(
 ): void {
   const entry = queryCache.get(key);
   if (entry?.inflight || entry?.version === version) return;
-  const run = async () => {
+  const generation = DeviceClient.generation();
+  const attempt = async () => {
     const ready = readyHooks.get(appId);
     await ready?.();
     try {
@@ -458,8 +632,34 @@ function fetchQuery(
       return DeviceClient.query(appId, name, args);
     }
   };
+  const run = async () => {
+    for (let tries = 0; ; tries += 1) {
+      try {
+        return await attempt();
+      } catch (err) {
+        const delay = QUERY_RETRY_DELAYS_MS[tries];
+        if (err instanceof DeviceStaleError || isRejectedRequest(err) || delay === undefined) throw err;
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        if (DeviceClient.generation() !== generation) throw new DeviceStaleError();
+      }
+    }
+  };
+  /** The data moved on (or the session was reset) while this request ran: fetch again if a page still shows it. */
+  const refreshIfBehind = () => {
+    const latest = queryVersion(appId, catalog);
+    if (latest !== version && queryListeners.get(key)?.size) fetchQuery(key, appId, name, args, latest, catalog);
+  };
+  const discardStale = () => {
+    if (entry) queryCache.set(key, { ...entry, inflight: undefined });
+    else queryCache.delete(key);
+    refreshIfBehind();
+  };
   const inflight = run().then(
     (data) => {
+      if (generation !== DeviceClient.generation()) {
+        discardStale();
+        return;
+      }
       queryCache.delete(key);
       queryCache.set(key, { version, data });
       evictQueries();
@@ -472,13 +672,21 @@ function fetchQuery(
       if (latest !== version) fetchQuery(key, appId, name, args, latest, catalog);
     },
     (err) => {
-      if (!(err instanceof DeviceStaleError)) console.error(`[device] query ${appId}.${name} failed`, err);
-      if (entry) queryCache.set(key, { ...entry, inflight: undefined });
-      else queryCache.delete(key);
+      if (err instanceof DeviceStaleError || generation !== DeviceClient.generation()) {
+        discardStale();
+        return;
+      }
+      console.error(`[device] query ${appId}.${name} failed`, err);
+      recordQueryFailure(appId, name, err);
+      // Keep what was shown, and tell the pages: they stop loading and can show the failure.
+      queryCache.set(key, { version: entry?.version ?? -1, data: entry?.data, error: { cause: err, version } });
+      notifyQuery(key);
+      refreshIfBehind();
     },
   );
   DeviceClient.hold(inflight);
-  queryCache.set(key, { version: entry?.version ?? -1, data: entry?.data, inflight });
+  // The failure of an earlier fetch stays visible until this one answers.
+  queryCache.set(key, { version: entry?.version ?? -1, data: entry?.data, error: entry?.error, inflight });
 }
 
 /**
@@ -509,6 +717,10 @@ export function prefetchDeviceQuery(
  *
  * `catalog`: the query reads only the app's shared read-only catalog, never
  * session state, so app commands do not re-run it.
+ *
+ * A fetch that fails is tried again twice; after that `error` is set and
+ * `loading` is false (the last result, if any, stays in `data`). It is fetched
+ * again when the app's data changes, when the page is shown again, or on `retry()`.
  */
 export function useDeviceQuery<T>(
   appId: string,
@@ -516,7 +728,7 @@ export function useDeviceQuery<T>(
   args: Record<string, unknown>,
   enabled = true,
   options: { keepPrevious?: boolean; catalog?: boolean } = {},
-): { data: T | undefined; loading: boolean } {
+): { data: T | undefined; loading: boolean; error: unknown; retry: () => void } {
   const catalog = Boolean(options.catalog);
   const dataVersion = useSyncExternalStore(subscribeVersion(appId), getVersion(appId));
   const version = catalog ? 0 : dataVersion;
@@ -543,8 +755,19 @@ export function useDeviceQuery<T>(
   const hasData = entry !== undefined && entry.version >= 0;
   if (hasData) previous.current = entry.data;
   const showPrevious = options.keepPrevious && enabled && !hasData;
+  // A failure counts while nothing newer is on its way or has arrived.
+  const failed = enabled && !entry?.inflight && entry?.error?.version === version && entry.version !== version;
+  const latest = useRef({ key, appId, name, args, version, catalog });
+  latest.current = { key, appId, name, args, version, catalog };
+  const retry = useRef(() => {
+    const q = latest.current;
+    fetchQuery(q.key, q.appId, q.name, q.args, q.version, q.catalog);
+    notifyQuery(q.key);
+  }).current;
   return {
     data: (showPrevious ? previous.current : entry?.data) as T | undefined,
-    loading: enabled && entry?.version !== version,
+    loading: enabled && entry?.version !== version && !failed,
+    error: failed ? entry!.error!.cause : undefined,
+    retry,
   };
 }

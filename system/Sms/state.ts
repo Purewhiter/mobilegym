@@ -3,6 +3,7 @@ import { createDeviceAppStore } from '../../os/device/deviceStore';
 import { SMS_CONFIG } from './data';
 import ContentResolver from '../../os/ContentResolver';
 import { ensureSmsProviderRegistered } from '../../os/providers/SmsProvider';
+import { createContentSnapshot } from '../../os/providers/contentSnapshot';
 import * as TimeService from '../../os/TimeService';
 import { NotificationService } from '../../os/NotificationService';
 import type { Conversation, Message } from './types';
@@ -82,27 +83,12 @@ function getEmptySmsSnapshot(): { conversations: Conversation[]; messagesByConve
   return { conversations: [], messagesByConversationId: {} };
 }
 
-let _smsSnapshot: { conversations: Conversation[]; messagesByConversationId: MessagesByConversationId } | null = null;
-
-function ensureSmsSnapshot(): { conversations: Conversation[]; messagesByConversationId: MessagesByConversationId } {
-  if (_smsSnapshot) return _smsSnapshot;
-  _smsSnapshot = buildSmsSnapshot();
-  return _smsSnapshot;
-}
-
-function subscribeSms(listener: () => void): () => void {
-  return ContentResolver.registerContentObserver('content://sms', () => {
-    _smsSnapshot = buildSmsSnapshot();
-    listener();
-  });
-}
-
-function getSmsSnapshot() {
-  return ensureSmsSnapshot();
-}
+// Read again after any change to the messages, also one made while no page was showing them.
+const smsSnapshot = createContentSnapshot('content://sms', buildSmsSnapshot);
+const EMPTY_SMS_SNAPSHOT = getEmptySmsSnapshot();
 
 export function useSmsProviderState(): { conversations: Conversation[]; messagesByConversationId: MessagesByConversationId } {
-  return useSyncExternalStore(subscribeSms, getSmsSnapshot, getEmptySmsSnapshot);
+  return useSyncExternalStore(smsSnapshot.subscribe, smsSnapshot.get, () => EMPTY_SMS_SNAPSHOT);
 }
 
 /** Check whether a string looks like a valid phone number.
@@ -186,5 +172,5 @@ export function sendMessage(conversationId: string, content: string): void {
 }
 
 export function getUnreadCount(): number {
-  return ensureSmsSnapshot().conversations.filter((conversation) => conversation.isUnread).length;
+  return smsSnapshot.get().conversations.filter((conversation) => conversation.isUnread).length;
 }
