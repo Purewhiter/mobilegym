@@ -144,3 +144,46 @@ async def test_codex_retries_only_infrastructure_failures_in_fresh_sessions(tmp_
     assert rows["demo.budget"]["is_error"] and rows["demo.budget"]["max_steps"] == 45
     meta = json.loads((directory / "meta.json").read_text())
     assert meta["task_max_steps"] == {"demo.retry": 30, "demo.abort": 30, "demo.budget": 45}
+
+
+@pytest.mark.asyncio
+async def test_timeout_keeps_a_result_written_before_client_shutdown(tmp_path, monkeypatch):
+    class Process:
+        pid = 1_000_000
+        returncode = None
+
+        async def wait(self):
+            await asyncio.Event().wait()
+
+    process = Process()
+    stopped = []
+
+    async def spawn(*command, **kwargs):
+        child = Path(command[command.index("--run-dir") + 1])
+        child.mkdir(parents=True)
+        result = EpisodeResult(
+            task_id="demo.done", task_name="fixture", suite="demo", max_steps=30,
+            execution=ExecutionResult(steps=1, trace=[], runtime_s=1, finished=True,
+                                      truncated=False, stop_reason="COMPLETE"),
+            judge=JudgeResult.ok(),
+        )
+        (child / "results.jsonl").write_text(json.dumps(result.to_dict()) + "\n")
+        (child / "client_exit.json").write_text(json.dumps({"batch_complete": True}))
+        return process
+
+    async def stop_workers(processes):
+        stopped.extend(processes)
+        process.returncode = -15
+
+    monkeypatch.setattr(asyncio, "create_subprocess_exec", spawn)
+    monkeypatch.setattr("bench_env.mcp.parallel.stop_workers", stop_workers)
+    directory = tmp_path / "batch"
+    args = SimpleNamespace(run_dir=directory, parallel=1, model="offline-test", reasoning_effort="medium",
+                           env_url="http://127.0.0.1:1", retry_errors=True, episode_timeout=0.01)
+    selection = {"parameter_seed": 42, "tasks": [{"id": "demo.done", "difficulty": "L2", "budget": 30}]}
+    assert await run_parallel(args, selection, "codex") == 0
+    job = json.loads((directory / "jobs.json").read_text())[0]
+    assert stopped == [process]
+    assert job["status"] == "completed"
+    assert len(job["attempts"]) == 1
+    assert job["attempts"][0]["timed_out"]

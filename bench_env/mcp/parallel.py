@@ -6,6 +6,7 @@ import asyncio
 from collections.abc import Sequence
 from datetime import datetime, timezone
 import json
+import math
 import os
 from pathlib import Path
 import signal
@@ -21,6 +22,36 @@ from bench_env.runner.base import EpisodeResult, ExecutionResult
 class BudgetMismatch(ValueError):
     """The worker's configuration differs from the validated selection."""
 
+DEFAULT_EPISODE_TIMEOUT = 1800.0
+
+
+def episode_timeout(value: str) -> float:
+    seconds = float(value)
+    if not math.isfinite(seconds) or seconds <= 0:
+        raise ValueError("episode timeout must be finite and positive")
+    return seconds
+
+
+async def stop_workers(processes: set[asyncio.subprocess.Process]) -> None:
+    if not processes:
+        return
+
+    groups = {process.pid for process in processes}
+    def signal_workers(sig: signal.Signals | int) -> None:
+        for pid in tuple(groups):
+            try:
+                os.killpg(pid, sig)
+            except ProcessLookupError:
+                groups.discard(pid)
+
+    signal_workers(signal.SIGTERM)
+    deadline = asyncio.get_running_loop().time() + 5
+    while groups and asyncio.get_running_loop().time() < deadline:
+        signal_workers(0)
+        if groups:
+            await asyncio.sleep(0.05)
+    signal_workers(signal.SIGKILL)
+    await asyncio.gather(*(p.wait() for p in processes))
 
 def validate_selection(selection: dict) -> dict:
     if not isinstance(selection, dict):
@@ -47,12 +78,14 @@ async def run_parallel(args, selection: dict, client: str, extra_worker_args: Se
         raise ValueError("--run-dir must be new or empty")
     directory.mkdir(parents=True, exist_ok=True)
     tasks = selection["tasks"]
+    timeout_seconds = getattr(args, "episode_timeout", DEFAULT_EPISODE_TIMEOUT)
     with (directory / "selection.json").open("x", encoding="utf-8") as stream:
         json.dump(selection, stream, ensure_ascii=False, indent=2)
     recorder = RunRecorder(directory.parent, fixed_run_dir=directory)
     recorder.start_run(agent="GenericAgentV2", model_name=args.model, extra_meta={
         "client": client, "transport": "mcp", "response_format": RESPONSE_FORMAT,
         "parallel": args.parallel, "env_url": args.env_url, "ssh_host": getattr(args, "ssh_host", None),
+        "episode_timeout": timeout_seconds,
         "reasoning_effort": args.reasoning_effort, "sample_seed": selection["parameter_seed"],
         "selection_seed": selection.get("selection_seed"), "selected_task_ids": [t["id"] for t in tasks],
         "context_policy": f"one_fresh_{client}_session_per_task",
@@ -105,11 +138,20 @@ async def run_parallel(args, selection: dict, client: str, extra_worker_args: Se
                         attempt_log["pid"] = process.pid
                         job["pid"] = process.pid
                         save_jobs()
-                        job["returncode"] = attempt_log["returncode"] = await process.wait()
+                        try:
+                            returncode = await asyncio.wait_for(process.wait(), timeout_seconds)
+                        except TimeoutError:
+                            await stop_workers({process})
+                            children.discard(process)
+                            attempt_log["timed_out"] = True
+                            returncode = process.returncode
+                        job["returncode"] = attempt_log["returncode"] = returncode
                         children.discard(process)
                     exit_path = child_dir / "client_exit.json"
                     client_exit = json.loads(exit_path.read_text(encoding="utf-8")) if exit_path.is_file() else {}
                     rows = read_results(child_dir)
+                    if attempt_log.get("timed_out") and not client_exit.get("batch_complete"):
+                        raise RuntimeError(f"Episode exceeded {timeout_seconds:g}s")
                     if len(rows) != 1 or rows[0].get("id") != task_id:
                         status = client_exit.get("batch_status", "incomplete")
                         raise ValueError(client_exit.get("error") or
@@ -171,21 +213,7 @@ async def run_parallel(args, selection: dict, client: str, extra_worker_args: Se
             for index, (task, job) in enumerate(zip(tasks, jobs), start=1):
                 group.create_task(worker(index, task, job))
     finally:
-        for process in children:
-            try:
-                os.killpg(process.pid, signal.SIGTERM)
-            except ProcessLookupError:
-                pass
-        if children:
-            try:
-                await asyncio.wait_for(asyncio.gather(*(p.wait() for p in children)), 5)
-            except asyncio.TimeoutError:
-                for process in children:
-                    try:
-                        os.killpg(process.pid, signal.SIGKILL)
-                    except ProcessLookupError:
-                        pass
-                await asyncio.gather(*(p.wait() for p in children))
+        await stop_workers(children)
         recorder.finish_run()
         meta_path = directory / "meta.json"
         meta = json.loads(meta_path.read_text(encoding="utf-8"))

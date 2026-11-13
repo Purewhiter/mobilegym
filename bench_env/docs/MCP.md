@@ -89,8 +89,10 @@ The launcher keeps the client logs locally and collects the remote run
 artifacts after each session. `client_exit.json` records the path under
 `runs/codex-ssh/` on the remote checkout. For a parallel run, the parent
 directory contains aggregate results, worker logs, and `jobs.json`.
-`--retry-errors` gives an infrastructure failure one fresh attempt using the
-same task and seed. Failed attempts keep their artifacts. A valid episode
+`--episode-timeout` limits each parallel attempt, including the client
+process and artifact collection. The default is 1800 seconds.
+`--retry-errors` gives an infrastructure failure, including a timeout, one
+fresh attempt using the same task and seed. Failed attempts keep their artifacts. A valid episode
 with a failing score stays in the results. The worker's CLI exit code is
 recorded alongside the server's completion status. Unresolved infrastructure
 errors give the parallel batch a nonzero exit status.

@@ -20,6 +20,7 @@ from bench_env.mcp.protocol import (
     MODEL_RESPONSE_LOG_KIND, OBSERVATION_FORMAT, RESPONSE_FORMAT, THOUGHT_KIND,
     build_client_prompt, get_protocol, protocol_sha256,
 )
+from bench_env.mcp.parallel import DEFAULT_EPISODE_TIMEOUT, episode_timeout, run_parallel
 
 
 def remote_path(path: str) -> str:
@@ -144,6 +145,8 @@ def main():
     parser.add_argument("--model", default="gpt-5.6-sol")
     parser.add_argument("--reasoning-effort", default="medium")
     parser.add_argument("--parallel", type=int, help="Run each task in a fresh session with this concurrency")
+    parser.add_argument("--episode-timeout", type=episode_timeout, default=DEFAULT_EPISODE_TIMEOUT,
+                        help="Seconds allowed per parallel worker attempt (default: %(default)g)")
     parser.add_argument("--retry-errors", action="store_true", help="Retry infrastructure failures once in parallel mode")
     parser.add_argument("--ssh-host", help="Run the MCP server on this SSH host")
     parser.add_argument("--ssh-repo", default="mobilegym-mcp", help="Path to the MCP checkout on the SSH host")
@@ -164,8 +167,6 @@ def main():
         if args.parallel is None:
             code = run_batch(args, tasks, codex, ssh)
         else:
-            from bench_env.mcp.parallel import run_parallel
-
             selection = {"parameter_seed": args.seed, "tasks": describe_tasks(tasks, args.seed)}
             ssh_worker_args = ["--ssh-host", args.ssh_host, "--ssh-repo", args.ssh_repo,
                                "--ssh-python", args.ssh_python] if ssh else []

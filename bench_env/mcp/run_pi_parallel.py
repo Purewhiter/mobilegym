@@ -7,7 +7,7 @@ import asyncio
 import json
 from pathlib import Path
 
-from bench_env.mcp.parallel import run_parallel, validate_selection
+from bench_env.mcp.parallel import DEFAULT_EPISODE_TIMEOUT, episode_timeout, run_parallel, validate_selection
 
 
 async def run(args) -> int:
@@ -21,6 +21,8 @@ def main():
     parser.add_argument("--run-dir", type=Path, required=True)
     parser.add_argument("--selection", type=Path, required=True)
     parser.add_argument("--parallel", type=int, default=5)
+    parser.add_argument("--episode-timeout", type=episode_timeout, default=DEFAULT_EPISODE_TIMEOUT,
+                        help="Seconds allowed per worker attempt (default: %(default)g)")
     parser.add_argument("--model", default="gpt-5.6-sol")
     parser.add_argument("--reasoning-effort", default="medium")
     parser.add_argument("--retry-errors", action="store_true", help="Retry infrastructure failures once")
