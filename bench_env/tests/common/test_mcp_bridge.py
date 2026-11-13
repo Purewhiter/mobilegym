@@ -156,6 +156,40 @@ async def test_disconnect_unblocks_inference_and_concurrent_actions_are_rejected
         await inference
 
 
+@pytest.mark.asyncio
+async def test_retry_recovers_cancelled_action_without_replaying_it(tmp_path):
+    action_log = tmp_path / "mcp_actions.jsonl"
+    bridge = MCPBridgeClient(action_timeout=5, action_log=action_log)
+    messages = [{"role": "user", "content": [{"type": "text", "text": "task"}]}]
+    first_decision = asyncio.create_task(asyncio.to_thread(bridge.chat, messages=messages))
+    await bridge.observe()
+    arguments = {**submission({"action": "HOME"}), "request_id": "action-1"}
+    first_call = asyncio.create_task(bridge.act(**arguments))
+    await first_decision
+    first_call.cancel()
+    with pytest.raises(asyncio.CancelledError):
+        await first_call
+
+    retry = asyncio.create_task(bridge.act(**arguments))
+    with pytest.raises(ValueError, match="one action"):
+        await bridge.act(**{**arguments, "request_id": "action-2"})
+    with pytest.raises(ValueError, match="different arguments"):
+        await bridge.act(**{**arguments, "action": {"action": "BACK"}})
+    next_decision = asyncio.create_task(asyncio.to_thread(bridge.chat, messages=messages))
+    assert await retry == await bridge.observe()
+    assert await bridge.act(**arguments) == await bridge.observe()
+    assert len(action_log.read_text().splitlines()) == 1
+    assert not next_decision.done()
+
+    final_call = asyncio.create_task(bridge.act(**{**arguments, "request_id": "action-2"}))
+    await next_decision
+    with pytest.raises(ValueError, match="superseded"):
+        await bridge.act(**arguments)
+    await bridge.close()
+    assert await final_call == {"status": "closed", "reason": "batch_finished"}
+    assert len(action_log.read_text().splitlines()) == 2
+
+
 @pytest.mark.parametrize("thought, action", [
     ("", {"action": "HOME"}),
     ("   ", {"action": "HOME"}),
@@ -363,7 +397,45 @@ def test_mcp_batch_end_is_one_plain_notification_without_internal_metadata():
     from bench_env.mcp.__main__ import render_view
     from bench_env.mcp.protocol import BATCH_END_MARKER
 
-    result = render_view({"status": "closed", "reason": "infrastructure_error", "content": []})
+    result = render_view({"status": "closed", "reason": "batch_finished", "content": []})
     assert len(result) == 1
     assert result[0].type == "text"
     assert result[0].text == BATCH_END_MARKER
+
+
+@pytest.mark.asyncio
+async def test_stdio_reports_simulator_start_failure_as_tool_error(tmp_path):
+    pytest.importorskip("mcp")
+    import sys
+    from pathlib import Path
+    from mcp import ClientSession, StdioServerParameters
+    from mcp.client.stdio import stdio_client
+
+    root = Path(__file__).resolve().parents[3]
+    run_dir = tmp_path / "startup-error"
+    # Force a deterministic startup failure before Playwright launches.
+    entry = """
+import sys
+from bench_env import factory
+from bench_env.mcp.__main__ import main
+async def fail_start(config):
+    raise RuntimeError('private simulator details')
+factory.create_env = fail_start
+main()
+"""
+    parameters = StdioServerParameters(
+        command=sys.executable, cwd=root,
+        args=["-c", entry, "--env-url", "http://127.0.0.1:1", "--run-dir", str(run_dir),
+              "--task-id", "clock.ToggleAlarm", "--limit", "1"],
+    )
+    with (tmp_path / "stdio.log").open("w") as log:
+        async with stdio_client(parameters, errlog=log) as (read, write):
+            async with ClientSession(read, write) as client:
+                await client.initialize()
+                result = await asyncio.wait_for(client.call_tool("observe", {}), 5)
+                assert result.isError
+                assert "infrastructure failure" in result.content[0].text
+                assert "private simulator details" not in result.content[0].text
+                assert "[评测结束]" not in result.content[0].text
+    status = json.loads((run_dir / "batch_status.json").read_text())
+    assert status == {"status": "infrastructure_error", "completed_episodes": 0, "expected_episodes": 1}

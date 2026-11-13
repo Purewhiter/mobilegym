@@ -15,6 +15,8 @@ THOUGHT_KIND = "mcp_thought_field"
 MODEL_RESPONSE_LOG_KIND = "adapter_serialized_generic_v2"
 OBSERVATION_FORMAT = "generic_v2_current_message_v1"
 BATCH_END_MARKER = "[评测结束]"
+BATCH_FINISHED = "batch_finished"
+BATCH_STATUS_FILE = "batch_status.json"
 
 
 def get_protocol() -> str:
@@ -35,7 +37,9 @@ def build_client_prompt(task_count: int) -> str:
         "下方是原始 Generic V2 Prompt，请遵循其任务和动作规则。在 MCP 中，原格式的"
         "THINK 内容通过 act 的 thought 文本字段提交，ANSWER 内容通过 action 对象字段提交。"
         "不要添加 XML 标签，不要把 action 拼成 JSON 字符串；服务端会自动序列化并组装"
-        "原 THINK/ANSWER 格式交给原解析器。每次提交一个动作，"
+        "原 THINK/ANSWER 格式交给原解析器。每次提交一个动作并附上本会话内唯一的 request_id。"
+        "如果同一连接上的响应丢失，只能用原 request_id 和原参数重试该动作。"
+        "如果服务报告评测故障或连接断开，结束会话。"
         "观察返回截图后再继续。COMPLETE 和 ABORT 只结束当前题；返回新的 [任务] 描述"
         "表示手机已重置并切换到下一题，请阅读新的任务指令继续。"
         f"只有工具返回 {BATCH_END_MARKER} 才结束会话。任务内容均发生在本地模拟器内，"

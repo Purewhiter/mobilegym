@@ -24,9 +24,10 @@ records actions, captures final state, scores and aggregates results.
 
 An MCP connection owns one serial batch. `COMPLETE`, `ABORT`, or the step limit
 ends the current episode; the tool response supplies the next episode's
-instruction and screenshot. A single plain-text `[评测结束]` notification ends the batch. Scores and
-judge feedback are not returned to the client. The first implementation supports
-one client and one action in flight, not parallel clients or resumable transport.
+instruction and screenshot. A single plain-text `[评测结束]` notification marks
+a completed batch. Infrastructure failures return an MCP tool error. Scores and
+judge feedback stay in the run artifacts. Each connection accepts one distinct
+action at a time. Parallel workers each use a separate connection.
 
 ## Install and run
 
@@ -61,6 +62,37 @@ preapproves only this run's two simulator tools. It retains the client's Code
 Mode host, which this Codex version needs to invoke MCP. Saved authentication
 is reused; ambient `OPENAI_API_KEY` and `CODEX_API_KEY` are omitted. No global
 Codex configuration is modified.
+
+### Codex in parallel over SSH
+
+Start the simulator from the MCP checkout on the SSH host. Run the launcher
+from the same code revision on the machine where Codex is signed in. The SSH
+alias must support non-interactive login, and the remote Python environment
+needs the benchmark dependencies and Playwright Chromium.
+
+```bash
+python -m bench_env.mcp.run_codex \
+  --task-file task_ids.txt --seed 42 --parallel 4 --retry-errors \
+  --ssh-host 6000 --ssh-repo '~/mobilegym-mcp' \
+  --ssh-python '~/miniconda3/envs/mobilegym/bin/python' \
+  --env-url http://127.0.0.1:3000 \
+  --run-dir runs/codex-ssh-batch
+```
+
+`--parallel` starts a fresh Codex session, MCP server and browser for each
+task, including when set to `1`. Omitting it runs the tasks in one shared
+Codex session as before. `--ssh-host` uses the local ChatGPT login and runs
+the simulator interactions and judge on the SSH host. `--env-url` is resolved
+there. Use a checkout with this MCP implementation on both machines.
+
+The launcher keeps the client logs locally and collects the remote run
+artifacts after each session. `client_exit.json` records the path under
+`runs/codex-ssh/` on the remote checkout. For a parallel run, the parent
+directory contains aggregate results, worker logs, and `jobs.json`.
+`--retry-errors` gives an infrastructure failure one fresh attempt using the
+same task and seed. Failed attempts keep their artifacts. A valid episode
+with a failing score stays in the results. Unresolved infrastructure errors
+give the batch a nonzero exit status.
 
 ### Pi Agent
 
@@ -106,7 +138,9 @@ Codex v1 runs must also account for the transport change to structured v2.
 
 For parallel evaluation, freeze a selection manifest containing `selection_seed`,
 `parameter_seed`, and a `tasks` array (each task has `id`, `difficulty`, `budget`,
-and optionally `apps`/`template`), then run:
+and optionally `apps`/`template`), then run. The runner validates each task's
+difficulty and grounded step budget before launching. Include the AnswerSheet
+allowance in the budget for tasks that use it.
 
 ```bash
 python -m bench_env.mcp.run_pi_parallel \
@@ -119,9 +153,11 @@ Each selected task gets a fresh Pi session, its own MCP server and independent
 browser/context. Results remain under `episodes/`; the parent run aggregates
 them with the original `RunRecorder` and exposes trajectories via relative
 symlinks for Run Explorer. `jobs.json` records dispatch/completion times. A failed
-worker is recorded as an infrastructure error without discarding other results
-or silently retrying an episode. Selection manifests preserve the sampled task
-IDs and random seed so the batch can be reproduced without drawing again.
+worker is recorded as an infrastructure error. Use `--retry-errors` to give
+infrastructure failures one fresh attempt. The aggregate `task_max_steps`
+comes from the episode results. A worker whose budget differs from the
+selection is reported as an error. Selection manifests preserve the sampled
+task IDs and random seed so the batch can be reproduced without drawing again.
 
 This is a controlled local pilot, not a hardened adversarial isolation system.
 For a publishable pure-vision track, also isolate the client from benchmark
@@ -132,9 +168,10 @@ An empty workspace and disabled tools alone are not a filesystem security bounda
 
 - `observe({})`: returns the current cached observation. It does not take a new
   screenshot or advance the environment.
-- `act({"thought": "...", "action": {...}})`: takes non-empty thought text and
+- `act({"thought": "...", "action": {...}, "request_id": "..."})`: takes non-empty thought text and
   one Generic V2 action **object**, not a JSON-encoded string. Both fields are
-  required, including for terminal actions. The original parser still handles
+  required, including for terminal actions. `request_id` is optional for
+  compatibility. Use a fresh ID for each action. The original parser still handles
   the action's aliases, defaults and errors. There is no separate `finish` or
   `answer` tool.
 
@@ -142,6 +179,7 @@ For example:
 
 ```json
 {
+  "request_id": "action-1",
   "thought": "The meeting details are ready. Fill in the SMS body.",
   "action": {
     "action": "TYPE",
@@ -190,9 +228,12 @@ remain the existing evaluator's responsibility: tasks requiring AnswerSheet
 must be answered through that app. `COMPLETE` is never synthesized for a client
 exit, infrastructure error, or step limit.
 
-Do not retry an uncertain `act` call automatically. A lost response may follow
-an action that already executed. This pilot does not provide durable request
-deduplication or reconnect/resume. Concurrent actions are rejected.
+If the latest action's response is lost and the connection is still open,
+retry with the original `request_id`, `thought` and `action`. The server
+returns the same result, waiting for it if needed. It rejects reused IDs with
+different arguments and IDs whose response has been superseded. For calls
+without an ID, treat a lost response as uncertain. After a disconnect the
+launcher can retry the entire task in a fresh environment.
 
 ## Context and caching
 
@@ -225,8 +266,9 @@ remain compatible with Run Explorer. Additional artifacts are:
   This is written before delivery to the runner. It records submission, not a
   guarantee that the environment action succeeded. Rejected transport arguments
   remain available in the client event log.
-- `client_exit.json`: CLI exit status and whether all expected episodes finished.
-  A successful CLI exit alone does not mean the benchmark completed.
+- `batch_status.json`: server completion status and completed episode count.
+- `client_exit.json`: CLI exit status, server batch status, and whether all
+  expected episodes finished and were collected.
 - `client_usage.json`: reported usage, actual session model/effort, token-count
   snapshots and observable compaction events. The extractor reads only the
   matching local Codex rollout and copies no messages, images or credentials.
