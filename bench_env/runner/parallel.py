@@ -289,9 +289,8 @@ class ParallelRunner(BaseRunner):
                     return
                 
                 task, trial_id, is_trial_0 = item
-                env.set_current_task(f"{task.id}#t{trial_id}")
-                
                 try:
+                    env.set_current_task(f"{task.id}#t{trial_id}")
                     if is_trial_0:
                         # ========== Trial 0: Setup + Dispatch + Run ==========
                         if self.verbose:
@@ -420,21 +419,37 @@ class ParallelRunner(BaseRunner):
                     _update_pbar(error_result)
                 
                 finally:
-                    agent.reset_history()
-                    queue.task_done()
+                    try:
+                        agent.reset_history()
+                    finally:
+                        queue.task_done()
         
-        # Start workers
-        worker_tasks = [asyncio.create_task(worker(i)) for i in range(n)]
-        
-        # Wait for all items to complete
-        await queue.join()
-        
-        # Send sentinels to stop workers
-        for _ in range(n):
-            await queue.put(None)
-        
-        # Wait for workers to finish
-        await asyncio.gather(*worker_tasks, return_exceptions=True)
+        workers = {asyncio.create_task(worker(wid)) for wid in range(n)}
+        active = workers.copy()
+        drained = asyncio.create_task(queue.join())
+        failures: list[BaseException] = []
+        try:
+            # Surviving workers can still drain the queue after a peer exits.
+            while not drained.done():
+                if not active:
+                    raise RuntimeError("All repeat workers exited before the task queue drained") from (
+                        failures[0] if failures else None
+                    )
+                done, _ = await asyncio.wait({drained, *active}, return_when=asyncio.FIRST_COMPLETED)
+                for task in done & active:
+                    active.remove(task)
+                    error = task.exception() if not task.cancelled() else None
+                    if error is not None:
+                        failures.append(error)
+                        logger.error("Repeat worker exited: %s", error, exc_info=error)
+            for _ in active:
+                queue.put_nowait(None)
+            await asyncio.gather(*active, return_exceptions=True)
+        finally:
+            for task in (drained, *workers):
+                if not task.done():
+                    task.cancel()
+            await asyncio.gather(drained, *workers, return_exceptions=True)
         
         return results
 

@@ -29,6 +29,10 @@ logger = get_logger(__name__)
 _SETTLE_JITTER_SEED = 0
 
 
+def _decode_compressed_state(data: str) -> dict:
+    return json_mod.loads(gzip.decompress(base64.b64decode(data)))
+
+
 def _env_message(env: "MobileGymEnv", message: str) -> str:
     prefix = getattr(env, "_log_prefix", "").strip()
     return f"{prefix} {message}".strip()
@@ -1531,8 +1535,7 @@ class MobileGymEnv(BaseMobileEnv):
             if not result:
                 return None
             if result["mode"] == "gz":
-                raw = gzip.decompress(base64.b64decode(result["data"]))
-                return json_mod.loads(raw)
+                return await asyncio.to_thread(_decode_compressed_state, result["data"])
             return json_mod.loads(result["data"])
         except Exception as e:
             if require_commit:
