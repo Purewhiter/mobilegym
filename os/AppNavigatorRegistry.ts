@@ -1,3 +1,5 @@
+import { getActiveTask, getTaskTopActivity } from './taskUtils';
+
 export interface AppNavigator {
   navigate: (path: string, options?: { replace?: boolean }) => void;
   back: () => boolean;
@@ -54,11 +56,10 @@ export const AppNavigatorRegistry = {
       return registry.get(appId)?.route() ?? null;
     }
     if (typeof window === 'undefined') return null;
-    const activeAppId = window.__OS__?.state?.activeAppId;
-    if (activeAppId && registry.has(activeAppId)) {
-      return registry.get(activeAppId)?.route() ?? null;
-    }
-    return null;
+    const state = window.__OS__?.getState();
+    if (!state || state.isLauncherVisible) return null;
+    const activity = getTaskTopActivity(getActiveTask(state));
+    return activity ? activityRoutes.get(activity.activityId)?.() ?? null : null;
   },
 
   getBackHandler(appId: string) {

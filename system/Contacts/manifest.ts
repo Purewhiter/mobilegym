@@ -38,12 +38,12 @@ export const manifest: AppManifest = {
     {
       action: 'ACTION_VIEW',
       scheme: 'tel',
-      route: '/',
+      route: '/?dialpad=true',
       description: '通过 tel: 链接拨号',
     },
     {
       action: 'ACTION_DIAL',
-      route: '/',
+      route: '/?dialpad=true',
       description: '打开拨号盘',
     },
     {

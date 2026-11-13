@@ -29,7 +29,7 @@ export const GestureBar = () => {
   const startTime = useRef(0);
   const [swipeProgress, setSwipeProgress] = useState(0);
   const holdTimerRef = useRef<number | null>(null);
-  const [isMouseDown, setIsMouseDown] = useState(false);
+  const pointerId = useRef<number | null>(null);
   // 检测背景颜色：桌面/多任务 或 声明式属性（限定在当前活跃应用内查找）
   const getActiveActivityContainer = () => activeTopActivityId
     ? document.getElementById(`activity-container-${activeTopActivityId}`)
@@ -99,129 +99,65 @@ export const GestureBar = () => {
   const barOpacity = isOnDarkBg ? gestureBarOpacityLight : gestureBarOpacityDark;
   const barColor = isOnDarkBg ? 'white' : 'black';
 
-  const handleTouchStart = (e: React.TouchEvent) => {
-    startY.current = e.touches[0].clientY;
-    startTime.current = TimeService.realNow();
-    setSwipeProgress(0);
-
-    if (holdTimerRef.current) {
-      clearTimeout(holdTimerRef.current);
-      holdTimerRef.current = null;
-    }
+  const clearHold = () => {
+    if (holdTimerRef.current !== null) window.clearTimeout(holdTimerRef.current);
+    holdTimerRef.current = null;
   };
 
-  const handleTouchMove = (e: React.TouchEvent) => {
-    const currentY = e.touches[0].clientY;
-    const diff = startY.current - currentY;
-    const progress = Math.min(Math.max(diff / gestureProgressDivisor, 0), 1);
-    setSwipeProgress(progress);
-
-    // 上滑悬停触发多任务
-    if (diff > homeSwipeThreshold && !holdTimerRef.current) {
-      holdTimerRef.current = window.setTimeout(() => {
-        window.__OS__?.showRecents();
-        setSwipeProgress(0);
-        holdTimerRef.current = null;
-      }, recentsHoldDuration);
-    }
-
-    if (diff < 40 && holdTimerRef.current) {
-      clearTimeout(holdTimerRef.current);
-      holdTimerRef.current = null;
-    }
-  };
-
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    if (holdTimerRef.current) {
-      clearTimeout(holdTimerRef.current);
-      holdTimerRef.current = null;
-    }
-
-    const endY = e.changedTouches[0].clientY;
-    const duration = TimeService.realNow() - startTime.current;
-    const diff = startY.current - endY;
-
-    // 快速上滑返回桌面
-    if (diff > homeSwipeThreshold && duration < recentsHoldDuration && !isRecentsVisible) {
-      // 已在桌面时先尝试关闭桌面层遮罩（如搜索）
-      if (isLauncherVisible) {
-        window.__OS__?.handleBack();
-      } else {
-        window.__OS__?.goHome();
-      }
-    }
-
-    setSwipeProgress(0);
-  };
-
-  // 鼠标事件处理 - 需要在 document 上监听才能捕获拖动
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      if (!isMouseDown || startY.current === 0) return;
-
-      const currentY = e.clientY;
-      const diff = startY.current - currentY;
-      const progress = Math.min(Math.max(diff / gestureProgressDivisor, 0), 1);
-      setSwipeProgress(progress);
-
-      // 上滑悬停触发多任务
-      if (diff > homeSwipeThreshold && !holdTimerRef.current) {
-        holdTimerRef.current = window.setTimeout(() => {
-          window.__OS__?.showRecents();
-          setSwipeProgress(0);
-          holdTimerRef.current = null;
-        }, recentsHoldDuration);
-      }
-
-      if (diff < gestureCancelThreshold && holdTimerRef.current) {
-        clearTimeout(holdTimerRef.current);
-        holdTimerRef.current = null;
-      }
+    const cancel = () => {
+      clearHold();
+      pointerId.current = null;
     };
-
-    const handleMouseUp = (e: MouseEvent) => {
-      if (!isMouseDown) return;
-
-      if (holdTimerRef.current) {
-        clearTimeout(holdTimerRef.current);
-        holdTimerRef.current = null;
-      }
-
-      const endY = e.clientY;
-      const duration = TimeService.realNow() - startTime.current;
-      const diff = startY.current - endY;
-
-      // 快速上滑返回桌面
-      if (diff > homeSwipeThreshold && duration < recentsHoldDuration && !isRecentsVisible) {
-        // 已在桌面时先尝试关闭桌面层遮罩（如搜索）
-        if (isLauncherVisible) {
-          window.__OS__?.handleBack();
-        } else {
-          window.__OS__?.goHome();
-        }
-      }
-
-      startY.current = 0;
+    const onBlur = () => {
+      cancel();
       setSwipeProgress(0);
-      setIsMouseDown(false);
     };
-
-    if (isMouseDown) {
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
-    }
-
+    window.addEventListener('blur', onBlur);
     return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
+      window.removeEventListener('blur', onBlur);
+      cancel();
     };
-  }, [isMouseDown, isRecentsVisible, isLauncherVisible]);
+  }, []);
 
-  const handleMouseDown = (e: React.MouseEvent) => {
-    e.preventDefault();
-    startY.current = e.clientY;
+  const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (!event.isPrimary || event.button !== 0 || pointerId.current !== null) return;
+    pointerId.current = event.pointerId;
+    startY.current = event.clientY;
     startTime.current = TimeService.realNow();
-    setIsMouseDown(true);
+    setSwipeProgress(0);
+    // Playwright replays synthetic pointer events on the original element.
+    if (event.nativeEvent.isTrusted) event.currentTarget.setPointerCapture(event.pointerId);
+  };
+
+  const handlePointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (event.pointerId !== pointerId.current) return;
+    const distance = startY.current - event.clientY;
+    setSwipeProgress(Math.min(Math.max(distance / gestureProgressDivisor, 0), 1));
+
+    if (distance < gestureCancelThreshold || isRecentsVisible) {
+      clearHold();
+      return;
+    }
+    if (holdTimerRef.current !== null) return;
+    holdTimerRef.current = window.setTimeout(() => {
+      holdTimerRef.current = null;
+      pointerId.current = null;
+      setSwipeProgress(0);
+      window.__OS__?.showRecents();
+    }, recentsHoldDuration);
+  };
+
+  const finishPointer = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (event.pointerId !== pointerId.current) return;
+    clearHold();
+    pointerId.current = null;
+    setSwipeProgress(0);
+    if (event.type !== 'pointerup' || isRecentsVisible) return;
+    if (startY.current - event.clientY <= homeSwipeThreshold ||
+        TimeService.realNow() - startTime.current >= recentsHoldDuration) return;
+    if (isLauncherVisible) window.__OS__?.handleBack();
+    else window.__OS__?.goHome();
   };
 
   // 在App内时，减小触摸区域避免遮挡TabBar
@@ -234,12 +170,14 @@ export const GestureBar = () => {
       data-gesture-bar="true"
       style={{
         zIndex: zIndexGestureBar,
-        height: `${touchAreaHeight}px`
+        height: `${touchAreaHeight}px`,
+        touchAction: 'none'
       }}
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
-      onMouseDown={handleMouseDown}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={finishPointer}
+      onPointerCancel={finishPointer}
+      onLostPointerCapture={finishPointer}
     >
       <div
         className="rounded-full pointer-events-none"

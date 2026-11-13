@@ -16,6 +16,8 @@ import {
 } from 'react-router-dom';
 import { ActivityRouteHost } from '../../os/components/ActivityRouteHost';
 import { useAppNavigationHandler } from '../../os/hooks/useAppNavigationHandler';
+import { useActivityId } from '../../os/ActivityContext';
+import type { IntentPayload } from '../../os/types/manifest';
 import { BottomTabBar } from './components/BottomTabBar';
 import { CallsPage } from './pages/CallsPage';
 import { ContactsPage } from './pages/ContactsPage';
@@ -30,6 +32,8 @@ import { PhonePreferenceScreenPage } from './pages/PhonePreferenceScreenPage';
 
 /** Handles back navigation and route observation for the OS */
 const ContactsNavigationHandler: React.FC = () => {
+  const activityId = useActivityId();
+  const previousIntent = useRef<IntentPayload | null>(null);
   const location = useLocation();
   const navigate = useNavigate();
   const { navigator } = React.useContext(UNSAFE_NavigationContext);
@@ -65,7 +69,20 @@ const ContactsNavigationHandler: React.FC = () => {
     onBack: handleBackPress,
     onNavigate: (path, navigateToPath) => {
       const normalized = path.startsWith('/') ? path : `/${path}`;
-      navigateToPath(normalized);
+      const queryStart = normalized.indexOf('?');
+      const pathname = queryStart < 0 ? normalized : normalized.slice(0, queryStart);
+      const search = queryStart < 0 ? '' : normalized.slice(queryStart + 1);
+      const params = new URLSearchParams(search);
+      if (pathname !== '/' || params.get('dialpad') !== 'true') return navigateToPath(normalized);
+      const intent = window.__OS__?.getIntentPayload(activityId);
+      const dialIntent = intent && intent !== previousIntent.current &&
+        (intent.action === 'ACTION_DIAL' || (intent.action === 'ACTION_VIEW' && intent.scheme === 'tel'));
+      if (intent) previousIntent.current = intent;
+      const value = params.get('number') ?? (dialIntent ? intent.data?.number ?? intent.data?.url : undefined);
+      const number = typeof value === 'string' ? value.replace(/^tel:/i, '').replace(/[\s().-]/g, '') : '';
+      if (/^\+?[0-9*#]{1,40}$/.test(number)) params.set('number', number);
+      else params.delete('number');
+      navigateToPath(`/?${params}`);
     },
   });
 

@@ -2040,15 +2040,7 @@ export const Launcher: React.FC = () => {
     setDrag(d);
   };
 
-  const computeDragOver = (clientX: number, clientY: number): DragOver | null => {
-    // Drag drop-target bar (e.g. remove/info) should take priority.
-    const hit = (typeof document !== 'undefined' ? document.elementFromPoint(clientX, clientY) : null) as HTMLElement | null;
-    const dropEl = hit?.closest?.('[data-drop-target]') as HTMLElement | null;
-    const target = dropEl?.getAttribute('data-drop-target');
-    if (target === 'remove' || target === 'info') {
-      return { container: 'dropTarget', target };
-    }
-
+  const computeContainerOverAt = (clientX: number, clientY: number): DragOver | null => {
     const l = layoutRef.current;
     const screen = l.screens[currentPageRef.current];
     if (screen) {
@@ -2078,6 +2070,23 @@ export const Launcher: React.FC = () => {
       }
     }
 
+    return null;
+  };
+
+  const dropTargetsRef = useRef<HTMLDivElement>(null);
+  const computeDragOver = (clientX: number, clientY: number): DragOver | null => {
+    const container = computeContainerOverAt(clientX, clientY);
+    if (container) return container;
+    // The bar sits above the grid and can be behind the status bar's gesture layer.
+    for (const element of dropTargetsRef.current?.querySelectorAll('[data-drop-target]') ?? []) {
+      const target = element.getAttribute('data-drop-target');
+      if (target !== 'remove' && target !== 'info') continue;
+      const rect = element.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0 &&
+          clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom) {
+        return { container: 'dropTarget', target };
+      }
+    }
     return null;
   };
 
@@ -2511,6 +2520,7 @@ export const Launcher: React.FC = () => {
       const d = dragRef.current;
       if (!d) return;
       if (e.pointerId !== d.pointerId) return;
+      const over = computeDragOver(e.clientX, e.clientY);
       clearAutoFlip();
       setPreviewScreensById(null);
       setPreviewHotseat(null);
@@ -2518,15 +2528,15 @@ export const Launcher: React.FC = () => {
       lastPreviewFolderIntentRef.current = false;
       dragRef.current = null;
       setDrag(null);
-      if (!d.over) return;
-      if (d.over.container === 'dropTarget' && d.over.target === 'info') {
+      if (!over) return;
+      if (over.container === 'dropTarget' && over.target === 'info') {
         const item = layoutRef.current.items[d.itemId] ?? d.transientItem;
         if (item?.kind === 'app') {
           openAppInfo(item.appId);
         }
         return;
       }
-      setLayout(prev => applyDrop(prev, d));
+      setLayout(prev => applyDrop(prev, { ...d, over, clientX: e.clientX, clientY: e.clientY }));
     };
 
     const onBlur = () => {
@@ -2542,15 +2552,19 @@ export const Launcher: React.FC = () => {
       setDrag(null);
     };
 
+    const onCancel = (e: PointerEvent) => {
+      if (e.pointerId === dragRef.current?.pointerId) onBlur();
+    };
+
     window.addEventListener('pointermove', onMove);
     window.addEventListener('pointerup', onUp);
-    window.addEventListener('pointercancel', onUp);
+    window.addEventListener('pointercancel', onCancel);
     window.addEventListener('blur', onBlur);
     return () => {
       clearAutoFlip();
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp);
-      window.removeEventListener('pointercancel', onUp);
+      window.removeEventListener('pointercancel', onCancel);
       window.removeEventListener('blur', onBlur);
     };
   }, []);
@@ -2850,8 +2864,9 @@ export const Launcher: React.FC = () => {
       {/* Drag drop targets */}
       {drag ? (
         <div
+          ref={dropTargetsRef}
           className="absolute left-0 right-0 z-[85] pointer-events-none"
-          style={{ top: `${statusBarHeight + 10}px` }}
+          style={{ top: `${Math.max(4, statusBarHeight - 32)}px` }}
           aria-label="拖拽目标栏"
         >
           <div className="mx-auto w-full px-6 flex justify-center gap-3 pointer-events-auto">

@@ -83,13 +83,14 @@ const CallLogItem: React.FC<{
 
 const DialpadOverlay: React.FC<{
   sims: SimProfile[];
-  onClose: () => void;
-}> = ({ sims, onClose }) => {
+  close: React.HTMLAttributes<HTMLDivElement>;
+  initialDigits: string;
+}> = ({ sims, close, initialDigits }) => {
   const locale = useLocale();
   const isEnglish = locale === 'en';
   const { themeService, version } = useTheme();
   const s = useAppStrings(strings, stringsEn);
-  const [digits, setDigits] = useState('');
+  const [digits, setDigits] = useState(initialDigits);
 
   const buttons = [
     { key: '1', sub: '' },
@@ -124,7 +125,7 @@ const DialpadOverlay: React.FC<{
 
   return (
     <div className="absolute inset-0 z-30">
-      <div className="absolute inset-0 bg-black/0" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/0" {...close} />
 
       <div className="absolute left-0 right-0 bottom-[86px] bg-app-surface rounded-t-[24px] shadow-[0_-12px_28px_rgba(0,0,0,0.10)] overflow-hidden">
         <div className="px-6 pt-5 pb-2">
@@ -259,9 +260,10 @@ const DialpadOverlay: React.FC<{
 export const CallsPage: React.FC = () => {
   const locale = useLocale();
   const isEnglish = locale === 'en';
-  const { bindNav, back } = useContactsGestures();
+  const { bindNav, bindBack } = useContactsGestures();
   const [searchParams] = useSearchParams();
   const dialpadOpen = searchParams.get('dialpad') === 'true';
+  const requestedNumber = searchParams.get('number') ?? '';
   const list = useMemo(() => CONTACTS_CONFIG.callLogs, []);
   const s = useAppStrings(strings, stringsEn);
   const sims = useSimProfiles();
@@ -341,10 +343,10 @@ export const CallsPage: React.FC = () => {
 
       {dialpadOpen ? (
         <DialpadOverlay
+          key={requestedNumber}
           sims={sims}
-          onClose={() => {
-            back(1);
-          }}
+          close={bindBack()}
+          initialDigits={/^\+?[0-9*#]{1,40}$/.test(requestedNumber) ? requestedNumber : ''}
         />
       ) : null}
     </div>

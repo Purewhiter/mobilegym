@@ -4,6 +4,8 @@ import { applySkinToThemeColors } from '../../os/SkinService';
 import { useDarkMode } from '../../os/hooks/useDarkMode';
 import { MemoryRouter, useLocation, UNSAFE_NavigationContext, Route } from 'react-router-dom';
 import { ActivityRouteHost } from '../../os/components/ActivityRouteHost';
+import { useActivityId } from '../../os/ActivityContext';
+import type { IntentPayload } from '../../os/types/manifest';
 import { IcGlobe, IcBack, IcForward, IcRefresh, IcHome, IcSearch, IcShield, IcNavBack, IcNavForward, IcTabs, IcMoreHoriz, IcClose, IcAdd } from './res/icons';
 import { manifest } from './manifest';
 import { colors, colorsDark } from './res/colors';
@@ -24,8 +26,20 @@ import faviconGoogle from './assets/favicons/google.ico';
 import faviconBing from './assets/favicons/bing.ico';
 import { routes } from './routes';
 
+function externalUrl(value: unknown): string | undefined {
+    if (typeof value !== 'string') return;
+    try {
+        const url = new URL(value);
+        if (url.protocol === 'http:' || url.protocol === 'https:') return url.href;
+    } catch {
+        return;
+    }
+}
+
 // --- Navigation Handler ---
 const BrowserNavigationHandler: React.FC = () => {
+    const activityId = useActivityId();
+    const previousIntent = useRef<IntentPayload | null>(null);
     const location = useLocation();
     const { back, nav } = useBrowserGestures();
     const { navigator } = React.useContext(UNSAFE_NavigationContext);
@@ -51,7 +65,24 @@ const BrowserNavigationHandler: React.FC = () => {
         return false;
     }, [back, navigator]);
 
-    useAppNavigationHandler('browser', { onBack: handleBackPress });
+    useAppNavigationHandler('browser', {
+        onBack: handleBackPress,
+        onNavigate: (path, navigate) => {
+            const queryStart = path.indexOf('?');
+            const pathname = queryStart < 0 ? path : path.slice(0, queryStart);
+            const search = queryStart < 0 ? '' : path.slice(queryStart + 1);
+            if (pathname !== routes.view.path) return navigate(path);
+            const params = new URLSearchParams(search);
+            const intent = window.__OS__?.getIntentPayload(activityId);
+            const fresh = intent && intent !== previousIntent.current;
+            if (intent) previousIntent.current = intent;
+            const url = externalUrl(params.get('url') ?? (fresh && intent.action === 'ACTION_VIEW' ? intent.data?.url : undefined));
+            if (url) params.set('url', url);
+            else params.delete('url');
+            const query = params.toString();
+            navigate(query ? `${pathname}?${query}` : pathname);
+        },
+    });
 
     return null;
 };
@@ -132,7 +163,7 @@ const BrowserHome: React.FC<{ onNavigate: (url: string) => void; bindOpen: (url:
 };
 
 // --- WebView Component ---
-const BrowserView: React.FC<{ url: string }> = ({ url }) => {
+const BrowserView: React.FC<{ url: string; external?: boolean }> = ({ url, external }) => {
     const [isLoading, setIsLoading] = useState(true);
 
     return (
@@ -153,11 +184,11 @@ const BrowserView: React.FC<{ url: string }> = ({ url }) => {
                         className="w-full h-full border-none"
                         onLoad={() => setIsLoading(false)}
                         title="browser-active-content"
-                        sandbox="allow-same-origin allow-scripts allow-forms"
+                        sandbox={external ? 'allow-scripts allow-forms' : 'allow-same-origin allow-scripts allow-forms'}
                         allow="autoplay; encrypted-media"
                     />
                 ) : null}
-                {isLoading && (
+                {url && isLoading && (
                     <div className="absolute inset-0 bg-app-surface flex items-center justify-center">
                         <div className="w-8 h-8 border-3 border-blue-500/20 border-t-blue-500 rounded-full animate-spin" />
                     </div>
@@ -166,6 +197,18 @@ const BrowserView: React.FC<{ url: string }> = ({ url }) => {
         </div>
     );
 };
+
+const BrowserViewRoute: React.FC<{ tabUrl: string }> = ({ tabUrl }) => {
+    const { search } = useLocation();
+    const openedUrl = externalUrl(new URLSearchParams(search).get('url'));
+    const url = openedUrl ?? tabUrl;
+    return <BrowserView key={url} url={url} external={openedUrl !== undefined} />;
+};
+
+const browserScreenIdentity = ({ pathname, search }: { pathname: string; search: string }) =>
+    pathname === routes.view.path
+        ? `${pathname}:${externalUrl(new URLSearchParams(search).get('url')) ?? ''}`
+        : pathname;
 
 // --- Tabs Overlay ---
 const TabsOverlay: React.FC<{
@@ -236,13 +279,17 @@ const BrowserContent: React.FC = () => {
 
     // The tabs list lives in the URL (?panel=tabs on / and /view): system back closes it.
     const isTabsOverlayOpen = new URLSearchParams(location.search).get('panel') === 'tabs';
+    const openedUrl = location.pathname === routes.view.path
+        ? externalUrl(new URLSearchParams(location.search).get('url'))
+        : undefined;
+    const displayedUrl = openedUrl ?? activeTab.url;
 
     // Track visited URLs
     useEffect(() => {
-        if (activeTab.url) {
-            trackVisitedUrl(activeTab.url);
+        if (displayedUrl) {
+            trackVisitedUrl(displayedUrl);
         }
-    }, [activeTab.url, trackVisitedUrl]);
+    }, [displayedUrl, trackVisitedUrl]);
 
     const toUrl = (input: string) => {
         let target = input.trim();
@@ -295,9 +342,9 @@ const BrowserContent: React.FC = () => {
             {/* Content */}
             <div className="flex-1 relative flex flex-col overflow-hidden">
                 {/* Pages below the top stay as they were left (Fragment back stack), see ActivityRouteHost. */}
-                <ActivityRouteHost>
+                <ActivityRouteHost identity={browserScreenIdentity}>
                     <Route path="/" element={<BrowserHome onNavigate={handleNavigate} bindOpen={bindOpenUrl} />} />
-                    <Route path="/view" element={<BrowserView url={activeTab.url} />} />
+                    <Route path="/view" element={<BrowserViewRoute tabUrl={activeTab.url} />} />
                 </ActivityRouteHost>
             </div>
 
@@ -323,7 +370,7 @@ const BrowserContent: React.FC = () => {
                     {...bindNav(routes.home, {
                         replace: true,
                         beforeTrigger: () => {
-                            if (activeTab.url) {
+                            if (!openedUrl && activeTab.url) {
                                 storeGoHome(activeTabId);
                             }
                         },
@@ -334,7 +381,7 @@ const BrowserContent: React.FC = () => {
                 </button>
 
                 <button
-                    {...bindNav(location.pathname === '/view' ? routes.view : routes.home, { search: { panel: 'tabs' } })}
+                    {...bindNav(location.pathname === '/view' ? routes.view : routes.home, { search: { panel: 'tabs', url: openedUrl } })}
                     className="w-12 h-12 flex items-center justify-center text-slate-500 relative active:bg-slate-50 rounded-full"
                 >
                     <IcTabs size={dimens.tabs_icon_size} />
