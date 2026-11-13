@@ -21,6 +21,10 @@ Use:
 
 The OS no longer relies on DOM color auto-detection fallback. Declare the foreground when a page differs from the manifest default.
 
+### Device chrome
+
+The Redmi Note 12 Turbo HyperOS profile in `os/chrome/` draws the default status bar and gesture handle. The status bar reflects device state and shows up to three unread notification owners, with dots for overflow. Set the `device_chrome_profile` device preference to `legacy` to replay with the previous chrome. A custom status bar theme takes precedence over the profile. Keep reserving the usual app status bar space with `pt-10`.
+
 ### Foreground fallback chain
 
 The system chrome resolves its foreground color from declarative signals only — it never samples the page's background pixels.

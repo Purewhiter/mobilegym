@@ -44,6 +44,8 @@ export interface OsCellularState {
 
 export interface OsWifiState {
   level: number;
+  /** Wi-Fi generation when specified by the device scenario. */
+  standard?: number;
   connectedSsid?: string;
   ipAddress?: string;
   macAddress?: string;

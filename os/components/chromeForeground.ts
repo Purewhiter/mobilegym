@@ -5,7 +5,7 @@
  * the launcher root carries `data-launcher="true"`.
  */
 
-import { getActiveTopActivityId } from '../taskUtils';
+import { getActiveTask, getTaskTopActivity } from '../taskUtils';
 
 import type { AppId, OSState } from '../types';
 
@@ -37,17 +37,18 @@ export const queryLastForegroundDeclaration = (
 
 export type ChromeTaskSnapshot = {
   activeTopActivityId: string | null;
+  activeTopAppId: AppId | null;
   activeRootAppId: AppId | null;
   isLauncherVisible: boolean;
   isRecentsVisible: boolean;
 };
 
 export const getChromeTaskSnapshot = (state: OSState): ChromeTaskSnapshot => {
-  const activeTask = state.activeTaskId
-    ? state.tasks.find((task) => task.taskId === state.activeTaskId) ?? null
-    : null;
+  const activeTask = getActiveTask(state);
+  const activeActivity = getTaskTopActivity(activeTask);
   return {
-    activeTopActivityId: getActiveTopActivityId(state),
+    activeTopActivityId: activeActivity?.activityId ?? null,
+    activeTopAppId: activeActivity?.appId ?? null,
     activeRootAppId: activeTask?.rootAppId ?? null,
     isLauncherVisible: state.isLauncherVisible,
     isRecentsVisible: state.isRecentsVisible,
@@ -56,6 +57,7 @@ export const getChromeTaskSnapshot = (state: OSState): ChromeTaskSnapshot => {
 
 export const areChromeTaskSnapshotsEqual = (a: ChromeTaskSnapshot, b: ChromeTaskSnapshot): boolean => {
   return a.activeTopActivityId === b.activeTopActivityId
+    && a.activeTopAppId === b.activeTopAppId
     && a.activeRootAppId === b.activeRootAppId
     && a.isLauncherVisible === b.isLauncherVisible
     && a.isRecentsVisible === b.isRecentsVisible;

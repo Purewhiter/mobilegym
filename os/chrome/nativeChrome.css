@@ -1,0 +1,7 @@
+@font-face {
+  font-family: NativeChromeMiSans;
+  src: url('./assets/redmi-note12-turbo-hyperos3/MiSansVF-digits.woff2') format('woff2');
+  font-weight: 150 700;
+  font-style: normal;
+  font-display: swap;
+}

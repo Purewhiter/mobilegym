@@ -1,0 +1,1932 @@
+{
+  "schemaVersion": 1,
+  "assets": [
+    {
+      "key": "stat_sys_signal_0",
+      "path": "os/chrome/assets/redmi-note12-turbo-hyperos3/stat_sys_signal_0.svg",
+      "identity": "derived-native-vector",
+      "sourcePackage": "com.android.systemui",
+      "apkSha256": "9816e0ab8ff6f5ae3a0fcd1c704c3d24659e5138b39a300f93ee478baad11260",
+      "resourceId": "0x7f081b48",
+      "variants": [
+        {
+          "configuration": "",
+          "rawValue": "(file) res/drawable/stat_sys_signal_0.xml type=XML",
+          "tableLine": 46579,
+          "entry": "res/drawable/stat_sys_signal_0.xml"
+        }
+      ],
+      "archiveEntry": "res/drawable/stat_sys_signal_0.xml",
+      "archiveEntrySha256": "d2df23e5cb2a8ae615f8b4454cc87e15b4155958a3c3b0e59935187e7c154638",
+      "decodedXmlSha256": "ddd940b999630dabe2e3168ed0ce3abf9a522ede4639fffbeee284381a95bf6a",
+      "resolvedDimensions": {},
+      "outputSha256": "ae295b9256fe55111b433b0789abbe1e7059898c56403c800245cd15cbd58f18",
+      "conversion": {
+        "width": 20.0,
+        "height": 20.0,
+        "viewportWidth": 20.0,
+        "viewportHeight": 20.0,
+        "autoMirrored": false,
+        "direction": "LTR; autoMirrored flag retained for caller RTL handling",
+        "resolvedColorReferences": [
+          "@color/light_mode_icon_transparent_color_single_tone"
+        ],
+        "identity": "derived-vector-not-original-SVG",
+        "externalGradientPaints": [],
+        "limitations": [
+          "XML-to-SVG translation; not Android-renderer pixel verification.",
+          "Theme/configuration selection belongs to the caller."
+        ]
+      }
+    },
+    {
+      "key": "stat_sys_signal_0_darkmode",
+      "path": "os/chrome/assets/redmi-note12-turbo-hyperos3/stat_sys_signal_0_darkmode.svg",
+      "identity": "derived-native-vector",
+      "sourcePackage": "com.android.systemui",
+      "apkSha256": "9816e0ab8ff6f5ae3a0fcd1c704c3d24659e5138b39a300f93ee478baad11260",
+      "resourceId": "0x7f081b49",
+      "variants": [
+        {
+          "configuration": "",
+          "rawValue": "(file) res/drawable/stat_sys_signal_0_darkmode.xml type=XML",
+          "tableLine": 46581,
+          "entry": "res/drawable/stat_sys_signal_0_darkmode.xml"
+        }
+      ],
+      "archiveEntry": "res/drawable/stat_sys_signal_0_darkmode.xml",
+      "archiveEntrySha256": "2a7251cc4b974061a4ea51e80ea2b88f5bb0501d6f45a046c62e0976fddc9798",
+      "decodedXmlSha256": "d5e2e34f592ea64b70dc6beb3c57ffac55eb5b40d30849b5a41053103e868c19",
+      "resolvedDimensions": {},
+      "outputSha256": "e9fac7936812ba84c78dff1c6bc525f2d199ea374dcd1a375ee3d282ab725bbf",
+      "conversion": {
+        "width": 20.0,
+        "height": 20.0,
+        "viewportWidth": 20.0,
+        "viewportHeight": 20.0,
+        "autoMirrored": false,
+        "direction": "LTR; autoMirrored flag retained for caller RTL handling",
+        "resolvedColorReferences": [
+          "@color/dark_mode_icon_transparent_color_single_tone"
+        ],
+        "identity": "derived-vector-not-original-SVG",
+        "externalGradientPaints": [],
+        "limitations": [
+          "XML-to-SVG translation; not Android-renderer pixel verification.",
+          "Theme/configuration selection belongs to the caller."
+        ]
+      }
+    },
+    {
+      "key": "stat_sys_signal_1",
+      "path": "os/chrome/assets/redmi-note12-turbo-hyperos3/stat_sys_signal_1.svg",
+      "identity": "derived-native-vector",
+      "sourcePackage": "com.android.systemui",
+      "apkSha256": "9816e0ab8ff6f5ae3a0fcd1c704c3d24659e5138b39a300f93ee478baad11260",
+      "resourceId": "0x7f081b4e",
+      "variants": [
+        {
+          "configuration": "",
+          "rawValue": "(file) res/drawable/stat_sys_signal_1.xml type=XML",
+          "tableLine": 46591,
+          "entry": "res/drawable/stat_sys_signal_1.xml"
+        }
+      ],
+      "archiveEntry": "res/drawable/stat_sys_signal_1.xml",
+      "archiveEntrySha256": "ee079c7a1f2d9db90aadf3fb1dbc43a79f8dceb157c722d345daa3a2da45c414",
+      "decodedXmlSha256": "e27f62ad7fe82055c03ef0fe73e114aac830f3e465d40c173994ba289b06437c",
+      "resolvedDimensions": {},
+      "outputSha256": "30435ac35d21806395f4f7b31bb14a6f07beaf66a016cd08eedc3b9f00536c91",
+      "conversion": {
+        "width": 20.0,
+        "height": 20.0,
+        "viewportWidth": 20.0,
+        "viewportHeight": 20.0,
+        "autoMirrored": false,
+        "direction": "LTR; autoMirrored flag retained for caller RTL handling",
+        "resolvedColorReferences": [
+          "@color/light_mode_icon_color_single_tone",
+          "@color/light_mode_icon_transparent_color_single_tone"
+        ],
+        "identity": "derived-vector-not-original-SVG",
+        "externalGradientPaints": [],
+        "limitations": [
+          "XML-to-SVG translation; not Android-renderer pixel verification.",
+          "Theme/configuration selection belongs to the caller."
+        ]
+      }
+    },
+    {
+      "key": "stat_sys_signal_1_darkmode",
+      "path": "os/chrome/assets/redmi-note12-turbo-hyperos3/stat_sys_signal_1_darkmode.svg",
+      "identity": "derived-native-vector",
+      "sourcePackage": "com.android.systemui",
+      "apkSha256": "9816e0ab8ff6f5ae3a0fcd1c704c3d24659e5138b39a300f93ee478baad11260",
+      "resourceId": "0x7f081b4f",
+      "variants": [
+        {
+          "configuration": "",
+          "rawValue": "(file) res/drawable/stat_sys_signal_1_darkmode.xml type=XML",
+          "tableLine": 46593,
+          "entry": "res/drawable/stat_sys_signal_1_darkmode.xml"
+        }
+      ],
+      "archiveEntry": "res/drawable/stat_sys_signal_1_darkmode.xml",
+      "archiveEntrySha256": "3ea4c647183ee88246b9c6a1d1dd788fa8767aed47b6f3c0bad1edd2179f9a35",
+      "decodedXmlSha256": "1260a5d62cfcef50b01e3c71a32bd07e7cf0fa7411ca73d9cea91cc039caa724",
+      "resolvedDimensions": {},
+      "outputSha256": "23cb2b0afadf33dd54b11daa1412ea09575f78b57c26e8cff59e4b759fa6a4b0",
+      "conversion": {
+        "width": 20.0,
+        "height": 20.0,
+        "viewportWidth": 20.0,
+        "viewportHeight": 20.0,
+        "autoMirrored": false,
+        "direction": "LTR; autoMirrored flag retained for caller RTL handling",
+        "resolvedColorReferences": [
+          "@color/dark_mode_icon_color_single_tone",
+          "@color/dark_mode_icon_transparent_color_single_tone"
+        ],
+        "identity": "derived-vector-not-original-SVG",
+        "externalGradientPaints": [],
+        "limitations": [
+          "XML-to-SVG translation; not Android-renderer pixel verification.",
+          "Theme/configuration selection belongs to the caller."
+        ]
+      }
+    },
+    {
+      "key": "stat_sys_signal_2",
+      "path": "os/chrome/assets/redmi-note12-turbo-hyperos3/stat_sys_signal_2.svg",
+      "identity": "derived-native-vector",
+      "sourcePackage": "com.android.systemui",
+      "apkSha256": "9816e0ab8ff6f5ae3a0fcd1c704c3d24659e5138b39a300f93ee478baad11260",
+      "resourceId": "0x7f081b54",
+      "variants": [
+        {
+          "configuration": "",
+          "rawValue": "(file) res/drawable/stat_sys_signal_2.xml type=XML",
+          "tableLine": 46603,
+          "entry": "res/drawable/stat_sys_signal_2.xml"
+        }
+      ],
+      "archiveEntry": "res/drawable/stat_sys_signal_2.xml",
+      "archiveEntrySha256": "1f3d77c822a9c13bb9626d8fd46a6da7bf1a6c7dbc1b3a74dac7bbdf5cca213c",
+      "decodedXmlSha256": "e4352952518bd0327debf0c3b76413f0c6bf7fb1b954c3f2b8f8eb0e15f0c9b0",
+      "resolvedDimensions": {},
+      "outputSha256": "c5483c8a42c106538001ef8124b48ac0eb519a977d6ff80e13cb654cdd4836e5",
+      "conversion": {
+        "width": 20.0,
+        "height": 20.0,
+        "viewportWidth": 20.0,
+        "viewportHeight": 20.0,
+        "autoMirrored": false,
+        "direction": "LTR; autoMirrored flag retained for caller RTL handling",
+        "resolvedColorReferences": [
+          "@color/light_mode_icon_color_single_tone",
+          "@color/light_mode_icon_transparent_color_single_tone"
+        ],
+        "identity": "derived-vector-not-original-SVG",
+        "externalGradientPaints": [],
+        "limitations": [
+          "XML-to-SVG translation; not Android-renderer pixel verification.",
+          "Theme/configuration selection belongs to the caller."
+        ]
+      }
+    },
+    {
+      "key": "stat_sys_signal_2_darkmode",
+      "path": "os/chrome/assets/redmi-note12-turbo-hyperos3/stat_sys_signal_2_darkmode.svg",
+      "identity": "derived-native-vector",
+      "sourcePackage": "com.android.systemui",
+      "apkSha256": "9816e0ab8ff6f5ae3a0fcd1c704c3d24659e5138b39a300f93ee478baad11260",
+      "resourceId": "0x7f081b55",
+      "variants": [
+        {
+          "configuration": "",
+          "rawValue": "(file) res/drawable/stat_sys_signal_2_darkmode.xml type=XML",
+          "tableLine": 46605,
+          "entry": "res/drawable/stat_sys_signal_2_darkmode.xml"
+        }
+      ],
+      "archiveEntry": "res/drawable/stat_sys_signal_2_darkmode.xml",
+      "archiveEntrySha256": "71385f6b58e1818b64fa6b3e278de9c3dd64a54b96adb0387a2f7d6822d6d2d3",
+      "decodedXmlSha256": "2a0688d4b178d092785959e672c84125eae3636557b771c509e365c3444c64ab",
+      "resolvedDimensions": {},
+      "outputSha256": "2ba6843f6214adfea229e2b81c1889bed174e1e5044f3d355300c8d40e9174d9",
+      "conversion": {
+        "width": 20.0,
+        "height": 20.0,
+        "viewportWidth": 20.0,
+        "viewportHeight": 20.0,
+        "autoMirrored": false,
+        "direction": "LTR; autoMirrored flag retained for caller RTL handling",
+        "resolvedColorReferences": [
+          "@color/dark_mode_icon_color_single_tone",
+          "@color/dark_mode_icon_transparent_color_single_tone"
+        ],
+        "identity": "derived-vector-not-original-SVG",
+        "externalGradientPaints": [],
+        "limitations": [
+          "XML-to-SVG translation; not Android-renderer pixel verification.",
+          "Theme/configuration selection belongs to the caller."
+        ]
+      }
+    },
+    {
+      "key": "stat_sys_signal_3",
+      "path": "os/chrome/assets/redmi-note12-turbo-hyperos3/stat_sys_signal_3.svg",
+      "identity": "derived-native-vector",
+      "sourcePackage": "com.android.systemui",
+      "apkSha256": "9816e0ab8ff6f5ae3a0fcd1c704c3d24659e5138b39a300f93ee478baad11260",
+      "resourceId": "0x7f081b5a",
+      "variants": [
+        {
+          "configuration": "",
+          "rawValue": "(file) res/drawable/stat_sys_signal_3.xml type=XML",
+          "tableLine": 46615,
+          "entry": "res/drawable/stat_sys_signal_3.xml"
+        }
+      ],
+      "archiveEntry": "res/drawable/stat_sys_signal_3.xml",
+      "archiveEntrySha256": "9f5430408f7546d7a5224fe2ff009a4515555522e425808e171217d6da4bdffd",
+      "decodedXmlSha256": "5a71cc49713d0b6c1c99ae0949170095b3a8dbe9f15dd652a30114870358639d",
+      "resolvedDimensions": {},
+      "outputSha256": "d5f9fcc48b5e5855d0440c1a2423e0c021a90a88f1ba5703e3b2b999026bd938",
+      "conversion": {
+        "width": 20.0,
+        "height": 20.0,
+        "viewportWidth": 20.0,
+        "viewportHeight": 20.0,
+        "autoMirrored": false,
+        "direction": "LTR; autoMirrored flag retained for caller RTL handling",
+        "resolvedColorReferences": [
+          "@color/light_mode_icon_color_single_tone",
+          "@color/light_mode_icon_transparent_color_single_tone"
+        ],
+        "identity": "derived-vector-not-original-SVG",
+        "externalGradientPaints": [],
+        "limitations": [
+          "XML-to-SVG translation; not Android-renderer pixel verification.",
+          "Theme/configuration selection belongs to the caller."
+        ]
+      }
+    },
+    {
+      "key": "stat_sys_signal_3_darkmode",
+      "path": "os/chrome/assets/redmi-note12-turbo-hyperos3/stat_sys_signal_3_darkmode.svg",
+      "identity": "derived-native-vector",
+      "sourcePackage": "com.android.systemui",
+      "apkSha256": "9816e0ab8ff6f5ae3a0fcd1c704c3d24659e5138b39a300f93ee478baad11260",
+      "resourceId": "0x7f081b5b",
+      "variants": [
+        {
+          "configuration": "",
+          "rawValue": "(file) res/drawable/stat_sys_signal_3_darkmode.xml type=XML",
+          "tableLine": 46617,
+          "entry": "res/drawable/stat_sys_signal_3_darkmode.xml"
+        }
+      ],
+      "archiveEntry": "res/drawable/stat_sys_signal_3_darkmode.xml",
+      "archiveEntrySha256": "96ce96a2dd0f7133661225142271f42051b30ec6eef7023469719862ec908eca",
+      "decodedXmlSha256": "48b7a0b335c969741e19fbbf69b63be260a82a444a1d24daa6ce13c2ed2077de",
+      "resolvedDimensions": {},
+      "outputSha256": "ec3be26ff947c9e07bfcb1c21b9cae3e76360a4a17409e9be8d0fa53064fc19b",
+      "conversion": {
+        "width": 20.0,
+        "height": 20.0,
+        "viewportWidth": 20.0,
+        "viewportHeight": 20.0,
+        "autoMirrored": false,
+        "direction": "LTR; autoMirrored flag retained for caller RTL handling",
+        "resolvedColorReferences": [
+          "@color/dark_mode_icon_color_single_tone",
+          "@color/dark_mode_icon_transparent_color_single_tone"
+        ],
+        "identity": "derived-vector-not-original-SVG",
+        "externalGradientPaints": [],
+        "limitations": [
+          "XML-to-SVG translation; not Android-renderer pixel verification.",
+          "Theme/configuration selection belongs to the caller."
+        ]
+      }
+    },
+    {
+      "key": "stat_sys_signal_4",
+      "path": "os/chrome/assets/redmi-note12-turbo-hyperos3/stat_sys_signal_4.svg",
+      "identity": "derived-native-vector",
+      "sourcePackage": "com.android.systemui",
+      "apkSha256": "9816e0ab8ff6f5ae3a0fcd1c704c3d24659e5138b39a300f93ee478baad11260",
+      "resourceId": "0x7f081b60",
+      "variants": [
+        {
+          "configuration": "",
+          "rawValue": "(file) res/drawable/stat_sys_signal_4.xml type=XML",
+          "tableLine": 46627,
+          "entry": "res/drawable/stat_sys_signal_4.xml"
+        }
+      ],
+      "archiveEntry": "res/drawable/stat_sys_signal_4.xml",
+      "archiveEntrySha256": "23422de4549a1c1d92a9235cf5b4be5573a99a3f86b3eee6fc5b553232d16fbb",
+      "decodedXmlSha256": "efd26308939072854b86a2f581e2b4404bc61fedfec26044b9beefaa9f8ad00a",
+      "resolvedDimensions": {},
+      "outputSha256": "5b167d3583f99ee92d481fc0ddc4864973d9fed0c1a670911097084450dd05e9",
+      "conversion": {
+        "width": 20.0,
+        "height": 20.0,
+        "viewportWidth": 20.0,
+        "viewportHeight": 20.0,
+        "autoMirrored": false,
+        "direction": "LTR; autoMirrored flag retained for caller RTL handling",
+        "resolvedColorReferences": [
+          "@color/light_mode_icon_color_single_tone"
+        ],
+        "identity": "derived-vector-not-original-SVG",
+        "externalGradientPaints": [],
+        "limitations": [
+          "XML-to-SVG translation; not Android-renderer pixel verification.",
+          "Theme/configuration selection belongs to the caller."
+        ]
+      }
+    },
+    {
+      "key": "stat_sys_signal_4_darkmode",
+      "path": "os/chrome/assets/redmi-note12-turbo-hyperos3/stat_sys_signal_4_darkmode.svg",
+      "identity": "derived-native-vector",
+      "sourcePackage": "com.android.systemui",
+      "apkSha256": "9816e0ab8ff6f5ae3a0fcd1c704c3d24659e5138b39a300f93ee478baad11260",
+      "resourceId": "0x7f081b61",
+      "variants": [
+        {
+          "configuration": "",
+          "rawValue": "(file) res/drawable/stat_sys_signal_4_darkmode.xml type=XML",
+          "tableLine": 46629,
+          "entry": "res/drawable/stat_sys_signal_4_darkmode.xml"
+        }
+      ],
+      "archiveEntry": "res/drawable/stat_sys_signal_4_darkmode.xml",
+      "archiveEntrySha256": "f037bf26ac283c54c5cd7de4162ae43df1b6c05bce89c3a919ecb9250f78e844",
+      "decodedXmlSha256": "c7093b5068de5718e7e0ffb24b08600cd3d6a08d1b897a12b2f51c52508caafb",
+      "resolvedDimensions": {},
+      "outputSha256": "a21322afb6ca8935cab18dbc917b41fc56dbf8643b6e8b19c4f3abc3eb4a21cf",
+      "conversion": {
+        "width": 20.0,
+        "height": 20.0,
+        "viewportWidth": 20.0,
+        "viewportHeight": 20.0,
+        "autoMirrored": false,
+        "direction": "LTR; autoMirrored flag retained for caller RTL handling",
+        "resolvedColorReferences": [
+          "@color/dark_mode_icon_color_single_tone"
+        ],
+        "identity": "derived-vector-not-original-SVG",
+        "externalGradientPaints": [],
+        "limitations": [
+          "XML-to-SVG translation; not Android-renderer pixel verification.",
+          "Theme/configuration selection belongs to the caller."
+        ]
+      }
+    },
+    {
+      "key": "stat_sys_wifi_signal_0",
+      "path": "os/chrome/assets/redmi-note12-turbo-hyperos3/stat_sys_wifi_signal_0.svg",
+      "identity": "derived-native-vector",
+      "sourcePackage": "com.android.systemui",
+      "apkSha256": "9816e0ab8ff6f5ae3a0fcd1c704c3d24659e5138b39a300f93ee478baad11260",
+      "resourceId": "0x7f081bdf",
+      "variants": [
+        {
+          "configuration": "",
+          "rawValue": "(file) res/drawable/stat_sys_wifi_signal_0.xml type=XML",
+          "tableLine": 46877,
+          "entry": "res/drawable/stat_sys_wifi_signal_0.xml"
+        }
+      ],
+      "archiveEntry": "res/drawable/stat_sys_wifi_signal_0.xml",
+      "archiveEntrySha256": "e9e270efdf68b08b16e368c608906ba1a67f2133ec893476241665764575edda",
+      "decodedXmlSha256": "eed2b961f407e2e0357c5da69cf26c0ff438e83c9210980f289a746c15d832dc",
+      "resolvedDimensions": {},
+      "outputSha256": "83f1e232f476ea5e593a733568fa50e316cf7ebe8d21396a61bf68556bebe5e1",
+      "conversion": {
+        "width": 20.0,
+        "height": 20.0,
+        "viewportWidth": 20.0,
+        "viewportHeight": 20.0,
+        "autoMirrored": false,
+        "direction": "LTR; autoMirrored flag retained for caller RTL handling",
+        "resolvedColorReferences": [
+          "@color/light_mode_icon_transparent_color_single_tone"
+        ],
+        "identity": "derived-vector-not-original-SVG",
+        "externalGradientPaints": [],
+        "limitations": [
+          "XML-to-SVG translation; not Android-renderer pixel verification.",
+          "Theme/configuration selection belongs to the caller."
+        ]
+      }
+    },
+    {
+      "key": "stat_sys_wifi_signal_0_darkmode",
+      "path": "os/chrome/assets/redmi-note12-turbo-hyperos3/stat_sys_wifi_signal_0_darkmode.svg",
+      "identity": "derived-native-vector",
+      "sourcePackage": "com.android.systemui",
+      "apkSha256": "9816e0ab8ff6f5ae3a0fcd1c704c3d24659e5138b39a300f93ee478baad11260",
+      "resourceId": "0x7f081be0",
+      "variants": [
+        {
+          "configuration": "",
+          "rawValue": "(file) res/drawable/stat_sys_wifi_signal_0_darkmode.xml type=XML",
+          "tableLine": 46879,
+          "entry": "res/drawable/stat_sys_wifi_signal_0_darkmode.xml"
+        }
+      ],
+      "archiveEntry": "res/drawable/stat_sys_wifi_signal_0_darkmode.xml",
+      "archiveEntrySha256": "deb3317c0c0e00f5f09aecb3f6f93daeefc32c2a828d1ec5b7414927c6a1ea05",
+      "decodedXmlSha256": "ea9b9f46ce944ffd10f8473125728971003b41ee83816ca1fc34784c37c2847d",
+      "resolvedDimensions": {},
+      "outputSha256": "889698a40368b94628c35d46ab47e75ac4bfa73c5f15461759780080bd9f838f",
+      "conversion": {
+        "width": 20.0,
+        "height": 20.0,
+        "viewportWidth": 20.0,
+        "viewportHeight": 20.0,
+        "autoMirrored": false,
+        "direction": "LTR; autoMirrored flag retained for caller RTL handling",
+        "resolvedColorReferences": [
+          "@color/dark_mode_icon_transparent_color_single_tone"
+        ],
+        "identity": "derived-vector-not-original-SVG",
+        "externalGradientPaints": [],
+        "limitations": [
+          "XML-to-SVG translation; not Android-renderer pixel verification.",
+          "Theme/configuration selection belongs to the caller."
+        ]
+      }
+    },
+    {
+      "key": "stat_sys_wifi_signal_1",
+      "path": "os/chrome/assets/redmi-note12-turbo-hyperos3/stat_sys_wifi_signal_1.svg",
+      "identity": "derived-native-vector",
+      "sourcePackage": "com.android.systemui",
+      "apkSha256": "9816e0ab8ff6f5ae3a0fcd1c704c3d24659e5138b39a300f93ee478baad11260",
+      "resourceId": "0x7f081be2",
+      "variants": [
+        {
+          "configuration": "",
+          "rawValue": "(file) res/drawable/stat_sys_wifi_signal_1.xml type=XML",
+          "tableLine": 46883,
+          "entry": "res/drawable/stat_sys_wifi_signal_1.xml"
+        }
+      ],
+      "archiveEntry": "res/drawable/stat_sys_wifi_signal_1.xml",
+      "archiveEntrySha256": "e1176649a50da87b8f6c178dbbc8a57268cad853751569113482f53068daf0ce",
+      "decodedXmlSha256": "3b8cc31fe6d650eb21ab5299038fda53dc1e6aa94da7b34733490118eec2681a",
+      "resolvedDimensions": {},
+      "outputSha256": "9fb368d9dfd78d70beb1e8ff61c2fc0ad054807d33d5c61f2de8b49476e59784",
+      "conversion": {
+        "width": 20.0,
+        "height": 20.0,
+        "viewportWidth": 20.0,
+        "viewportHeight": 20.0,
+        "autoMirrored": false,
+        "direction": "LTR; autoMirrored flag retained for caller RTL handling",
+        "resolvedColorReferences": [
+          "@color/light_mode_icon_color_single_tone",
+          "@color/light_mode_icon_transparent_color_single_tone"
+        ],
+        "identity": "derived-vector-not-original-SVG",
+        "externalGradientPaints": [],
+        "limitations": [
+          "XML-to-SVG translation; not Android-renderer pixel verification.",
+          "Theme/configuration selection belongs to the caller."
+        ]
+      }
+    },
+    {
+      "key": "stat_sys_wifi_signal_1_darkmode",
+      "path": "os/chrome/assets/redmi-note12-turbo-hyperos3/stat_sys_wifi_signal_1_darkmode.svg",
+      "identity": "derived-native-vector",
+      "sourcePackage": "com.android.systemui",
+      "apkSha256": "9816e0ab8ff6f5ae3a0fcd1c704c3d24659e5138b39a300f93ee478baad11260",
+      "resourceId": "0x7f081be3",
+      "variants": [
+        {
+          "configuration": "",
+          "rawValue": "(file) res/drawable/stat_sys_wifi_signal_1_darkmode.xml type=XML",
+          "tableLine": 46885,
+          "entry": "res/drawable/stat_sys_wifi_signal_1_darkmode.xml"
+        }
+      ],
+      "archiveEntry": "res/drawable/stat_sys_wifi_signal_1_darkmode.xml",
+      "archiveEntrySha256": "311cd23f2d3faa856cebf4d4591cdf3b5a14d10b1a3ee50d3f9cafd626575038",
+      "decodedXmlSha256": "8f52d112b723334f03eda176f899415cc6960e1c2c816d2ab546177ee6737f4a",
+      "resolvedDimensions": {},
+      "outputSha256": "00bf683eb15ff385559386f0a511fec36108056a493a09df2f5f277eeb5724fb",
+      "conversion": {
+        "width": 20.0,
+        "height": 20.0,
+        "viewportWidth": 20.0,
+        "viewportHeight": 20.0,
+        "autoMirrored": false,
+        "direction": "LTR; autoMirrored flag retained for caller RTL handling",
+        "resolvedColorReferences": [
+          "@color/dark_mode_icon_color_single_tone",
+          "@color/dark_mode_icon_transparent_color_single_tone"
+        ],
+        "identity": "derived-vector-not-original-SVG",
+        "externalGradientPaints": [],
+        "limitations": [
+          "XML-to-SVG translation; not Android-renderer pixel verification.",
+          "Theme/configuration selection belongs to the caller."
+        ]
+      }
+    },
+    {
+      "key": "stat_sys_wifi_signal_2",
+      "path": "os/chrome/assets/redmi-note12-turbo-hyperos3/stat_sys_wifi_signal_2.svg",
+      "identity": "derived-native-vector",
+      "sourcePackage": "com.android.systemui",
+      "apkSha256": "9816e0ab8ff6f5ae3a0fcd1c704c3d24659e5138b39a300f93ee478baad11260",
+      "resourceId": "0x7f081be5",
+      "variants": [
+        {
+          "configuration": "",
+          "rawValue": "(file) res/drawable/stat_sys_wifi_signal_2.xml type=XML",
+          "tableLine": 46889,
+          "entry": "res/drawable/stat_sys_wifi_signal_2.xml"
+        }
+      ],
+      "archiveEntry": "res/drawable/stat_sys_wifi_signal_2.xml",
+      "archiveEntrySha256": "59391ecf914a52c28e67bca14020fe0a647141b5d5e7dcdd85bbc86a54d7ef14",
+      "decodedXmlSha256": "b636afda3cb35da6c0851fb1c3b2fcfc257a483b350303e39e77d49ba2783fa7",
+      "resolvedDimensions": {},
+      "outputSha256": "53197ad1ddd16059f6921a4b0142dc29388b22e66ca952a2e8cd41b7658a3ad7",
+      "conversion": {
+        "width": 20.0,
+        "height": 20.0,
+        "viewportWidth": 20.0,
+        "viewportHeight": 20.0,
+        "autoMirrored": false,
+        "direction": "LTR; autoMirrored flag retained for caller RTL handling",
+        "resolvedColorReferences": [
+          "@color/light_mode_icon_color_single_tone",
+          "@color/light_mode_icon_transparent_color_single_tone"
+        ],
+        "identity": "derived-vector-not-original-SVG",
+        "externalGradientPaints": [],
+        "limitations": [
+          "XML-to-SVG translation; not Android-renderer pixel verification.",
+          "Theme/configuration selection belongs to the caller."
+        ]
+      }
+    },
+    {
+      "key": "stat_sys_wifi_signal_2_darkmode",
+      "path": "os/chrome/assets/redmi-note12-turbo-hyperos3/stat_sys_wifi_signal_2_darkmode.svg",
+      "identity": "derived-native-vector",
+      "sourcePackage": "com.android.systemui",
+      "apkSha256": "9816e0ab8ff6f5ae3a0fcd1c704c3d24659e5138b39a300f93ee478baad11260",
+      "resourceId": "0x7f081be6",
+      "variants": [
+        {
+          "configuration": "",
+          "rawValue": "(file) res/drawable/stat_sys_wifi_signal_2_darkmode.xml type=XML",
+          "tableLine": 46891,
+          "entry": "res/drawable/stat_sys_wifi_signal_2_darkmode.xml"
+        }
+      ],
+      "archiveEntry": "res/drawable/stat_sys_wifi_signal_2_darkmode.xml",
+      "archiveEntrySha256": "ea30a70e7a1ee8b90da145e0ff6c3816d9d716ab7f2fe9abdd58d83956354884",
+      "decodedXmlSha256": "278739f439e62a402294bcd752b3e9a24c09c816bc6b37a1d632b13a109e5ea3",
+      "resolvedDimensions": {},
+      "outputSha256": "35e19c6387035ae9f92fbaa6b63fc294f7534d69a3af2f98670985b7969d7208",
+      "conversion": {
+        "width": 20.0,
+        "height": 20.0,
+        "viewportWidth": 20.0,
+        "viewportHeight": 20.0,
+        "autoMirrored": false,
+        "direction": "LTR; autoMirrored flag retained for caller RTL handling",
+        "resolvedColorReferences": [
+          "@color/dark_mode_icon_color_single_tone",
+          "@color/dark_mode_icon_transparent_color_single_tone"
+        ],
+        "identity": "derived-vector-not-original-SVG",
+        "externalGradientPaints": [],
+        "limitations": [
+          "XML-to-SVG translation; not Android-renderer pixel verification.",
+          "Theme/configuration selection belongs to the caller."
+        ]
+      }
+    },
+    {
+      "key": "stat_sys_wifi_signal_3",
+      "path": "os/chrome/assets/redmi-note12-turbo-hyperos3/stat_sys_wifi_signal_3.svg",
+      "identity": "derived-native-vector",
+      "sourcePackage": "com.android.systemui",
+      "apkSha256": "9816e0ab8ff6f5ae3a0fcd1c704c3d24659e5138b39a300f93ee478baad11260",
+      "resourceId": "0x7f081be8",
+      "variants": [
+        {
+          "configuration": "",
+          "rawValue": "(file) res/drawable/stat_sys_wifi_signal_3.xml type=XML",
+          "tableLine": 46895,
+          "entry": "res/drawable/stat_sys_wifi_signal_3.xml"
+        }
+      ],
+      "archiveEntry": "res/drawable/stat_sys_wifi_signal_3.xml",
+      "archiveEntrySha256": "38d265e58b2da42bfdd1cc25fcf9139bd8ac393501ddd9264c162b569fcfaeb4",
+      "decodedXmlSha256": "b42417e6f0d47f4e8424e9ca7931c4f3439b6e8133bf8b2cdfe13154bde280aa",
+      "resolvedDimensions": {},
+      "outputSha256": "7fd045c79775c4c5e00b717c0d4b7c976b646876e5b723268904b8e8e9be5932",
+      "conversion": {
+        "width": 20.0,
+        "height": 20.0,
+        "viewportWidth": 20.0,
+        "viewportHeight": 20.0,
+        "autoMirrored": false,
+        "direction": "LTR; autoMirrored flag retained for caller RTL handling",
+        "resolvedColorReferences": [
+          "@color/light_mode_icon_color_single_tone"
+        ],
+        "identity": "derived-vector-not-original-SVG",
+        "externalGradientPaints": [],
+        "limitations": [
+          "XML-to-SVG translation; not Android-renderer pixel verification.",
+          "Theme/configuration selection belongs to the caller."
+        ]
+      }
+    },
+    {
+      "key": "stat_sys_wifi_signal_3_darkmode",
+      "path": "os/chrome/assets/redmi-note12-turbo-hyperos3/stat_sys_wifi_signal_3_darkmode.svg",
+      "identity": "derived-native-vector",
+      "sourcePackage": "com.android.systemui",
+      "apkSha256": "9816e0ab8ff6f5ae3a0fcd1c704c3d24659e5138b39a300f93ee478baad11260",
+      "resourceId": "0x7f081be9",
+      "variants": [
+        {
+          "configuration": "",
+          "rawValue": "(file) res/drawable/stat_sys_wifi_signal_3_darkmode.xml type=XML",
+          "tableLine": 46897,
+          "entry": "res/drawable/stat_sys_wifi_signal_3_darkmode.xml"
+        }
+      ],
+      "archiveEntry": "res/drawable/stat_sys_wifi_signal_3_darkmode.xml",
+      "archiveEntrySha256": "b292b990c97e05737319b99d8d4c840fc0a38ae39146fea365983d63f3dba5db",
+      "decodedXmlSha256": "cb4f4de12c0d300ffd13d98481eb1b2b4d614cd38d8ab3a10ac4c182203a9b15",
+      "resolvedDimensions": {},
+      "outputSha256": "79318a31036b764b56aca530cf8e7799c1f75b1bd2768e02c3a4c6328f104fbd",
+      "conversion": {
+        "width": 20.0,
+        "height": 20.0,
+        "viewportWidth": 20.0,
+        "viewportHeight": 20.0,
+        "autoMirrored": false,
+        "direction": "LTR; autoMirrored flag retained for caller RTL handling",
+        "resolvedColorReferences": [
+          "@color/dark_mode_icon_color_single_tone"
+        ],
+        "identity": "derived-vector-not-original-SVG",
+        "externalGradientPaints": [],
+        "limitations": [
+          "XML-to-SVG translation; not Android-renderer pixel verification.",
+          "Theme/configuration selection belongs to the caller."
+        ]
+      }
+    },
+    {
+      "key": "stat_sys_no_sim",
+      "path": "os/chrome/assets/redmi-note12-turbo-hyperos3/stat_sys_no_sim.svg",
+      "identity": "derived-native-vector",
+      "sourcePackage": "com.android.systemui",
+      "apkSha256": "9816e0ab8ff6f5ae3a0fcd1c704c3d24659e5138b39a300f93ee478baad11260",
+      "resourceId": "0x7f081b24",
+      "variants": [
+        {
+          "configuration": "",
+          "rawValue": "(file) res/drawable/stat_sys_no_sim.xml type=XML",
+          "tableLine": 46509,
+          "entry": "res/drawable/stat_sys_no_sim.xml"
+        }
+      ],
+      "archiveEntry": "res/drawable/stat_sys_no_sim.xml",
+      "archiveEntrySha256": "0947c17f02761ab7e4efabb9a889599c6a143d631a3a0e806c4ebdcfb3a24737",
+      "decodedXmlSha256": "1ad7478c005956593050348303e9a1ee0429c50436b12a476b4fb93e9ba97eab",
+      "resolvedDimensions": {},
+      "outputSha256": "1af298807e588e56af7faf1673a6818eebd712bb869760a803ec5dabdb78ca31",
+      "conversion": {
+        "width": 20.0,
+        "height": 20.0,
+        "viewportWidth": 20.0,
+        "viewportHeight": 20.0,
+        "autoMirrored": false,
+        "direction": "LTR; autoMirrored flag retained for caller RTL handling",
+        "resolvedColorReferences": [
+          "@color/light_mode_icon_color_single_tone"
+        ],
+        "identity": "derived-vector-not-original-SVG",
+        "externalGradientPaints": [],
+        "limitations": [
+          "XML-to-SVG translation; not Android-renderer pixel verification.",
+          "Theme/configuration selection belongs to the caller."
+        ]
+      }
+    },
+    {
+      "key": "stat_sys_no_sim_darkmode",
+      "path": "os/chrome/assets/redmi-note12-turbo-hyperos3/stat_sys_no_sim_darkmode.svg",
+      "identity": "derived-native-vector",
+      "sourcePackage": "com.android.systemui",
+      "apkSha256": "9816e0ab8ff6f5ae3a0fcd1c704c3d24659e5138b39a300f93ee478baad11260",
+      "resourceId": "0x7f081b25",
+      "variants": [
+        {
+          "configuration": "",
+          "rawValue": "(file) res/drawable/stat_sys_no_sim_darkmode.xml type=XML",
+          "tableLine": 46511,
+          "entry": "res/drawable/stat_sys_no_sim_darkmode.xml"
+        }
+      ],
+      "archiveEntry": "res/drawable/stat_sys_no_sim_darkmode.xml",
+      "archiveEntrySha256": "7432ba9b1c00f6459cd0333a3301677ed0cabc5a9bea70922248052319c397eb",
+      "decodedXmlSha256": "3722de81fced991a451d2bc16165501c8e0c7da552b503217e6c710aa6fc6007",
+      "resolvedDimensions": {},
+      "outputSha256": "f697b442645248fedf677c71a1ff7dde45a46942a7eeceb6ec3f177cff6a7d97",
+      "conversion": {
+        "width": 20.0,
+        "height": 20.0,
+        "viewportWidth": 20.0,
+        "viewportHeight": 20.0,
+        "autoMirrored": false,
+        "direction": "LTR; autoMirrored flag retained for caller RTL handling",
+        "resolvedColorReferences": [
+          "@color/dark_mode_icon_color_single_tone"
+        ],
+        "identity": "derived-vector-not-original-SVG",
+        "externalGradientPaints": [],
+        "limitations": [
+          "XML-to-SVG translation; not Android-renderer pixel verification.",
+          "Theme/configuration selection belongs to the caller."
+        ]
+      }
+    },
+    {
+      "key": "stat_sys_data_bluetooth",
+      "path": "os/chrome/assets/redmi-note12-turbo-hyperos3/stat_sys_data_bluetooth.svg",
+      "identity": "derived-native-vector",
+      "sourcePackage": "com.android.systemui",
+      "apkSha256": "9816e0ab8ff6f5ae3a0fcd1c704c3d24659e5138b39a300f93ee478baad11260",
+      "resourceId": "0x7f081ab7",
+      "variants": [
+        {
+          "configuration": "",
+          "rawValue": "(file) res/drawable/stat_sys_data_bluetooth.xml type=XML",
+          "tableLine": 46297,
+          "entry": "res/drawable/stat_sys_data_bluetooth.xml"
+        }
+      ],
+      "archiveEntry": "res/drawable/stat_sys_data_bluetooth.xml",
+      "archiveEntrySha256": "4a51117bc7ccf48458bdba477ee8c2d6158c395c0f84ba5a1d71840ed5428b7b",
+      "decodedXmlSha256": "6ea79763a2fa01f014fde13f962706bc027491ce1d7eba4b19e0a207bd161e71",
+      "resolvedDimensions": {},
+      "outputSha256": "a7f2e3d4ac7512e077340bb8a12efea7c395a325e1b43406d0e8ec7cb65dd24f",
+      "conversion": {
+        "width": 15.0,
+        "height": 20.0,
+        "viewportWidth": 15.0,
+        "viewportHeight": 20.0,
+        "autoMirrored": false,
+        "direction": "LTR; autoMirrored flag retained for caller RTL handling",
+        "resolvedColorReferences": [
+          "@color/light_mode_icon_color_single_tone"
+        ],
+        "identity": "derived-vector-not-original-SVG",
+        "externalGradientPaints": [],
+        "limitations": [
+          "XML-to-SVG translation; not Android-renderer pixel verification.",
+          "Theme/configuration selection belongs to the caller."
+        ]
+      }
+    },
+    {
+      "key": "stat_sys_data_bluetooth_darkmode",
+      "path": "os/chrome/assets/redmi-note12-turbo-hyperos3/stat_sys_data_bluetooth_darkmode.svg",
+      "identity": "derived-native-vector",
+      "sourcePackage": "com.android.systemui",
+      "apkSha256": "9816e0ab8ff6f5ae3a0fcd1c704c3d24659e5138b39a300f93ee478baad11260",
+      "resourceId": "0x7f081abb",
+      "variants": [
+        {
+          "configuration": "",
+          "rawValue": "(file) res/drawable/stat_sys_data_bluetooth_darkmode.xml type=XML",
+          "tableLine": 46305,
+          "entry": "res/drawable/stat_sys_data_bluetooth_darkmode.xml"
+        }
+      ],
+      "archiveEntry": "res/drawable/stat_sys_data_bluetooth_darkmode.xml",
+      "archiveEntrySha256": "1dbe88c417ec579c188f176d9ea8342b51543d72f1ade6a5fed9fc0d6aa6def3",
+      "decodedXmlSha256": "6b71d4f4ac7d4f416299e51ef608daca898c1c3212e75b1fd3a14248fb129460",
+      "resolvedDimensions": {},
+      "outputSha256": "ef173ba97fd583a26a70c4f890773cd2712da94039700cb8c9937a3d34255a9b",
+      "conversion": {
+        "width": 15.0,
+        "height": 20.0,
+        "viewportWidth": 15.0,
+        "viewportHeight": 20.0,
+        "autoMirrored": false,
+        "direction": "LTR; autoMirrored flag retained for caller RTL handling",
+        "resolvedColorReferences": [
+          "@color/dark_mode_icon_color_single_tone"
+        ],
+        "identity": "derived-vector-not-original-SVG",
+        "externalGradientPaints": [],
+        "limitations": [
+          "XML-to-SVG translation; not Android-renderer pixel verification.",
+          "Theme/configuration selection belongs to the caller."
+        ]
+      }
+    },
+    {
+      "key": "stat_sys_data_bluetooth_connected",
+      "path": "os/chrome/assets/redmi-note12-turbo-hyperos3/stat_sys_data_bluetooth_connected.svg",
+      "identity": "derived-native-vector",
+      "sourcePackage": "com.android.systemui",
+      "apkSha256": "9816e0ab8ff6f5ae3a0fcd1c704c3d24659e5138b39a300f93ee478baad11260",
+      "resourceId": "0x7f081ab8",
+      "variants": [
+        {
+          "configuration": "",
+          "rawValue": "(file) res/drawable/stat_sys_data_bluetooth_connected.xml type=XML",
+          "tableLine": 46299,
+          "entry": "res/drawable/stat_sys_data_bluetooth_connected.xml"
+        }
+      ],
+      "archiveEntry": "res/drawable/stat_sys_data_bluetooth_connected.xml",
+      "archiveEntrySha256": "a39e6a9e0e0fac0479b3d20825409b4fbf685b00cd742c2db6d8cc96a852d6d9",
+      "decodedXmlSha256": "cb7584c631bad41138d0f6bdc927e4df19be07b59a6c4253d8a6e340fb5939e4",
+      "resolvedDimensions": {},
+      "outputSha256": "98512404effafc4bc627204869d074ae4375cd8e7e0b74bb2e16337e3b941ca0",
+      "conversion": {
+        "width": 16.0,
+        "height": 20.0,
+        "viewportWidth": 16.0,
+        "viewportHeight": 20.0,
+        "autoMirrored": false,
+        "direction": "LTR; autoMirrored flag retained for caller RTL handling",
+        "resolvedColorReferences": [
+          "@color/light_mode_icon_color_single_tone"
+        ],
+        "identity": "derived-vector-not-original-SVG",
+        "externalGradientPaints": [],
+        "limitations": [
+          "XML-to-SVG translation; not Android-renderer pixel verification.",
+          "Theme/configuration selection belongs to the caller."
+        ]
+      }
+    },
+    {
+      "key": "stat_sys_data_bluetooth_connected_darkmode",
+      "path": "os/chrome/assets/redmi-note12-turbo-hyperos3/stat_sys_data_bluetooth_connected_darkmode.svg",
+      "identity": "derived-native-vector",
+      "sourcePackage": "com.android.systemui",
+      "apkSha256": "9816e0ab8ff6f5ae3a0fcd1c704c3d24659e5138b39a300f93ee478baad11260",
+      "resourceId": "0x7f081ab9",
+      "variants": [
+        {
+          "configuration": "",
+          "rawValue": "(file) res/drawable/stat_sys_data_bluetooth_connected_darkmode.xml type=XML",
+          "tableLine": 46301,
+          "entry": "res/drawable/stat_sys_data_bluetooth_connected_darkmode.xml"
+        }
+      ],
+      "archiveEntry": "res/drawable/stat_sys_data_bluetooth_connected_darkmode.xml",
+      "archiveEntrySha256": "c9f3e2a1fb08df50df4466da62df385786728c3b2a1abce38e6f4183551cbb6b",
+      "decodedXmlSha256": "6cd7a668db12b586a7a6df80df9084851ce91ea4c04c3e66f0f907ffdb2d8288",
+      "resolvedDimensions": {},
+      "outputSha256": "f35d77ebb5a8587df7507995a9a8cfbc66e42515aa55afed4a44013a0edbde3d",
+      "conversion": {
+        "width": 16.0,
+        "height": 20.0,
+        "viewportWidth": 16.0,
+        "viewportHeight": 20.0,
+        "autoMirrored": false,
+        "direction": "LTR; autoMirrored flag retained for caller RTL handling",
+        "resolvedColorReferences": [
+          "@color/dark_mode_icon_color_single_tone"
+        ],
+        "identity": "derived-vector-not-original-SVG",
+        "externalGradientPaints": [],
+        "limitations": [
+          "XML-to-SVG translation; not Android-renderer pixel verification.",
+          "Theme/configuration selection belongs to the caller."
+        ]
+      }
+    },
+    {
+      "key": "stat_sys_alarm",
+      "path": "os/chrome/assets/redmi-note12-turbo-hyperos3/stat_sys_alarm.svg",
+      "identity": "derived-native-vector",
+      "sourcePackage": "com.android.systemui",
+      "apkSha256": "9816e0ab8ff6f5ae3a0fcd1c704c3d24659e5138b39a300f93ee478baad11260",
+      "resourceId": "0x7f081a96",
+      "variants": [
+        {
+          "configuration": "",
+          "rawValue": "(file) res/drawable/stat_sys_alarm.xml type=XML",
+          "tableLine": 46231,
+          "entry": "res/drawable/stat_sys_alarm.xml"
+        }
+      ],
+      "archiveEntry": "res/drawable/stat_sys_alarm.xml",
+      "archiveEntrySha256": "535b9df75baf89ec2607eb3ee043ebc38b6513d29b24888fd1d65c945a44d150",
+      "decodedXmlSha256": "1fbd10a904e8fb00ea8938f0d6bf5746711d0290166550f4280284bd2eb88265",
+      "resolvedDimensions": {},
+      "outputSha256": "dc3c37c5ae60a655f512aba97582df7e7f18f86318fee4117a1b7698ce2af8ff",
+      "conversion": {
+        "width": 18.0,
+        "height": 20.0,
+        "viewportWidth": 18.0,
+        "viewportHeight": 20.0,
+        "autoMirrored": false,
+        "direction": "LTR; autoMirrored flag retained for caller RTL handling",
+        "resolvedColorReferences": [
+          "@color/light_mode_icon_color_single_tone"
+        ],
+        "identity": "derived-vector-not-original-SVG",
+        "externalGradientPaints": [],
+        "limitations": [
+          "XML-to-SVG translation; not Android-renderer pixel verification.",
+          "Theme/configuration selection belongs to the caller."
+        ]
+      }
+    },
+    {
+      "key": "stat_sys_alarm_darkmode",
+      "path": "os/chrome/assets/redmi-note12-turbo-hyperos3/stat_sys_alarm_darkmode.svg",
+      "identity": "derived-native-vector",
+      "sourcePackage": "com.android.systemui",
+      "apkSha256": "9816e0ab8ff6f5ae3a0fcd1c704c3d24659e5138b39a300f93ee478baad11260",
+      "resourceId": "0x7f081a97",
+      "variants": [
+        {
+          "configuration": "",
+          "rawValue": "(file) res/drawable/stat_sys_alarm_darkmode.xml type=XML",
+          "tableLine": 46233,
+          "entry": "res/drawable/stat_sys_alarm_darkmode.xml"
+        }
+      ],
+      "archiveEntry": "res/drawable/stat_sys_alarm_darkmode.xml",
+      "archiveEntrySha256": "7db41c1b470cafedd51b8c16bdbfe274a1fa0c7cb4062404e257552257e49c90",
+      "decodedXmlSha256": "1fa6b0910354908da327d557ac9f434a8174fe11991b87d8bf29eab08d6490d3",
+      "resolvedDimensions": {},
+      "outputSha256": "a796200fe6ca978d0cbeb6d3b89dbb6e7bd2568ab2ee2e5034d57110631a8da0",
+      "conversion": {
+        "width": 18.0,
+        "height": 20.0,
+        "viewportWidth": 18.0,
+        "viewportHeight": 20.0,
+        "autoMirrored": false,
+        "direction": "LTR; autoMirrored flag retained for caller RTL handling",
+        "resolvedColorReferences": [
+          "@color/dark_mode_icon_color_single_tone"
+        ],
+        "identity": "derived-vector-not-original-SVG",
+        "externalGradientPaints": [],
+        "limitations": [
+          "XML-to-SVG translation; not Android-renderer pixel verification.",
+          "Theme/configuration selection belongs to the caller."
+        ]
+      }
+    },
+    {
+      "key": "stat_sys_headset",
+      "path": "os/chrome/assets/redmi-note12-turbo-hyperos3/stat_sys_headset.svg",
+      "identity": "derived-native-vector",
+      "sourcePackage": "com.android.systemui",
+      "apkSha256": "9816e0ab8ff6f5ae3a0fcd1c704c3d24659e5138b39a300f93ee478baad11260",
+      "resourceId": "0x7f081afc",
+      "variants": [
+        {
+          "configuration": "",
+          "rawValue": "(file) res/drawable/stat_sys_headset.xml type=XML",
+          "tableLine": 46435,
+          "entry": "res/drawable/stat_sys_headset.xml"
+        }
+      ],
+      "archiveEntry": "res/drawable/stat_sys_headset.xml",
+      "archiveEntrySha256": "19453addc1eb69582a5eab6f49575f5b0f0e36703bc9a64a73eea0bc2ee54cbb",
+      "decodedXmlSha256": "06df2dd6e2dd1588e69c56b726f5e2067a5074450a1625c44d29f8d01cc1c080",
+      "resolvedDimensions": {},
+      "outputSha256": "36c0dafa03d6172ae2022b643c3cc3d6d51be7c9a74d660d88db334a3e1df033",
+      "conversion": {
+        "width": 18.0,
+        "height": 20.0,
+        "viewportWidth": 18.0,
+        "viewportHeight": 20.0,
+        "autoMirrored": false,
+        "direction": "LTR; autoMirrored flag retained for caller RTL handling",
+        "resolvedColorReferences": [
+          "@color/light_mode_icon_color_single_tone"
+        ],
+        "identity": "derived-vector-not-original-SVG",
+        "externalGradientPaints": [],
+        "limitations": [
+          "XML-to-SVG translation; not Android-renderer pixel verification.",
+          "Theme/configuration selection belongs to the caller."
+        ]
+      }
+    },
+    {
+      "key": "stat_sys_headset_darkmode",
+      "path": "os/chrome/assets/redmi-note12-turbo-hyperos3/stat_sys_headset_darkmode.svg",
+      "identity": "derived-native-vector",
+      "sourcePackage": "com.android.systemui",
+      "apkSha256": "9816e0ab8ff6f5ae3a0fcd1c704c3d24659e5138b39a300f93ee478baad11260",
+      "resourceId": "0x7f081afd",
+      "variants": [
+        {
+          "configuration": "",
+          "rawValue": "(file) res/drawable/stat_sys_headset_darkmode.xml type=XML",
+          "tableLine": 46437,
+          "entry": "res/drawable/stat_sys_headset_darkmode.xml"
+        }
+      ],
+      "archiveEntry": "res/drawable/stat_sys_headset_darkmode.xml",
+      "archiveEntrySha256": "ca7fbc67e0df3ee855edbc77ff473440989cb3a6f550ba16c5dad93931dcb2a9",
+      "decodedXmlSha256": "273a738fa16e2e20ba93323cf926727adc6cc5c526ca3603188ed2381bdd314e",
+      "resolvedDimensions": {},
+      "outputSha256": "f40f667d732af372904c012545897638b108f7481e029518645c5fce4452c17e",
+      "conversion": {
+        "width": 18.0,
+        "height": 20.0,
+        "viewportWidth": 18.0,
+        "viewportHeight": 20.0,
+        "autoMirrored": false,
+        "direction": "LTR; autoMirrored flag retained for caller RTL handling",
+        "resolvedColorReferences": [
+          "@color/dark_mode_icon_color_single_tone"
+        ],
+        "identity": "derived-vector-not-original-SVG",
+        "externalGradientPaints": [],
+        "limitations": [
+          "XML-to-SVG translation; not Android-renderer pixel verification.",
+          "Theme/configuration selection belongs to the caller."
+        ]
+      }
+    },
+    {
+      "key": "stat_sys_nfc",
+      "path": "os/chrome/assets/redmi-note12-turbo-hyperos3/stat_sys_nfc.svg",
+      "identity": "derived-native-vector",
+      "sourcePackage": "com.android.systemui",
+      "apkSha256": "9816e0ab8ff6f5ae3a0fcd1c704c3d24659e5138b39a300f93ee478baad11260",
+      "resourceId": "0x7f081b1f",
+      "variants": [
+        {
+          "configuration": "",
+          "rawValue": "(file) res/drawable/stat_sys_nfc.xml type=XML",
+          "tableLine": 46503,
+          "entry": "res/drawable/stat_sys_nfc.xml"
+        }
+      ],
+      "archiveEntry": "res/drawable/stat_sys_nfc.xml",
+      "archiveEntrySha256": "922fde226ee5819c6cdf38eb9b87fdfeff9adbdd611186691cd82b77bc049021",
+      "decodedXmlSha256": "95f7b7d3a15b28cdd5b9d977de94304c565ea2c3f8f9c23944bca6ec7200ea76",
+      "resolvedDimensions": {},
+      "outputSha256": "8c08d78a3124615c680dea326bc848dccaaf9a5ef8f255605b1c5ea0ec7b938e",
+      "conversion": {
+        "width": 18.0,
+        "height": 20.0,
+        "viewportWidth": 18.0,
+        "viewportHeight": 20.0,
+        "autoMirrored": false,
+        "direction": "LTR; autoMirrored flag retained for caller RTL handling",
+        "resolvedColorReferences": [
+          "@color/light_mode_icon_color_single_tone"
+        ],
+        "identity": "derived-vector-not-original-SVG",
+        "externalGradientPaints": [],
+        "limitations": [
+          "XML-to-SVG translation; not Android-renderer pixel verification.",
+          "Theme/configuration selection belongs to the caller."
+        ]
+      }
+    },
+    {
+      "key": "stat_sys_nfc_darkmode",
+      "path": "os/chrome/assets/redmi-note12-turbo-hyperos3/stat_sys_nfc_darkmode.svg",
+      "identity": "derived-native-vector",
+      "sourcePackage": "com.android.systemui",
+      "apkSha256": "9816e0ab8ff6f5ae3a0fcd1c704c3d24659e5138b39a300f93ee478baad11260",
+      "resourceId": "0x7f081b20",
+      "variants": [
+        {
+          "configuration": "",
+          "rawValue": "(file) res/drawable/stat_sys_nfc_darkmode.xml type=XML",
+          "tableLine": 46505,
+          "entry": "res/drawable/stat_sys_nfc_darkmode.xml"
+        }
+      ],
+      "archiveEntry": "res/drawable/stat_sys_nfc_darkmode.xml",
+      "archiveEntrySha256": "110ba845fa1a2d0121738d99d44481bf3ff862ef98c51bde3136b9dd1cc9cced",
+      "decodedXmlSha256": "c72478b907842ec757b8fdab4d46246c1cd4f7509fc1779d22c25c8ace7a7ad3",
+      "resolvedDimensions": {},
+      "outputSha256": "fe4ffe668b02b46f23b51075185c2e14d78d657c9336a1da3371261491f5fc8e",
+      "conversion": {
+        "width": 18.0,
+        "height": 20.0,
+        "viewportWidth": 18.0,
+        "viewportHeight": 20.0,
+        "autoMirrored": false,
+        "direction": "LTR; autoMirrored flag retained for caller RTL handling",
+        "resolvedColorReferences": [
+          "@color/dark_mode_icon_color_single_tone"
+        ],
+        "identity": "derived-vector-not-original-SVG",
+        "externalGradientPaints": [],
+        "limitations": [
+          "XML-to-SVG translation; not Android-renderer pixel verification.",
+          "Theme/configuration selection belongs to the caller."
+        ]
+      }
+    },
+    {
+      "key": "stat_sys_ringer_silent",
+      "path": "os/chrome/assets/redmi-note12-turbo-hyperos3/stat_sys_ringer_silent.svg",
+      "identity": "derived-native-vector",
+      "sourcePackage": "com.android.systemui",
+      "apkSha256": "9816e0ab8ff6f5ae3a0fcd1c704c3d24659e5138b39a300f93ee478baad11260",
+      "resourceId": "0x7f081b33",
+      "variants": [
+        {
+          "configuration": "",
+          "rawValue": "(file) res/drawable/stat_sys_ringer_silent.xml type=XML",
+          "tableLine": 46539,
+          "entry": "res/drawable/stat_sys_ringer_silent.xml"
+        }
+      ],
+      "archiveEntry": "res/drawable/stat_sys_ringer_silent.xml",
+      "archiveEntrySha256": "253299753e8ea03fa8932a8b64112cbe9f24efe727b395e10162f00dea70a463",
+      "decodedXmlSha256": "34662e335f8867a92af498c7e9a69a53cd3c7bdef2db0b3ed3b4618cda65a1ad",
+      "resolvedDimensions": {},
+      "outputSha256": "c2f3addfea8b266c42428183dd5f1f9f5b6c518c4ac73cca8c7fe3662514ce7e",
+      "conversion": {
+        "width": 17.0,
+        "height": 20.0,
+        "viewportWidth": 17.0,
+        "viewportHeight": 20.0,
+        "autoMirrored": false,
+        "direction": "LTR; autoMirrored flag retained for caller RTL handling",
+        "resolvedColorReferences": [
+          "@color/light_mode_icon_color_single_tone"
+        ],
+        "identity": "derived-vector-not-original-SVG",
+        "externalGradientPaints": [],
+        "limitations": [
+          "XML-to-SVG translation; not Android-renderer pixel verification.",
+          "Theme/configuration selection belongs to the caller."
+        ]
+      }
+    },
+    {
+      "key": "stat_sys_ringer_silent_darkmode",
+      "path": "os/chrome/assets/redmi-note12-turbo-hyperos3/stat_sys_ringer_silent_darkmode.svg",
+      "identity": "derived-native-vector",
+      "sourcePackage": "com.android.systemui",
+      "apkSha256": "9816e0ab8ff6f5ae3a0fcd1c704c3d24659e5138b39a300f93ee478baad11260",
+      "resourceId": "0x7f081b34",
+      "variants": [
+        {
+          "configuration": "",
+          "rawValue": "(file) res/drawable/stat_sys_ringer_silent_darkmode.xml type=XML",
+          "tableLine": 46541,
+          "entry": "res/drawable/stat_sys_ringer_silent_darkmode.xml"
+        }
+      ],
+      "archiveEntry": "res/drawable/stat_sys_ringer_silent_darkmode.xml",
+      "archiveEntrySha256": "b57c579a4c07be71559f84a42351fee56bfb8db3cf852a3ee18529302ffcb5a8",
+      "decodedXmlSha256": "28dad460d79058d4f5a0dfbb42e1dcb072087fcd0734166c856800f63c5cc4df",
+      "resolvedDimensions": {},
+      "outputSha256": "8b8f6507f53f3e5bd3c3bc3e001756ee16d6c7cfacfab5ce76011ef02e0d3214",
+      "conversion": {
+        "width": 17.0,
+        "height": 20.0,
+        "viewportWidth": 17.0,
+        "viewportHeight": 20.0,
+        "autoMirrored": false,
+        "direction": "LTR; autoMirrored flag retained for caller RTL handling",
+        "resolvedColorReferences": [
+          "@color/dark_mode_icon_color_single_tone"
+        ],
+        "identity": "derived-vector-not-original-SVG",
+        "externalGradientPaints": [],
+        "limitations": [
+          "XML-to-SVG translation; not Android-renderer pixel verification.",
+          "Theme/configuration selection belongs to the caller."
+        ]
+      }
+    },
+    {
+      "key": "stat_sys_wifi_inout",
+      "path": "os/chrome/assets/redmi-note12-turbo-hyperos3/stat_sys_wifi_inout.svg",
+      "identity": "derived-native-vector",
+      "sourcePackage": "com.android.systemui",
+      "apkSha256": "9816e0ab8ff6f5ae3a0fcd1c704c3d24659e5138b39a300f93ee478baad11260",
+      "resourceId": "0x7f081bd9",
+      "variants": [
+        {
+          "configuration": "",
+          "rawValue": "(file) res/drawable/stat_sys_wifi_inout.xml type=XML",
+          "tableLine": 46865,
+          "entry": "res/drawable/stat_sys_wifi_inout.xml"
+        }
+      ],
+      "archiveEntry": "res/drawable/stat_sys_wifi_inout.xml",
+      "archiveEntrySha256": "e7c946f682f374f5fe21b18b8a3c1ae89b60f736626ebfc1c4c8f0ca8168a7c7",
+      "decodedXmlSha256": "90c68c3629d8b9902d0b7c2d8309877e27c28e9a28fa78b5ec2f58b6bfeed3ae",
+      "resolvedDimensions": {},
+      "outputSha256": "26f149319a24aa352110a81d7ba7bac82fb123438cbb48388730bccb59273b7a",
+      "conversion": {
+        "width": 6.0,
+        "height": 20.0,
+        "viewportWidth": 6.0,
+        "viewportHeight": 20.0,
+        "autoMirrored": false,
+        "direction": "LTR; autoMirrored flag retained for caller RTL handling",
+        "resolvedColorReferences": [
+          "@color/light_mode_icon_color_single_tone"
+        ],
+        "identity": "derived-vector-not-original-SVG",
+        "externalGradientPaints": [],
+        "limitations": [
+          "XML-to-SVG translation; not Android-renderer pixel verification.",
+          "Theme/configuration selection belongs to the caller."
+        ]
+      }
+    },
+    {
+      "key": "stat_sys_wifi_inout_darkmode",
+      "path": "os/chrome/assets/redmi-note12-turbo-hyperos3/stat_sys_wifi_inout_darkmode.svg",
+      "identity": "derived-native-vector",
+      "sourcePackage": "com.android.systemui",
+      "apkSha256": "9816e0ab8ff6f5ae3a0fcd1c704c3d24659e5138b39a300f93ee478baad11260",
+      "resourceId": "0x7f081bda",
+      "variants": [
+        {
+          "configuration": "",
+          "rawValue": "(file) res/drawable/stat_sys_wifi_inout_darkmode.xml type=XML",
+          "tableLine": 46867,
+          "entry": "res/drawable/stat_sys_wifi_inout_darkmode.xml"
+        }
+      ],
+      "archiveEntry": "res/drawable/stat_sys_wifi_inout_darkmode.xml",
+      "archiveEntrySha256": "5b296f836d0739739cb495538029a639ed91439944d9bea5920969a11644807d",
+      "decodedXmlSha256": "3819bdb2779ff71e0fa824a8c60dbea08fa694465c5a2354228fa4a3cb242948",
+      "resolvedDimensions": {},
+      "outputSha256": "d39d5ee57c5e4b7564319cb9b43c2f43316c10b7beec37a82af5ee9d55be7e99",
+      "conversion": {
+        "width": 6.0,
+        "height": 20.0,
+        "viewportWidth": 6.0,
+        "viewportHeight": 20.0,
+        "autoMirrored": false,
+        "direction": "LTR; autoMirrored flag retained for caller RTL handling",
+        "resolvedColorReferences": [
+          "@color/dark_mode_icon_color_single_tone"
+        ],
+        "identity": "derived-vector-not-original-SVG",
+        "externalGradientPaints": [],
+        "limitations": [
+          "XML-to-SVG translation; not Android-renderer pixel verification.",
+          "Theme/configuration selection belongs to the caller."
+        ]
+      }
+    },
+    {
+      "key": "stat_sys_signal_flightmode",
+      "path": "os/chrome/assets/redmi-note12-turbo-hyperos3/stat_sys_signal_flightmode.svg",
+      "identity": "derived-native-vector",
+      "sourcePackage": "com.android.systemui",
+      "apkSha256": "9816e0ab8ff6f5ae3a0fcd1c704c3d24659e5138b39a300f93ee478baad11260",
+      "resourceId": "0x7f081b69",
+      "variants": [
+        {
+          "configuration": "",
+          "rawValue": "(file) res/drawable/stat_sys_signal_flightmode.xml type=XML",
+          "tableLine": 46645,
+          "entry": "res/drawable/stat_sys_signal_flightmode.xml"
+        }
+      ],
+      "archiveEntry": "res/drawable/stat_sys_signal_flightmode.xml",
+      "archiveEntrySha256": "40d4abcbab88ec0b48b8859079849dfc81fbf19b6b88ad5a87cae2fe09d4b22b",
+      "decodedXmlSha256": "2e29496cc36ce6802a2a40366ed7613b24793b7ff5cc2e2de741e0c839e05a49",
+      "resolvedDimensions": {},
+      "outputSha256": "900565f75b570eea2a39f829d35e3e71894b7ea6b19ebdb6c645eb189774e671",
+      "conversion": {
+        "width": 58.0,
+        "height": 56.0,
+        "viewportWidth": 58.0,
+        "viewportHeight": 56.0,
+        "autoMirrored": false,
+        "direction": "LTR; autoMirrored flag retained for caller RTL handling",
+        "resolvedColorReferences": [
+          "@color/light_mode_icon_color_single_tone"
+        ],
+        "identity": "derived-vector-not-original-SVG",
+        "externalGradientPaints": [],
+        "limitations": [
+          "XML-to-SVG translation; not Android-renderer pixel verification.",
+          "Theme/configuration selection belongs to the caller."
+        ]
+      }
+    },
+    {
+      "key": "stat_sys_signal_flightmode_darkmode",
+      "path": "os/chrome/assets/redmi-note12-turbo-hyperos3/stat_sys_signal_flightmode_darkmode.svg",
+      "identity": "derived-native-vector",
+      "sourcePackage": "com.android.systemui",
+      "apkSha256": "9816e0ab8ff6f5ae3a0fcd1c704c3d24659e5138b39a300f93ee478baad11260",
+      "resourceId": "0x7f081b6a",
+      "variants": [
+        {
+          "configuration": "",
+          "rawValue": "(file) res/drawable/stat_sys_signal_flightmode_darkmode.xml type=XML",
+          "tableLine": 46647,
+          "entry": "res/drawable/stat_sys_signal_flightmode_darkmode.xml"
+        }
+      ],
+      "archiveEntry": "res/drawable/stat_sys_signal_flightmode_darkmode.xml",
+      "archiveEntrySha256": "ff4980098bd7c4841570a4744492c7a742bfe16b75cdcfd752dc3a483bfd9db5",
+      "decodedXmlSha256": "7fba87d240ce251fe81227d512eb2c810a3dcf77b837e43f687b47f7fd016364",
+      "resolvedDimensions": {},
+      "outputSha256": "428cc86b60a40027e820adf51cda231edd6d27a577d6d87f66ac1f68f072a3a7",
+      "conversion": {
+        "width": 58.0,
+        "height": 56.0,
+        "viewportWidth": 58.0,
+        "viewportHeight": 56.0,
+        "autoMirrored": false,
+        "direction": "LTR; autoMirrored flag retained for caller RTL handling",
+        "resolvedColorReferences": [
+          "@color/dark_mode_icon_color_single_tone"
+        ],
+        "identity": "derived-vector-not-original-SVG",
+        "externalGradientPaints": [],
+        "limitations": [
+          "XML-to-SVG translation; not Android-renderer pixel verification.",
+          "Theme/configuration selection belongs to the caller."
+        ]
+      }
+    },
+    {
+      "key": "stat_sys_branded_vpn",
+      "path": "os/chrome/assets/redmi-note12-turbo-hyperos3/stat_sys_branded_vpn.svg",
+      "identity": "derived-native-vector",
+      "sourcePackage": "com.android.systemui",
+      "apkSha256": "9816e0ab8ff6f5ae3a0fcd1c704c3d24659e5138b39a300f93ee478baad11260",
+      "resourceId": "0x7f081aab",
+      "variants": [
+        {
+          "configuration": "",
+          "rawValue": "(file) res/drawable/stat_sys_branded_vpn.xml type=XML",
+          "tableLine": 46273,
+          "entry": "res/drawable/stat_sys_branded_vpn.xml"
+        }
+      ],
+      "archiveEntry": "res/drawable/stat_sys_branded_vpn.xml",
+      "archiveEntrySha256": "5bb7a2df64a0fde7a43e08f11a6ba1bf9f125434662f87ed6c545af4b3caf052",
+      "decodedXmlSha256": "a7aaabf578ec033e9d2aa9dcd2b5db52dd8a864e113a2a214ee3dcfb4b33b861",
+      "resolvedDimensions": {},
+      "outputSha256": "4b497ca63d21861be19e128738e8b920c1da0eea8d43708ac7a54b1d0887cb6a",
+      "conversion": {
+        "width": 17.0,
+        "height": 17.0,
+        "viewportWidth": 24.0,
+        "viewportHeight": 24.0,
+        "autoMirrored": false,
+        "direction": "LTR; autoMirrored flag retained for caller RTL handling",
+        "resolvedColorReferences": [],
+        "identity": "derived-vector-not-original-SVG",
+        "externalGradientPaints": [],
+        "limitations": [
+          "XML-to-SVG translation; not Android-renderer pixel verification.",
+          "Theme/configuration selection belongs to the caller."
+        ]
+      }
+    },
+    {
+      "key": "hollow_battery_meter_normal",
+      "path": "os/chrome/assets/redmi-note12-turbo-hyperos3/hollow_battery_meter_normal.svg",
+      "identity": "derived-native-vector",
+      "sourcePackage": "com.android.systemui",
+      "apkSha256": "9816e0ab8ff6f5ae3a0fcd1c704c3d24659e5138b39a300f93ee478baad11260",
+      "resourceId": "0x7f080feb",
+      "variants": [
+        {
+          "configuration": "",
+          "rawValue": "(file) res/drawable/hollow_battery_meter_normal.xml type=XML",
+          "tableLine": 40834,
+          "entry": "res/drawable/hollow_battery_meter_normal.xml"
+        }
+      ],
+      "archiveEntry": "res/drawable/hollow_battery_meter_normal.xml",
+      "archiveEntrySha256": "e3c61a693292a4ec3836202c2a5585da8f7eb218e5c1007300fe6dec2f7b98f8",
+      "decodedXmlSha256": "49baead2a7c07f5b1b754d09bb8aef376bdb47edbe2e734c53e949949524fb66",
+      "resolvedDimensions": {
+        "@dimen/battery_meter_height": "20.0dp",
+        "@dimen/battery_meter_width": "28.0dp"
+      },
+      "outputSha256": "2b36777db60f9a9e01b3d5002e205b5bb1a32abeefcea3261ef6e9e9d68b661c",
+      "conversion": {
+        "width": 28.0,
+        "height": 20.0,
+        "viewportWidth": 28.0,
+        "viewportHeight": 20.0,
+        "autoMirrored": false,
+        "direction": "LTR; autoMirrored flag retained for caller RTL handling",
+        "resolvedColorReferences": [
+          "@color/light_mode_icon_color_single_tone"
+        ],
+        "identity": "derived-vector-not-original-SVG",
+        "externalGradientPaints": [],
+        "limitations": [
+          "XML-to-SVG translation; not Android-renderer pixel verification.",
+          "Theme/configuration selection belongs to the caller."
+        ]
+      }
+    },
+    {
+      "key": "hollow_battery_meter_normal_dark",
+      "path": "os/chrome/assets/redmi-note12-turbo-hyperos3/hollow_battery_meter_normal_dark.svg",
+      "identity": "derived-native-vector",
+      "sourcePackage": "com.android.systemui",
+      "apkSha256": "9816e0ab8ff6f5ae3a0fcd1c704c3d24659e5138b39a300f93ee478baad11260",
+      "resourceId": "0x7f080fec",
+      "variants": [
+        {
+          "configuration": "",
+          "rawValue": "(file) res/drawable/hollow_battery_meter_normal_dark.xml type=XML",
+          "tableLine": 40836,
+          "entry": "res/drawable/hollow_battery_meter_normal_dark.xml"
+        }
+      ],
+      "archiveEntry": "res/drawable/hollow_battery_meter_normal_dark.xml",
+      "archiveEntrySha256": "013445b88b963a2f969de856d496949434fa83c673928e2d21571dc4e6132e2d",
+      "decodedXmlSha256": "a8ce4ade8594872f07f15ff9eb155421ae2632b86e1856a920d622bc53fb994f",
+      "resolvedDimensions": {
+        "@dimen/battery_meter_height": "20.0dp",
+        "@dimen/battery_meter_width": "28.0dp"
+      },
+      "outputSha256": "25177e8e59f55ddb47877dfe2bece314c02e9b4ebd2b23ddf365db1faa398587",
+      "conversion": {
+        "width": 28.0,
+        "height": 20.0,
+        "viewportWidth": 28.0,
+        "viewportHeight": 20.0,
+        "autoMirrored": false,
+        "direction": "LTR; autoMirrored flag retained for caller RTL handling",
+        "resolvedColorReferences": [
+          "@color/dark_mode_icon_color_single_tone"
+        ],
+        "identity": "derived-vector-not-original-SVG",
+        "externalGradientPaints": [],
+        "limitations": [
+          "XML-to-SVG translation; not Android-renderer pixel verification.",
+          "Theme/configuration selection belongs to the caller."
+        ]
+      }
+    },
+    {
+      "key": "hollow_battery_meter_progress_normal",
+      "path": "os/chrome/assets/redmi-note12-turbo-hyperos3/hollow_battery_meter_progress_normal.svg",
+      "identity": "derived-native-vector",
+      "sourcePackage": "com.android.systemui",
+      "apkSha256": "9816e0ab8ff6f5ae3a0fcd1c704c3d24659e5138b39a300f93ee478baad11260",
+      "resourceId": "0x7f080ff8",
+      "variants": [
+        {
+          "configuration": "",
+          "rawValue": "(file) res/drawable/hollow_battery_meter_progress_normal.xml type=XML",
+          "tableLine": 40856,
+          "entry": "res/drawable/hollow_battery_meter_progress_normal.xml"
+        }
+      ],
+      "archiveEntry": "res/drawable/hollow_battery_meter_progress_normal.xml",
+      "archiveEntrySha256": "c797f42a656a78b10154cf2e7b36c3f333aa07ac4b8d720498d5e5748e61d36b",
+      "decodedXmlSha256": "03f96c8b80aec462e13e9c49752f9766d048df5f9bf30c785645a47b9146d147",
+      "resolvedDimensions": {
+        "@dimen/battery_meter_height": "20.0dp",
+        "@dimen/battery_meter_width": "28.0dp"
+      },
+      "outputSha256": "eb8a88173348db15e5c5717f5eca4fe6b130ddc45e4938d85f7e1ffb0674d35f",
+      "conversion": {
+        "width": 28.0,
+        "height": 20.0,
+        "viewportWidth": 28.0,
+        "viewportHeight": 20.0,
+        "autoMirrored": false,
+        "direction": "LTR; autoMirrored flag retained for caller RTL handling",
+        "resolvedColorReferences": [
+          "@color/light_mode_icon_color_single_tone"
+        ],
+        "identity": "derived-vector-not-original-SVG",
+        "externalGradientPaints": [],
+        "limitations": [
+          "XML-to-SVG translation; not Android-renderer pixel verification.",
+          "Theme/configuration selection belongs to the caller."
+        ]
+      }
+    },
+    {
+      "key": "hollow_battery_meter_progress_normal_dark",
+      "path": "os/chrome/assets/redmi-note12-turbo-hyperos3/hollow_battery_meter_progress_normal_dark.svg",
+      "identity": "derived-native-vector",
+      "sourcePackage": "com.android.systemui",
+      "apkSha256": "9816e0ab8ff6f5ae3a0fcd1c704c3d24659e5138b39a300f93ee478baad11260",
+      "resourceId": "0x7f080ff9",
+      "variants": [
+        {
+          "configuration": "",
+          "rawValue": "(file) res/drawable/hollow_battery_meter_progress_normal_dark.xml type=XML",
+          "tableLine": 40858,
+          "entry": "res/drawable/hollow_battery_meter_progress_normal_dark.xml"
+        }
+      ],
+      "archiveEntry": "res/drawable/hollow_battery_meter_progress_normal_dark.xml",
+      "archiveEntrySha256": "190d7cd6c09161f3a6dc63f1cf2f0a64f797c399f8dec32ddd1705900d1e83e6",
+      "decodedXmlSha256": "21462ec4ca35f04bc54759886515b263cf8ec600dc67576b90b366c4dd730870",
+      "resolvedDimensions": {
+        "@dimen/battery_meter_height": "20.0dp",
+        "@dimen/battery_meter_width": "28.0dp"
+      },
+      "outputSha256": "d0f9a2c81ed8009267f7b594a2ed8714661bf443018804372f5d92fbad04521b",
+      "conversion": {
+        "width": 28.0,
+        "height": 20.0,
+        "viewportWidth": 28.0,
+        "viewportHeight": 20.0,
+        "autoMirrored": false,
+        "direction": "LTR; autoMirrored flag retained for caller RTL handling",
+        "resolvedColorReferences": [
+          "@color/dark_mode_icon_color_single_tone"
+        ],
+        "identity": "derived-vector-not-original-SVG",
+        "externalGradientPaints": [],
+        "limitations": [
+          "XML-to-SVG translation; not Android-renderer pixel verification.",
+          "Theme/configuration selection belongs to the caller."
+        ]
+      }
+    },
+    {
+      "key": "hollow_battery_meter_charging",
+      "path": "os/chrome/assets/redmi-note12-turbo-hyperos3/hollow_battery_meter_charging.svg",
+      "identity": "derived-native-vector",
+      "sourcePackage": "com.android.systemui",
+      "apkSha256": "9816e0ab8ff6f5ae3a0fcd1c704c3d24659e5138b39a300f93ee478baad11260",
+      "resourceId": "0x7f080fe8",
+      "variants": [
+        {
+          "configuration": "",
+          "rawValue": "(file) res/drawable/hollow_battery_meter_charging.xml type=XML",
+          "tableLine": 40828,
+          "entry": "res/drawable/hollow_battery_meter_charging.xml"
+        }
+      ],
+      "archiveEntry": "res/drawable/hollow_battery_meter_charging.xml",
+      "archiveEntrySha256": "26d056b7b13306861c41d42e243a76f116662efbbec77d55aa79e271559d144a",
+      "decodedXmlSha256": "7aaa692c51d0e42bb43b7dedb7376f6b8f449b2f0b8169f8b2fd1a22e5616e7d",
+      "resolvedDimensions": {
+        "@dimen/battery_meter_height": "20.0dp",
+        "@dimen/hollow_battery_meter_charge_width": "8.0dp"
+      },
+      "outputSha256": "e48a0187e2d7954d5ea5f1dc3925a7a9e8a5abeff9bd8b402f35f4f7831446d1",
+      "conversion": {
+        "width": 8.0,
+        "height": 20.0,
+        "viewportWidth": 8.0,
+        "viewportHeight": 20.0,
+        "autoMirrored": false,
+        "direction": "LTR; autoMirrored flag retained for caller RTL handling",
+        "resolvedColorReferences": [
+          "@color/light_mode_icon_color_single_tone"
+        ],
+        "identity": "derived-vector-not-original-SVG",
+        "externalGradientPaints": [],
+        "limitations": [
+          "XML-to-SVG translation; not Android-renderer pixel verification.",
+          "Theme/configuration selection belongs to the caller."
+        ]
+      }
+    },
+    {
+      "key": "hollow_battery_meter_charging_dark",
+      "path": "os/chrome/assets/redmi-note12-turbo-hyperos3/hollow_battery_meter_charging_dark.svg",
+      "identity": "derived-native-vector",
+      "sourcePackage": "com.android.systemui",
+      "apkSha256": "9816e0ab8ff6f5ae3a0fcd1c704c3d24659e5138b39a300f93ee478baad11260",
+      "resourceId": "0x7f080fe9",
+      "variants": [
+        {
+          "configuration": "",
+          "rawValue": "(file) res/drawable/hollow_battery_meter_charging_dark.xml type=XML",
+          "tableLine": 40830,
+          "entry": "res/drawable/hollow_battery_meter_charging_dark.xml"
+        }
+      ],
+      "archiveEntry": "res/drawable/hollow_battery_meter_charging_dark.xml",
+      "archiveEntrySha256": "5bb8350374c8c0e224719f84c744e3f580ff9142a34a5b0ac67a5e5822070b54",
+      "decodedXmlSha256": "12333a2598efcc087d9421f23ddd4dda1b30d12ddbea65be11df01e27c3ffc14",
+      "resolvedDimensions": {
+        "@dimen/battery_meter_height": "20.0dp",
+        "@dimen/hollow_battery_meter_charge_width": "8.0dp"
+      },
+      "outputSha256": "c8b982b084b30c69f02681a8e2d43eaac5560f8f2898ada162c43386720a620a",
+      "conversion": {
+        "width": 8.0,
+        "height": 20.0,
+        "viewportWidth": 8.0,
+        "viewportHeight": 20.0,
+        "autoMirrored": false,
+        "direction": "LTR; autoMirrored flag retained for caller RTL handling",
+        "resolvedColorReferences": [
+          "@color/dark_mode_icon_color_single_tone"
+        ],
+        "identity": "derived-vector-not-original-SVG",
+        "externalGradientPaints": [],
+        "limitations": [
+          "XML-to-SVG translation; not Android-renderer pixel verification.",
+          "Theme/configuration selection belongs to the caller."
+        ]
+      }
+    },
+    {
+      "key": "hollow_battery_meter_quick_charging",
+      "path": "os/chrome/assets/redmi-note12-turbo-hyperos3/hollow_battery_meter_quick_charging.svg",
+      "identity": "derived-native-vector",
+      "sourcePackage": "com.android.systemui",
+      "apkSha256": "9816e0ab8ff6f5ae3a0fcd1c704c3d24659e5138b39a300f93ee478baad11260",
+      "resourceId": "0x7f081002",
+      "variants": [
+        {
+          "configuration": "",
+          "rawValue": "(file) res/drawable/hollow_battery_meter_quick_charging.xml type=XML",
+          "tableLine": 40870,
+          "entry": "res/drawable/hollow_battery_meter_quick_charging.xml"
+        }
+      ],
+      "archiveEntry": "res/drawable/hollow_battery_meter_quick_charging.xml",
+      "archiveEntrySha256": "575428a3f3c0a0417cfe6b8aa45c09b8e107d0ce6b01485d52ead1e5a0054fd3",
+      "decodedXmlSha256": "b5b8d53b7e94508e6ae5b91fd592caab492941e2298556f9068ca73ca2dc7b63",
+      "resolvedDimensions": {
+        "@dimen/battery_meter_height": "20.0dp",
+        "@dimen/hollow_battery_meter_charge_width": "8.0dp"
+      },
+      "outputSha256": "8c920c302040acacabee1e7e2471365871e9b9d8997ffe1174579f36ef19c2c5",
+      "conversion": {
+        "width": 8.0,
+        "height": 20.0,
+        "viewportWidth": 8.0,
+        "viewportHeight": 20.0,
+        "autoMirrored": false,
+        "direction": "LTR; autoMirrored flag retained for caller RTL handling",
+        "resolvedColorReferences": [
+          "@color/light_mode_icon_color_single_tone"
+        ],
+        "identity": "derived-vector-not-original-SVG",
+        "externalGradientPaints": [],
+        "limitations": [
+          "XML-to-SVG translation; not Android-renderer pixel verification.",
+          "Theme/configuration selection belongs to the caller."
+        ]
+      }
+    },
+    {
+      "key": "hollow_battery_meter_quick_charging_dark",
+      "path": "os/chrome/assets/redmi-note12-turbo-hyperos3/hollow_battery_meter_quick_charging_dark.svg",
+      "identity": "derived-native-vector",
+      "sourcePackage": "com.android.systemui",
+      "apkSha256": "9816e0ab8ff6f5ae3a0fcd1c704c3d24659e5138b39a300f93ee478baad11260",
+      "resourceId": "0x7f081003",
+      "variants": [
+        {
+          "configuration": "",
+          "rawValue": "(file) res/drawable/hollow_battery_meter_quick_charging_dark.xml type=XML",
+          "tableLine": 40872,
+          "entry": "res/drawable/hollow_battery_meter_quick_charging_dark.xml"
+        }
+      ],
+      "archiveEntry": "res/drawable/hollow_battery_meter_quick_charging_dark.xml",
+      "archiveEntrySha256": "e4eb9d31e2c97d8ec9455eaab17c2a0331d7b38e6408d036c341f13841b70dc0",
+      "decodedXmlSha256": "3e4c9136f7f00597a32e2b199fd1a514581ac665ff6bab8e6e0707b5d63e730c",
+      "resolvedDimensions": {
+        "@dimen/battery_meter_height": "20.0dp",
+        "@dimen/hollow_battery_meter_charge_width": "8.0dp"
+      },
+      "outputSha256": "631804bdf2fc14ce4fd856a38ad038a5b5508c00f9bb1ec6e638f8306900d89c",
+      "conversion": {
+        "width": 8.0,
+        "height": 20.0,
+        "viewportWidth": 8.0,
+        "viewportHeight": 20.0,
+        "autoMirrored": false,
+        "direction": "LTR; autoMirrored flag retained for caller RTL handling",
+        "resolvedColorReferences": [
+          "@color/dark_mode_icon_color_single_tone"
+        ],
+        "identity": "derived-vector-not-original-SVG",
+        "externalGradientPaints": [],
+        "limitations": [
+          "XML-to-SVG translation; not Android-renderer pixel verification.",
+          "Theme/configuration selection belongs to the caller."
+        ]
+      }
+    },
+    {
+      "key": "hollow_battery_meter_progress_charging",
+      "path": "os/chrome/assets/redmi-note12-turbo-hyperos3/hollow_battery_meter_progress_charging.svg",
+      "identity": "derived-native-vector",
+      "sourcePackage": "com.android.systemui",
+      "apkSha256": "9816e0ab8ff6f5ae3a0fcd1c704c3d24659e5138b39a300f93ee478baad11260",
+      "resourceId": "0x7f080ff4",
+      "variants": [
+        {
+          "configuration": "",
+          "rawValue": "(file) res/drawable/hollow_battery_meter_progress_charging.xml type=XML",
+          "tableLine": 40852,
+          "entry": "res/drawable/hollow_battery_meter_progress_charging.xml"
+        }
+      ],
+      "archiveEntry": "res/drawable/hollow_battery_meter_progress_charging.xml",
+      "archiveEntrySha256": "237b6763ebae2c275acfbb747cc66fc353a67cef8a2009f52f7d0e0d72bd3849",
+      "decodedXmlSha256": "a949dd201ac54a4938cbbe46f797217941078f4dfa54df887a695db4b5a56fce",
+      "resolvedDimensions": {
+        "@dimen/battery_meter_height": "20.0dp",
+        "@dimen/battery_meter_width": "28.0dp"
+      },
+      "outputSha256": "cace3f244f25bff494627184293ab9e6f180f9ad0693f6d22ddb6c06213896ae",
+      "conversion": {
+        "width": 28.0,
+        "height": 20.0,
+        "viewportWidth": 28.0,
+        "viewportHeight": 20.0,
+        "autoMirrored": false,
+        "direction": "LTR; autoMirrored flag retained for caller RTL handling",
+        "resolvedColorReferences": [
+          "@color/status_bar_battery_charging"
+        ],
+        "identity": "derived-vector-not-original-SVG",
+        "externalGradientPaints": [],
+        "limitations": [
+          "XML-to-SVG translation; not Android-renderer pixel verification.",
+          "Theme/configuration selection belongs to the caller."
+        ]
+      }
+    },
+    {
+      "key": "hollow_battery_meter_progress_low",
+      "path": "os/chrome/assets/redmi-note12-turbo-hyperos3/hollow_battery_meter_progress_low.svg",
+      "identity": "derived-native-vector",
+      "sourcePackage": "com.android.systemui",
+      "apkSha256": "9816e0ab8ff6f5ae3a0fcd1c704c3d24659e5138b39a300f93ee478baad11260",
+      "resourceId": "0x7f080ff6",
+      "variants": [
+        {
+          "configuration": "",
+          "rawValue": "(file) res/drawable/hollow_battery_meter_progress_low.xml type=XML",
+          "tableLine": 40854,
+          "entry": "res/drawable/hollow_battery_meter_progress_low.xml"
+        }
+      ],
+      "archiveEntry": "res/drawable/hollow_battery_meter_progress_low.xml",
+      "archiveEntrySha256": "0e9cb41dd2201f9c1dc205f4de76e68cff428f25b7da58a5fc237874153e3b4c",
+      "decodedXmlSha256": "1b674801217955e4d6ef08808475fb8ef0e1544416fdf036835aed7ae4dda26d",
+      "resolvedDimensions": {
+        "@dimen/battery_meter_height": "20.0dp",
+        "@dimen/battery_meter_width": "28.0dp"
+      },
+      "outputSha256": "feec88a45c9b155536e42067260229e9ad94f957622c0ccef1c717edbe26f39d",
+      "conversion": {
+        "width": 28.0,
+        "height": 20.0,
+        "viewportWidth": 28.0,
+        "viewportHeight": 20.0,
+        "autoMirrored": false,
+        "direction": "LTR; autoMirrored flag retained for caller RTL handling",
+        "resolvedColorReferences": [
+          "@color/status_bar_battery_low"
+        ],
+        "identity": "derived-vector-not-original-SVG",
+        "externalGradientPaints": [],
+        "limitations": [
+          "XML-to-SVG translation; not Android-renderer pixel verification.",
+          "Theme/configuration selection belongs to the caller."
+        ]
+      }
+    },
+    {
+      "key": "hollow_battery_meter_progress_power_save",
+      "path": "os/chrome/assets/redmi-note12-turbo-hyperos3/hollow_battery_meter_progress_power_save.svg",
+      "identity": "derived-native-vector",
+      "sourcePackage": "com.android.systemui",
+      "apkSha256": "9816e0ab8ff6f5ae3a0fcd1c704c3d24659e5138b39a300f93ee478baad11260",
+      "resourceId": "0x7f081000",
+      "variants": [
+        {
+          "configuration": "",
+          "rawValue": "(file) res/drawable/hollow_battery_meter_progress_power_save.xml type=XML",
+          "tableLine": 40868,
+          "entry": "res/drawable/hollow_battery_meter_progress_power_save.xml"
+        }
+      ],
+      "archiveEntry": "res/drawable/hollow_battery_meter_progress_power_save.xml",
+      "archiveEntrySha256": "2c003a92fee354593d89d06d95eb98be68336447df6ca66732c8d4bb08f8c497",
+      "decodedXmlSha256": "4f889c157cf61c84c3a5e9a82dfe276f972b8df81637af58b99fccb9fed39eaa",
+      "resolvedDimensions": {
+        "@dimen/battery_meter_height": "20.0dp",
+        "@dimen/battery_meter_width": "28.0dp"
+      },
+      "outputSha256": "b96c9a0108f5006a6b22d138cd1690d3081e1ec928a1b5de01f83b6d8b21419d",
+      "conversion": {
+        "width": 28.0,
+        "height": 20.0,
+        "viewportWidth": 28.0,
+        "viewportHeight": 20.0,
+        "autoMirrored": false,
+        "direction": "LTR; autoMirrored flag retained for caller RTL handling",
+        "resolvedColorReferences": [
+          "@color/status_bar_battery_power_save"
+        ],
+        "identity": "derived-vector-not-original-SVG",
+        "externalGradientPaints": [],
+        "limitations": [
+          "XML-to-SVG translation; not Android-renderer pixel verification.",
+          "Theme/configuration selection belongs to the caller."
+        ]
+      }
+    },
+    {
+      "key": "hollow_battery_meter_radius",
+      "path": "os/chrome/assets/redmi-note12-turbo-hyperos3/hollow_battery_meter_radius.svg",
+      "identity": "derived-native-vector",
+      "sourcePackage": "com.android.systemui",
+      "apkSha256": "9816e0ab8ff6f5ae3a0fcd1c704c3d24659e5138b39a300f93ee478baad11260",
+      "resourceId": "0x7f081005",
+      "variants": [
+        {
+          "configuration": "",
+          "rawValue": "(file) res/drawable/hollow_battery_meter_radius.xml type=XML",
+          "tableLine": 40876,
+          "entry": "res/drawable/hollow_battery_meter_radius.xml"
+        }
+      ],
+      "archiveEntry": "res/drawable/hollow_battery_meter_radius.xml",
+      "archiveEntrySha256": "cb8a730477153eabdb9c221503603cf064ccf7ed8811db939d07468ae4430ba0",
+      "decodedXmlSha256": "552b512ad7548fca181cf3e25b6444448cb886104e37ad39dc9ce37c357bc841",
+      "resolvedDimensions": {
+        "@dimen/battery_meter_height": "20.0dp",
+        "@dimen/battery_meter_width": "28.0dp"
+      },
+      "outputSha256": "c91266fe8f15c1974dd1ebc019f2db8d4adc80639c7ee0538ad925b4964b645d",
+      "conversion": {
+        "width": 28.0,
+        "height": 20.0,
+        "viewportWidth": 28.0,
+        "viewportHeight": 20.0,
+        "autoMirrored": false,
+        "direction": "LTR; autoMirrored flag retained for caller RTL handling",
+        "resolvedColorReferences": [],
+        "identity": "derived-vector-not-original-SVG",
+        "externalGradientPaints": [],
+        "limitations": [
+          "XML-to-SVG translation; not Android-renderer pixel verification.",
+          "Theme/configuration selection belongs to the caller."
+        ]
+      }
+    },
+    {
+      "key": "MiSansVF-digits",
+      "path": "os/chrome/assets/redmi-note12-turbo-hyperos3/MiSansVF-digits.woff2",
+      "identity": "derived-subset-system-font",
+      "source": ".replica_runs/meituan-rea-20261028/network-audit/device-fonts/MiSansVF.ttf",
+      "sourceSha256": "0ddef90648998900175cfdca9a6f087a2544c182f130b0ad4f7e94a03a115e79",
+      "outputSha256": "c8d27e6dda461c4d471aeef94115067f7a6a72166e5744f6581d701d1557c890",
+      "characters": "0123456789: EGLT+",
+      "axis": {
+        "wght": [
+          150,
+          330,
+          700
+        ]
+      },
+      "family": "MiSans VF",
+      "bindingEvidence": [
+        "MiuiClock.java:174",
+        "MiuiConfigs.java:112",
+        "MiuiBatteryUtils.java:12"
+      ],
+      "limitation": "Typeface alias substitution depends on system font configuration; source file is the previously pulled phone system font, not an APK asset."
+    }
+  ]
+}

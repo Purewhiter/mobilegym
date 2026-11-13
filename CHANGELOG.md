@@ -22,6 +22,8 @@ Versions: `harness` (bench_env runtime) / `taskset` (benchmark content) / `sim` 
 
 ### Added
 
+- **`[score-affecting]` Device chrome.** The Redmi HyperOS status and gesture bars are now the defaults on the launcher and across apps. All screenshot-based tasks may be affected. Use the `device_chrome_profile` preference set to `legacy` for replays recorded with the earlier chrome.
+
 - **Run provenance.** Every run's `meta.json` now records `harness_version`, `taskset_version`, `data_version`, `sim_version`, `git_commit`, `git_dirty`, `git_diff_sha` and `untracked_code_count`, stamped by `RunRecorder.start_run()`, and a dirty run saves its tracked changes as `uncommitted.patch` (binary-safe, independent of the user's git config, re-read on every run start — `git apply` it onto `git_commit` to get the tree that ran). Provenance can never abort a run: without git, every git field is `null`. A results directory is now self-describing: you can tell which benchmark produced a number without reconstructing it from timestamps. `git_dirty: true` marks a run that is not reproducible from any published version.
 - **Version constants** in [`bench_env/version.py`](bench_env/version.py), splitting harness / task set / simulator / data into four independently-bumped axes.
 - **[`docs/VERSIONING.md`](docs/VERSIONING.md)** — bump rules, the rules that protect published numbers, and the release checklist.

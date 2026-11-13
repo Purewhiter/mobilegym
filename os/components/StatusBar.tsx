@@ -4,6 +4,9 @@ import { useState, useEffect, useCallback } from 'react';
 
 import { SIMULATOR_CONFIG } from '../data';
 import { getAppManifest } from '../data/appRegistry';
+import { THEME_CONFIG } from '../data/themeConfig';
+import { DeviceStatusBar } from '../chrome/DeviceStatusBar';
+import { useDeviceChromeProfile } from '../chrome/useDeviceChromeProfile';
 
 import { Wifi, Bluetooth, Signal, BatteryMedium, Plane } from 'lucide-react';
 
@@ -33,10 +36,12 @@ const {
 export const StatusBar = () => {
   const {
     activeTopActivityId,
+    activeTopAppId,
     activeRootAppId,
     isLauncherVisible,
     isRecentsVisible,
   } = useTaskManagerSelector(getChromeTaskSnapshot, areChromeTaskSnapshotsEqual);
+  const chromeProfile = useDeviceChromeProfile(!isLauncherVisible && !isRecentsVisible ? activeTopAppId : null);
   const { themeService, version } = useTheme();
   const [time, setTime] = useState('');
   const [isLight, setIsLight] = useState(true); // true = white text, false = black text
@@ -153,6 +158,10 @@ export const StatusBar = () => {
   const iconTintFilter = isLight ? 'brightness(0) invert(1)' : 'brightness(0)';
 
   if (shadeOpen || isHidden) return null;
+  const statusBarTheme = themeService.getActiveComponentThemeId('statusbar');
+  if (chromeProfile && (!statusBarTheme || statusBarTheme === THEME_CONFIG.defaultComponents.statusbar)) {
+    return <DeviceStatusBar profile={chromeProfile} time={time} light={isLight} quickSettings={qs} state={dyn} zIndex={zIndexStatusBar} />;
+  }
 
   const wifiVisible = qs.wifiEnabled;
   const btVisible = qs.bluetoothEnabled;

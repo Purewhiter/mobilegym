@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 
 import { SIMULATOR_CONFIG } from '../data';
 import { getAppManifest } from '../data/appRegistry';
+import { useDeviceChromeProfile } from '../chrome/useDeviceChromeProfile';
 
 import * as TimeService from '../TimeService';
 
@@ -21,10 +22,12 @@ const {
 export const GestureBar = () => {
   const {
     activeTopActivityId,
+    activeTopAppId,
     activeRootAppId,
     isLauncherVisible,
     isRecentsVisible,
   } = useTaskManagerSelector(getChromeTaskSnapshot, areChromeTaskSnapshotsEqual);
+  const gesture = useDeviceChromeProfile(!isLauncherVisible && !isRecentsVisible ? activeTopAppId : null)?.gesture;
   const startY = useRef(0);
   const startTime = useRef(0);
   const [swipeProgress, setSwipeProgress] = useState(0);
@@ -96,8 +99,11 @@ export const GestureBar = () => {
     return () => observer.disconnect();
   }, [activeTopActivityId, isLauncherVisible, isRecentsVisible, activeRootAppId]);
 
-  const barOpacity = isOnDarkBg ? gestureBarOpacityLight : gestureBarOpacityDark;
-  const barColor = isOnDarkBg ? 'white' : 'black';
+  const barOpacity = isOnDarkBg
+    ? gesture?.opacityLight ?? gestureBarOpacityLight
+    : gesture?.opacityDark ?? gestureBarOpacityDark;
+  const barColor = isOnDarkBg ? gesture?.colorLight ?? 'white' : gesture?.colorDark ?? 'black';
+  const barTransform = `translate(${gesture?.rasterOffsetX ?? 0}px, ${gesture?.rasterOffsetY ?? 0}px) scaleX(${1 + swipeProgress * gestureProgressScale})`;
 
   const clearHold = () => {
     if (holdTimerRef.current !== null) window.clearTimeout(holdTimerRef.current);
@@ -162,7 +168,8 @@ export const GestureBar = () => {
 
   // 在App内时，减小触摸区域避免遮挡TabBar
   const isInApp = activeTopActivityId !== null && !isLauncherVisible && !isRecentsVisible;
-  const touchAreaHeight = isInApp ? bottomGestureHeight : bottomGestureHeight * 2;
+  const touchHeight = gesture?.touchHeight ?? bottomGestureHeight;
+  const touchAreaHeight = isInApp ? touchHeight : touchHeight * 2;
 
   return (
     <div
@@ -171,6 +178,7 @@ export const GestureBar = () => {
       style={{
         zIndex: zIndexGestureBar,
         height: `${touchAreaHeight}px`,
+        paddingBottom: gesture?.bottom,
         touchAction: 'none'
       }}
       onPointerDown={handlePointerDown}
@@ -180,13 +188,14 @@ export const GestureBar = () => {
       onLostPointerCapture={finishPointer}
     >
       <div
+        data-native-navigation-handle={gesture ? 'true' : undefined}
         className="rounded-full pointer-events-none"
         style={{
-          width: `${gestureBarWidth}px`,
-          height: `${gestureBarHeight}px`,
+          width: gesture?.width ?? gestureBarWidth,
+          height: gesture?.height ?? gestureBarHeight,
           backgroundColor: barColor,
           opacity: barOpacity,
-          transform: `scaleX(${1 + swipeProgress * gestureProgressScale})`,
+          transform: barTransform,
           transitionDuration: `${transitionDuration}ms`,
         }}
       />

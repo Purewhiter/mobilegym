@@ -38,6 +38,7 @@ interface OSApi {
 
   notifications: {
     getState: () => import('../types').OSNotificationSnapshot;
+    setStatusBarOverflowHint: (value: boolean) => void;
     push: (input: Partial<import('../types').OSNotification> & Pick<import('../types').OSNotification, 'title'>) => import('../types').OSNotification;
     markRead: (id: string, read?: boolean) => void;
     dismiss: (id: string) => void;
