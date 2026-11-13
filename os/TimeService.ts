@@ -33,6 +33,10 @@ export interface TimeConfig {
     speed?: number;
 }
 
+function isValidSpeed(speed: number | undefined): speed is number {
+    return speed !== undefined && Number.isFinite(speed) && speed > 0;
+}
+
 /**
  * The time configuration the page boots with: SIMULATOR_CONFIG.time, unless the
  * page URL carries `?simTime=<epoch ms | "2026-10-30 21:31:02">` (and optionally
@@ -44,7 +48,7 @@ export function getBootTimeConfig(): TimeConfig {
         mode: SIMULATOR_CONFIG.time.mode ?? 'real',
         simulatedTime: SIMULATOR_CONFIG.time.simulatedTime,
         flowing: SIMULATOR_CONFIG.time.flowing ?? true,
-        speed: SIMULATOR_CONFIG.time.speed ?? 1,
+        speed: isValidSpeed(SIMULATOR_CONFIG.time.speed) ? SIMULATOR_CONFIG.time.speed : 1,
     };
     if (typeof window === 'undefined') return base;
     const params = new URLSearchParams(window.location.search);
@@ -102,10 +106,11 @@ function resetTimeTickScheduler(): void {
 
     timeTickTimer = window.setTimeout(() => {
         timeTickTimer = null;
-        if (!(timeConfig.mode === 'simulated' && timeConfig.flowing === false)) {
+        const current = now();
+        if (current >= next && !(timeConfig.mode === 'simulated' && timeConfig.flowing === false)) {
             BroadcastBus.sendBroadcast({
                 action: ACTION_TIME_TICK,
-                extras: { now: now() },
+                extras: { now: current },
             });
         }
         resetTimeTickScheduler();
@@ -136,7 +141,9 @@ function emitTimeSetBroadcast() {
  */
 function parseTime(time: string | number | undefined): number | undefined {
     if (time === undefined) return undefined;
-    if (typeof time === 'number') return time;
+    if (typeof time === 'number') {
+        return Number.isFinite(time) && Math.abs(time) <= 8_640_000_000_000_000 ? time : undefined;
+    }
 
     // Replace space with T for ISO format compatibility
     const isoString = time.includes('T') ? time : time.replace(' ', 'T');
@@ -155,7 +162,7 @@ function parseTime(time: string | number | undefined): number | undefined {
  */
 export function initTimeService(config: TimeConfig): void {
     timeConfig = { flowing: true, ...config };
-    speedMultiplier = config.speed ?? 1;
+    speedMultiplier = isValidSpeed(config.speed) ? config.speed : 1;
     parsedSimulatedTime = parseTime(config.simulatedTime);
     if (config.mode === 'simulated' && parsedSimulatedTime !== undefined) {
         realAnchorTime = Date.now();
@@ -240,8 +247,8 @@ export function setFlowing(flowing: boolean): void {
  * Re-anchors the current time so there's no jump when changing speed.
  */
 export function setSpeed(speed: number): void {
-    if (speed <= 0) {
-        console.error(`[TimeService] Invalid speed: ${speed}, must be > 0`);
+    if (!isValidSpeed(speed)) {
+        console.error(`[TimeService] Invalid speed: ${speed}, expected a finite positive number`);
         return;
     }
     if (speed === speedMultiplier) return;

@@ -3,9 +3,14 @@
  * Handles sprite sheets (srcid selects a frame from a vertically-stacked strip).
  */
 
+import { realNow } from '../../TimeService';
+
 const cache = new Map<string, HTMLImageElement>();
 const loading = new Map<string, Promise<HTMLImageElement>>();
-const failed = new Set<string>();
+const failed = new Map<string, { retryAt: number; delay: number }>();
+const IMAGE_RETRY_DELAY_MS = 5_000;
+const MAX_IMAGE_RETRY_DELAY_MS = 300_000;
+const MAX_FAILED_IMAGES = 2_000;
 
 export type AssetUrlResolver = (src: string) => string;
 
@@ -16,17 +21,23 @@ export function createPrefixedAssetUrlResolver(basePath: string): AssetUrlResolv
 export function loadImage(url: string): Promise<HTMLImageElement> {
   const cached = cache.get(url);
   if (cached) return Promise.resolve(cached);
-  if (failed.has(url)) return Promise.resolve(cache.get(url) ?? new Image());
+  if (getImageRetryAt(url) !== undefined) return Promise.resolve(new Image());
 
   let pending = loading.get(url);
   if (pending) return pending;
 
   pending = new Promise<HTMLImageElement>((resolve) => {
     const img = new Image();
-    img.onload = () => { cache.set(url, img); loading.delete(url); resolve(img); };
+    img.onload = () => { failed.delete(url); cache.set(url, img); loading.delete(url); resolve(img); };
     img.onerror = () => {
-      cache.set(url, img);
-      failed.add(url);
+      const lastFailure = failed.get(url);
+      const delay = lastFailure ? Math.min(lastFailure.delay * 2, MAX_IMAGE_RETRY_DELAY_MS) : IMAGE_RETRY_DELAY_MS;
+      failed.delete(url);
+      failed.set(url, { retryAt: realNow() + delay, delay });
+      if (failed.size > MAX_FAILED_IMAGES) {
+        const oldest = failed.keys().next();
+        if (!oldest.done) failed.delete(oldest.value);
+      }
       loading.delete(url);
       resolve(img);
     };
@@ -40,8 +51,9 @@ export function getImage(url: string): HTMLImageElement | null {
   return cache.get(url) ?? null;
 }
 
-export function isImageLoadFailed(url: string): boolean {
-  return failed.has(url);
+export function getImageRetryAt(url: string): number | undefined {
+  const failure = failed.get(url);
+  return failure && failure.retryAt > realNow() ? failure.retryAt : undefined;
 }
 
 /**

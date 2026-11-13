@@ -215,6 +215,9 @@ export const WmrRenderer: React.FC<WmrRendererProps> = ({
           basePath: xmlBaseUrl ?? '',
           assetUrlResolver,
           onIntent: handleWmrIntent,
+          onImageSettled: () => {
+            if (!cancelled) wakeRenderLoopRef.current?.();
+          },
           enableHitRegions: analysis.hasInteractiveNodes,
           enableMeasurePass: analysis.needsMeasurePass,
         }, designW, designH, doc.root.tag !== 'Widget');
@@ -385,7 +388,7 @@ export const WmrRenderer: React.FC<WmrRendererProps> = ({
         rafId = requestAnimationFrame(frame);
         return;
       }
-      timerId = window.setTimeout(frame, delayMs);
+      timerId = window.setTimeout(frame, Math.min(delayMs, 2_147_483_647));
     };
     const wake = () => {
       // Delayed commands can change static widgets before the next passive refresh.
@@ -427,7 +430,7 @@ export const WmrRenderer: React.FC<WmrRendererProps> = ({
           stopRefresh();
         }
 
-        if (forceRender || shouldRefreshData || now - lastRender >= renderInterval) {
+        if (forceRender || shouldRefreshData || now >= activeRenderer.imageRetryAt || now - lastRender >= renderInterval) {
           lastRender = now;
           if (currentFrameRate > 0 || forceRender) {
             const stopAnim = beginWmrPerf('widget.animationRefresh', sourceKey);
@@ -441,7 +444,7 @@ export const WmrRenderer: React.FC<WmrRendererProps> = ({
         const nowAfterWork = TimeService.realNow();
         const renderDelay = Math.max(16, renderInterval - (nowAfterWork - lastRender));
         const dataDelay = Math.max(16, nextDataRefreshAt - nowAfterWork);
-        scheduleNext(Math.min(renderDelay, dataDelay));
+        scheduleNext(Math.min(renderDelay, dataDelay, Math.max(1, activeRenderer.imageRetryAt - nowAfterWork)));
       } catch (err) {
         reportError('render', err);
       }

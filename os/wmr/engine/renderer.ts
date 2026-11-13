@@ -12,7 +12,7 @@ import { evalNum, evalStr, evalExprStr, toNum, compileExpr, evalExpr } from './e
 import { VarContext, formatDateTime } from './variables';
 import {
   getImage,
-  isImageLoadFailed,
+  getImageRetryAt,
   loadImage,
   drawSpriteFrame,
   type AssetUrlResolver,
@@ -115,6 +115,7 @@ export interface RenderOptions {
   basePath: string;
   assetUrlResolver?: AssetUrlResolver;
   onIntent?: (pkg: string, cls?: string) => boolean | void;
+  onImageSettled?: () => void;
   enableHitRegions?: boolean;
   enableMeasurePass?: boolean;
 }
@@ -162,6 +163,8 @@ export class WmrCanvasRenderer {
   private lastCanvasHeight = 0;
   private lastCanvasDpr = 0;
   private textLayoutCache = new WeakMap<object, CachedTextLayout>();
+  private pendingImages = new Set<string>();
+  imageRetryAt = Infinity;
 
   constructor(vars: VarContext, opts: RenderOptions, designWidth: number, designHeight: number, preserveAspect = true) {
     this.vars = vars;
@@ -183,7 +186,22 @@ export class WmrCanvasRenderer {
     return this.opts.assetUrlResolver ? this.opts.assetUrlResolver(src) : this.opts.basePath + src;
   }
 
+  private requestImage(url: string): void {
+    const retryAt = getImageRetryAt(url);
+    if (retryAt !== undefined) {
+      this.imageRetryAt = Math.min(this.imageRetryAt, retryAt);
+      return;
+    }
+    if (this.pendingImages.has(url)) return;
+    this.pendingImages.add(url);
+    void loadImage(url).then(() => {
+      this.pendingImages.delete(url);
+      this.opts.onImageSettled?.();
+    });
+  }
+
   render(canvas: HTMLCanvasElement, nodes: WmrNode[]): void {
+    this.imageRetryAt = Infinity;
     const dpr = window.devicePixelRatio || 1;
     const displayW = canvas.clientWidth;
     const displayH = canvas.clientHeight;
@@ -756,6 +774,7 @@ export class WmrCanvasRenderer {
       }
     } else {
       const img = getImage(url);
+      if (!img?.naturalWidth) this.requestImage(url);
       let resolvedImg = img;
       let resolvedImgSrc = resolvedSrc;
       if ((!resolvedImg || !resolvedImg.naturalWidth) && this.lastResolvedImageByNode.has(node)) {
@@ -764,7 +783,6 @@ export class WmrCanvasRenderer {
         resolvedImgSrc = fallback.src;
       }
       if (!resolvedImg || !resolvedImg.naturalWidth) {
-        if (!isImageLoadFailed(url)) loadImage(url);
         c.restore();
         return;
       }
@@ -846,7 +864,6 @@ export class WmrCanvasRenderer {
       };
     }
 
-    if (!isImageLoadFailed(directUrl)) loadImage(directUrl);
     const variantSrc = this.getIndexedVariantSrc(src, clampedIndex);
     const variantUrl = this.resolveAssetUrl(variantSrc);
     const variant = getImage(variantUrl);
@@ -860,7 +877,8 @@ export class WmrCanvasRenderer {
       };
     }
 
-    if (!isImageLoadFailed(variantUrl)) loadImage(variantUrl);
+    this.requestImage(directUrl);
+    this.requestImage(variantUrl);
     return null;
   }
 
@@ -1312,7 +1330,7 @@ export class WmrCanvasRenderer {
       const url = this.resolveAssetUrl(stem + suffix + ext);
       const img = getImage(url);
       if (!img || !img.naturalWidth) {
-        if (!isImageLoadFailed(url)) loadImage(url);
+        this.requestImage(url);
         charImgs.push(null);
         continue;
       }
