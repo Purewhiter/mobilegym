@@ -1,0 +1,11 @@
+# Deliberately small integration pilot, not a representative leaderboard sample.
+calendar.ChangeDefaultReminder
+clock.ToggleAlarm
+wechat.ReadContactRegion
+bilibili.SetSexTask
+notes.CreateFolderAndMoveNote
+sms.ToggleFreeNetworkSetting
+tencent_meeting.CheckContactCount
+spotify.PlaySongFromSearch
+weather.CheckCurrentTemp
+crossapp_content.NotesContentToRedbookAndX

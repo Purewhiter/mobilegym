@@ -7,6 +7,7 @@ This module decouples component creation from the Runner logic.
 from __future__ import annotations
 
 import argparse
+import asyncio
 from pathlib import Path
 from typing import Optional, Any, Union, TYPE_CHECKING, cast
 
@@ -174,7 +175,11 @@ async def create_env(config: ConfigType) -> Any:
             physical_size=physical_size,
             device_scale_factor=3,
         )
-        await env.start()
+        try:
+            await env.start()
+        except (Exception, asyncio.CancelledError):
+            await env.close()
+            raise
         return env
 
 
