@@ -6,7 +6,8 @@
  *   - no page fetch, app chunk load, or other registered busy work is pending
  *     (e.g. the single-tap timer that waits out the double-tap window);
  *   - no short `setTimeout` (≤ 1 s: debounces, deferred UI updates) is armed;
- *     longer timers and intervals are ambient (carousels, clocks) and ignored;
+ *     longer timers and intervals are ambient (carousels, clocks) and ignored,
+ *     and so are animation cadences scheduled with `setAmbientTimeout`;
  *   - no finite CSS animation/transition is running (infinite ones are ambient);
  *   - every image inside the viewport has finished loading;
  *   - web fonts are ready;
@@ -38,6 +39,20 @@ export function holdBusy(work: Promise<unknown>): void {
 /** Count the next `ms` as busy (a timer that will fire a UI change). */
 export function holdBusyFor(ms: number): void {
   holdBusy(new Promise(resolve => rawSetTimeout(resolve, ms)));
+}
+
+/**
+ * A timer that never counts as pending work. For the cadence of continuous
+ * animations (a canvas widget repainting a marquee every 50 ms): like infinite
+ * CSS animations and rAF loops they never settle, so tracking them would keep
+ * the page from ever counting as idle.
+ */
+export function setAmbientTimeout(handler: () => void, ms: number): ReturnType<typeof setTimeout> {
+  return rawSetTimeout(handler, ms);
+}
+
+export function clearAmbientTimeout(id: ReturnType<typeof setTimeout> | null | undefined): void {
+  rawClearTimeout(id);
 }
 
 // ── Short timers ───────────────────────────────────────────────────

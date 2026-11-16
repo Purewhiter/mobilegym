@@ -16,6 +16,7 @@ import {
 } from './WmrBundleCache';
 import { beginWmrPerf } from './WmrPerf';
 import { getPassiveDataUpdateDelayMs } from './passiveRefresh';
+import { clearAmbientTimeout, setAmbientTimeout } from '../idle';
 
 interface WmrRendererProps {
   /** URL to the widget's manifest.xml directory, e.g. "/themes/<id>/clock_2x4/" */
@@ -367,7 +368,7 @@ export const WmrRenderer: React.FC<WmrRendererProps> = ({
     const activeAnalysis = analysis;
 
     let rafId: number | null = null;
-    let timerId: number | null = null;
+    let timerId: ReturnType<typeof setTimeout> | null = null;
     let lastRender = 0;
     let renderRequested = false;
     // Absolute real time at which provider/time data is next due; 0 = on the first frame.
@@ -378,17 +379,20 @@ export const WmrRenderer: React.FC<WmrRendererProps> = ({
         rafId = null;
       }
       if (timerId != null) {
-        window.clearTimeout(timerId);
+        clearAmbientTimeout(timerId);
         timerId = null;
       }
     };
+    // The loop's timers are its own cadence (a marquee repaints every 50 ms for as
+    // long as it is on screen), not work an input is waiting for: keep them out
+    // of idle detection, as the rAF frames already are.
     const scheduleNext = (delayMs: number) => {
       cancelScheduled();
       if (delayMs <= 34) {
         rafId = requestAnimationFrame(frame);
         return;
       }
-      timerId = window.setTimeout(frame, Math.min(delayMs, 2_147_483_647));
+      timerId = setAmbientTimeout(frame, Math.min(delayMs, 2_147_483_647));
     };
     const wake = () => {
       // Delayed commands can change static widgets before the next passive refresh.
