@@ -116,6 +116,29 @@ export function next(scope: string): number {
   return nextStream(scope)();
 }
 
+// Per-frame draws (animation particles) must not persist a counter on every
+// call: each save re-arms a debounced localStorage write, so a rain animation
+// asking for numbers every frame kept a short timer armed forever and the page
+// never counted as idle (os/idle.ts). These counters live in memory only.
+let volatileSeed: number | null = null;
+const volatileCounters = new Map<string, number>();
+
+/**
+ * Like `next(scope)` (item n of a scope gives the same number), but the counter
+ * is kept in memory and restarts with each page load. For decorative draws
+ * whose values nobody stores, such as WMR `rand()` in animations.
+ */
+export function nextVolatile(scope: string): number {
+  const seed = load().seed;
+  if (volatileSeed !== seed) {
+    volatileCounters.clear();
+    volatileSeed = seed;
+  }
+  const n = volatileCounters.get(scope) ?? 0;
+  volatileCounters.set(scope, n + 1);
+  return stream(`${scope}#${n}`)();
+}
+
 // ── Helpers on a generator ─────────────────────────────────────────
 
 /** Integer in [min, maxExclusive). */
@@ -154,4 +177,6 @@ export function shuffle<T>(rng: Rng, items: readonly T[]): T[] {
 /** Test hook: forget cached state (next draw re-reads localStorage). */
 export function _resetForTests(): void {
   state = null;
+  volatileSeed = null;
+  volatileCounters.clear();
 }

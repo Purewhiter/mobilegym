@@ -72,6 +72,19 @@ describe('RandomService', () => {
     expect(Random.getSeed()).toBe(Random.DEFAULT_SEED);
   });
 
+  it('volatile draws match next() for the same scope and never touch storage', () => {
+    Random.setSeed(9);
+    flushAll();
+    storage.clear();
+    const volatile = [Random.nextVolatile('wmr.rand'), Random.nextVolatile('wmr.rand'), Random.nextVolatile('wmr.rand')];
+    flushAll();
+    expect(storage.size).toBe(0);
+
+    Random._resetForTests();
+    Random.setSeed(9);
+    expect([Random.next('wmr.rand'), Random.next('wmr.rand'), Random.next('wmr.rand')]).toEqual(volatile);
+  });
+
   it('helpers stay in range', () => {
     const rng = Random.stream('helpers');
     for (let i = 0; i < 200; i++) {
