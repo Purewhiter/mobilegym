@@ -124,7 +124,7 @@ export const PostDetailsPage: React.FC = () => {
   }
 
   return (
-    <div className="flex h-full flex-col bg-app-bg text-app-text pt-10 pb-20">
+    <div className="flex h-full flex-col bg-app-bg text-app-text pt-10">
       {/* Header */}
       <div className="flex items-center px-4 py-2 border-b border-app-border sticky top-0 bg-white/80 backdrop-blur-md z-50">
         <button className="text-app-text mr-6" {...bindBack()}>
@@ -298,8 +298,8 @@ export const PostDetailsPage: React.FC = () => {
 
       <XRetweetSheet postId={retweetMenuPostId} onRetweet={toggleRetweet} />
 
-      {/* Fixed Bottom Reply Bar */}
-      <div className="fixed bottom-0 left-0 right-0 border-t border-app-border bg-app-bg z-40">
+      {/* Bottom reply bar stays in flow: fixed positioning drifts under designViewportWidth zoom */}
+      <div className="shrink-0 border-t border-app-border bg-app-bg">
         <div
           className="flex items-center px-4 py-2"
           {...bindNav(routes.reply, { params: { id: post.id } })}

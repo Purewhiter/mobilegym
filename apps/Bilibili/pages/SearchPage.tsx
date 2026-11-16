@@ -30,6 +30,26 @@ const formatDuration = (d: any) => {
     return d;
 };
 
+// Highlight every case-insensitive occurrence of the query as JSX. The query is
+// user input, so it must not become a RegExp ("C++" or "(" throws) or HTML.
+const renderHighlightedText = (text: string, query: string): React.ReactNode => {
+    if (!text || !query) return text;
+    const lowerText = text.toLowerCase();
+    const lowerQuery = query.toLowerCase();
+    let idx = lowerText.indexOf(lowerQuery);
+    if (idx === -1) return text;
+    const nodes: React.ReactNode[] = [];
+    let start = 0;
+    while (idx !== -1) {
+        if (idx > start) nodes.push(text.slice(start, idx));
+        nodes.push(<span key={idx} className="text-app-primary">{text.slice(idx, idx + query.length)}</span>);
+        start = idx + query.length;
+        idx = lowerText.indexOf(lowerQuery, start);
+    }
+    if (start < text.length) nodes.push(text.slice(start));
+    return nodes;
+};
+
 // ----- Icons -----
 const NewIcon: React.FC<{ label: string }> = ({ label }) => (
     <span className="bg-[#FF6699] text-white text-[10px] px-1 rounded-[2px] ml-1">{label}</span>
@@ -120,9 +140,9 @@ const MediaResultItem: React.FC<{ item: any; type: 'anime' | 'movie' }> = ({ ite
 
             <div className="flex-1 flex flex-col min-w-0 h-[113px] justify-between py-0.5">
                 <div>
-                    <h3 className="text-[14px] font-bold text-app-text leading-snug mb-1 line-clamp-2"
-                        dangerouslySetInnerHTML={{ __html: item.highlightedTitle || item.title }}
-                    />
+                    <h3 className="text-[14px] font-bold text-app-text leading-snug mb-1 line-clamp-2">
+                        {item.highlightedTitle ?? item.title}
+                    </h3>
                     <div className="text-[11px] text-app-text-muted leading-normal flex flex-col gap-0.5">
                         <div className="flex items-center gap-1">
                             <span className="border border-[#23C9ED] text-[#23C9ED] text-[9px] px-0.5 rounded-[2px] leading-none">{locale === 'en' ? 'Official' : '出品'}</span>
@@ -209,7 +229,7 @@ const RichUserCard: React.FC<{ user: any; videoById: Map<string, any> }> = ({ us
                     </div>
                     <div>
                         <div className="flex items-center gap-1.5 mb-1">
-                            <span className="text-[17px] text-app-primary font-medium" dangerouslySetInnerHTML={{ __html: user.highlightedName || user.name }}></span>
+                            <span className="text-[17px] text-app-primary font-medium">{user.highlightedName ?? user.name}</span>
                             <span className={`text-[9px] px-1 rounded-[2px] border ${user.level >= 6 ? 'border-[#FF0000] text-[#FF0000]' : 'border-[#9499A0] text-app-text-muted'}`}>
                                 LV{user.level}
                             </span>
@@ -342,7 +362,7 @@ const VideoResultItem: React.FC<{ video: any; authorByName: Map<string, any> }> 
                 </div>
             </div>
             <div className="flex-1 flex flex-col justify-between py-0.5">
-                <h3 className="text-[14px] text-app-text line-clamp-2 leading-snug" dangerouslySetInnerHTML={{ __html: video.highlightedTitle || video.title }}></h3>
+                <h3 className="text-[14px] text-app-text line-clamp-2 leading-snug">{video.highlightedTitle ?? video.title}</h3>
                 <div className="flex flex-col gap-1">
                     <div className="flex items-center gap-1.5 text-[11px] text-app-text-muted">
                         {authorFace && <img referrerPolicy="no-referrer" src={authorFace} className="w-3.5 h-3.5 rounded-full" />}
@@ -388,7 +408,7 @@ const UserResultItem: React.FC<{ user: any }> = ({ user }) => {
                 </div>
                 <div className="flex flex-col gap-0.5">
                     <div className="flex items-center gap-1.5">
-                        <span className="text-[15px] text-app-text font-medium" dangerouslySetInnerHTML={{ __html: user.highlightedName || user.name }}></span>
+                        <span className="text-[15px] text-app-text font-medium">{user.highlightedName ?? user.name}</span>
                         <span className={`text-[9px] px-1 rounded-[2px] border ${user.level >= 6 ? 'border-[#FF0000] text-[#FF0000]' : 'border-[#9499A0] text-app-text-muted'}`}>
                             LV{user.level}
                         </span>
@@ -781,7 +801,7 @@ export const SearchPage: React.FC = () => {
     const searchResults = useMemo(() => {
         if (!committedQuery || !searchData) return { videos: [], users: [], animes: [], movies: [] };
 
-        const highlight = (text: string) => text.replace(new RegExp(committedQuery, 'gi'), match => `<span class="text-app-primary">${match}</span>`);
+        const highlight = (text: string) => renderHighlightedText(text, committedQuery);
 
         // 匹配（视频标题/作者、用户名、番剧/影视榜单标题）由 server 完成，这里只加高亮
         const videos = searchData.videos.map(v => ({

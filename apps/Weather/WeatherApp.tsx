@@ -571,20 +571,21 @@ const WeatherContent: React.FC = () => {
     setScrollProgress(progress);
   }, [currentIndex, savedCities, totalPages]);
 
-  // 处理触摸开始 - 用于可滑动区域触发水平滚动
-  const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX;
-    touchStartY.current = e.touches[0].clientY;
+  // 处理按下 - 用于可滑动区域触发水平滚动（PointerEvent 同时覆盖触摸和鼠标执行器）
+  const handlePointerDown = useCallback((e: React.PointerEvent) => {
+    if (!e.isPrimary) return;
+    touchStartX.current = e.clientX;
+    touchStartY.current = e.clientY;
     touchStartScrollLeft.current = horizontalScrollRef.current?.scrollLeft ?? 0;
     isSwiping.current = true;
     swipeDirection.current = null;
   }, []);
 
-  const handleTouchMove = useCallback((e: React.TouchEvent) => {
-    if (!isSwiping.current || !horizontalScrollRef.current) return;
+  const handlePointerMove = useCallback((e: React.PointerEvent) => {
+    if (!e.isPrimary || !isSwiping.current || !horizontalScrollRef.current) return;
 
-    const deltaX = e.touches[0].clientX - touchStartX.current;
-    const deltaY = e.touches[0].clientY - touchStartY.current;
+    const deltaX = e.clientX - touchStartX.current;
+    const deltaY = e.clientY - touchStartY.current;
 
     // 判断滑动方向（只在第一次移动时判断）
     if (swipeDirection.current === null) {
@@ -625,7 +626,8 @@ const WeatherContent: React.FC = () => {
     }
   }, [totalPages]);
 
-  const handleTouchEnd = useCallback(() => {
+  const handlePointerEnd = useCallback(() => {
+    if (!isSwiping.current) return;
     const wasHorizontal = swipeDirection.current === 'horizontal';
     isSwiping.current = false;
     swipeDirection.current = null;
@@ -742,10 +744,10 @@ const WeatherContent: React.FC = () => {
         ref={mainContainerRef}
         className="w-full h-full overflow-y-auto relative z-10 no-scrollbar"
         onScroll={handleVerticalScroll}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-        onTouchCancel={handleTouchEnd}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerEnd}
+        onPointerCancel={handlePointerEnd}
       >
         {/* ===== 主标题栏（对齐真机 main_title_bar_layout / bg_blur）===== */}
         <div
