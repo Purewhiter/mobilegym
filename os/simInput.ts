@@ -682,59 +682,67 @@ export function initSimInput(): void {
           const scrollTarget = scrollInfo?.element ?? null;
 
           const el = startEl || document.body;
-          
-          // ========== 统一的触摸模拟方案 ==========
-          // 模拟真实触摸：发送完整的 touch 事件序列 + 手动滚动
-          // （因为合成的 TouchEvent 不会触发浏览器原生滚动，必须手动处理）
-          
-          dispatchTouch(el, 'touchstart', s.x, s.y);
-          dispatchPointer(el, 'pointerdown', s.x, s.y, { buttons: 1 });
 
-          // 分步发送 touchmove 并同步滚动
-          const dt = ms / steps;
-          for (let i = 1; i <= steps; i++) {
-            const progress = i / steps;
-            const xi = s.x + dx * progress;
-            const yi = s.y + dy * progress;
+          // 程序滚动标志：分步 scrollBy（含惯性段）进行期间置位，供滚轮类组件
+          // 挂起「滚动中途吸附」（见 system/Clock/components/WheelColumn.tsx——
+          // 中途取整重排会与后续 scrollBy 竞争，长行程累计成 ±1 格失格）。
+          if (scrollTarget) window.__SIM_SCROLLING__ = (window.__SIM_SCROLLING__ ?? 0) + 1;
+          try {
+            // ========== 统一的触摸模拟方案 ==========
+            // 模拟真实触摸：发送完整的 touch 事件序列 + 手动滚动
+            // （因为合成的 TouchEvent 不会触发浏览器原生滚动，必须手动处理）
 
-            // 发送 touch/pointer move 事件
-            dispatchTouch(el, 'touchmove', xi, yi);
-            dispatchPointer(el, 'pointermove', xi, yi, { buttons: 1 });
-            
-            // 同步滚动（如果有滚动容器）
-            if (scrollTarget) {
-              // 计算这一步应该滚动多少（滑动距离的反方向）
-              const stepScrollX = -dx / steps;
-              const stepScrollY = -dy / steps;
-              scrollTarget.scrollBy({ left: stepScrollX, top: stepScrollY, behavior: 'auto' });
+            dispatchTouch(el, 'touchstart', s.x, s.y);
+            dispatchPointer(el, 'pointerdown', s.x, s.y, { buttons: 1 });
+
+            // 分步发送 touchmove 并同步滚动
+            const dt = ms / steps;
+            for (let i = 1; i <= steps; i++) {
+              const progress = i / steps;
+              const xi = s.x + dx * progress;
+              const yi = s.y + dy * progress;
+
+              // 发送 touch/pointer move 事件
+              dispatchTouch(el, 'touchmove', xi, yi);
+              dispatchPointer(el, 'pointermove', xi, yi, { buttons: 1 });
+
+              // 同步滚动（如果有滚动容器）
+              if (scrollTarget) {
+                // 计算这一步应该滚动多少（滑动距离的反方向）
+                const stepScrollX = -dx / steps;
+                const stepScrollY = -dy / steps;
+                scrollTarget.scrollBy({ left: stepScrollX, top: stepScrollY, behavior: 'auto' });
+              }
+
+
+              await sleep(dt);
             }
 
+            dispatchTouch(el, 'touchend', e.x, e.y);
+            dispatchPointer(el, 'pointerup', e.x, e.y, { buttons: 0 });
 
-            await sleep(dt);
-          }
+            // 惯性滚动（模拟松手后的滑动）
+            if (inertia && scrollTarget && inertiaMs > 0) {
+              const inertiaSteps = Math.max(6, Math.round(steps * 0.8));
+              const tailDt = inertiaMs / inertiaSteps;
 
-          dispatchTouch(el, 'touchend', e.x, e.y);
-          dispatchPointer(el, 'pointerup', e.x, e.y, { buttons: 0 });
+              // 初始速度 = 最后一步的滚动速度 * 放大系数
+              let vx = (-dx / steps) * 1.5;
+              let vy = (-dy / steps) * 1.5;
 
-          // 惯性滚动（模拟松手后的滑动）
-          if (inertia && scrollTarget && inertiaMs > 0) {
-            const inertiaSteps = Math.max(6, Math.round(steps * 0.8));
-            const tailDt = inertiaMs / inertiaSteps;
+              for (let i = 0; i < inertiaSteps; i++) {
+                vx *= inertiaDecay;
+                vy *= inertiaDecay;
 
-            // 初始速度 = 最后一步的滚动速度 * 放大系数
-            let vx = (-dx / steps) * 1.5;
-            let vy = (-dy / steps) * 1.5;
+                if (Math.abs(vx) < 0.5 && Math.abs(vy) < 0.5) break;
 
-            for (let i = 0; i < inertiaSteps; i++) {
-              vx *= inertiaDecay;
-              vy *= inertiaDecay;
+                scrollTarget.scrollBy({ left: vx, top: vy, behavior: 'auto' });
 
-              if (Math.abs(vx) < 0.5 && Math.abs(vy) < 0.5) break;
-
-              scrollTarget.scrollBy({ left: vx, top: vy, behavior: 'auto' });
-  
-              await sleep(tailDt);
+                await sleep(tailDt);
+              }
             }
+          } finally {
+            if (scrollTarget) window.__SIM_SCROLLING__ = Math.max(0, (window.__SIM_SCROLLING__ ?? 1) - 1);
           }
         })
         .catch(err => {

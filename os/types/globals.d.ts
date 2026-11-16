@@ -286,6 +286,8 @@ declare global {
 
     __SIM_INPUT__?: import('../simInput').SimInputAPI;
     __SIM_QUERY__?: import('../simInput').SimQueryAPI;
+    /** >0 表示 __SIM_INPUT__ 正在执行程序化滚动（swipe 分步 scrollBy 或惯性段） */
+    __SIM_SCROLLING__?: number;
 
     __getScrollMeta__?: () => import('../scrollMeta').ScrollMetaMap;
   }
