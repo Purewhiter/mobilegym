@@ -308,9 +308,12 @@ class Controller:
                         if agent.history:
                             last_record = agent.history[-1]
                             prompt = getattr(last_record, "llm_prompt", None)
-                        episode.record_step(step_idx=step + 1, obs=obs, action=action,
-                                            route=obs.route, model_response=action.raw_response,
-                                            model_prompt=prompt)
+                        # Resize, annotation and file writes take tens of ms per step;
+                        # off the event loop so parallel episodes in this process keep going.
+                        await asyncio.to_thread(
+                            episode.record_step, step_idx=step + 1, obs=obs, action=action,
+                            route=obs.route, model_response=action.raw_response,
+                            model_prompt=prompt)
 
                     # ---- Repetitive loop detection ----
                     if loop_threshold > 0:

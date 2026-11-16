@@ -21,6 +21,25 @@ if TYPE_CHECKING:
 
 logger = get_logger(__name__)
 
+# adb can wedge (a stuck adbd, a USB hiccup); without a deadline one call hangs
+# the whole episode, so every adb subprocess is bounded and killed on timeout.
+ADB_TIMEOUT_S = 30.0
+ADB_PUSH_TIMEOUT_S = 120.0
+
+
+async def _communicate(proc: asyncio.subprocess.Process, cmd: list[str], timeout_s: float) -> Tuple[bytes, bytes] | None:
+    """``proc.communicate()`` with a deadline; kills the process and returns None on timeout."""
+    try:
+        return await asyncio.wait_for(proc.communicate(), timeout=timeout_s)
+    except asyncio.TimeoutError:
+        try:
+            proc.kill()
+        except ProcessLookupError:
+            pass
+        await proc.wait()
+        logger.error(f"[ADB Timeout] cmd={cmd} did not finish within {timeout_s:.0f}s; killed")
+        return None
+
 
 # App name -> package name mapping (from Open-AutoGLM)
 # Supports both Chinese names and English aliases
@@ -470,7 +489,10 @@ class RealDeviceEnv(BaseMobileEnv):
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE
         )
-        stdout, stderr = await proc.communicate()
+        out = await _communicate(proc, cmd, ADB_PUSH_TIMEOUT_S)
+        if out is None:
+            return ""
+        stdout, stderr = out
         if proc.returncode != 0:
             logger.error(f"[ADB Push Error] {stderr.decode()}")
             return ""
@@ -506,8 +528,10 @@ class RealDeviceEnv(BaseMobileEnv):
         # Force-stop every package listed in APP_PACKAGES so each episode starts from
         # a clean background. We only touch apps we explicitly benchmark — system
         # components (Launcher, IME, SystemUI) are left untouched.
-        for pkg in {p for p in APP_PACKAGES.values() if "." in p}:
-            await self._adb("shell", "am", "force-stop", pkg)
+        # One shell call for all of them instead of one adb round-trip per package.
+        packages = sorted({p for p in APP_PACKAGES.values() if "." in p})
+        if packages:
+            await self._adb("shell", "; ".join(f"am force-stop {shlex.quote(p)}" for p in packages))
         await asyncio.sleep(0.3)
 
         # Second HOME press: most launchers scroll back to the first
@@ -622,7 +646,10 @@ class RealDeviceEnv(BaseMobileEnv):
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE
         )
-        stdout, stderr = await proc.communicate()
+        out = await _communicate(proc, cmd, ADB_TIMEOUT_S)
+        if out is None:
+            return ""
+        stdout, stderr = out
         if proc.returncode != 0:
             logger.error(f"[ADB Error] cmd={cmd} err={stderr.decode()}")
             return ""
@@ -656,8 +683,8 @@ class RealDeviceEnv(BaseMobileEnv):
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE
         )
-        stdout, stderr = await proc.communicate()
-        return stdout
+        out = await _communicate(proc, cmd, ADB_TIMEOUT_S)
+        return out[0] if out else b""
 
     def _parse_point(self, point: Any) -> Tuple[int, int]:
         if point is None:

@@ -3,7 +3,7 @@
  * and injection, reset, data loading, idle waits, seeding).
  */
 
-import { getStateSetter, getStore, readPersistedAppState, writePersistedAppState } from '../createAppStore';
+import { getStateSetter, getStore } from '../createAppStore';
 import { idleState, waitForIdle } from '../idle';
 import { deviceQueryFailures, waitForStateCommit } from '../device/deviceStore';
 import { endPersistReset, flushAll } from '../debouncedPersist';
@@ -220,6 +220,19 @@ export function buildSimApi(): NonNullable<Window['__SIM__']> {
         // Device-backed apps and providers apply patches asynchronously (sync, merge, push to the server).
         const pending: Promise<void>[] = [];
 
+        // Every app with state registers its store at startup (OSContext imports all
+        // state.ts eagerly), so a patch for an app without one has nowhere to go.
+        // Refuse it before applying anything: silently dropping it would leave a
+        // task's setup or criteria inversion unapplied.
+        if (patch.apps && typeof patch.apps === 'object') {
+          const unknown = Object.entries(patch.apps)
+            .filter(([appId, appPatch]) => appPatch !== undefined && appPatch !== null && !getStore(appId))
+            .map(([appId]) => appId);
+          if (unknown.length) {
+            throw new Error(`[__SIM__.setState] no state store for app(s): ${unknown.join(', ')}`);
+          }
+        }
+
         if (patch.os && typeof patch.os === 'object') {
           pending.push(...applyOsStatePatch(patch.os, { source: 'external' }));
         }
@@ -244,14 +257,6 @@ export function buildSimApi(): NonNullable<Window['__SIM__']> {
               }
               if (deep) store.setState(applyPatch(currentData));
               else store.setState(appPatch as any);
-            } else {
-              const current = readPersistedAppState(appId) ?? null;
-              const merged = current === null
-                ? appPatch
-                : deep
-                  ? deepMerge(current, appPatch)
-                  : { ...current, ...appPatch };
-              writePersistedAppState(appId, merged as Record<string, any>);
             }
           }
         }

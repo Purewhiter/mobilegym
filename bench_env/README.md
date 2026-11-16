@@ -54,13 +54,15 @@ Starting the simulator (which involves cloning `mobilegym-data` for default app 
 > ```bash
 > conda install -c conda-forge nginx                # one-time, if not already installed
 > npm run build
-> ./scripts/server/start_nginx_gateway.sh           # → https://localhost:4180  (HTTP/2 + TLS)
+> ./scripts/server/start_nginx_gateway.sh           # → https://localhost:4180 (HTTP/2 + TLS) and http://127.0.0.1:4182
 > # stop with: ./scripts/server/start_nginx_gateway.sh stop
 > ```
 >
 > The script also starts the device server (the process that holds RedBook, Bilibili, file system and 12306 catalog data, `device/main.ts`) as `DEVICE_WORKERS` Node shards (default 2, about 1GB of memory each); nginx routes each session's `/__device` requests to the shard that holds it. It needs `node` on `PATH` (or `NODE_BIN`).
 >
-> Then pass `--env-url https://localhost:4180`. This nginx HTTPS endpoint uses a self-signed localhost certificate; Chromium may reject the Service Worker script fetch for `/map-sw.js` even when the page itself loaded. `bench_env` sets Playwright `ignore_https_errors=True` and launches Chromium with `--ignore-certificate-errors` so Map's local Service Worker cache can register under that TLS setup.
+> For runs on the same machine pass `--env-url http://127.0.0.1:4182` (the plain-HTTP port, `PORT+2`, override with `HTTP_PORT`; it only listens on loopback). Chromium keeps no HTTP cache for an origin whose self-signed certificate it ignores, so over HTTPS every page load re-downloads the whole bundle (a reload costs about 6.5 MB over HTTPS against 0.2 MB over HTTP).
+>
+> From another machine pass `--env-url https://<host>:4180`. This nginx HTTPS endpoint uses a self-signed localhost certificate; Chromium may reject the Service Worker script fetch for `/map-sw.js` even when the page itself loaded. `bench_env` sets Playwright `ignore_https_errors=True` and launches Chromium with `--ignore-certificate-errors` so Map's local Service Worker cache can register under that TLS setup.
 
 ---
 

@@ -694,25 +694,31 @@ class MobileGymEnv(BaseMobileEnv):
     async def close(self) -> None:
         """Close browser and release resources (only those we own)."""
         if self._page:
-            # Release this page's device-server session (best effort).
+            # Release this page's device-server session (best effort; a crashed
+            # page must not hold up the rest of the cleanup).
             try:
-                await self._page.evaluate("() => window.__DEVICE__?.resetSession?.()")
+                await asyncio.wait_for(
+                    self._page.evaluate("() => window.__DEVICE__?.resetSession?.()"), timeout=5
+                )
             except Exception:
                 pass
-        try:
-            # 总是关闭 page
-            if self._page:
-                await self._page.close()
-            # 只关闭自己创建的 context
-            if self._owns_context and self._context:
-                await self._context.close()
-            # 只关闭自己创建的 browser
-            if self._owns_browser and self._browser:
-                await self._browser.close()
-            if self._pw:
-                await self._pw.stop()
-        except Exception as e:
-            logger.debug(f"Error during MobileGymEnv.close(): {type(e).__name__}: {e}")
+        # Each step on its own: one failure (a crashed page, say) must not skip
+        # closing the context and browser or stopping the Playwright driver.
+        steps = []
+        if self._page:
+            steps.append(("page", self._page.close))
+        # 只关闭自己创建的 context / browser
+        if self._owns_context and self._context:
+            steps.append(("context", self._context.close))
+        if self._owns_browser and self._browser:
+            steps.append(("browser", self._browser.close))
+        if self._pw:
+            steps.append(("playwright", self._pw.stop))
+        for name, close in steps:
+            try:
+                await close()
+            except Exception as e:
+                logger.debug(f"Error closing {name} in MobileGymEnv.close(): {type(e).__name__}: {e}")
         self._pw = self._browser = self._context = self._page = None
 
     async def restart(self) -> "MobileGymEnv":
@@ -766,6 +772,20 @@ class MobileGymEnv(BaseMobileEnv):
     def page(self) -> Page:
         assert self._page is not None, "Call start() first"
         return self._page
+
+    async def _evaluate(self, expression: str, arg: Any = None, *, timeout_s: float, what: str) -> Any:
+        """``page.evaluate`` with a deadline.
+
+        Playwright's evaluate has no timeout of its own, so a page promise that
+        never settles (a stalled import, a hung device request) would block the
+        worker forever. Use this for every evaluate that awaits page work.
+        """
+        try:
+            return await asyncio.wait_for(self.page.evaluate(expression, arg), timeout=timeout_s)
+        except asyncio.TimeoutError as e:
+            raise TimeoutError(
+                f"{self._log_prefix}[page#{self._page_seq}] {what} did not finish within {timeout_s:.0f}s"
+            ) from e
 
     def _attach_page_listeners(self) -> None:
         """Attach pageerror / requestfailed / response listeners for observability."""
@@ -1026,12 +1046,14 @@ class MobileGymEnv(BaseMobileEnv):
             })
         """
         # Wait for the device to acknowledge the patch before navigating away.
-        await self.page.evaluate(
+        await self._evaluate(
             """async ({patch, deep, reload}) => {
                 await window.__SIM__.setState(patch, {deep, reload: false});
                 if (reload) await window.__SIM__.waitForStateCommit?.();
             }""",
             {"patch": patch, "deep": deep, "reload": reload},
+            timeout_s=30,
+            what="set_state",
         )
         if reload:
             await self.page.reload(wait_until="load")
@@ -1064,7 +1086,7 @@ class MobileGymEnv(BaseMobileEnv):
         to eliminate per-app CDP round-trips. Each app is opened sequentially
         in the browser (single-threaded JS) with a settle delay between them.
         """
-        await self.page.evaluate(
+        await self._evaluate(
             """async ({appIds, settleMs}) => {
                 // Pre-import state.ts modules for involved apps so their
                 // Zustand stores are registered in storeRegistry before
@@ -1082,6 +1104,8 @@ class MobileGymEnv(BaseMobileEnv):
                 os.goHome?.();
             }""",
             {"appIds": app_ids, "settleMs": settle_ms},
+            timeout_s=30 + len(app_ids) * settle_ms / 1000,
+            what="warm_apps",
         )
         # One final Python-side settle for the home screen
         await asyncio.sleep(0.3)
@@ -1378,7 +1402,7 @@ class MobileGymEnv(BaseMobileEnv):
             # resetState() = new API (no reload); fallback = manual cleanup.
             # NEVER call __SIM__.reset() here — it contains location.reload()
             # which races with the Python page.reload() below.
-            await self.page.evaluate("""async () => {
+            await self._evaluate("""async () => {
                 if (window.__SIM__?.resetState) {
                     await window.__SIM__.resetState();
                     return;
@@ -1386,7 +1410,7 @@ class MobileGymEnv(BaseMobileEnv):
                 // Manual fallback (no reload)
                 localStorage.clear();
                 sessionStorage.clear();
-            }""")
+            }""", timeout_s=timeout_ms / 1000, what="resetState")
         except Exception as e:
             # A same-tab navigation preserves the old device session. The outer
             # retry reloads and tries the reset again before starting an episode.
@@ -1441,7 +1465,7 @@ class MobileGymEnv(BaseMobileEnv):
             raise RuntimeError(f"{p} _wait_ready phase=__OS__ timeout: {type(e).__name__}: {e}") from e
         # 3. 预加载当前任务涉及的 App 的重型数据 (allSettled with per-app error)
         with sw.phase("waitForData"):
-            wait_result = await self.page.evaluate(
+            wait_result = await self._evaluate(
             """async (ids) => {
                 if (!window.__SIM__?.waitForData) return {ok: true, failed: []};
                 // Monkey-patch fetch to capture response debug info on non-ok responses
@@ -1468,6 +1492,8 @@ class MobileGymEnv(BaseMobileEnv):
                 }
             }""",
             app_ids,
+            timeout_s=timeout_ms / 1000,
+            what=f"waitForData({app_ids})",
         )
         if not wait_result.get("ok"):
             raise RuntimeError(f"{p} _wait_ready phase=waitForData({app_ids}) failed: {wait_result.get('error', 'unknown')}")

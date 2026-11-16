@@ -3,7 +3,7 @@
 # mobile-gym 生产环境一键启动 (Nginx + API backend)
 #
 # 架构:
-#   Nginx (:PORT) ──┬── 静态文件 (dist/)  ← sendfile 零拷贝
+#   Nginx (:PORT HTTPS, 127.0.0.1:HTTP_PORT HTTP) ──┬── 静态文件 (dist/)  ← sendfile 零拷贝
 #                   ├── /api/gw/* → Python (:PORT+1)
 #                   └── /__device/* → 设备服务端 (Node, DEVICE_WORKERS 个分片,
 #                                     :DEVICE_PORT 起; 按会话 id 里的分片号路由)
@@ -11,6 +11,8 @@
 # 环境变量:
 #   DEVICE_WORKERS   设备服务端进程数（默认 2；每个进程各加载一份 App 数据，约 1GB 内存）
 #   DEVICE_PORT      第一个分片的端口（默认 PORT+20）
+#   HTTP_PORT        本机 plain HTTP 端口（默认 PORT+2，只绑 127.0.0.1）。本机评测请用它：
+#                    自签 HTTPS 下 Chromium 不写 HTTP 缓存，每次加载都全量下载
 #   NODE_BIN         node 可执行文件（默认从 PATH 找）
 #
 # 使用:
@@ -21,6 +23,7 @@
 
 PORT=${1:-4180}
 API_PORT=$((PORT + 1))
+HTTP_PORT=${HTTP_PORT:-$((PORT + 2))}
 DEVICE_WORKERS=${DEVICE_WORKERS:-2}
 DEVICE_PORT=${DEVICE_PORT:-$((PORT + 20))}
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -86,6 +89,7 @@ render_nginx_config() {
         -e "s/__ROOT__/$esc_root/g" \
         -e "s/__PORT__/$PORT/g" \
         -e "s/__API_PORT__/$API_PORT/g" \
+        -e "s/__HTTP_PORT__/$HTTP_PORT/g" \
         "$NGINX_SOURCE_CONFIG" \
     | awk -v up="$device_upstream" -v map="$device_map" '
         $0 == "__DEVICE_UPSTREAM__" { printf "%s", up; next }
@@ -190,12 +194,13 @@ for ((k = 0; k < DEVICE_WORKERS; k++)); do
 done
 
 # 3. Start Nginx
-echo "[start] Nginx on :${PORT} (workers=8)"
+echo "[start] Nginx on :${PORT} (https) + 127.0.0.1:${HTTP_PORT} (http)"
 "$NGINX_BIN" -c "$NGINX_DIR/nginx.run.conf"
 
 sleep 0.5
 echo ""
-echo "✅ mobile-gym serving at https://0.0.0.0:${PORT}  (HTTP/2 + TLS)"
+echo "✅ mobile-gym serving at https://0.0.0.0:${PORT}  (HTTP/2 + TLS, remote access)"
+echo "   Local:   http://127.0.0.1:${HTTP_PORT}  (use this for local runs: --env-url http://127.0.0.1:${HTTP_PORT})"
 echo "   Static:  Nginx (sendfile + HTTP/2 + 8 workers)"
 echo "   API:     uvicorn + starlette (:${API_PORT}, ${API_WORKERS} workers)"
 echo "   Device:  ${DEVICE_WORKERS} Node shard(s) (:${DEVICE_PORT}+), routed by session id"

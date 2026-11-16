@@ -10,7 +10,7 @@
  *   - no finite CSS animation/transition is running (infinite ones are ambient);
  *   - every image inside the viewport has finished loading;
  *   - web fonts are ready;
- *   - the DOM has not changed for `quietMs`.
+ *   - the visible DOM has not changed for `quietMs` (hidden apps' changes are ignored).
  * After that, two more frames so the final state is painted. `timeoutMs` caps
  * the wait for pages that never settle (tickers, video); the result says why.
  */
@@ -92,10 +92,28 @@ let observer: MutationObserver | null = null;
 trackFetches();
 trackTimers();
 
+/**
+ * Whether a mutation could change what is on screen. Backgrounded apps stay
+ * mounted under `display:none` / `visibility:hidden` containers and keep their
+ * intervals (a running stopwatch redraws every 30 ms); their DOM changes must
+ * not keep the foreground from ever counting as quiet.
+ */
+function mutationIsRendered(record: MutationRecord): boolean {
+  const node = record.target;
+  // An attribute change can hide its own element (a dialog set to display:none):
+  // judge it by the parent, which shows whether that change was on screen.
+  const el = record.type === 'attributes'
+    ? node.parentElement ?? (node as Element)
+    : node instanceof Element ? node : node.parentElement;
+  if (!el) return false;
+  if (typeof el.checkVisibility !== 'function') return true;
+  return el.checkVisibility({ visibilityProperty: true });
+}
+
 function ensureObserver(): void {
   if (observer || typeof MutationObserver === 'undefined' || !document.body) return;
-  observer = new MutationObserver(() => {
-    lastMutationAt = TimeService.realNow();
+  observer = new MutationObserver((records) => {
+    if (records.some(mutationIsRendered)) lastMutationAt = TimeService.realNow();
   });
   observer.observe(document.body, { subtree: true, childList: true, attributes: true, characterData: true });
   lastMutationAt = TimeService.realNow();
